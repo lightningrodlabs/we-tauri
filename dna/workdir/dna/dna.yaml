@@ -1,0 +1,8 @@
+---
+manifest_version: "1"
+name: we
+uuid: 00000000-0000-0000-0000-000000000000
+properties: ~
+zomes:
+  - name: hc_zome_we
+    bundled: ../../target/wasm32-unknown-unknown/release/we.wasm
