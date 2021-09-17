@@ -34,6 +34,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   _store!: WeStore;
 
   _games = new StoreSubscriber(this, () => this._store.games);
+  _players = new StoreSubscriber(this, () => this._store.players);
 
   /** Private properties */
 
@@ -42,6 +43,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   private initialized = false;
   private initializing = false;
   firstUpdated() {
+    this._store.updatePlayers();
     this.checkInit();
   }
 
@@ -73,6 +75,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 
   async refresh() {
     await this._store.updateGames();
+    await this._store.updatePlayers();
   }
 
   async openGameDialog() {
@@ -87,9 +90,16 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     this._current = game;
   }
 
-
+//    <sl-avatar .image=${profile.fields.avatar}></sl-avatar>
+//    <div>${profile.nickname}</div></li>`
   render() {
     if (!this._current) return; // html`<mwc-button  @click=${() => this.checkInit()}>Start</mwc-button>`;
+    const folks = this._players.value.map((player)=>{
+      return html`<li class="folk">
+${player}
+</li>
+`
+    })
 
     return html`
 <mwc-select outlined label="Game" @select=${this.handleGameSelect}>
@@ -107,6 +117,8 @@ ${Object.entries(this._games.value).map(
 <mwc-button icon="add_circle" @click=${() =>
       this.openGameDialog()}>New</mwc-button>
 <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+
+${folks}
 
 <we-game-dialog id="game-dialog" @game-added=${(e:any) => this._current = e.detail}> ></we-game-dialog>
 `;

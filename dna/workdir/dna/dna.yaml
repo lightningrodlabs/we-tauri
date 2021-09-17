@@ -6,3 +6,5 @@ properties: ~
 zomes:
   - name: hc_zome_we
     bundled: ../../target/wasm32-unknown-unknown/release/we.wasm
+  - name: hc_zome_membrane
+    bundled: ../../target/wasm32-unknown-unknown/release/membrane.wasm

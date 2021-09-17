@@ -605,6 +605,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "membrane"
+version = "0.0.1-alpha1"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "futures",
+ "hc_utils",
+ "hdk",
+ "holo_hash",
+ "nanoid",
+ "observability",
+ "serde",
+ "stream-cancel",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "memchr"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

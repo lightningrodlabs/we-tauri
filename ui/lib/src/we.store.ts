@@ -11,9 +11,11 @@ export interface WeStore {
 
   /** Readable stores */
   games: Readable<Dictionary<GameEntry>>;
+  players: Readable<Array<AgentPubKeyB64>>;
 
   /** Actions */
   updateGames: () => Promise<Dictionary<GameEntry>>;
+  updatePlayers: () => Promise<Array<AgentPubKeyB64>>;
   addGame: (game: GameEntry) => Promise<EntryHashB64>;
   game: (game:string) => GameEntry;
 }
@@ -27,7 +29,11 @@ export function createWeStore(
 
   const gamesStore: Writable<Dictionary<GameEntry>> = writable({});
 
+  const playersStore: Writable<Array<AgentPubKeyB64>> = writable([]);
+
   const games: Readable<Dictionary<GameEntry>> = derived(gamesStore, i => i)
+
+  const players: Readable<Array<AgentPubKeyB64>> = derived(playersStore, i => i)
 
   const updateGameFromEntry = async (hash: EntryHashB64, game: GameEntry) => {
     gamesStore.update(games => {
@@ -57,12 +63,25 @@ export function createWeStore(
   return {
     myAgentPubKey,
     games,
+    players,
     async updateGames() : Promise<Dictionary<GameEntry>> {
       const games = await service.getGames();
       for (const s of games) {
         await updateGameFromEntry(s.hash, s.content)
       }
       return get(gamesStore)
+    },
+    async updatePlayers() : Promise<Array<AgentPubKeyB64>> {
+      const players = await service.getPlayers();
+      for (const p of players) {
+        playersStore.update(players => {
+          if (players.indexOf(p) == -1) {
+            players.push(p)
+          }
+          return players
+        })
+      }
+      return get(playersStore)
     },
     async addGame(game: GameEntry) : Promise<EntryHashB64> {
       const hash: EntryHashB64 = await service.createGame(game)

@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "dna/zomes/we",
+  "dna/zomes/membrane",
 ]
 
 [profile.dev]

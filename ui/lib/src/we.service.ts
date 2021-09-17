@@ -5,7 +5,8 @@ import { GameEntry, Signal } from './types';
 export class WeService {
   constructor(
     public cellClient: CellClient,
-    protected zomeName = 'hc_zome_we'
+    protected zomeName = 'hc_zome_we',
+    protected membraneZomeName = 'hc_zome_membrane'
   ) {}
 
   get myAgentPubKey() : AgentPubKeyB64 {
@@ -14,6 +15,10 @@ export class WeService {
 
   async getGames(): Promise<Array<HoloHashed<GameEntry>>> {
     return this.callZome('get_games', null);
+  }
+
+  async getPlayers(): Promise<Array<AgentPubKeyB64>> {
+    return this.callMembrane('get_players', null);
   }
 
   async createGame(game: GameEntry): Promise<EntryHashB64> {
@@ -26,5 +31,8 @@ export class WeService {
 
   private callZome(fn_name: string, payload: any) {
     return this.cellClient.callZome(this.zomeName, fn_name, payload);
+  }
+  private callMembrane(fn_name: string, payload: any) {
+    return this.cellClient.callZome(this.membraneZomeName, fn_name, payload);
   }
 }
