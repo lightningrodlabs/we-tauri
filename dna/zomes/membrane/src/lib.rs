@@ -13,8 +13,7 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
     let path = get_players_path();
     path.ensure()?;
     let anchor_hash = path.hash()?;
-    let player : Vec<u8> = agent_info()?.agent_latest_pubkey.get_raw_39().into();
-    create_link(anchor_hash.clone(), anchor_hash , player)?;
+    create_link(anchor_hash.clone(), EntryHash::from(agent_info()?.agent_latest_pubkey) , ())?;
 
     Ok(InitCallbackResult::Pass)
 }
@@ -28,7 +27,7 @@ fn get_wheres_inner() -> MembraneResult<Vec<AgentPubKeyB64>> {
     let links = get_links(path.hash()?, None)?.into_inner();
     let mut output = Vec::with_capacity(links.len());
     for link in links.into_iter().map(|link| link) {
-        let key : AgentPubKey = AgentPubKey::from_raw_39_panicky(link.tag.into_inner());
+        let key : AgentPubKey = AgentPubKey::from(link.target);
         let player : AgentPubKeyB64 = key.into();
         output.push(player);
     }
