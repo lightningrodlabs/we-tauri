@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        background: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <we-app></we-app>
+
+    <script type="module">
+      import { WeApp } from './src/index.ts';
+      customElements.define('we-app', WeApp);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+import { html, css, LitElement } from "lit";
+import { state } from "lit/decorators.js";
+
+import { contextProvided } from "@lit-labs/context";
+import { StoreSubscriber } from "lit-svelte-stores";
+import { Unsubscriber } from "svelte/store";
+
+import { sharedStyles } from "../sharedStyles";
+import { weContext, Dictionary, Signal } from "../types";
+import { WeStore } from "../we.store";
+import { WeGameDialog } from "./we-game-dialog";
+import { lightTheme, SlAvatar } from '@scoped-elements/shoelace';
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import {
+  ListItem,
+  Select,
+  IconButton,
+  Button,
+} from "@scoped-elements/material-web";
+
+/**
+ * @element we-controller
+ */
+export class WeController extends ScopedElementsMixin(LitElement) {
+  constructor() {
+    super();
+  }
+
+  /** Public attributes */
+
+  /** Dependencies */
+
+  @contextProvided({ context: weContext })
+  _store!: WeStore;
+
+  _games = new StoreSubscriber(this, () => this._store.games);
+
+  /** Private properties */
+
+  @state() _current = "";
+
+  private initialized = false;
+  private initializing = false;
+  firstUpdated() {
+    this.checkInit();
+  }
+
+  async checkInit() {
+    if (!this.initialized && !this.initializing) {
+      this.initializing = true  // because checkInit gets call whenever profiles changes...
+      let games = await this._store.updateGames();
+      // load up a game if there are none:
+      if (Object.keys(games).length == 0) {
+        console.log("no games found, initializing")
+        await this.initializeGames();
+        games = await this._store.updateGames();
+      }
+      this._current = Object.keys(games)[0];
+      console.log("current game", this._current, games[this._current].name);
+      this.initializing = false
+    }
+    this.initialized = true;
+  }
+
+  async initializeGames() {
+    await this._store.addGame({
+      name: "test",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      meta: {},
+    });
+  }
+
+  async refresh() {
+    await this._store.updateGames();
+  }
+
+  async openGameDialog() {
+    this.gameDialogElem.open();
+  }
+
+  get gameDialogElem() : WeGameDialog {
+    return this.shadowRoot!.getElementById("game-dialog") as WeGameDialog;
+  }
+
+  private handleGameSelect(game: string): void {
+    this._current = game;
+  }
+
+
+  render() {
+    if (!this._current) return; // html`<mwc-button  @click=${() => this.checkInit()}>Start</mwc-button>`;
+
+    return html`
+<mwc-select outlined label="Game" @select=${this.handleGameSelect}>
+${Object.entries(this._games.value).map(
+  ([key, game]) => html`
+    <mwc-list-item
+      @request-selected=${() => this.handleGameSelect(key)}
+      .selected=${key === this._current}
+      value="${key}"
+      >${game.name}
+    </mwc-list-item>
+  `
+)}
+</mwc-select>
+<mwc-button icon="add_circle" @click=${() =>
+      this.openGameDialog()}>New</mwc-button>
+<mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+
+<we-game-dialog id="game-dialog" @game-added=${(e:any) => this._current = e.detail}> ></we-game-dialog>
+`;
+  }
+
+  static get scopedElements() {
+    return {
+      "mwc-select": Select,
+      "mwc-list-item": ListItem,
+      "mwc-icon-button": IconButton,
+      "mwc-button": Button,
+      "we-game-dialog" : WeGameDialog,
+      'sl-avatar': SlAvatar,
+    };
+  }
+
+  static get styles() {
+    return [
+      lightTheme,
+      sharedStyles,
+      css`
+        :host {
+          margin: 10px;
+        }
+
+        @media (min-width: 640px) {
+          main {
+            max-width: none;
+          }
+        }
+      `,
+    ];
+  }
+}
