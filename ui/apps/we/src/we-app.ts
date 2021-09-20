@@ -2,8 +2,8 @@ import { ContextProvider } from "@lit-labs/context";
 import { state } from "lit/decorators.js";
 import {
   WeController,
+  WeStore,
   weContext,
-  createWeStore,
 } from "@we/elements";
 import { AppWebsocket } from "@holochain/conductor-api";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
@@ -25,7 +25,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const cellData = appInfo.cell_data[0];
     const cellClient = new HolochainClient(appWebsocket, cellData);
 
-    new ContextProvider(this, weContext, createWeStore(cellClient));
+    new ContextProvider(this, weContext, new WeStore(cellClient));
 
     this.loaded = true;
   }
