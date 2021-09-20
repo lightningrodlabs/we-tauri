@@ -97,6 +97,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     const folks = this._players.value.map((player)=>{
       return html`<li class="folk">
 ${player}
+${player == this._store.myAgentPubKey ? " me!" : ""}
 </li>
 `
     })
