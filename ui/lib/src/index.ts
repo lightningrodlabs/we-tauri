@@ -5,6 +5,7 @@ import 'cqfill';
 
 export * from './elements/we-controller';
 export * from './elements/we-game-dialog';
+export * from './elements/we-player';
 export * from './we.service';
 export * from './we.store';
 export * from './types';

@@ -9,6 +9,7 @@ import { sharedStyles } from "../sharedStyles";
 import { weContext, Dictionary, Signal } from "../types";
 import { WeStore } from "../we.store";
 import { WeGameDialog } from "./we-game-dialog";
+import { WePlayer } from "./we-player";
 import { lightTheme, SlAvatar } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
@@ -94,11 +95,13 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 //    <div>${profile.nickname}</div></li>`
   render() {
     if (!this._current) return; // html`<mwc-button  @click=${() => this.checkInit()}>Start</mwc-button>`;
-    const folks = this._players.value.map((player)=>{
-      return html`<li class="folk">
-${player}
-${player == this._store.myAgentPubKey ? " me!" : ""}
-</li>
+    const players = this._players.value.map((player)=>{
+      return html`
+<we-player
+.hash=${player}
+.size=${32}
+.me=${player == this._store.myAgentPubKey}
+></we-player>
 `
     })
 
@@ -119,7 +122,7 @@ ${Object.entries(this._games.value).map(
       this.openGameDialog()}>New</mwc-button>
 <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
 
-${folks}
+<div class="players">${players}</div>
 
 <we-game-dialog id="game-dialog" @game-added=${(e:any) => this._current = e.detail}> ></we-game-dialog>
 `;
@@ -132,6 +135,7 @@ ${folks}
       "mwc-icon-button": IconButton,
       "mwc-button": Button,
       "we-game-dialog" : WeGameDialog,
+      "we-player" : WePlayer,
       'sl-avatar': SlAvatar,
     };
   }
@@ -144,7 +148,10 @@ ${folks}
         :host {
           margin: 10px;
         }
-
+        .players {
+           width: 40px;
+           float:right;
+        }
         @media (min-width: 640px) {
           main {
             max-width: none;
