@@ -15,6 +15,18 @@ export default async (orchestrator) => {
     // be used to spin up the conductor processes which are returned in a matching array.
     const [a_and_b_conductor] = await s.players([localConductorConfig])
 
+    let game1 = {
+      name: "profiles",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      meta: {}
+    };
+
+    a_and_b_conductor.setSignalHandler((signal) => {
+      console.log("Received Signal:",signal)
+      t.deepEqual(signal.data.payload.message, { type: 'NewGame', content: game1 })
+    })
+
     // install your happs into the conductors and destructuring the returned happ data using the same
     // array structure as you created in your installation array.
     let [alice_we_happ/*, bobbo_we_happ*/] = await installAgents(a_and_b_conductor,  ["alice"/*, 'bobbo'*/])
@@ -28,12 +40,6 @@ export default async (orchestrator) => {
 
 
     // Create a game
-    let game1 = {
-      name: "profiles",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      meta: {}
-    };
     const game1_hash = await alice_we.call('hc_zome_we', 'create_game', game1 );
     t.ok(game1_hash)
     console.log("game1_hash", game1_hash);

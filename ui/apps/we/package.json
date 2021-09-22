@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@holochain-open-dev/cell-client": "^0.0.4",
-    "@holochain/conductor-api": "0.2.0",
+    "@holochain/conductor-api": "0.2.1",
     "@lit-labs/context": "github:holochain-open-dev/context#build",
     "@we/elements": "^0.0.1",
     "lit": "^2.0.0-rc.4"
