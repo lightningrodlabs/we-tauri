@@ -6,7 +6,7 @@ import { StoreSubscriber } from "lit-svelte-stores";
 import { weContext } from "../types";
 import { classMap } from 'lit/directives/class-map.js';
 
-export class WeGames extends LitElement {
+export class WeWes extends LitElement {
 
   @contextProvided({ context: weContext })
   _store!: WeStore;
@@ -14,23 +14,26 @@ export class WeGames extends LitElement {
   _wes = new StoreSubscriber(this, () => this._store.wes);
 
   @property()
-  weId: string = "";
+  selected: string = "";
 
   private async handleClick(e: any) {
-    this._store.selectGame(this.weId, e.target.id);
+    this.selected = e.target.id
+    this.dispatchEvent(new CustomEvent('we-selected', { detail: this.selected, bubbles: true, composed: true }));
   }
 
   render() {
-    const we = this._wes.value[this.weId]
-    if (!we) return
-    const games = Object.entries(we.games).map(
-      ([key, game]) => html`
-<li class="game ${classMap({selected: game.name==this._store.selectedGame(this.weId)})}"" @click=${this.handleClick} id="${game.name}"><img src="${game.logo_url}"><div>${game.name}</div></li>`
+    const wes = Object.entries(this._wes.value).map(
+      ([key, we]) => html`
+<li class="we ${classMap({selected: we.name==this.selected})}"" @click=${this.handleClick} id="${we.name}">
+  <img src="${we.logo_url}" />
+  <div class="we-name">${we.name}</div>
+</li>`
+
     )
 
     return html`
-<div class="games">
-${games}
+<div class="wes">
+${wes}
 </div>
 `;
   }
@@ -38,25 +41,33 @@ ${games}
   static get styles() {
     return css`
 
-.game {
+.we {
+margin-bottom: 25px;
 border-radius: 10%;
-display: inline-block;
 }
 .selected {
 border: black 2px solid;
 }
-.game > img {
-border-radius: 30%;
-width: 60px;
+.we > img {
+border-radius: 50%;
+width: 50px;
+height: 50px;
+object-fit:cover;
 pointer-events: none;
 }
-.games {
+.wes {
 list-style: none;
 display: inline-block;
-margin: 2px;
+padding: 2px;
 text-align: center;
 font-size: 70%;
+background-color: lightgrey;
+padding:6px;
 }
+.we-name {
+
+}
+
 `;
   }
 }

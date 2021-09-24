@@ -1,5 +1,5 @@
 import { html, css, LitElement } from "lit";
-import { state } from "lit/decorators.js";
+import { state, property } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -11,6 +11,7 @@ import { WeStore } from "../we.store";
 import { WeGameDialog } from "./we-game-dialog";
 import { WePlayer } from "./we-player";
 import { WeGames } from "./we-games";
+import { WeWes } from "./we-wes";
 import { lightTheme, SlAvatar } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
@@ -39,58 +40,16 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 
   /** Private properties */
 
-  @state() _current = "";
-
-  @state() _currentWe = "we"
-
-  private initialized = false;
-  private initializing = false;
-  firstUpdated() {
-    this.checkInit();
-  }
-
-  async checkInit() {
-    if (!this.initialized && !this.initializing) {
-      this.initializing = true  // because checkInit gets call whenever profiles changes...
-      let games = await this._store.updateGames(this._currentWe);
-      // load up a game if there are none:
-      if (Object.keys(games).length == 0) {
-        console.log("no games found, initializing")
-        await this.initializeGames();
-        games = await this._store.updateGames(this._currentWe);
-      }
-      this._current = Object.keys(games)[0];
-      console.log("current game", this._current, games[this._current].name);
-      this.initializing = false
-    }
-    this.initialized = true;
-  }
-
-  async initializeGames() {
-    await this._store.addGame(this._currentWe, {
-      name: "profiles",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png",
-      meta: {},
-    });
-    await this._store.addGame(this._currentWe, {
-      name: "chat",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
-      meta: {},
-    });
-  }
+  @property() selected = ""
 
   async refresh() {
-    await this._store.updateGames(this._currentWe);
-    await this._store.updatePlayers(this._currentWe);
+    await this._store.updateGames(this.selected);
+    await this._store.updatePlayers(this.selected);
   }
 
   async openGameDialog() {
     const dialog = this.gameDialogElem
-    dialog.weId = this._currentWe
+    dialog.weId = this.selected
     dialog.open();
   }
 
@@ -99,36 +58,55 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   private handleGameSelect(game: string): void {
-    this._current = game;
+    this._store.selectGame(this.selected, game);
+  }
+
+  private handleWeSelect(weId: string): void {
+    console.log("selecting we:", weId)
+    this.selected = weId;
   }
 
 //    <sl-avatar .image=${profile.fields.avatar}></sl-avatar>
 //    <div>${profile.nickname}</div></li>`
   render() {
-    if (!this._current) return; // html`<mwc-button  @click=${() => this.checkInit()}>Start</mwc-button>`;
-    const players = this._wes.value[this._currentWe].players.map((player)=>{
-      return html`
+    const we = this._wes.value[this.selected]
+    let players;
+    if (we) {
+      players = we.players.map((player)=>{
+        return html`
 <we-player
 .hash=${player}
 .size=${32}
 .me=${player == this._store.myAgentPubKey}
 ></we-player>
 `
-    })
+      })
+    }
+    const current = this._store.selectedGame(this.selected)
+    let gameContent
+    if (current) {
+      gameContent = html`Content for ${current} goes here`
+    } else {
+      gameContent = html`
+<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add App</mwc-button>
+<mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>`
+    }
 
     return html`
-<div class="we">
-  <img class="we-logo" src="${this._wes.value[this._currentWe].logo_url}"/>
-  <div class="we-name"> ${this._wes.value[this._currentWe].name}</div>
-  <mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>New</mwc-button>
-  <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+<we-wes class="wes" .selected=${this.selected} @we-selected=${(e:any) => this.handleWeSelect(e.detail)}></we-wes>
+
+<div class="games">
+<img class="game-admin" @click=${() => this.handleGameSelect("")} src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png" />
+  ${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
 </div>
 
-<we-games .weId=${this._currentWe} @game-selected=${(e:any) => this.handleGameSelect(e.detail)}></we-games>
+<div class="game-content">
+${gameContent}
+</div>
 
 <div class="players">${players}</div>
 
-<we-game-dialog id="game-dialog" @game-added=${(e:any) => this._current = e.detail}> ></we-game-dialog>
+<we-game-dialog id="game-dialog" @game-added=${(e:any) => this.handleGameSelect(e.detail)}> ></we-game-dialog>
 `;
   }
 
@@ -141,6 +119,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
       "we-game-dialog" : WeGameDialog,
       "we-player" : WePlayer,
       "we-games" : WeGames,
+      "we-wes" : WeWes,
       'sl-avatar': SlAvatar,
     };
   }
@@ -153,22 +132,25 @@ export class WeController extends ScopedElementsMixin(LitElement) {
         :host {
           margin: 0px;
         }
-        .we {
-          border-bottom: 2px solid black
+        we-wes {
+          float: left;
+          border-right: 2px solid black;
+          height: 100vh;
         }
-        .we > img {
-          border-radius: 50%;
-          width: 50px;
+        .game-admin {
           height: 50px;
-          object-fit:cover;
-        }
-        .we-name {
-          display: inline-block;
+          width: 50px;
+          padding: 5px;
+          float: right;
         }
         .players {
-           width: 40px;
-           float:right;
+          width: 40px;
+          float:right;
         }
+        .games {
+          border-bottom: 2px solid black;
+          min-height: 76px;
+         }
         @media (min-width: 640px) {
           main {
             max-width: none;

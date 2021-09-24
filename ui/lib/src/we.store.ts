@@ -93,4 +93,18 @@ export class WeStore {
   game(weId: string, game: string): GameEntry {
     return get(this.weStore)[weId].games[game];
   }
+
+  selectGame(weId: string, game: string) {
+    console.log("selecting game:", game)
+    this.weStore.update(wes => {
+      wes[weId].selectedGame = game
+      return wes
+    })
+  }
+
+  selectedGame(weId: string): string {
+    const we = get(this.weStore)[weId]
+    return we ? we.selectedGame : "";
+  }
+
 }
