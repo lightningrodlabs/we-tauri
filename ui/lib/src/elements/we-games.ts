@@ -11,10 +11,13 @@ export class WeGames extends LitElement {
   @contextProvided({ context: weContext })
   _store!: WeStore;
 
-  _games = new StoreSubscriber(this, () => this._store.games);
+  _wes = new StoreSubscriber(this, () => this._store.wes);
 
   @property()
   selected: string = "";
+
+  @property()
+  weId: string = "";
 
   private async handleClick(e: any) {
     this.selected = e.target.id
@@ -22,7 +25,9 @@ export class WeGames extends LitElement {
   }
 
   render() {
-    const games = Object.entries(this._games.value).map(
+    const we = this._wes.value[this.weId]
+    if (!we) return
+    const games = Object.entries(we.games).map(
       ([key, game]) => html`
 <li class="game ${classMap({selected: game.name==this.selected})}"" @click=${this.handleClick} id="${game.name}"><img src="${game.logo_url}"><div>${game.name}</div></li>`
 

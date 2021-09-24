@@ -35,29 +35,29 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
   _store!: WeStore;
 
-  _games = new StoreSubscriber(this, () => this._store.games);
-  _players = new StoreSubscriber(this, () => this._store.players);
+  _wes = new StoreSubscriber(this, () => this._store.wes);
 
   /** Private properties */
 
   @state() _current = "";
 
+  @state() _currentWe = "we"
+
   private initialized = false;
   private initializing = false;
   firstUpdated() {
-    this._store.updatePlayers();
     this.checkInit();
   }
 
   async checkInit() {
     if (!this.initialized && !this.initializing) {
       this.initializing = true  // because checkInit gets call whenever profiles changes...
-      let games = await this._store.updateGames();
+      let games = await this._store.updateGames(this._currentWe);
       // load up a game if there are none:
       if (Object.keys(games).length == 0) {
         console.log("no games found, initializing")
         await this.initializeGames();
-        games = await this._store.updateGames();
+        games = await this._store.updateGames(this._currentWe);
       }
       this._current = Object.keys(games)[0];
       console.log("current game", this._current, games[this._current].name);
@@ -67,14 +67,14 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   async initializeGames() {
-    await this._store.addGame({
+    await this._store.addGame(this._currentWe, {
       name: "profiles",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png",
       meta: {},
     });
-    await this._store.addGame({
+    await this._store.addGame(this._currentWe, {
       name: "chat",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
@@ -84,12 +84,14 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   async refresh() {
-    await this._store.updateGames();
-    await this._store.updatePlayers();
+    await this._store.updateGames(this._currentWe);
+    await this._store.updatePlayers(this._currentWe);
   }
 
   async openGameDialog() {
-    this.gameDialogElem.open();
+    const dialog = this.gameDialogElem
+    dialog.weId = this._currentWe
+    dialog.open();
   }
 
   get gameDialogElem() : WeGameDialog {
@@ -104,7 +106,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 //    <div>${profile.nickname}</div></li>`
   render() {
     if (!this._current) return; // html`<mwc-button  @click=${() => this.checkInit()}>Start</mwc-button>`;
-    const players = this._players.value.map((player)=>{
+    const players = this._wes.value[this._currentWe].players.map((player)=>{
       return html`
 <we-player
 .hash=${player}
@@ -115,10 +117,14 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     })
 
     return html`
-<we-games @game-selected=${(e:any) => this.handleGameSelect(e.detail)}></we-games>
-<mwc-button icon="add_circle" @click=${() =>
-      this.openGameDialog()}>New</mwc-button>
-<mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+<div class="we">
+  <img class="we-logo" src="${this._wes.value[this._currentWe].logo_url}"/>
+  <div class="we-name"> ${this._wes.value[this._currentWe].name}</div>
+  <mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>New</mwc-button>
+  <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+</div>
+
+<we-games .weId=${this._currentWe} @game-selected=${(e:any) => this.handleGameSelect(e.detail)}></we-games>
 
 <div class="players">${players}</div>
 
@@ -145,7 +151,19 @@ export class WeController extends ScopedElementsMixin(LitElement) {
       sharedStyles,
       css`
         :host {
-          margin: 10px;
+          margin: 0px;
+        }
+        .we {
+          border-bottom: 2px solid black
+        }
+        .we > img {
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          object-fit:cover;
+        }
+        .we-name {
+          display: inline-block;
         }
         .players {
            width: 40px;

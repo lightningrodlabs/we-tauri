@@ -3,46 +3,53 @@ import { CellClient } from '@holochain-open-dev/cell-client';
 import { writable, Writable, derived, Readable, get } from 'svelte/store';
 
 import { WeService } from './we.service';
-import { Dictionary, GameEntry,} from './types';
+import { We } from './we';
+import { Dictionary, GameEntry } from './types';
 
 export class WeStore {
   /** Private */
-  private service: WeService;
-  private gamesStore: Writable<Dictionary<GameEntry>> = writable({});
-  private playersStore: Writable<Array<AgentPubKeyB64>> = writable([]);
+  private services: Dictionary<WeService> = {};
+  private weStore: Writable<Dictionary<We>> = writable({});
 
 
   /** Static info */
-  myAgentPubKey: AgentPubKeyB64;
+  myAgentPubKey: AgentPubKeyB64 = ""; //TODO, fix based on assumption of agent key across we
 
   /** Readable stores */
-  public games: Readable<Dictionary<GameEntry>> = derived(this.gamesStore, i => i)
-  public players: Readable<Array<AgentPubKeyB64>> = derived(this.playersStore, i => i)
+  public wes: Readable<Dictionary<We>> = derived(this.weStore, i => i)
 
- constructor(
-    protected cellClient: CellClient,
+  public addWe(
+    weId: string,
+    weLogo: string,
+    cellClient: CellClient,
     zomeName = 'hc_zome_we'
   ) {
     this.myAgentPubKey = serializeHash(cellClient.cellId[1]);
-    this.service = new WeService(cellClient, zomeName);
+    this.services[weId] = new WeService(cellClient, zomeName);
 
     cellClient.addSignalHandler( signal => {
       console.log("SIGNAL",signal)
       const payload = signal.data.payload
       switch(payload.message.type) {
         case "NewGame":
-          if (!get(this.games)[payload.gameHash]) {
-            this.updateGameFromEntry(payload.gameHash, payload.message.content)
+          if (!get(this.wes)[weId].games[payload.gameHash]) {
+            this.updateGameFromEntry(weId, payload.gameHash, payload.message.content)
           }
           break;
       }
     })
+    this.weStore.update(wes => {
+      wes[weId] = new We(weId, "fakeDnaHash", weLogo)
+      return wes
+    })
+
+    this.updatePlayers(weId);
   }
 
-  private async updateGameFromEntry (hash: EntryHashB64, game: GameEntry) {
-    this.gamesStore.update(games => {
-      games[hash] = game
-      return games
+  private async updateGameFromEntry (weId: string, hash: EntryHashB64, game: GameEntry) {
+    this.weStore.update(wes => {
+      wes[weId].games[hash] = game
+      return wes
     })
   }
 
@@ -52,38 +59,38 @@ export class WeStore {
   }
 
   /** Actions */
-  async updateGames() : Promise<Dictionary<GameEntry>> {
-    const games = await this.service.getGames();
+  async updateGames(weId: string) : Promise<Dictionary<GameEntry>> {
+    const games = await this.services[weId].getGames();
     for (const s of games) {
-      await this.updateGameFromEntry(s.hash, s.content)
+      await this.updateGameFromEntry(weId, s.hash, s.content)
     }
-    return get(this.gamesStore)
+    return get(this.weStore)[weId].games
   }
 
-  async updatePlayers() : Promise<Array<AgentPubKeyB64>> {
-    const players = await this.service.getPlayers();
+  async updatePlayers(weId: string) : Promise<Array<AgentPubKeyB64>> {
+    const players = await this.services[weId].getPlayers();
     for (const p of players) {
-      this.playersStore.update(players => {
-        if (players.indexOf(p) == -1) {
-          players.push(p)
+      this.weStore.update(wes => {
+        if (wes[weId].players.indexOf(p) == -1) {
+          wes[weId].players.push(p)
         }
-        return players
+        return wes
       })
     }
-    return get(this.playersStore)
+    return get(this.weStore)[weId].players
   }
 
-  async addGame(game: GameEntry) : Promise<EntryHashB64> {
-    const hash: EntryHashB64 = await this.service.createGame(game)
-    this.gamesStore.update(games => {
-      games[hash] = game
-      return games
+  async addGame(weId: string, game: GameEntry) : Promise<EntryHashB64> {
+    const hash: EntryHashB64 = await this.services[weId].createGame(game)
+    this.weStore.update(wes => {
+      wes[weId].games[hash] = game
+      return wes
     })
-    this.service.notify({gameHash:hash, message: {type:"NewGame", content: game}}, this.others());
+    this.services[weId].notify({gameHash:hash, message: {type:"NewGame", content: game}}, this.others());
     return hash
   }
 
-  game(game: string): GameEntry {
-    return get(this.gamesStore)[game];
+  game(weId: string, game: string): GameEntry {
+    return get(this.weStore)[weId].games[game];
   }
 }

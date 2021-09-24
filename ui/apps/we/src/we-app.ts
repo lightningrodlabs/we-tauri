@@ -24,8 +24,10 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
     const cellData = appInfo.cell_data[0];
     const cellClient = new HolochainClient(appWebsocket, cellData);
+    const store = new WeStore()
+    store.addWe("we", "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg", cellClient)
 
-    new ContextProvider(this, weContext, new WeStore(cellClient));
+    new ContextProvider(this, weContext, store);
 
     this.loaded = true;
   }

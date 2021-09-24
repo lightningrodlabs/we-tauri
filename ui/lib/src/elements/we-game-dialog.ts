@@ -1,5 +1,5 @@
 import { html, css, LitElement } from "lit";
-import { state, query } from "lit/decorators.js";
+import { state, query, property } from "lit/decorators.js";
 
 import { sharedStyles } from "../sharedStyles";
 import { contextProvided } from "@lit-labs/context";
@@ -12,6 +12,9 @@ import { Dialog, TextField, Button } from "@scoped-elements/material-web";
  * @element we-game
  */
 export class WeGameDialog extends ScopedElementsMixin(LitElement) {
+
+  @property()
+  weId: string = ""
 
   /** Dependencies */
   @contextProvided({ context: weContext })
@@ -55,7 +58,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
       meta: {
       },
     };
-    const newGame = await this._store.addGame(game);
+    const newGame = await this._store.addGame(this.weId, game);
     this.dispatchEvent(new CustomEvent('game-added', { detail: newGame, bubbles: true, composed: true }));
     const dialog = this.shadowRoot!.getElementById(
       "game-dialog"

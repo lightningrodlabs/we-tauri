@@ -10,16 +10,16 @@ export type Dictionary<T> = { [key: string]: T };
 
 export interface GameInfo {
   entry: GameEntry,
-  hash: HeaderHashB64;
+  hash: HeaderHashB64,
   author: AgentPubKeyB64,
 }
 
 export interface GameEntry {
-  name: string;
-  dna_hash: DnaHashB64;
-  ui_url: String;
-  logo_url: String;
-  meta?: Dictionary<string>;
+  name: string,
+  dna_hash: DnaHashB64,
+  ui_url: String,
+  logo_url: String,
+  meta?: Dictionary<string>,
 }
 
 export type Signal =
