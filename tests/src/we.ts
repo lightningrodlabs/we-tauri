@@ -19,6 +19,7 @@ export default async (orchestrator) => {
       name: "profiles",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
+      logo_url: "http://logourl",
       meta: {}
     };
 

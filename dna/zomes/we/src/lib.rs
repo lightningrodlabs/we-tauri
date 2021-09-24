@@ -38,6 +38,7 @@ pub struct Game {
     pub name: String,
     dna_hash: DnaHashB64,
     ui_url: String,
+    logo_url: String,
     pub meta: HashMap<String, String>,  // usable by the UI for whatever
 }
 

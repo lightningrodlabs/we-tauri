@@ -18,6 +18,7 @@ export interface GameEntry {
   name: string;
   dna_hash: DnaHashB64;
   ui_url: String;
+  logo_url: String;
   meta?: Dictionary<string>;
 }
 

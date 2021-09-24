@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "scripts": {
-    "build": "rimraf dist && npm run analyze && rollup -c",
+    "build": "rimraf dist  && rollup -c",
     "build:watch": "npm run analyze && rollup -c && watch -p \"src/**/*\" -c \"npm run analyze && rollup -c\"",
     "analyze": "lit-analyzer src --failFast"
   },

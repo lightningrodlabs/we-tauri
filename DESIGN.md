@@ -27,6 +27,7 @@ The main zome tracks DNAs that have been added to the group, and enables members
 pub struct Game {
     pub name: String,
     dna_hash: DnaHashB64,
+    logo_url: String,
     ui_url: String,
     pub meta: HashMap<String, String>,  // usable by the UI for whatever
 }

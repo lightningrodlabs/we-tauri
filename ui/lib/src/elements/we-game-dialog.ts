@@ -27,23 +27,30 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
   _nameField!: TextField;
   @query('#dna-hash-field')
   _dnaHashField!: TextField;
-  @query('#url-field')
-  _urlField!: TextField;
+  @query('#ui-url-field')
+  _uiUrlField!: TextField;
+  @query('#logo-url-field')
+  _logoUrlField!: TextField;
+
 
 
   private async handleOk(e: any) {
-    const valid = this._urlField.validity.valid && this._nameField.validity.valid
+    const valid = this._logoUrlField.validity.valid && this._uiUrlField.validity.valid && this._nameField.validity.valid
     if (!this._nameField.validity.valid) {
       this._nameField.reportValidity()
     }
-    if (!this._urlField.validity.valid) {
-      this._urlField.reportValidity()
+    if (!this._uiUrlField.validity.valid) {
+      this._uiUrlField.reportValidity()
+    }
+    if (!this._logoUrlField.validity.valid) {
+      this._logoUrlField.reportValidity()
     }
     if (!valid) return
 
     const game: GameEntry = {
       name: this._nameField.value,
-      ui_url: this._urlField.value,
+      ui_url: this._uiUrlField.value,
+      logo_url: this._logoUrlField.value,
       dna_hash: this._dnaHashField.value,
       meta: {
       },
@@ -58,7 +65,8 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
   private async handleGameDialog(e: any) {
     this._nameField.value = "";
-    this._urlField.value = "";
+    this._uiUrlField.value = "";
+    this._logoUrlField.value = "";
     this._dnaHashField.value = "";
   }
 
@@ -72,7 +80,8 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 this.handleGameDialog
 }>
 <mwc-textfield @input=${() => (this.shadowRoot!.getElementById("name-field") as TextField).reportValidity()} id="name-field" label="Name" autoValidate=true required></mwc-textfield>
-<mwc-textfield @input=${this.handleUrlUpdated} id="url-field" label="Image URL" autoValidate=true required></mwc-textfield>
+<mwc-textfield @input=${this.handleUrlUpdated} id="ui-url-field" label="UI zip file URL" autoValidate=true required></mwc-textfield>
+<mwc-textfield @input=${this.handleUrlUpdated} id="logo-url-field" label="Logo Image URL" autoValidate=true required></mwc-textfield>
 <mwc-textfield @input=${() => (this.shadowRoot!.getElementById("dna-hash-field") as TextField).reportValidity()} id="dna-hash-field" label="DNA Hash" autoValidate=true required></mwc-textfield>
 
 <mwc-button id="primary-action-button" slot="primaryAction" @click=${this.handleOk}>ok</mwc-button>

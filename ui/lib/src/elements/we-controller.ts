@@ -10,6 +10,7 @@ import { weContext, Dictionary, Signal } from "../types";
 import { WeStore } from "../we.store";
 import { WeGameDialog } from "./we-game-dialog";
 import { WePlayer } from "./we-player";
+import { WeGames } from "./we-games";
 import { lightTheme, SlAvatar } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
@@ -67,9 +68,17 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 
   async initializeGames() {
     await this._store.addGame({
-      name: "test",
+      name: "profiles",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
+      logo_url: "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png",
+      meta: {},
+    });
+    await this._store.addGame({
+      name: "chat",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
       meta: {},
     });
   }
@@ -106,18 +115,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     })
 
     return html`
-<mwc-select outlined label="Game" @select=${this.handleGameSelect}>
-${Object.entries(this._games.value).map(
-  ([key, game]) => html`
-    <mwc-list-item
-      @request-selected=${() => this.handleGameSelect(key)}
-      .selected=${key === this._current}
-      value="${key}"
-      >${game.name}
-    </mwc-list-item>
-  `
-)}
-</mwc-select>
+<we-games @game-selected=${(e:any) => this.handleGameSelect(e.detail)}></we-games>
 <mwc-button icon="add_circle" @click=${() =>
       this.openGameDialog()}>New</mwc-button>
 <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
@@ -136,6 +134,7 @@ ${Object.entries(this._games.value).map(
       "mwc-button": Button,
       "we-game-dialog" : WeGameDialog,
       "we-player" : WePlayer,
+      "we-games" : WeGames,
       'sl-avatar': SlAvatar,
     };
   }
