@@ -90,8 +90,12 @@ export class WeStore {
     return hash
   }
 
-  game(weId: string, game: string): GameEntry {
-    return get(this.weStore)[weId].games[game];
+  currentGame(weId: string): GameEntry | null {
+    const we = get(this.weStore)[weId]
+    if (!we) return null
+    else {
+      return we.games[we.selectedGame];
+    }
   }
 
   selectGame(weId: string, game: string) {

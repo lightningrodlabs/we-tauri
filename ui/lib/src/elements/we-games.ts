@@ -25,7 +25,7 @@ export class WeGames extends LitElement {
     if (!we) return
     const games = Object.entries(we.games).map(
       ([key, game]) => html`
-<li class="game ${classMap({selected: game.name==this._store.selectedGame(this.weId)})}"" @click=${this.handleClick} id="${game.name}"><img src="${game.logo_url}"><div>${game.name}</div></li>`
+<li class="game ${classMap({selected: key==this._store.selectedGame(this.weId)})}"" @click=${this.handleClick} id="${key}"><img src="${game.logo_url}"><div>${game.name}</div></li>`
     )
 
     return html`

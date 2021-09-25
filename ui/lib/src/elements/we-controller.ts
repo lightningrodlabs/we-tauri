@@ -82,13 +82,13 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 `
       })
     }
-    const current = this._store.selectedGame(this.selected)
+    const game = this._store.currentGame(this.selected)
     let gameContent
-    if (current) {
-      gameContent = html`Content for ${current} goes here`
+    if (game) {
+      gameContent = html`Content for ${game.name} goes here`
     } else {
       gameContent = html`
-<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add App</mwc-button>
+${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add hApp</mwc-button>` : ''}
 <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>`
     }
 

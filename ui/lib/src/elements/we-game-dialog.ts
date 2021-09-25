@@ -79,7 +79,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-<mwc-dialog  id="game-dialog" heading="Game" @closing=${
+<mwc-dialog  id="game-dialog" heading="hApp" @closing=${
 this.handleGameDialog
 }>
 <mwc-textfield @input=${() => (this.shadowRoot!.getElementById("name-field") as TextField).reportValidity()} id="name-field" label="Name" autoValidate=true required></mwc-textfield>
