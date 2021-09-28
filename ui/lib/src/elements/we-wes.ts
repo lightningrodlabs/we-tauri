@@ -35,7 +35,7 @@ export class WeWes extends LitElement {
 <div class="wes">
 ${wes}
 </div>
-`;
+`
   }
 
   static get styles() {
@@ -61,7 +61,6 @@ display: inline-block;
 padding: 2px;
 text-align: center;
 font-size: 70%;
-background-color: lightgrey;
 padding:6px;
 }
 .we-name {

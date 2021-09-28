@@ -93,11 +93,13 @@ ${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGam
     }
 
     return html`
-<we-wes class="wes" .selected=${this.selected} @we-selected=${(e:any) => this.handleWeSelect(e.detail)}></we-wes>
-
-<div class="games">
+<div class="games-list">
 <img class="game-admin" @click=${() => this.handleGameSelect("")} src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png" />
-  ${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
+${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
+</div>
+<div class="wes-list">
+  <img class="wes-admin"  @click=${() => this.handleWeSelect("")} src="https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png" />
+  <we-wes .selected=${this.selected} @we-selected=${(e:any) => this.handleWeSelect(e.detail)}></we-wes>
 </div>
 
 <div class="game-content">
@@ -132,10 +134,25 @@ ${gameContent}
         :host {
           margin: 0px;
         }
-        we-wes {
-          float: left;
+        .wes-list {
           border-right: 2px solid black;
+          background-color: lightgrey;
           height: 100vh;
+          width: 100px;
+        }
+        .wes-admin {
+          float: left;
+          height: 50px;
+          width: 50px;
+          padding:6px;
+        }
+        we-wes {
+          clear: both;
+        }
+        .games-list {
+          border-right: 2px solid black;
+          float:left;
+          min-width: 76px;
         }
         .game-admin {
           height: 50px;
@@ -147,10 +164,6 @@ ${gameContent}
           width: 40px;
           float:right;
         }
-        .games {
-          border-bottom: 2px solid black;
-          min-height: 76px;
-         }
         @media (min-width: 640px) {
           main {
             max-width: none;

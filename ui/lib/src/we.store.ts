@@ -111,4 +111,9 @@ export class WeStore {
     return we ? we.selectedGame : "";
   }
 
+  games(weId: string): Dictionary<GameEntry> {
+    const we = get(this.weStore)[weId]
+    return we ? we.games : {};
+  }
+
 }
