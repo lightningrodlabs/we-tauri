@@ -18,6 +18,7 @@ export class WeWes extends LitElement {
 
   private async handleClick(e: any) {
     this.selected = e.target.id
+    this.shadowRoot!.querySelector("sl-tooltip")!.open = false;
     this.dispatchEvent(new CustomEvent('we-selected', { detail: this.selected, bubbles: true, composed: true }));
   }
 
