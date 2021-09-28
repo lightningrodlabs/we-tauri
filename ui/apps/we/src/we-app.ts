@@ -27,7 +27,8 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const cellClient = new HolochainClient(appWebsocket, cellData);
     const id = installeAppId.slice(3)
 
-    // slime: https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg
+    await this.store.updateGames(id)
+
     // TODO delete me, just here for starters
     if (id=="self" && Object.keys(this.store.games(id)).length==0) {
       this.store.addWe(id, "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png", cellClient)
@@ -40,18 +41,40 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         meta: {},
       });
       await this.store.addGame(id, {
+        name: "docs",
+        dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+        ui_url: "http://someurl",
+        logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+        meta: {},
+      });
+
+
+      this.store.addWe("slime", "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg", cellClient)
+      await this.store.addGame("slime", {
         name: "chat",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
         logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
         meta: {},
       });
+      await this.store.addGame("slime", {
+        name: "docs",
+        dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+        ui_url: "http://someurl",
+        logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+        meta: {},
+      });
+
+      this.store.addWe("fish", "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg", cellClient)
+      await this.store.addGame("fish", {
+        name: "chat",
+        dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+        ui_url: "http://someurl",
+        logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
+        meta: {},
+      });
+
     }
-    await this.store.updateGames(id)
-
-
-    this.store.addWe("Fish!", "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg", cellClient)
-
   }
 
   async firstUpdated() {

@@ -1,5 +1,5 @@
 import { html, css, LitElement } from "lit";
-import { state, property } from "lit/decorators.js";
+import { state, property, query } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -44,19 +44,24 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 
   @property() selected = ""
 
+  @query('#game-dialog')
+  _gameDialog!: WeGameDialog;
+
+  @query('#we-dialog')
+  _weDialog!: WeGameDialog;
+
   async refresh() {
     await this._store.updateGames(this.selected);
     await this._store.updatePlayers(this.selected);
   }
 
   async openGameDialog() {
-    const dialog = this.gameDialogElem
-    dialog.weId = this.selected
-    dialog.open();
+    this._gameDialog.weId = this.selected
+    this._gameDialog.open();
   }
 
-  get gameDialogElem() : WeGameDialog {
-    return this.shadowRoot!.getElementById("game-dialog") as WeGameDialog;
+  async openWeDialog() {
+    this._weDialog.open();
   }
 
   private handleGameSelect(game: string): void {
@@ -84,14 +89,17 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 `
       })
     }
-    const game = this._store.currentGame(this.selected)
-    let gameContent
-    if (game) {
-      gameContent = html`Content for ${game.name} goes here`
+    let content
+    if (!this.selected) {
+      content = html`<mwc-button icon="add_circle" @click=${() => this.openWeDialog()}>Add We</mwc-button>`
     } else {
-      gameContent = html`
-${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add hApp</mwc-button>` : ''}
+      const game = this._store.currentGame(this.selected)
+      if (game) {
+        content = html`Content for ${game.name} goes here`
+      } else {
+        content = html`<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add hApp</mwc-button>
 <mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>`
+      }
     }
 
     return html`
@@ -100,14 +108,15 @@ ${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGam
   <img class="wes-admin"  @click=${() => this.handleWeSelect("")} src="${GEAR_ICON_URL}" />
 </div>
 
+${this.selected ? html`
 <div class="games-list">
   <div class="we-name">${this.selected}</div>
-  ${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
+   <we-games .weId=${this.selected}></we-games>
   <img class="game-admin" @click=${() => this.handleGameSelect("")} src="${GEAR_ICON_URL}"/>
-</div>
+</div>` : ''}
 
-<div class="game-content">
-${gameContent}
+<div class="content-pane">
+${content}
 </div>
 
 <div class="players">${players}</div>
@@ -180,7 +189,7 @@ ${gameContent}
           flex-grow: 0;
           border-top: solid 1px gray;
         }
-        .game-content {
+        .content-pane {
           flex-grow: 1;
           padding: 10px;
         }

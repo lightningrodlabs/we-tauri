@@ -60,6 +60,9 @@ export class WeStore {
 
   /** Actions */
   async updateGames(weId: string) : Promise<Dictionary<GameEntry>> {
+    if (!this.services[weId]) {
+      return {}
+    }
     const games = await this.services[weId].getGames();
     for (const s of games) {
       await this.updateGameFromEntry(weId, s.hash, s.content)
