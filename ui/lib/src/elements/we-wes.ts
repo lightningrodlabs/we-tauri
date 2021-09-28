@@ -5,7 +5,7 @@ import { contextProvided } from "@lit-labs/context";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { weContext } from "../types";
 import { classMap } from 'lit/directives/class-map.js';
-
+import { SlTooltip } from '@scoped-elements/shoelace';
 export class WeWes extends LitElement {
 
   @contextProvided({ context: weContext })
@@ -24,11 +24,11 @@ export class WeWes extends LitElement {
   render() {
     const wes = Object.entries(this._wes.value).map(
       ([key, we]) => html`
-<li class="we ${classMap({selected: we.name==this.selected})}"" @click=${this.handleClick} id="${we.name}">
-  <img src="${we.logo_url}" />
-  <div class="we-name">${we.name}</div>
-</li>`
-
+<sl-tooltip placement="right" .content=${we.name}>
+  <li class="we ${classMap({selected: we.name==this.selected})}"" @click=${this.handleClick} id="${we.name}">
+    <img src="${we.logo_url}" />
+  </li>
+</sl-tooltip>`
     )
 
     return html`
@@ -38,11 +38,16 @@ ${wes}
 `
   }
 
+  static get scopedElements() {
+    return {
+      "sl-tooltip": SlTooltip,
+    }
+  }
+
   static get styles() {
     return css`
 
 .we {
-margin-bottom: 25px;
 border-radius: 10%;
 }
 .selected {
@@ -63,9 +68,7 @@ text-align: center;
 font-size: 70%;
 padding:6px;
 }
-.we-name {
 
-}
 
 `;
   }

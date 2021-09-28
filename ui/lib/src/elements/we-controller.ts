@@ -93,13 +93,15 @@ ${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGam
     }
 
     return html`
-<div class="games-list">
-<img class="game-admin" @click=${() => this.handleGameSelect("")} src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png" />
-${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
-</div>
 <div class="wes-list">
   <img class="wes-admin"  @click=${() => this.handleWeSelect("")} src="https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png" />
   <we-wes .selected=${this.selected} @we-selected=${(e:any) => this.handleWeSelect(e.detail)}></we-wes>
+</div>
+
+<div class="games-list">
+  <div class="we-name">${this.selected}</div>
+  <img class="game-admin" @click=${() => this.handleGameSelect("")} src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png" />
+${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
 </div>
 
 <div class="game-content">
@@ -133,36 +135,51 @@ ${gameContent}
       css`
         :host {
           margin: 0px;
+          height: 100vh;
+          display: flex;
         }
         .wes-list {
-          border-right: 2px solid black;
-          background-color: lightgrey;
-          height: 100vh;
-          width: 100px;
+          display: flex;
+          flex-direction: column;
+          background-color: darkgrey;
         }
         .wes-admin {
-          float: left;
           height: 50px;
           width: 50px;
           padding:6px;
+          flex-grow: 0;
         }
         we-wes {
-          clear: both;
+          flex-grow: 1;
         }
         .games-list {
-          border-right: 2px solid black;
-          float:left;
-          min-width: 76px;
+          display: flex;
+          flex-direction: column;
+          padding: 5px;
+          background-color: lightgrey;
+        }
+        we-games {
+          flex-grow: 0;
+        }
+        .we-name {
+          text-align: center;
+          border-bottom: solid 1px gray;
         }
         .game-admin {
           height: 50px;
           width: 50px;
           padding: 5px;
-          float: right;
+          flex-grow: 0;
+        }
+        .game-content {
+          flex-grow: 1;
+          padding: 10px;
         }
         .players {
           width: 40px;
-          float:right;
+          background-color: lightgrey;
+          height: 100vh;
+          padding: 2px;
         }
         @media (min-width: 640px) {
           main {

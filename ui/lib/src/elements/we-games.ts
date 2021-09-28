@@ -40,7 +40,6 @@ ${games}
 
 .game {
 border-radius: 10%;
-display: inline-block;
 }
 .selected {
 border: black 2px solid;
@@ -51,8 +50,9 @@ width: 60px;
 pointer-events: none;
 }
 .games {
+display: flex;
+flex-direction: column;
 list-style: none;
-display: inline-block;
 margin: 2px;
 text-align: center;
 font-size: 70%;
