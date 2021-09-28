@@ -27,12 +27,13 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const cellClient = new HolochainClient(appWebsocket, cellData);
     const id = installeAppId.slice(3)
 
+    // slime: https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg
     // TODO delete me, just here for starters
-    if (id=="test" && Object.keys(this.store.games(id)).length==0) {
-      this.store.addWe(id, "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg", cellClient)
+    if (id=="self" && Object.keys(this.store.games(id)).length==0) {
+      this.store.addWe(id, "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png", cellClient)
 
       await this.store.addGame(id, {
-        name: "profiles",
+        name: "who",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
         logo_url: "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png",

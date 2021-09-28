@@ -64,10 +64,8 @@ pointer-events: none;
 .wes {
 list-style: none;
 display: inline-block;
-padding: 2px;
 text-align: center;
 font-size: 70%;
-padding:6px;
 }
 
 

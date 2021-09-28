@@ -21,6 +21,8 @@ import {
   Button,
 } from "@scoped-elements/material-web";
 
+const GEAR_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png"
+
 /**
  * @element we-controller
  */
@@ -94,14 +96,14 @@ ${this.selected ? html`<mwc-button icon="add_circle" @click=${() => this.openGam
 
     return html`
 <div class="wes-list">
-  <img class="wes-admin"  @click=${() => this.handleWeSelect("")} src="https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png" />
   <we-wes .selected=${this.selected} @we-selected=${(e:any) => this.handleWeSelect(e.detail)}></we-wes>
+  <img class="wes-admin"  @click=${() => this.handleWeSelect("")} src="${GEAR_ICON_URL}" />
 </div>
 
 <div class="games-list">
   <div class="we-name">${this.selected}</div>
-  <img class="game-admin" @click=${() => this.handleGameSelect("")} src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png" />
-${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
+  ${this.selected ? html`<we-games .weId=${this.selected}></we-games>` : ''}
+  <img class="game-admin" @click=${() => this.handleGameSelect("")} src="${GEAR_ICON_URL}"/>
 </div>
 
 <div class="game-content">
@@ -141,20 +143,24 @@ ${gameContent}
         .wes-list {
           display: flex;
           flex-direction: column;
+          align-items: center;
           background-color: darkgrey;
+          padding: 5px;
         }
         .wes-admin {
           height: 50px;
           width: 50px;
-          padding:6px;
+          padding-top: 5px;
           flex-grow: 0;
+          border-top: solid 1px gray;
         }
         we-wes {
-          flex-grow: 1;
+          flex-grow: 0;
         }
         .games-list {
           display: flex;
           flex-direction: column;
+          align-items: center;
           padding: 5px;
           background-color: lightgrey;
         }
@@ -164,12 +170,15 @@ ${gameContent}
         .we-name {
           text-align: center;
           border-bottom: solid 1px gray;
+          margin-bottom: 5px;
+          width: 100%;
         }
         .game-admin {
           height: 50px;
           width: 50px;
           padding: 5px;
           flex-grow: 0;
+          border-top: solid 1px gray;
         }
         .game-content {
           flex-grow: 1;
