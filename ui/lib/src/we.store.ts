@@ -6,6 +6,9 @@ import { WeService } from './we.service';
 import { We } from './we';
 import { Dictionary, GameEntry } from './types';
 
+const areEqual = (first: Uint8Array, second: Uint8Array) =>
+  first.length === second.length && first.every((value, index) => value === second[index]);
+
 export class WeStore {
   /** Private */
   private services: Dictionary<WeService> = {};
@@ -28,6 +31,9 @@ export class WeStore {
     this.services[weId] = new WeService(cellClient, zomeName);
 
     cellClient.addSignalHandler( signal => {
+      if (! areEqual(cellClient.cellId[0],signal.data.cellId[0]) || !areEqual(cellClient.cellId[1], signal.data.cellId[1])) {
+        return
+      }
       console.log("SIGNAL",signal)
       const payload = signal.data.payload
       switch(payload.message.type) {

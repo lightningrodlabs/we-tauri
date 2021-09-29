@@ -41,7 +41,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         name: "who",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
-        logo_url: "https://www.pngitem.com/pimgs/m/146-1468479_my-profile-icon-blank-profile-picture-circle-hd.png",
+        logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
         meta: {},
       });
       await this.store.addGame(id, {
