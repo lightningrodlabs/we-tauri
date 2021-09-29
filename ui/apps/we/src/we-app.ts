@@ -15,7 +15,11 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   loaded = false;
 
   private store = new WeStore()
+  private adminWebsocket : AdminWebsocket | null = null;
 
+  constructor() {
+    super();
+  }
 
   async loadApp(appWebsocket: AppWebsocket, installeAppId: string) {
 
@@ -41,7 +45,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         meta: {},
       });
       await this.store.addGame(id, {
-        name: "docs",
+        name: "synDocs",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
         logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
@@ -54,14 +58,21 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         name: "chat",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
-        logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
+        logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
         meta: {},
       });
       await this.store.addGame("slime", {
-        name: "docs",
+        name: "synDocs",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
         logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+        meta: {},
+      });
+      await this.store.addGame("slime", {
+        name: "where",
+        dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+        ui_url: "http://someurl",
+        logo_url: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
         meta: {},
       });
 
@@ -70,7 +81,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         name: "chat",
         dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
         ui_url: "http://someurl",
-        logo_url: "https://w7.pngwing.com/pngs/952/46/png-transparent-text-bubble-brand-logo-blue-font-chat-icon-angle-text-rectangle-thumbnail.png",
+        logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
         meta: {},
       });
 
@@ -78,14 +89,16 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   }
 
   async firstUpdated() {
-    const adminWebsocket = await AdminWebsocket.connect(
+
+    this.adminWebsocket = await AdminWebsocket.connect(
       `ws://localhost:9000` //${process.env.HCADMIN_PORT}`
     );
+
     const appWebsocket = await AppWebsocket.connect(
       `ws://localhost:${process.env.HC_PORT}`
     );
 
-    const active = await adminWebsocket.listActiveApps();
+    const active = await this.adminWebsocket.listActiveApps();
     for (const app of active) {
       if (app.startsWith("we-")) {
         await this.loadApp(appWebsocket, app)
@@ -100,7 +113,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   render() {
     if (!this.loaded) return html`<span>Loading...</span>`;
     return html`
-<we-controller .selected="Slimers"></we-controller>
+<we-controller .selected="self"}></we-controller>
     `;
   }
 
