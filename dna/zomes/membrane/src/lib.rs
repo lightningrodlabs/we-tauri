@@ -22,7 +22,7 @@ entry_defs![
     Path::entry_def()
 ];
 
-fn get_wheres_inner() -> MembraneResult<Vec<AgentPubKeyB64>> {
+fn get_players_inner() -> MembraneResult<Vec<AgentPubKeyB64>> {
     let path = get_players_path();
     let links = get_links(path.hash()?, None)?.into_inner();
     let mut output = Vec::with_capacity(links.len());
@@ -36,6 +36,6 @@ fn get_wheres_inner() -> MembraneResult<Vec<AgentPubKeyB64>> {
 
 #[hdk_extern]
 fn get_players(_: ()) -> ExternResult<Vec<AgentPubKeyB64>> {
-    let result = get_wheres_inner()?;
+    let result = get_players_inner()?;
     Ok(result)
 }

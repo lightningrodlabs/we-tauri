@@ -5,8 +5,10 @@ import { sharedStyles } from "../sharedStyles";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { WeStore } from "../we.store";
-import { weContext, GameEntry } from "../types";
-import { Dialog, TextField, Button } from "@scoped-elements/material-web";
+import { weContext, GameEntry, Dictionary } from "../types";
+import { Dialog, TextField, Button,   ListItem, Select, } from "@scoped-elements/material-web";
+
+import { EntryHashB64, HeaderHashB64, AgentPubKeyB64, serializeHash } from '@holochain-open-dev/core-types';
 
 /**
  * @element we-game
@@ -20,21 +22,51 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
   _store!: WeStore;
 
-  open() {
+  @state()
+  dnas: Dictionary<string> = {}
+
+  async updateAvailableApps() {
+    const dnas: Dictionary<string> = {}
+    if (this._store.adminWebsocket && this._store.appWebsocket) {
+      const active = await this._store.adminWebsocket.listActiveApps();
+      const installed : Dictionary<boolean> = {}
+      Object.values(this._store.games(this.weId)).map((g)=> installed[g.dna_hash] = true)
+      console.log("installed",installed)
+      for (const app of active) {
+        const appInfo = await this._store.appWebsocket!.appInfo({
+          installed_app_id: app,
+        });
+        const dna_hash = serializeHash(appInfo.cell_data[0].cell_id[0])
+        if (!installed[dna_hash]) {
+          dnas[app] = dna_hash
+        }
+      }
+      this.dnas = dnas
+    }
+    else {
+      console.log("Admin and/or app websocket not initialized")
+    }
+  }
+
+  async open() {
     const dialog = this.shadowRoot!.getElementById("game-dialog") as Dialog
+    await this.updateAvailableApps()
+    if (Object.keys(this.dnas).length == 0) {
+      alert("No Dna's available to install, add some via the launcher!")
+      return
+    }
     dialog.open = true
   }
 
   /** Private properties */
   @query('#name-field')
   _nameField!: TextField;
-  @query('#dna-hash-field')
-  _dnaHashField!: TextField;
+  @query('#dna-field')
+  _dnaField!: TextField;
   @query('#ui-url-field')
   _uiUrlField!: TextField;
   @query('#logo-url-field')
   _logoUrlField!: TextField;
-
 
 
   private async handleOk(e: any) {
@@ -54,7 +86,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
       name: this._nameField.value,
       ui_url: this._uiUrlField.value,
       logo_url: this._logoUrlField.value,
-      dna_hash: this._dnaHashField.value,
+      dna_hash: this._dnaField.value,
       meta: {
       },
     };
@@ -70,7 +102,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
     this._nameField.value = "";
     this._uiUrlField.value = "";
     this._logoUrlField.value = "";
-    this._dnaHashField.value = "";
+    this._dnaField.value = "";
   }
 
   handleUrlUpdated(e:Event) {
@@ -82,10 +114,18 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 <mwc-dialog  id="game-dialog" heading="hApp" @closing=${
 this.handleGameDialog
 }>
-<mwc-textfield @input=${() => (this.shadowRoot!.getElementById("name-field") as TextField).reportValidity()} id="name-field" label="Name" autoValidate=true required></mwc-textfield>
-<mwc-textfield @input=${this.handleUrlUpdated} id="ui-url-field" label="UI zip file URL" autoValidate=true required></mwc-textfield>
-<mwc-textfield @input=${this.handleUrlUpdated} id="logo-url-field" label="Logo Image URL" autoValidate=true required></mwc-textfield>
-<mwc-textfield @input=${() => (this.shadowRoot!.getElementById("dna-hash-field") as TextField).reportValidity()} id="dna-hash-field" label="DNA Hash" autoValidate=true required></mwc-textfield>
+<mwc-select outlined label="DNA"  @input=${() => this._dnaField.reportValidity()} id="dna-field" required>
+${Object.entries(this.dnas).map(
+([appId, dna]) => html`
+<mwc-list-item value="${dna}">
+  ${appId}-${dna}
+</mwc-list-item>
+`
+)}
+</mwc-select>
+<mwc-textfield @input=${() => this._nameField.reportValidity()} id="name-field" label="Name" autoValidate=true required outlined></mwc-textfield>
+<mwc-textfield @input=${() => this._uiUrlField.reportValidity()} id="ui-url-field" label="UI zip file URL" autoValidate=true required outlined></mwc-textfield>
+<mwc-textfield @input=${() => this._logoUrlField.reportValidity()} id="logo-url-field" label="Logo Image URL" autoValidate=true required outlined></mwc-textfield>
 
 <mwc-button id="primary-action-button" slot="primaryAction" @click=${this.handleOk}>ok</mwc-button>
 <mwc-button slot="secondaryAction"  dialogAction="cancel">cancel</mwc-button>
@@ -94,6 +134,8 @@ this.handleGameDialog
   }
   static get scopedElements() {
     return {
+      "mwc-select": Select,
+      "mwc-list-item": ListItem,
       "mwc-button": Button,
       "mwc-dialog": Dialog,
       "mwc-textfield": TextField,
@@ -103,6 +145,13 @@ this.handleGameDialog
     return [
       sharedStyles,
       css`
+mwc-select {
+display: block;
+margin-top: 10px;
+}
+mwc-textfield {
+margin-top: 10px;
+}
 `,
     ];
   }

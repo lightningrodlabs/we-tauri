@@ -15,26 +15,12 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   loaded = false;
 
   private store = new WeStore()
-  private adminWebsocket : AdminWebsocket | null = null;
 
   constructor() {
     super();
   }
 
-  async loadApp(appWebsocket: AppWebsocket, installeAppId: string) {
-
-    const appInfo = await appWebsocket.appInfo({
-      installed_app_id: installeAppId,
-    });
-
-    const cellData = appInfo.cell_data[0];
-    const cellClient = new HolochainClient(appWebsocket, cellData);
-    const id = installeAppId.slice(3)
-
-    await this.store.updateGames(id)
-
-    // TODO delete me, just here for starters
-    if (id=="self" && Object.keys(this.store.games(id)).length==0) {
+  async initialize(cellClient: HolochainClient, id: string) {
       this.store.addWe(id, "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png", cellClient)
 
       await this.store.addGame(id, {
@@ -85,23 +71,41 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         meta: {},
       });
 
+  }
+
+
+  async loadApp(installedAppId: string) {
+
+    const appInfo = await this.store.appWebsocket!.appInfo({
+      installed_app_id: installedAppId,
+    });
+
+    const cellData = appInfo.cell_data[0];
+    const cellClient = new HolochainClient(this.store.appWebsocket!, cellData);
+    const id = installedAppId.slice(3)
+
+    await this.store.updateGames(id)
+
+    // TODO delete me, just here for starters
+    if (id=="self" && Object.keys(this.store.games(id)).length==0) {
+      await this.initialize(cellClient, id)
     }
   }
 
   async firstUpdated() {
 
-    this.adminWebsocket = await AdminWebsocket.connect(
+    this.store.adminWebsocket = await AdminWebsocket.connect(
       `ws://localhost:9000` //${process.env.HCADMIN_PORT}`
     );
 
-    const appWebsocket = await AppWebsocket.connect(
+    this.store.appWebsocket = await AppWebsocket.connect(
       `ws://localhost:${process.env.HC_PORT}`
     );
 
-    const active = await this.adminWebsocket.listActiveApps();
+    const active = await this.store.adminWebsocket.listActiveApps();
     for (const app of active) {
       if (app.startsWith("we-")) {
-        await this.loadApp(appWebsocket, app)
+        await this.loadApp(app)
       }
     }
 

@@ -5,6 +5,7 @@ import { writable, Writable, derived, Readable, get } from 'svelte/store';
 import { WeService } from './we.service';
 import { We } from './we';
 import { Dictionary, GameEntry } from './types';
+import { AppWebsocket, AdminWebsocket } from "@holochain/conductor-api";
 
 const areEqual = (first: Uint8Array, second: Uint8Array) =>
   first.length === second.length && first.every((value, index) => value === second[index]);
@@ -14,6 +15,8 @@ export class WeStore {
   private services: Dictionary<WeService> = {};
   private weStore: Writable<Dictionary<We>> = writable({});
 
+  public adminWebsocket : AdminWebsocket | null = null;
+  public appWebsocket : AppWebsocket | null = null;
 
   /** Static info */
   myAgentPubKey: AgentPubKeyB64 = ""; //TODO, fix based on assumption of agent key across we
