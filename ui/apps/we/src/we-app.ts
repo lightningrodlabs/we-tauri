@@ -22,20 +22,20 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   }
 
   async initialize(id: string) {
-    await this.store.addGame(id, {
-      name: "who",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
-      meta: {},
-    });
-    await this.store.addGame(id, {
-      name: "synDocs",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
-      meta: {},
-    });
+    // await this.store.addGame(id, {
+    //   name: "who",
+    //   dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+    //   ui_url: "http://someurl",
+    //   logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
+    //   meta: {},
+    // });
+    // await this.store.addGame(id, {
+    //   name: "synDocs",
+    //   dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+    //   ui_url: "http://someurl",
+    //   logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+    //   meta: {},
+    // });
 
     await this.store.newWe("slime",  this.getLogo("slime"))
     await this.store.addGame("slime", {
@@ -84,11 +84,22 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return ""
   }
 
-  async loadWe(cell: InstalledCell) {
+  async loadWe(installedAppId: string) {
 
-    let id = cell.cell_nick
-    if (id == "we-slot") id = "self"
+    const appInfo = await this.store.appWebsocket!.appInfo({
+      installed_app_id: installedAppId,
+    });
+
+    const id = installedAppId.slice(3)
+    await this._loadWe(id, appInfo.cell_data[0])
+  }
+
+  async _loadWe(id: string, cell: InstalledCell ) {
+    const dna = serializeHash(cell.cell_id[0]);
+    console.log("loading DNA ", dna)
+
     const cellClient = new HolochainClient(this.store.appWebsocket!, cell);
+
     this.store.addWe(id, this.getLogo(id), cellClient) //TODO fix getlogo
     await this.store.updateGames(id)
 
@@ -114,12 +125,17 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     });
 
     const installedCells = appInfo.cell_data;
-
     this.store.myAgentPubKey = serializeHash(installedCells[0].cell_id[1]);
     this.store.weDnaHash = serializeHash(installedCells[0].cell_id[0]);
-    console.log("installed cells", installedCells)
-    for (const cell of installedCells) {
-      await this.loadWe(cell)
+    console.log("DNA ", this.store.weDnaHash)
+    this._loadWe("self", installedCells[0])
+
+    const active = await this.store.adminWebsocket.listActiveApps();
+    console.log("installed apps", active)
+    for (const app of active) {
+      if (app.startsWith("we-")) {
+        await this.loadWe(app)
+      }
     }
 
     new ContextProvider(this, weContext, this.store);

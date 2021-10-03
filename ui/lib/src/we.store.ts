@@ -5,7 +5,7 @@ import { writable, Writable, derived, Readable, get } from 'svelte/store';
 import { WeService } from './we.service';
 import { We } from './we';
 import { Dictionary, GameEntry } from './types';
-import { AppWebsocket, AdminWebsocket, InstalledCell } from "@holochain/conductor-api";
+import { AppWebsocket, AdminWebsocket, InstalledAppInfo } from "@holochain/conductor-api";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const areEqual = (first: Uint8Array, second: Uint8Array) =>
@@ -27,18 +27,26 @@ export class WeStore {
 
   public async newWe(weId: string, weLogo: string ) {
     console.log("new WE ", weId)
-    const cellId = await this.adminWebsocket!.createCloneCell({
-      dna_hash: new Buffer(deserializeHash(this.weDnaHash)),
-      agent_key: new Buffer(deserializeHash(this.myAgentPubKey)),
-      installed_app_id: "self",
-      slot_id: "we-slot",
+
+    const newWeHash = await this.adminWebsocket!.registerDna({
+      hash:  new Buffer(deserializeHash(this.weDnaHash)),
+      uid: weId,
     })
-    const installedCell: InstalledCell = {
-      cell_id: cellId,
-      cell_nick: weId,
-    }
-    console.log("with cellID", cellId)
-    const cellClient = new HolochainClient(this.appWebsocket!, installedCell);
+
+    const installed_app_id = `we-${weId}`
+    const appInfo: InstalledAppInfo = await this.adminWebsocket!.installApp(
+      {
+        installed_app_id,
+        agent_key:  new Buffer(deserializeHash(this.myAgentPubKey)),
+        dnas: [{
+          hash: newWeHash,
+          nick: weId,
+        }]
+      })
+    const enabledResult = await this.adminWebsocket!.enableApp({ installed_app_id });
+    console.log("with dna", serializeHash(enabledResult.app.cell_data[0].cell_id[0]))
+
+    const cellClient = new HolochainClient(this.appWebsocket!, appInfo.cell_data[0]);
     this.addWe(weId, weLogo, cellClient)
   }
 
