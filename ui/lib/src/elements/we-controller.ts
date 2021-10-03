@@ -9,6 +9,7 @@ import { sharedStyles } from "../sharedStyles";
 import { weContext, Dictionary, Signal } from "../types";
 import { WeStore } from "../we.store";
 import { WeGameDialog } from "./we-game-dialog";
+import { WeDialog } from "./we-dialog";
 import { WePlayer } from "./we-player";
 import { WeGames } from "./we-games";
 import { WeWes } from "./we-wes";
@@ -48,7 +49,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   _gameDialog!: WeGameDialog;
 
   @query('#we-dialog')
-  _weDialog!: WeGameDialog;
+  _weDialog!: WeDialog;
 
   async initialize() {
     await this._store.newWe("self",  this.getLogo("self"))
@@ -125,9 +126,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   async openWeDialog() {
-    //this.initialize()
-
-//    this._weDialog.open();
+    this._weDialog.open();
   }
 
   private handleGameSelect(game: string): void {
@@ -188,6 +187,7 @@ ${content}
 <div class="players">${players}</div>
 
 <we-game-dialog id="game-dialog" @game-added=${(e:any) => this.handleGameSelect(e.detail)}> ></we-game-dialog>
+<we-dialog id="we-dialog" @we-added=${(e:any) => this.handleWeSelect(e.detail)}> ></we-dialog>
 `;
   }
 
@@ -198,6 +198,7 @@ ${content}
       "mwc-icon-button": IconButton,
       "mwc-button": Button,
       "we-game-dialog" : WeGameDialog,
+      "we-dialog" : WeDialog,
       "we-player" : WePlayer,
       "we-games" : WeGames,
       "we-wes" : WeWes,

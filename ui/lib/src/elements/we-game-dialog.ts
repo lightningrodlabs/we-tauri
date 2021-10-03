@@ -49,16 +49,18 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
   }
 
   async open() {
-    const dialog = this.shadowRoot!.getElementById("game-dialog") as Dialog
     await this.updateAvailableApps()
     if (Object.keys(this.dnas).length == 0) {
       alert("No Dna's available to install, add some via the launcher!")
       return
     }
-    dialog.open = true
+    this._dialog.open = true
   }
 
   /** Private properties */
+   @query('#game-dialog')
+  _dialog!: Dialog;
+
   @query('#name-field')
   _nameField!: TextField;
   @query('#dna-field')
@@ -92,10 +94,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
     };
     const newGame = await this._store.addGame(this.weId, game);
     this.dispatchEvent(new CustomEvent('game-added', { detail: newGame, bubbles: true, composed: true }));
-    const dialog = this.shadowRoot!.getElementById(
-      "game-dialog"
-    ) as Dialog;
-    dialog.close()
+    this._dialog.close()
   }
 
   private async handleGameDialog(e: any) {
