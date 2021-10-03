@@ -1,11 +1,12 @@
-import { EntryHashB64, HeaderHashB64, AgentPubKeyB64, serializeHash } from '@holochain-open-dev/core-types';
+import { EntryHashB64, HeaderHashB64, AgentPubKeyB64, DnaHashB64, serializeHash, deserializeHash } from '@holochain-open-dev/core-types';
 import { CellClient } from '@holochain-open-dev/cell-client';
 import { writable, Writable, derived, Readable, get } from 'svelte/store';
 
 import { WeService } from './we.service';
 import { We } from './we';
 import { Dictionary, GameEntry } from './types';
-import { AppWebsocket, AdminWebsocket } from "@holochain/conductor-api";
+import { AppWebsocket, AdminWebsocket, InstalledCell } from "@holochain/conductor-api";
+import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const areEqual = (first: Uint8Array, second: Uint8Array) =>
   first.length === second.length && first.every((value, index) => value === second[index]);
@@ -20,9 +21,26 @@ export class WeStore {
 
   /** Static info */
   myAgentPubKey: AgentPubKeyB64 = ""; //TODO, fix based on assumption of agent key across we
-
+  weDnaHash: DnaHashB64 = "";
   /** Readable stores */
   public wes: Readable<Dictionary<We>> = derived(this.weStore, i => i)
+
+  public async newWe(weId: string, weLogo: string ) {
+    console.log("new WE ", weId)
+    const cellId = await this.adminWebsocket!.createCloneCell({
+      dna_hash: new Buffer(deserializeHash(this.weDnaHash)),
+      agent_key: new Buffer(deserializeHash(this.myAgentPubKey)),
+      installed_app_id: "self",
+      slot_id: "we-slot",
+    })
+    const installedCell: InstalledCell = {
+      cell_id: cellId,
+      cell_nick: weId,
+    }
+    console.log("with cellID", cellId)
+    const cellClient = new HolochainClient(this.appWebsocket!, installedCell);
+    this.addWe(weId, weLogo, cellClient)
+  }
 
   public addWe(
     weId: string,
@@ -30,7 +48,7 @@ export class WeStore {
     cellClient: CellClient,
     zomeName = 'hc_zome_we'
   ) {
-    this.myAgentPubKey = serializeHash(cellClient.cellId[1]);
+    console.log("adding WE ", weId)
     this.services[weId] = new WeService(cellClient, zomeName);
 
     cellClient.addSignalHandler( signal => {

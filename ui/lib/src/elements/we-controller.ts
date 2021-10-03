@@ -50,6 +50,69 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   @query('#we-dialog')
   _weDialog!: WeGameDialog;
 
+  async initialize(id: string) {
+    await this._store.addGame(id, {
+      name: "who",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
+      meta: {},
+    });
+    await this._store.addGame(id, {
+      name: "synDocs",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+      meta: {},
+    });
+
+    await this._store.newWe("slime",  this.getLogo("slime"))
+    await this._store.addGame("slime", {
+      name: "chat",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
+      meta: {},
+    });
+    await this._store.addGame("slime", {
+      name: "synDocs",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+      meta: {},
+    });
+    await this._store.addGame("slime", {
+      name: "where",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
+      meta: {},
+    });
+
+    await this._store.newWe("fish", this.getLogo("fish"))
+    await this._store.addGame("fish", {
+      name: "chat",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
+      meta: {},
+    });
+
+  }
+
+  //TODO fix
+  getLogo(id: string) : string {
+    switch (id) {
+    case "self":
+      return "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png"
+    case "slime":
+      return "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg"
+    case "fish":
+      return "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg"
+    }
+    return ""
+  }
+
   async refresh() {
     await this._store.updateGames(this.selected);
     await this._store.updatePlayers(this.selected);
@@ -61,7 +124,9 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   async openWeDialog() {
-    this._weDialog.open();
+    this.initialize("self")
+
+//    this._weDialog.open();
   }
 
   private handleGameSelect(game: string): void {
