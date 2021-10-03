@@ -50,15 +50,16 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   @query('#we-dialog')
   _weDialog!: WeGameDialog;
 
-  async initialize(id: string) {
-    await this._store.addGame(id, {
+  async initialize() {
+    await this._store.newWe("self",  this.getLogo("self"))
+    await this._store.addGame("self", {
       name: "who",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
       meta: {},
     });
-    await this._store.addGame(id, {
+    await this._store.addGame("self", {
       name: "synDocs",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
@@ -124,7 +125,7 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   }
 
   async openWeDialog() {
-    this.initialize("self")
+    //this.initialize()
 
 //    this._weDialog.open();
   }

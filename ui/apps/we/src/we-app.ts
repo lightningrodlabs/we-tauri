@@ -21,21 +21,35 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     super();
   }
 
-  async initialize(id: string) {
-    // await this.store.addGame(id, {
-    //   name: "who",
-    //   dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-    //   ui_url: "http://someurl",
-    //   logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
-    //   meta: {},
-    // });
-    // await this.store.addGame(id, {
-    //   name: "synDocs",
-    //   dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-    //   ui_url: "http://someurl",
-    //   logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
-    //   meta: {},
-    // });
+  //TODO fix
+  getLogo(id: string) : string {
+    switch (id) {
+    case "self":
+      return "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png"
+    case "slime":
+      return "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg"
+    case "fish":
+      return "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg"
+    }
+    return ""
+  }
+
+  async initialize() {
+    await this.store.newWe("self",  this.getLogo("self"))
+    await this.store.addGame("self", {
+      name: "who",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
+      meta: {},
+    });
+    await this.store.addGame("self", {
+      name: "synDocs",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
+      meta: {},
+    });
 
     await this.store.newWe("slime",  this.getLogo("slime"))
     await this.store.addGame("slime", {
@@ -71,18 +85,6 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
   }
 
-  //TODO fix
-  getLogo(id: string) : string {
-    switch (id) {
-    case "self":
-      return "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png"
-    case "slime":
-      return "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg"
-    case "fish":
-      return "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg"
-    }
-    return ""
-  }
 
   async loadWe(installedAppId: string) {
 
@@ -104,10 +106,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     await this.store.updateGames(id)
 
     console.log("games in ",id, this.store.games(id))
-    // TODO delete me, just here for starters
-    if (id=="self" && Object.keys(this.store.games(id)).length==0) {
-//      await this.initialize(id)
-    }
+
   }
 
   async firstUpdated() {
@@ -121,20 +120,23 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     );
 
     const appInfo = await this.store.appWebsocket!.appInfo({
-      installed_app_id: "self",
+      installed_app_id: "we",
     });
 
     const installedCells = appInfo.cell_data;
     this.store.myAgentPubKey = serializeHash(installedCells[0].cell_id[1]);
     this.store.weDnaHash = serializeHash(installedCells[0].cell_id[0]);
     console.log("DNA ", this.store.weDnaHash)
-    this._loadWe("self", installedCells[0])
 
-    const active = await this.store.adminWebsocket.listActiveApps();
-    console.log("installed apps", active)
-    for (const app of active) {
-      if (app.startsWith("we-")) {
-        await this.loadWe(app)
+    let active = await this.store.adminWebsocket.listActiveApps();
+    if (active.indexOf("we-self") == -1) {
+      await this.initialize()
+    } else {
+      console.log("installed apps", active)
+      for (const app of active) {
+        if (app.startsWith("we-")) {
+          await this.loadWe(app)
+        }
       }
     }
 
