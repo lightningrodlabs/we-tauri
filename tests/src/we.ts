@@ -36,7 +36,7 @@ export default async (orchestrator) => {
 
     const players = await alice_we.call('hc_zome_membrane', 'get_players', null );
     t.ok(players)
-    t.equal(players[0], serializeHash(alice_we_happ.agent) )
+    t.equal(Object.keys(players)[0], serializeHash(alice_we_happ.agent) )
     console.log("players", players);
 
 

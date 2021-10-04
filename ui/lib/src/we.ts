@@ -1,5 +1,5 @@
 import { DnaHashB64, AgentPubKeyB64 } from '@holochain-open-dev/core-types';
-import { Dictionary, GameEntry } from './types';
+import { Dictionary, GameEntry, Players } from './types';
 
 export class We {
 
@@ -9,7 +9,7 @@ export class We {
     public logo_url: String,
     public selectedGame: string = "",
     public games: Dictionary<GameEntry> = {},
-    public players: Array<AgentPubKeyB64> = []
+    public players: Players = {}
   ) {}
 
 }

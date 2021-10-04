@@ -144,10 +144,11 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     const we = this._wes.value[this.selected]
     let players;
     if (we) {
-      players = we.players.map((player)=>{
+      players = Object.entries(we.players).map(([player, props])=>{
         return html`
 <we-player
 .hash=${player}
+.props=${props}
 .size=${32}
 .me=${player == this._store.myAgentPubKey}
 ></we-player>

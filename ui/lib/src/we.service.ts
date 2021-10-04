@@ -1,6 +1,6 @@
 import { CellClient } from '@holochain-open-dev/cell-client';
 import { HoloHashed, serializeHash, EntryHashB64, HeaderHashB64, AgentPubKeyB64 } from '@holochain-open-dev/core-types';
-import { GameEntry, Signal } from './types';
+import { GameEntry, Signal, Players } from './types';
 
 export class WeService {
   constructor(
@@ -17,7 +17,7 @@ export class WeService {
     return this.callZome('get_games', null);
   }
 
-  async getPlayers(): Promise<Array<AgentPubKeyB64>> {
+  async getPlayers(): Promise<Players> {
     return this.callMembrane('get_players', null);
   }
 

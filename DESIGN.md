@@ -17,7 +17,7 @@ We have to have a way to determine who gets to join the group.  In this design w
 This zome is required to add new members to an anchor or provide some mechanism to return a list of current members for the purpose of sending signals to.
 
 #### Zome calls
-- get_players() -> Array<AgentPubKey>
+- get_players() -> HashMap<AgentPubKeyB64, String>
 
 ### we zome
 The main zome tracks DNAs that have been added to the group, and enables members to request/get membrane proofs for joining these DNAs.

@@ -8,6 +8,8 @@ export const weContext : Context<WeStore> = createContext('hc_zome_we/service');
 
 export type Dictionary<T> = { [key: string]: T };
 
+export type Players = { [key: string]: Dictionary<string> }
+
 export interface GameInfo {
   entry: GameEntry,
   hash: HeaderHashB64,

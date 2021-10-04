@@ -3,7 +3,7 @@ pub use hdk::prelude::Path;
 pub use error::{WeError, WeResult};
 pub mod error;
 use hc_utils::*;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use holo_hash::{AgentPubKeyB64, EntryHashB64, DnaHashB64};
 
 #[hdk_extern]
@@ -39,7 +39,7 @@ pub struct Game {
     dna_hash: DnaHashB64,
     ui_url: String,
     logo_url: String,
-    pub meta: HashMap<String, String>,  // usable by the UI for whatever
+    pub meta: BTreeMap<String, String>,  // usable by the UI for whatever
 }
 
 fn get_games_path() -> Path {

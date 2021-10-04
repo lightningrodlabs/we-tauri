@@ -4,7 +4,7 @@ import { writable, Writable, derived, Readable, get } from 'svelte/store';
 
 import { WeService } from './we.service';
 import { We } from './we';
-import { Dictionary, GameEntry } from './types';
+import { Dictionary, GameEntry, Players } from './types';
 import { AppWebsocket, AdminWebsocket, InstalledAppInfo } from "@holochain/conductor-api";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
@@ -105,16 +105,12 @@ export class WeStore {
     return get(this.weStore)[weId].games
   }
 
-  async updatePlayers(weId: string) : Promise<Array<AgentPubKeyB64>> {
+  async updatePlayers(weId: string) : Promise<Players> {
     const players = await this.services[weId].getPlayers();
-    for (const p of players) {
-      this.weStore.update(wes => {
-        if (wes[weId].players.indexOf(p) == -1) {
-          wes[weId].players.push(p)
-        }
-        return wes
-      })
-    }
+    this.weStore.update(wes => {
+      wes[weId].players = players
+      return wes
+    })
     return get(this.weStore)[weId].players
   }
 

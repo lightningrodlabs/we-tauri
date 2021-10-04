@@ -3,9 +3,14 @@ import { css, html, LitElement, PropertyValues } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import renderIcon from '@holo-host/identicon';
 import { classMap } from 'lit/directives/class-map.js';
+import { Dictionary } from '../types';
+import { SlTooltip } from '@scoped-elements/shoelace';
 export class WePlayer extends LitElement {
   @property()
   hash!: HoloHashB64;
+
+  @property()
+  props!: Dictionary<string>;
 
   @property()
   size: number | undefined = undefined;
@@ -39,6 +44,7 @@ export class WePlayer extends LitElement {
   render() {
     return html`
 <li class="player">
+<sl-tooltip placement="left" .content=${this.hash}>
       <canvas
         id="canvas"
         width="1"
@@ -48,9 +54,16 @@ export class WePlayer extends LitElement {
           circle: this.shape === 'circle',
         })}
       ></canvas>
-${(this.showHash && this.hash) ? html`<div>${this.hash.slice(-4)}</div>` : ''}
+</sl-tooltip>
+${(this.props) ? html`<div>${this.props.nickname}</div>` : ''}
 </li>
     `;
+  }
+
+  static get scopedElements() {
+    return {
+      "sl-tooltip": SlTooltip,
+    }
   }
 
   static get styles() {

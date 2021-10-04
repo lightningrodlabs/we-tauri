@@ -18,6 +18,8 @@ pub enum WeError {
     Timestamp(#[from] TimestampError),
     #[error(transparent)]
     UtilsError(#[from] UtilsError),
+    #[error("Failed to get who data")]
+    WhoError,
 }
 
 pub type WeResult<T> = Result<T, WeError>;
