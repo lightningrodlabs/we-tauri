@@ -4,6 +4,7 @@
   "workspaces": [
     "ui/apps/*",
     "ui/lib",
+    "ui/compository",
     "tests"
   ],
   "scripts": {

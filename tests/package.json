@@ -21,7 +21,7 @@
     "uuidv4": "^6.2.11"
   },
   "devDependencies": {
-    "@holochain/tryorama": "holochain/tryorama#3970c375e5f48bbf520e8ec906fb37f1ee29c35e",
+    "@holochain/tryorama": "0.4.5",
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.14",
     "@detools/tap-diff": "^0.2.2"
