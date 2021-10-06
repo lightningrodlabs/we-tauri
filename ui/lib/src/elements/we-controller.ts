@@ -5,6 +5,11 @@ import { contextProvided } from "@lit-labs/context";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { Unsubscriber } from "svelte/store";
 
+//@ts-ignore
+import whereRender from "./where";
+
+
+
 import { sharedStyles } from "../sharedStyles";
 import { weContext, Dictionary, Signal } from "../types";
 import { WeStore } from "../we.store";
@@ -160,7 +165,9 @@ export class WeController extends ScopedElementsMixin(LitElement) {
       content = html`<mwc-button icon="add_circle" @click=${() => this.openWeDialog()}>Add We</mwc-button>`
     } else {
       const game = this._store.currentGame(this.selected)
-      if (game) {
+      if (game?.name === 'where') {
+        whereRender()
+      } else if (game) {
         content = html`Content for ${game.name} goes here`
       } else {
         content = html`<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add hApp</mwc-button>
