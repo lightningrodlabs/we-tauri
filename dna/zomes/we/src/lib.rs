@@ -2,7 +2,6 @@ pub use hdk::prelude::*;
 pub use hdk::prelude::Path;
 pub use error::{WeError, WeResult};
 pub mod error;
-use hc_utils::*;
 use std::collections::BTreeMap;
 use holo_hash::{AgentPubKeyB64, EntryHashB64, DnaHashB64};
 
@@ -26,7 +25,7 @@ entry_defs![
 ];
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct GameOutput {
+pub struct GameInfo {
     hash: EntryHashB64,
     content: Game,
 }
@@ -36,6 +35,7 @@ pub struct GameOutput {
 #[derive(Clone)]
 pub struct Game {
     pub name: String,
+    pub description: String,
     dna_hash: DnaHashB64,
     ui_url: String,
     logo_url: String,
@@ -59,17 +59,32 @@ fn create_game(input: Game) -> ExternResult<EntryHashB64> {
 }
 
 #[hdk_extern]
-fn get_games(_: ()) -> ExternResult<Vec<GameOutput>> {
+fn get_games(_: ()) -> ExternResult<Vec<GameInfo>> {
     let path = get_games_path();
     let games = get_games_inner(path.hash()?)?;
     Ok(games)
 }
 
-fn get_games_inner(base: EntryHash) -> WeResult<Vec<GameOutput>> {
-    let entries = get_links_and_load_type(base, None)?;
+pub fn get_game_by_hash(post_hash: EntryHash) -> WeResult<Game> {
+    let element = get(post_hash, GetOptions::default())?.ok_or(WeError::GetError)?;
+
+    let game: Option<Game> = element.entry().to_app_option()?;
+
+    game.ok_or(WeError::GetError)
+}
+
+fn get_games_inner(base: EntryHash) -> WeResult<Vec<GameInfo>> {
+
+    let links = get_links(base.clone(), None)?;
+    let entries: Vec<Game> = links
+        .into_inner()
+        .into_iter()
+        .map(|link| get_game_by_hash(link.target))
+        .collect::<WeResult<Vec<Game>>>()?;
+
     let mut games = vec![];
     for e in entries {
-        games.push(GameOutput {hash: hash_entry(&e)?.into(), content: e});
+        games.push(GameInfo {hash: hash_entry(&e)?.into(), content: e});
     }
     Ok(games)
 }

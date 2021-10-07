@@ -38,6 +38,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     await this.store.newWe("self",  this.getLogo("self"))
     await this.store.addGame("self", {
       name: "who",
+      description: "Identity manager for We groups",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
@@ -45,6 +46,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     });
     await this.store.addGame("self", {
       name: "synDocs",
+      description: "Real-time document editor",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
@@ -54,6 +56,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     await this.store.newWe("slime",  this.getLogo("slime"))
     await this.store.addGame("slime", {
       name: "chat",
+      description: "Chat with channels and other cool features",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
@@ -61,6 +64,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     });
     await this.store.addGame("slime", {
       name: "synDocs",
+      description: "Real-time document editor",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
@@ -68,6 +72,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     });
     await this.store.addGame("slime", {
       name: "where",
+      description: "Group awareness building toolkit",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
@@ -77,6 +82,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     await this.store.newWe("fish", this.getLogo("fish"))
     await this.store.addGame("fish", {
       name: "chat",
+      description: "Chat with channels and other cool features",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
       ui_url: "http://someurl",
       logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",

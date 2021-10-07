@@ -18,6 +18,7 @@ export interface GameInfo {
 
 export interface GameEntry {
   name: string,
+  description: string,
   dna_hash: DnaHashB64,
   ui_url: String,
   logo_url: String,

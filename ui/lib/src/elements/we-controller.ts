@@ -6,7 +6,7 @@ import { StoreSubscriber } from "lit-svelte-stores";
 import { Unsubscriber } from "svelte/store";
 
 import { sharedStyles } from "../sharedStyles";
-import { weContext, Dictionary, Signal } from "../types";
+import { weContext, Dictionary, Signal, GameEntry } from "../types";
 import { WeStore } from "../we.store";
 import { WeGameDialog } from "./we-game-dialog";
 import { WeDialog } from "./we-dialog";
@@ -20,6 +20,7 @@ import {
   Select,
   IconButton,
   Button,
+  Card,
 } from "@scoped-elements/material-web";
 
 const GEAR_ICON_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Gear_icon_svg.svg/560px-Gear_icon_svg.svg.png"
@@ -50,57 +51,6 @@ export class WeController extends ScopedElementsMixin(LitElement) {
 
   @query('#we-dialog')
   _weDialog!: WeDialog;
-
-  async initialize() {
-    await this._store.newWe("self",  this.getLogo("self"))
-    await this._store.addGame("self", {
-      name: "who",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://raw.githubusercontent.com/lightningrodlabs/we/main/ui/apps/we/who.png",
-      meta: {},
-    });
-    await this._store.addGame("self", {
-      name: "synDocs",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
-      meta: {},
-    });
-
-    await this._store.newWe("slime",  this.getLogo("slime"))
-    await this._store.addGame("slime", {
-      name: "chat",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
-      meta: {},
-    });
-    await this._store.addGame("slime", {
-      name: "synDocs",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://cdn1.iconfinder.com/data/icons/hawcons/32/699327-icon-55-document-text-512.png",
-      meta: {},
-    });
-    await this._store.addGame("slime", {
-      name: "where",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
-      meta: {},
-    });
-
-    await this._store.newWe("fish", this.getLogo("fish"))
-    await this._store.addGame("fish", {
-      name: "chat",
-      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
-      ui_url: "http://someurl",
-      logo_url: "https://elemental-chat.holo.host/img/ECLogoWhiteMiddle.png",
-      meta: {},
-    });
-
-  }
 
   //TODO fix
   getLogo(id: string) : string {
@@ -138,6 +88,30 @@ export class WeController extends ScopedElementsMixin(LitElement) {
     this.selected = weId;
   }
 
+  private getAvailableGames() {
+    return { "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd" : {
+      name: "HoloFuel",
+      description: "Asset-backed mutual-credit powering the Holo network.",
+      dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
+      ui_url: "http://someurl",
+      logo_url: "https://holo.host/wp-content/uploads/HoloFuel.svg",
+      meta: {},
+    }}
+  }
+  private getInstalledGames() {
+
+  }
+
+  private makeCard(dnaHash: string, game: GameEntry, button: string) {
+    return html`
+<mwc-card outlined >
+  <div slot="header" class="card-header"><img src="${game.logo_url}"> ${game.name}</div>
+  <div slot="content" class="card-content">${game.description}</div>
+  <mwc-button slot="action-buttons">${button}</mwc-button>
+</mwc-card>
+
+`
+  }
 //    <sl-avatar .image=${profile.fields.avatar}></sl-avatar>
 //    <div>${profile.nickname}</div></li>`
   render() {
@@ -163,8 +137,24 @@ export class WeController extends ScopedElementsMixin(LitElement) {
       if (game) {
         content = html`Content for ${game.name} goes here`
       } else {
+        const available = Object.entries(this.getAvailableGames()).map(
+          ([key, game]) => this.makeCard(key, game, "Install")
+        )
+        const installed =  Object.entries(we.games).map(
+          ([key, game]) => this.makeCard(key, game, "Deactivate")
+        )
+
         content = html`<mwc-button icon="add_circle" @click=${() => this.openGameDialog()}>Add hApp</mwc-button>
-<mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>`
+<mwc-button icon="refresh" @click=${() => this.refresh()}>Refresh</mwc-button>
+<div>
+<h3>Available to install</h3>
+        ${available}
+</div>
+<div>
+<h3>Installed</h3>
+        ${installed}
+</div>
+`
       }
     }
 
@@ -204,6 +194,7 @@ ${content}
       "we-games" : WeGames,
       "we-wes" : WeWes,
       'sl-avatar': SlAvatar,
+      'mwc-card': Card,
     };
   }
 
@@ -266,6 +257,18 @@ ${content}
           background-color: lightgrey;
           height: 100vh;
           padding: 2px;
+        }
+        .card-header {
+          display: flex;
+          align-items: center;
+          padding: 16px;
+        }
+        .card-header > img {
+          width: 40px;
+        }
+        .card-content {
+          width: 300px;
+          padding: 16px;
         }
         @media (min-width: 640px) {
           main {

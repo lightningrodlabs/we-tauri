@@ -6,7 +6,7 @@ import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { WeStore } from "../we.store";
 import { weContext, GameEntry, Dictionary } from "../types";
-import { Dialog, TextField, Button,   ListItem, Select, } from "@scoped-elements/material-web";
+import { Dialog, TextField, TextArea, Button, ListItem, Select, } from "@scoped-elements/material-web";
 
 import { EntryHashB64, HeaderHashB64, AgentPubKeyB64, serializeHash } from '@holochain-open-dev/core-types';
 
@@ -63,6 +63,8 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
   @query('#name-field')
   _nameField!: TextField;
+  @query('#desc-field')
+  _descField!: TextField;
   @query('#dna-field')
   _dnaField!: TextField;
   @query('#ui-url-field')
@@ -72,9 +74,12 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
 
   private async handleOk(e: any) {
-    const valid = this._logoUrlField.validity.valid && this._uiUrlField.validity.valid && this._nameField.validity.valid
+    const valid = this._logoUrlField.validity.valid && this._uiUrlField.validity.valid && this._nameField.validity.valid && this._descField.validity.valid
     if (!this._nameField.validity.valid) {
       this._nameField.reportValidity()
+    }
+    if (!this._descField.validity.valid) {
+      this._descField.reportValidity()
     }
     if (!this._uiUrlField.validity.valid) {
       this._uiUrlField.reportValidity()
@@ -86,6 +91,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
     const game: GameEntry = {
       name: this._nameField.value,
+      description: this._descField.value,
       ui_url: this._uiUrlField.value,
       logo_url: this._logoUrlField.value,
       dna_hash: this._dnaField.value,
@@ -99,6 +105,7 @@ export class WeGameDialog extends ScopedElementsMixin(LitElement) {
 
   private async handleGameDialog(e: any) {
     this._nameField.value = "";
+    this._descField.value = "";
     this._uiUrlField.value = "";
     this._logoUrlField.value = "";
     this._dnaField.value = "";
@@ -123,6 +130,7 @@ ${Object.entries(this.dnas).map(
 )}
 </mwc-select>
 <mwc-textfield @input=${() => this._nameField.reportValidity()} id="name-field" label="Name" autoValidate=true required outlined></mwc-textfield>
+<mwc-textarea @input=${() => this._nameField.reportValidity()} id="desc-field" label="Description" autoValidate=true required outlined></mwc-textarea>
 <mwc-textfield @input=${() => this._uiUrlField.reportValidity()} id="ui-url-field" label="UI zip file URL" autoValidate=true required outlined></mwc-textfield>
 <mwc-textfield @input=${() => this._logoUrlField.reportValidity()} id="logo-url-field" label="Logo Image URL" autoValidate=true required outlined></mwc-textfield>
 
@@ -138,6 +146,7 @@ ${Object.entries(this.dnas).map(
       "mwc-button": Button,
       "mwc-dialog": Dialog,
       "mwc-textfield": TextField,
+      "mwc-textarea": TextArea,
     };
   }
   static get styles() {
