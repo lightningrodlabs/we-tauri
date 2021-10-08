@@ -1,10 +1,12 @@
-import { deserializeHash, HoloHashB64 } from '@holochain-open-dev/core-types';
-import { css, html, LitElement, PropertyValues } from 'lit';
-import { property, query } from 'lit/decorators.js';
-import renderIcon from '@holo-host/identicon';
-import { classMap } from 'lit/directives/class-map.js';
-import { Dictionary } from '../types';
-import { SlTooltip } from '@scoped-elements/shoelace';
+import { deserializeHash, HoloHashB64 } from "@holochain-open-dev/core-types";
+import { css, html, LitElement, PropertyValues } from "lit";
+import { SlTooltip } from "@scoped-elements/shoelace";
+import { property, query } from "lit/decorators.js";
+import renderIcon from "@holo-host/identicon";
+import { classMap } from "lit/directives/class-map.js";
+
+import { Dictionary } from "../types";
+
 export class WePlayer extends LitElement {
   @property()
   hash!: HoloHashB64;
@@ -16,7 +18,7 @@ export class WePlayer extends LitElement {
   size: number | undefined = undefined;
 
   @property()
-  shape: 'square' | 'circle' = 'circle';
+  shape: "square" | "circle" = "circle";
 
   @property()
   me: boolean = false;
@@ -24,13 +26,13 @@ export class WePlayer extends LitElement {
   @property()
   showHash: boolean = true;
 
-  @query('#canvas')
+  @query("#canvas")
   _canvas!: HTMLCanvasElement;
 
   updated(changedValues: PropertyValues) {
     super.updated(changedValues);
 
-    if (changedValues.has('hash') || changedValues.has('size')) {
+    if (changedValues.has("hash") || changedValues.has("size")) {
       renderIcon(
         {
           hash: deserializeHash(this.hash),
@@ -43,27 +45,27 @@ export class WePlayer extends LitElement {
 
   render() {
     return html`
-<li class="player">
-<sl-tooltip placement="left" .content=${this.hash}>
-      <canvas
-        id="canvas"
-        width="1"
-        height="1"
-        class=${classMap({
-          square: this.shape === 'square',
-          circle: this.shape === 'circle',
-        })}
-      ></canvas>
-</sl-tooltip>
-${(this.props) ? html`<div>${this.props.nickname}</div>` : ''}
-</li>
+      <li class="player">
+        <sl-tooltip placement="left" .content=${this.hash}>
+          <canvas
+            id="canvas"
+            width="1"
+            height="1"
+            class=${classMap({
+              square: this.shape === "square",
+              circle: this.shape === "circle",
+            })}
+          ></canvas>
+        </sl-tooltip>
+        ${this.props ? html`<div>${this.props.nickname}</div>` : ""}
+      </li>
     `;
   }
 
   static get scopedElements() {
     return {
       "sl-tooltip": SlTooltip,
-    }
+    };
   }
 
   static get styles() {
@@ -75,13 +77,13 @@ ${(this.props) ? html`<div>${this.props.nickname}</div>` : ''}
       .circle {
         border-radius: 50%;
       }
-.player {
-list-style: none;
-display: inline-block;
-margin: 2px;
-text-align: center;
-font-size: 70%;
-}
+      .player {
+        list-style: none;
+        display: inline-block;
+        margin: 2px;
+        text-align: center;
+        font-size: 70%;
+      }
     `;
   }
 }

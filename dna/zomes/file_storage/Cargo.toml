@@ -1,0 +1,12 @@
+[package]
+authors = ["eric@harris-braun.com"]
+edition = "2018"
+name = "file_storage"
+version = "0.0.1-alpha1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "file_storage"
+
+[dependencies]
+hc_zome_file_storage = {git = "https://github.com/holochain-open-dev/file-storage", rev = "4bfd7d6c6e987da17f1a04cc4be94912e861c779"}

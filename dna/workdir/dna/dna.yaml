@@ -8,3 +8,5 @@ zomes:
     bundled: ../../target/wasm32-unknown-unknown/release/we.wasm
   - name: hc_zome_membrane
     bundled: ../../target/wasm32-unknown-unknown/release/membrane.wasm
+  - name: file_storage
+    bundled: ../../target/wasm32-unknown-unknown/release/file_storage.wasm
