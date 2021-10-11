@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "build": "tsc",
     "build:watch": "npm run analyze && tsc && watch -p \"src/**/*\" -c \"npm run analyze && tsc\"",
     "analyze": "lit-analyzer src --failFast"
   },

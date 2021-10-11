@@ -18,7 +18,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
   async firstUpdated() {
     const adminWebsocket = await AdminWebsocket.connect(
-      `ws://localhost:9000` //${process.env.HCADMIN_PORT}`
+      `ws://localhost:${process.env.ADMIN_PORT}`
     );
 
     const appWebsocket = await AppWebsocket.connect(

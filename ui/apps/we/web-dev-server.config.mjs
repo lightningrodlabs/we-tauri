@@ -35,6 +35,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
     replace({
       "process.env.HC_PORT": JSON.stringify(HC_PORT),
+      "process.env.ADMIN_PORT": JSON.stringify(process.env.ADMIN_PORT),
     }),
     builtins(),
     commonjs(),

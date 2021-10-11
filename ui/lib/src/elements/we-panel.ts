@@ -30,9 +30,9 @@ export class WePanel extends ScopedElementsMixin(LitElement) {
   }
 
   updated(changedValues: PropertyValues) {
-    super.updated(changedValues)
-    if (changedValues.has('_store')) {
-      this.refresh()
+    super.updated(changedValues);
+    if (changedValues.has("_store")) {
+      this.refresh();
     }
   }
 
@@ -63,7 +63,8 @@ export class WePanel extends ScopedElementsMixin(LitElement) {
         <mwc-button icon="refresh" @click=${() => this.refresh()}
           >Refresh</mwc-button
         >`;
-    else return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`
+    else
+      return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`;
   }
 
   render() {
