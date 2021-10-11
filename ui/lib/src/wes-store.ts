@@ -103,6 +103,9 @@ export class WesStore {
     const newWeHash = await this.adminWebsocket.registerDna({
       hash: deserializeHash(weDnaHash) as Buffer,
       uid: weId,
+      properties:{
+        logo_url: weLogo
+      }
     });
 
     const installed_app_id = `we-${weId}`;
