@@ -19,6 +19,10 @@ export class WeService {
     return serializeHash(this.cellClient.cellId[1]);
   }
 
+  async getLogoUrl(): Promise<string> {
+    return this.callZome("get_logo_url", null);
+  }
+
   async getGames(): Promise<Array<HoloHashed<GameEntry>>> {
     return this.callZome("get_games", null);
   }

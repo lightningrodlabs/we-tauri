@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { contextProvided } from "@lit-labs/context";
+import { contextProvided, provide } from "@lit-labs/context";
 
 import {
   TextField,
@@ -10,7 +10,10 @@ import {
   Snackbar,
   Dialog,
 } from "@scoped-elements/material-web";
-import { UploadFiles } from "@holochain-open-dev/file-storage";
+import {
+  fileStorageServiceContext,
+  UploadFiles,
+} from "@holochain-open-dev/file-storage";
 
 import { importModuleFromFile } from "../renderers/processes/import-module-from-file";
 import { sharedStyles } from "../sharedStyles";
@@ -87,7 +90,6 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
         this._weStore.appWebsocket,
         this._weStore.cellData
       );
-
       if (!renderers.full || !renderers.blocks) {
         throw new Error("Malformed lenses");
       }
@@ -98,6 +100,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       };
       this._invalidUiBundle = false;
     } catch (e) {
+      console.error(e);
       (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
       this._invalidUiBundle = true;
     }
@@ -127,7 +130,14 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
         heading="Create Game"
         @closing=${this.handleDialogClosing}
       >
-        <div class="column" style="padding: 16px;">
+        <div
+          class="column"
+          style="padding: 16px;"
+          ${provide(
+            fileStorageServiceContext,
+            this._weStore.fileStorageService
+          )}
+        >
           <mwc-textfield
             id="dna-name"
             label="Name"

@@ -16,6 +16,7 @@ import {
   AppWebsocket,
   AdminWebsocket,
   InstalledAppInfo,
+  AppStatusFilter,
 } from "@holochain/conductor-api";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
@@ -31,12 +32,8 @@ export class WesStore {
     selectedWeId: undefined,
   });
 
-  public adminWebsocket: AdminWebsocket | null = null;
-  public appWebsocket: AppWebsocket | null = null;
-
   /** Static info */
   myAgentPubKey: AgentPubKeyB64 = ""; //TODO, fix based on assumption of agent key across we
-  weDnaHash: DnaHashB64 = "";
   /** Readable stores */
   public wes: Readable<Dictionary<WeStore>> = derived(
     this.wesStore,
@@ -51,18 +48,67 @@ export class WesStore {
     (s) => s.selectedWeId
   );
 
-  public async newWe(weId: string, weLogo: string) {
+  constructor(
+    protected appWebsocket: AppWebsocket,
+    protected adminWebsocket: AdminWebsocket
+  ) {}
+
+  public async fetchWes() {
+    let active = await this.adminWebsocket.listApps({
+      status_filter: AppStatusFilter.Running,
+    });
+
+    console.log("installed apps", active);
+    const activeWes = active.filter((app) =>
+      app.installed_app_id.startsWith("we-")
+    );
+    const promises = activeWes.map(async (we) => {
+      const store = await this.createWeStore(we);
+      return [we.installed_app_id, store] as [string, WeStore];
+    });
+    const stores = await Promise.all(promises);
+
+    this.wesStore.update((s) => {
+      for (const [weId, store] of stores) {
+        s.wes[weId] = store;
+      }
+      return s;
+    });
+  }
+
+  private async createWeStore(app: InstalledAppInfo): Promise<WeStore> {
+    const weId = app.installed_app_id;
+
+    const cellData = app.cell_data[0];
+    const cellClient = new HolochainClient(this.appWebsocket, cellData);
+
+    return WeStore.create(weId, this.adminWebsocket, cellClient);
+  }
+
+  /**
+   * Clones the We DNA with a new unique weId as its UID
+   * @param weId
+   * @param weLogo
+   */
+  public async createWe(weId: string, weLogo: string) {
+    const appInfo = await this.appWebsocket.appInfo({
+      installed_app_id: "we-self",
+    });
+
+    const installedCells = appInfo.cell_data;
+    const myAgentPubKey = serializeHash(installedCells[0].cell_id[1]);
+    const weDnaHash = serializeHash(installedCells[0].cell_id[0]);
     console.log("new WE ", weId);
 
-    const newWeHash = await this.adminWebsocket!.registerDna({
-      hash: new Buffer(deserializeHash(this.weDnaHash)),
+    const newWeHash = await this.adminWebsocket.registerDna({
+      hash: deserializeHash(weDnaHash) as Buffer,
       uid: weId,
     });
 
     const installed_app_id = `we-${weId}`;
-    const appInfo: InstalledAppInfo = await this.adminWebsocket!.installApp({
+    const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
       installed_app_id,
-      agent_key: new Buffer(deserializeHash(this.myAgentPubKey)),
+      agent_key: deserializeHash(myAgentPubKey) as Buffer,
       dnas: [
         {
           hash: newWeHash,
@@ -70,7 +116,7 @@ export class WesStore {
         },
       ],
     });
-    const enabledResult = await this.adminWebsocket!.enableApp({
+    const enabledResult = await this.adminWebsocket.enableApp({
       installed_app_id,
     });
     console.log(
@@ -79,28 +125,14 @@ export class WesStore {
     );
 
     const cellClient = new HolochainClient(
-      this.appWebsocket!,
-      appInfo.cell_data[0]
+      this.appWebsocket,
+      newAppInfo.cell_data[0]
     );
-    this.addWe(weId, weLogo, cellClient);
-  }
 
-  public addWe(
-    weId: string,
-    weLogo: string,
-    cellClient: CellClient,
-    zomeName = "hc_zome_we"
-  ) {
-    console.log("adding WE ", weId);
+    const store = await WeStore.create(weId, this.adminWebsocket, cellClient);
 
     this.wesStore.update((wes) => {
-      wes.wes[weId] = new WeStore(
-        weId,
-        this.adminWebsocket!,
-        cellClient,
-        weLogo
-      );
-      wes.wes[weId].fetchPlayers();
+      wes.wes[weId] = store;
       wes.selectedWeId = weId;
       return wes;
     });

@@ -10,10 +10,11 @@ export class WeRender extends ScopedElementsMixin(LitElement) {
 
   renderRenderer(element: Element | undefined) {
     if (element) {
-      this.renderer(element as HTMLElement, this.registry);
+      this.renderer(element as HTMLElement, this);
     }
   }
+
   render() {
-    return html`<div ${ref(this.renderRenderer)}></div>`;
+    return html`<div ${ref(e=> this.renderRenderer(e))}></div>`;
   }
 }

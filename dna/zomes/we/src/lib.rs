@@ -43,6 +43,18 @@ fn get_games_path() -> Path {
     Path::from("games")
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug, SerializedBytes)]
+pub struct Properties {
+    logo_url: String,
+}
+
+#[hdk_extern]
+fn get_logo_url(_: ()) -> ExternResult<String> {
+    let zome_info = zome_info()?;
+    let properties = Properties::try_from(zome_info.properties)?;
+    Ok(properties.logo_url)
+}
+
 #[hdk_extern]
 fn create_game(input: Game) -> ExternResult<EntryHashB64> {
     let _header_hash = create_entry(&input)?;

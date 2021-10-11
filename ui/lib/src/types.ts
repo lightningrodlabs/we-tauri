@@ -22,7 +22,7 @@ export interface GameEntry {
   dna_hash: DnaHashB64;
   dna_file_hash: EntryHashB64;
   ui_file_hash: EntryHashB64;
-  logo_url: String;
+  logo_url: string;
   meta?: Dictionary<string>;
 }
 

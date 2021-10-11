@@ -13,8 +13,8 @@ export class WeWes extends ScopedElementsMixin(LitElement) {
   _wes = new StoreSubscriber(this, () => this._store.wes);
 
   render() {
-    const wes = Object.entries(this._wes.value).map(
-      ([key, we]) => html` <we-logo .weId=${key}></we-logo> `
+    const wes = Object.keys(this._wes.value).map(
+      (key) => html` <we-logo .weId=${key}></we-logo> `
     );
 
     return html` <div class="wes">${wes}</div> `;

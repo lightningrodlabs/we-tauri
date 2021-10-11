@@ -1,4 +1,5 @@
 import { AppWebsocket, InstalledCell } from "@holochain/conductor-api";
+import { ScopedElementsHost } from "@open-wc/scoped-elements/types/src/types";
 
 export type Dictionary<T> = { [key: string]: T };
 
@@ -9,7 +10,7 @@ export interface Renderers {
 
 export type StandaloneRenderer = (
   element: HTMLElement,
-  customElementRegistry: CustomElementRegistry
+  host: ScopedElementsHost
 ) => void;
 
 export interface BlockRenderer {

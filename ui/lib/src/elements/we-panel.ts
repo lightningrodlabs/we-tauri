@@ -1,18 +1,21 @@
 import { contextProvided, provide } from "@lit-labs/context";
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button } from "@scoped-elements/material-web";
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
-import { query } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
 import { weContext, wesContext } from "../context";
 import { GEAR_ICON_URL } from "../types";
 import { WeStore } from "../we-store";
 import { WesStore } from "../wes-store";
 import { CreateGameDialog } from "./create-game-dialog";
+import { WeGame } from "./we-game";
 import { WeGames } from "./we-games";
 import { WePlayer } from "./we-player";
 
-export class WePanel extends LitElement {
-  @contextProvided({ context: weContext })
+export class WePanel extends ScopedElementsMixin(LitElement) {
+  @contextProvided({ context: weContext, multiple: true })
+  @state()
   _store!: WeStore;
 
   _info = new StoreSubscriber(this, () => this._store.info);
@@ -26,12 +29,19 @@ export class WePanel extends LitElement {
     this._gameDialog.open();
   }
 
+  updated(changedValues: PropertyValues) {
+    super.updated(changedValues)
+    if (changedValues.has('_store')) {
+      this.refresh()
+    }
+  }
+
   async refresh() {
     await Promise.all([this._store.fetchGames(), this._store.fetchPlayers()]);
   }
 
   renderPlayers() {
-    return Object.entries(this._players).map(([player, props]) => {
+    return Object.entries(this._players.value).map(([player, props]) => {
       return html`
         <we-player
           .hash=${player}
@@ -44,16 +54,16 @@ export class WePanel extends LitElement {
   }
 
   renderContent() {
-    if (!this._selectedGameId)
+    if (!this._selectedGameId.value)
       return html`<mwc-button
           icon="add_circle"
           @click=${() => this.openGameDialog()}
-          >Add hApp</mwc-button
+          >Add Game</mwc-button
         >
         <mwc-button icon="refresh" @click=${() => this.refresh()}
           >Refresh</mwc-button
         >`;
-    else return "Content goes here";
+    else return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`
   }
 
   render() {
@@ -80,6 +90,7 @@ export class WePanel extends LitElement {
       "we-player": WePlayer,
       "mwc-button": Button,
       "we-games": WeGames,
+      "we-game": WeGame,
     };
   }
 

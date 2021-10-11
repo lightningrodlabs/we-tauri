@@ -49,7 +49,7 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     }
     if (!valid) return;
 
-    await this._store.newWe(this._nameField.value, this._logoUrlField.value);
+    await this._store.createWe(this._nameField.value, this._logoUrlField.value);
 
     this.dispatchEvent(
       new CustomEvent("we-added", {

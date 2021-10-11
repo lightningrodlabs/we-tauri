@@ -2,10 +2,11 @@ import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, CircularProgress } from "@scoped-elements/material-web";
-import { html, LitElement, PropertyValues } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { property } from "lit/decorators.js";
 import { weContext } from "../context";
+import { sharedStyles } from "../sharedStyles";
 import { WeStore } from "../we-store";
 import { WeRender } from "./we-render";
 
@@ -20,6 +21,14 @@ export class WeGame extends ScopedElementsMixin(LitElement) {
 
   addGame() {
     this._store.addGame(this.gameHash);
+  }
+
+  updated(changedValues: PropertyValues) {
+    super.updated(changedValues)
+
+    if (changedValues.has('gameHash')) {
+      this._store.fetchRenderers(this.gameHash)
+    }
   }
 
   render() {
@@ -48,5 +57,9 @@ export class WeGame extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-circular-progress": CircularProgress,
     };
+  }
+
+  static get styles() {
+    return [sharedStyles]
   }
 }

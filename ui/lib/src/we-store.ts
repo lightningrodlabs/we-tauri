@@ -27,6 +27,7 @@ import { importModuleFromFile } from "./renderers/processes/import-module-from-f
 import { Renderers, SetupRenderers } from "./renderers/types";
 import { Dictionary, GameEntry, Players } from "./types";
 import { WeService } from "./we.service";
+import { Buffer } from "buffer";
 
 export interface WeState {
   name: string;
@@ -63,6 +64,7 @@ export class WeStore {
   public selectedGameId: Readable<EntryHashB64 | undefined>;
   public players: Readable<Players>;
   public info: Readable<WeInfo>;
+
   public game(gameHash: EntryHashB64): Readable<
     | {
         info: GameEntry;
@@ -93,18 +95,17 @@ export class WeStore {
     return (this.service.cellClient as any).cellData;
   }
 
-  constructor(
+  private constructor(
     weId: string,
     protected adminWebsocket: AdminWebsocket,
-    cellClient: CellClient,
-    weLogo: string
+    cellClient: CellClient
   ) {
     this.service = new WeService(cellClient);
     this.fileStorageService = new FileStorageService(cellClient);
 
     this.state = writable({
       name: weId,
-      logo_url: weLogo,
+      logo_url: "",
       players: {},
       games: {},
       gamesAlreadyPlaying: {},
@@ -142,6 +143,25 @@ export class WeStore {
     });
   }
 
+  static async create(
+    weId: string,
+    adminWebsocket: AdminWebsocket,
+    cellClient: CellClient
+  ): Promise<WeStore> {
+    const store = new WeStore(weId, adminWebsocket, cellClient);
+    await Promise.all([store.fetchPlayers(), store.fetchWeInfo()]);
+    return store;
+  }
+
+  async fetchWeInfo() {
+    const logo_url = await this.service.getLogoUrl();
+
+    this.state.update((s) => {
+      s.logo_url = logo_url;
+      return s;
+    });
+  }
+
   async fetchGames() {
     const [games, cellIds] = await Promise.all([
       this.service.getGames(),
@@ -153,7 +173,7 @@ export class WeStore {
     this.state.update((s) => {
       for (const game of games) {
         s.games[game.hash] = game.content;
-        if (dnaHashes.includes(game.hash))
+        if (dnaHashes.includes(game.content.dna_hash))
           s.gamesAlreadyPlaying[game.hash] = true;
       }
 
@@ -183,7 +203,10 @@ export class WeStore {
     const mod = await importModuleFromFile(file);
     const setupRenderers: SetupRenderers = mod.default;
 
-    const renderers = setupRenderers(this.appWebsocket, this.cellData);
+    const renderers = setupRenderers(this.appWebsocket, {
+      cell_id: [deserializeHash(game.dna_hash) as Buffer, deserializeHash(this.myAgentPubKey) as Buffer],
+      cell_nick: game.name
+    });
     this.state.update((s) => {
       s.renderers[gameHash] = renderers;
       return s;
@@ -196,9 +219,6 @@ export class WeStore {
       return s;
     });
 
-    if (gameHash) {
-      this.fetchRenderers(gameHash);
-    }
   }
 
   // Installs the given game to the conductor, and registers it in the We DNA
@@ -237,7 +257,7 @@ export class WeStore {
   }
 
   gameUid(gameName: string) {
-    return `we-${get(this.state).name}-game-${gameName}`;
+    return `wegame-${get(this.state).name}-game-${gameName}`;
   }
 
   // Installs the already existing game in this We to the conductor
@@ -282,16 +302,14 @@ export class WeStore {
             {
               id: "game",
               dna: {
-                location: {
-                  bundled: "dna",
-                } as any,
+                bundled: "dna",
                 uid: name,
-              },
+              } as any,
             },
           ],
         },
         resources: {
-          dna: (await dnaFile.arrayBuffer()) as any,
+          dna: Array.from(new Uint8Array(await dnaFile.arrayBuffer())) as any,
         },
       },
       uid: name,

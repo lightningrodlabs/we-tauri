@@ -3,11 +3,11 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map";
+import { classMap } from "lit/directives/class-map.js";
 import { derived } from "svelte/store";
-import { weContext, wesContext } from "../context";
+
+import { wesContext } from "../context";
 import { unnest } from "../utils/unnest";
-import { WeStore } from "../we-store";
 import { WesStore } from "../wes-store";
 
 export class WeLogo extends ScopedElementsMixin(LitElement) {

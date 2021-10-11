@@ -43,27 +43,6 @@ export class WeController extends ScopedElementsMixin(LitElement) {
   @query("#we-dialog")
   _weDialog!: CreateWeDialog;
 
-  async initialize() {
-    await this._store.newWe("self", this.getLogo("self"));
-
-    await this._store.newWe("slime", this.getLogo("slime"));
-
-    await this._store.newWe("fish", this.getLogo("fish"));
-  }
-
-  //TODO fix
-  getLogo(id: string): string {
-    switch (id) {
-      case "self":
-        return "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png";
-      case "slime":
-        return "https://d2r55xnwy6nx47.cloudfront.net/uploads/2018/07/Physarum_CNRS_2880x1500.jpg";
-      case "fish":
-        return "https://www.publicdomainpictures.net/pictures/260000/velka/school-of-fish-1527727063xgZ.jpg";
-    }
-    return "";
-  }
-
   async openWeDialog() {
     this._weDialog.open();
   }
