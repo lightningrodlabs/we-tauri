@@ -19,6 +19,7 @@ import {
   Select,
   IconButton,
   Button,
+  Card,
 } from "@scoped-elements/material-web";
 import { WePanel } from "./we-panel";
 import { weContext, wesContext } from "../context";
@@ -110,7 +111,6 @@ export class WeController extends ScopedElementsMixin(LitElement) {
         we-wes {
           flex-grow: 0;
         }
-
         @media (min-width: 640px) {
           main {
             max-width: none;

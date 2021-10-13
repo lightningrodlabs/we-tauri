@@ -9,8 +9,8 @@ pub enum WeError {
     Infallible(#[from] Infallible),
     #[error(transparent)]
     EntryError(#[from] EntryError),
-    #[error("Failed to convert an agent link tag to an agent pub key")]
-    AgentTag,
+    #[error("Get failed")]
+    GetError,
     #[error(transparent)]
     Wasm(#[from] WasmError),
     #[error(transparent)]

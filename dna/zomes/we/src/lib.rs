@@ -2,7 +2,10 @@ pub use error::{WeError, WeResult};
 pub use hdk::prelude::Path;
 pub use hdk::prelude::*;
 pub mod error;
+<<<<<<< HEAD
 use holo_hash::{AgentPubKeyB64, DnaHashB64, EntryHashB64};
+=======
+>>>>>>> main
 use std::collections::BTreeMap;
 
 #[hdk_extern]
@@ -22,7 +25,7 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
 entry_defs![Path::entry_def(), Game::entry_def()];
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct GameOutput {
+pub struct GameInfo {
     hash: EntryHashB64,
     content: Game,
 }
@@ -32,6 +35,7 @@ pub struct GameOutput {
 #[derive(Clone)]
 pub struct Game {
     pub name: String,
+    pub description: String,
     dna_hash: DnaHashB64,
     dna_file_hash: EntryHashB64,
     ui_file_hash: EntryHashB64,
@@ -71,7 +75,7 @@ fn create_game(input: Game) -> ExternResult<EntryHashB64> {
 }
 
 #[hdk_extern]
-fn get_games(_: ()) -> ExternResult<Vec<GameOutput>> {
+fn get_games(_: ()) -> ExternResult<Vec<GameInfo>> {
     let path = get_games_path();
     let games = get_games_inner(path.hash()?)?;
     Ok(games)
