@@ -98,7 +98,8 @@ export class WeStore {
   private constructor(
     weId: string,
     protected adminWebsocket: AdminWebsocket,
-    cellClient: CellClient
+    cellClient: CellClient,
+    protected whoCellData: InstalledCell
   ) {
     this.service = new WeService(cellClient);
     this.fileStorageService = new FileStorageService(cellClient);
@@ -146,9 +147,10 @@ export class WeStore {
   static async create(
     weId: string,
     adminWebsocket: AdminWebsocket,
-    cellClient: CellClient
+    cellClient: CellClient,
+    whoCellData: InstalledCell
   ): Promise<WeStore> {
-    const store = new WeStore(weId, adminWebsocket, cellClient);
+    const store = new WeStore(weId, adminWebsocket, cellClient, whoCellData);
     await Promise.all([store.fetchPlayers(), store.fetchWeInfo()]);
     return store;
   }
@@ -242,9 +244,11 @@ export class WeStore {
     };
 
     const hash: EntryHashB64 = await this.service.createGame(game);
+
+    // Call we to get the who cellId
     this.state.update((s) => {
       s.games[hash] = game;
-      s.renderers[hash] = setupRenderers(this.appWebsocket, this.cellData);
+      s.renderers[hash] = setupRenderers(this.appWebsocket, this.cellData, this.whoCellData);
       s.gamesAlreadyPlaying[hash] = true;
       s.selectedGame = hash;
       this.service.notify(

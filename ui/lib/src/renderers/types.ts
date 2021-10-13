@@ -20,5 +20,6 @@ export interface BlockRenderer {
 
 export type SetupRenderers = (
   appWebsocket: AppWebsocket,
-  cellData: InstalledCell
+  cellData: InstalledCell,
+  whoCell: InstalledCell
 ) => Renderers;

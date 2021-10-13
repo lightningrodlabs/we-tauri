@@ -100,12 +100,14 @@ export class WesStore {
     const weDnaHash = serializeHash(installedCells[0].cell_id[0]);
     console.log("new WE ", weId);
 
+    // Create the We cell
+
     const newWeHash = await this.adminWebsocket.registerDna({
       hash: deserializeHash(weDnaHash) as Buffer,
       uid: weId,
-      properties:{
-        logo_url: weLogo
-      }
+      properties: {
+        logo_url: weLogo,
+      },
     });
 
     const installed_app_id = `we-${weId}`;
@@ -127,12 +129,19 @@ export class WesStore {
       serializeHash(enabledResult.app.cell_data[0].cell_id[0])
     );
 
+    // TODO: create the Who cell
+
     const cellClient = new HolochainClient(
       this.appWebsocket,
       newAppInfo.cell_data[0]
     );
 
-    const store = await WeStore.create(weId, this.adminWebsocket, cellClient);
+    const store = await WeStore.create(
+      weId,
+      this.adminWebsocket,
+      cellClient,
+      whoCellData
+    );
 
     this.wesStore.update((wes) => {
       wes.wes[weId] = store;
