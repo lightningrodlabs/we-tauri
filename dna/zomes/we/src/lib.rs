@@ -2,10 +2,7 @@ pub use error::{WeError, WeResult};
 pub use hdk::prelude::Path;
 pub use hdk::prelude::*;
 pub mod error;
-<<<<<<< HEAD
 use holo_hash::{AgentPubKeyB64, DnaHashB64, EntryHashB64};
-=======
->>>>>>> main
 use std::collections::BTreeMap;
 
 #[hdk_extern]
@@ -81,7 +78,7 @@ fn get_games(_: ()) -> ExternResult<Vec<GameInfo>> {
     Ok(games)
 }
 
-fn get_games_inner(base: EntryHash) -> WeResult<Vec<GameOutput>> {
+fn get_games_inner(base: EntryHash) -> WeResult<Vec<GameInfo>> {
     let links = get_links(base, None)?;
 
     let get_input = links
@@ -103,7 +100,7 @@ fn get_games_inner(base: EntryHash) -> WeResult<Vec<GameOutput>> {
 
     let mut games = vec![];
     for e in game_entries {
-        games.push(GameOutput {
+        games.push(GameInfo {
             hash: hash_entry(&e)?.into(),
             content: e,
         });
