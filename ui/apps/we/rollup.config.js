@@ -66,10 +66,6 @@ export default {
             require.resolve("@babel/preset-env"),
             {
               targets: [
-                "last 3 Chrome major versions",
-                "last 3 Firefox major versions",
-                "last 3 Edge major versions",
-                "last 3 Safari major versions",
               ],
               modules: false,
               bugfixes: true,
@@ -77,6 +73,7 @@ export default {
           ],
         ],
         plugins: [
+          "@babel/plugin-syntax-dynamic-import",
           [
             require.resolve("babel-plugin-template-html-minifier"),
             {

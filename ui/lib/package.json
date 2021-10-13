@@ -4,8 +4,8 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "scripts": {
-    "build": "rimraf dist  && rollup -c",
-    "build:watch": "npm run analyze && rollup -c && watch -p \"src/**/*\" -c \"npm run analyze && rollup -c\"",
+    "build": "tsc",
+    "build:watch": "npm run analyze && tsc && watch -p \"src/**/*\" -c \"npm run analyze && tsc\"",
     "analyze": "lit-analyzer src --failFast"
   },
   "type": "module",
@@ -24,13 +24,14 @@
     "watch-cli": "^0.2.3"
   },
   "dependencies": {
+    "@holo-host/identicon": "git+https://github.com/holo-host/identicon.git#types",
     "@holochain-open-dev/cell-client": "^0.0.4",
     "@holochain-open-dev/core-types": "^0.1.1",
-    "@holo-host/identicon": "git+https://github.com/holo-host/identicon.git#types",
+    "@holochain-open-dev/file-storage": "github:holochain-open-dev/file-storage#ui-build",
     "@lit-labs/context": "github:holochain-open-dev/context#build",
     "@open-wc/scoped-elements": "^2.0.0-next.4",
-    "@scoped-elements/material-web": "^0.0.4",
-    "@scoped-elements/shoelace": "^0.0.4",
+    "@scoped-elements/material-web": "^0.0.14",
+    "@scoped-elements/shoelace": "^0.0.6",
     "cqfill": "^0.6.0",
     "lit": "^2.0.0-rc.3",
     "lit-svelte-stores": "^0.1.3",

@@ -2,6 +2,7 @@
 members = [
   "dna/zomes/we",
   "dna/zomes/membrane",
+  "dna/zomes/file_storage",
 ]
 
 [profile.dev]

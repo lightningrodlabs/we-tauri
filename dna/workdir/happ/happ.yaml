@@ -3,7 +3,7 @@ manifest_version: "1"
 name: we
 description: ~
 slots:
-  - id: we-slot
+  - id: we-self
     provisioning:
       strategy: create
       deferred: false

@@ -10,6 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "noImplicitAny": false,
     "sourceMap": true,
     "inlineSources": true,
     "declaration": true

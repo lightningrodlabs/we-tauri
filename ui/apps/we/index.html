@@ -8,13 +8,18 @@
         margin: 0px;
       }
     </style>
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <we-app></we-app>
 
     <script type="module">
-      import { WeApp } from './src/index.ts';
-      customElements.define('we-app', WeApp);
+      import { WeApp } from "./out-tsc/index.js";
+      customElements.define("we-app", WeApp);
     </script>
   </body>
 </html>

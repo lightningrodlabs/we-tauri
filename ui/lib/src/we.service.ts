@@ -1,32 +1,42 @@
-import { CellClient } from '@holochain-open-dev/cell-client';
-import { HoloHashed, serializeHash, EntryHashB64, HeaderHashB64, AgentPubKeyB64 } from '@holochain-open-dev/core-types';
-import { GameEntry, Signal, Players } from './types';
+import { CellClient } from "@holochain-open-dev/cell-client";
+import {
+  HoloHashed,
+  serializeHash,
+  EntryHashB64,
+  HeaderHashB64,
+  AgentPubKeyB64,
+} from "@holochain-open-dev/core-types";
+import { GameEntry, Signal, Players } from "./types";
 
 export class WeService {
   constructor(
     public cellClient: CellClient,
-    protected zomeName = 'hc_zome_we',
-    protected membraneZomeName = 'hc_zome_membrane'
+    protected zomeName = "hc_zome_we",
+    protected membraneZomeName = "hc_zome_membrane"
   ) {}
 
-  get myAgentPubKey() : AgentPubKeyB64 {
+  get myAgentPubKey(): AgentPubKeyB64 {
     return serializeHash(this.cellClient.cellId[1]);
   }
 
+  async getLogoUrl(): Promise<string> {
+    return this.callZome("get_logo_url", null);
+  }
+
   async getGames(): Promise<Array<HoloHashed<GameEntry>>> {
-    return this.callZome('get_games', null);
+    return this.callZome("get_games", null);
   }
 
   async getPlayers(): Promise<Players> {
-    return this.callMembrane('get_players', null);
+    return this.callMembrane("get_players", null);
   }
 
   async createGame(game: GameEntry): Promise<EntryHashB64> {
-    return this.callZome('create_game', game);
+    return this.callZome("create_game", game);
   }
 
   async notify(signal: Signal, folks: Array<AgentPubKeyB64>): Promise<void> {
-    return this.callZome('notify', {signal, folks});
+    return this.callZome("notify", { signal, folks });
   }
 
   private callZome(fn_name: string, payload: any) {
