@@ -82,7 +82,7 @@ export class WesStore {
     const cellData = app.cell_data[0];
     const cellClient = new HolochainClient(this.appWebsocket, cellData);
 
-    return WeStore.create(weId, this.adminWebsocket, cellClient);
+    return WeStore.create(weId, this.adminWebsocket, cellClient, /*FIXME*/cellData);
   }
 
   /**

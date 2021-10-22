@@ -88,7 +88,8 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
 
       const renderers = setupRenderers(
         this._weStore.appWebsocket,
-        this._weStore.cellData
+        this._weStore.cellData,
+        this._weStore.whoData
       );
       if (!renderers.full || !renderers.blocks) {
         throw new Error("Malformed lenses");

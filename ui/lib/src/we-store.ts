@@ -58,6 +58,7 @@ const areEqual = (first: Uint8Array, second: Uint8Array) =>
 export class WeStore {
   private state: Writable<WeState>;
   private service: WeService;
+  private whoCell: InstalledCell; //TODO this should probably be a WhoService
   public fileStorageService: FileStorageService;
 
   public games: Readable<Dictionary<GameEntry>>;
@@ -93,6 +94,10 @@ export class WeStore {
 
   public get cellData(): InstalledCell {
     return (this.service.cellClient as any).cellData;
+  }
+
+  public get whoData(): InstalledCell {
+    return this.whoCellData;
   }
 
   private constructor(
@@ -205,10 +210,13 @@ export class WeStore {
     const mod = await importModuleFromFile(file);
     const setupRenderers: SetupRenderers = mod.default;
 
-    const renderers = setupRenderers(this.appWebsocket, {
-      cell_id: [deserializeHash(game.dna_hash) as Buffer, deserializeHash(this.myAgentPubKey) as Buffer],
-      cell_nick: game.name
-    });
+    const renderers = setupRenderers(this.appWebsocket, 
+      {
+        cell_id: [deserializeHash(game.dna_hash) as Buffer, deserializeHash(this.myAgentPubKey) as Buffer],
+        cell_nick: game.name
+      },
+      this.whoData
+    );
     this.state.update((s) => {
       s.renderers[gameHash] = renderers;
       return s;
