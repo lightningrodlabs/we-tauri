@@ -1,0 +1,31 @@
+{
+  "name": "my-webcomponents",
+  "version": "1.0.0",
+  "main": "dist/index.es.js",
+  "exports": {
+    ".": "./dist/index.es.js"
+  },
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "devDependencies": {
+    "lit": "^2.0.2",
+    "@babel/core": "^7.17.2",
+    "@storybook/addon-actions": "^6.4.19",
+    "@storybook/addon-essentials": "^6.4.19",
+    "@storybook/addon-links": "^6.4.19",
+    "@storybook/web-components": "^6.4.19",
+    "babel-loader": "^8.2.3",
+    "storybook-builder-vite": "^0.1.15",
+    "typescript": "^4.5.4",
+    "vite": "^2.8.0"
+  }
+}
