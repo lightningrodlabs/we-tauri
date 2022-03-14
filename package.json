@@ -2,17 +2,15 @@
   "name": "we-dev",
   "private": true,
   "workspaces": [
-    "ui/apps/*",
-    "ui/lib",
+    "ui/app",
+    "ui/libs/*",
     "tests"
   ],
   "scripts": {
-    "start": "npm run build:happ && npm run build -w @we/elements && cross-env HC_PORT=$(port) ADMIN_PORT=$(port) concurrently -k \"npm run build:watch -w @we/elements\" \"npm run start:happ\" \"npm run start -w we\"",
-    "start-proxied": "npm run build:happ && npm run build -w @we/elements && cross-env HC_PORT=$(port) concurrently -k \"npm run start:happ-proxied\" \"npm run start -w we\"",
-    "start-rerun": "cross-env HC_PORT=8888 concurrently -k \"npm run build:watch -w @we/elements\" \"hc s run 0 -p 8888\" \"npm run start -w we\"",
+    "start": "npm run build:happ && cross-env HC_PORT=$(port) ADMIN_PORT=$(port) concurrently -k \"npm run build:watch -w @we/renderers\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && npm t -w tests",
-    "start:happ": "rimraf .hc* && RUST_LOG=warn hc s -f=$ADMIN_PORT generate ./dna/workdir/happ/we.happ --run=$HC_PORT -a we-self network mdns",
-    "start:happ-proxied": "rimraf .hc* && RUST_LOG=warn hc s -f=9000 generate ./dna/workdir/happ/we.happ --run=$HC_PORT -a we-self network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
+    "start:happ": "RUST_LOG=warn hc s -f=$ADMIN_PORT generate ./dna/workdir/happ/we.happ --run=$HC_PORT -a we-self network mdns",
+    "start:happ-proxied": "RUST_LOG=warn hc s -f=9000 generate ./dna/workdir/happ/we.happ --run=$HC_PORT -a we-self network --bootstrap https://bootstrap-staging.holo.host/ quic -p=kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:dna && hc app pack ./dna/workdir/happ",
     "build:dna": "npm run build:zome && hc dna pack ./dna/workdir/dna",

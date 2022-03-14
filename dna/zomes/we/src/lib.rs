@@ -33,11 +33,10 @@ pub struct GameInfo {
 pub struct Game {
     pub name: String,
     pub description: String,
-    dna_hash: DnaHashB64,
-    dna_file_hash: EntryHashB64,
-    ui_file_hash: EntryHashB64,
-    logo_url: String,
-    pub meta: BTreeMap<String, String>, // usable by the UI for whatever
+    pub dna_hash: DnaHashB64,
+    pub dna_file_hash: EntryHashB64,
+    pub ui_file_hash: EntryHashB64,
+    pub logo_url: String,
 }
 
 fn get_games_path() -> Path {
