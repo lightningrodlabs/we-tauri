@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
 name: we
-uuid: 00000000-0000-0000-0000-000000000000
+uid: 00000000-0000-0000-0000-000000000000
 properties: 
   logo_url: "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png"
 zomes:

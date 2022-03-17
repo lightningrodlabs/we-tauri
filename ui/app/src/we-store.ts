@@ -199,10 +199,14 @@ export class WeStore {
     const mod = await importModuleFromFile(file);
     const setupRenderers: SetupRenderers = mod.default;
 
-    const renderers = setupRenderers(this.appWebsocket, 
+    const renderers = setupRenderers(
+      this.appWebsocket,
       {
-        cell_id: [deserializeHash(game.dna_hash) as Buffer, deserializeHash(this.myAgentPubKey) as Buffer],
-        cell_nick: game.name
+        cell_id: [
+          deserializeHash(game.dna_hash) as Buffer,
+          deserializeHash(this.myAgentPubKey) as Buffer,
+        ],
+        cell_nick: game.name,
       },
       this.whoData
     );
@@ -217,7 +221,6 @@ export class WeStore {
       s.selectedGame = gameHash;
       return s;
     });
-
   }
 
   // Installs the given game to the conductor, and registers it in the We DNA
@@ -245,7 +248,11 @@ export class WeStore {
     // Call we to get the who cellId
     this.state.update((s) => {
       s.games[hash] = game;
-      s.renderers[hash] = setupRenderers(this.appWebsocket, this.cellData, this.whoCellData);
+      s.renderers[hash] = setupRenderers(
+        this.appWebsocket,
+        this.cellData,
+        this.whoCellData
+      );
       s.gamesAlreadyPlaying[hash] = true;
       s.selectedGame = hash;
       this.service.notify(
@@ -305,6 +312,7 @@ export class WeStore {
               dna: {
                 bundled: "dna",
                 uid: name,
+                properties: {},
               } as any,
             },
           ],

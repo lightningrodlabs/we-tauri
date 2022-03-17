@@ -37,7 +37,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   plugins: [
     replace({
       "process.env.HC_PORT": JSON.stringify(process.env.HC_PORT),
-      "process.env.ADMIN_PORT": JSON.stringify(process.env.ADMIN_PORT),
+      "process.env.ADMIN_PORT": JSON.stringify(process.env.ADMIN_PORT) || undefined,
       delimiters: ["", ""],
     }),
 

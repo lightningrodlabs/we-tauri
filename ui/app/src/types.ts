@@ -5,8 +5,6 @@ import {
   DnaHashB64,
 } from "@holochain-open-dev/core-types";
 
-export type Players = { [key: string]: Record<string, string> };
-
 export interface GameInfo {
   entry: GameEntry;
   hash: HeaderHashB64;

@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: where
+uid: 00000000-0000-0000-0000-000000000000
+zomes:
+  - name: where
+    bundled: ../../target/wasm32-unknown-unknown/release/where.wasm

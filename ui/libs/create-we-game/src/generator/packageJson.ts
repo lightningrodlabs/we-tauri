@@ -4,10 +4,10 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const packageJson = ({gameName}: {gameName: string;}): ScFile => ({
+export const packageJson = (): ScFile => ({
   type: ScNodeType.File,
   content: `{
-  "name": "${gameName}",
+  "name": "we-game",
   "version": "0.0.1",
   "scripts": {
     "build": "rimraf dist && tsc && rollup --config rollup.config.js",
@@ -19,7 +19,7 @@ export const packageJson = ({gameName}: {gameName: string;}): ScFile => ({
     "@holochain-open-dev/profiles": "^0.0.9",
     "@holochain/client": "^0.3.2",
     "@holochain-open-dev/context": "^0.0.3",
-    "@lightningrodlabs/we-game": "^0.0.2",
+    "@lightningrodlabs/we-game": "^0.0.3",
     "@open-wc/scoped-elements": "^2.0.1",
     "@scoped-elements/material-web": "^0.0.19",
     "lit": "^2.2.0"
@@ -45,7 +45,8 @@ export const packageJson = ({gameName}: {gameName: string;}): ScFile => ({
     "rollup-plugin-workbox": "^6.2.0",
     "tslib": "^2.3.1",
     "typescript": "^4.5.0"
-  }
+  },
+  "private": true
 }
 `
 });

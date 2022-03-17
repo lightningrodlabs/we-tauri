@@ -1,30 +1,53 @@
-import { HolochainClient } from "@holochain-open-dev/cell-client";
-import { ProfilesStore } from "@holochain-open-dev/profiles";
-import { AdminWebsocket, InstalledCell } from "@holochain/client";
-import { ScopedElementsHost } from "@open-wc/scoped-elements/types/src/types";
+import { AppBundle, InstalledCell } from "@holochain/client";
 
 export interface GameRenderers {
   full: Renderer;
-  blocks: Array<BlockRenderer>;
+  blocks: Array<GameBlock>;
 }
 
 export type Renderer = (
-  gameRootElement: HTMLElement,
-  host: ScopedElementsHost
+  rootElement: HTMLElement,
+  registry: CustomElementRegistry
 ) => void;
 
-export interface BlockRenderer {
+export interface GameBlock {
   name: string;
   render: Renderer;
 }
 
-export interface WeServices {
-  profilesStore: ProfilesStore;
-}
+// In the context of an already installed we
+//  - Install game
+//  - Fork game from a we to another
 
-export type SetupRenderers = (
-  client: HolochainClient,
-  adminWebsocket: AdminWebsocket,
-  gameCells: InstalledCell[],
-  weServices: WeServices
-) => GameRenderers;
+export type InstallGameResult =
+  | {
+      success: true;
+      gameCells: InstalledCell[];
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+export interface WeGame {
+  createGameRenderer?: (
+    appBundle: AppBundle,
+    weStore: WeStore,
+    resolve: (gameCells: InstalledCell[]) => void,
+    reject: (error: string) => void
+  ) => Renderer;
+
+  forkGameRenderer?: (
+    appBundle: AppBundle,
+    fromWe: WeStore,
+    fromCells: InstalledCell[],
+    toWe: WeStore,
+    resolve: (gameCells: InstalledCell[]) => void,
+    reject: (error: string) => void
+  ) => Renderer;
+
+  gameRenderers: (
+    weStore: WeStore,
+    gameCells: Array<InstalledCell>
+  ) => GameRenderers;
+}

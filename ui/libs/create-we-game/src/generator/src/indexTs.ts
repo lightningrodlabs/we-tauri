@@ -8,10 +8,9 @@ export const indexTs = ({gameNameTitleCase, gameName}: {gameNameTitleCase: strin
   type: ScNodeType.File,
   content: `import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
 import { SetupRenderers, WeServices } from "@lightningrodlabs/we-game";
+import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 import { ${gameNameTitleCase}Game } from "./${gameName}-game";
-import { ScopedElementsHost } from "@open-wc/scoped-elements/types/src/types";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const setupRenderers: SetupRenderers = (
   client: HolochainClient,
@@ -20,8 +19,8 @@ const setupRenderers: SetupRenderers = (
   weServices: WeServices
 ) => {
   return {
-    full(element: HTMLElement, host: ScopedElementsHost) {
-      host.defineScopedElement("${gameName}-game", ${gameNameTitleCase}Game);
+    full(element: HTMLElement, registry: CustomElementRegistry) {
+      registry.define("${gameName}-game", ${gameNameTitleCase}Game);
       element.innerHTML = \`<${gameName}-game></${gameName}-game>\`;
       let gameElement = element.querySelector("${gameName}-game") as any;
 

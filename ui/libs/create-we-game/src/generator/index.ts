@@ -13,7 +13,7 @@ export default ({gameName, gameNameTitleCase}: {gameName: string; gameNameTitleC
   children: {
   '.gitignore': gitignore(),
   'demo': demo({gameName}),
-  'package.json': packageJson({gameName}),
+  'package.json': packageJson(),
   'rollup.config.js': rollupConfigJs(),
   'src': src({gameNameTitleCase, gameName}),
   'tsconfig.json': tsconfigJson(),
