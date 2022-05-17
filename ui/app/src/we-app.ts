@@ -3,28 +3,34 @@ import { state, query } from "lit/decorators.js";
 import { AppWebsocket, AdminWebsocket, InstalledCell } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
-import { StoreSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import {
+  IconButton,
+  Button,
+  CircularProgress,
+} from "@scoped-elements/material-web";
+import { HolochainClient } from "@holochain-open-dev/cell-client";
+import { DnaHashB64 } from "@holochain-open-dev/core-types";
 
-import { weContext } from "./we/context";
-import { CreateWeDialog } from "./wes/create-we-dialog";
 import { sharedStyles } from "./sharedStyles";
-import { WesStore } from "./wes/wes-store";
-import { wesContext } from "./wes/context";
+import { WesStore } from "./exterior/wes-store";
+import { CreateWeDialog } from "./exterior/elements/create-we-dialog";
+import { wesContext } from "./exterior/context";
+import { weContext } from "./interior/context";
+import { WeStore } from "./interior/we-store";
+import { WeDetail } from "./interior/elements/we-detail";
+import { classMap } from "lit/directives/class-map.js";
+import { WeLogo } from "./interior/elements/we-logo";
+import { WeContext } from "./exterior/elements/we-context";
 
 export class WeApp extends ScopedElementsMixin(LitElement) {
-  @state()
-  loaded = false;
-
   private _store!: WesStore;
 
-  _wes = new StoreSubscriber(this, () => this._store?.wes);
+  @state()
+  _wes!: TaskSubscriber<Record<DnaHashB64, WeStore>>;
 
   @state()
   _selectedWeId: string | undefined;
-
-  _selectedWe = new StoreSubscriber(this, () =>
-    this._selectedWeId ? this._store?.weStore(this._selectedWeId) : undefined
-  );
 
   @query("#we-dialog")
   _weDialog!: CreateWeDialog;
@@ -34,16 +40,16 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       `ws://localhost:${process.env.ADMIN_PORT}`
     );
 
-    const appWebsocket = await AppWebsocket.connect(
-      `ws://localhost:${process.env.HC_PORT}`
+    const holochainClient = await HolochainClient.connect(
+      `ws://localhost:${process.env.HC_PORT}`,
+      "we"
     );
 
-    this._store = new WesStore(appWebsocket, adminWebsocket);
-    await this._store.fetchWes();
-
+    this._store = new WesStore(holochainClient, adminWebsocket);
     new ContextProvider(this, wesContext, this._store);
 
-    this.loaded = true;
+    this._wes = new TaskSubscriber(this, () => this._store.fetchWes());
+
   }
 
   renderWeList() {
@@ -51,14 +57,19 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       ${Object.keys(this._wes.value).map(
         (weId) =>
           html`
-            <we-logo .highlighted=${weId === this._selectedWeId}></we-logo>
+            <we-context .weId=${weId}>
+              <we-logo
+                class=${classMap({ highlighted: weId === this._selectedWeId })}
+                @click=${() => (this._selectedWeId = weId)}
+              ></we-logo>
+            </we-context>
           `
       )}
     </div> `;
   }
 
   render() {
-    if (!this.loaded)
+    if (!this._wes || this._wes.loading)
       return html`<div class="row center-content">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
@@ -77,10 +88,12 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         ></mwc-icon-button>
       </div>
 
-      ${this._selectedWe.value
-        ? html`<we-detail
-            ${provide(weContext, this._selectedWe.value)}
-          ></we-detail>`
+      ${this._selectedWeId
+        ? html`
+            <we-context .weId=${this._selectedWeId}>
+              <we-detail></we-detail>
+            </we-context>
+          `
         : html`How to join a we?`}
 
       <create-we-dialog id="we-dialog"></create-we-dialog>
@@ -95,6 +108,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       "create-we-dialog": CreateWeDialog,
       "we-detail": WeDetail,
       "we-logo": WeLogo,
+      "we-context": WeContext,
     };
   }
 
@@ -128,6 +142,9 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
           main {
             max-width: none;
           }
+        }
+        .highlighted {
+          border: black 2px solid;
         }
       `,
     ];

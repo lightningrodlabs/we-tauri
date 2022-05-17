@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "out-tsc",
     "rootDir": "./src",
-    "declaration": false
+    "declaration": false,
+    "incremental": true
   },
   "include": ["src/**/*.ts"]
 }

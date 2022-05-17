@@ -1,0 +1,12 @@
+[package]
+authors = ["eric@harris-braun.com"]
+edition = "2018"
+name = "membrane_invitations"
+version = "0.0.1-alpha1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "membrane_invitations"
+
+[dependencies]
+hc_zome_membrane_invitations = {git = "https://github.com/holochain-open-dev/membrane-invitations", rev = "for-hdk-v0.0.130"}

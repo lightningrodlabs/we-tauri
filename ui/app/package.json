@@ -2,19 +2,19 @@
   "name": "we",
   "version": "0.0.1",
   "scripts": {
-    "build": "rimraf dist && tsc && rollup --config rollup.config.js",
+    "build": "tsc && rollup --config rollup.config.js",
     "build:watch": "tsc --watch --preserveWatchOutput",
     "start": "tsc && concurrently -k --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.3.2",
+    "@holochain-open-dev/cell-client": "^0.3.5",
     "@holochain-open-dev/context": "^0.0.3",
     "@holochain-open-dev/core-types": "^0.2.0",
+    "@holochain-open-dev/profiles": "^0.0.11",
     "@holochain/client": "^0.3.2",
-    "@we/renderers": "^0.0.1",
     "lit": "^2.2.0",
-    "lit-svelte-stores": "^0.1.6"
+    "lit-svelte-stores": "^0.1.9"
   },
   "devDependencies": {
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",

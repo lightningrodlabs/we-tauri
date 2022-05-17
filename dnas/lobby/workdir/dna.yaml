@@ -1,0 +1,8 @@
+---
+manifest_version: "1"
+name: lobby
+uid: 00000000-0000-0000-0000-000000000000
+properties: ~
+zomes:
+  - name: membrane_invitations
+    bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations.wasm

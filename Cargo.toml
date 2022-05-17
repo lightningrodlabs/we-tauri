@@ -1,8 +1,9 @@
 [workspace]
 members = [
-  "dna/zomes/we",
-  "dna/zomes/membrane",
-  "dna/zomes/file_storage",
+  "dnas/lobby/zomes/membrane_invitations",
+  "dnas/we/zomes/games",
+  "dnas/we/zomes/profiles",
+  "dnas/we/zomes/we",
 ]
 
 [profile.dev]

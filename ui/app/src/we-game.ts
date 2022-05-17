@@ -1,4 +1,5 @@
 import { AppBundle, InstalledAppInfo, InstalledCell } from "@holochain/client";
+import { WeStore } from "./interior/we-store";
 
 export interface GameRenderers {
   full: Renderer;

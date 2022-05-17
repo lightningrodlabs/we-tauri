@@ -1,0 +1,25 @@
+---
+manifest_version: "1"
+name: we
+description: ~
+roles:
+  - id: lobby
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../dnas/lobby/workdir/lobby.dna"
+      properties: ~
+      uuid: ~
+      version: ~
+      clone_limit: 100
+  - id: we
+    provisioning:
+      strategy: create
+      deferred: true
+    dna:
+      bundled: "../dnas/we/workdir/we.dna"
+      properties: ~
+      uuid: ~
+      version: ~
+      clone_limit: 100
