@@ -1,10 +1,10 @@
-import { ContextProvider } from "@holochain-open-dev/context";
+import { ContextProvider } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import {
   ProfilesStore,
   profilesStoreContext,
 } from "@holochain-open-dev/profiles";
-import { InstalledCell } from "@holochain/conductor-api";
+import { InstalledCell } from "@holochain/client";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";

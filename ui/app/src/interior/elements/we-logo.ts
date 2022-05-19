@@ -1,4 +1,4 @@
-import { contextProvided } from "@holochain-open-dev/context";
+import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
@@ -7,6 +7,7 @@ import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
 import { property, query } from "lit/decorators.js";
 import { weContext } from "../../interior/context";
 import { WeStore } from "../../interior/we-store";
+import { WeInfo } from "../types";
 
 export class WeLogo extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
@@ -28,15 +29,23 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
     );
   }
 
-  render() {
-    const name = this._info.value?.name;
-    return html` <sl-tooltip id="tooltip" placement="right" .content=${name}>
+  renderLogo(info: WeInfo) {
+    return html`<sl-tooltip
+      id="tooltip"
+      placement="right"
+      .content=${info.name}
+    >
       <li class="we" @click=${this.handleClick}>
-        ${this._info.loading
-          ? html` <sl-skeleton></sl-skeleton> `
-          : html` <img src="${this._info.value.logo_src}" /> `}
+        <img src="${info.logo_src}" />
       </li>
     </sl-tooltip>`;
+  }
+
+  render() {
+    return this._info.render({
+      pending: () => html` <sl-skeleton></sl-skeleton> `,
+      complete: this.renderLogo,
+    });
   }
 
   static get scopedElements() {

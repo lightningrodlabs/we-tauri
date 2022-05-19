@@ -23,6 +23,7 @@ entry_defs![PathEntry::entry_def()];
 pub struct WeInfo {
     logo_src: String,
     name: String,
+    timestamp: u64,
 }
 
 #[hdk_extern]

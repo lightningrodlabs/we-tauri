@@ -1,9 +1,9 @@
 import { html, css, LitElement } from "lit";
 import { state, query, property } from "lit/decorators.js";
 
-import { contextProvided } from "@holochain-open-dev/context";
+import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import {  wesContext } from "../context";
+import { wesContext } from "../context";
 import { Dialog, TextField, Button } from "@scoped-elements/material-web";
 
 import {

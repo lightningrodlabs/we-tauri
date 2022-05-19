@@ -4,6 +4,7 @@ members = [
   "dnas/we/zomes/games",
   "dnas/we/zomes/profiles",
   "dnas/we/zomes/we",
+  "dnas/we/zomes/peer_status",
 ]
 
 [profile.dev]

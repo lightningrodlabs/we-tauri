@@ -11,3 +11,5 @@ zomes:
     bundled: ../../../target/wasm32-unknown-unknown/release/games.wasm
   - name: profiles
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles.wasm
+  - name: peer_status
+    bundled: ../../../target/wasm32-unknown-unknown/release/peer_status.wasm

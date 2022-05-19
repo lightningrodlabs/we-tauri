@@ -1,10 +1,10 @@
 import { html, LitElement, PropertyValues } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
-  Context,
+  ContextConsumer,
   contextProvided,
   ContextProvider,
-} from "@holochain-open-dev/context";
+} from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import { DnaHashB64 } from "@holochain-open-dev/core-types";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -13,9 +13,14 @@ import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { WeStore } from "../../interior/we-store";
 import { weContext } from "../../interior/context";
+import {
+  ProfilesStore,
+  profilesStoreContext,
+} from "@holochain-open-dev/profiles";
+import { get } from "svelte/store";
 
 export class WeContext extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: wesContext, multiple: true })
+  @contextProvided({ context: wesContext, subscribe: true })
   @state()
   wesStore!: WesStore;
 
@@ -24,10 +29,25 @@ export class WeContext extends ScopedElementsMixin(LitElement) {
 
   _weStore = new StoreSubscriber(this, () => this.wesStore?.weStore(this.weId));
 
-  _provider!: ContextProvider<Context<WeStore>>;
+  _provider!: ContextProvider<typeof weContext>;
+  _profilesProvider!: ContextProvider<typeof profilesStoreContext>;
 
-  firstUpdated() {
-    this._provider = new ContextProvider(this, weContext, this._weStore.value);
+  connectedCallback() {
+    super.connectedCallback();
+
+    const weStore = get(this.wesStore.weStore(this.weId));
+
+    this._provider = new ContextProvider(
+      this,
+      weContext,
+
+      weStore
+    );
+    this._profilesProvider = new ContextProvider(
+      this,
+      profilesStoreContext,
+      weStore.profilesStore
+    );
   }
 
   updated(changedValues: PropertyValues) {
@@ -35,6 +55,7 @@ export class WeContext extends ScopedElementsMixin(LitElement) {
 
     if (changedValues.has("weId")) {
       this._provider.setValue(this._weStore.value);
+      this._profilesProvider.setValue(this._weStore.value.profilesStore);
     }
   }
 

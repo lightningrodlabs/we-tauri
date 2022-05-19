@@ -24,6 +24,8 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     exportConditions: ["browser", "development"],
   },
 
+  clearTerminalOnReload: false,
+  
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto'
 

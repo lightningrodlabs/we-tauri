@@ -23,6 +23,10 @@ import {
   writable,
   Writable,
 } from "svelte/store";
+import { MembraneInvitationsService } from "@holochain-open-dev/membrane-invitations";
+import { encode } from "@msgpack/msgpack";
+import { ProfilesStore } from "@holochain-open-dev/profiles";
+
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { Game, PlayingGame, WeInfo } from "./types";
 import { GameRenderers, WeGame } from "../we-game";
@@ -32,6 +36,7 @@ import { WeService } from "./we-service";
 export class WeStore {
   private gamesService: GamesService;
   private weService: WeService;
+  public profilesStore: ProfilesStore;
 
   private _allGames: Writable<Record<EntryHashB64, Game>> = writable({});
   private _gamesIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
@@ -71,10 +76,13 @@ export class WeStore {
 
   constructor(
     protected cellClient: CellClient,
-    protected adminWebsocket: AdminWebsocket
+    protected weDnaHash: DnaHashB64,
+    protected adminWebsocket: AdminWebsocket,
+    protected membraneInvitationsService: MembraneInvitationsService
   ) {
     this.gamesService = new GamesService(cellClient);
     this.weService = new WeService(cellClient);
+    this.profilesStore = new ProfilesStore(cellClient);
 
     cellClient.addSignalHandler((signal) => {
       const payload = signal.data.payload;
@@ -292,4 +300,34 @@ export class WeStore {
 
     return serializeHash(appInfo.cell_data[0].cell_id[0]);
   } */
+
+  public async inviteToJoin(agentPubKey: AgentPubKeyB64) {
+    const weCell = this.cellClient.cellId;
+    const myAgentPubKey = serializeHash(weCell[1]);
+    const weDnaHash = serializeHash(weCell[0]);
+
+    const info = await this.weService.getInfo();
+
+    const properties = encode(info);
+    console.log(
+      {
+        originalDnaHash: this.weDnaHash,
+        properties,
+        uid: undefined,
+        resultingDnaHash: weDnaHash,
+      } as any,
+      agentPubKey,
+
+    );
+    await this.membraneInvitationsService.inviteToJoinMembrane(
+      {
+        originalDnaHash: this.weDnaHash,
+        properties,
+        uid: undefined,
+        resultingDnaHash: weDnaHash,
+      },
+      agentPubKey,
+      undefined
+    );
+  }
 }

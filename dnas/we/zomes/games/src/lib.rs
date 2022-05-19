@@ -74,10 +74,7 @@ pub fn register_game(input: RegisterGameInput) -> ExternResult<()> {
     let game_hash = hash_entry(input.game)?;
 
     create_link(
-        ExternalHash::from(AnyLinkableHash::from(AgentPubKey::from(
-            input.game_agent_pub_key,
-        )))
-        .into(),
+        EntryHash::from(AgentPubKey::from(input.game_agent_pub_key)),
         game_hash.into(),
         HdkLinkType::Any,
         (), // Maybe game hash?

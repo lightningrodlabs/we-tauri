@@ -1,4 +1,5 @@
-import { contextProvided, provide } from "@holochain-open-dev/context";
+import { contextProvided } from "@lit-labs/context";
+import { ProfilePrompt } from "@holochain-open-dev/profiles";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress, Button } from "@scoped-elements/material-web";
 import { css, html, LitElement, PropertyValues } from "lit";
@@ -8,9 +9,10 @@ import { query, state } from "lit/decorators.js";
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { CreateGameDialog } from "./create-game-dialog";
+import { WeMembers } from "./we-members";
 
-export class WeDetail extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: weContext, multiple: true })
+export class WeDashboard extends ScopedElementsMixin(LitElement) {
+  @contextProvided({ context: weContext, subscribe: true })
   @state()
   _store!: WeStore;
 
@@ -40,43 +42,33 @@ export class WeDetail extends ScopedElementsMixin(LitElement) {
   }
 
   renderContent() {
-    if (!this._selectedGameId)
-      return html`<mwc-button
-          icon="add_circle"
-          @click=${() => this.openGameDialog()}
-          >Add Game</mwc-button
-        >
-        <mwc-button icon="refresh" @click=${() => this.refresh()}
-          >Refresh</mwc-button
-        >`;
+    if (!this._selectedGameId) return html`<we-members></we-members>`;
     else
       return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`;
   }
 
   render() {
-    if (this._info.loading)
-      return html`
-        <div class="column center-content" style="flex: 1;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress>
+    return html`
+      <profile-prompt>
+        <div class="games-list">
+          <we-games></we-games>
+          <img class="game-admin" />
         </div>
-      `;
 
-    return html` <div class="games-list">
-        <div class="we-name">${this._info.value.name}</div>
-        <we-games></we-games>
-        <img class="game-admin" />
-      </div>
+        <div class="content-pane">${this.renderContent()}</div>
 
-      <div class="content-pane">${this.renderContent()}</div>
+        <div class="players">${this.renderPlayers()}</div>
 
-      <div class="players">${this.renderPlayers()}</div>
-
-      <create-game-dialog id="game-dialog"></create-game-dialog>`;
+        <create-game-dialog id="game-dialog"></create-game-dialog>
+      </profile-prompt>
+    `;
   }
 
   static get scopedElements() {
     return {
       "create-game-dialog": CreateGameDialog,
+      "profile-prompt": ProfilePrompt,
+      "we-members": WeMembers,
       "mwc-button": Button,
       "mwc-circular-progress": CircularProgress,
     };

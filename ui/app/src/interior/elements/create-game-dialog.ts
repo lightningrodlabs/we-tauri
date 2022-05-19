@@ -1,8 +1,8 @@
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { contextProvided, provide } from "@holochain-open-dev/context";
-
+import { contextProvided } from "@lit-labs/context";
+import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Card,
@@ -14,7 +14,6 @@ import {
 import { sharedStyles } from "../../sharedStyles";
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 
 export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
@@ -32,9 +31,8 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
   @state()
-  _uiBundle:
-    | { hash: EntryHashB64; setupRenderers: any }
-    | undefined = undefined;
+  _uiBundle: { hash: EntryHashB64; setupRenderers: any } | undefined =
+    undefined;
   @state()
   _invalidUiBundle = false;
 
@@ -53,7 +51,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     );
   }
 
-/* 
+  /* 
   async publishDna() {
     if (this._dnaBundle && this._uiBundle) {
       const result = await this._weStore.createGame(
@@ -125,10 +123,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
         heading="Create Game"
         @closing=${this.handleDialogClosing}
       >
-        <div
-          class="column"
-          style="padding: 16px;"
-        >
+        <div class="column" style="padding: 16px;">
           <mwc-textfield
             id="dna-name"
             label="Name"

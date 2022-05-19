@@ -1,5 +1,5 @@
 import { EntryHashB64 } from "@holochain-open-dev/core-types";
-import { contextProvided } from "@holochain-open-dev/context";
+import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement, PropertyValues } from "lit";
