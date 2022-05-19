@@ -423,7 +423,7 @@ checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
 [[package]]
 name = "hc_zome_membrane_invitations"
 version = "0.0.1"
-source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=for-hdk-v0.0.127#fbf54196247593d1abf0e2eb72a50b0e45248afe"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=for-hdk-v0.0.127#b9913095d1d98e290ba0aa94b482ef3eb4c24663"
 dependencies = [
  "derive_more",
  "hc_zome_membrane_invitations_types",
@@ -434,7 +434,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_membrane_invitations_types"
 version = "0.0.1"
-source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=for-hdk-v0.0.127#fbf54196247593d1abf0e2eb72a50b0e45248afe"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=for-hdk-v0.0.127#b9913095d1d98e290ba0aa94b482ef3eb4c24663"
 dependencies = [
  "derive_more",
  "hdk",
@@ -840,9 +840,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87f3e037eac156d1775da914196f0f37741a274155e34a0b7e427c35d2a2ecb9"
+checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
 
 [[package]]
 name = "opentelemetry"
