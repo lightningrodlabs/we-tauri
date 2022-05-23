@@ -1,4 +1,4 @@
-import { html, LitElement, PropertyValues } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
   ContextConsumer,
@@ -62,4 +62,10 @@ export class WeContext extends ScopedElementsMixin(LitElement) {
   render() {
     return html`<slot></slot>`;
   }
+
+  static styles = css`
+    :host {
+      display: contents;
+    }
+  `;
 }

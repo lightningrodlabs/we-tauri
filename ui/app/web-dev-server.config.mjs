@@ -25,7 +25,21 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   },
 
   clearTerminalOnReload: false,
-  
+
+  middleware: [
+    async (ctx, next) => {
+      if (ctx.request.url.includes(".launcher-env.json", undefined)) {
+        ctx.body = {
+          APP_INTERFACE_PORT: process.env.HC_PORT,
+          ADMIN_INTERFACE_PORT: process.env.ADMIN_PORT,
+          INSTALLED_APP_ID: "we",
+        };
+      }
+
+      return next();
+    },
+  ],
+
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto'
 

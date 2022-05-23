@@ -8,6 +8,7 @@ import {
   IconButton,
   Button,
   CircularProgress,
+  Fab,
 } from "@scoped-elements/material-web";
 import { classMap } from "lit/directives/class-map.js";
 import { DnaHashB64 } from "@holochain-open-dev/core-types";
@@ -37,36 +38,41 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
   _weDialog!: CreateWeDialog;
 
   renderWeList(wes: Record<DnaHashB64, WeStore>) {
-    return html`<div class="wes">
-      ${Object.keys(wes).map(
-        (weId) =>
-          html`
-            <we-context .weId=${weId}>
-              <we-logo
-                class=${classMap({ highlighted: weId === this._selectedWeId })}
-                @click=${() => (this._selectedWeId = weId)}
-              ></we-logo>
-            </we-context>
-          `
-      )}
-    </div> `;
+    return Object.keys(wes).map(
+      (weId) =>
+        html`
+          <we-context .weId=${weId}>
+            <we-logo
+              style="margin-top: 8px; border-radius: 50%"
+              class=${classMap({ highlighted: weId === this._selectedWeId })}
+              @click=${() => (this._selectedWeId = weId)}
+            ></we-logo>
+          </we-context>
+        `
+    );
   }
 
   renderContent(wes: Record<DnaHashB64, WeStore>) {
     return html`
       <div class="row" style="flex: 1">
-        <div class="wes-list">
-          <mwc-icon-button
+        <div
+          class="column"
+          style="padding: 8px; align-items: center; background-color: #303F9F"
+        >
+          <mwc-fab
             icon="home"
-            class="wes-admin"
             @click=${() => (this._selectedWeId = undefined)}
-          ></mwc-icon-button>
+          ></mwc-fab>
 
           ${this.renderWeList(wes)}
 
-          <mwc-button icon="add_circle" @click=${() => this._weDialog.open()}
-            >Add We</mwc-button
-          >
+          <mwc-fab
+            icon="group_add"
+            @click=${() => this._weDialog.open()}
+            style="margin-top: 8px;"
+          ></mwc-fab>
+
+          <span style="flex: 1"></span>
 
           <holo-identicon .hash=${this.wesStore.myAgentPubKey}></holo-identicon>
         </div>
@@ -74,7 +80,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
         ${this._selectedWeId
           ? html`
               <we-context .weId=${this._selectedWeId}>
-                <we-dashboard></we-dashboard>
+                <we-dashboard style="flex: 1"></we-dashboard>
               </we-context>
             `
           : html`<my-invitations></my-invitations>`}
@@ -98,6 +104,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
       "mwc-icon-button": IconButton,
       "mwc-circular-progress": CircularProgress,
       "mwc-button": Button,
+      "mwc-fab": Fab,
       "holo-identicon": HoloIdenticon,
       "create-we-dialog": CreateWeDialog,
       "my-invitations": MyInvitations,
@@ -114,20 +121,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
         :host {
           display: flex;
         }
-        .wes-list {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          background-color: darkgrey;
-          padding: 5px;
-        }
-        .wes-admin {
-          height: 50px;
-          width: 50px;
-          padding-top: 5px;
-          flex-grow: 0;
-          border-top: solid 1px gray;
-        }
+
         @media (min-width: 640px) {
           main {
             max-width: none;

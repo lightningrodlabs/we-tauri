@@ -3,15 +3,10 @@ import { state, query, property } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { wesContext } from "../context";
 import { Dialog, TextField, Button } from "@scoped-elements/material-web";
+import { SelectAvatar } from "@holochain-open-dev/utils";
 
-import {
-  EntryHashB64,
-  HeaderHashB64,
-  AgentPubKeyB64,
-  serializeHash,
-} from "@holochain-open-dev/core-types";
+import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { sharedStyles } from "../../sharedStyles";
 
@@ -24,35 +19,25 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   _store!: WesStore;
 
   async open() {
-    this._nameField.value = "";
-    this._logoUrlField.value = "";
+    this._name = "";
+    this._logoSrc = "";
     this._dialog.show();
   }
 
   /** Private properties */
   @query("#dialog")
   _dialog!: Dialog;
-  @query("#name-field")
-  _nameField!: TextField;
-  @query("#logo-url-field")
-  _logoUrlField!: TextField;
+  @state()
+  _name: string | undefined;
+  @state()
+  _logoSrc: string | undefined;
 
   private async handleOk(e: any) {
-    const valid =
-      this._logoUrlField.validity.valid && this._nameField.validity.valid;
-    if (!this._nameField.validity.valid) {
-      this._nameField.reportValidity();
-    }
-    if (!this._logoUrlField.validity.valid) {
-      this._logoUrlField.reportValidity();
-    }
-    if (!valid) return;
-
-    await this._store.createWe(this._nameField.value, this._logoUrlField.value);
+    await this._store.createWe(this._name!, this._logoSrc!);
 
     this.dispatchEvent(
       new CustomEvent("we-added", {
-        detail: this._nameField.value,
+        detail: this._name,
         bubbles: true,
         composed: true,
       })
@@ -60,30 +45,25 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     this._dialog.close();
   }
 
-  private async handleDialog(e: any) {}
-
   render() {
     return html`
-      <mwc-dialog id="dialog" heading="hApp" @closing=${this.handleDialog}>
+      <mwc-dialog id="dialog" heading="Create We">
+        <select-avatar
+          @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
+        ></select-avatar>
+
         <mwc-textfield
-          @input=${() => this._nameField.reportValidity()}
-          id="name-field"
+          @input=${(e) => (this._name = e.target.value)}
           label="Name"
-          autoValidate="true"
+          autoValidate
           required
           outlined
         ></mwc-textfield>
-        <mwc-textfield
-          @input=${() => this._logoUrlField.reportValidity()}
-          id="logo-url-field"
-          label="Logo Image URL"
-          autoValidate="true"
-          required
-          outlined
-        ></mwc-textfield>
+
         <mwc-button
           id="primary-action-button"
           slot="primaryAction"
+          .disabled=${!this._name || !this._logoSrc}
           @click=${this.handleOk}
           >ok</mwc-button
         >
@@ -95,6 +75,7 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   }
   static get scopedElements() {
     return {
+      "select-avatar": SelectAvatar,
       "mwc-button": Button,
       "mwc-dialog": Dialog,
       "mwc-textfield": TextField,

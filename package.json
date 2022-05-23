@@ -9,20 +9,24 @@
   "scripts": {
     "start": "npm run build:happ && npm run start:agent",
     "network": "npm run build:happ && concurrently-repeat \"npm run start:agent\"",
-    "start:agent": "cross-env HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"npm run start:happ\" \"npm run start -w we\"",
+    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 15 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && npm t -w tests",
     "start:happ": "RUST_LOG=warn hc s -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "playground": "run-singleton \"holochain-playground\""
+    "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle -a DevHub ./DevHub/DevHub.happ wetest1 && npm run devhub:ui",
+    "devhub:ui": "wds --config devhub-wds.mjs",
+    "playground": "run-singleton \"holochain-playground\"",
+    "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/launcher/releases/download/v0.3.9/DevHub.webhapp && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.8",
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
     "cross-env": "^7.0.3",
+    "extract-zip-relative-path": "^2.0.4",
     "json-parse-better-errors": "^1.0.2",
     "new-port-cli": "^1.0.0",
     "rimraf": "^3.0.2",

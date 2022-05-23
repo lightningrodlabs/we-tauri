@@ -35,9 +35,7 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
       placement="right"
       .content=${info.name}
     >
-      <li class="we" @click=${this.handleClick}>
-        <img src="${info.logo_src}" />
-      </li>
+      <img class="we" src="${info.logo_src}" @click=${this.handleClick} />
     </sl-tooltip>`;
   }
 
@@ -57,15 +55,15 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
 
   static get styles() {
     return css`
-      .we {
-        border-radius: 10%;
+      :host {
+        display: flex;
       }
-      .we > img {
+      .we {
+        cursor: pointer;
         border-radius: 50%;
         width: 50px;
         height: 50px;
         object-fit: cover;
-        pointer-events: none;
       }
     `;
   }

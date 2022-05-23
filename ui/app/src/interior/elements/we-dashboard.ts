@@ -1,7 +1,7 @@
 import { contextProvided } from "@lit-labs/context";
 import { ProfilePrompt } from "@holochain-open-dev/profiles";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { CircularProgress, Button } from "@scoped-elements/material-web";
+import { CircularProgress, Button, Fab } from "@scoped-elements/material-web";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import { query, state } from "lit/decorators.js";
@@ -17,14 +17,13 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   _store!: WeStore;
 
   _info = new TaskSubscriber(this, () => this._store.fetchInfo());
+
+  _games = new TaskSubscriber(this, () => this._store.fetchAllGames());
+
   _selectedGameId; // = new StoreSubscriber(this, () => this._store.selectedGameId);
 
   @query("#game-dialog")
   _gameDialog!: CreateGameDialog;
-
-  async openGameDialog() {
-    this._gameDialog.open();
-  }
 
   updated(changedValues: PropertyValues) {
     super.updated(changedValues);
@@ -47,13 +46,20 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`;
   }
 
+  renderGamesList() {
+    return html`
+      <div class="column">
+        <we-games></we-games>
+
+        <mwc-fab icon="add" @click=${() => this._gameDialog.open()}></mwc-fab>
+      </div>
+    `;
+  }
+
   render() {
     return html`
-      <profile-prompt>
-        <div class="games-list">
-          <we-games></we-games>
-          <img class="game-admin" />
-        </div>
+      <profile-prompt style="flex: 1;">
+        ${this.renderGamesList()}
 
         <div class="content-pane">${this.renderContent()}</div>
 
@@ -70,6 +76,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "profile-prompt": ProfilePrompt,
       "we-members": WeMembers,
       "mwc-button": Button,
+      "mwc-fab": Fab,
       "mwc-circular-progress": CircularProgress,
     };
   }
@@ -77,31 +84,16 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   static get styles() {
     return css`
       :host {
-        display: contents;
-      }
-      .games-list {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 5px;
-        background-color: lightgrey;
       }
-      we-games {
-        flex-grow: 0;
-      }
+
       .we-name {
         text-align: center;
         border-bottom: solid 1px gray;
         margin-bottom: 5px;
         width: 100%;
       }
-      .game-admin {
-        height: 50px;
-        width: 50px;
-        padding: 5px;
-        flex-grow: 0;
-        border-top: solid 1px gray;
-      }
+
       .content-pane {
         flex-grow: 1;
         padding: 10px;
