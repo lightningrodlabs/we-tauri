@@ -28,8 +28,8 @@ pub struct WeInfo {
 
 #[hdk_extern]
 fn get_info(_: ()) -> ExternResult<WeInfo> {
-    let zome_info = dna_info()?;
-    let properties = WeInfo::try_from(zome_info.properties)?;
+    let dna_info = dna_info()?;
+    let properties = WeInfo::try_from(dna_info.properties)?;
     Ok(properties)
 }
 /* 
