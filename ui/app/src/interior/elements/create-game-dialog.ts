@@ -14,6 +14,7 @@ import {
 import { sharedStyles } from "../../sharedStyles";
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
+import { getAllPublishedApps } from "../../processes/devhub/get-happs";
 
 export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
@@ -48,6 +49,18 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       !this._logoUrl ||
       !this._logoUrl.value ||
       this._invalidUiBundle
+    );
+  }
+
+  async firstUpdated() {
+    const installedApps = await this._weStore.adminWebsocket.listApps({});
+    const devhubHapp = installedApps.find(
+      (app) => app.installed_app_id === "DevHub"
+    )!;
+
+    const apps = await getAllPublishedApps(
+      this._weStore.appWebsocket,
+      devhubHapp
     );
   }
 

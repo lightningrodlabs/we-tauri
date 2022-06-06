@@ -77,7 +77,7 @@ export class WeStore {
   constructor(
     protected cellClient: CellClient,
     protected weDnaHash: DnaHashB64,
-    protected adminWebsocket: AdminWebsocket,
+    public adminWebsocket: AdminWebsocket,
     protected membraneInvitationsService: MembraneInvitationsService
   ) {
     this.gamesService = new GamesService(cellClient);

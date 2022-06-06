@@ -16,36 +16,7 @@ export interface GameBlock {
   render: Renderer;
 }
 
-// In the context of an already installed we
-//  - Install game
-//  - Fork game from a we to another
-
-export type InstallGameResult =
-  | {
-      success: true;
-      gameInfo: InstalledAppInfo;
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
 export interface WeGame {
-  createGameRenderer?: (
-    appBundle: AppBundle,
-    weStore: WeStore,
-    resolve: (gameInfo: InstalledAppInfo) => void,
-    reject: (error: string) => void
-  ) => Renderer;
-
-  forkGameRenderer?: (
-    appBundle: AppBundle,
-    fromWe: WeStore,
-    fromCells: InstalledCell[],
-    toWe: WeStore,
-    resolve: (gameInfo: InstalledAppInfo) => void,
-    reject: (error: string) => void
-  ) => Renderer;
 
   gameRenderers: (
     weStore: WeStore,
