@@ -10,6 +10,7 @@ import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { CreateGameDialog } from "./create-game-dialog";
 import { WeMembers } from "./we-members";
+import { InstallableGames } from "./installable-games";
 
 export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -41,9 +42,18 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderContent() {
-    if (!this._selectedGameId) return html`<we-members></we-members>`;
-    else
+    if (!this._selectedGameId) {
+      return html`
+        <div class="column">
+          <h2>Members</h2>
+          <we-members></we-members>
+          <h2>Available hApps on the DevHub:</h2>
+          <installable-games></installable-games>
+    </div>
+        `;
+    } else {
       return html`<we-game .gameHash=${this._selectedGameId.value}></we-game>`;
+    }
   }
 
   renderGamesList() {
@@ -75,6 +85,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "create-game-dialog": CreateGameDialog,
       "profile-prompt": ProfilePrompt,
       "we-members": WeMembers,
+      "installable-games": InstallableGames,
       "mwc-button": Button,
       "mwc-fab": Fab,
       "mwc-circular-progress": CircularProgress,

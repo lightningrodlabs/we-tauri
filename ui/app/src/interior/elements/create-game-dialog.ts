@@ -9,6 +9,7 @@ import {
   Button,
   Snackbar,
   Dialog,
+  CircularProgress,
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
@@ -37,6 +38,12 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _invalidUiBundle = false;
 
+  @state()
+  _installableGames;
+
+  @state()
+  private _loading = true;
+
   open() {
     this._gameDialog.show();
   }
@@ -58,13 +65,17 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       (app) => app.installed_app_id === "DevHub"
     )!;
 
-    const apps = await getAllPublishedApps(
+    this._installableGames = await getAllPublishedApps(
       this._weStore.appWebsocket,
       devhubHapp
     );
+
+    this._loading = false;
+
   }
 
-  /* 
+
+  /*
   async publishDna() {
     if (this._dnaBundle && this._uiBundle) {
       const result = await this._weStore.createGame(
@@ -117,6 +128,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     this._logoUrl.value = "";
   }
 
+
   renderErrorSnackbar() {
     return html`
       <mwc-snackbar id="error-snackbar" labelText="Invalid UI bundle">
@@ -129,6 +141,25 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
   render() {
+
+    if (this._loading) {
+      return html`
+        ${this.renderErrorSnackbar()}
+        <mwc-dialog
+          id="game-dialog"
+          heading="Create Game"
+          @closing=${this.handleDialogClosing}
+        >
+        <mwc-circular-progress indeterminate></mwc-circular-progress>
+
+        </mwc-dialog>
+      </div>`;
+    }
+
+    // this.getInstallableGames();
+    console.log("installable games within render: ", this._installableGames);
+    console.log("type: ", typeof this._installableGames)
+
     return html`
       ${this.renderErrorSnackbar()}
       <mwc-dialog
@@ -137,6 +168,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
         @closing=${this.handleDialogClosing}
       >
         <div class="column" style="padding: 16px;">
+
           <mwc-textfield
             id="dna-name"
             label="Name"
@@ -184,6 +216,8 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-dialog": Dialog,
       "mwc-snackbar": Snackbar,
+      'mwc-circular-progress': CircularProgress,
+
     };
   }
 

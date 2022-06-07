@@ -190,48 +190,24 @@ export class WeStore {
 
     return renderers;
   }
-  /*
-  // Installs the given game to the conductor, and registers it in the We DNA
-  async createGame(
-    dnaFile: File,
-    setupRenderers: SetupRenderers,
-    gameInput: AddGameInput
-  ): Promise<EntryHashB64> {
-    // Install game
-    const name = this.gameUid(gameInput.name);
 
-    const dnaHash = await this.installGame(dnaFile, name);
+  // // Installs the given game to the conductor, and registers it in the We DNA
+  // async createGame(
+  //   happReleaseEntryHash: EntryHash
+  // ): Promise<EntryHashB64> {
 
-    const game: Game = {
-      dna_file_hash: gameInput.dna_file_hash,
-      ui_file_hash: gameInput.ui_file_hash,
-      dna_hash: dnaHash,
-      logo_src: gameInput.logo_src,
-      name: gameInput.name,
-      meta: {},
-    };
+  //   // call fetchWebHapp from processes/devhub
 
-    const hash: EntryHashB64 = await this.service.createGame(game);
+  //   // decompress bytearray
 
-    // Call we to get the who cellId
-    this.state.update((s) => {
-      s.games[hash] = game;
-      s.renderers[hash] = setupRenderers(
-        this.appWebsocket,
-        this.cellData,
-        this.whoCellData
-      );
-      s.gamesAlreadyPlaying[hash] = true;
-      s.selectedGame = hash;
-      this.service.notify(
-        { gameHash: hash, message: { type: "NewGame", content: game } },
-        Object.keys(s.players)
-      );
-      return s;
-    });
-    return hash;
-  }
+  //   // decompress .happ --> appBundle object --> call AdminWebsocket.install()
 
+  //   //
+
+
+  // }
+
+/*
   gameUid(gameName: string) {
     return `wegame-${get(this.state).name}-game-${gameName}`;
   }
