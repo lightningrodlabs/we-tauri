@@ -43,7 +43,7 @@ export class WeStore {
     writable({});
   private _gameRenderers: Writable<Record<EntryHashB64, GameRenderers>> =
     writable({});
-  /* 
+  /*
   public game(gameHash: EntryHashB64): Readable<
     | {
         info: Game;
@@ -63,7 +63,7 @@ export class WeStore {
   }
  */
   public get appWebsocket(): AppWebsocket {
-    return (this.cellClient as any).appWebsocket;
+    return (this.cellClient as any).client.appWebsocket;
   }
 
   public get myAgentPubKey(): AgentPubKeyB64 {
@@ -190,7 +190,7 @@ export class WeStore {
 
     return renderers;
   }
-  /* 
+  /*
   // Installs the given game to the conductor, and registers it in the We DNA
   async createGame(
     dnaFile: File,
