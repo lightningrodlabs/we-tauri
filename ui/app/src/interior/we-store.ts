@@ -14,6 +14,9 @@ import {
   InstalledAppInfoStatus,
   InstalledAppInfo,
   InstalledCell,
+  EntryHash,
+  InstalledAppId,
+  AgentPubKey,
 } from "@holochain/client";
 import {
   derived,
@@ -28,10 +31,14 @@ import { encode } from "@msgpack/msgpack";
 import { ProfilesStore } from "@holochain-open-dev/profiles";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
+import { fetchWebHapp } from "../processes/devhub/get-happs";
 import { Game, PlayingGame, WeInfo } from "./types";
 import { GameRenderers, WeGame } from "../we-game";
 import { GamesService } from "./games-service";
 import { WeService } from "./we-service";
+import { Gunzip } from "zlibt2";
+import { uuid } from 'uuidv4';
+
 
 export class WeStore {
   private gamesService: GamesService;
@@ -66,13 +73,19 @@ export class WeStore {
     return (this.cellClient as any).client.appWebsocket;
   }
 
-  public get myAgentPubKey(): AgentPubKeyB64 {
+  public get myAgentPubKeyB64(): AgentPubKeyB64 {
     return serializeHash(this.cellClient.cellId[1]);
+  }
+
+  public get myAgentPubKey(): AgentPubKey {
+    return this.cellClient.cellId[1];
   }
 
   public get cellData(): InstalledCell {
     return (this.cellClient as any).cellData;
   }
+
+
 
   constructor(
     protected cellClient: CellClient,
@@ -97,6 +110,13 @@ export class WeStore {
           break;
       }
     });
+  }
+
+  public async getDevhubHapp(): Promise<InstalledAppInfo> {
+    const installedApps = await this.adminWebsocket.listApps({});
+    return installedApps.find(
+      (app) => app.installed_app_id === "DevHub"
+    )!;
   }
 
   async fetchInfo(): Promise<Readable<WeInfo>> {
@@ -191,17 +211,81 @@ export class WeStore {
     return renderers;
   }
 
-  // // Installs the given game to the conductor, and registers it in the We DNA
+
+
+  // Installs the given game to the conductor, and registers it in the We DNA
   // async createGame(
-  //   happReleaseEntryHash: EntryHash
+  //   happReleaseEntryHash: EntryHash,
+  //   installedAppId: InstalledAppId,
   // ): Promise<EntryHashB64> {
 
   //   // call fetchWebHapp from processes/devhub
 
-  //   // decompress bytearray
+
+
+  //   const compressedWebHapp = await fetchWebHapp(
+  //     this.appWebsocket,
+  //     await this.getDevhubHapp(),
+  //     "hApp", // This is chosen arbitrary at the moment
+  //     happReleaseEntryHash,
+  //     )
+
+  //   // decompress bytearray into .happ and ui.zip (zlibt2)
+
+  //   const gunzip = new Gunzip(compressedWebHapp);
+  //   const bundle = gunzip.decompress();
+  //   // find out format of this decompressed object (see /devhub-dnas/zomes/happ_library/src/packaging.rs --> get_webhapp_package)
+  //   const webappManifest = bundle.manifest;
+  //   const resources = bundle.resources;
+
+  //   const ui = resources[webappManifest.ui.bundled];
+  //   const compressedHapp = resources[webappManifest.happ_manifest.bundled];
 
   //   // decompress .happ --> appBundle object --> call AdminWebsocket.install()
+  //   const decompressedHapp = new Gunzip(compressedHapp);
 
+  //   const decompressedBundle = {
+  //     // ???
+  //     }
+  //   }
+  //   // bundle: {
+  //   //   manifest: {
+  //   //     manifest_version: "1",
+  //   //     name,
+  //   //     roles: [
+  //   //       {
+  //   //         id: "game",
+  //   //         dna: {
+  //   //           bundled: "dna",
+  //   //           uid: name,
+  //   //           properties: {},
+  //   //         } as any,
+  //   //       },
+  //   //     ],
+  //   //   },
+  //   //   resources: {
+  //   //     dna: Array.from(new Uint8Array(await dnaFile.arrayBuffer())) as any,
+  //   //   },
+  //   // replace .happ resource with n
+
+  //   const request: InstallAppBundleRequest = {
+  //     agent_key: this.myAgentPubKey,
+  //     installed_app_id: installedAppId,
+  //     membrane_proofs: {},
+  //     bundle: bundle, // ????   how does the bundle need to look like?
+  //     uid: uuid(),
+  //   }
+
+  //   this.adminWebsocket.installAppBundle(request);
+
+  // //   export declare type InstallAppBundleRequest = {
+  // //     agent_key: AgentPubKey;
+  // //     installed_app_id?: InstalledAppId;
+  // //     membrane_proofs: {
+  // //         [key: string]: MembraneProof;
+  // //     };
+  // //     uid?: Uid;
+  // // }
   //   //
 
 

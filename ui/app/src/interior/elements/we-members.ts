@@ -26,6 +26,7 @@ export class WeMembers extends ScopedElementsMixin(LitElement) {
     return html`
       <div>
         <list-profiles></list-profiles>
+        <h4>invite new member:</h4>
         <mwc-textfield
           label="Agent Pub Key"
           id="pubkey-field"

@@ -38,7 +38,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
 
-    return html` <wes-dashboard style="flex: 1"></wes-dashboard> `;
+    return html` <wes-dashboard style="flex: 1;"></wes-dashboard> `;
   }
 
   static get scopedElements() {

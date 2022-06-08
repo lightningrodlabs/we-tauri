@@ -34,10 +34,11 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
 
 
   async firstUpdated() {
-    const installedApps = await this._weStore.adminWebsocket.listApps({});
-    const devhubHapp = installedApps.find(
-      (app) => app.installed_app_id === "DevHub"
-    )!;
+    // const installedApps = await this._weStore.adminWebsocket.listApps({});
+    // const devhubHapp = installedApps.find(
+    //   (app) => app.installed_app_id === "DevHub"
+    // )!;
+    const devhubHapp = await this._weStore.getDevhubHapp();
 
     this._installableGames = await getAllPublishedApps(
       this._weStore.appWebsocket,
@@ -53,9 +54,11 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
     console.log("game: ", game);
     return html`
       <mwc-card class="game-card">
-        <h2 style="padding: 5px; margin:0;">${game.title}</h2>
-        <h3 style="padding: 5px; margin: 0;">${game.subtitle}</h3>
-        <div style="overflow-y: auto; padding: 5px;">${game.description}</div>
+        <div style="height: 145px;">
+          <h2 style="padding: 5px; margin:0;">${game.title}</h2>
+          <h3 style="padding: 5px; margin: 0;">${game.subtitle}</h3>
+          <div style="height: 70px; overflow-y: auto; padding: 5px;">${game.description}</div>
+        </div>
         <mwc-button>INSTALL</mwc-button>
       </mwc-card>
     `;
@@ -69,7 +72,7 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
       `;
 
     return html`
-      <div style="display: flex;">
+      <div style="display: flex; flex-wrap: wrap;">
         ${this._installableGames.map((item: any) => {
           let game: GameDescription = {
             title: item.app.content.title,
@@ -94,7 +97,7 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
 
   static localStyles = css`
   .game-card {
-      max-width: 300px;
+      width: 300px;
       height: 180px;
       margin: 10px;
   }

@@ -56,8 +56,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
     return html`
       <div class="row" style="flex: 1">
         <div
-          class="column"
-          style="padding: 8px; align-items: center; background-color: #303F9F"
+          class="column wes-sidebar"
         >
           <mwc-fab
             icon="home"
@@ -77,15 +76,18 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           <holo-identicon .hash=${this.wesStore.myAgentPubKey}></holo-identicon>
         </div>
 
-        ${this._selectedWeId
-          ? html`
-              <we-context .weId=${this._selectedWeId}>
-                <we-dashboard style="flex: 1"></we-dashboard>
-              </we-context>
-            `
-          : html`<my-invitations></my-invitations>`}
+        <div style="margin-left: 72px; width: 100%;">
+          ${this._selectedWeId
+            ? html`
+                <we-context .weId=${this._selectedWeId}>
+                  <we-dashboard style="flex: 1;"></we-dashboard>
+                </we-context>
+              `
+            : html`<my-invitations></my-invitations>`}
+        </div>
 
         <create-we-dialog id="we-dialog"></create-we-dialog>
+
       </div>
     `;
   }
@@ -122,13 +124,23 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           display: flex;
         }
 
+        .wes-sidebar {
+          padding: 8px;
+          align-items: center;
+          background-color: #303F9F;
+          position: fixed;
+          top: 0;
+          height: 100vh;
+          z-index: 1;
+        }
+
         @media (min-width: 640px) {
           main {
             max-width: none;
           }
         }
         .highlighted {
-          border: black 2px solid;
+          border: white 4px solid;
         }
       `,
     ];

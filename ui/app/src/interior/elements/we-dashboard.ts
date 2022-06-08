@@ -47,8 +47,10 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         <div class="column">
           <h2>Members</h2>
           <we-members></we-members>
-          <h2>Available hApps on the DevHub:</h2>
-          <installable-games></installable-games>
+          <h2 style="margin-top: 100px;">hApps available on the DevHub</h2>
+          <div style="background: #ecebff; border-radius: 8px; padding: 10px;" >
+            <installable-games></installable-games>
+          </div>
     </div>
         `;
     } else {
@@ -58,7 +60,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
   renderGamesList() {
     return html`
-      <div class="column">
+      <div class="column we-sidebar">
         <we-games></we-games>
 
         <mwc-fab icon="add" @click=${() => this._gameDialog.open()}></mwc-fab>
@@ -98,6 +100,19 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         display: flex;
       }
 
+      h2 {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .we-sidebar {
+        padding: 8px;
+        background: #9ca5e3;
+        position: fixed;
+        top: 0;
+        height: 100vh;
+        z-index: 1;
+      }
+
       .we-name {
         text-align: center;
         border-bottom: solid 1px gray;
@@ -107,9 +122,15 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
       .content-pane {
         flex-grow: 1;
-        padding: 10px;
+        padding: 30px;
+        margin-left: 72px;
+        margin-right: 40px;
+        width: 100%;
       }
       .players {
+        position: fixed;
+        top: 0;
+        right: 0;
         width: 40px;
         background-color: lightgrey;
         height: 100vh;
