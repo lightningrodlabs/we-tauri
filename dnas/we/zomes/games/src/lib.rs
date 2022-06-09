@@ -64,11 +64,16 @@ pub struct GameGui(SerializedBytes);
 pub struct RegisterGameInput {
     pub game_agent_pub_key: AgentPubKeyB64,
     pub game: Game,
-    pub gui_file: GameGui,
 }
+
+#[hdk_extern]
+pub fn commit_gui_file(input: GameGui) -> ExternResult<EntryHashB64> {
+    create_entry(&input)?;
+    Ok(hash_entry(&input)?.into())
+}
+
 #[hdk_extern]
 pub fn register_game(input: RegisterGameInput) -> ExternResult<()> {
-    create_entry(input.gui_file)?;
     create_entry(&input.game)?;
 
     let game_hash = hash_entry(input.game)?;

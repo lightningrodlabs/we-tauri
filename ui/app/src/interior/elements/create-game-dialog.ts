@@ -16,19 +16,17 @@ import { sharedStyles } from "../../sharedStyles";
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { getAllPublishedApps } from "../../processes/devhub/get-happs";
+import { GameInfo } from "../types";
 
 export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
   _weStore!: WeStore;
 
-  @query("#dna-name")
-  _nameField!: TextField;
-
-  @query("#logo-url")
-  _logoUrl!: TextField;
-
   @query("#game-dialog")
   _gameDialog!: Dialog;
+
+  @query("#installed-app-id")
+  _installedAppIdField!: TextField;
 
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
@@ -44,35 +42,27 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @state()
   private _loading = true;
 
-  open() {
+  @property()
+  _gameInfo: GameInfo = {
+    title: "",
+    subtitle: "",
+    description: "",
+    entryHash: new Uint8Array(0),
+    icon: undefined,
+  };
+
+  open(gameInfo: GameInfo) {
     this._gameDialog.show();
+    this._gameInfo = gameInfo;
   }
 
   get publishDisabled() {
     return (
-      !this._dnaBundle ||
-      !this._nameField ||
-      !this._nameField.value ||
-      !this._logoUrl ||
-      !this._logoUrl.value ||
-      this._invalidUiBundle
+      !this._installedAppIdField
     );
   }
 
-  async firstUpdated() {
-    const installedApps = await this._weStore.adminWebsocket.listApps({});
-    const devhubHapp = installedApps.find(
-      (app) => app.installed_app_id === "DevHub"
-    )!;
-
-    this._installableGames = await getAllPublishedApps(
-      this._weStore.appWebsocket,
-      devhubHapp
-    );
-
-    this._loading = false;
-
-  }
+  // this._weStore.createGame(gameInfo, "placeholder")
 
 
   /*
@@ -123,76 +113,79 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     }
   }
  */
-  public handleDialogClosing() {
-    this._nameField.value = "";
-    this._logoUrl.value = "";
+
+  async createGame() {
+    await this._weStore.createGame(this._gameInfo, this._installedAppIdField.value)
+      .then(
+        () => (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show()
+      ).catch(
+        (e) => {
+          (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+          console.log("Installation error:", e);
+        }
+      );
   }
 
+  // public async handleDialogClosing() {$
+  // }
+
+
+  // renderErrorSnackbar() {
+  //   return html`
+  //     <mwc-snackbar id="error-snackbar" labelText="Installation failed!">
+  //       <mwc-button
+  //         slot="action"
+  //         label="See Documentation"
+  //         @click=${() => window.open("https://github.com/compository/lib")}
+  //       ></mwc-button>
+  //     </mwc-snackbar>
+  //   `;
+  // }
 
   renderErrorSnackbar() {
     return html`
-      <mwc-snackbar id="error-snackbar" labelText="Invalid UI bundle">
-        <mwc-button
-          slot="action"
-          label="See Documentation"
-          @click=${() => window.open("https://github.com/compository/lib")}
-        ></mwc-button>
+      <mwc-snackbar id="error-snackbar" labelText="Installation failed! (See console for details)">
       </mwc-snackbar>
     `;
   }
+
+  renderSuccessSnackbar() {
+    return html`
+      <mwc-snackbar id="success-snackbar" labelText="Installation successful" style="text-align: center"></mwc-snackbar>
+    `
+  }
+
+
   render() {
-
-    if (this._loading) {
-      return html`
-        ${this.renderErrorSnackbar()}
-        <mwc-dialog
-          id="game-dialog"
-          heading="Create Game"
-          @closing=${this.handleDialogClosing}
-        >
-        <mwc-circular-progress indeterminate></mwc-circular-progress>
-
-        </mwc-dialog>
-      </div>`;
-    }
-
-    // this.getInstallableGames();
-    console.log("installable games within render: ", this._installableGames);
-    console.log("type: ", typeof this._installableGames)
 
     return html`
       ${this.renderErrorSnackbar()}
+      ${this.renderSuccessSnackbar()}
       <mwc-dialog
         id="game-dialog"
-        heading="Create Game"
-        @closing=${this.handleDialogClosing}
+        heading="Add Custom Name"
       >
         <div class="column" style="padding: 16px;">
 
           <mwc-textfield
-            id="dna-name"
-            label="Name"
+            id="installed-app-id"
+            label="Custom Name"
             required
             outlined
             autoValidate
+            value=${this._gameInfo.title}
             @input=${() => this.requestUpdate()}
             style="margin-bottom: 24px;"
+            dialogInitialFocus
           ></mwc-textfield>
           <mwc-textfield
             id="logo-url"
-            label="Logo Url"
-            required
+            label="Logo Url (optional)"
             outlined
             autoValidate
             @input=${() => this.requestUpdate()}
             style="margin-bottom: 24px;"
           ></mwc-textfield>
-
-          <span style="margin-bottom: 8px;">DNA Bundle (required)</span>
-
-          <span style="margin-bottom: 8px; margin-top: 24px;"
-            >UI Bundle File (optional)</span
-          >
         </div>
 
         <mwc-button
@@ -204,7 +197,9 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
           id="primary-action-button"
           .disabled=${this.publishDisabled}
           slot="primaryAction"
-          label="CREATE"
+          dialogAction="close"
+          label="INSTALL"
+          @click=${() => this.createGame()}
         ></mwc-button>
       </mwc-dialog>
     `;

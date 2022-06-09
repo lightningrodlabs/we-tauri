@@ -63,7 +63,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       <div class="column we-sidebar">
         <we-games></we-games>
 
-        <mwc-fab icon="add" @click=${() => this._gameDialog.open()}></mwc-fab>
       </div>
     `;
   }

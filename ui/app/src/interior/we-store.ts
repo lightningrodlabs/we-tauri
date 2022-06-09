@@ -17,6 +17,7 @@ import {
   EntryHash,
   InstalledAppId,
   AgentPubKey,
+  AppBundle,
 } from "@holochain/client";
 import {
   derived,
@@ -32,13 +33,13 @@ import { ProfilesStore } from "@holochain-open-dev/profiles";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
-import { Game, PlayingGame, WeInfo } from "./types";
+import { Game, GameInfo, PlayingGame, WeInfo } from "./types";
 import { GameRenderers, WeGame } from "../we-game";
 import { GamesService } from "./games-service";
 import { WeService } from "./we-service";
-import { Gunzip } from "zlibt2";
-import { uuid } from 'uuidv4';
-
+import { decompressSync } from "fflate";
+import { decode } from "@msgpack/msgpack";
+import { v4 as uuidv4 } from 'uuid';
 
 export class WeStore {
   private gamesService: GamesService;
@@ -214,82 +215,102 @@ export class WeStore {
 
 
   // Installs the given game to the conductor, and registers it in the We DNA
-  // async createGame(
-  //   happReleaseEntryHash: EntryHash,
-  //   installedAppId: InstalledAppId,
-  // ): Promise<EntryHashB64> {
+  async createGame(
+    gameInfo: GameInfo,
+    installedAppId: InstalledAppId,
+  ): Promise<void> {
 
-  //   // call fetchWebHapp from processes/devhub
+    // --- Installing ---
 
+    const devhubHapp = await this.getDevhubHapp();
 
+    const compressedWebHapp = await fetchWebHapp(
+      this.appWebsocket,
+      devhubHapp,
+      "hApp", // This is chosen arbitrarily at the moment
+      gameInfo.entryHash,
+      )
 
-  //   const compressedWebHapp = await fetchWebHapp(
-  //     this.appWebsocket,
-  //     await this.getDevhubHapp(),
-  //     "hApp", // This is chosen arbitrary at the moment
-  //     happReleaseEntryHash,
-  //     )
+    // decompress bytearray into .happ and ui.zip (zlibt2)
+    const bundle = decode(decompressSync(new Uint8Array(compressedWebHapp))) as any;
 
-  //   // decompress bytearray into .happ and ui.zip (zlibt2)
+    // find out format of this decompressed object (see /devhub-dnas/zomes/happ_library/src/packaging.rs --> get_webhapp_package())
+    const webappManifest = bundle.manifest;
+    const resources = bundle.resources;
 
-  //   const gunzip = new Gunzip(compressedWebHapp);
-  //   const bundle = gunzip.decompress();
-  //   // find out format of this decompressed object (see /devhub-dnas/zomes/happ_library/src/packaging.rs --> get_webhapp_package)
-  //   const webappManifest = bundle.manifest;
-  //   const resources = bundle.resources;
+    const compressedGui = resources[webappManifest.ui.bundled];
+    // decompress and etract index.js
 
-  //   const ui = resources[webappManifest.ui.bundled];
-  //   const compressedHapp = resources[webappManifest.happ_manifest.bundled];
+    const compressedHapp = resources[webappManifest.happ_manifest.bundled];
 
-  //   // decompress .happ --> appBundle object --> call AdminWebsocket.install()
-  //   const decompressedHapp = new Gunzip(compressedHapp);
+    const decompressedHapp = decode(decompressSync(new Uint8Array(compressedHapp))) as AppBundle;
 
-  //   const decompressedBundle = {
-  //     // ???
-  //     }
-  //   }
-  //   // bundle: {
-  //   //   manifest: {
-  //   //     manifest_version: "1",
-  //   //     name,
-  //   //     roles: [
-  //   //       {
-  //   //         id: "game",
-  //   //         dna: {
-  //   //           bundled: "dna",
-  //   //           uid: name,
-  //   //           properties: {},
-  //   //         } as any,
-  //   //       },
-  //   //     ],
-  //   //   },
-  //   //   resources: {
-  //   //     dna: Array.from(new Uint8Array(await dnaFile.arrayBuffer())) as any,
-  //   //   },
-  //   // replace .happ resource with n
+    const uid = uuidv4();
 
-  //   const request: InstallAppBundleRequest = {
-  //     agent_key: this.myAgentPubKey,
-  //     installed_app_id: installedAppId,
-  //     membrane_proofs: {},
-  //     bundle: bundle, // ????   how does the bundle need to look like?
-  //     uid: uuid(),
-  //   }
+    const request: InstallAppBundleRequest = {
+      agent_key: this.myAgentPubKey,
+      installed_app_id: installedAppId,
+      membrane_proofs: {},
+      bundle: decompressedHapp,
+      uid: uid,
+    }
 
-  //   this.adminWebsocket.installAppBundle(request);
-
-  // //   export declare type InstallAppBundleRequest = {
-  // //     agent_key: AgentPubKey;
-  // //     installed_app_id?: InstalledAppId;
-  // //     membrane_proofs: {
-  // //         [key: string]: MembraneProof;
-  // //     };
-  // //     uid?: Uid;
-  // // }
-  //   //
+    const appInfo = await this.adminWebsocket.installAppBundle(request);
 
 
-  // }
+    console.log("worked :)");
+
+    // --- registering in the We DNA ---
+
+
+    // where do I get the devhubWebhappHash and the devhubGuiHash from?
+
+    // const cells = devhubCells(devhubHapp);
+
+    // const guiEntryHash = await this.gamesService.commitGuiFile(guiFile);
+
+
+    // const game: Game = {
+    //   name: installedAppId,
+    //   description: gameInfo.description,
+    //   logoSrc: gameInfo.icon,
+
+    //   devhubHappReleaseHash: gameInfo.entryHash, // probably wrong
+    //   guiFileHash: guiEntryHash,
+
+    //   properties: {},
+    //   uid: uid,
+    //   dnaHashes: appInfo.cell_data.map(); // extract dna hash from cell_data
+
+
+    //   cell_data = {
+
+
+
+    //   }
+
+    //   function devhubCells(devhubHapp: InstalledAppInfo) {
+    //     const happs = devhubHapp.cell_data.find((c) => c.role_id === "happs");
+    //     const dnarepo = devhubHapp.cell_data.find((c) => c.role_id === "dnarepo");
+    //     const webassets = devhubHapp.cell_data.find((c) => c.role_id === "webassets");
+    // }
+
+    // export interface Game {
+    //   name: string;
+    //   description: string;
+    //   logoSrc: string;
+
+    //   devhubWebhappHash: EntryHashB64;
+    //   devhubGuiHash: EntryHashB64;
+
+    //   properties: Record<string, Uint8Array>; // Segmented by RoleId
+    //   uid: Record<string, string | undefined>; // Segmented by RoleId
+    //   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
+    // }
+
+    // const entryHash = await this.gamesService.createGame(game);
+
+  }
 
 /*
   gameUid(gameName: string) {

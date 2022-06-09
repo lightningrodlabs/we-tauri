@@ -17,12 +17,17 @@ export class GamesService {
     return this.callZome("create_game", game);
   }
 
+  async commitGuiFile(
+    guiFile: Uint8Array
+  ): Promise<EntryHashB64> {
+    return this.callZome("commit_gui_file", guiFile);
+  }
+
   async registerGame(
     gameAgentPubKey: AgentPubKeyB64,
     game: Game,
-    guiFile: Uint8Array
   ): Promise<EntryHashB64> {
-    return this.callZome("register_game", { gameAgentPubKey, game, guiFile });
+    return this.callZome("register_game", { gameAgentPubKey, game });
   }
 
   async queryGameGui(guiHash: EntryHashB64): Promise<Uint8Array> {

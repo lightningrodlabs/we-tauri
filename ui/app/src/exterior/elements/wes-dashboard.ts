@@ -76,7 +76,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           <holo-identicon .hash=${this.wesStore.myAgentPubKey}></holo-identicon>
         </div>
 
-        <div style="margin-left: 72px; width: 100%;">
+        <div style="margin-left: 72px; width: 100%">
           ${this._selectedWeId
             ? html`
                 <we-context .weId=${this._selectedWeId}>
