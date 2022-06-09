@@ -1,9 +1,9 @@
-import { AppBundle, InstalledAppInfo, InstalledCell } from "@holochain/client";
-
-export interface GameRenderers {
-  full: Renderer;
-  blocks: Array<GameBlock>;
-}
+import { ProfilesStore } from "@holochain-open-dev/profiles";
+import {
+  AdminWebsocket,
+  AppWebsocket,
+  InstalledAppInfo,
+} from "@holochain/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
@@ -15,39 +15,20 @@ export interface GameBlock {
   render: Renderer;
 }
 
-// In the context of an already installed we
-//  - Install game
-//  - Fork game from a we to another
+export interface GameRenderers {
+  full: Renderer;
+  blocks: Array<GameBlock>;
+}
 
-export type InstallGameResult =
-  | {
-      success: true;
-      gameInfo: InstalledAppInfo;
-    }
-  | {
-      success: false;
-      error: string;
-    };
+export interface WeServices {
+  profilesStore: ProfilesStore;
+}
 
 export interface WeGame {
-  createGameRenderer?: (
-    appBundle: AppBundle,
-    weStore: WeStore,
-    resolve: (gameInfo: InstalledAppInfo) => void,
-    reject: (error: string) => void
-  ) => Renderer;
-
-  forkGameRenderer?: (
-    appBundle: AppBundle,
-    fromWe: WeStore,
-    fromCells: InstalledCell[],
-    toWe: WeStore,
-    resolve: (gameInfo: InstalledAppInfo) => void,
-    reject: (error: string) => void
-  ) => Renderer;
-
   gameRenderers: (
-    weStore: WeStore,
+    appWebsocket: AppWebsocket,
+    adminWebsocket: AdminWebsocket,
+    weStore: WeServices,
     gameInfo: InstalledAppInfo
   ) => GameRenderers;
 }

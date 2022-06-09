@@ -8,11 +8,11 @@
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.3.5",
+    "@holochain-open-dev/cell-client": "^0.4.0",
     "@holochain-open-dev/core-types": "^0.2.0",
     "@holochain-open-dev/membrane-invitations": "github:holochain-open-dev/membrane-invitations#ui-build",
     "@holochain-open-dev/peer-status": "github:holochain-open-dev/peer-status#ui-build",
-    "@holochain-open-dev/profiles": "^0.1.0",
+    "@holochain-open-dev/profiles": "^0.2.0",
     "@holochain-open-dev/utils": "^0.0.12",
     "@holochain/client": "^0.3.2",
     "@lit-labs/context": "^0.1.1",
