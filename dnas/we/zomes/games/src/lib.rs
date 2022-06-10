@@ -15,7 +15,7 @@ impl From<GameLinkType> for LinkType {
     }
 }
 
-entry_defs![PathEntry::entry_def(), Game::entry_def()];
+entry_defs![PathEntry::entry_def(), Game::entry_def(), GameGui::entry_def()];
 
 /// A game
 #[hdk_entry(id = "game")]
@@ -24,10 +24,10 @@ entry_defs![PathEntry::entry_def(), Game::entry_def()];
 pub struct Game {
     pub name: String,
     pub description: String,
-    pub logo_src: String,
+    pub logo_src: Option<String>,
 
-    pub devhub_webhapp_hash: EntryHashB64,
-    pub devhub_gui_hash: EntryHashB64,
+    pub devhub_happ_release_hash: EntryHashB64,
+    pub gui_file_hash: EntryHashB64,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
     pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId

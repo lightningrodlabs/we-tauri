@@ -3,11 +3,11 @@ import { css } from "lit";
 export const sharedStyles = css`
 
   body {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 
   h4 {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 
   .column {

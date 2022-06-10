@@ -9,10 +9,10 @@ export interface WeInfo {
 export interface Game {
   name: string;
   description: string;
-  logoSrc: string;
+  logoSrc: string | undefined;
 
-  devhubWebhappHash: EntryHashB64;
-  devhubGuiHash: EntryHashB64;
+  devhubHappReleaseHash: EntryHashB64;
+  guiFileHash: EntryHashB64;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   uid: Record<string, string | undefined>; // Segmented by RoleId
@@ -20,9 +20,9 @@ export interface Game {
 }
 
 export interface GameInfo {
-  title: String,
-  subtitle: String,
-  description: String,
+  title: string,
+  subtitle: string,
+  description: string,
   installedAppId?: InstalledAppId,
   entryHash: EntryHash,
   icon: string | undefined,

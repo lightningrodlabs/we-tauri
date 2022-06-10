@@ -37,7 +37,8 @@ import { Game, GameInfo, PlayingGame, WeInfo } from "./types";
 import { GameRenderers, WeGame } from "../we-game";
 import { GamesService } from "./games-service";
 import { WeService } from "./we-service";
-import { decompressSync } from "fflate";
+
+import { decompressSync, unzipSync } from "fflate";
 import { decode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -171,13 +172,15 @@ export class WeStore {
   }
 
   async fetchGameRenderers(gameHash: EntryHashB64): Promise<GameRenderers> {
+
     const renderer = get(this._gameRenderers)[gameHash];
     if (renderer) return renderer;
 
     const game = get(this._allGames)[gameHash];
     const gamesIAmPlaying = get(this._gamesIAmPlaying)[gameHash];
-
-    const rendererBytes = await this.gamesService.queryGameGui(gameHash);
+    debugger
+    const rendererBytes = await this.gamesService.queryGameGui(game.guiFileHash);
+    // { type: "ribosome_error", data: "Wasm error while working with Ribosome: Serialize(Deserialize(\"invalid type: map, expected byte array\"))" }
 
     const file = new File(
       [new Blob([new Uint8Array(rendererBytes)])],
@@ -185,7 +188,7 @@ export class WeStore {
     );
 
     const mod = await importModuleFromFile(file);
-    const gameGui: WeGame = mod.default;
+    const gameGui: WeGame = mod.default; // for a Gui to be we-compatible it's default export must be of type WeGame
 
     const cell_data: InstalledCell[] = [];
 
@@ -218,7 +221,7 @@ export class WeStore {
   async createGame(
     gameInfo: GameInfo,
     installedAppId: InstalledAppId,
-  ): Promise<void> {
+  ): Promise<EntryHashB64> {
 
     // --- Installing ---
 
@@ -238,11 +241,8 @@ export class WeStore {
     const webappManifest = bundle.manifest;
     const resources = bundle.resources;
 
-    const compressedGui = resources[webappManifest.ui.bundled];
-    // decompress and etract index.js
 
     const compressedHapp = resources[webappManifest.happ_manifest.bundled];
-
     const decompressedHapp = decode(decompressSync(new Uint8Array(compressedHapp))) as AppBundle;
 
     const uid = uuidv4();
@@ -258,58 +258,62 @@ export class WeStore {
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
 
-    console.log("worked :)");
+    // console.log("worked :)");
 
-    // --- registering in the We DNA ---
-
-
-    // where do I get the devhubWebhappHash and the devhubGuiHash from?
-
-    // const cells = devhubCells(devhubHapp);
-
-    // const guiEntryHash = await this.gamesService.commitGuiFile(guiFile);
+    // // --- registering in the We DNA ---
 
 
-    // const game: Game = {
-    //   name: installedAppId,
-    //   description: gameInfo.description,
-    //   logoSrc: gameInfo.icon,
+    // decompress and etract index.js
+    const compressedGui = resources[webappManifest.ui.bundled];
 
-    //   devhubHappReleaseHash: gameInfo.entryHash, // probably wrong
-    //   guiFileHash: guiEntryHash,
+    const decompressedGui = unzipSync(new Uint8Array(compressedGui)) as any;
 
-    //   properties: {},
-    //   uid: uid,
-    //   dnaHashes: appInfo.cell_data.map(); // extract dna hash from cell_data
+    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui["index.js"]);
 
 
-    //   cell_data = {
+    console.log("cells:", appInfo.cell_data);
 
+    const dnaHashes: Record<string, DnaHashB64> = {};
+    appInfo.cell_data.forEach((cell) => {
+      dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
+    });
 
+    console.log("DNA hashes", dnaHashes);
 
-    //   }
+    const game: Game = {
+      name: installedAppId,
+      description: gameInfo.description,
+      logoSrc: gameInfo.icon,
 
-    //   function devhubCells(devhubHapp: InstalledAppInfo) {
-    //     const happs = devhubHapp.cell_data.find((c) => c.role_id === "happs");
-    //     const dnarepo = devhubHapp.cell_data.find((c) => c.role_id === "dnarepo");
-    //     const webassets = devhubHapp.cell_data.find((c) => c.role_id === "webassets");
-    // }
+      devhubHappReleaseHash: serializeHash(gameInfo.entryHash),
+      guiFileHash: guiEntryHash,
+
+      properties: {},
+      uid: { "hApp": uid },
+      dnaHashes: dnaHashes,
+    }
 
     // export interface Game {
     //   name: string;
     //   description: string;
     //   logoSrc: string;
 
-    //   devhubWebhappHash: EntryHashB64;
-    //   devhubGuiHash: EntryHashB64;
+    //   devhubHappReleaseHash: EntryHashB64;
+    //   guiFileHash: EntryHashB64;
 
     //   properties: Record<string, Uint8Array>; // Segmented by RoleId
     //   uid: Record<string, string | undefined>; // Segmented by RoleId
     //   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
     // }
 
-    // const entryHash = await this.gamesService.createGame(game);
-
+    const entryHash = await this.gamesService.createGame(game);
+    console.log("Installation successful. EntryHash: ", entryHash);
+    console.log("fetching all games to update this._allGames");
+    await this.fetchAllGames();
+    console.log("trying to fetch gameRenderers for game...");
+    const renderers = await this.fetchGameRenderers(entryHash);
+    console.log("renderers: ", renderers);
+    return entryHash;
   }
 
 /*
@@ -412,3 +416,4 @@ export class WeStore {
     );
   }
 }
+

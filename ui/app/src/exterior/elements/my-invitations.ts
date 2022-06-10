@@ -5,11 +5,11 @@ import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { ProfileDetail, AgentAvatar } from "@holochain-open-dev/profiles";
+import { Button, List, ListItem, Card } from "@scoped-elements/material-web";
 
 import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
-import { WeContext } from "./we-context";
+import { sharedStyles } from "../../sharedStyles";
 
 
 export class MyInvitations extends ScopedElementsMixin(LitElement) {
@@ -46,23 +46,25 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
   ) {
     return html`
     <div class="content-pane">
-      <h3>Pending invitations to join a We</h3>
-      <mwc-list>
+      <h2>Pending invitations to join a We</h2>
+      <div class="column" style="justify-content: space-between;">
         ${Object.entries(invitations).map(
           ([headerHash, invitation]) =>
             html`
-              <div class="row">
-                <mwc-list-item>
-                ${this.weName(invitation)}
-                </mwc-list-item>
-                <mwc-button raised
-                  label="JOIN"
-                  @click=${() => this.join(headerHash, invitation)}
-                ></mwc-button>
-              </div>
-            `
+              <mwc-card style="width: 500px; margin: 5px;">
+                  <div class="row" style="align-items: center; padding: 5px;" >
+                    <div>${this.weName(invitation)}</div>
+                    <div class="row" style="margin-left: auto;">
+                        <mwc-button raised
+                          label="JOIN"
+                          @click=${() => this.join(headerHash, invitation)}
+                      ></mwc-button>
+                    </div>
+                  </div>
+              </mwc-card>
+          `
         )}
-      </mwc-list>
+      </div>
     </div>
     `;
   }
@@ -76,19 +78,26 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "we-context": WeContext,
-      "profile-detail": ProfileDetail,
-      "agent-avatar": AgentAvatar,
+      "mwc-button": Button,
+      "mwc-list": List,
+      "mwc-list-item": ListItem,
+      "mwc-card": Card,
     };
   }
 
   static get styles() {
-    return css`
+    let localStyles = css`
       .content-pane {
         padding: 30px;
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: Arial, sans-serif,
+      }
+
+      h2 {
+        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
       }
 
     `
+
+    return [sharedStyles, localStyles];
   }
 }

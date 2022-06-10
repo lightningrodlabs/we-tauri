@@ -49,7 +49,7 @@ export class WeMembers extends ScopedElementsMixin(LitElement) {
     return html`
       <div>
         <mwc-snackbar id="snackbar-success" timeoutMs=4000 labelText="Invitation sent." style="text-align: center;"></mwc-snackbar>
-        <mwc-snackbar id="snackbar-error" timeoutMs=4000 labelText="Error. Public Key may be invalid." style="text-align: center;"></mwc-snackbar>
+        <mwc-snackbar id="snackbar-error" timeoutMs=4000 labelText="Error. Public key may be invalid." style="text-align: center;"></mwc-snackbar>
 
         <list-profiles></list-profiles>
         <h4>invite new member:</h4>

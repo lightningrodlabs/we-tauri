@@ -62,8 +62,6 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     );
   }
 
-  // this._weStore.createGame(gameInfo, "placeholder")
-
 
   /*
   async publishDna() {
