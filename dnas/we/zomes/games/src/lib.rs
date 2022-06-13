@@ -39,21 +39,20 @@ fn get_games_path() -> Path {
 }
 
 #[hdk_extern]
-fn create_game(input: Game) -> ExternResult<EntryHashB64> {
-    let _header_hash = create_entry(&input)?;
-    let hash = hash_entry(input.clone())?;
+fn create_game(input: RegisterGameInput) -> ExternResult<EntryHashB64> {
+    let game_hash = register_game(input)?;
 
     let path = get_games_path();
     path.ensure()?;
     let anchor_hash = path.path_entry_hash()?;
     create_link(
         anchor_hash.into(),
-        hash.clone().into(),
+        game_hash.clone().into(),
         GameLinkType::ExternalAgentToGame,
         (),
     )?;
 
-    Ok(hash.into())
+    Ok(game_hash)
 }
 
 #[hdk_entry(id = "game_gui", visibility = "private")]
@@ -73,19 +72,19 @@ pub fn commit_gui_file(input: GameGui) -> ExternResult<EntryHashB64> {
 }
 
 #[hdk_extern]
-pub fn register_game(input: RegisterGameInput) -> ExternResult<()> {
+pub fn register_game(input: RegisterGameInput) -> ExternResult<EntryHashB64> {
     create_entry(&input.game)?;
 
     let game_hash = hash_entry(input.game)?;
 
     create_link(
         EntryHash::from(AgentPubKey::from(input.game_agent_pub_key)),
-        game_hash.into(),
+        game_hash.clone().into(),
         HdkLinkType::Any,
         (), // Maybe game hash?
     )?;
 
-    Ok(())
+    Ok(game_hash.into())
 }
 
 #[hdk_extern]
@@ -114,7 +113,7 @@ pub fn get_games_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Play
     let offer_entry_type = EntryType::App(AppEntryType::new(
         entry_def_index!(Game)?,
         zome_info()?.id,
-        EntryVisibility::Private,
+        EntryVisibility::Public,
     ));
     let filter = ChainQueryFilter::new()
         .entry_type(offer_entry_type)

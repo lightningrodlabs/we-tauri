@@ -11,7 +11,7 @@
     "network": "hc s clean && npm run build:happ && concurrently-repeat \"npm run start:agent\"",
     "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 20 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && npm t -w tests",
-    "start:happ": "RUST_LOG=warn hc s -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
+    "start:happ": "RUST_LOG=warn WASM_LOG=debug hc s -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",

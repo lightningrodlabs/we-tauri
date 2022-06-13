@@ -19,6 +19,11 @@ export interface Game {
   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
 }
 
+export interface RegisterGameInput {
+  gameAgentPubKey: AgentPubKeyB64,
+  game: Game,
+}
+
 export interface GameInfo {
   title: string,
   subtitle: string,
@@ -37,3 +42,6 @@ export type Signal = {
   gameHash: EntryHashB64;
   message: { type: "NewGame"; content: Game };
 };
+
+
+export type GuiFile = Uint8Array;

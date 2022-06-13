@@ -15,6 +15,7 @@
     "@holochain-open-dev/profiles": "^0.2.0",
     "@holochain-open-dev/utils": "^0.0.12",
     "@holochain/client": "^0.3.2",
+    "@lightningrodlabs/we-game": "0.0.4",
     "@lit-labs/context": "^0.1.1",
     "@msgpack/msgpack": "^2.7.2",
     "@open-wc/scoped-elements": "^2.1.1",

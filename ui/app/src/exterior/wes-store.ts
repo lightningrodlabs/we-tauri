@@ -38,16 +38,17 @@ export class WesStore {
 
   constructor(
     protected holochainClient: HolochainClient,
-    protected adminWebsocket: AdminWebsocket
+    protected adminWebsocket: AdminWebsocket,
+    protected weAppInfo: InstalledAppInfo,
   ) {
-    const lobbyCell = holochainClient.cellDataByRoleId("lobby")!;
-    const cellClient = holochainClient.forCell(lobbyCell);
+    const lobbyCell = weAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
+    const cellClient = new CellClient(holochainClient, lobbyCell);
     this.membraneInvitationsStore = new MembraneInvitationsStore(cellClient);
     this.myAgentPubKey = serializeHash(lobbyCell.cell_id[1]);
   }
 
   private originalWeDnaHash(): DnaHashB64 {
-    const appInfo = this.holochainClient.appInfo;
+    const appInfo = this.weAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
     return serializeHash(weCell.cell_id[0]);
@@ -98,7 +99,7 @@ export class WesStore {
 
     const newWeHash = await this.installWe(name, logo, timestamp);
 
-    const appInfo = this.holochainClient.appInfo;
+    const appInfo = this.weAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
     const weDnaHash = serializeHash(weCell.cell_id[0]);
@@ -132,7 +133,7 @@ export class WesStore {
     logo: string,
     timestamp: number
   ): Promise<DnaHashB64> {
-    const appInfo = this.holochainClient.appInfo;
+    const appInfo = this.weAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
     const myAgentPubKey = serializeHash(weCell.cell_id[1]);

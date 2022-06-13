@@ -21,12 +21,14 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       `ws://localhost:${process.env.ADMIN_PORT}`
     );
 
-    const holochainClient = await HolochainClient.connect(
+    const appWebsocket = await AppWebsocket.connect(
       `ws://localhost:${process.env.HC_PORT}`,
-      "we"
     );
 
-    this._store = new WesStore(holochainClient, adminWebsocket);
+    const holochainClient = new HolochainClient(appWebsocket);
+
+    const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
+    this._store = new WesStore(holochainClient, adminWebsocket, weAppInfo);
     new ContextProvider(this, wesContext, this._store);
 
     this.loading = false;

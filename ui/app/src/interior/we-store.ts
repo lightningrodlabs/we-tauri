@@ -33,8 +33,8 @@ import { ProfilesStore } from "@holochain-open-dev/profiles";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
-import { Game, GameInfo, PlayingGame, WeInfo } from "./types";
-import { GameRenderers, WeGame } from "../we-game";
+import { Game, GameInfo, GuiFile, PlayingGame, RegisterGameInput, WeInfo } from "./types";
+import { GameRenderers, WeGame } from "@lightningrodlabs/we-game";
 import { GamesService } from "./games-service";
 import { WeService } from "./we-service";
 
@@ -47,11 +47,13 @@ export class WeStore {
   private weService: WeService;
   public profilesStore: ProfilesStore;
 
+  private _selectedGameId: Writable<EntryHashB64 | undefined> = writable(undefined);
   private _allGames: Writable<Record<EntryHashB64, Game>> = writable({});
   private _gamesIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
     writable({});
   private _gameRenderers: Writable<Record<EntryHashB64, GameRenderers>> =
     writable({});
+
   /*
   public game(gameHash: EntryHashB64): Readable<
     | {
@@ -75,16 +77,17 @@ export class WeStore {
     return (this.cellClient as any).client.appWebsocket;
   }
 
-  public get myAgentPubKeyB64(): AgentPubKeyB64 {
-    return serializeHash(this.cellClient.cellId[1]);
-  }
 
   public get myAgentPubKey(): AgentPubKey {
-    return this.cellClient.cellId[1];
+    return this.cellClient.cell.cell_id[1];
   }
 
   public get cellData(): InstalledCell {
     return (this.cellClient as any).cellData;
+  }
+
+  public get selectedGameId(): Readable<EntryHashB64 | undefined> {
+    return derived(this._selectedGameId, (id) => id);
   }
 
 
@@ -114,6 +117,11 @@ export class WeStore {
     });
   }
 
+
+  public selectGame(gameHash: EntryHashB64 | undefined) {
+    this._selectedGameId.update((id) => gameHash);
+  }
+
   public async getDevhubHapp(): Promise<InstalledAppInfo> {
     const installedApps = await this.adminWebsocket.listApps({});
     return installedApps.find(
@@ -139,7 +147,6 @@ export class WeStore {
     Readable<Record<EntryHashB64, PlayingGame>>
   > {
     const gamesIAmPlaying = await this.gamesService.getGamesIAmPlaying();
-
     const games: Record<EntryHashB64, Game> = {};
     const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
 
@@ -177,10 +184,8 @@ export class WeStore {
     if (renderer) return renderer;
 
     const game = get(this._allGames)[gameHash];
-    const gamesIAmPlaying = get(this._gamesIAmPlaying)[gameHash];
-    debugger
+    const gameAgentPubKey = get(this._gamesIAmPlaying)[gameHash];
     const rendererBytes = await this.gamesService.queryGameGui(game.guiFileHash);
-    // { type: "ribosome_error", data: "Wasm error while working with Ribosome: Serialize(Deserialize(\"invalid type: map, expected byte array\"))" }
 
     const file = new File(
       [new Blob([new Uint8Array(rendererBytes)])],
@@ -196,19 +201,21 @@ export class WeStore {
       cell_data.push({
         cell_id: [
           deserializeHash(dnaHash),
-          deserializeHash(gamesIAmPlaying[gameHash]),
+          deserializeHash(gameAgentPubKey),
         ],
         role_id,
       });
     }
 
-    const renderers = gameGui.gameRenderers(this, {
+    const renderers = gameGui.gameRenderers(this.appWebsocket, this.adminWebsocket, { profilesStore: this.profilesStore }, {
       installed_app_id: "",
       cell_data,
       status: { running: null },
     });
+
+    // s.renderers is undefined --> maybe because this._gameRenderers is still empty at that point?
     this._gameRenderers.update((s) => {
-      s.renderers[gameHash] = renderers;
+      s[gameHash] = renderers;
       return s;
     });
 
@@ -216,14 +223,7 @@ export class WeStore {
   }
 
 
-
-  // Installs the given game to the conductor, and registers it in the We DNA
-  async createGame(
-    gameInfo: GameInfo,
-    installedAppId: InstalledAppId,
-  ): Promise<EntryHashB64> {
-
-    // --- Installing ---
+  async fetchAndDecompressWebHapp(entryHash: EntryHashB64): Promise<[AppBundle, GuiFile]> {
 
     const devhubHapp = await this.getDevhubHapp();
 
@@ -231,7 +231,7 @@ export class WeStore {
       this.appWebsocket,
       devhubHapp,
       "hApp", // This is chosen arbitrarily at the moment
-      gameInfo.entryHash,
+      deserializeHash(entryHash),
       )
 
     // decompress bytearray into .happ and ui.zip (zlibt2)
@@ -241,9 +241,48 @@ export class WeStore {
     const webappManifest = bundle.manifest;
     const resources = bundle.resources;
 
-
     const compressedHapp = resources[webappManifest.happ_manifest.bundled];
     const decompressedHapp = decode(decompressSync(new Uint8Array(compressedHapp))) as AppBundle;
+
+    // decompress and etract index.js
+    const compressedGui = resources[webappManifest.ui.bundled];
+    const decompressedGuiMap = unzipSync(new Uint8Array(compressedGui)) as any;
+
+    const decompressedGui = decompressedGuiMap["index.js"] as GuiFile;
+
+    return [decompressedHapp, decompressedGui]
+
+  }
+
+
+  // Installs the given game to the conductor, and registers it in the We DNA
+  async createGame(
+    gameInfo: GameInfo,
+    installedAppId: InstalledAppId,
+  ): Promise<EntryHashB64> {
+
+    // --- Install hApp in the conductor---
+
+    const [decompressedHapp, decompressedGui] = await this.fetchAndDecompressWebHapp(serializeHash(gameInfo.entryHash));
+
+    // const devhubHapp = await this.getDevhubHapp();
+
+    // const compressedWebHapp = await fetchWebHapp(
+    //   this.appWebsocket,
+    //   devhubHapp,
+    //   "hApp", // This is chosen arbitrarily at the moment
+    //   gameInfo.entryHash,
+    //   )
+
+    // // decompress bytearray into .happ and ui.zip (zlibt2)
+    // const bundle = decode(decompressSync(new Uint8Array(compressedWebHapp))) as any;
+
+    // // find out format of this decompressed object (see /devhub-dnas/zomes/happ_library/src/packaging.rs --> get_webhapp_package())
+    // const webappManifest = bundle.manifest;
+    // const resources = bundle.resources;
+
+    // const compressedHapp = resources[webappManifest.happ_manifest.bundled];
+    // const decompressedHapp = decode(decompressSync(new Uint8Array(compressedHapp))) as AppBundle;
 
     const uid = uuidv4();
 
@@ -257,28 +296,20 @@ export class WeStore {
 
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
+    // // --- Register hApp and UI in the We DNA ---
 
-    // console.log("worked :)");
+    // // decompress and etract index.js
+    // const compressedGui = resources[webappManifest.ui.bundled];
+    // const decompressedGui = unzipSync(new Uint8Array(compressedGui)) as any;
 
-    // // --- registering in the We DNA ---
-
-
-    // decompress and etract index.js
-    const compressedGui = resources[webappManifest.ui.bundled];
-
-    const decompressedGui = unzipSync(new Uint8Array(compressedGui)) as any;
-
-    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui["index.js"]);
-
-
-    console.log("cells:", appInfo.cell_data);
+    // commit the ui as a private entry to the source chain (in order to always be readily available)
+    // const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui["index.js"]);
+    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui);
 
     const dnaHashes: Record<string, DnaHashB64> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
     });
-
-    console.log("DNA hashes", dnaHashes);
 
     const game: Game = {
       name: installedAppId,
@@ -293,6 +324,11 @@ export class WeStore {
       dnaHashes: dnaHashes,
     }
 
+    const registerGameInput: RegisterGameInput = {
+      gameAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      game,
+    };
+
     // export interface Game {
     //   name: string;
     //   description: string;
@@ -306,14 +342,19 @@ export class WeStore {
     //   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
     // }
 
-    const entryHash = await this.gamesService.createGame(game);
-    console.log("Installation successful. EntryHash: ", entryHash);
-    console.log("fetching all games to update this._allGames");
-    await this.fetchAllGames();
-    console.log("trying to fetch gameRenderers for game...");
-    const renderers = await this.fetchGameRenderers(entryHash);
-    console.log("renderers: ", renderers);
-    return entryHash;
+    const gameHash = await this.gamesService.createGame(registerGameInput);
+
+    this._gamesIAmPlaying.update((gamesIAmPlaying) => {
+      gamesIAmPlaying[gameHash] = serializeHash(this.myAgentPubKey);
+      return gamesIAmPlaying}
+    );
+
+    this._allGames.update((allGames) => {
+      allGames[gameHash] = game;
+      return allGames}
+    );
+
+    return gameHash;
   }
 
 /*
@@ -321,35 +362,49 @@ export class WeStore {
     return `wegame-${get(this.state).name}-game-${gameName}`;
   }
 
-  // Installs the already existing game in this We to the conductor
-  async playGame(gameHash: EntryHashB64) {
-    const cellIds = await this.adminWebsocket.listCellIds();
+*/
 
+  // Installs the already existing game in this We to the conductor
+  async joinGame(gameHash: EntryHashB64) {
+
+    const cellIds = await this.adminWebsocket.listCellIds();
     const dnaHashes = cellIds.map((cellId) => serializeHash(cellId[0]));
 
     // If the game is already installed, nothing to do
     if (dnaHashes.includes(gameHash)) return;
 
-    const state = get(this.state);
-    const game = state.games[gameHash];
+    // fetch hApp and GUI
+    const [decompressedHapp, decompressedGui] = await this.fetchAndDecompressWebHapp(gameHash);
+
+
+    const allGames: Record<EntryHashB64, Game> = get(this._allGames);
+    let game = allGames[gameHash];
+
     if (!game) {
-      //TODO: fetch game entry
+      game = get(await this.fetchAllGames())[gameHash];
     }
 
-    const name = this.gameUid(game.name);
-    const file = await this.fileStorageService.downloadFile(game.dna_file_hash);
+    // install app bundle
+    const request: InstallAppBundleRequest = {
+      agent_key: this.myAgentPubKey,
+      installed_app_id: game.name,
+      membrane_proofs: {},
+      bundle: decompressedHapp,
+      uid: game.uid["happ"],
+    }
 
-    await Promise.all([
-      this.installGame(file, name),
-      this.fetchRenderers(gameHash),
-    ]);
+    const appInfo = await this.adminWebsocket.installAppBundle(request);
 
-    this.state.update((s) => {
-      s.gamesAlreadyPlaying[gameHash] = true;
-      return s;
-    });
+    // commit GUI to source chain as private entry
+    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui);
+
+    this._gamesIAmPlaying.update((gamesIAmPlaying) => {
+      gamesIAmPlaying[gameHash] = serializeHash(this.myAgentPubKey);
+      return gamesIAmPlaying}
+    );
   }
 
+  /*
   private async installGame(dnaFile: File, name: string): Promise<DnaHashB64> {
     const installAppBundleRequest: InstallAppBundleRequest = {
       installed_app_id: name,
@@ -383,11 +438,14 @@ export class WeStore {
       installed_app_id: name,
     });
 
+
+    ---> commit GUI file to source chain??
+
     return serializeHash(appInfo.cell_data[0].cell_id[0]);
   } */
 
   public async inviteToJoin(agentPubKey: AgentPubKeyB64) {
-    const weCell = this.cellClient.cellId;
+    const weCell = this.cellClient.cell.cell_id;
     const myAgentPubKey = serializeHash(weCell[1]);
     const weDnaHash = serializeHash(weCell[0]);
 
