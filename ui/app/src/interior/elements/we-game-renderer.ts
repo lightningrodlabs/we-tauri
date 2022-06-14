@@ -40,7 +40,9 @@ export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
   render() {
     if (!this._renderer) {
       return html `
-        <mwc-circular-progress indeterminate></mwc-circular-progress>
+        <div class="center-conent">
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
+        </div>
       `
     } else {
       return html`

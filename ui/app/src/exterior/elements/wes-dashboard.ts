@@ -140,7 +140,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           }
         }
         .highlighted {
-          border: white 4px solid;
+          border: #9ca5e3 4px solid;
         }
       `,
     ];

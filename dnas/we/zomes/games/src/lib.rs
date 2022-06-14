@@ -147,6 +147,7 @@ pub fn get_games_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Play
         }
     }
 
+    debug!(">>>>> playing_games: {:?}", playing_games);
     Ok(playing_games)
 }
 

@@ -54,6 +54,23 @@ export class WeStore {
   private _gameRenderers: Writable<Record<EntryHashB64, GameRenderers>> =
     writable({});
 
+
+
+  public get unjoinedGames(): Readable<Record<EntryHashB64, Game>> {
+
+    return derived(this._allGames, (allGames) => {
+      const unjoinedGames: Record<EntryHashB64, Game> = {};
+      const gamesIAmPlaying = get(this._gamesIAmPlaying);
+
+      Object.entries(allGames).map(([gameHash, game]) => {
+        if (!gamesIAmPlaying[gameHash]) {
+          unjoinedGames[gameHash] = game;
+        }
+      })
+      return unjoinedGames;
+    })
+  }
+
   /*
   public game(gameHash: EntryHashB64): Readable<
     | {
@@ -86,10 +103,6 @@ export class WeStore {
     return (this.cellClient as any).cellData;
   }
 
-  public get selectedGameId(): Readable<EntryHashB64 | undefined> {
-    return derived(this._selectedGameId, (id) => id);
-  }
-
 
 
   constructor(
@@ -107,8 +120,8 @@ export class WeStore {
       switch (payload.message.type) {
         case "NewGame":
           this._allGames.update((s) => {
-            if (!s.games[payload.gameHash]) {
-              s.games[payload.gameHash] = payload.message.content;
+            if (!s[payload.gameHash]) {
+              s[payload.gameHash] = payload.message.content;
             }
             return s;
           });
@@ -146,6 +159,7 @@ export class WeStore {
   async fetchGamesIAmPlaying(): Promise<
     Readable<Record<EntryHashB64, PlayingGame>>
   > {
+    debugger
     const gamesIAmPlaying = await this.gamesService.getGamesIAmPlaying();
     const games: Record<EntryHashB64, Game> = {};
     const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
@@ -249,7 +263,7 @@ export class WeStore {
     const decompressedGuiMap = unzipSync(new Uint8Array(compressedGui)) as any;
 
     const decompressedGui = decompressedGuiMap["index.js"] as GuiFile;
-
+    this.adminWebsocket.listCellIds
     return [decompressedHapp, decompressedGui]
 
   }
@@ -365,20 +379,25 @@ export class WeStore {
 */
 
   // Installs the already existing game in this We to the conductor
-  async joinGame(gameHash: EntryHashB64) {
+  async joinGame(gameHash: EntryHashB64): Promise<void> {
 
-    const cellIds = await this.adminWebsocket.listCellIds();
-    const dnaHashes = cellIds.map((cellId) => serializeHash(cellId[0]));
+    debugger
+    // const cellIds = await this.adminWebsocket.listCellIds();
+    // const dnaHashes = cellIds.map((cellId) => serializeHash(cellId[0]));
+
+    // // If the game is already installed, nothing to do
+    // if (dnaHashes.includes(gameHash)) return;
 
     // If the game is already installed, nothing to do
-    if (dnaHashes.includes(gameHash)) return;
-
-    // fetch hApp and GUI
-    const [decompressedHapp, decompressedGui] = await this.fetchAndDecompressWebHapp(gameHash);
-
+    const installedGamesHashes = Object.entries(get(this._gamesIAmPlaying)).map(([entryHash, agentPubKey]) => entryHash);
+    if (installedGamesHashes.includes(gameHash)) return;
 
     const allGames: Record<EntryHashB64, Game> = get(this._allGames);
     let game = allGames[gameHash];
+
+    // fetch hApp and GUI
+    const [decompressedHapp, decompressedGui] = await this.fetchAndDecompressWebHapp(game.devhubHappReleaseHash);
+
 
     if (!game) {
       game = get(await this.fetchAllGames())[gameHash];

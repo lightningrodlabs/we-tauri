@@ -10,8 +10,9 @@ export class GamesService {
   }
 
   async getGamesIAmPlaying(): Promise<Record<EntryHashB64, PlayingGame>> {
-    console.log("FETCHING GAMES I AM PLAYING");
-    return this.callZome("get_games_i_am_playing", null);
+    const result = this.callZome("get_games_i_am_playing", null);
+    console.log("call zome result: ", result);
+    return result;
   }
 
   async createGame(registerGameInput: RegisterGameInput): Promise<EntryHashB64> {
