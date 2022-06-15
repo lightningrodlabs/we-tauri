@@ -1,4 +1,4 @@
-import { html, css, LitElement } from "lit";
+import { html, css, LitElement, PropertyValueMap } from "lit";
 import { state, query, property } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
@@ -22,11 +22,17 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     this._name = "";
     this._logoSrc = "";
     this._dialog.show();
+    this._nameField.value = "";
+    // this._avatarField.clear(); // to be uncommented once utils is updated
   }
 
   /** Private properties */
   @query("#dialog")
   _dialog!: Dialog;
+  @query("#name-field")
+  _nameField!: HTMLInputElement;
+  @query("#select-avatar")
+  _avatarField!: SelectAvatar;
   @state()
   _name: string | undefined;
   @state()
@@ -45,15 +51,21 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     this._dialog.close();
   }
 
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+      console.log("I am a new instance of a create-we-dialog");
+  }
+
   render() {
     return html`
       <mwc-dialog id="dialog" heading="Create We">
         <select-avatar
+        id="select-avatar"
           @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
         ></select-avatar>
 
         <mwc-textfield
           @input=${(e) => (this._name = e.target.value)}
+          id="name-field"
           label="Name"
           autoValidate
           required

@@ -176,14 +176,6 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
             style="margin-bottom: 24px;"
             dialogInitialFocus
           ></mwc-textfield>
-          <mwc-textfield
-            id="logo-url"
-            label="Logo Url (optional)"
-            outlined
-            autoValidate
-            @input=${() => this.requestUpdate()}
-            style="margin-bottom: 24px;"
-          ></mwc-textfield>
         </div>
 
         <mwc-button
