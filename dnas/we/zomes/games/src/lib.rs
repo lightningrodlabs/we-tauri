@@ -46,8 +46,8 @@ fn create_game(input: RegisterGameInput) -> ExternResult<EntryHashB64> {
     path.ensure()?;
     let anchor_hash = path.path_entry_hash()?;
     create_link(
-        anchor_hash.into(),
-        game_hash.clone().into(),
+        anchor_hash,
+        game_hash.clone(),
         GameLinkType::ExternalAgentToGame,
         (),
     )?;
@@ -79,7 +79,7 @@ pub fn register_game(input: RegisterGameInput) -> ExternResult<EntryHashB64> {
 
     create_link(
         EntryHash::from(AgentPubKey::from(input.game_agent_pub_key)),
-        game_hash.clone().into(),
+        game_hash.clone(),
         HdkLinkType::Any,
         (), // Maybe game hash?
     )?;
@@ -155,7 +155,7 @@ pub fn get_games_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Play
 fn get_all_games(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Game>> {
     let path = get_games_path();
 
-    let links = get_links(path.path_entry_hash()?.into(), None)?;
+    let links = get_links(path.path_entry_hash()?, None)?;
 
     let get_input = links
         .into_iter()
