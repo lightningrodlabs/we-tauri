@@ -74,7 +74,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
   renderGamesList() {
     const gamesIAmPlaying = this._gamesIAmPlaying.value;
-    console.log("games I am playing: ", gamesIAmPlaying);
     if (gamesIAmPlaying) {
       return html`
         <div class="column we-sidebar">

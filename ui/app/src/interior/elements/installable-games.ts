@@ -53,8 +53,6 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
   }
 
   renderInstallableGame(gameInfo: GameInfo) {
-    console.log("installable game being rendered.");
-    console.log("game: ", gameInfo);
     return html`
 
       <mwc-card class="game-card">

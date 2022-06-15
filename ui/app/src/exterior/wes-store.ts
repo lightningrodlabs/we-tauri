@@ -47,6 +47,8 @@ export class WesStore {
     this.myAgentPubKey = serializeHash(lobbyCell.cell_id[1]);
   }
 
+
+
   private originalWeDnaHash(): DnaHashB64 {
     const appInfo = this.weAppInfo;
 

@@ -46,7 +46,7 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
   ) {
     return html`
     <div class="content-pane">
-      <h2>Pending invitations to join a We</h2>
+      <h2>Pending invitations to join a We:</h2>
       <div class="column" style="justify-content: space-between;">
         ${Object.entries(invitations).map(
           ([headerHash, invitation]) =>

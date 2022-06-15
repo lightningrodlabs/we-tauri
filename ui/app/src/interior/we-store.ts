@@ -159,7 +159,6 @@ export class WeStore {
   async fetchGamesIAmPlaying(): Promise<
     Readable<Record<EntryHashB64, PlayingGame>>
   > {
-    debugger
     const gamesIAmPlaying = await this.gamesService.getGamesIAmPlaying();
     const games: Record<EntryHashB64, Game> = {};
     const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
@@ -381,7 +380,6 @@ export class WeStore {
   // Installs the already existing game in this We to the conductor
   async joinGame(gameHash: EntryHashB64): Promise<void> {
 
-    debugger
     // const cellIds = await this.adminWebsocket.listCellIds();
     // const dnaHashes = cellIds.map((cellId) => serializeHash(cellId[0]));
 
@@ -395,6 +393,7 @@ export class WeStore {
     const allGames: Record<EntryHashB64, Game> = get(this._allGames);
     let game = allGames[gameHash];
 
+    console.log("devhubreleasehash: ", game.devhubHappReleaseHash);
     // fetch hApp and GUI
     const [decompressedHapp, decompressedGui] = await this.fetchAndDecompressWebHapp(game.devhubHappReleaseHash);
 
@@ -414,8 +413,17 @@ export class WeStore {
 
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
+    // register Game entry in order to have it in the own source chain
+    const registerGameInput: RegisterGameInput = {
+      gameAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      game,
+    };
+
+    await this.gamesService.createGame(registerGameInput);
+
     // commit GUI to source chain as private entry
     const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui);
+
 
     this._gamesIAmPlaying.update((gamesIAmPlaying) => {
       gamesIAmPlaying[gameHash] = serializeHash(this.myAgentPubKey);
