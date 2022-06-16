@@ -25,7 +25,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
   _info = new TaskSubscriber(this, () => this._store.fetchInfo());
 
-  _allGames = new TaskSubscriber(this, () => this._store.fetchAllGames());
+  // _allGames = new TaskSubscriber(this, () => this._store.fetchAllGames());
+  // _allGames = new StoreSubscriber(this, () => this._store.allGames);
 
   _gamesIAmPlaying = new TaskSubscriber(this, () => this._store.fetchGamesIAmPlaying());
 

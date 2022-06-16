@@ -12,7 +12,7 @@ name = "games"
 derive_more = "0.99"
 serde = "1"
 thiserror = "1.0.20"
-hdk = {version = "0.0.132", features = ["encoding"]}
+hdk = {version = "0.0.136", features = ["encoding"]}
 
 [dev-dependencies]
 #holochain = { git = "https://github.com/holochain/holochain.git", branch = "develop", features = ["test_utils"] }

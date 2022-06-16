@@ -94,7 +94,6 @@ export class WeStore {
     return (this.cellClient as any).client.appWebsocket;
   }
 
-
   public get myAgentPubKey(): AgentPubKey {
     return this.cellClient.cell.cell_id[1];
   }
@@ -103,6 +102,13 @@ export class WeStore {
     return (this.cellClient as any).cellData;
   }
 
+  public get allGames() {
+    return derived(this._allGames, (allGames) => allGames);
+  }
+
+  public get gamesIAmPlaying() {
+    return derived(this._gamesIAmPlaying, (gamesIAmPlaying) => gamesIAmPlaying);
+  }
 
 
   constructor(
@@ -129,7 +135,6 @@ export class WeStore {
       }
     });
   }
-
 
   public selectGame(gameHash: EntryHashB64 | undefined) {
     this._selectedGameId.update((id) => gameHash);

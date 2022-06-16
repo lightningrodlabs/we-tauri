@@ -6,7 +6,7 @@ import {
   serializeHash,
   deserializeHash,
 } from "@holochain-open-dev/core-types";
-import { CellClient } from "@holochain-open-dev/cell-client";
+import { CellClient, HolochainClient } from "@holochain-open-dev/cell-client";
 import { writable, Writable, derived, Readable, get } from "svelte/store";
 
 import { WeStore } from "../interior/we-store";
@@ -16,7 +16,6 @@ import {
   AppStatusFilter,
   MembraneProof,
 } from "@holochain/client";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
 import {
   MembraneInvitationsService,
   MembraneInvitationsStore,
@@ -127,6 +126,10 @@ export class WesStore {
   ) {
     await this.installWe(name, logo, timestamp);
 
+    await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
+  }
+
+  public async removeInvitation(invitationHeaderHash: HeaderHashB64) {
     await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
   }
 

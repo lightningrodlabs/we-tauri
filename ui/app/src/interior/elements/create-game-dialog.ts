@@ -17,6 +17,7 @@ import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { getAllPublishedApps } from "../../processes/devhub/get-happs";
 import { GameInfo } from "../types";
+import { TaskSubscriber } from "lit-svelte-stores";
 
 export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
@@ -38,9 +39,6 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
 
   @state()
   _installableGames;
-
-  @state()
-  private _loading = true;
 
   @property()
   _gameInfo: GameInfo = {
@@ -112,10 +110,32 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   }
  */
 
+  checkValidity() {
+    // checking for duplicate names -- doesn't seem to work currently becaus for some reason weStore is undefined here...
+    // console.log("weStore within checkValidity: ", this._weStore);
+    // console.log("Checking validity");
+    // const allGames = this._weStore.allGames;
+    // console.log("allGames:, ", allGames);
+    // if (allGames) {
+    //   const allNames = Object.entries(allGames).map(([gameHash, game]) => game.name);
+    //   if (allNames.includes(this._installedAppIdField.value)) {
+    //     return {
+    //       valid: false
+    //     };
+    //   }
+    // }
+    return {
+      valid: true
+    }
+  }
+
   async createGame() {
     await this._weStore.createGame(this._gameInfo, this._installedAppIdField.value)
       .then(
-        () => (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show()
+        () => {
+          (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+          // make sure allGames is up to date
+        }
       ).catch(
         (e) => {
           (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
@@ -174,7 +194,9 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
             value=${this._gameInfo.title}
             @input=${() => this.requestUpdate()}
             style="margin-bottom: 24px;"
+            validateOnInitialRender
             dialogInitialFocus
+            .validityTransform=${this.checkValidity}
           ></mwc-textfield>
         </div>
 

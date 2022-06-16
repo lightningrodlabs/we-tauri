@@ -22,8 +22,6 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     this._name = "";
     this._logoSrc = "";
     this._dialog.show();
-    this._nameField.value = "";
-    // this._avatarField.clear(); // to be uncommented once utils is updated
   }
 
   /** Private properties */
@@ -39,6 +37,7 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   _logoSrc: string | undefined;
 
   private async handleOk(e: any) {
+    this._dialog.close();
     await this._store.createWe(this._name!, this._logoSrc!);
 
     this.dispatchEvent(
@@ -48,7 +47,8 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
         composed: true,
       })
     );
-    this._dialog.close();
+    this._nameField.value = "";
+    this._avatarField.clear();
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {

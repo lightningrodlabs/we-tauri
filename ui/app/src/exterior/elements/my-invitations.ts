@@ -5,11 +5,12 @@ import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { Button, List, ListItem, Card } from "@scoped-elements/material-web";
+import { Button, List, ListItem, Card, Snackbar } from "@scoped-elements/material-web";
 
 import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { sharedStyles } from "../../sharedStyles";
+import { query } from "lit/decorators.js";
 
 
 export class MyInvitations extends ScopedElementsMixin(LitElement) {
@@ -30,40 +31,77 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
       properties.name,
       properties.logo_src,
       properties.timestamp
-    );
+    )
+    .then()
+    .catch((e) => {
+      if (e.data.data) {
+        if (e.data.data.includes("AppAlreadyInstalled")) {
+          (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+        }
+      }
+    });
+  }
+
+  async removeInvitation(invitationHeaderHash: HeaderHashB64) {
+    await this.wesStore.removeInvitation(invitationHeaderHash);
   }
 
   weName(invitation: JoinMembraneInvitation) {
     return (decode(invitation.cloneDnaRecipe.properties) as any).name;
   }
 
+  weImg(invitation: JoinMembraneInvitation) {
+    return (decode(invitation.cloneDnaRecipe.properties) as any).logo_src;
+  }
+
   inviter(invitation: JoinMembraneInvitation) {
     return invitation.inviter;
   }
+
+  renderErrorSnackbar() {
+    return html`
+      <mwc-snackbar style="text-align: center;" id="error-snackbar" labelText="You are already part of this We!">
+      </mwc-snackbar>
+    `;
+  }
+
 
   renderInvitations(
     invitations: Record<HeaderHashB64, JoinMembraneInvitation>
   ) {
     return html`
     <div class="content-pane">
+      ${this.renderErrorSnackbar()}
       <h2>Pending invitations to join a We:</h2>
       <div class="column" style="justify-content: space-between;">
         ${Object.entries(invitations).map(
-          ([headerHash, invitation]) =>
-            html`
-              <mwc-card style="width: 500px; margin: 5px;">
-                  <div class="row" style="align-items: center; padding: 5px;" >
-                    <div>${this.weName(invitation)}</div>
+      ([headerHash, invitation]) => {
+        return html`
+              <mwc-card style="width: 700px; margin: 5px;">
+                  <div class="row" style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em" >
+                  <img class="we-image" src=${this.weImg(invitation)}>
+                  <div style="font-weight: bold; margin-left: 10px;">${this.weName(invitation)}</div>
                     <div class="row" style="margin-left: auto;">
-                        <mwc-button raised
-                          label="JOIN"
-                          @click=${() => this.join(headerHash, invitation)}
+                      <mwc-button
+                        class="accept-invitation"
+                        raised
+                        label="JOIN"
+                        icon="check"
+                        @click=${() => this.join(headerHash, invitation)}
                       ></mwc-button>
+                      <mwc-button
+                        class="delete-invitation"
+                        raised
+                        label="DELETE"
+                        icon="delete"
+                        @click=${() => this.removeInvitation(headerHash)}>
+                      </mwc-button>
                     </div>
                   </div>
               </mwc-card>
           `
-        )}
+      }
+    )}
       </div>
     </div>
     `;
@@ -82,6 +120,7 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
       "mwc-list": List,
       "mwc-list-item": ListItem,
       "mwc-card": Card,
+      "mwc-snackbar": Snackbar,
     };
   }
 
@@ -94,6 +133,21 @@ export class MyInvitations extends ScopedElementsMixin(LitElement) {
 
       h2 {
         font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+
+      .accept-invitation {
+        --mdc-theme-primary: #17c200;
+      }
+
+      .delete-invitation {
+        --mdc-theme-primary: #cf0000;
+        margin-left: 5px;
+      }
+
+      .we-image {
+        height: 30px;
+        width: 30px;
+        border-radius: 50%;
       }
 
     `
