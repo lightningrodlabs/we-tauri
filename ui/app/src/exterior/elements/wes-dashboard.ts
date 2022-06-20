@@ -22,7 +22,7 @@ import { WeDashboard } from "../../interior/elements/we-dashboard";
 import { WeLogo } from "../../interior/elements/we-logo";
 import { WeContext } from "./we-context";
 import { sharedStyles } from "../../sharedStyles";
-import { MyInvitations } from "./my-invitations";
+import { HomeScreen } from "./home-screen";
 
 export class WesDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext })
@@ -83,7 +83,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
                   <we-dashboard style="flex: 1;"></we-dashboard>
                 </we-context>
               `
-            : html`<my-invitations></my-invitations>`}
+            : html`<home-screen></home-screen>`}
         </div>
 
         <create-we-dialog id="we-dialog"></create-we-dialog>
@@ -109,7 +109,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
       "mwc-fab": Fab,
       "holo-identicon": HoloIdenticon,
       "create-we-dialog": CreateWeDialog,
-      "my-invitations": MyInvitations,
+      "home-screen": HomeScreen,
       "we-dashboard": WeDashboard,
       "we-logo": WeLogo,
       "we-context": WeContext,
