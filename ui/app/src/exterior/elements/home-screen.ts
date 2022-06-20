@@ -5,7 +5,7 @@ import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { Button, List, ListItem, Card, Snackbar, Icon } from "@scoped-elements/material-web";
+import { Button, List, ListItem, Card, Snackbar, Icon, Dialog } from "@scoped-elements/material-web";
 
 import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
@@ -26,6 +26,9 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
 
   @query("#we-dialog")
   _weDialog!: CreateWeDialog;
+
+  @query("#join-group-dialog")
+  _joinGroupDialog!: Dialog;
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
@@ -67,6 +70,36 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     return invitation.inviter;
   }
 
+  getDate(invitation: JoinMembraneInvitation) {
+    const delta_ms = Date.now() - invitation.timestamp/1000;
+    const delta = delta_ms/1000;
+    if (delta < 0) {
+      return "-"
+    } else if (delta < 60) {
+      return "seconds ago"
+    } else if (delta < 120) {
+      return `${Math.floor(delta/60)} minute ago`
+    } else if (delta < 3600) {
+      return `${Math.floor(delta/60)} minutes ago`
+    } else if (delta < 7200) {
+      return `${Math.floor(delta/3600)} hour ago`
+    } else if (delta < 86400) {
+      return `${Math.floor(delta/3600)} hours ago`
+    } else if (delta < 172800) {
+      return `${Math.floor(delta/86400)} day ago`
+    } else if (delta < 2592000) {
+      return `${Math.floor(delta/86400)} days ago`
+    } else if (delta < 5184000) {
+      return `${Math.floor(delta/2592000)} month ago`
+    } else if (delta < 31104000) {
+      return `${Math.floor(delta/2592000)} months ago`
+    } else if (delta < 62208000) {
+      return `${Math.floor(delta/31104000)} year ago`
+    } else {
+      return `${Math.floor(delta/31104000)} years ago`
+    }
+  }
+
   renderErrorSnackbar() {
     return html`
       <mwc-snackbar style="text-align: center;" id="error-snackbar" labelText="You are already part of this We!">
@@ -85,9 +118,10 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html `
-      ${Object.entries(invitations).map(
+      ${Object.entries(invitations).sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp).map(
         ([headerHash, invitation]) => {
           return html`
+              <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="max-width: 800px; margin: 5px;">
                     <div class="row" style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em" >
                     <holo-identicon .hash=${this.inviter(invitation)}></holo-identicon>
@@ -112,6 +146,8 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
                       </div>
                     </div>
                 </mwc-card>
+                <div class="default-font" style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;">${this.getDate(invitation)}</div>
+              </div>
             `
           }
         )}
@@ -127,7 +163,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   ) {
     return html`
       ${this.renderErrorSnackbar()}
-      <div class="row title center-content" style="margin-top: 100px;"><mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">invitations</span></div>
+      <div class="row title center-content" style="margin-top: 80px;"><mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">invitations</span></div>
       <div class="column center-content" style="justify-content: space-between; margin-top: 30px;">
       ${this.renderInvitations(invitations)}
       </div>
@@ -138,16 +174,29 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     return html`
 
       <create-we-dialog id="we-dialog"></create-we-dialog>
+      <mwc-dialog id="join-group-dialog">
+        To join a group, send your public key to the administrator of the group you would like to join.
+        <mwc-button dialogAction="ok" slot="primaryAction">OK</mwc-button>
+      </mwc-dialog>
       <mwc-snackbar id="copied-snackbar" timeoutMs=4000 labelText="Copied!" style="text-align: center;"></mwc-snackbar>
 
       <div class="column content-pane center-content">
-        <mwc-button
 
+        <div class="row title center-content" style="margin-top: 30px;"><mwc-icon>start</mwc-icon><span style="margin-left: 10px;">get started</span></div>
+
+        <mwc-button
           raised
           icon="add"
-          style="margin-top: 60px;"
+          style="margin-top: 40px;"
           @click=${() => this._weDialog.open()}
           >Create New Group
+        </mwc-button>
+        <mwc-button
+          raised
+          icon="add"
+          style="margin-top: 15px;"
+          @click=${() => this._joinGroupDialog.show()}
+          >Join Group
         </mwc-button>
 
         ${this._myInvitations.render({
@@ -156,7 +205,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
         }
 
         <div class="column center-content">
-          <div class="row title center-content" style="margin-top: 100px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
+          <div class="row title center-content" style="margin-top: 80px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
           <div class="default-font" style="margin-top: 30px;">
             <sl-tooltip placement="right" .content=${"copy"}>
               <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.wesStore.myAgentPubKey); this._copiedSnackbar.show()}}>
@@ -184,6 +233,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       "holo-identicon": HoloIdenticon,
       "create-we-dialog": CreateWeDialog,
       "sl-tooltip": SlTooltip,
+      "mwc-dialog": Dialog,
     };
   }
 

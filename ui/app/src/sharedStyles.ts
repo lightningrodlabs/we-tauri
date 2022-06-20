@@ -6,7 +6,7 @@ export const sharedStyles = css`
     font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 
-  h4 {
+  .default-font {
     font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
 

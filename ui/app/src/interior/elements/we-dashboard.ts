@@ -17,6 +17,7 @@ import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "../../sharedStyles";
+import { InvitationsBlock } from "./invitations-block";
 
 export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -35,6 +36,9 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
   @property()
   _selectedGameId: EntryHashB64 | undefined = undefined;
+
+  @state()
+  private _showInvitationFlow: boolean = false;
 
   @query("#game-dialog")
   _gameDialog!: CreateGameDialog;
@@ -69,8 +73,29 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       );
   }
 
+  openInvitationFlow() {
+    this._showInvitationFlow = true;
+  }
+
+  closeInvitationFlow() {
+    this._showInvitationFlow = false;
+  }
+
   renderPlayers() {
-    return html``;
+    return html`
+      <div class="column">
+        <div class="default-font" style="font-size: 1.1em; text-align: center; border-bottom: 2px solid white; padding: 10px 5px;">${this._info.value?.name}</div>
+        <div class="default-font" style="font-size: 0.9em; text-align: right; margin: 25px; color: #303f9f;">MEMBERS</div>
+        <list-profiles></list-profiles>
+      </div>
+  `;
+  }
+
+
+  renderInvitationsBlock() {
+    return html`
+      I am the invitation block :)
+    `
   }
 
   renderGamesList() {
@@ -155,12 +180,16 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     if (!this._selectedGameId) {
       return html`
         ${this.renderJoinErrorSnackbar()}
-        <div class="column">
-          <h2>Members</h2>
-          <we-members></we-members>
+        <div class="column center-content">
+          <!-- <h2>Members</h2> -->
+          <!-- <we-members></we-members> -->
+          <div class="row title center-content title" style="margin-top: 80px;"><mwc-icon>outgoing_mail</mwc-icon><span style="margin-left: 10px;">invite new member</span></div>
+          <invitations-block></invitations-block>
+
           ${this.renderNewGamesList()}
-          <h2 style="margin-top: 100px;">hApps available on the DevHub</h2>
-          <div style="background: #ecebff; border-radius: 8px; padding: 10px;" >
+
+          <div class="row title center-content title" style="margin-top: 100px;"><mwc-icon>install_desktop</mwc-icon><span style="margin-left: 10px;">hApps available on the DevHub</span></div>
+          <div class="row center-content installable-games-container">
             <installable-games></installable-games>
           </div>
         </div>
@@ -181,7 +210,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
         <div class="content-pane">${this.renderContent()}</div>
 
-        <div class="players">${this.renderPlayers()}</div>
+        <div class="members-sidebar">${this.renderPlayers()}</div>
 
         <create-game-dialog id="game-dialog"></create-game-dialog>
       </profile-prompt>
@@ -199,6 +228,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "mwc-circular-progress": CircularProgress,
       "we-game-renderer": WeGameRenderer,
       "sl-tooltip": SlTooltip,
+      "invitations-block": InvitationsBlock,
     };
   }
 
@@ -208,8 +238,16 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         display: flex;
       }
 
-      h2 {
-        font-family: Arial, Helvetica, sans-serif;
+
+      .title {
+        align-items: center;
+        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-size: 1.2em;
+        text-align: center;
+      }
+
+      .default-font {
+        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
       }
 
       .we-sidebar {
@@ -233,15 +271,15 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         flex-grow: 1;
         padding: 30px;
         margin-left: 72px;
-        margin-right: 40px;
+        margin-right: 200px;
         width: 100%;
       }
-      .players {
+      .members-sidebar {
         position: fixed;
         top: 0;
         right: 0;
-        width: 40px;
-        background-color: lightgrey;
+        width: 200px;
+        background-color: #e3e5ed;
         height: 100vh;
         padding: 2px;
       }
@@ -284,6 +322,15 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
       .highlighted {
         border: #303F9F 4px solid;
+      }
+
+      .installable-games-container {
+        background: #ecebff;
+        border-radius: 8px;
+        padding: 10px;
+        width: 100%;
+        margin-top: 20px;
+        min-height: 100px;
       }
     `;
 

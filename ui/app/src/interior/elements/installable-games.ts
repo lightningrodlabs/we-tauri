@@ -83,21 +83,26 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
       ></create-game-dialog>
 
       <div style="display: flex; flex-wrap: wrap;">
-        ${this._installableGames.map((item) => {
+        ${(this._installableGames.length == 0)
+          ? html`
+            <div class="column" style="align-items: center;">
+              <div class="row center-content default-font">No hApps available yet <mwc-icon style="margin-left: 10px;">mood_bad</mwc-icon></div>
+            </div>
+            `
+          :  this._installableGames.map((item) => {
 
-          let latestRelease = getLatestRelease(item);
+            let latestRelease = getLatestRelease(item);
 
-          if (latestRelease) {
-            let gameInfo: GameInfo = {
-              title: item.app.content.title,
-              subtitle: item.app.content.subtitle,
-              description: item.app.content.description,
-              icon: undefined, // ADD ICON HERE
-              entryHash: latestRelease.address,
+            if (latestRelease) {
+              let gameInfo: GameInfo = {
+                title: item.app.content.title,
+                subtitle: item.app.content.subtitle,
+                description: item.app.content.description,
+                icon: undefined, // TODO: ADD ICON HERE
+                entryHash: latestRelease.address,
+              }
+              return this.renderInstallableGame(gameInfo);
             }
-            return this.renderInstallableGame(gameInfo);
-          }
-
         })}
       </div>
     `;
