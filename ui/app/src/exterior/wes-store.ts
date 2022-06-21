@@ -27,10 +27,15 @@ export class WesStore {
   public membraneInvitationsStore: MembraneInvitationsStore;
 
   private _wes: Writable<Record<DnaHashB64, WeStore>> = writable({});
+  private _selectedWeId: Writable<DnaHashB64 | undefined> = writable(undefined);
 
   /** Static info */
   public weStore(weId: DnaHashB64): Readable<WeStore> {
     return derived(this._wes, (wes) => wes[weId]);
+  }
+
+  public get selectedWeId(): Readable<DnaHashB64 | undefined> {
+    return derived(this._selectedWeId, (id) => id);
   }
 
   public myAgentPubKey: AgentPubKeyB64;
@@ -55,6 +60,11 @@ export class WesStore {
     return serializeHash(weCell.cell_id[0]);
   }
 
+  public setWeId(id: DnaHashB64 | undefined) {
+    this._selectedWeId.set(id);
+  }
+
+  // sorts the Wes alphabetically
   public async fetchWes(): Promise<Readable<Record<DnaHashB64, WeStore>>> {
     let active = await this.adminWebsocket.listApps({
       status_filter: AppStatusFilter.Running,
@@ -63,7 +73,8 @@ export class WesStore {
     console.log("installed apps", active);
     const activeWes = active.filter((app) =>
       app.installed_app_id.startsWith("we-")
-    );
+    ).sort((a, b) => a.installed_app_id.localeCompare(b.installed_app_id)); // sorting alphabetically
+
     const stores = activeWes.map((we) => {
       const weCell = we.cell_data[0];
 
@@ -95,7 +106,7 @@ export class WesStore {
    * @param weName
    * @param weLogo
    */
-  public async createWe(name: string, logo: string) {
+  public async createWe(name: string, logo: string): Promise<DnaHashB64> {
     const timestamp = Date.now();
 
     const newWeHash = await this.installWe(name, logo, timestamp);
@@ -116,6 +127,8 @@ export class WesStore {
       properties: encode(properties),
       resultingDnaHash: newWeHash,
     });
+
+    return newWeHash;
   }
 
   public async joinWe(
@@ -182,10 +195,12 @@ export class WesStore {
       this.membraneInvitationsStore.service
     );
 
-    this._wes.update((wes) => {
-      wes[serializeHash(newWeCell.cell_id[0])] = store;
-      return wes;
-    });
+    // this._wes.update((wes) => {
+    //   wes[serializeHash(newWeCell.cell_id[0])] = store;
+    //   return wes;
+    // });
+    await this.fetchWes(); // called to update store (the commented lines above would
+                           // not order the wes alphabetically)
 
     return serializeHash(newWeHash);
   }

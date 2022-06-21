@@ -61,6 +61,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
           <mwc-button
             style="margin: 10px;"
             raised
+            icon="send"
             label="INVITE"
             @click=${() => this.inviteToJoin(this._pubKey!)}
             .disabled=${!this._pubKey}

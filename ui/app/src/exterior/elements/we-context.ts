@@ -40,7 +40,6 @@ export class WeContext extends ScopedElementsMixin(LitElement) {
     this._provider = new ContextProvider(
       this,
       weContext,
-
       weStore
     );
     this._profilesProvider = new ContextProvider(

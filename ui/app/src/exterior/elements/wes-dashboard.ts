@@ -23,6 +23,7 @@ import { WeLogo } from "../../interior/elements/we-logo";
 import { WeContext } from "./we-context";
 import { sharedStyles } from "../../sharedStyles";
 import { HomeScreen } from "./home-screen";
+import { get } from "svelte/store";
 
 export class WesDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext })
@@ -30,9 +31,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
   wesStore!: WesStore;
 
   _wes = new TaskSubscriber(this, () => this.wesStore.fetchWes());
-
-  @state()
-  _selectedWeId: string | undefined;
+  _selectedWeId = new StoreSubscriber(this, () => this.wesStore.selectedWeId);
 
   @query("#we-dialog")
   _weDialog!: CreateWeDialog;
@@ -44,12 +43,20 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           <we-context .weId=${weId}>
             <we-logo
               style="margin-top: 8px; border-radius: 50%"
-              class=${classMap({ highlighted: weId === this._selectedWeId })}
-              @click=${() => (this._selectedWeId = weId)}
+              class=${classMap({ highlighted: weId === this._selectedWeId.value })}
+              @click=${() => (this.wesStore.setWeId(weId))}
             ></we-logo>
           </we-context>
         `
     );
+  }
+
+  renderWeDashboard() {
+    return html`
+      <we-context .weId=${this._selectedWeId.value}>
+        <we-dashboard style="flex: 1;"></we-dashboard>
+      </we-context>
+    `
   }
 
   renderContent(wes: Record<DnaHashB64, WeStore>) {
@@ -57,18 +64,21 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
       <div class="row" style="flex: 1">
         <div
           class="column wes-sidebar"
+          style=""
         >
           <mwc-fab
-            icon="home"
-            @click=${() => (this._selectedWeId = undefined)}
-          ></mwc-fab>
+            style="--mdc-theme-secondary: #9ca5e3"
+            @click=${() => (this.wesStore.setWeId(undefined))}
+          >
+            <mwc-icon slot="icon" outlined>explore</mwc-icon>
+          </mwc-fab>
 
           ${this.renderWeList(wes)}
 
           <mwc-fab
             icon="group_add"
             @click=${() => this._weDialog.open()}
-            style="margin-top: 8px;"
+            style="margin-top: 8px; --mdc-theme-secondary: #9ca5e3;"
           ></mwc-fab>
 
           <span style="flex: 1"></span>
@@ -77,16 +87,12 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
         </div>
 
         <div style="margin-left: 72px; width: 100%">
-          ${this._selectedWeId
-            ? html`
-                <we-context .weId=${this._selectedWeId}>
-                  <we-dashboard style="flex: 1;"></we-dashboard>
-                </we-context>
-              `
+          ${this._selectedWeId.value
+            ? this.renderWeDashboard()
             : html`<home-screen></home-screen>`}
         </div>
 
-        <create-we-dialog id="we-dialog"></create-we-dialog>
+        <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this.wesStore.setWeId(e.detail) }}></create-we-dialog>
 
       </div>
     `;
@@ -131,6 +137,8 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           position: fixed;
           top: 0;
           height: 100vh;
+          overflow: visible;
+          overflow-y: auto;
           z-index: 1;
         }
 

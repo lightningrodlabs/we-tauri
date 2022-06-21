@@ -37,22 +37,25 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   _logoSrc: string | undefined;
 
   private async handleOk(e: any) {
-    this._dialog.close();
-    await this._store.createWe(this._name!, this._logoSrc!);
+    // if statement is required to prevent ENTER key to close the dialog while the button is disabled
+    if (this._name && this._logoSrc) {
 
-    this.dispatchEvent(
-      new CustomEvent("we-added", {
-        detail: this._name,
-        bubbles: true,
-        composed: true,
-      })
-    );
-    this._nameField.value = "";
-    this._avatarField.clear();
+      this._dialog.close();
+      const weId = await this._store.createWe(this._name!, this._logoSrc!);
+
+      this.dispatchEvent(
+        new CustomEvent("we-added", {
+          detail: weId,
+          bubbles: true,
+          composed: true,
+        })
+      );
+      this._nameField.value = "";
+      this._avatarField.clear();
+    }
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-      console.log("I am a new instance of a create-we-dialog");
   }
 
   render() {

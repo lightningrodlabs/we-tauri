@@ -104,7 +104,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       return html`
         <div class="column we-sidebar">
           <mwc-fab
-            icon="home"
+            icon="tune"
+            style="--mdc-theme-secondary: #303F9F"
             @click=${() => { this._selectedGameId = undefined } }
           ></mwc-fab>
           ${Object.entries(gamesIAmPlaying).map(
@@ -206,6 +207,17 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <profile-prompt style="flex: 1;">
+
+        <div slot="hero">
+          <div class="default-font">
+            <div class="column center-content">
+              <img class="we-logo" style="margin-top: 30px;" src=${this._info.value?.logo_src!}>
+              <div style="font-weight: bold; margin-top: 20px; font-size: 1.2em;">${this._info.value?.name}</div>
+              <div style="margin-bottom: 50px; margin-top: 50px; font-size: 1.3em;">How would you like to appear in this group?</div>
+            </div>
+          </div>
+        </div>
+
         ${this.renderGamesList()}
 
         <div class="content-pane">${this.renderContent()}</div>
@@ -258,6 +270,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         top: 0;
         height: 100vh;
         width: 58px;
+        overflow-y: auto;
       }
 
       .we-name {
@@ -265,6 +278,13 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         border-bottom: solid 1px gray;
         margin-bottom: 5px;
         width: 100%;
+      }
+
+      .we-logo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .content-pane {
