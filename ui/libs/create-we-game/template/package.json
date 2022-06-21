@@ -7,10 +7,10 @@
     "start": "concurrently -k --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\""
   },
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.3.2",
-    "@holochain-open-dev/profiles": "^0.0.9",
-    "@holochain/client": "^0.3.2",
-    "@lit-labs/context": "^0.1.1",
+    "@holochain-open-dev/cell-client": "^0.5.3",
+    "@holochain-open-dev/profiles": "^0.3.0",
+    "@holochain/client": "^0.4.1",
+    "@lit-labs/context": "^0.1.2",
     "@lightningrodlabs/we-game": "^0.0.3",
     "@open-wc/scoped-elements": "^2.0.1",
     "@scoped-elements/material-web": "^0.0.19",
