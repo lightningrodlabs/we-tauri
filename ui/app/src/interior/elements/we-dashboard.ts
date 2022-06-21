@@ -78,14 +78,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  openInvitationFlow() {
-    this._showInvitationFlow = true;
-  }
-
-  closeInvitationFlow() {
-    this._showInvitationFlow = false;
-  }
-
   renderPlayers() {
     return html`
       <div class="column">
@@ -96,12 +88,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   `;
   }
 
-
-  renderInvitationsBlock() {
-    return html`
-      I am the invitation block :)
-    `
-  }
 
   renderGamesList(gamesIAmPlaying: Record<EntryHashB64, PlayingGame>) {
     if (gamesIAmPlaying) {
