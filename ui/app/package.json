@@ -17,13 +17,14 @@
     "@holochain/client": "^0.3.2",
     "@lightningrodlabs/we-game": "0.0.4",
     "@lit-labs/context": "^0.1.1",
+    "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
     "@open-wc/scoped-elements": "^2.1.1",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
     "fflate": "^0.7.3",
     "lit": "^2.2.0",
-    "lit-svelte-stores": "^0.2.0",
+    "lit-svelte-stores": "^0.2.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

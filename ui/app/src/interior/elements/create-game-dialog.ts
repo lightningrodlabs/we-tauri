@@ -224,7 +224,6 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       "mwc-dialog": Dialog,
       "mwc-snackbar": Snackbar,
       'mwc-circular-progress': CircularProgress,
-
     };
   }
 
