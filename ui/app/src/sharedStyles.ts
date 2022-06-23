@@ -23,4 +23,11 @@ export const sharedStyles = css`
     justify-content: center;
     align-items: center;
   }
+
+  .title {
+    align-items: center;
+    font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 1.2em;
+    text-align: center;
+  }
 `;

@@ -6,8 +6,10 @@ import {
   Button,
   Fab,
   Snackbar,
+  IconButtonToggle,
+  LinearProgress,
 } from "@scoped-elements/material-web";
-import { css, html, LitElement, PropertyValues } from "lit";
+import { css, html, LitElement, PropertyValueMap, PropertyValues } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
 import { get } from "svelte/store";
@@ -23,7 +25,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "../../sharedStyles";
 import { InvitationsBlock } from "./invitations-block";
-import { PlayingGame } from "../types";
+import { Game, PlayingGame } from "../types";
 
 export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -36,22 +38,21 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     () => [this._store]
   );
 
-  // _allGames = new TaskSubscriber(this, () => this._store.fetchAllGames());
-  // _allGames = new StoreSubscriber(this, () => this._store.allGames);
-
-  _gamesIAmPlaying = new TaskSubscriber(
+  _allGames = new TaskSubscriber(
     this,
-    ([s]) => s.fetchGamesIAmPlaying(),
+    () => this._store.fetchAllGames(),
     () => [this._store]
   );
 
-  _unjoinedGames = new StoreSubscriber(this, () => this._store.unjoinedGames);
 
   @property()
   _selectedGameId: EntryHashB64 | undefined = undefined;
 
   @state()
-  private _showInvitationFlow: boolean = false;
+  private _showGameDescription: boolean = false;
+
+  @state()
+  private _loading: boolean = true;
 
   @query("#game-dialog")
   _gameDialog!: CreateGameDialog;
@@ -66,11 +67,52 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
+  renderInstallingProgress() {
+    return html`
+    <mwc-snackbar
+      id="installing-progress"
+      timeoutMs=-1
+      labelText="Installing..."
+      style="text-align: center"
+    >
+    </mwc-snackbar>
+    `
+  }
+
+  renderSuccessSnackbar() {
+    return html`
+      <mwc-snackbar id="installation-success" labelText="Installation successful" style="text-align: center"></mwc-snackbar>
+    `
+  }
+
+
+  protected async firstUpdated() {
+    await this._store.fetchGamesIAmPlaying();
+    await this._store.fetchInfo();
+    this._loading = false;
+  }
+
+  toggleGameDescription() {
+    this._showGameDescription = !this._showGameDescription;
+  }
+
   async joinGame(gameHash: EntryHashB64) {
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._store
       .joinGame(gameHash)
-      .then(() => {})
+      .then(() => {
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (
+          this.shadowRoot?.getElementById("installation-success") as Snackbar
+        ).show();
+        this.requestUpdate(); // to show the newly installed game in case user is still on same page
+      })
       .catch((e) => {
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
         (
           this.shadowRoot?.getElementById("join-error-snackbar") as Snackbar
         ).show();
@@ -89,58 +131,60 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   }
 
 
-  renderGamesList(gamesIAmPlaying: Record<EntryHashB64, PlayingGame>) {
-    if (gamesIAmPlaying) {
+  renderGamesList(allGames: Record<EntryHashB64, Game>) {
+    if (allGames) {
       return html`
         <div class="column we-sidebar">
           <mwc-fab
-            icon="tune"
+            icon="home"
             style="--mdc-theme-secondary: #303F9F"
             @click=${() => {
               this._selectedGameId = undefined
             }}
           ></mwc-fab>
-          ${Object.entries(gamesIAmPlaying).map(([gameHash, playingGame]) => {
-            console.log("playing game: ", playingGame);
-            if (!playingGame.game.logoSrc) {
-              return html`
-                <sl-tooltip
-                  id="tooltip"
-                  placement="right"
-                  .content=${playingGame.game.name}
-                >
-                  <div
-                    class="game-logo-placeholder ${classMap({
-                      highlighted: gameHash === this._selectedGameId,
-                    })}"
-                    @click=${() => {
-                      this._selectedGameId = gameHash;
-                    }}
+          ${Object.entries(allGames)
+            .sort(([a_hash, a_game], [b_hash, b_game]) => a_game.name.localeCompare(b_game.name))
+            .map(([gameHash, game]) => {
+              if (!game.logoSrc) {
+                return html`
+                  <sl-tooltip
+                    id="tooltip"
+                    placement="right"
+                    .content=${game.name}
                   >
-                    ${playingGame.game.name[0]}
-                  </div>
-                </sl-tooltip>
-              `;
-            } else {
-              return html`
-                <sl-tooltip
-                  id="tooltip"
-                  placement="right"
-                  .content=${playingGame.game.name}
-                >
-                  <img
-                    class="game-logo ${classMap({
-                      highlighted: gameHash === this._selectedGameId,
-                    })}"
-                    src=${playingGame.game.logoSrc}
-                    @click=${() => {
-                      this._selectedGameId = gameHash;
-                    }}
-                  />
-                </sl-tooltip>
-              `;
-            }
-          })}
+                    <div
+                      class="game-logo-placeholder ${classMap({
+                        highlighted: gameHash === this._selectedGameId,
+                      })}"
+                      @click=${() => {
+                        this._selectedGameId = gameHash;
+                      }}
+                    >
+                      ${game.name[0]}
+                    </div>
+                  </sl-tooltip>
+                `;
+              } else {
+                return html`
+                  <sl-tooltip
+                    id="tooltip"
+                    placement="right"
+                    .content=${game.name}
+                  >
+                    <img
+                      class="game-logo ${classMap({
+                        highlighted: gameHash === this._selectedGameId,
+                      })}"
+                      src=${game.logoSrc}
+                      @click=${() => {
+                        this._selectedGameId = gameHash;
+                      }}
+                    />
+                  </sl-tooltip>
+                `;
+              }
+            })
+          }
         </div>
       `;
     } else {
@@ -150,71 +194,65 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  // Renders a list of the games of the we which the agent hasn't joined yet.
-  renderNewGamesList() {
-    const unjoinedGames = this._unjoinedGames.value;
-    if (Object.entries(unjoinedGames).length > 0) {
-      return html`
-        ${Object.entries(unjoinedGames).map(([gameHash, game]) => {
-          return html`
-            <h2 style="margin-top: 100px;">
-              New Games you haven't joined yet:
-            </h2>
-            <div
-              style="background: #c6fcba; border-radius: 8px; padding: 10px;"
-            >
-              <mwc-card class="game-card">
-                <div style="height: 145px;">
-                  <h2 style="padding: 5px; margin:0;">${game.name}</h2>
-                  <div style="height: 70px; overflow-y: auto; padding: 5px;">
-                    ${game.description}
-                  </div>
-                </div>
-                <mwc-button
-                  outlined
-                  @click=${() => {
-                    this.joinGame(gameHash);
-                  }}
-                  >JOIN</mwc-button
-                >
-              </mwc-card>
-            </div>
-          `;
-        })}
-      `;
-    }
-  }
 
   renderContent() {
-    console.log(this._selectedGameId);
-
+    console.log("_allGames: ", this._allGames.value);
+    console.log("_info: ", this._info.value);
     if (!this._selectedGameId) {
       return html`
-        ${this.renderJoinErrorSnackbar()}
         <div class="column center-content">
-          <!-- <h2>Members</h2> -->
-          <!-- <we-members></we-members> -->
-          <div class="row title center-content title" style="margin-top: 80px;"><mwc-icon>outgoing_mail</mwc-icon><span style="margin-left: 10px;">invite new member</span></div>
-          <invitations-block></invitations-block>
 
-          ${this.renderNewGamesList()}
+          <img class="logo-large" style=" width: 150px; height: 150px;" src=${this._info.value!.logo_src}>
+          <div class="default-font" style="font-size: 1.4em; margin-top: 30px; font-weight: bold;">${this._info.value?.name}</div>
 
-          <div class="row title center-content title" style="margin-top: 100px;"><mwc-icon>install_desktop</mwc-icon><span style="margin-left: 10px;">hApps available on the DevHub</span></div>
+          <invitations-block style="margin-top: 50px;"></invitations-block>
+
+          <div class="row title center-content title" style="margin-top: 80px;"><mwc-icon>install_desktop</mwc-icon><span style="margin-left: 10px;">hApps available on the DevHub</span></div>
           <div class="row center-content installable-games-container">
             <installable-games></installable-games>
           </div>
         </div>
       `;
-    } else {
-      return html` ${this.renderJoinErrorSnackbar()}
+    } else if (this._store.isInstalled(this._selectedGameId)) {
+      return html`
         <we-game-renderer
           id="${this._selectedGameId}"
           .gameHash=${this._selectedGameId}
         ></we-game-renderer>`;
+    } else {
+      const game = this._store.getGameInfo(this._selectedGameId)!;
+      return html`
+        <div class="column center-content">
+          ${!game.logoSrc
+            ? html`<div class="logo-placeholder-large" style="width: 100px; height: 100px;">${game.name[0]}</div>`
+            : html`<img class="logo-large" src=${game.logoSrc!}>`
+          }
+          <div class="row center-content" style="margin-top: 20px;">
+            <div class="default-font" style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;">${game.name}</div>
+            <mwc-icon-button-toggle onIcon="expand_less" offIcon="expand_more" @click=${this.toggleGameDescription}></mwc-icon-button-toggle>
+          </div>
+          ${this._showGameDescription
+              ? html`<div class="default-font" style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;">${game.description}</div>`
+              : html``
+            }
+          <div class="default-font" style="margin-top: 70px; font-size: 1.2em; text-align: center;">This game has been added by someone else from your group.</div>
+          <div class="default-font" style="margin-top: 10px; font-size: 1.2em; text-align: center;">You haven't installed it yet.</div>
+          <mwc-button style="margin-top: 50px;" raised @click=${() => this.joinGame(this._selectedGameId!)}>INSTALL</mwc-button>
+        </div>
+      `
     }
   }
 
   render() {
+
+    if (this._loading) {
+      return html`
+        <div class="center-content">
+          <mwc-circular-progress style="margin-top: 100px;"></mwc-circular-progress>
+    </div>
+    `;
+    }
+
     return html`
       <profile-prompt style="flex: 1;">
 
@@ -223,12 +261,17 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
             <div class="column center-content">
               <img class="we-logo" style="margin-top: 30px;" src=${this._info.value?.logo_src!}>
               <div style="font-weight: bold; margin-top: 20px; font-size: 1.2em;">${this._info.value?.name}</div>
-              <div style="margin-bottom: 50px; margin-top: 50px; font-size: 1.3em;">How would you like to appear in this group?</div>
+              <div style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;">How would you like to appear in this group?</div>
             </div>
           </div>
         </div>
 
-        ${this._gamesIAmPlaying.render({
+
+        ${this.renderJoinErrorSnackbar()}
+        ${this.renderInstallingProgress()}
+        ${this.renderSuccessSnackbar()}
+
+        ${this._allGames.render({
           complete: (games) => this.renderGamesList(games),
           pending: () => html`
             <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -256,6 +299,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "we-game-renderer": WeGameRenderer,
       "sl-tooltip": SlTooltip,
       "invitations-block": InvitationsBlock,
+      "mwc-icon-button-toggle": IconButtonToggle,
+      "mwc-linear-progress": LinearProgress,
     };
   }
 
@@ -263,14 +308,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     const localStyles = css`
       :host {
         display: flex;
-      }
-
-
-      .title {
-        align-items: center;
-        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
-        font-size: 1.2em;
-        text-align: center;
       }
 
       .default-font {
@@ -285,10 +322,10 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         top: 0;
         height: 100vh;
         width: 58px;
-        overflow-y: auto;
       }
 
       .we-name {
+
         text-align: center;
         border-bottom: solid 1px gray;
         margin-bottom: 5px;
@@ -346,7 +383,27 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       }
 
       .game-logo-placeholder:hover {
-        box-shadow: 0 0 5px #0000;
+        box-shadow: 0 0 10px #0000;
+        background: gray;
+      }
+
+      .logo-large {
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background: white;
+      }
+
+      .logo-placeholder-large {
+        text-align: center;
+        font-size: 70px;
+        border-radius: 50%;
+        border: 4px solid black;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background: white;
       }
 
       .game-card {

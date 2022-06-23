@@ -60,7 +60,7 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <mwc-dialog id="dialog" heading="Create We">
+      <mwc-dialog id="dialog" heading="Create Group">
         <select-avatar
         id="select-avatar"
           @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}

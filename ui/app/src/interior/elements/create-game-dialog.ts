@@ -130,14 +130,16 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   }
 
   async createGame() {
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show()
     await this._weStore.createGame(this._gameInfo, this._installedAppIdField.value)
       .then(
         () => {
+          (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
           (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
-          // make sure allGames is up to date
         }
       ).catch(
         (e) => {
+          (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
           (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
           console.log("Installation error:", e);
         }
@@ -162,7 +164,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
 
   renderErrorSnackbar() {
     return html`
-      <mwc-snackbar id="error-snackbar" labelText="Installation failed! (See console for details)">
+      <mwc-snackbar id="error-snackbar" labelText="Installation failed! (See console for details)" style="text-align: center">
       </mwc-snackbar>
     `;
   }
@@ -173,12 +175,20 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     `
   }
 
+  renderInstallingProgress() {
+    return html`
+      <mwc-snackbar style="text-align: center;" id="installing-progress" labelText="Installing...">
+      </mwc-snackbar>
+    `;
+  }
 
   render() {
 
     return html`
       ${this.renderErrorSnackbar()}
       ${this.renderSuccessSnackbar()}
+      ${this.renderInstallingProgress()}
+
       <mwc-dialog
         id="game-dialog"
         heading="Add Custom Name"

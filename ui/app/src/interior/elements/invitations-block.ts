@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { ListProfiles } from "@holochain-open-dev/profiles";
-import { Button, TextField, Snackbar, Icon, Dialog } from "@scoped-elements/material-web";
+import { Button, TextField, Snackbar, Icon, Dialog, Card } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { AgentPubKeyB64, serializeHash } from "@holochain-open-dev/core-types";
 import { query, state } from "lit/decorators.js";
@@ -46,31 +46,35 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <div>
-        <mwc-snackbar id="snackbar-success" timeoutMs=4000 labelText="Invitation sent." style="text-align: center;"></mwc-snackbar>
-        <mwc-snackbar id="snackbar-error" timeoutMs=4000 labelText="Error. Public key may be invalid." style="text-align: center;"></mwc-snackbar>
+      <mwc-snackbar id="snackbar-success" timeoutMs=4000 labelText="Invitation sent." style="text-align: center;"></mwc-snackbar>
+      <mwc-snackbar id="snackbar-error" timeoutMs=4000 labelText="Error. Public key may be invalid." style="text-align: center;"></mwc-snackbar>
+
+
+      <mwc-card>
+        <div style="margin: 20px;">
+          <div class="row title center-content title"><mwc-icon>outgoing_mail</mwc-icon><span style="margin-left: 10px;">invite new member</span></div>
+          <div class="row" style="align-items: center; margin-top: 20px;">
+            <mwc-textfield
+              label="Public Key"
+              id="pubkey-field"
+              autoValidate
+              @input=${(e) => (this._pubKey = e.target.value)}
+              outlined
+            ></mwc-textfield>
+            <mwc-button
+              style="margin: 10px;"
+              raised
+              icon="send"
+              label="INVITE"
+              @click=${() => this.inviteToJoin(this._pubKey!)}
+              .disabled=${!this._pubKey}
+            ></mwc-button>
+          </div>
+          <div class="default-font" style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;">
+            ask a friend to send you his/her public key
+          </div>
         </div>
-        <div class="row" style="align-items: center; margin-top: 20px;">
-          <mwc-textfield
-            label="Public Key"
-            id="pubkey-field"
-            autoValidate
-            @input=${(e) => (this._pubKey = e.target.value)}
-            outlined
-          ></mwc-textfield>
-          <mwc-button
-            style="margin: 10px;"
-            raised
-            icon="send"
-            label="INVITE"
-            @click=${() => this.inviteToJoin(this._pubKey!)}
-            .disabled=${!this._pubKey}
-          ></mwc-button>
-        </div>
-        <div class="default-font" style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;">
-                ask your friend to send you his/her public key
-            </div>
-      </div>
+      </mwc-card>
     `;
   }
 
@@ -83,6 +87,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
       "mwc-icon": Icon,
       "mwc-dialog": Dialog,
       "invitation-help-dialog": InvitationHelpDialog,
+      "mwc-card": Card,
     };
   }
 

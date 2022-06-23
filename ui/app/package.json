@@ -14,7 +14,7 @@
     "@holochain-open-dev/peer-status": "github:holochain-open-dev/peer-status#ui-build",
     "@holochain-open-dev/profiles": "^0.3.0",
     "@holochain-open-dev/utils": "^0.0.13",
-    "@holochain/client": "^0.3.2",
+    "@holochain/client": "^0.4.1",
     "@lightningrodlabs/we-game": "0.0.4",
     "@lit-labs/context": "^0.1.1",
     "@lit-labs/task": "^1.1.2",

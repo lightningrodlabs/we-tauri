@@ -29,7 +29,7 @@ import {
 } from "svelte/store";
 import { MembraneInvitationsService } from "@holochain-open-dev/membrane-invitations";
 import { encode } from "@msgpack/msgpack";
-import { ProfilesStore } from "@holochain-open-dev/profiles";
+import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
@@ -54,26 +54,11 @@ export class WeStore {
   private weService: WeService;
   public profilesStore: ProfilesStore;
 
-  private _selectedGameId: Writable<EntryHashB64 | undefined> =
-    writable(undefined);
   private _allGames: Writable<Record<EntryHashB64, Game>> = writable({});
   private _gamesIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
     writable({});
   private _gameRenderers: Record<EntryHashB64, GameRenderers> = {};
 
-  public get unjoinedGames(): Readable<Record<EntryHashB64, Game>> {
-    return derived(this._allGames, (allGames) => {
-      const unjoinedGames: Record<EntryHashB64, Game> = {};
-      const gamesIAmPlaying = get(this._gamesIAmPlaying);
-
-      Object.entries(allGames).map(([gameHash, game]) => {
-        if (!gamesIAmPlaying[gameHash]) {
-          unjoinedGames[gameHash] = game;
-        }
-      });
-      return unjoinedGames;
-    });
-  }
 
   /*
   public game(gameHash: EntryHashB64): Readable<
@@ -122,7 +107,7 @@ export class WeStore {
   ) {
     this.gamesService = new GamesService(cellClient);
     this.weService = new WeService(cellClient);
-    this.profilesStore = new ProfilesStore(cellClient);
+    this.profilesStore = new ProfilesStore(new ProfilesService(cellClient));
 
     cellClient.addSignalHandler((signal) => {
       const payload = signal.data.payload;
@@ -139,18 +124,14 @@ export class WeStore {
     });
   }
 
-  public selectGame(gameHash: EntryHashB64 | undefined) {
-    this._selectedGameId.update((id) => gameHash);
-  }
-
   public async getDevhubHapp(): Promise<InstalledAppInfo> {
     const installedApps = await this.adminWebsocket.listApps({});
     return installedApps.find((app) => app.installed_app_id === "DevHub")!;
   }
 
+
   async fetchInfo(): Promise<Readable<WeInfo>> {
     const info = await this.weService.getInfo();
-
     return readable(info);
   }
 
@@ -196,6 +177,41 @@ export class WeStore {
       }
     );
   }
+
+
+  isInstalled(gameHash: EntryHashB64) {
+    const installedIds = Object.entries(get(this._gamesIAmPlaying)).map(([entryHash, agentPubKey]) => entryHash)
+    console.log("installedIds: ", installedIds);
+    console.log("gameHash: ", gameHash);
+    console.log("included: ", installedIds.includes(gameHash));
+    return installedIds.includes(gameHash);
+  }
+
+
+  getGameInfo(gameHash: EntryHashB64): Game | undefined {
+    return get(this._allGames)[gameHash];
+  }
+
+  // async fetchOrderedGamesList(): Promise<Readable<Record<"joined"|"unjoined", Readable<<EntryHashB64, Game>> {
+
+  //   const gamesIamPlaying = get(await this.fetchGamesIAmPlaying());
+  //   const allGames = get(await this.fetchAllGames());
+
+
+
+  //   return derived(this._allGames, (allGames) => {
+  //     const unjoinedGames: Record<EntryHashB64, Game> = {};
+  //     const gamesIAmPlaying = get(this._gamesIAmPlaying);
+
+  //     Object.entries(allGames).map(([gameHash, game]) => {
+  //       if (!gamesIAmPlaying[gameHash]) {
+  //         unjoinedGames[gameHash] = game;
+  //       }
+  //     });
+  //     return unjoinedGames;
+  //   });
+
+  // }
 
   async fetchGameRenderers(gameHash: EntryHashB64): Promise<GameRenderers> {
     const renderer = this._gameRenderers[gameHash];
@@ -439,45 +455,7 @@ export class WeStore {
     });
   }
 
-  /*
-  private async installGame(dnaFile: File, name: string): Promise<DnaHashB64> {
-    const installAppBundleRequest: InstallAppBundleRequest = {
-      installed_app_id: name,
-      agent_key: deserializeHash(this.myAgentPubKey) as any,
-      membrane_proofs: {},
-      bundle: {
-        manifest: {
-          manifest_version: "1",
-          name,
-          roles: [
-            {
-              id: "game",
-              dna: {
-                bundled: "dna",
-                uid: name,
-                properties: {},
-              } as any,
-            },
-          ],
-        },
-        resources: {
-          dna: Array.from(new Uint8Array(await dnaFile.arrayBuffer())) as any,
-        },
-      },
-      uid: name,
-    };
 
-    const appInfo: InstalledAppInfo =
-      await this.adminWebsocket!.installAppBundle(installAppBundleRequest);
-    const enabledResult = await this.adminWebsocket!.enableApp({
-      installed_app_id: name,
-    });
-
-
-    ---> commit GUI file to source chain??
-
-    return serializeHash(appInfo.cell_data[0].cell_id[0]);
-  } */
 
   public async inviteToJoin(agentPubKey: AgentPubKeyB64) {
     const weCell = this.cellClient.cell.cell_id;

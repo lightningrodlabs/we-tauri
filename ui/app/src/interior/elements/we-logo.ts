@@ -14,7 +14,11 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
   @property()
   store!: WeStore;
 
-  _info = new TaskSubscriber(this, () => this.store.fetchInfo());
+  _info = new TaskSubscriber(
+    this,
+    () => this.store.fetchInfo(),
+    () => [this.store]
+  );
 
   @query("#tooltip")
   _tooltip!: SlTooltip;
@@ -34,6 +38,7 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
       id="tooltip"
       placement="right"
       .content=${info.name}
+      hoist
     >
       <img class="we" src="${info.logo_src}" @click=${this.handleClick} />
     </sl-tooltip>`;

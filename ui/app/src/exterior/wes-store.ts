@@ -195,12 +195,10 @@ export class WesStore {
       this.membraneInvitationsStore.service
     );
 
-    // this._wes.update((wes) => {
-    //   wes[serializeHash(newWeCell.cell_id[0])] = store;
-    //   return wes;
-    // });
-    await this.fetchWes(); // called to update store (the commented lines above would
-                           // not order the wes alphabetically)
+    this._wes.update((wes) => {
+      wes[serializeHash(newWeCell.cell_id[0])] = store;
+      return wes;
+    });
 
     return serializeHash(newWeHash);
   }
