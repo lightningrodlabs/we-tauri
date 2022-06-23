@@ -19,7 +19,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   _store!: WeStore;
 
   @state()
-  _pubKey: AgentPubKeyB64 | undefined;
+  _inviteePubKey: AgentPubKeyB64 | undefined;
 
   @query("#snackbar-success")
   _snackbarSuccess!: Snackbar;
@@ -35,6 +35,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
     this._store.inviteToJoin(agentPubKey)
       .then((r) => {
         this._pubkeyField.value = "";
+        this._inviteePubKey = undefined;
         this._snackbarSuccess.show();
       }).catch((e) => {
         this._snackbarError.show();
@@ -58,7 +59,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
               label="Public Key"
               id="pubkey-field"
               autoValidate
-              @input=${(e) => (this._pubKey = e.target.value)}
+              @input=${(e) => (this._inviteePubKey = e.target.value)}
               outlined
             ></mwc-textfield>
             <mwc-button
@@ -66,8 +67,8 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
               raised
               icon="send"
               label="INVITE"
-              @click=${() => this.inviteToJoin(this._pubKey!)}
-              .disabled=${!this._pubKey}
+              @click=${() => this.inviteToJoin(this._inviteePubKey!)}
+              .disabled=${!this._inviteePubKey}
             ></mwc-button>
           </div>
           <div class="default-font" style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;">

@@ -14,23 +14,15 @@ import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeDialog } from "./create-we-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { JoinGroupCard } from "./join-group-card";
-import { ManagingGroupsCard } from "./managing-groups-card";
 
 
-export class HomeScreen extends ScopedElementsMixin(LitElement) {
+export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext })
   wesStore!: WesStore;
 
   _myInvitations = new TaskSubscriber(this, () =>
     this.wesStore.membraneInvitationsStore.fetchMyInvitations()
   );
-
-  @query("#we-dialog")
-  _weDialog!: CreateWeDialog;
-
-  @query("#join-group-dialog")
-  _joinGroupDialog!: Dialog;
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
@@ -165,7 +157,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   ) {
     return html`
       ${this.renderErrorSnackbar()}
-      <div class="row title center-content" style="margin-top: 80px;"><mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">invitations</span></div>
+      <div class="row title center-content" style="margin-top: 70px;"><mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">your invitations:</span></div>
       <div class="column center-content" style="justify-content: space-between; margin-top: 30px;">
       ${this.renderInvitations(invitations)}
       </div>
@@ -174,28 +166,43 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-
-      <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this.wesStore.setWeId(e.detail) }}></create-we-dialog>
-      <mwc-dialog id="join-group-dialog">
-        To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.<br><br>You can see any open invitations below.
-        <mwc-button dialogAction="ok" slot="primaryAction">OK</mwc-button>
-      </mwc-dialog>
       <mwc-snackbar id="copied-snackbar" timeoutMs=4000 labelText="Copied!" style="text-align: center;"></mwc-snackbar>
 
 
-      <div class="column content-pane center-content">
-        <div class="row center-content default-font" style="font-size: 3em; color: #2c3888; margin-top: 15px;">
-          <div>Welcome to We!</div>
+      <mwc-card>
+
+        <div class="column content-pane center-content">
+
+          <div class="default-font" style="font-size: 1.7em;">
+            Joining A Group
+          </div>
+          <div class="default-font" style="text-align: center; margin-top: 40px; font-size: 1.1em;">
+            To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.
+          </div>
+
+          <div class="column center-content">
+            <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
+            <div class="default-font" style="margin-top: 15px;">
+              <sl-tooltip placement="right" .content=${"copy"}>
+                <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.wesStore.myAgentPubKey); this._copiedSnackbar.show()}}>
+                    ${this.wesStore.myAgentPubKey}
+                </div>
+              </sl-tooltip>
+              <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
+              send your public key to your friends if they want to invite you to their group
+              </div>
+            </div>
+          </div>
+
+          ${this._myInvitations.render({
+            complete: (i) => this.renderInvitationsBlock(i),
+          })
+          }
+
+
         </div>
 
-        <div class="row" style="margin-top: 70px;">
-
-          <managing-groups-card style="width: 40%; margin-right: 30px;"></managing-groups-card>
-          <join-group-card style="width: 60%;"></join-group-card>
-
-        </div>
-
-      </div>
+      </mwc-card>
     `;
   }
 
@@ -212,8 +219,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       "create-we-dialog": CreateWeDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
-      "join-group-card": JoinGroupCard,
-      "managing-groups-card": ManagingGroupsCard,
     };
   }
 
@@ -221,6 +226,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     let localStyles = css`
       .content-pane {
         padding: 30px;
+        font-family: Arial, sans-serif,
       }
 
       .default-font {
