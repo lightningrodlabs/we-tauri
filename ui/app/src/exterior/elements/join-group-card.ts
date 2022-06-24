@@ -176,7 +176,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
           <div class="default-font" style="font-size: 1.7em;">
             Joining A Group
           </div>
-          <div class="default-font" style="text-align: center; margin-top: 40px; font-size: 1.1em;">
+          <div class="default-font" style="text-align: center; margin-top: 40px; font-size: 1.15em;">
             To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.
           </div>
 

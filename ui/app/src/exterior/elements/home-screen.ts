@@ -176,10 +176,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     return html`
 
       <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this.wesStore.setWeId(e.detail) }}></create-we-dialog>
-      <mwc-dialog id="join-group-dialog">
-        To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.<br><br>You can see any open invitations below.
-        <mwc-button dialogAction="ok" slot="primaryAction">OK</mwc-button>
-      </mwc-dialog>
       <mwc-snackbar id="copied-snackbar" timeoutMs=4000 labelText="Copied!" style="text-align: center;"></mwc-snackbar>
 
 

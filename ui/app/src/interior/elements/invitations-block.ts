@@ -1,15 +1,13 @@
 import { css, html, LitElement } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { ListProfiles } from "@holochain-open-dev/profiles";
 import { Button, TextField, Snackbar, Icon, Dialog, Card } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64, serializeHash } from "@holochain-open-dev/core-types";
+import { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
 import { query, state } from "lit/decorators.js";
 
 import { sharedStyles } from "../../sharedStyles";
 import { WeStore } from "../we-store";
 import { weContext } from "../context";
-import { InvitationHelpDialog } from "./invitation-help-dialog";
 
 
 
@@ -81,13 +79,11 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "list-profiles": ListProfiles,
       "mwc-button": Button,
       "mwc-textfield": TextField,
       "mwc-snackbar": Snackbar,
       "mwc-icon": Icon,
       "mwc-dialog": Dialog,
-      "invitation-help-dialog": InvitationHelpDialog,
       "mwc-card": Card,
     };
   }

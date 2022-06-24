@@ -1,7 +1,7 @@
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
-import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import { TaskSubscriber } from "lit-svelte-stores";
 import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
 
 import { property, query } from "lit/decorators.js";

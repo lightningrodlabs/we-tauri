@@ -1,5 +1,5 @@
 import { contextProvided } from "@lit-labs/context";
-import { ProfilePrompt } from "@holochain-open-dev/profiles";
+import { ListProfiles, ProfilePrompt } from "@holochain-open-dev/profiles";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
   CircularProgress,
@@ -9,15 +9,13 @@ import {
   IconButtonToggle,
   LinearProgress,
 } from "@scoped-elements/material-web";
-import { css, html, LitElement, PropertyValueMap, PropertyValues } from "lit";
-import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import { css, html, LitElement } from "lit";
+import { TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
-import { get } from "svelte/store";
 
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { CreateGameDialog } from "./create-game-dialog";
-import { WeMembers } from "./we-members";
 import { InstallableGames } from "./installable-games";
 import { WeGameRenderer } from "./we-game-renderer";
 import { EntryHashB64 } from "@holochain-open-dev/core-types";
@@ -125,7 +123,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       <div class="column">
         <div class="default-font" style="font-size: 1.1em; text-align: center; border-bottom: 2px solid white; padding: 10px 5px;">${this._info.value?.name}</div>
         <div class="default-font" style="font-size: 0.9em; text-align: right; margin: 25px; color: #303f9f;">MEMBERS</div>
-        <list-profiles></list-profiles>
+        <list-profiles style="width= 100%;"></list-profiles>
       </div>
   `;
   }
@@ -135,13 +133,16 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     if (allGames) {
       return html`
         <div class="column we-sidebar">
-          <mwc-fab
-            icon="home"
-            style="--mdc-theme-secondary: #303F9F"
-            @click=${() => {
-              this._selectedGameId = undefined
-            }}
-          ></mwc-fab>
+          <sl-tooltip hoist placement="right" .content="${this._info.value?.name} Home">
+            <mwc-fab
+              icon="home"
+              style="--mdc-theme-secondary: #303F9F"
+              @click=${() => {
+                this._selectedGameId = undefined
+              }}
+            ></mwc-fab>
+          </sl-tooltip>
+
           ${Object.entries(allGames)
             .sort(([a_hash, a_game], [b_hash, b_game]) => a_game.name.localeCompare(b_game.name))
             .map(([gameHash, game]) => {
@@ -254,7 +255,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     }
 
     return html`
-      <profile-prompt style="flex: 1;">
+      <profile-prompt style="flex: 1; display: flex;">
 
         <div slot="hero">
           <div class="default-font">
@@ -291,7 +292,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     return {
       "create-game-dialog": CreateGameDialog,
       "profile-prompt": ProfilePrompt,
-      "we-members": WeMembers,
       "installable-games": InstallableGames,
       "mwc-button": Button,
       "mwc-fab": Fab,
@@ -301,6 +301,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "invitations-block": InvitationsBlock,
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-linear-progress": LinearProgress,
+      "list-profiles": ListProfiles,
     };
   }
 
