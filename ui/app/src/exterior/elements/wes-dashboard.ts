@@ -159,10 +159,10 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           display: flex;
         }
 
+
         .wes-sidebar {
           background-color: #303f9f;
           z-index: 1;
-          overflow-y: auto;
         }
 
         @media (min-width: 640px) {

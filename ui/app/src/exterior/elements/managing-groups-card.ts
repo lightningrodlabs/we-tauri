@@ -26,7 +26,7 @@ export class ManagingGroupsCard extends ScopedElementsMixin(LitElement) {
 
       <mwc-card>
 
-        <div class="column content-pane center-content default-font">
+        <div class="column content-pane default-font">
           <div style="font-size: 1.7em;">
             Managing Groups
           </div>

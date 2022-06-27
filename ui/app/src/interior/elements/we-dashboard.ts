@@ -9,6 +9,7 @@ import {
   Snackbar,
   IconButtonToggle,
   LinearProgress,
+  Card,
 } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
@@ -357,6 +358,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "installable-games": InstallableGames,
       "mwc-button": Button,
       "mwc-fab": Fab,
+      "mwc-card": Card,
       "mwc-circular-progress": CircularProgress,
       "we-game-renderer": WeGameRenderer,
       "sl-tooltip": SlTooltip,
@@ -397,6 +399,14 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         width: 224px;
         background-color: #ecebff;
         padding: 24px;
+      }
+
+      .members-title {
+        font-size: 1em;
+        font-weight: 600;
+        text-align: right;
+        margin: 25px 25px 20px 25px;
+        color: #1b245d;
       }
 
       .game-logo {
