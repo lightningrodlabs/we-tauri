@@ -24,10 +24,33 @@ export const sharedStyles = css`
     align-items: center;
   }
 
+  .flex-scrollable-parent {
+    position: relative;
+    display: flex;
+    flex: 1;
+  }
+
+  .flex-scrollable-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .flex-scrollable-x {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .flex-scrollable-y {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
   .title {
     align-items: center;
     font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 1.2em;
+    font-size: 1.7em;
     text-align: center;
   }
 `;

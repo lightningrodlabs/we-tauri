@@ -49,9 +49,9 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar id="snackbar-error" timeoutMs=4000 labelText="Error. Public key may be invalid." style="text-align: center;"></mwc-snackbar>
 
 
-      <mwc-card>
+      <mwc-card style="max-width: 480px;">
         <div style="margin: 20px;">
-          <div class="row title center-content title"><mwc-icon>outgoing_mail</mwc-icon><span style="margin-left: 10px;">invite new member</span></div>
+          <div class="row title" style="font-size: 1.4em;"><mwc-icon style="--mdc-icon-size: 1.4em;">outgoing_mail</mwc-icon><span style="margin-left: 10px;">invite new member</span></div>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
               label="Public Key"

@@ -71,10 +71,9 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
 
   renderContent(wes: Record<DnaHashB64, WeStore>) {
     return html`
-      <div class="row" style="flex: 1">
+      <div class="row flex-scrollable-parent" style="flex: 1">
         <div
-          class="column wes-sidebar"
-          style=""
+          class="column wes-sidebar flex-scrollable-container flex-scrollable-y"
         >
 
           <sl-tooltip placement="right" content="Home" hoist>
@@ -98,13 +97,14 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
 
           <span style="flex: 1"></span>
 
-          <holo-identicon .hash=${this.wesStore.myAgentPubKey} style="margin-top: 30px;"></holo-identicon>
+          <holo-identicon .hash=${this.wesStore.myAgentPubKey} style="margin-top: 30px; margin-bottom: 4px;"></holo-identicon>
         </div>
 
-        <div style="margin-left: 72px; width: 100%: display: flex;">
-          ${this._selectedWeId
-            ? this.renderWeDashboard()
-            : html`<home-screen></home-screen>`}
+        <div class="flex-scrollable-parent" style="display: flex; flex: 1; margin-left: 82px; ">
+
+            ${this._selectedWeId
+              ? this.renderWeDashboard()
+              : html`<home-screen></home-screen>`}
         </div>
 
         <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this._selectedWeId = e.detail; this.requestUpdate() }}></create-we-dialog>
@@ -146,15 +146,14 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           display: flex;
         }
 
+
         .wes-sidebar {
           padding: 8px;
           align-items: center;
           background-color: #303F9F;
+          width: 62px;
           position: fixed;
-          top: 0;
-          height: 100vh;
           z-index: 1;
-          overflow-y: auto;
         }
 
         @media (min-width: 640px) {

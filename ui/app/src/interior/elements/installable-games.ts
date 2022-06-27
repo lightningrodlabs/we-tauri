@@ -76,11 +76,11 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
         }}
       ></create-game-dialog>
 
-      <div style="display: flex; flex-wrap: wrap;">
+      <div class="flex-scrollable-y" style="display: flex; flex-wrap: wrap; max-height: 500px;">
         ${(games.length == 0)
           ? html`
             <div class="column" style="align-items: center;">
-              <div class="row center-content default-font">No hApps available yet <mwc-icon style="margin-left: 10px;">mood_bad</mwc-icon></div>
+              <div class="row center-content default-font" style="font-size: 1.em; text-align: center; margin-top: 20px;">No hApps available yet <mwc-icon style="margin-left: 10px;">mood_bad</mwc-icon></div>
             </div>
             `
           : games.map((item) => {

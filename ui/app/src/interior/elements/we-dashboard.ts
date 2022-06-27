@@ -8,6 +8,7 @@ import {
   Snackbar,
   IconButtonToggle,
   LinearProgress,
+  Card,
 } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
@@ -121,8 +122,10 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   renderPlayers() {
     return html`
       <div class="column">
-        <div class="default-font" style="font-size: 1.1em; text-align: center; border-bottom: 2px solid white; padding: 10px 5px;">${this._info.value?.name}</div>
-        <div class="default-font" style="font-size: 0.9em; text-align: right; margin: 25px; color: #303f9f;">MEMBERS</div>
+        <div class="default-font members-title">
+          MEMBERS
+          <mwc-icon style="position: relative; top: 0.25em; --mdc-icon-size: 1.7em; margin-left: 6px; display: none;">groups</mwc-icon>
+        </div>
         <list-profiles style="width= 100%;"></list-profiles>
       </div>
   `;
@@ -132,7 +135,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   renderGamesList(allGames: Record<EntryHashB64, Game>) {
     if (allGames) {
       return html`
-        <div class="column we-sidebar">
+        <div class="column we-sidebar flex-scrollable-container" style="left: 78px;">
           <sl-tooltip hoist placement="right" .content="${this._info.value?.name} Home">
             <mwc-fab
               icon="home"
@@ -197,8 +200,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
 
   renderContent() {
-    console.log("_allGames: ", this._allGames.value);
-    console.log("_info: ", this._info.value);
+
     if (!this._selectedGameId) {
       return html`
         <div class="column center-content">
@@ -206,11 +208,17 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           <img class="logo-large" style=" width: 150px; height: 150px;" src=${this._info.value!.logo_src}>
           <div class="default-font" style="font-size: 1.4em; margin-top: 30px; font-weight: bold;">${this._info.value?.name}</div>
 
-          <invitations-block style="margin-top: 50px;"></invitations-block>
+          <div class="column center-content" style="margin-top: 50px; width: 100%;">
+            <invitations-block></invitations-block>
 
-          <div class="row title center-content title" style="margin-top: 80px;"><mwc-icon>install_desktop</mwc-icon><span style="margin-left: 10px;">hApps available on the DevHub</span></div>
-          <div class="row center-content installable-games-container">
-            <installable-games></installable-games>
+            <mwc-card style="margin-top: 20px;">
+              <div style="margin: 20px;">
+                <div class="row title"><img src="https://drive.switch.ch/index.php/s/LePJamPcyx10AXO/download" style="height: 1.6em;"><span style="margin-left: 15px;">hApps available on the DevHub</span></div>
+                <div class="row installable-games-container">
+                  <installable-games></installable-games>
+                </div>
+              </div>
+            </mwc-card>
           </div>
         </div>
       `;
@@ -279,9 +287,13 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           `,
         })}
 
-        <div class="content-pane">${this.renderContent()}</div>
-
-        <div class="members-sidebar">${this.renderPlayers()}</div>
+        <div style="display: flex; flex: 1;">
+          <div class="content-pane" style="margin-right: ${this._selectedGameId? "0" : "220px"};">${this.renderContent()}</div>
+          ${(!this._selectedGameId)
+              ? html`<div class="members-sidebar">${this.renderPlayers()}</div>`
+              : html``
+            }
+        </div>
 
         <create-game-dialog id="game-dialog"></create-game-dialog>
       </profile-prompt>
@@ -295,6 +307,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "installable-games": InstallableGames,
       "mwc-button": Button,
       "mwc-fab": Fab,
+      "mwc-card": Card,
       "mwc-circular-progress": CircularProgress,
       "we-game-renderer": WeGameRenderer,
       "sl-tooltip": SlTooltip,
@@ -320,13 +333,10 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         align-items: center;
         background: #9ca5e3;
         position: fixed;
-        top: 0;
-        height: 100vh;
-        width: 58px;
+        width: 62px;
       }
 
       .we-name {
-
         text-align: center;
         border-bottom: solid 1px gray;
         margin-bottom: 5px;
@@ -341,20 +351,32 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       }
 
       .content-pane {
-        flex-grow: 1;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
         padding: 30px;
         margin-left: 72px;
-        margin-right: 200px;
+        /* margin-right: 220px; */
         width: 100%;
+        position: relative;
       }
+
       .members-sidebar {
         position: fixed;
         top: 0;
         right: 0;
-        width: 200px;
-        background-color: #e3e5ed;
-        height: 100vh;
+        width: 220px;
+        background-color: #dce4ff;
+        height: 100%;
         padding: 2px;
+      }
+
+      .members-title {
+        font-size: 1em;
+        font-weight: 600;
+        text-align: right;
+        margin: 25px 25px 20px 25px;
+        color: #1b245d;
       }
 
       .game-logo {
@@ -418,7 +440,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       }
 
       .installable-games-container {
-        background: #ecebff;
         border-radius: 8px;
         padding: 10px;
         width: 100%;

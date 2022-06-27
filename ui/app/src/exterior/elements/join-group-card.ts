@@ -171,34 +171,36 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
 
       <mwc-card>
 
-        <div class="column content-pane center-content">
+        <div class="column content-pane">
 
           <div class="default-font" style="font-size: 1.7em;">
             Joining A Group
           </div>
-          <div class="default-font" style="text-align: center; margin-top: 40px; font-size: 1.15em;">
-            To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.
-          </div>
+          <div class="center-content">
+            <div class="default-font" style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
+              To join a group, send your public key to the administrator of the group you would like to join and ask him/her to invite you.
+            </div>
 
-          <div class="column center-content">
-            <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
-            <div class="default-font" style="margin-top: 15px;">
-              <sl-tooltip placement="right" .content=${"copy"}>
-                <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.wesStore.myAgentPubKey); this._copiedSnackbar.show()}}>
-                    ${this.wesStore.myAgentPubKey}
+            <div class="column center-content">
+              <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
+              <div class="default-font" style="margin-top: 15px;">
+                <sl-tooltip placement="right" .content=${"copy"}>
+                  <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.wesStore.myAgentPubKey); this._copiedSnackbar.show()}}>
+                      ${this.wesStore.myAgentPubKey}
+                  </div>
+                </sl-tooltip>
+                <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
+                send your public key to your friends if they want to invite you to their group
                 </div>
-              </sl-tooltip>
-              <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
-              send your public key to your friends if they want to invite you to their group
               </div>
             </div>
+
+            ${this._myInvitations.render({
+              complete: (i) => this.renderInvitationsBlock(i),
+            })
+            }
+
           </div>
-
-          ${this._myInvitations.render({
-            complete: (i) => this.renderInvitationsBlock(i),
-          })
-          }
-
 
         </div>
 
