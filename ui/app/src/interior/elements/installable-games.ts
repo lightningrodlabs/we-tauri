@@ -23,7 +23,6 @@ import {
 
 import { GameInfo } from "../types";
 import { CreateGameDialog } from "./create-game-dialog";
-import { TaskSubscriber } from "lit-svelte-stores";
 
 export class InstallableGames extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -76,11 +75,11 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
         }}
       ></create-game-dialog>
 
-      <div style="display: flex; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
         ${(games.length == 0)
           ? html`
-            <div class="column" style="align-items: center;">
-              <div class="row center-content default-font">No hApps available yet <mwc-icon style="margin-left: 10px;">mood_bad</mwc-icon></div>
+            <div class="column center-content">
+              <span class="placeholder">No applets available yet</span>
             </div>
             `
           : games.map((item) => {

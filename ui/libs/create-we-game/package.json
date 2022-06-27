@@ -12,7 +12,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@holochain-open-dev/profiles": "^0.3.0",
+    "@holochain-open-dev/profiles": "^0.3.4",
     "@holochain/client": "^0.4.1",
     "@open-wc/scoped-elements": "^2.0.1",
     "lodash-es": "^4.17.21"

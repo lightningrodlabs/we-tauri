@@ -55,11 +55,8 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   }
 
   get publishDisabled() {
-    return (
-      !this._installedAppIdField
-    );
+    return !this._installedAppIdField;
   }
-
 
   /*
   async publishDna() {
@@ -125,30 +122,33 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     //   }
     // }
     return {
-      valid: true
-    }
+      valid: true,
+    };
   }
 
   async createGame() {
-    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show()
-    await this._weStore.createGame(this._gameInfo, this._installedAppIdField.value)
-      .then(
-        () => {
-          (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-          (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
-        }
-      ).catch(
-        (e) => {
-          (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-          (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-          console.log("Installation error:", e);
-        }
-      );
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+    await this._weStore
+      .createGame(this._gameInfo, this._installedAppIdField.value)
+      .then(() => {
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (
+          this.shadowRoot?.getElementById("success-snackbar") as Snackbar
+        ).show();
+      })
+      .catch((e) => {
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+        console.log("Installation error:", e);
+      });
   }
 
   // public async handleDialogClosing() {$
   // }
-
 
   // renderErrorSnackbar() {
   //   return html`
@@ -164,37 +164,37 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
 
   renderErrorSnackbar() {
     return html`
-      <mwc-snackbar id="error-snackbar" labelText="Installation failed! (See console for details)" style="text-align: center">
+      <mwc-snackbar
+        id="error-snackbar"
+        labelText="Installation failed! (See console for details)"
+      >
       </mwc-snackbar>
     `;
   }
 
   renderSuccessSnackbar() {
     return html`
-      <mwc-snackbar id="success-snackbar" labelText="Installation successful" style="text-align: center"></mwc-snackbar>
-    `
+      <mwc-snackbar
+        id="success-snackbar"
+        labelText="Installation successful"
+      ></mwc-snackbar>
+    `;
   }
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar style="text-align: center;" id="installing-progress" labelText="Installing...">
+      <mwc-snackbar id="installing-progress" labelText="Installing...">
       </mwc-snackbar>
     `;
   }
 
   render() {
-
     return html`
-      ${this.renderErrorSnackbar()}
-      ${this.renderSuccessSnackbar()}
+      ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
-      <mwc-dialog
-        id="game-dialog"
-        heading="Add Custom Name"
-      >
+      <mwc-dialog id="game-dialog" heading="Add Custom Name">
         <div class="column" style="padding: 16px;">
-
           <mwc-textfield
             id="installed-app-id"
             label="Custom Name"
@@ -233,7 +233,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-dialog": Dialog,
       "mwc-snackbar": Snackbar,
-      'mwc-circular-progress': CircularProgress,
+      "mwc-circular-progress": CircularProgress,
     };
   }
 

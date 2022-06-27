@@ -1,7 +1,12 @@
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { ListProfiles } from "@holochain-open-dev/profiles";
-import { Button, TextField, Snackbar, CircularProgress } from "@scoped-elements/material-web";
+import {
+  Button,
+  TextField,
+  Snackbar,
+  CircularProgress,
+} from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
 import { query, state, property } from "lit/decorators.js";
@@ -11,8 +16,7 @@ import { WeStore } from "../we-store";
 import { weContext } from "../context";
 import { RenderBlock } from "./render-block";
 import { Renderer } from "@lightningrodlabs/we-game";
-
-
+import { Task } from "@lit-labs/task";
 
 export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -22,33 +26,25 @@ export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
   @state()
   _pubKey: AgentPubKeyB64 | undefined;
 
-  @state()
-  private _renderer: Renderer | undefined;
-
   @property()
   gameHash!: EntryHashB64;
 
-  @state()
-  private _loading: boolean = true;
-
-
-  async firstUpdated() {
-    const gameRenderers = await this._store.fetchGameRenderers(this.gameHash);
-    this._renderer = gameRenderers.full;
-  }
+  _rendererTask = new Task(
+    this,
+    () => this._store.fetchGameRenderers(this.gameHash),
+    () => [this._store, this.gameHash]
+  );
 
   render() {
-    if (!this._renderer) {
-      return html `
-        <div class="center-conent">
+    return this._rendererTask.render({
+      pending: () => html`
+        <div class="center-content">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
-      `
-    } else {
-      return html`
-        <render-block .renderer=${this._renderer}></render-block>
-      `;
-    }
+      `,
+      complete: (renderer) =>
+        html` <render-block .renderer=${renderer.full}></render-block> `,
+    });
   }
 
   static get scopedElements() {
@@ -58,5 +54,12 @@ export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
     };
   }
 
-  static styles = [sharedStyles];
+  static styles = [
+    sharedStyles,
+    css`
+      :host {
+        position: relative;
+      }
+    `,
+  ];
 }

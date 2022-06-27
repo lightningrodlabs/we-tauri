@@ -35,7 +35,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
     this,
     () => this.wesStore.fetchWes(),
     () => [this.wesStore]
-    );
+  );
 
   @state()
   private _selectedWeId: string | undefined;
@@ -45,7 +45,9 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
 
   renderWeList(wes: Record<DnaHashB64, WeStore>) {
     return Object.entries(wes)
-      .sort(([a_hash, a_store], [b_hash, b_store]) => a_hash.localeCompare(b_hash))
+      .sort(([a_hash, a_store], [b_hash, b_store]) =>
+        a_hash.localeCompare(b_hash)
+      )
       .map(
         ([weId, weStore]) =>
           html`
@@ -54,7 +56,10 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
                 .store=${weStore}
                 style="margin-top: 8px; border-radius: 50%"
                 class=${classMap({ highlighted: weId === this._selectedWeId })}
-                @click=${() => { this._selectedWeId=weId; this.requestUpdate(); }}
+                @click=${() => {
+                  this._selectedWeId = weId;
+                  this.requestUpdate();
+                }}
               ></we-logo>
             </we-context>
           `
@@ -66,49 +71,57 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
       <we-context .weId=${this._selectedWeId}>
         <we-dashboard style="flex: 1;"></we-dashboard>
       </we-context>
-    `
+    `;
   }
 
   renderContent(wes: Record<DnaHashB64, WeStore>) {
     return html`
       <div class="row" style="flex: 1">
-        <div
-          class="column wes-sidebar"
-          style=""
-        >
+        <div class="column wes-sidebar">
+          <div class="column" style="flex: 1; align-items: center; margin: 8px">
+            <sl-tooltip placement="right" content="Home" hoist>
+              <mwc-fab
+                style="--mdc-theme-secondary: #9ca5e3"
+                @click=${() => {
+                  this._selectedWeId = undefined;
+                }}
+              >
+                <mwc-icon slot="icon" outlined>explore</mwc-icon>
+              </mwc-fab>
+            </sl-tooltip>
 
-          <sl-tooltip placement="right" content="Home" hoist>
-            <mwc-fab
-              style="--mdc-theme-secondary: #9ca5e3"
-              @click=${() => { this._selectedWeId = undefined }}
-            >
-              <mwc-icon slot="icon" outlined>explore</mwc-icon>
-            </mwc-fab>
-          </sl-tooltip>
+            ${this.renderWeList(wes)}
 
-          ${this.renderWeList(wes)}
+            <sl-tooltip placement="right" content="Add Group" hoist>
+              <mwc-fab
+                icon="group_add"
+                @click=${() => this._weDialog.open()}
+                style="margin-top: 8px; --mdc-theme-secondary: #9ca5e3;"
+              ></mwc-fab>
+            </sl-tooltip>
 
-          <sl-tooltip placement="right" content="Add Group" hoist>
-            <mwc-fab
-              icon="group_add"
-              @click=${() => this._weDialog.open()}
-              style="margin-top: 8px; --mdc-theme-secondary: #9ca5e3;"
-            ></mwc-fab>
-          </sl-tooltip>
+            <span style="flex: 1"></span>
 
-          <span style="flex: 1"></span>
-
-          <holo-identicon .hash=${this.wesStore.myAgentPubKey} style="margin-top: 30px;"></holo-identicon>
+            <holo-identicon
+              .hash=${this.wesStore.myAgentPubKey}
+              style="margin-top: 30px;"
+            ></holo-identicon>
+          </div>
         </div>
 
-        <div style="margin-left: 72px; width: 100%: display: flex;">
+        <div style="flex: 1; width: 100%; display: flex;">
           ${this._selectedWeId
             ? this.renderWeDashboard()
             : html`<home-screen></home-screen>`}
         </div>
 
-        <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this._selectedWeId = e.detail; this.requestUpdate() }}></create-we-dialog>
-
+        <create-we-dialog
+          id="we-dialog"
+          @we-added=${(e: CustomEvent) => {
+            this._selectedWeId = e.detail;
+            this.requestUpdate();
+          }}
+        ></create-we-dialog>
       </div>
     `;
   }
@@ -147,12 +160,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
         }
 
         .wes-sidebar {
-          padding: 8px;
-          align-items: center;
-          background-color: #303F9F;
-          position: fixed;
-          top: 0;
-          height: 100vh;
+          background-color: #303f9f;
           z-index: 1;
           overflow-y: auto;
         }

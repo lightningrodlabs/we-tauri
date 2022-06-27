@@ -28,8 +28,13 @@ import {
   Writable,
 } from "svelte/store";
 import { MembraneInvitationsService } from "@holochain-open-dev/membrane-invitations";
-import { encode } from "@msgpack/msgpack";
+import { encode, decode } from "@msgpack/msgpack";
 import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
+import { PeerStatusStore } from "@holochain-open-dev/peer-status";
+import { GameRenderers, WeGame } from "@lightningrodlabs/we-game";
+
+import { decompressSync, unzipSync } from "fflate";
+import { v4 as uuidv4 } from "uuid";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
@@ -41,24 +46,19 @@ import {
   RegisterGameInput,
   WeInfo,
 } from "./types";
-import { GameRenderers, WeGame } from "@lightningrodlabs/we-game";
 import { GamesService } from "./games-service";
 import { WeService } from "./we-service";
-
-import { decompressSync, unzipSync } from "fflate";
-import { decode } from "@msgpack/msgpack";
-import { v4 as uuidv4 } from "uuid";
 
 export class WeStore {
   private gamesService: GamesService;
   private weService: WeService;
   public profilesStore: ProfilesStore;
+  public peerStatusStore: PeerStatusStore;
 
   private _allGames: Writable<Record<EntryHashB64, Game>> = writable({});
   private _gamesIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
     writable({});
   private _gameRenderers: Record<EntryHashB64, GameRenderers> = {};
-
 
   /*
   public game(gameHash: EntryHashB64): Readable<
@@ -108,9 +108,13 @@ export class WeStore {
     this.gamesService = new GamesService(cellClient);
     this.weService = new WeService(cellClient);
     this.profilesStore = new ProfilesStore(new ProfilesService(cellClient));
+    this.peerStatusStore = new PeerStatusStore(cellClient);
 
     cellClient.addSignalHandler((signal) => {
       const payload = signal.data.payload;
+
+      if (!payload.message) return;
+
       switch (payload.message.type) {
         case "NewGame":
           this._allGames.update((s) => {
@@ -128,7 +132,6 @@ export class WeStore {
     const installedApps = await this.adminWebsocket.listApps({});
     return installedApps.find((app) => app.installed_app_id === "DevHub")!;
   }
-
 
   async fetchInfo(): Promise<Readable<WeInfo>> {
     const info = await this.weService.getInfo();
@@ -178,15 +181,15 @@ export class WeStore {
     );
   }
 
-
   isInstalled(gameHash: EntryHashB64) {
-    const installedIds = Object.entries(get(this._gamesIAmPlaying)).map(([entryHash, agentPubKey]) => entryHash)
+    const installedIds = Object.entries(get(this._gamesIAmPlaying)).map(
+      ([entryHash, agentPubKey]) => entryHash
+    );
     console.log("installedIds: ", installedIds);
     console.log("gameHash: ", gameHash);
     console.log("included: ", installedIds.includes(gameHash));
     return installedIds.includes(gameHash);
   }
-
 
   getGameInfo(gameHash: EntryHashB64): Game | undefined {
     return get(this._allGames)[gameHash];
@@ -196,8 +199,6 @@ export class WeStore {
 
   //   const gamesIamPlaying = get(await this.fetchGamesIAmPlaying());
   //   const allGames = get(await this.fetchAllGames());
-
-
 
   //   return derived(this._allGames, (allGames) => {
   //     const unjoinedGames: Record<EntryHashB64, Game> = {};
@@ -252,7 +253,7 @@ export class WeStore {
     );
 
     // s.renderers is undefined --> maybe because this._gameRenderers is still empty at that point?
-    this._gameRenderers[gameHash] = renderers
+    this._gameRenderers[gameHash] = renderers;
 
     return renderers;
   }
@@ -454,8 +455,6 @@ export class WeStore {
       return gamesIAmPlaying;
     });
   }
-
-
 
   public async inviteToJoin(agentPubKey: AgentPubKeyB64) {
     const weCell = this.cellClient.cell.cell_id;

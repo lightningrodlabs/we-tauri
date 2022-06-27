@@ -1,8 +1,6 @@
 import { AppWebsocket, EntryHash, InstalledAppInfo } from "@holochain/client";
 import { Happ, HappRelease } from "./types";
 
-
-
 export interface ContentAddress<C> {
   id: EntryHash;
   address: EntryHash;
@@ -36,13 +34,13 @@ export async function getAllPublishedApps(
   const allAppsOutput = await appWebsocket.callZome({
     cap_secret: null,
     cell_id: cells.happs.cell_id,
-    fn_name: "get_all_happs",
+    fn_name: "get_happs_by_tags",
     zome_name: "happ_library",
-    payload: null,
+    payload: ["we-applet"],
     provenance: cells.happs.cell_id[1],
   });
-
-  const allApps: Array<ContentAddress<Happ>> = allAppsOutput.payload.items;
+  console.log(allAppsOutput);
+  const allApps: Array<ContentAddress<Happ>> = allAppsOutput.payload;
 
   const promises = allApps.map((app) =>
     getAppsReleases(appWebsocket, devhubHapp, app)
