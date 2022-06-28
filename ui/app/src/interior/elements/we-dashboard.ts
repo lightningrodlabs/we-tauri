@@ -200,32 +200,38 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   renderContent() {
     if (!this._selectedAppletId) {
       return html`
-        <div class="column" style="flex: 1; margin: 24px;">
-          <div class="row center-content" style="margin-top: 56px">
-            <div class="column center-content">
-              <img
-                class="logo-large"
-                style=" width: 150px; height: 150px;"
-                src=${this._info.value!.logo_src}
-              />
-              <div
-                style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
-              >
-                ${this._info.value?.name}
+        <div class="flex-scrollable-parent">
+          <div class="flex-scrollable-container">
+            <div class="flex-scrollable-y">
+              <div class="column" style="flex: 1; margin: 24px;">
+                <div class="row center-content" style="margin-top: 56px">
+                  <div class="column center-content">
+                    <img
+                      class="logo-large"
+                      style=" width: 150px; height: 150px;"
+                      src=${this._info.value!.logo_src}
+                    />
+                    <div
+                      style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
+                    >
+                      ${this._info.value?.name}
+                    </div>
+                  </div>
+
+                  <invitations-block
+                    style="margin-left: 50px;"
+                  ></invitations-block>
+                </div>
+
+                <div class="row title" style="margin-top: 80px;">
+                  <span style="align-self: start">Applets Library</span>
+                </div>
+
+                <hr style="width: 100%" />
+
+                <installable-applets></installable-applets>
               </div>
             </div>
-
-            <invitations-block style="margin-left: 50px;"></invitations-block>
-          </div>
-
-          <div class="row title" style="margin-top: 80px;">
-            <span style="align-self: start">Applets Library</span>
-          </div>
-
-          <hr style="width: 100%" />
-
-          <div class="row installable-applets-container">
-            <installable-applets></installable-applets>
           </div>
         </div>
       `;
