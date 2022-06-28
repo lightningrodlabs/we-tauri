@@ -11,6 +11,7 @@ out-tsc
 node_modules
 *.tsbuildinfo
 *.happ
-*.dna`
+*.dna
+ui.zip`
 });
     
