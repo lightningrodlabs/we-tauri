@@ -10,7 +10,7 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
-import { PeerStatusApplet } from "./peer-status-applet";
+import { PeerStatusApplet } from "./peer_status-applet";
 
 const peer_statusApplet: WeApplet = {
   async appletRenderers(

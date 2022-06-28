@@ -18,7 +18,7 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
-import { ${appletNameTitleCase}Applet } from "./peer-status-applet";
+import { ${appletNameTitleCase}Applet } from "./${appletName}-applet";
 
 const ${appletName}Applet: WeApplet = {
   async appletRenderers(
