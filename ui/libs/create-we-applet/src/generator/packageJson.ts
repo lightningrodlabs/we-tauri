@@ -4,22 +4,29 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const packageJson = (): ScFile => ({
+export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
   type: ScNodeType.File,
   content: `{
-  "name": "we-game",
+  "name": "we-applet",
   "version": "0.0.1",
   "scripts": {
+    "start": "npm run build:happ && cross-env HC_PORT=\$(port) ADMIN_PORT=\$(port) concurrently \\"npm run start:happ\\" \\"npm run start:ui\\"",
+    "start:ui": "concurrently -k --names tsc,dev-server \\"npm run build:watch\\" \\"wds --config ./web-dev-server.config.mjs\\"",
+    "start:happ": "RUST_LOG=warn WASM_LOG=debug hc s -f=\$ADMIN_PORT generate ./workdir/${appletName}-applet.happ --run=\$HC_PORT -a ${appletName}-applet network mdns",
     "build": "rimraf dist && tsc && rollup --config rollup.config.js",
     "build:watch": "tsc -w --preserveWatchOutput",
-    "start": "concurrently -k --names tsc,dev-server \\"npm run build:watch\\" \\"web-dev-server --config ./web-dev-server.config.mjs\\""
+    "package": "npm run build:happ && npm run package:ui && hc web-app pack ./workdir",
+    "package:ui": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * ",
+    "build:happ": "npm run build:dnas && hc app pack ./workdir",
+    "build:dnas": "npm run build:zomes && hc dna pack ./workdir",
+    "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown"
   },
   "dependencies": {
     "@holochain-open-dev/cell-client": "^0.5.3",
-    "@holochain-open-dev/profiles": "^0.3.0",
+    "@holochain-open-dev/${appletName}": "^0.3.4",
     "@holochain/client": "^0.4.1",
+    "@lightningrodlabs/we-applet": "^0.0.1",
     "@lit-labs/context": "^0.1.2",
-    "@lightningrodlabs/we-game": "^0.0.3",
     "@open-wc/scoped-elements": "^2.0.1",
     "@scoped-elements/material-web": "^0.0.19",
     "lit": "^2.2.0"
@@ -37,6 +44,7 @@ export const packageJson = (): ScFile => ({
     "bestzip": "^2.2.0",
     "concurrently": "^5.3.0",
     "deepmerge": "^4.2.2",
+    "new-port-cli": "^1.0.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.56.2",
     "rollup-plugin-node-builtins": "^2.1.2",

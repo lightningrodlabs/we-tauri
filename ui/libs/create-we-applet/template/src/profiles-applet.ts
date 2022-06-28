@@ -10,7 +10,7 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { LitElement, html } from "lit";
 
-export class WhereApplet extends ScopedElementsMixin(LitElement) {
+export class ProfilesApplet extends ScopedElementsMixin(LitElement) {
   @property()
   client!: HolochainClient;
 
@@ -30,7 +30,7 @@ export class WhereApplet extends ScopedElementsMixin(LitElement) {
     // TODO: Initialize any store that you have and create a ContextProvider for it
     //
     // eg:
-    // new ContextProvider(this, whereContext, new WhereStore(cellClient, store));
+    // new ContextProvider(this, profilesContext, new ProfilesStore(cellClient, store));
 
     this.loaded = true;
   }
@@ -44,7 +44,7 @@ export class WhereApplet extends ScopedElementsMixin(LitElement) {
       </div>`;
 
     // TODO: add any elements that you have in your applet
-    return html``;
+    return html`<span>This is my applet!</span>`;
   }
 
   static get scopedElements() {

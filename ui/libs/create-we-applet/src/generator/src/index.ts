@@ -1,7 +1,7 @@
-import { ScNodeType, ScDirectory } from '@source-craft/types';
+import { ScNodeType, ScDirectory } from '@source-craft/types'; 
 
 import { indexTs } from './indexTs';
-import { appletNameAppletTs } from './appletNameAppletTs';
+import { appletNameAppletTs } from './appletNameAppletTs';  
 
 export default ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScDirectory => ({
   type: ScNodeType.Directory,

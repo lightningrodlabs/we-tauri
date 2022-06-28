@@ -1,4 +1,4 @@
-import { ScNodeType, ScDirectory } from '@source-craft/types';
+import { ScNodeType, ScDirectory } from '@source-craft/types'; 
 
 import { gitignore } from './gitignore';
 import demo from './demo';
@@ -7,16 +7,18 @@ import { rollupConfigJs } from './rollupConfigJs';
 import src from './src';
 import { tsconfigJson } from './tsconfigJson';
 import { webDevServerConfigMjs } from './webDevServerConfigMjs';
+import workdir from './workdir';  
 
-export default ({appletName, appletNameTitleCase}: {appletName: string; appletNameTitleCase: string;}): ScDirectory => ({
+export default ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScDirectory => ({
   type: ScNodeType.Directory,
   children: {
   '.gitignore': gitignore(),
-  'demo': demo({appletName}),
-  'package.json': packageJson(),
+  'demo': demo({appletNameTitleCase, appletName}),
+  'package.json': packageJson({appletName}),
   'rollup.config.js': rollupConfigJs(),
   'src': src({appletNameTitleCase, appletName}),
   'tsconfig.json': tsconfigJson(),
-  'web-dev-server.config.mjs': webDevServerConfigMjs()
+  'web-dev-server.config.mjs': webDevServerConfigMjs(),
+  'workdir': workdir({appletName})
   }
 })

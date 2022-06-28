@@ -4,7 +4,7 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
+export const indexHtml = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
   type: ScNodeType.File,
   content: `<!DOCTYPE html>
 <html>
@@ -18,38 +18,38 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
     <div id="container"></div>
 
     <script type="module">
-      import renderFunctions from "../out-tsc";
+      import Applet from "../out-tsc";
       import { HolochainClient } from "@holochain-open-dev/cell-client";
-      import { ProfilesStore } from "@holochain-open-dev/profiles/mock";
-      import { ProfilesZomeMock } from "@holochain-open-dev/profiles";
-      import { AdminWebsocket } from "@holochain/client";
+      import { ${appletNameTitleCase}Store, ${appletNameTitleCase}Service } from "@holochain-open-dev/${appletName}";
+      import { ${appletNameTitleCase}ZomeMock } from "@holochain-open-dev/${appletName}/mocks";
+      import { AppWebsocket, AdminWebsocket } from "@holochain/client";
 
       const container = document.getElementById("container");
 
       async function setup() {
-        const client = await HolochainClient.connect(
-          \`ws://localhost:\${process.env.HC_PORT}\`,
-          "${appletName}"
+        const appWs = await AppWebsocket.connect(
+          \`ws://localhost:\${process.env.HC_PORT}\`
         );
 
         const adminWs = await AdminWebsocket.connect(
           \`ws://localhost:\${process.env.ADMIN_PORT}\`
         );
 
-        const cellData = client.appInfo.cell_data;
+        const appInfo = await appWs.appInfo({
+          installed_app_id: "${appletName}-applet",
+        });
 
-        const renders = renderFunctions(
-          client,
+        const renderers = await Applet.appletRenderers(
+          appWs,
           adminWs,
-          client.appInfo.cell_data,
           {
-            profilesStore: new ProfilesStore(new ProfilesZomeMock(), {
-              avatarMode: "identicon",
-            }),
-          }
+            ${appletName}Store: new ${appletNameTitleCase}Store(
+              new ${appletNameTitleCase}Service(new ${appletNameTitleCase}ZomeMock())
+            ),
+          },
+          appInfo
         );
-
-        renders.full(container, window.customElements);
+        renderers.full(container, window.customElements);
       }
       setup();
     </script>

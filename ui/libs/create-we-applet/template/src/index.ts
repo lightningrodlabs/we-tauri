@@ -11,21 +11,21 @@ import {
 } from "@lightningrodlabs/we-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
-import { WhereApplet } from "./where-applet";
+import { ProfilesApplet } from "./profiles-applet";
 
 
-const whereApplet: WeApplet = {
-  gameRenderers(
+const profilesApplet: WeApplet = {
+  async appletRenderers(
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
     appletInfo: InstalledAppInfo
-  ): AppletRenderers {
+  ): Promise<AppletRenderers> {
     return {
       full(element: HTMLElement, registry: CustomElementRegistry) {
-        registry.define("where-applet", WhereApplet);
-        element.innerHTML = `<where-applet></where-applet>`;
-        let appletElement = element.querySelector("where-applet") as any;
+        registry.define("profiles-applet", ProfilesApplet);
+        element.innerHTML = `<profiles-applet></profiles-applet>`;
+        let appletElement = element.querySelector("profiles-applet") as any;
 
         appletElement.client = new HolochainClient(appWebsocket);
         appletElement.profilesStore = weServices.profilesStore;
@@ -36,4 +36,4 @@ const whereApplet: WeApplet = {
   },
 };
 
-export default whereApplet;
+export default profilesApplet;

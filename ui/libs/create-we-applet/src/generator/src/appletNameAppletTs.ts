@@ -6,13 +6,13 @@ import snakeCase from 'lodash-es/snakeCase';
 
 export const appletNameAppletTs = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
   type: ScNodeType.File,
-  content: `import { ContextProvider } from "@holochain-open-dev/context";
+  content: `import { ContextProvider } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import {
-  ProfilesStore,
-  profilesStoreContext,
-} from "@holochain-open-dev/profiles";
-import { InstalledCell } from "@holochain/conductor-api";
+  ${appletNameTitleCase}Store,
+  ${appletName}StoreContext,
+} from "@holochain-open-dev/${appletName}";
+import { InstalledCell } from "@holochain/client";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
@@ -23,7 +23,7 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
   client!: HolochainClient;
 
   @property()
-  profilesStore!: ProfilesStore;
+  ${appletName}Store!: ${appletNameTitleCase}Store;
 
   @property()
   cellData!: InstalledCell;
@@ -32,9 +32,8 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
   loaded = false;
 
   async firstUpdated() {
-    await this.profilesStore.fetchAllProfiles();
 
-    new ContextProvider(this, profilesStoreContext, this.profilesStore);
+    new ContextProvider(this, ${appletName}StoreContext, this.${appletName}Store);
 
     // TODO: Initialize any store that you have and create a ContextProvider for it
     //
@@ -53,7 +52,7 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
       </div>\`;
 
     // TODO: add any elements that you have in your applet
-    return html\`\`;
+    return html\`<span>This is my applet!</span>\`;
   }
 
   static get scopedElements() {
@@ -65,3 +64,4 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
 }
 `
 });
+    

@@ -30,5 +30,5 @@ export interface WeApplet {
     adminWebsocket: AdminWebsocket,
     weStore: WeServices,
     appletInfo: InstalledAppInfo
-  ) => AppletRenderers;
+  ) => Promise<AppletRenderers>;
 }

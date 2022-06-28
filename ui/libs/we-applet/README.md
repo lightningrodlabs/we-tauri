@@ -12,29 +12,35 @@ You need to import the `SetupRenderers` type from `@lightningrodlabs/we-applet`,
 
 ```ts
 import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { SetupRenderers, WeServices } from "@lightningrodlabs/we-applet";
+import { WeApplet, WeServices } from "@lightningrodlabs/we-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
-const setupRenderers: SetupRenderers = (
-  client: HolochainClient,
-  adminWebsocket: AdminWebsocket,
-  appletCells: InstalledCell[], // This will contain all the cells that your applet has installed
-  weServices: WeServices
-) => {
-  // Maybe instantiate a store?
+const applet: WeApplet = {
+  async gameRenderers(
+    appWebsocket: AppWebsocket,
+    adminWebsocket: AdminWebsocket,
+    weServices: WeServices,
+    appletInfo: InstalledAppInfo  // This will contain all the cells that your applet has installed
+  ): Promise<AppletRenderers> {
+    // Maybe instantiate a store?
 
-  return {
-    full(appletRootElement: HTMLElement, registry: CustomElementRegistry) {
-      appletRootElement.innerHTML = "<span>Replace this with the appropriate HTML for your applet</span>";
+    return {
+      full(element: HTMLElement, registry: CustomElementRegistry) {
+        // Replace this with the UI for your applet
+        element.innerHTML = `<my-applet></my-applet>`;
+        let appletElement = element.querySelector("my-applet") as any;
 
-      // You can also do `registry.define('my-element', MyElement);`
-      // to register CustomElements that are going to be available in the scope for the element
-    },
-    blocks: [],
-  };
+        appletElement.appWebsocket = appWebsocket;
+        appletElement.profilesStore = weServices.profilesStore;
+        appletElement.cellData = appletInfo.cell_data[0];
+      },
+      blocks: [],
+    };
+  },
 };
 
-export default setupRenderers;
+export default whereApplet;
+
 ```
 
 ## Building
@@ -57,7 +63,7 @@ import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
 import { terser } from "rollup-plugin-terser";
 
 export default {
-  input: "out-tsc/index.js", // This needs to be pointing to the file that has the `SetupRenderers` default export
+  input: "out-tsc/index.js", // This needs to be pointing to the file that has the `WeApplet` default export
   output: {
     format: "es",
     dir: 'dist',
@@ -99,25 +105,6 @@ export default {
             ],
             modules: false,
             bugfixes: true,
-          },
-        ],
-      ],
-      plugins: [
-        [
-          require.resolve("babel-plugin-template-html-minifier"),
-          {
-            modules: {
-              lit: ["html", { name: "css", encapsulation: "style" }],
-            },
-            failOnError: false,
-            strictCSS: true,
-            htmlMinifier: {
-              collapseWhitespace: true,
-              conservativeCollapse: true,
-              removeComments: true,
-              caseSensitive: true,
-              minifyCSS: true,
-            },
           },
         ],
       ],

@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: profiles-applet
+ui:
+  bundled: "../ui.zip"
+happ_manifest:
+  bundled: "./profiles-applet.happ"
