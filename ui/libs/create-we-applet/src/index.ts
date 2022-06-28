@@ -1,6 +1,6 @@
 import { writeDirectoryTree } from "@source-craft/fs";
 import generate from "./generator";
-import { upperFirst, camelCase } from "lodash-es";
+import { upperFirst, camelCase, snakeCase } from "lodash-es";
 
 console.log(`@lightningrodlabs/create-we-applet`);
 
@@ -14,7 +14,7 @@ if (!process.argv[2]) {
 const appletName = process.argv[2];
 
 let d = generate({
-  appletName,
+  appletName: snakeCase(appletName),
   appletNameTitleCase: upperFirst(camelCase(appletName)),
 });
 

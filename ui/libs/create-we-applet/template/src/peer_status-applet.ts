@@ -7,7 +7,7 @@ import {
 import { InstalledAppInfo, AppWebsocket } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 
 export class PeerStatusApplet extends ScopedElementsMixin(LitElement) {
   @property()
@@ -23,7 +23,6 @@ export class PeerStatusApplet extends ScopedElementsMixin(LitElement) {
   loaded = false;
 
   async firstUpdated() {
-
     new ContextProvider(this, profilesStoreContext, this.profilesStore);
 
     // TODO: Initialize any store that you have and create a ContextProvider for it
@@ -52,4 +51,13 @@ export class PeerStatusApplet extends ScopedElementsMixin(LitElement) {
       // TODO: add any elements that you have in your applet
     };
   }
+
+  static styles = [
+    css`
+      :host {
+        display: flex;
+        flex: 1;
+      }
+    `,
+  ];
 }
