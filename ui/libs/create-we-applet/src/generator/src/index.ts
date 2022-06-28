@@ -1,12 +1,12 @@
-import { ScNodeType, ScDirectory } from '@source-craft/types'; 
+import { ScNodeType, ScDirectory } from '@source-craft/types';
 
 import { indexTs } from './indexTs';
-import { gameNameGameTs } from './gameNameGameTs';  
+import { appletNameAppletTs } from './appletNameAppletTs';
 
-export default ({gameNameTitleCase, gameName}: {gameNameTitleCase: string; gameName: string;}): ScDirectory => ({
+export default ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScDirectory => ({
   type: ScNodeType.Directory,
   children: {
-  'index.ts': indexTs({gameNameTitleCase, gameName}),
-  [`${gameName}-game.ts`]: gameNameGameTs({gameNameTitleCase, gameName})
+  'index.ts': indexTs({appletNameTitleCase, appletName}),
+  [`${appletName}-applet.ts`]: appletNameAppletTs({appletNameTitleCase, appletName})
   }
 })

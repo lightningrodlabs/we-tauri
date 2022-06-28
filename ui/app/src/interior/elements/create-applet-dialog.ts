@@ -16,15 +16,15 @@ import { sharedStyles } from "../../sharedStyles";
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
 import { getAllPublishedApps } from "../../processes/devhub/get-happs";
-import { GameInfo } from "../types";
+import { AppletInfo } from "../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 
-export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
+export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
   _weStore!: WeStore;
 
-  @query("#game-dialog")
-  _gameDialog!: Dialog;
+  @query("#applet-dialog")
+  _appletDialog!: Dialog;
 
   @query("#installed-app-id")
   _installedAppIdField!: TextField;
@@ -38,10 +38,10 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   _invalidUiBundle = false;
 
   @state()
-  _installableGames;
+  _installableApplets;
 
   @property()
-  _gameInfo: GameInfo = {
+  _appletInfo: AppletInfo = {
     title: "",
     subtitle: "",
     description: "",
@@ -49,9 +49,9 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     icon: undefined,
   };
 
-  open(gameInfo: GameInfo) {
-    this._gameDialog.show();
-    this._gameInfo = gameInfo;
+  open(appletInfo: AppletInfo) {
+    this._appletDialog.show();
+    this._appletInfo = appletInfo;
   }
 
   get publishDisabled() {
@@ -61,7 +61,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
   /*
   async publishDna() {
     if (this._dnaBundle && this._uiBundle) {
-      const result = await this._weStore.createGame(
+      const result = await this._weStore.createApplet(
         this._dnaBundle.file,
         this._uiBundle.setupRenderers,
         {
@@ -111,10 +111,10 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     // checking for duplicate names -- doesn't seem to work currently becaus for some reason weStore is undefined here...
     // console.log("weStore within checkValidity: ", this._weStore);
     // console.log("Checking validity");
-    // const allGames = this._weStore.allGames;
-    // console.log("allGames:, ", allGames);
-    // if (allGames) {
-    //   const allNames = Object.entries(allGames).map(([gameHash, game]) => game.name);
+    // const allApplets = this._weStore.allApplets;
+    // console.log("allApplets:, ", allApplets);
+    // if (allApplets) {
+    //   const allNames = Object.entries(allApplets).map(([appletHash, applet]) => applet.name);
     //   if (allNames.includes(this._installedAppIdField.value)) {
     //     return {
     //       valid: false
@@ -126,10 +126,10 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
     };
   }
 
-  async createGame() {
+  async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._weStore
-      .createGame(this._gameInfo, this._installedAppIdField.value)
+      .createApplet(this._appletInfo, this._installedAppIdField.value)
       .then(() => {
         (
           this.shadowRoot?.getElementById("installing-progress") as Snackbar
@@ -193,7 +193,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
-      <mwc-dialog id="game-dialog" heading="Add Custom Name">
+      <mwc-dialog id="applet-dialog" heading="Add Custom Name">
         <div class="column" style="padding: 16px;">
           <mwc-textfield
             id="installed-app-id"
@@ -201,7 +201,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
             required
             outlined
             autoValidate
-            value=${this._gameInfo.title}
+            value=${this._appletInfo.title}
             @input=${() => this.requestUpdate()}
             style="margin-bottom: 24px;"
             validateOnInitialRender
@@ -221,7 +221,7 @@ export class CreateGameDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.createGame()}
+          @click=${() => this.createApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;

@@ -17,15 +17,15 @@ import { property, query, state } from "lit/decorators.js";
 
 import { weContext } from "../context";
 import { WeStore } from "../we-store";
-import { CreateGameDialog } from "./create-game-dialog";
-import { InstallableGames } from "./installable-games";
-import { WeGameRenderer } from "./we-game-renderer";
+import { CreateAppletDialog } from "./create-applet-dialog";
+import { InstallableApplets } from "./installable-applets";
+import { WeAppletRenderer } from "./we-applet-renderer";
 import { EntryHashB64, serializeHash } from "@holochain-open-dev/core-types";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "../../sharedStyles";
 import { InvitationsBlock } from "./invitations-block";
-import { Game, PlayingGame } from "../types";
+import { Applet, PlayingApplet } from "../types";
 
 export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -38,9 +38,9 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     () => [this._store]
   );
 
-  _allGames = new TaskSubscriber(
+  _allApplets = new TaskSubscriber(
     this,
-    () => this._store.fetchAllGames(),
+    () => this._store.fetchAllApplets(),
     () => [this._store]
   );
 
@@ -51,16 +51,16 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   );
 
   @property()
-  _selectedGameId: EntryHashB64 | undefined = undefined;
+  _selectedAppletId: EntryHashB64 | undefined = undefined;
 
   @state()
-  private _showGameDescription: boolean = false;
+  private _showAppletDescription: boolean = false;
 
   @state()
   private _loading: boolean = true;
 
-  @query("#game-dialog")
-  _gameDialog!: CreateGameDialog;
+  @query("#applet-dialog")
+  _appletDialog!: CreateAppletDialog;
 
   renderJoinErrorSnackbar() {
     return html`
@@ -93,19 +93,19 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   protected async firstUpdated() {
-    await this._store.fetchGamesIAmPlaying();
+    await this._store.fetchAppletsIAmPlaying();
     await this._store.fetchInfo();
     this._loading = false;
   }
 
-  toggleGameDescription() {
-    this._showGameDescription = !this._showGameDescription;
+  toggleAppletDescription() {
+    this._showAppletDescription = !this._showAppletDescription;
   }
 
-  async joinGame(gameHash: EntryHashB64) {
+  async joinApplet(appletHash: EntryHashB64) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._store
-      .joinGame(gameHash)
+      .joinApplet(appletHash)
       .then(() => {
         (
           this.shadowRoot?.getElementById("installing-progress") as Snackbar
@@ -113,7 +113,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         (
           this.shadowRoot?.getElementById("installation-success") as Snackbar
         ).show();
-        this.requestUpdate(); // to show the newly installed game in case user is still on same page
+        this.requestUpdate(); // to show the newly installed applet in case user is still on same page
       })
       .catch((e) => {
         (
@@ -126,8 +126,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  renderGamesList(allGames: Record<EntryHashB64, Game>) {
-    if (allGames) {
+  renderAppletsList(allApplets: Record<EntryHashB64, Applet>) {
+    if (allApplets) {
       return html`
         <div class="column we-sidebar">
           <sl-tooltip
@@ -139,32 +139,32 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
               icon="home"
               style="--mdc-theme-secondary: #303F9F"
               @click=${() => {
-                this._selectedGameId = undefined;
+                this._selectedAppletId = undefined;
               }}
             ></mwc-fab>
           </sl-tooltip>
 
-          ${Object.entries(allGames)
-            .sort(([a_hash, a_game], [b_hash, b_game]) =>
-              a_game.name.localeCompare(b_game.name)
+          ${Object.entries(allApplets)
+            .sort(([a_hash, a_applet], [b_hash, b_applet]) =>
+              a_applet.name.localeCompare(b_applet.name)
             )
-            .map(([gameHash, game]) => {
-              if (!game.logoSrc) {
+            .map(([appletHash, applet]) => {
+              if (!applet.logoSrc) {
                 return html`
                   <sl-tooltip
                     id="tooltip"
                     placement="right"
-                    .content=${game.name}
+                    .content=${applet.name}
                   >
                     <div
-                      class="game-logo-placeholder ${classMap({
-                        highlighted: gameHash === this._selectedGameId,
+                      class="applet-logo-placeholder ${classMap({
+                        highlighted: appletHash === this._selectedAppletId,
                       })}"
                       @click=${() => {
-                        this._selectedGameId = gameHash;
+                        this._selectedAppletId = appletHash;
                       }}
                     >
-                      ${game.name[0]}
+                      ${applet.name[0]}
                     </div>
                   </sl-tooltip>
                 `;
@@ -173,15 +173,15 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
                   <sl-tooltip
                     id="tooltip"
                     placement="right"
-                    .content=${game.name}
+                    .content=${applet.name}
                   >
                     <img
-                      class="game-logo ${classMap({
-                        highlighted: gameHash === this._selectedGameId,
+                      class="applet-logo ${classMap({
+                        highlighted: appletHash === this._selectedAppletId,
                       })}"
-                      src=${game.logoSrc}
+                      src=${applet.logoSrc}
                       @click=${() => {
-                        this._selectedGameId = gameHash;
+                        this._selectedAppletId = appletHash;
                       }}
                     />
                   </sl-tooltip>
@@ -198,7 +198,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderContent() {
-    if (!this._selectedGameId) {
+    if (!this._selectedAppletId) {
       return html`
         <div class="column" style="flex: 1; margin: 24px;">
           <div class="row center-content" style="margin-top: 56px">
@@ -224,50 +224,50 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
           <hr style="width: 100%" />
 
-          <div class="row installable-games-container">
-            <installable-games></installable-games>
+          <div class="row installable-applets-container">
+            <installable-applets></installable-applets>
           </div>
         </div>
       `;
-    } else if (this._store.isInstalled(this._selectedGameId)) {
-      return html` <we-game-renderer
+    } else if (this._store.isInstalled(this._selectedAppletId)) {
+      return html` <we-applet-renderer
         style="flex: 1"
-        id="${this._selectedGameId}"
-        .gameHash=${this._selectedGameId}
-      ></we-game-renderer>`;
+        id="${this._selectedAppletId}"
+        .appletHash=${this._selectedAppletId}
+      ></we-applet-renderer>`;
     } else {
-      const game = this._store.getGameInfo(this._selectedGameId)!;
+      const applet = this._store.getAppletInfo(this._selectedAppletId)!;
       return html`
         <div class="column center-content">
-          ${!game.logoSrc
+          ${!applet.logoSrc
             ? html`<div
                 class="logo-placeholder-large"
                 style="width: 100px; height: 100px;"
               >
-                ${game.name[0]}
+                ${applet.name[0]}
               </div>`
-            : html`<img class="logo-large" src=${game.logoSrc!} />`}
+            : html`<img class="logo-large" src=${applet.logoSrc!} />`}
           <div class="row center-content" style="margin-top: 20px;">
             <div
               style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
             >
-              ${game.name}
+              ${applet.name}
             </div>
             <mwc-icon-button-toggle
               onIcon="expand_less"
               offIcon="expand_more"
-              @click=${this.toggleGameDescription}
+              @click=${this.toggleAppletDescription}
             ></mwc-icon-button-toggle>
           </div>
-          ${this._showGameDescription
+          ${this._showAppletDescription
             ? html`<div
                 style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
               >
-                ${game.description}
+                ${applet.description}
               </div>`
             : html``}
           <div style="margin-top: 70px; font-size: 1.2em; text-align: center;">
-            This game has been added by someone else from your group.
+            This applet has been added by someone else from your group.
           </div>
           <div style="margin-top: 10px; font-size: 1.2em; text-align: center;">
             You haven't installed it yet.
@@ -275,7 +275,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           <mwc-button
             style="margin-top: 50px;"
             raised
-            @click=${() => this.joinGame(this._selectedGameId!)}
+            @click=${() => this.joinApplet(this._selectedAppletId!)}
             >INSTALL</mwc-button
           >
         </div>
@@ -322,8 +322,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         ${this.renderSuccessSnackbar()}
 
         <div class="row" style="flex: 1">
-          ${this._allGames.render({
-            complete: (games) => this.renderGamesList(games),
+          ${this._allApplets.render({
+            complete: (applets) => this.renderAppletsList(applets),
             pending: () => html`
               <mwc-circular-progress indeterminate></mwc-circular-progress>
             `,
@@ -346,21 +346,21 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           </div>
         </div>
 
-        <create-game-dialog id="game-dialog"></create-game-dialog>
+        <create-applet-dialog id="applet-dialog"></create-applet-dialog>
       </profile-prompt>
     `;
   }
 
   static get scopedElements() {
     return {
-      "create-game-dialog": CreateGameDialog,
+      "create-applet-dialog": CreateAppletDialog,
       "profile-prompt": ProfilePrompt,
-      "installable-games": InstallableGames,
+      "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
       "mwc-card": Card,
       "mwc-circular-progress": CircularProgress,
-      "we-game-renderer": WeGameRenderer,
+      "we-applet-renderer": WeAppletRenderer,
       "sl-tooltip": SlTooltip,
       "invitations-block": InvitationsBlock,
       "mwc-icon-button-toggle": IconButtonToggle,
@@ -409,7 +409,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         color: #1b245d;
       }
 
-      .game-logo {
+      .applet-logo {
         cursor: pointer;
         margin-top: 8px;
         border-radius: 50%;
@@ -419,11 +419,11 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .game-logo:hover {
+      .applet-logo:hover {
         box-shadow: 0 0 5px #0000;
       }
 
-      .game-logo-placeholder {
+      .applet-logo-placeholder {
         text-align: center;
         font-size: 35px;
         cursor: pointer;
@@ -435,7 +435,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .game-logo-placeholder:hover {
+      .applet-logo-placeholder:hover {
         box-shadow: 0 0 10px #0000;
         background: gray;
       }
@@ -459,7 +459,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .game-card {
+      .applet-card {
         width: 300px;
         height: 180px;
         margin: 10px;
@@ -469,7 +469,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         border: #303f9f 4px solid;
       }
 
-      .installable-games-container {
+      .installable-applets-container {
         padding: 10px;
         width: 100%;
       }

@@ -15,7 +15,7 @@ export default async (orchestrator) => {
     // be used to spin up the conductor processes which are returned in a matching array.
     const [a_and_b_conductor] = await s.players([localConductorConfig])
 
-    let game1 = {
+    let applet1 = {
       name: "profiles",
       description: "Manage user's avatar and nicname",
       dna_hash: "uhC0kKLh4y743R0WEXBePKiAJJ9Myeg63GMW2MDinP4rU2RQ-okBd",
@@ -26,7 +26,7 @@ export default async (orchestrator) => {
 
     a_and_b_conductor.setSignalHandler((signal) => {
       console.log("Received Signal:",signal)
-      t.deepEqual(signal.data.payload.message, { type: 'NewGame', content: game1 })
+      t.deepEqual(signal.data.payload.message, { type: 'NewApplet', content: applet1 })
     })
 
     // install your happs into the conductors and destructuring the returned happ data using the same
@@ -41,14 +41,14 @@ export default async (orchestrator) => {
     console.log("players", players);
 
 
-    // Create a game
-    const game1_hash = await alice_we.call('hc_zome_we', 'create_game', game1 );
-    t.ok(game1_hash)
-    console.log("game1_hash", game1_hash);
+    // Create a applet
+    const applet1_hash = await alice_we.call('hc_zome_we', 'create_applet', applet1 );
+    t.ok(applet1_hash)
+    console.log("applet1_hash", applet1_hash);
 
-    const games = await alice_we.call('hc_zome_we', 'get_games', null );
-    console.log(games);
-    t.deepEqual(games, [{hash: game1_hash, content: game1}]);
+    const applets = await alice_we.call('hc_zome_we', 'get_applets', null );
+    console.log(applets);
+    t.deepEqual(applets, [{hash: applet1_hash, content: applet1}]);
 
   })
 }

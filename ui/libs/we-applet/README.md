@@ -1,33 +1,33 @@
-# @lightningrodlabs/we-game
+# @lightningrodlabs/we-applet
 
-This package contains the interfaces and contracts that a UI module needs to implement in order to become a We Game.
+This package contains the interfaces and contracts that a UI module needs to implement in order to become a We Applet.
 
-You can use [@lightningrodlabs/create-we-game](https://npmjs.com/package/@lightningrodlabs/create-we-game) to easily scaffold the initial structure for a We Game.
+You can use [@lightningrodlabs/create-we-applet](https://npmjs.com/package/@lightningrodlabs/create-we-applet) to easily scaffold the initial structure for a We Applet.
 
-## Implementing a We Game
+## Implementing a We Applet
 
-You need to import the `SetupRenderers` type from `@lightningrodlabs/we-game`, and have only a default export in your file:
+You need to import the `SetupRenderers` type from `@lightningrodlabs/we-applet`, and have only a default export in your file:
 
 > index.ts.
 
 ```ts
 import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { SetupRenderers, WeServices } from "@lightningrodlabs/we-game";
+import { SetupRenderers, WeServices } from "@lightningrodlabs/we-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const setupRenderers: SetupRenderers = (
   client: HolochainClient,
   adminWebsocket: AdminWebsocket,
-  gameCells: InstalledCell[], // This will contain all the cells that your game has installed
+  appletCells: InstalledCell[], // This will contain all the cells that your applet has installed
   weServices: WeServices
 ) => {
   // Maybe instantiate a store?
 
   return {
-    full(gameRootElement: HTMLElement, registry: CustomElementRegistry) {
-      gameRootElement.innerHTML = "<span>Replace this with the appropriate HTML for your game</span>";
+    full(appletRootElement: HTMLElement, registry: CustomElementRegistry) {
+      appletRootElement.innerHTML = "<span>Replace this with the appropriate HTML for your applet</span>";
 
-      // You can also do `registry.define('my-element', MyElement);` 
+      // You can also do `registry.define('my-element', MyElement);`
       // to register CustomElements that are going to be available in the scope for the element
     },
     blocks: [],
@@ -126,4 +126,4 @@ export default {
 };
 ```
 
-Now you have it! You can use the generated `.js` file as a We Game UI file.
+Now you have it! You can use the generated `.js` file as a We Applet UI file.

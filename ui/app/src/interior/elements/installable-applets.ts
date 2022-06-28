@@ -21,15 +21,15 @@ import {
   getLatestRelease,
 } from "../../processes/devhub/get-happs";
 
-import { GameInfo } from "../types";
-import { CreateGameDialog } from "./create-game-dialog";
+import { AppletInfo } from "../types";
+import { CreateAppletDialog } from "./create-applet-dialog";
 
-export class InstallableGames extends ScopedElementsMixin(LitElement) {
+export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
   @state()
   _weStore!: WeStore;
 
-  _installableGames = new Task(
+  _installableApplets = new Task(
     this,
     async ([s]) => {
       const devhubHapp = await this._weStore.getDevhubHapp();
@@ -40,25 +40,25 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
   );
 
   @state()
-  private _selectedGameInfo: GameInfo | undefined;
+  private _selectedAppletInfo: AppletInfo | undefined;
 
-  @query("#game-dialog")
-  _gameDialog!: CreateGameDialog;
+  @query("#applet-dialog")
+  _appletDialog!: CreateAppletDialog;
 
-  renderInstallableGame(gameInfo: GameInfo) {
+  renderInstallableApplet(appletInfo: AppletInfo) {
     return html`
-      <mwc-card class="game-card">
+      <mwc-card class="applet-card">
         <div style="height: 145px;">
-          <h2 style="padding: 5px; margin:0;">${gameInfo.title}</h2>
-          <h3 style="padding: 5px; margin: 0;">${gameInfo.subtitle}</h3>
+          <h2 style="padding: 5px; margin:0;">${appletInfo.title}</h2>
+          <h3 style="padding: 5px; margin: 0;">${appletInfo.subtitle}</h3>
           <div style="height: 70px; overflow-y: auto; padding: 5px;">
-            ${gameInfo.description}
+            ${appletInfo.description}
           </div>
         </div>
         <mwc-button
           outlined
           @click=${() => {
-            this._gameDialog.open(gameInfo);
+            this._appletDialog.open(appletInfo);
           }}
           >INSTALL</mwc-button
         >
@@ -66,34 +66,34 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  renderGames(games: Array<AppWithReleases>) {
-    return html` <create-game-dialog
-        id="game-dialog"
-        .gameInfo=${this._selectedGameInfo}
+  renderApplets(applets: Array<AppWithReleases>) {
+    return html` <create-applet-dialog
+        id="applet-dialog"
+        .appletInfo=${this._selectedAppletInfo}
         @closed=${() => {
-          this._selectedGameInfo = undefined;
+          this._selectedAppletInfo = undefined;
         }}
-      ></create-game-dialog>
+      ></create-applet-dialog>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-        ${(games.length == 0)
+        ${(applets.length == 0)
           ? html`
             <div class="column center-content">
               <span class="placeholder">No applets available yet</span>
             </div>
             `
-          : games.map((item) => {
+          : applets.map((item) => {
               let latestRelease = getLatestRelease(item);
 
               if (latestRelease) {
-                let gameInfo: GameInfo = {
+                let appletInfo: AppletInfo = {
                   title: item.app.content.title,
                   subtitle: item.app.content.subtitle,
                   description: item.app.content.description,
                   icon: undefined, // ADD ICON HERE
                   entryHash: latestRelease.address,
                 };
-                return this.renderInstallableGame(gameInfo);
+                return this.renderInstallableApplet(appletInfo);
               }
             })
           }
@@ -102,8 +102,8 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
-    return this._installableGames.render({
-      complete: (games) => this.renderGames(games),
+    return this._installableApplets.render({
+      complete: (applets) => this.renderApplets(applets),
       pending: () => html`
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       `,
@@ -117,12 +117,12 @@ export class InstallableGames extends ScopedElementsMixin(LitElement) {
       "mwc-textfield": TextField,
       "mwc-circular-progress": CircularProgress,
       "mwc-card": Card,
-      "create-game-dialog": CreateGameDialog,
+      "create-applet-dialog": CreateAppletDialog,
     };
   }
 
   static localStyles = css`
-    .game-card {
+    .applet-card {
       width: 300px;
       height: 180px;
       margin: 10px;

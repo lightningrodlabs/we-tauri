@@ -25,10 +25,10 @@ export interface WeServices {
 }
 
 export interface WeApplet {
-  gameRenderers: (
+  appletRenderers: (
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
-    weServices: WeServices,
-    appletAppInfo: InstalledAppInfo
+    weStore: WeServices,
+    appletInfo: InstalledAppInfo
   ) => AppletRenderers;
 }

@@ -13,6 +13,7 @@ import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 import { WhereApplet } from "./where-applet";
 
+
 const whereApplet: WeApplet = {
   gameRenderers(
     appWebsocket: AppWebsocket,

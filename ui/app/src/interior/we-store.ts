@@ -31,7 +31,7 @@ import { MembraneInvitationsService } from "@holochain-open-dev/membrane-invitat
 import { encode, decode } from "@msgpack/msgpack";
 import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
 import { PeerStatusStore } from "@holochain-open-dev/peer-status";
-import { GameRenderers, WeGame } from "@lightningrodlabs/we-game";
+import { AppletRenderers, WeApplet } from "@lightningrodlabs/we-applet";
 
 import { decompressSync, unzipSync } from "fflate";
 import { v4 as uuidv4 } from "uuid";
@@ -39,31 +39,31 @@ import { v4 as uuidv4 } from "uuid";
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
 import {
-  Game,
-  GameInfo,
+  Applet,
+  AppletInfo,
   GuiFile,
-  PlayingGame,
-  RegisterGameInput,
+  PlayingApplet,
+  RegisterAppletInput,
   WeInfo,
 } from "./types";
-import { GamesService } from "./games-service";
+import { AppletsService } from "./applets-service";
 import { WeService } from "./we-service";
 
 export class WeStore {
-  private gamesService: GamesService;
+  private appletsService: AppletsService;
   private weService: WeService;
   public profilesStore: ProfilesStore;
   public peerStatusStore: PeerStatusStore;
 
-  private _allGames: Writable<Record<EntryHashB64, Game>> = writable({});
-  private _gamesIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
+  private _allApplets: Writable<Record<EntryHashB64, Applet>> = writable({});
+  private _appletsIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
     writable({});
-  private _gameRenderers: Record<EntryHashB64, GameRenderers> = {};
+  private _appletRenderers: Record<EntryHashB64, AppletRenderers> = {};
 
   /*
-  public game(gameHash: EntryHashB64): Readable<
+  public applet(appletHash: EntryHashB64): Readable<
     | {
-        info: Game;
+        info: Applet;
         renderers: Renderers | undefined;
         areWePlaying: boolean;
       }
@@ -71,10 +71,10 @@ export class WeStore {
   > {
     return derived(this.state, (s) => {
       return {
-        game_hash: gameHash,
-        info: s.games[gameHash],
-        renderers: s.renderers[gameHash],
-        areWePlaying: !!s.gamesAlreadyPlaying[gameHash],
+        applet_hash: appletHash,
+        info: s.applets[appletHash],
+        renderers: s.renderers[appletHash],
+        areWePlaying: !!s.appletsAlreadyPlaying[appletHash],
       };
     });
   }
@@ -91,12 +91,12 @@ export class WeStore {
     return (this.cellClient as any).cellData;
   }
 
-  public get allGames() {
-    return derived(this._allGames, (allGames) => allGames);
+  public get allApplets() {
+    return derived(this._allApplets, (allApplets) => allApplets);
   }
 
-  public get gamesIAmPlaying() {
-    return derived(this._gamesIAmPlaying, (gamesIAmPlaying) => gamesIAmPlaying);
+  public get appletsIAmPlaying() {
+    return derived(this._appletsIAmPlaying, (appletsIAmPlaying) => appletsIAmPlaying);
   }
 
   constructor(
@@ -105,7 +105,7 @@ export class WeStore {
     public adminWebsocket: AdminWebsocket,
     protected membraneInvitationsService: MembraneInvitationsService
   ) {
-    this.gamesService = new GamesService(cellClient);
+    this.appletsService = new AppletsService(cellClient);
     this.weService = new WeService(cellClient);
     this.profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     this.peerStatusStore = new PeerStatusStore(cellClient);
@@ -116,10 +116,10 @@ export class WeStore {
       if (!payload.message) return;
 
       switch (payload.message.type) {
-        case "NewGame":
-          this._allGames.update((s) => {
-            if (!s[payload.gameHash]) {
-              s[payload.gameHash] = payload.message.content;
+        case "NewApplet":
+          this._allApplets.update((s) => {
+            if (!s[payload.appletHash]) {
+              s[payload.appletHash] = payload.message.content;
             }
             return s;
           });
@@ -138,90 +138,90 @@ export class WeStore {
     return readable(info);
   }
 
-  async fetchAllGames(): Promise<Readable<Record<EntryHashB64, Game>>> {
-    const allGames = await this.gamesService.getAllGames();
+  async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
+    const allApplets = await this.appletsService.getAllApplets();
 
-    this._allGames = writable(allGames);
+    this._allApplets = writable(allApplets);
 
-    return derived(this._allGames, (i) => i);
+    return derived(this._allApplets, (i) => i);
   }
 
-  async fetchGamesIAmPlaying(): Promise<
-    Readable<Record<EntryHashB64, PlayingGame>>
+  async fetchAppletsIAmPlaying(): Promise<
+    Readable<Record<EntryHashB64, PlayingApplet>>
   > {
-    const gamesIAmPlaying = await this.gamesService.getGamesIAmPlaying();
-    const games: Record<EntryHashB64, Game> = {};
+    const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
+    const applets: Record<EntryHashB64, Applet> = {};
     const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
 
-    for (const [gameHash, playingGame] of Object.entries(gamesIAmPlaying)) {
-      myOtherPubKeys[gameHash] = playingGame.agentPubKey;
-      games[gameHash] = playingGame.game;
+    for (const [appletHash, playingApplet] of Object.entries(appletsIAmPlaying)) {
+      myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
+      applets[appletHash] = playingApplet.applet;
     }
 
-    this._gamesIAmPlaying.set(myOtherPubKeys);
-    this._allGames.update((g) => ({
+    this._appletsIAmPlaying.set(myOtherPubKeys);
+    this._allApplets.update((g) => ({
       ...g,
-      ...games,
+      ...applets,
     }));
 
     return derived(
-      [this._gamesIAmPlaying, this._allGames],
-      ([playing, allGames]) => {
-        const playingGames: Record<EntryHashB64, PlayingGame> = {};
+      [this._appletsIAmPlaying, this._allApplets],
+      ([playing, allApplets]) => {
+        const playingApplets: Record<EntryHashB64, PlayingApplet> = {};
 
-        for (const [gameHash, agentPubKey] of Object.entries(playing)) {
-          playingGames[gameHash] = {
+        for (const [appletHash, agentPubKey] of Object.entries(playing)) {
+          playingApplets[appletHash] = {
             agentPubKey,
-            game: allGames[gameHash],
+            applet: allApplets[appletHash],
           };
         }
 
-        return playingGames;
+        return playingApplets;
       }
     );
   }
 
-  isInstalled(gameHash: EntryHashB64) {
-    const installedIds = Object.entries(get(this._gamesIAmPlaying)).map(
+  isInstalled(appletHash: EntryHashB64) {
+    const installedIds = Object.entries(get(this._appletsIAmPlaying)).map(
       ([entryHash, agentPubKey]) => entryHash
     );
     console.log("installedIds: ", installedIds);
-    console.log("gameHash: ", gameHash);
-    console.log("included: ", installedIds.includes(gameHash));
-    return installedIds.includes(gameHash);
+    console.log("appletHash: ", appletHash);
+    console.log("included: ", installedIds.includes(appletHash));
+    return installedIds.includes(appletHash);
   }
 
-  getGameInfo(gameHash: EntryHashB64): Game | undefined {
-    return get(this._allGames)[gameHash];
+  getAppletInfo(appletHash: EntryHashB64): Applet | undefined {
+    return get(this._allApplets)[appletHash];
   }
 
-  // async fetchOrderedGamesList(): Promise<Readable<Record<"joined"|"unjoined", Readable<<EntryHashB64, Game>> {
+  // async fetchOrderedAppletsList(): Promise<Readable<Record<"joined"|"unjoined", Readable<<EntryHashB64, Applet>> {
 
-  //   const gamesIamPlaying = get(await this.fetchGamesIAmPlaying());
-  //   const allGames = get(await this.fetchAllGames());
+  //   const appletsIamPlaying = get(await this.fetchAppletsIAmPlaying());
+  //   const allApplets = get(await this.fetchAllApplets());
 
-  //   return derived(this._allGames, (allGames) => {
-  //     const unjoinedGames: Record<EntryHashB64, Game> = {};
-  //     const gamesIAmPlaying = get(this._gamesIAmPlaying);
+  //   return derived(this._allApplets, (allApplets) => {
+  //     const unjoinedApplets: Record<EntryHashB64, Applet> = {};
+  //     const appletsIAmPlaying = get(this._appletsIAmPlaying);
 
-  //     Object.entries(allGames).map(([gameHash, game]) => {
-  //       if (!gamesIAmPlaying[gameHash]) {
-  //         unjoinedGames[gameHash] = game;
+  //     Object.entries(allApplets).map(([appletHash, applet]) => {
+  //       if (!appletsIAmPlaying[appletHash]) {
+  //         unjoinedApplets[appletHash] = applet;
   //       }
   //     });
-  //     return unjoinedGames;
+  //     return unjoinedApplets;
   //   });
 
   // }
 
-  async fetchGameRenderers(gameHash: EntryHashB64): Promise<GameRenderers> {
-    const renderer = this._gameRenderers[gameHash];
+  async fetchAppletRenderers(appletHash: EntryHashB64): Promise<AppletRenderers> {
+    const renderer = this._appletRenderers[appletHash];
     if (renderer) return renderer;
 
-    const game = get(this._allGames)[gameHash];
-    const gameAgentPubKey = get(this._gamesIAmPlaying)[gameHash];
-    const rendererBytes = await this.gamesService.queryGameGui(
-      game.guiFileHash
+    const applet = get(this._allApplets)[appletHash];
+    const appletAgentPubKey = get(this._appletsIAmPlaying)[appletHash];
+    const rendererBytes = await this.appletsService.queryAppletGui(
+      applet.guiFileHash
     );
 
     const file = new File(
@@ -230,18 +230,18 @@ export class WeStore {
     );
 
     const mod = await importModuleFromFile(file);
-    const gameGui: WeGame = mod.default; // for a Gui to be we-compatible it's default export must be of type WeGame
+    const appletGui: WeApplet = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
 
     const cell_data: InstalledCell[] = [];
 
-    for (const [role_id, dnaHash] of Object.entries(game.dnaHashes)) {
+    for (const [role_id, dnaHash] of Object.entries(applet.dnaHashes)) {
       cell_data.push({
-        cell_id: [deserializeHash(dnaHash), deserializeHash(gameAgentPubKey)],
+        cell_id: [deserializeHash(dnaHash), deserializeHash(appletAgentPubKey)],
         role_id,
       });
     }
 
-    const renderers = gameGui.gameRenderers(
+    const renderers = appletGui.appletRenderers(
       this.appWebsocket,
       this.adminWebsocket,
       { profilesStore: this.profilesStore },
@@ -252,8 +252,8 @@ export class WeStore {
       }
     );
 
-    // s.renderers is undefined --> maybe because this._gameRenderers is still empty at that point?
-    this._gameRenderers[gameHash] = renderers;
+    // s.renderers is undefined --> maybe because this._appletRenderers is still empty at that point?
+    this._appletRenderers[appletHash] = renderers;
 
     return renderers;
   }
@@ -293,15 +293,15 @@ export class WeStore {
     return [decompressedHapp, decompressedGui];
   }
 
-  // Installs the given game to the conductor, and registers it in the We DNA
-  async createGame(
-    gameInfo: GameInfo,
+  // Installs the given applet to the conductor, and registers it in the We DNA
+  async createApplet(
+    appletInfo: AppletInfo,
     installedAppId: InstalledAppId
   ): Promise<EntryHashB64> {
     // --- Install hApp in the conductor---
 
     const [decompressedHapp, decompressedGui] =
-      await this.fetchAndDecompressWebHapp(serializeHash(gameInfo.entryHash));
+      await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.entryHash));
 
     // const devhubHapp = await this.getDevhubHapp();
 
@@ -309,7 +309,7 @@ export class WeStore {
     //   this.appWebsocket,
     //   devhubHapp,
     //   "hApp", // This is chosen arbitrarily at the moment
-    //   gameInfo.entryHash,
+    //   appletInfo.entryHash,
     //   )
 
     // // decompress bytearray into .happ and ui.zip (zlibt2)
@@ -341,20 +341,20 @@ export class WeStore {
     // const decompressedGui = unzipSync(new Uint8Array(compressedGui)) as any;
 
     // commit the ui as a private entry to the source chain (in order to always be readily available)
-    // const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui["index.js"]);
-    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui);
+    // const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui["index.js"]);
+    const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui);
 
     const dnaHashes: Record<string, DnaHashB64> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
     });
 
-    const game: Game = {
+    const applet: Applet = {
       name: installedAppId,
-      description: gameInfo.description,
-      logoSrc: gameInfo.icon,
+      description: appletInfo.description,
+      logoSrc: appletInfo.icon,
 
-      devhubHappReleaseHash: serializeHash(gameInfo.entryHash),
+      devhubHappReleaseHash: serializeHash(appletInfo.entryHash),
       guiFileHash: guiEntryHash,
 
       properties: {},
@@ -362,12 +362,12 @@ export class WeStore {
       dnaHashes: dnaHashes,
     };
 
-    const registerGameInput: RegisterGameInput = {
-      gameAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
-      game,
+    const registerAppletInput: RegisterAppletInput = {
+      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      applet,
     };
 
-    // export interface Game {
+    // export interface Applet {
     //   name: string;
     //   description: string;
     //   logoSrc: string;
@@ -380,79 +380,79 @@ export class WeStore {
     //   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
     // }
 
-    const gameHash = await this.gamesService.createGame(registerGameInput);
+    const appletHash = await this.appletsService.createApplet(registerAppletInput);
 
-    this._gamesIAmPlaying.update((gamesIAmPlaying) => {
-      gamesIAmPlaying[gameHash] = serializeHash(this.myAgentPubKey);
-      return gamesIAmPlaying;
+    this._appletsIAmPlaying.update((appletsIAmPlaying) => {
+      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
+      return appletsIAmPlaying;
     });
 
-    this._allGames.update((allGames) => {
-      allGames[gameHash] = game;
-      return allGames;
+    this._allApplets.update((allApplets) => {
+      allApplets[appletHash] = applet;
+      return allApplets;
     });
 
-    return gameHash;
+    return appletHash;
   }
 
   /*
-  gameUid(gameName: string) {
-    return `wegame-${get(this.state).name}-game-${gameName}`;
+  appletUid(appletName: string) {
+    return `weapplet-${get(this.state).name}-applet-${appletName}`;
   }
 
 */
 
-  // Installs the already existing game in this We to the conductor
-  async joinGame(gameHash: EntryHashB64): Promise<void> {
+  // Installs the already existing applet in this We to the conductor
+  async joinApplet(appletHash: EntryHashB64): Promise<void> {
     // const cellIds = await this.adminWebsocket.listCellIds();
     // const dnaHashes = cellIds.map((cellId) => serializeHash(cellId[0]));
 
-    // // If the game is already installed, nothing to do
-    // if (dnaHashes.includes(gameHash)) return;
+    // // If the applet is already installed, nothing to do
+    // if (dnaHashes.includes(appletHash)) return;
 
-    // If the game is already installed, nothing to do
-    const installedGamesHashes = Object.entries(get(this._gamesIAmPlaying)).map(
+    // If the applet is already installed, nothing to do
+    const installedAppletsHashes = Object.entries(get(this._appletsIAmPlaying)).map(
       ([entryHash, agentPubKey]) => entryHash
     );
-    if (installedGamesHashes.includes(gameHash)) return;
+    if (installedAppletsHashes.includes(appletHash)) return;
 
-    const allGames: Record<EntryHashB64, Game> = get(this._allGames);
-    let game = allGames[gameHash];
+    const allApplets: Record<EntryHashB64, Applet> = get(this._allApplets);
+    let applet = allApplets[appletHash];
 
-    console.log("devhubreleasehash: ", game.devhubHappReleaseHash);
+    console.log("devhubreleasehash: ", applet.devhubHappReleaseHash);
     // fetch hApp and GUI
     const [decompressedHapp, decompressedGui] =
-      await this.fetchAndDecompressWebHapp(game.devhubHappReleaseHash);
+      await this.fetchAndDecompressWebHapp(applet.devhubHappReleaseHash);
 
-    if (!game) {
-      game = get(await this.fetchAllGames())[gameHash];
+    if (!applet) {
+      applet = get(await this.fetchAllApplets())[appletHash];
     }
 
     // install app bundle
     const request: InstallAppBundleRequest = {
       agent_key: this.myAgentPubKey,
-      installed_app_id: game.name,
+      installed_app_id: applet.name,
       membrane_proofs: {},
       bundle: decompressedHapp,
-      uid: game.uid["happ"],
+      uid: applet.uid["happ"],
     };
 
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
-    // register Game entry in order to have it in the own source chain
-    const registerGameInput: RegisterGameInput = {
-      gameAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
-      game,
+    // register Applet entry in order to have it in the own source chain
+    const registerAppletInput: RegisterAppletInput = {
+      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      applet,
     };
 
-    await this.gamesService.createGame(registerGameInput);
+    await this.appletsService.createApplet(registerAppletInput);
 
     // commit GUI to source chain as private entry
-    const guiEntryHash = await this.gamesService.commitGuiFile(decompressedGui);
+    const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui);
 
-    this._gamesIAmPlaying.update((gamesIAmPlaying) => {
-      gamesIAmPlaying[gameHash] = serializeHash(this.myAgentPubKey);
-      return gamesIAmPlaying;
+    this._appletsIAmPlaying.update((appletsIAmPlaying) => {
+      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
+      return appletsIAmPlaying;
     });
   }
 

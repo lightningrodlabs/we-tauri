@@ -2,7 +2,7 @@ import { ref } from "lit/directives/ref.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { Renderer } from "@lightningrodlabs/we-game";
+import { Renderer } from "@lightningrodlabs/we-applet";
 
 export class RenderBlock extends ScopedElementsMixin(LitElement) {
   @property()
@@ -13,7 +13,7 @@ export class RenderBlock extends ScopedElementsMixin(LitElement) {
     //@ts-ignore
     return this.__registry;
   }
-  
+
   //@ts-ignore
   set registry(registry) {
     //@ts-ignore

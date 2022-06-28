@@ -23,6 +23,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "applets"
+version = "0.0.1-alpha1"
+dependencies = [
+ "derive_more",
+ "futures",
+ "hdk",
+ "serde",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -360,18 +372,6 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
-]
-
-[[package]]
-name = "games"
-version = "0.0.1-alpha1"
-dependencies = [
- "derive_more",
- "futures",
- "hdk",
- "serde",
- "thiserror",
- "tokio",
 ]
 
 [[package]]

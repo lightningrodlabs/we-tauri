@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use std::convert::Infallible;
 
 #[derive(thiserror::Error, Debug)]
-pub enum GamesError {
+pub enum AppletsError {
     #[error(transparent)]
     Serialization(#[from] SerializedBytesError),
     #[error(transparent)]
@@ -17,10 +17,10 @@ pub enum GamesError {
     Timestamp(#[from] TimestampError),
 }
 
-pub type GamesResult<T> = Result<T, GamesError>;
+pub type AppletsResult<T> = Result<T, AppletsError>;
 
-impl From<GamesError> for WasmError {
-    fn from(c: GamesError) -> Self {
+impl From<AppletsError> for WasmError {
+    fn from(c: AppletsError) -> Self {
         WasmError::Guest(c.to_string())
     }
 }

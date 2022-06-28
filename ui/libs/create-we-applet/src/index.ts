@@ -6,7 +6,7 @@ import { writeDirectoryTree } from "@source-craft/fs";
 import generate from "./generator";
 import { upperFirst, camelCase } from "lodash-es";
 
-console.log(`@lightningrodlabs/create-we-game`);
+console.log(`@lightningrodlabs/create-we-applet`);
 
 if (!semver.gte(process.version, "14.0.0")) {
   console.log(
@@ -26,16 +26,16 @@ if (!semver.gte(process.version, "14.0.0")) {
 
 if (!process.argv[2]) {
   console.log(
-    "Please provide the name of the game: npx @lightningrodlabs/create-we-game where"
+    "Please provide the name of the applet: npx @lightningrodlabs/create-we-applet where"
   );
   process.exit(1);
 }
 
-const gameName = process.argv[2];
+const appletName = process.argv[2];
 
 let d = generate({
-  gameName,
-  gameNameTitleCase: upperFirst(camelCase(gameName)),
+  appletName,
+  appletNameTitleCase: upperFirst(camelCase(appletName)),
 });
 
 writeDirectoryTree(`${process.cwd()}/we-applet`, d);

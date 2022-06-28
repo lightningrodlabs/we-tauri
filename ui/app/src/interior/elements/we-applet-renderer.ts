@@ -15,10 +15,10 @@ import { sharedStyles } from "../../sharedStyles";
 import { WeStore } from "../we-store";
 import { weContext } from "../context";
 import { RenderBlock } from "./render-block";
-import { Renderer } from "@lightningrodlabs/we-game";
+import { Renderer } from "@lightningrodlabs/we-applet";
 import { Task } from "@lit-labs/task";
 
-export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
+export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
   @state()
   _store!: WeStore;
@@ -27,12 +27,12 @@ export class WeGameRenderer extends ScopedElementsMixin(LitElement) {
   _pubKey: AgentPubKeyB64 | undefined;
 
   @property()
-  gameHash!: EntryHashB64;
+  appletHash!: EntryHashB64;
 
   _rendererTask = new Task(
     this,
-    () => this._store.fetchGameRenderers(this.gameHash),
-    () => [this._store, this.gameHash]
+    () => this._store.fetchAppletRenderers(this.appletHash),
+    () => [this._store, this.appletHash]
   );
 
   render() {

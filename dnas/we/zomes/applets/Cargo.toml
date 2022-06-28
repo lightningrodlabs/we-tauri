@@ -1,12 +1,12 @@
 [package]
 authors = ["eric@harris-braun.com"]
 edition = "2018"
-name = "games"
+name = "applets"
 version = "0.0.1-alpha1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "games"
+name = "applets"
 
 [dependencies]
 derive_more = "0.99"

@@ -4,7 +4,7 @@ Creating a group coherence with holochain apps
 
 ## Context
 
-A key component of group coherence, is that the members of the group know the "rules of the games" that they are playing together. Since every Holochain DNA is fundamentally a "rules of a game", we can create a powerful group coherence tool by making it easy to compose DNAs and their UIs inside of a membrane of people. **We** is a DNA and UI that provides this functionality, along with a pattern on how to declare and share functionality across the sub-DNAs that are composed into the group.
+A key component of group coherence, is that the members of the group know the "rules of the applets" that they are playing together. Since every Holochain DNA is fundamentally a "rules of a applet", we can create a powerful group coherence tool by making it easy to compose DNAs and their UIs inside of a membrane of people. **We** is a DNA and UI that provides this functionality, along with a pattern on how to declare and share functionality across the sub-DNAs that are composed into the group.
 
 # We hApp: DNAs
 
@@ -52,19 +52,19 @@ fn get_my_invitations() -> Array<JoinDnaInvitation>
 ```
 
 
-#### games
+#### applets
 
 Responsabilities
 
-- Tracks games (happs) that have been added to the group.
-- Tracks the members that have joined each game.
-- Tracks invitations to those games (with membrane proof).
+- Tracks applets (happs) that have been added to the group.
+- Tracks the members that have joined each applet.
+- Tracks invitations to those applets (with membrane proof).
 
 ##### Entry Types
 
 ```rust
-#[hdk_entry(id = "game" )]
-pub struct Game {
+#[hdk_entry(id = "applet" )]
+pub struct Applet {
     pub name: String,
     pub description: String,
     pub logo_src: String,
@@ -82,18 +82,18 @@ pub struct Game {
 ##### Zome calls
 
 ```rust
-fn add_game(game: Game) -> ()
+fn add_applet(applet: Applet) -> ()
 
-fn get_games() -> Array<Game>
+fn get_applets() -> Array<Applet>
 
-fn invite_to_play(game_hash: EntryHashB64, invitee: AgentPubKeyB64, membrane_proofs: HashMap<String, Option<SerializedBytes>>) -> ()
+fn invite_to_play(applet_hash: EntryHashB64, invitee: AgentPubKeyB64, membrane_proofs: HashMap<String, Option<SerializedBytes>>) -> ()
 
-pub struct PlayGameInvitation {
-  game_hash: EntryHashB64,
+pub struct PlayAppletInvitation {
+  applet_hash: EntryHashB64,
   inviter: AgentPubKeyB64,
   membrane_proofs: HashMap<String, Option<SerializedBytes>>
 }
-fn get_my_invitations_for_games() -> Array<AgentPubKeyB64>
+fn get_my_invitations_for_applets() -> Array<AgentPubKeyB64>
 ```
 
 #### we
@@ -121,13 +121,13 @@ Every "we" will have a profiles zome (for now at least) to be able to store the 
 
 
 
-# Game DNAs
+# Applet DNAs
 
 These are domain specific DNAs (where, mutual-credit, notes).
 
 The main challenge here is the membrane proofs, again. How do we make it so that only members of the "we" can enter?
 
-The simplest answer is: let's have a progenitor in these pluggable DNAs, that can invite people to play the game upon request. These progenitor could also give inviting rights to new participants, so that any participant of the pluggable DNA can invite others.
+The simplest answer is: let's have a progenitor in these pluggable DNAs, that can invite people to play the applet upon request. These progenitor could also give inviting rights to new participants, so that any participant of the pluggable DNA can invite others.
 
 Question: do we have to force this pattern/membrane onto all the pluggable DNAs?
 
@@ -135,17 +135,17 @@ Question: do we have to force this pattern/membrane onto all the pluggable DNAs?
 
 The _We_ will initially look quite similar to discord, where each DNA is represented on the left hand side as an icon which you click on to switch between them. The assumption is that Pluggable DNAs also have we-compatible bundled UIs that can be installed on the fly, and, possibly even composed with to make mixed user-created UIs, see Compository below.
 
-> The interface that a UI for a game needs to implement is in `ui/libs/we-game`.
+> The interface that a UI for a applet needs to implement is in `ui/libs/we-applet`.
 
-## Library of Games
+## Library of Applets
 
-Games will need to follow certain patterns to be compatible with the _We_ DNA. This is especially around membranes that we decide for the pluggable DNAs, thus we will need to be able to mark DNAs in the devHub and happStore as _We_ components.
+Applets will need to follow certain patterns to be compatible with the _We_ DNA. This is especially around membranes that we decide for the pluggable DNAs, thus we will need to be able to mark DNAs in the devHub and happStore as _We_ components.
 
 ## Functional dependencies
 
 TO BE ANSWERED: How do DNAs know which DNA serves a particular group function, i.e. how do we know how to ask which DNA for profile information?
 
-> For now the game UI receives a simple `WeServices` object with the profiles store in it.
+> For now the applet UI receives a simple `WeServices` object with the profiles store in it.
 
 ## Nesting of Wes
 
@@ -181,18 +181,18 @@ It should be possible to nest we instances. However there are questions to be an
 ## Grammatics of social evolution
 
 - Fork:
-  - from_we.fork_game(to_we) -> create a clone of the game in "from_we" in "to_we"
-  - from_we.fork_we() -> a new we with all the games forked
+  - from_we.fork_applet(to_we) -> create a clone of the applet in "from_we" in "to_we"
+  - from_we.fork_we() -> a new we with all the applets forked
 - Merge
   - from_we.merge_we(to_we)
-    - change the "we context" of all games in "from_we" to "to_we"
+    - change the "we context" of all applets in "from_we" to "to_we"
 - Nest
   - from_we.nest_into(to_we)
 - Unnest
   - from_we.unnest_from(to_we)
 - Federate
 
-  - from_we.federate_game(game, with_we) -> "with_we" has also "game"
+  - from_we.federate_applet(applet, with_we) -> "with_we" has also "applet"
 
   Input
 

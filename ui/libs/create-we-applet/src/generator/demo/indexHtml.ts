@@ -4,7 +4,7 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const indexHtml = ({gameName}: {gameName: string;}): ScFile => ({
+export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
   type: ScNodeType.File,
   content: `<!DOCTYPE html>
 <html>
@@ -29,7 +29,7 @@ export const indexHtml = ({gameName}: {gameName: string;}): ScFile => ({
       async function setup() {
         const client = await HolochainClient.connect(
           \`ws://localhost:\${process.env.HC_PORT}\`,
-          "${gameName}"
+          "${appletName}"
         );
 
         const adminWs = await AdminWebsocket.connect(
