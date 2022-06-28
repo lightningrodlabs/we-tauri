@@ -26,7 +26,7 @@ export default {
   watch: {
     clearScreen: false,
   },
-
+external: [],
   plugins: [
     /** Resolve bare module imports */
     nodeResolve({
@@ -36,9 +36,7 @@ export default {
     replace({
       "process.env.NODE_ENV": '"production"',
     }),
-    builtins(),
     commonjs({}),
-    globals(),
     /** Minify JS */
     terser(),
     /** Bundle assets references via import.meta.url */

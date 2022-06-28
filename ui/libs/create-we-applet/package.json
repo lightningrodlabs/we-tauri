@@ -1,9 +1,12 @@
 {
   "name": "@lightningrodlabs/create-we-applet",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "bin": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "generate": "node --es-module-specifier-resolution=node generate.mjs",
