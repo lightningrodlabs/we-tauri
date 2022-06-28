@@ -241,7 +241,7 @@ export class WeStore {
       });
     }
 
-    const renderers = appletGui.appletRenderers(
+    const renderers = await appletGui.appletRenderers(
       this.appWebsocket,
       this.adminWebsocket,
       { profilesStore: this.profilesStore },
