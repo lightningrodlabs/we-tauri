@@ -10,7 +10,7 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { LitElement, html } from "lit";
 
-export class WhereGame extends ScopedElementsMixin(LitElement) {
+export class WhereApplet extends ScopedElementsMixin(LitElement) {
   @property()
   client!: HolochainClient;
 
@@ -24,7 +24,6 @@ export class WhereGame extends ScopedElementsMixin(LitElement) {
   loaded = false;
 
   async firstUpdated() {
-    await this.profilesStore.fetchAllProfiles();
 
     new ContextProvider(this, profilesStoreContext, this.profilesStore);
 

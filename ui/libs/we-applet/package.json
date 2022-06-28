@@ -1,6 +1,6 @@
 {
-  "name": "@lightningrodlabs/we-game",
-  "version": "0.0.4",
+  "name": "@lightningrodlabs/we-applet",
+  "version": "0.0.1",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -17,7 +17,7 @@
   "dependencies": {
     "@holochain/client": "^0.4.1",
     "@holochain-open-dev/cell-client": "^0.5.3",
-    "@holochain-open-dev/profiles": "^0.3.0"
+    "@holochain-open-dev/profiles": "^0.3.4"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.4",

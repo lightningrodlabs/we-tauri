@@ -38,12 +38,12 @@ let d = generate({
   gameNameTitleCase: upperFirst(camelCase(gameName)),
 });
 
-writeDirectoryTree(`${process.cwd()}/we-game`, d);
+writeDirectoryTree(`${process.cwd()}/we-applet`, d);
 
-console.log(`Game scaffolded!\n`);
+console.log(`Applet scaffolded!\n`);
 console.log(`Run these commands to get started:\n`);
 
-console.log(`cd we-game`);
+console.log(`cd we-applet`);
 console.log(`npm run build\n`);
 
 console.log(`WARNING! The npm package that has been created is prepared to operate within a larger npm workspace,

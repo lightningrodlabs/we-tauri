@@ -10,25 +10,25 @@ export type Renderer = (
   registry: CustomElementRegistry
 ) => void;
 
-export interface GameBlock {
+export interface AppletBlock {
   name: string;
   render: Renderer;
 }
 
-export interface GameRenderers {
+export interface AppletRenderers {
   full: Renderer;
-  blocks: Array<GameBlock>;
+  blocks: Array<AppletBlock>;
 }
 
 export interface WeServices {
   profilesStore: ProfilesStore;
 }
 
-export interface WeGame {
+export interface WeApplet {
   gameRenderers: (
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
-    weStore: WeServices,
-    gameInfo: InstalledAppInfo
-  ) => GameRenderers;
+    weServices: WeServices,
+    appletAppInfo: InstalledAppInfo
+  ) => AppletRenderers;
 }
