@@ -43,7 +43,7 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
         </div>
       `,
       complete: (renderer) =>
-        html` <render-block .renderer=${renderer.full}></render-block> `,
+        html` <render-block .renderer=${renderer.full} style="flex: 1"></render-block> `,
     });
   }
 
@@ -58,6 +58,7 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
     sharedStyles,
     css`
       :host {
+        display: flex;
         position: relative;
       }
     `,

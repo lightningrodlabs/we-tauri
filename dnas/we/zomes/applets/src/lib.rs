@@ -48,7 +48,7 @@ fn create_applet(input: RegisterAppletInput) -> ExternResult<EntryHashB64> {
     create_link(
         anchor_hash,
         applet_hash.clone(),
-        AppletLinkType::ExternalAgentToApplet,
+        HdkLinkType::Any,
         (),
     )?;
 
@@ -78,9 +78,9 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHashB64>
     let applet_hash = hash_entry(input.applet)?;
 
     create_link(
-        EntryHash::from(AgentPubKey::from(input.applet_agent_pub_key)),
         applet_hash.clone(),
-        HdkLinkType::Any,
+        AgentPubKey::from(input.applet_agent_pub_key),
+        AppletLinkType::ExternalAgentToApplet,
         (), // Maybe applet hash?
     )?;
 
@@ -131,14 +131,14 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Pl
         if let Header::CreateLink(create_link_header) = element.header() {
             if create_link_header.link_type == AppletLinkType::ExternalAgentToApplet.into() {
                 let applet_hash =
-                    EntryHashB64::from(EntryHash::from(create_link_header.target_address.clone()));
+                    EntryHashB64::from(EntryHash::from(create_link_header.base_address.clone()));
                 if let Some(applet) = applets.get(&applet_hash) {
                     playing_applets.insert(
                         applet_hash,
                         PlayingApplet {
                             applet: applet.clone(),
                             agent_pub_key: AgentPubKeyB64::from(AgentPubKey::from(
-                                EntryHash::from(create_link_header.base_address.clone()),
+                                EntryHash::from(create_link_header.target_address.clone()),
                             )),
                         },
                     );

@@ -232,7 +232,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     } else if (this._store.isInstalled(this._selectedAppletId)) {
       return html` <we-applet-renderer
         style="flex: 1"
-        id="${this._selectedAppletId}"
         .appletHash=${this._selectedAppletId}
       ></we-applet-renderer>`;
     } else {
@@ -329,21 +328,25 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
             `,
           })}
           ${this.renderContent()}
-
-          <div class="members-sidebar">
-            ${this._allMembers.render({
-              complete: (profiles) =>
-                html`<list-agents-by-status
-                  .agents=${Object.keys(profiles).filter(
-                    (agentPubKey) =>
-                      agentPubKey !== serializeHash(this._store.myAgentPubKey)
-                  )}
-                ></list-agents-by-status>`,
-              pending: () => html`
-                <mwc-circular-progress indeterminate></mwc-circular-progress>
-              `,
-            })}
-          </div>
+          ${this._selectedAppletId
+            ? html``
+            : html` <div class="members-sidebar">
+                ${this._allMembers.render({
+                  complete: (profiles) =>
+                    html`<list-agents-by-status
+                      .agents=${Object.keys(profiles).filter(
+                        (agentPubKey) =>
+                          agentPubKey !==
+                          serializeHash(this._store.myAgentPubKey)
+                      )}
+                    ></list-agents-by-status>`,
+                  pending: () => html`
+                    <mwc-circular-progress
+                      indeterminate
+                    ></mwc-circular-progress>
+                  `,
+                })}
+              </div>`}
         </div>
 
         <create-applet-dialog id="applet-dialog"></create-applet-dialog>

@@ -34,7 +34,7 @@ import { PeerStatusStore } from "@holochain-open-dev/peer-status";
 import { AppletRenderers, WeApplet } from "@lightningrodlabs/we-applet";
 
 import { decompressSync, unzipSync } from "fflate";
-import { v4 as uuidv4 } from "uuid";
+import { stringify, v4 as uuidv4 } from "uuid";
 
 import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
@@ -96,7 +96,10 @@ export class WeStore {
   }
 
   public get appletsIAmPlaying() {
-    return derived(this._appletsIAmPlaying, (appletsIAmPlaying) => appletsIAmPlaying);
+    return derived(
+      this._appletsIAmPlaying,
+      (appletsIAmPlaying) => appletsIAmPlaying
+    );
   }
 
   constructor(
@@ -150,10 +153,13 @@ export class WeStore {
     Readable<Record<EntryHashB64, PlayingApplet>>
   > {
     const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
+    
     const applets: Record<EntryHashB64, Applet> = {};
     const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
 
-    for (const [appletHash, playingApplet] of Object.entries(appletsIAmPlaying)) {
+    for (const [appletHash, playingApplet] of Object.entries(
+      appletsIAmPlaying
+    )) {
       myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
       applets[appletHash] = playingApplet.applet;
     }
@@ -214,7 +220,9 @@ export class WeStore {
 
   // }
 
-  async fetchAppletRenderers(appletHash: EntryHashB64): Promise<AppletRenderers> {
+  async fetchAppletRenderers(
+    appletHash: EntryHashB64
+  ): Promise<AppletRenderers> {
     const renderer = this._appletRenderers[appletHash];
     if (renderer) return renderer;
 
@@ -296,7 +304,7 @@ export class WeStore {
   // Installs the given applet to the conductor, and registers it in the We DNA
   async createApplet(
     appletInfo: AppletInfo,
-    installedAppId: InstalledAppId
+    customName: InstalledAppId
   ): Promise<EntryHashB64> {
     // --- Install hApp in the conductor---
 
@@ -323,6 +331,7 @@ export class WeStore {
     // const decompressedHapp = decode(decompressSync(new Uint8Array(compressedHapp))) as AppBundle;
 
     const uid = uuidv4();
+    const installedAppId: InstalledAppId = `${uid}-${customName}`;
 
     const request: InstallAppBundleRequest = {
       agent_key: this.myAgentPubKey,
@@ -334,6 +343,8 @@ export class WeStore {
 
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
+    await this.adminWebsocket.enableApp({ installed_app_id: installedAppId });
+
     // // --- Register hApp and UI in the We DNA ---
 
     // // decompress and etract index.js
@@ -342,15 +353,19 @@ export class WeStore {
 
     // commit the ui as a private entry to the source chain (in order to always be readily available)
     // const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui["index.js"]);
-    const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui);
+    const guiEntryHash = await this.appletsService.commitGuiFile(
+      decompressedGui
+    );
 
     const dnaHashes: Record<string, DnaHashB64> = {};
+    const uidByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
+      uidByRole[cell.role_id] = uid;
     });
 
     const applet: Applet = {
-      name: installedAppId,
+      name: customName,
       description: appletInfo.description,
       logoSrc: appletInfo.icon,
 
@@ -358,7 +373,7 @@ export class WeStore {
       guiFileHash: guiEntryHash,
 
       properties: {},
-      uid: { hApp: uid },
+      uid: uidByRole,
       dnaHashes: dnaHashes,
     };
 
@@ -380,7 +395,9 @@ export class WeStore {
     //   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
     // }
 
-    const appletHash = await this.appletsService.createApplet(registerAppletInput);
+    const appletHash = await this.appletsService.createApplet(
+      registerAppletInput
+    );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
       appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
@@ -411,9 +428,9 @@ export class WeStore {
     // if (dnaHashes.includes(appletHash)) return;
 
     // If the applet is already installed, nothing to do
-    const installedAppletsHashes = Object.entries(get(this._appletsIAmPlaying)).map(
-      ([entryHash, agentPubKey]) => entryHash
-    );
+    const installedAppletsHashes = Object.entries(
+      get(this._appletsIAmPlaying)
+    ).map(([entryHash, agentPubKey]) => entryHash);
     if (installedAppletsHashes.includes(appletHash)) return;
 
     const allApplets: Record<EntryHashB64, Applet> = get(this._allApplets);
@@ -428,16 +445,23 @@ export class WeStore {
       applet = get(await this.fetchAllApplets())[appletHash];
     }
 
+    const uid = Object.values(applet.uid)[0];
+    const installedAppId = `${uid}-${applet.name}`;
+
     // install app bundle
     const request: InstallAppBundleRequest = {
       agent_key: this.myAgentPubKey,
-      installed_app_id: applet.name,
+      installed_app_id: installedAppId,
       membrane_proofs: {},
       bundle: decompressedHapp,
-      uid: applet.uid["happ"],
+      uid,
     };
 
     const appInfo = await this.adminWebsocket.installAppBundle(request);
+
+    await this.adminWebsocket.enableApp({
+      installed_app_id: installedAppId
+    })
 
     // register Applet entry in order to have it in the own source chain
     const registerAppletInput: RegisterAppletInput = {
@@ -448,7 +472,9 @@ export class WeStore {
     await this.appletsService.createApplet(registerAppletInput);
 
     // commit GUI to source chain as private entry
-    const guiEntryHash = await this.appletsService.commitGuiFile(decompressedGui);
+    const guiEntryHash = await this.appletsService.commitGuiFile(
+      decompressedGui
+    );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
       appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
