@@ -13,6 +13,7 @@ export default {
   output: {
     format: "es",
     dir: 'dist',
+    sourcemap: false
   },
   watch: {
     clearScreen: false,

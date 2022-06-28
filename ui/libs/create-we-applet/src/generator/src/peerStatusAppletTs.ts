@@ -4,36 +4,35 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const appletNameAppletTs = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
+export const peerStatusAppletTs = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
   type: ScNodeType.File,
   content: `import { ContextProvider } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import {
-  ${appletNameTitleCase}Store,
-  ${appletName}StoreContext,
-} from "@holochain-open-dev/${appletName}";
-import { InstalledCell } from "@holochain/client";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
+  ProfilesStore,
+  profilesStoreContext,
+} from "@holochain-open-dev/profiles";
+import { InstalledAppInfo, AppWebsocket } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { LitElement, html } from "lit";
 
 export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement) {
   @property()
-  client!: HolochainClient;
+  appWebsocket!: AppWebsocket;
 
   @property()
-  ${appletName}Store!: ${appletNameTitleCase}Store;
+  profilesStore!: ProfilesStore;
 
   @property()
-  cellData!: InstalledCell;
+  appletAppInfo!: InstalledAppInfo;
 
   @state()
   loaded = false;
 
   async firstUpdated() {
 
-    new ContextProvider(this, ${appletName}StoreContext, this.${appletName}Store);
+    new ContextProvider(this, profilesStoreContext, this.profilesStore);
 
     // TODO: Initialize any store that you have and create a ContextProvider for it
     //

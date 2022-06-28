@@ -13,11 +13,11 @@ const d = readFolder(`${__dirname}/template`);
 
 const patched = directoryToGenerator(d, [
   {
-    literal: "Profiles",
+    literal: "PeerStatus",
     template: "appletNameTitleCase",
   },
   {
-    literal: "profiles",
+    literal: "peer_status",
     template: "appletName",
   },
 ]);

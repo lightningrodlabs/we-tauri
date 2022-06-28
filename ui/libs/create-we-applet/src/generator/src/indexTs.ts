@@ -17,17 +17,15 @@ import {
   AppletRenderers,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
 
-import { ${appletNameTitleCase}Applet } from "./${appletName}-applet";
-
+import { ${appletNameTitleCase}Applet } from "./peer-status-applet";
 
 const ${appletName}Applet: WeApplet = {
   async appletRenderers(
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
-    appletInfo: InstalledAppInfo
+    appletAppInfo: InstalledAppInfo
   ): Promise<AppletRenderers> {
     return {
       full(element: HTMLElement, registry: CustomElementRegistry) {
@@ -35,9 +33,9 @@ const ${appletName}Applet: WeApplet = {
         element.innerHTML = \`<${appletName}-applet></${appletName}-applet>\`;
         let appletElement = element.querySelector("${appletName}-applet") as any;
 
-        appletElement.client = new HolochainClient(appWebsocket);
-        appletElement.${appletName}Store = weServices.${appletName}Store;
-        appletElement.cellData = appletInfo.cell_data[0];
+        appletElement.appWebsocket =  appWebsocket;
+        appletElement.profilesStore = weServices.profilesStore;
+        appletElement.appletAppInfo = appletAppInfo;
       },
       blocks: [],
     };

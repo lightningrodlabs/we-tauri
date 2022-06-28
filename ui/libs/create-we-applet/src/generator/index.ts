@@ -6,18 +6,20 @@ import { packageJson } from './packageJson';
 import { rollupConfigJs } from './rollupConfigJs';
 import src from './src';
 import { tsconfigJson } from './tsconfigJson';
+import { uiZip } from './uiZip';
 import { webDevServerConfigMjs } from './webDevServerConfigMjs';
 import workdir from './workdir';  
 
-export default ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScDirectory => ({
+export default ({appletName, appletNameTitleCase}: {appletName: string; appletNameTitleCase: string;}): ScDirectory => ({
   type: ScNodeType.Directory,
   children: {
   '.gitignore': gitignore(),
-  'demo': demo({appletNameTitleCase, appletName}),
+  'demo': demo({appletName}),
   'package.json': packageJson({appletName}),
   'rollup.config.js': rollupConfigJs(),
   'src': src({appletNameTitleCase, appletName}),
   'tsconfig.json': tsconfigJson(),
+  'ui.zip': uiZip(),
   'web-dev-server.config.mjs': webDevServerConfigMjs(),
   'workdir': workdir({appletName})
   }

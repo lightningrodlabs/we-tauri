@@ -4,21 +4,20 @@ import {
   ProfilesStore,
   profilesStoreContext,
 } from "@holochain-open-dev/profiles";
-import { InstalledCell } from "@holochain/client";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
+import { InstalledAppInfo, AppWebsocket } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { LitElement, html } from "lit";
 
-export class ProfilesApplet extends ScopedElementsMixin(LitElement) {
+export class PeerStatusApplet extends ScopedElementsMixin(LitElement) {
   @property()
-  client!: HolochainClient;
+  appWebsocket!: AppWebsocket;
 
   @property()
   profilesStore!: ProfilesStore;
 
   @property()
-  cellData!: InstalledCell;
+  appletAppInfo!: InstalledAppInfo;
 
   @state()
   loaded = false;
@@ -30,7 +29,7 @@ export class ProfilesApplet extends ScopedElementsMixin(LitElement) {
     // TODO: Initialize any store that you have and create a ContextProvider for it
     //
     // eg:
-    // new ContextProvider(this, profilesContext, new ProfilesStore(cellClient, store));
+    // new ContextProvider(this, peer_statusContext, new PeerStatusStore(cellClient, store));
 
     this.loaded = true;
   }

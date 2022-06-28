@@ -9,14 +9,6 @@ const commonjs = fromRollup(rollupCommonjs);
 /** Use Hot Module replacement by adding --hmr to the start command */
 const hmr = process.argv.includes("--hmr");
 
-if (!process.env.HC_PORT)
-  throw new Error(`There is no HC_PORT environment variable defined! 
-Define it in your package.json when calling this subprocess.`);
-
-if (!process.env.ADMIN_PORT)
-  throw new Error(`There is no ADMIN_PORT environment variable defined! 
-Define it in your package.json when calling this subprocess.`);
-
 export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   open: true,
   watch: !hmr,

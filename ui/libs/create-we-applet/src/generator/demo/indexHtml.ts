@@ -4,7 +4,7 @@ import kebabCase from 'lodash-es/kebabCase';
 import upperFirst from 'lodash-es/upperFirst';
 import snakeCase from 'lodash-es/snakeCase';
 
-export const indexHtml = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
+export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
   type: ScNodeType.File,
   content: `<!DOCTYPE html>
 <html>
@@ -20,8 +20,8 @@ export const indexHtml = ({appletNameTitleCase, appletName}: {appletNameTitleCas
     <script type="module">
       import Applet from "../out-tsc";
       import { HolochainClient } from "@holochain-open-dev/cell-client";
-      import { ${appletNameTitleCase}Store, ${appletNameTitleCase}Service } from "@holochain-open-dev/${appletName}";
-      import { ${appletNameTitleCase}ZomeMock } from "@holochain-open-dev/${appletName}/mocks";
+      import { ProfilesStore, ProfilesService } from "@holochain-open-dev/profiles";
+      import { ProfilesZomeMock } from "@holochain-open-dev/profiles/mocks";
       import { AppWebsocket, AdminWebsocket } from "@holochain/client";
 
       const container = document.getElementById("container");
@@ -43,8 +43,8 @@ export const indexHtml = ({appletNameTitleCase, appletName}: {appletNameTitleCas
           appWs,
           adminWs,
           {
-            ${appletName}Store: new ${appletNameTitleCase}Store(
-              new ${appletNameTitleCase}Service(new ${appletNameTitleCase}ZomeMock())
+            profilesStore: new ProfilesStore(
+              new ProfilesService(new ProfilesZomeMock())
             ),
           },
           appInfo

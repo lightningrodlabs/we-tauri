@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: profiles
+name: peer_status
 uid: 00000000-0000-0000-0000-000000000000
 zomes:
-  - name: profiles
-    bundled: ../target/wasm32-unknown-unknown/release/profiles.wasm
+  - name: peer_status
+    bundled: ../target/wasm32-unknown-unknown/release/peer_status.wasm

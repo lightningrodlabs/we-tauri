@@ -22,8 +22,7 @@ export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown"
   },
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.5.3",
-    "@holochain-open-dev/${appletName}": "^0.3.4",
+    "@holochain-open-dev/profiles": "^0.3.4",
     "@holochain/client": "^0.4.1",
     "@lightningrodlabs/we-applet": "^0.0.1",
     "@lit-labs/context": "^0.1.2",

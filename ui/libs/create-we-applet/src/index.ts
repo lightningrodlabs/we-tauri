@@ -44,8 +44,12 @@ console.log(`Applet scaffolded!\n`);
 console.log(`Run these commands to get started:\n`);
 
 console.log(`cd we-applet`);
-console.log(`npm run build\n`);
+console.log(`npm install`);
+console.log(`npm run start\n`);
 
-console.log(`WARNING! The npm package that has been created is prepared to operate within a larger npm workspace,
-and its npm start command should receive as environment variables the HC_PORT that points to a running holochain
-conductor's app port and the ADMIN_PORT that points to the admin port.`);
+
+console.log(`Or if you want to package it into its own .webhapp:\n`);
+
+console.log(`npm run package\n`);
+
+console.log(`The npm package that has been created is prepared to operate within a larger npm workspace. Follow the instructions in the README of this package to get integrate the scaffolded npm workspace into a larger project.`);

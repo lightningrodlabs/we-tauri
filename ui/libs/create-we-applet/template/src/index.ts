@@ -9,31 +9,29 @@ import {
   AppletRenderers,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import { HolochainClient } from "@holochain-open-dev/cell-client";
 
-import { ProfilesApplet } from "./profiles-applet";
+import { PeerStatusApplet } from "./peer-status-applet";
 
-
-const profilesApplet: WeApplet = {
+const peer_statusApplet: WeApplet = {
   async appletRenderers(
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
-    appletInfo: InstalledAppInfo
+    appletAppInfo: InstalledAppInfo
   ): Promise<AppletRenderers> {
     return {
       full(element: HTMLElement, registry: CustomElementRegistry) {
-        registry.define("profiles-applet", ProfilesApplet);
-        element.innerHTML = `<profiles-applet></profiles-applet>`;
-        let appletElement = element.querySelector("profiles-applet") as any;
+        registry.define("peer_status-applet", PeerStatusApplet);
+        element.innerHTML = `<peer_status-applet></peer_status-applet>`;
+        let appletElement = element.querySelector("peer_status-applet") as any;
 
-        appletElement.client = new HolochainClient(appWebsocket);
+        appletElement.appWebsocket =  appWebsocket;
         appletElement.profilesStore = weServices.profilesStore;
-        appletElement.cellData = appletInfo.cell_data[0];
+        appletElement.appletAppInfo = appletAppInfo;
       },
       blocks: [],
     };
   },
 };
 
-export default profilesApplet;
+export default peer_statusApplet;

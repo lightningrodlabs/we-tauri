@@ -1,7 +1,7 @@
 ---
 manifest_version: "1"
-name: profiles-applet
+name: peer_status-applet
 ui:
   bundled: "../ui.zip"
 happ_manifest:
-  bundled: "./profiles-applet.happ"
+  bundled: "./peer_status-applet.happ"
