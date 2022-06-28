@@ -57,3 +57,4 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
 </html>
 `
 });
+    
