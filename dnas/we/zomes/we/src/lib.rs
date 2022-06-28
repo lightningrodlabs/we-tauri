@@ -32,23 +32,23 @@ fn get_info(_: ()) -> ExternResult<WeInfo> {
     let properties = WeInfo::try_from(dna_info.properties)?;
     Ok(properties)
 }
-/* 
+/*
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]
 #[serde(tag = "type", content = "content")]
 pub enum Message {
-    NewGame(Game),
+    NewApplet(Applet),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SignalPayload {
-    game_hash: EntryHashB64,
+    applet_hash: EntryHashB64,
     message: Message,
 }
 
 impl SignalPayload {
-    fn new(game_hash: EntryHashB64, message: Message) -> Self {
-        SignalPayload { game_hash, message }
+    fn new(applet_hash: EntryHashB64, message: Message) -> Self {
+        SignalPayload { applet_hash, message }
     }
 }
 

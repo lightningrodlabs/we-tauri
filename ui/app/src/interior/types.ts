@@ -6,7 +6,7 @@ export interface WeInfo {
   name: string;
 }
 
-export interface Game {
+export interface Applet {
   name: string;
   description: string;
   logoSrc: string | undefined;
@@ -19,12 +19,12 @@ export interface Game {
   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
 }
 
-export interface RegisterGameInput {
-  gameAgentPubKey: AgentPubKeyB64,
-  game: Game,
+export interface RegisterAppletInput {
+  appletAgentPubKey: AgentPubKeyB64,
+  applet: Applet,
 }
 
-export interface GameInfo {
+export interface AppletInfo {
   title: string,
   subtitle: string,
   description: string,
@@ -33,14 +33,14 @@ export interface GameInfo {
   icon: string | undefined,
 }
 
-export interface PlayingGame {
-  game: Game;
+export interface PlayingApplet {
+  applet: Applet;
   agentPubKey: AgentPubKeyB64;
 }
 
 export type Signal = {
-  gameHash: EntryHashB64;
-  message: { type: "NewGame"; content: Game };
+  appletHash: EntryHashB64;
+  message: { type: "NewApplet"; content: Applet };
 };
 
 

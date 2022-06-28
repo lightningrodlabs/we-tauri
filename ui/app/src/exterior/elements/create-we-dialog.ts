@@ -11,7 +11,7 @@ import { WesStore } from "../wes-store";
 import { sharedStyles } from "../../sharedStyles";
 
 /**
- * @element we-game
+ * @element we-applet
  */
 export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   /** Dependencies */
