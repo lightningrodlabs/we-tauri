@@ -4,8 +4,6 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   middleware: [
     async (ctx, next) => {
       if (ctx.request.url.includes(".launcher-env.json", undefined)) {
-
-        console.log('hiii')
         ctx.body = {
           APP_INTERFACE_PORT: `ws://localhost:${process.env.HC_PORT}`,
           ADMIN_INTERFACE_PORT: `ws://localhost:${process.env.ADMIN_PORT}`,
