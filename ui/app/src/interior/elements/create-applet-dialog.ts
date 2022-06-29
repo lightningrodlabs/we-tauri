@@ -88,25 +88,31 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
-    await this._weStore
-      .createApplet(this._appletInfo, this._installedAppIdField.value)
-      .then(() => {
-        (
-          this.shadowRoot?.getElementById("installing-progress") as Snackbar
-        ).close();
-        (
-          this.shadowRoot?.getElementById("success-snackbar") as Snackbar
-        ).show();
-      })
-      .catch((e) => {
-        (
-          this.shadowRoot?.getElementById("installing-progress") as Snackbar
-        ).close();
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-        console.log("Installation error:", e);
-      });
-  }
+    try {
+      const appletEntryHash = await this._weStore.createApplet(
+        this._appletInfo,
+        this._installedAppIdField.value
+      );
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
 
+      this.dispatchEvent(
+        new CustomEvent("applet-installed", {
+          detail: { appletEntryHash },
+          composed: true,
+          bubbles: true,
+        })
+      );
+    } catch (e) {
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      console.log("Installation error:", e);
+    }
+  }
 
   renderErrorSnackbar() {
     return html`
@@ -129,7 +135,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="installing-progress" labelText="Installing...">
+      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
       </mwc-snackbar>
     `;
   }
@@ -155,7 +161,12 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
               this.checkValidity(newValue, nativeValidity)}
           ></mwc-textfield>
           ${this._duplicateName
-            ? html`<div class="default-font" style="color: #b10323; font-size: 12px; margin-left: 4px;">Name already exists.</div>`
+            ? html`<div
+                class="default-font"
+                style="color: #b10323; font-size: 12px; margin-left: 4px;"
+              >
+                Name already exists.
+              </div>`
             : html``}
         </div>
 

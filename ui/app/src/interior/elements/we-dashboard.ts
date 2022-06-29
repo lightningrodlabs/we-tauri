@@ -62,9 +62,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _showAppletDescription: boolean = false;
 
-  @query("#applet-dialog")
-  _appletDialog!: CreateAppletDialog;
-
   renderJoinErrorSnackbar() {
     return html`
       <mwc-snackbar
@@ -231,7 +228,11 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
                 <hr style="width: 100%" />
 
-                <installable-applets></installable-applets>
+                <installable-applets
+                  @applet-installed=${(e: CustomEvent) => {
+                    this._selectedAppletId = e.detail.appletEntryHash;
+                  }}
+                ></installable-applets>
               </div>
             </div>
           </div>
@@ -328,8 +329,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           </div>
         </div>
 
-        ${this.renderJoinErrorSnackbar()}
-        ${this.renderInstallingProgress()}
+        ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
         ${this.renderSuccessSnackbar()}
 
         <div class="row" style="flex: 1">
@@ -361,7 +361,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
               </div>`}
         </div>
 
-        <create-applet-dialog id="applet-dialog"></create-applet-dialog>
       </profile-prompt>
     `;
   }

@@ -144,7 +144,9 @@ export class WeStore {
   async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
     const allApplets = await this.appletsService.getAllApplets();
 
-    this._allApplets = writable(allApplets);
+    if (!this._allApplets) {
+      this._allApplets = writable(allApplets);
+    }
 
     return derived(this._allApplets, (i) => i);
   }
@@ -357,7 +359,6 @@ export class WeStore {
       applet,
     };
 
-
     const appletHash = await this.appletsService.createApplet(
       registerAppletInput
     );
@@ -375,11 +376,8 @@ export class WeStore {
     return appletHash;
   }
 
-
-
   // Installs the already existing applet in this We to the conductor
   async joinApplet(appletHash: EntryHashB64): Promise<void> {
-
     const installedAppletsHashes = Object.entries(
       get(this._appletsIAmPlaying)
     ).map(([entryHash, agentPubKey]) => entryHash);
@@ -412,8 +410,8 @@ export class WeStore {
     const appInfo = await this.adminWebsocket.installAppBundle(request);
 
     await this.adminWebsocket.enableApp({
-      installed_app_id: installedAppId
-    })
+      installed_app_id: installedAppId,
+    });
 
     // register Applet entry in order to have it in the own source chain
     const registerAppletInput: RegisterAppletInput = {
