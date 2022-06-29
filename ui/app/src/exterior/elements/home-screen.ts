@@ -1,11 +1,23 @@
-import { HeaderHashB64, AgentPubKeyB64, serializeHash } from "@holochain-open-dev/core-types";
+import {
+  HeaderHashB64,
+  AgentPubKeyB64,
+  serializeHash,
+} from "@holochain-open-dev/core-types";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { Button, List, ListItem, Card, Snackbar, Icon, Dialog } from "@scoped-elements/material-web";
+import {
+  Button,
+  List,
+  ListItem,
+  Card,
+  Snackbar,
+  Icon,
+  Dialog,
+} from "@scoped-elements/material-web";
 
 import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
@@ -16,7 +28,6 @@ import { CreateWeDialog } from "./create-we-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { JoinGroupCard } from "./join-group-card";
 import { ManagingGroupsCard } from "./managing-groups-card";
-
 
 export class HomeScreen extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext })
@@ -40,20 +51,23 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     invitation: JoinMembraneInvitation
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
-    await this.wesStore.joinWe(
-      invitationHeaderHash,
-      properties.name,
-      properties.logo_src,
-      properties.timestamp
-    )
-    .then()
-    .catch((e) => {
-      if (e.data.data) {
-        if (e.data.data.includes("AppAlreadyInstalled")) {
-          (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+    await this.wesStore
+      .joinWe(
+        invitationHeaderHash,
+        properties.name,
+        properties.logo_src,
+        properties.timestamp
+      )
+      .then()
+      .catch((e) => {
+        if (e.data.data) {
+          if (e.data.data.includes("AppAlreadyInstalled")) {
+            (
+              this.shadowRoot?.getElementById("error-snackbar") as Snackbar
+            ).show();
+          }
         }
-      }
-    });
+      });
   }
 
   async removeInvitation(invitationHeaderHash: HeaderHashB64) {
@@ -73,42 +87,45 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   }
 
   getDate(invitation: JoinMembraneInvitation) {
-    const delta_ms = Date.now() - invitation.timestamp/1000;
-    const delta = delta_ms/1000;
+    const delta_ms = Date.now() - invitation.timestamp / 1000;
+    const delta = delta_ms / 1000;
     if (delta < 0) {
-      return "-"
+      return "-";
     } else if (delta < 60) {
-      return "seconds ago"
+      return "seconds ago";
     } else if (delta < 120) {
-      return `${Math.floor(delta/60)} minute ago`
+      return `${Math.floor(delta / 60)} minute ago`;
     } else if (delta < 3600) {
-      return `${Math.floor(delta/60)} minutes ago`
+      return `${Math.floor(delta / 60)} minutes ago`;
     } else if (delta < 7200) {
-      return `${Math.floor(delta/3600)} hour ago`
+      return `${Math.floor(delta / 3600)} hour ago`;
     } else if (delta < 86400) {
-      return `${Math.floor(delta/3600)} hours ago`
+      return `${Math.floor(delta / 3600)} hours ago`;
     } else if (delta < 172800) {
-      return `${Math.floor(delta/86400)} day ago`
+      return `${Math.floor(delta / 86400)} day ago`;
     } else if (delta < 2592000) {
-      return `${Math.floor(delta/86400)} days ago`
+      return `${Math.floor(delta / 86400)} days ago`;
     } else if (delta < 5184000) {
-      return `${Math.floor(delta/2592000)} month ago`
+      return `${Math.floor(delta / 2592000)} month ago`;
     } else if (delta < 31104000) {
-      return `${Math.floor(delta/2592000)} months ago`
+      return `${Math.floor(delta / 2592000)} months ago`;
     } else if (delta < 62208000) {
-      return `${Math.floor(delta/31104000)} year ago`
+      return `${Math.floor(delta / 31104000)} year ago`;
     } else {
-      return `${Math.floor(delta/31104000)} years ago`
+      return `${Math.floor(delta / 31104000)} years ago`;
     }
   }
 
   renderErrorSnackbar() {
     return html`
-      <mwc-snackbar style="text-align: center;" id="error-snackbar" labelText="You are already part of this We!">
+      <mwc-snackbar
+        style="text-align: center;"
+        id="error-snackbar"
+        labelText="You are already part of this We!"
+      >
       </mwc-snackbar>
     `;
   }
-
 
   renderInvitations(
     invitations: Record<HeaderHashB64, JoinMembraneInvitation>
@@ -116,85 +133,131 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     if (Object.entries(invitations).length == 0) {
       return html`
         <div class="default-font">You have no open invitations...</div>
-        <mwc-button style="margin-top: 20px;" @click=${() => this._myInvitations.run()} icon="refresh">Refresh</mwc-button>
+        <mwc-button
+          style="margin-top: 20px;"
+          @click=${() => this._myInvitations.run()}
+          icon="refresh"
+          >Refresh</mwc-button
+        >
       `;
     } else {
-      return html `
-      ${Object.entries(invitations).sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp).map(
-        ([headerHash, invitation]) => {
-          return html`
+      return html`
+        ${Object.entries(invitations)
+          .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
+          .map(([headerHash, invitation]) => {
+            return html`
               <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="max-width: 800px; margin: 5px;">
-                    <div class="row" style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em" >
-                    <holo-identicon .hash=${this.inviter(invitation)}></holo-identicon>
+                  <div
+                    class="row"
+                    style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                  >
+                    <holo-identicon
+                      .hash=${this.inviter(invitation)}
+                    ></holo-identicon>
                     <span style="margin-left: 10px;">invited you to join</span>
-                    <img style="margin-left: 10px;" class="we-image" src=${this.weImg(invitation)}>
-                    <div style="font-weight: bold; margin-left: 10px;">${this.weName(invitation)}</div>
-                      <div class="row" style="margin-left: auto;">
-                        <mwc-button
-                          class="accept-invitation"
-                          raised
-                          label="JOIN"
-                          icon="check"
-                          @click=${() => this.join(headerHash, invitation)}
-                        ></mwc-button>
-                        <mwc-button
-                          class="delete-invitation"
-                          raised
-                          label="REJECT"
-                          icon="close"
-                          @click=${() => this.removeInvitation(headerHash)}>
-                        </mwc-button>
-                      </div>
+                    <img
+                      style="margin-left: 10px;"
+                      class="we-image"
+                      src=${this.weImg(invitation)}
+                    />
+                    <div style="font-weight: bold; margin-left: 10px;">
+                      ${this.weName(invitation)}
                     </div>
+                    <div class="row" style="margin-left: auto;">
+                      <mwc-button
+                        class="accept-invitation"
+                        raised
+                        label="JOIN"
+                        icon="check"
+                        @click=${() => this.join(headerHash, invitation)}
+                      ></mwc-button>
+                      <mwc-button
+                        class="delete-invitation"
+                        raised
+                        label="REJECT"
+                        icon="close"
+                        @click=${() => this.removeInvitation(headerHash)}
+                      >
+                      </mwc-button>
+                    </div>
+                  </div>
                 </mwc-card>
-                <div class="default-font" style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;">${this.getDate(invitation)}</div>
+                <div
+                  class="default-font"
+                  style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;"
+                >
+                  ${this.getDate(invitation)}
+                </div>
               </div>
-            `
-          }
-        )}
-      <mwc-button style="margin-top: 20px;" @click=${() => this._myInvitations.run()} icon="refresh">Refresh</mwc-button>
-      `
+            `;
+          })}
+        <mwc-button
+          style="margin-top: 20px;"
+          @click=${() => this._myInvitations.run()}
+          icon="refresh"
+          >Refresh</mwc-button
+        >
+      `;
     }
-
   }
-
 
   renderInvitationsBlock(
     invitations: Record<HeaderHashB64, JoinMembraneInvitation>
   ) {
     return html`
       ${this.renderErrorSnackbar()}
-      <div class="row title center-content" style="margin-top: 80px;"><mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">invitations</span></div>
-      <div class="column center-content" style="justify-content: space-between; margin-top: 30px;">
-      ${this.renderInvitations(invitations)}
+      <div class="row title center-content" style="margin-top: 80px;">
+        <mwc-icon>mail</mwc-icon
+        ><span style="margin-left: 10px;">invitations</span>
+      </div>
+      <div
+        class="column center-content"
+        style="justify-content: space-between; margin-top: 30px;"
+      >
+        ${this.renderInvitations(invitations)}
       </div>
     `;
   }
 
   render() {
     return html`
+      <div class="flex-scrollable-parent">
+        <div class="flex-scrollable-container">
+          <div class="flex-scrollable-y">
+            <create-we-dialog
+              id="we-dialog"
+              @we-added=${(e: CustomEvent) => {
+                this.wesStore.setWeId(e.detail);
+              }}
+            ></create-we-dialog>
+            <mwc-snackbar
+              id="copied-snackbar"
+              timeoutMs="4000"
+              labelText="Copied!"
+              style="text-align: center;"
+            ></mwc-snackbar>
 
-      <create-we-dialog id="we-dialog" @we-added=${(e: CustomEvent) => { this.wesStore.setWeId(e.detail) }}></create-we-dialog>
-      <mwc-snackbar id="copied-snackbar" timeoutMs=4000 labelText="Copied!" style="text-align: center;"></mwc-snackbar>
+            <div class="column content-pane center-content">
+              <div
+                class="row center-content default-font"
+                style="font-size: 3em; color: #2c3888; margin-top: 15px;"
+              >
+                <div>Welcome to We!</div>
+              </div>
 
-
-      <div class="column content-pane center-content">
-        <div class="row center-content default-font" style="font-size: 3em; color: #2c3888; margin-top: 15px;">
-          <div>Welcome to We!</div>
+              <div class="row" style="margin-top: 70px;">
+                <managing-groups-card
+                  style="width: 40%; margin-right: 30px;"
+                ></managing-groups-card>
+                <join-group-card style="width: 60%;"></join-group-card>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="row" style="margin-top: 70px;">
-
-          <managing-groups-card style="width: 40%; margin-right: 30px;"></managing-groups-card>
-          <join-group-card style="width: 60%;"></join-group-card>
-
-        </div>
-
       </div>
     `;
   }
-
 
   static get scopedElements() {
     return {
@@ -220,12 +283,12 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       }
 
       .default-font {
-        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
       }
 
       .title {
         align-items: center;
-        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
         font-size: 1.2em;
         text-align: center;
       }
@@ -254,8 +317,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
         white-space: nowrap;
         cursor: pointer;
       }
-
-    `
+    `;
 
     return [sharedStyles, localStyles];
   }

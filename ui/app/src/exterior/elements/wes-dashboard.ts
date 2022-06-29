@@ -54,8 +54,11 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
             <we-context .weId=${weId}>
               <we-logo
                 .store=${weStore}
-                style="margin-top: 8px; border-radius: 50%"
-                class=${classMap({ highlighted: weId === this._selectedWeId })}
+                style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
+                class=${classMap({
+                  highlighted: weId === this._selectedWeId,
+                  weLogoHover: weId != this._selectedWeId,
+                })}
                 @click=${() => {
                   this._selectedWeId = weId;
                   this.requestUpdate();
@@ -81,7 +84,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
           <div class="column" style="flex: 1; align-items: center; margin: 8px">
             <sl-tooltip placement="right" content="Home" hoist>
               <mwc-fab
-                style="--mdc-theme-secondary: #9ca5e3"
+                class="home-button"
                 @click=${() => {
                   this._selectedWeId = undefined;
                 }}
@@ -96,7 +99,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
               <mwc-fab
                 icon="group_add"
                 @click=${() => this._weDialog.open()}
-                style="margin-top: 8px; --mdc-theme-secondary: #9ca5e3;"
+                style="margin-top: 4px; --mdc-theme-secondary: #9ca5e3;"
               ></mwc-fab>
             </sl-tooltip>
 
@@ -112,7 +115,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
         <div style="flex: 1; width: 100%; display: flex;">
           ${this._selectedWeId
             ? this.renderWeDashboard()
-            : html`<home-screen></home-screen>`}
+            : html`<home-screen style="display: flex; flex: 1;"></home-screen>`}
         </div>
 
         <create-we-dialog
@@ -162,6 +165,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
 
         .wes-sidebar {
           background-color: #303f9f;
+          overflow-y: auto;
           z-index: 1;
         }
 
@@ -170,9 +174,23 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
             max-width: none;
           }
         }
+
         .highlighted {
-          border: #9ca5e3 4px solid;
+          outline: #9ca5e3 4px solid;
         }
+
+        .weLogoHover:hover {
+          /* box-shadow: 0 0 7px #ffffff; */
+          outline: #9ca5e3 4px solid;
+        }
+
+        .home-button {
+          margin-bottom: 4px;
+          --mdc-theme-secondary:#9ca5e3;
+          --mdc-fab-focus-outline-color: white;
+          --mdc-fab-focus-outline-width: 4px
+        }
+
       `,
     ];
   }

@@ -56,9 +56,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _showAppletDescription: boolean = false;
 
-  @state()
-  private _loading: boolean = true;
-
   @query("#applet-dialog")
   _appletDialog!: CreateAppletDialog;
 
@@ -90,12 +87,6 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         labelText="Installation successful"
       ></mwc-snackbar>
     `;
-  }
-
-  protected async firstUpdated() {
-    await this._store.fetchAppletsIAmPlaying();
-    await this._store.fetchInfo();
-    this._loading = false;
   }
 
   toggleAppletDescription() {
@@ -137,7 +128,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           >
             <mwc-fab
               icon="home"
-              style="--mdc-theme-secondary: #303F9F"
+              style="--mdc-theme-secondary: #303F9F; --mdc-fab-focus-outline-color: white; --mdc-fab-focus-outline-width: 4px;"
               @click=${() => {
                 this._selectedAppletId = undefined;
               }}
@@ -157,8 +148,10 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
                     .content=${applet.name}
                   >
                     <div
-                      class="applet-logo-placeholder ${classMap({
+                      class="applet-logo-placeholder
+                        ${classMap({
                         highlighted: appletHash === this._selectedAppletId,
+                        appletLogoHover: appletHash != this._selectedAppletId,
                       })}"
                       @click=${() => {
                         this._selectedAppletId = appletHash;
@@ -178,6 +171,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
                     <img
                       class="applet-logo ${classMap({
                         highlighted: appletHash === this._selectedAppletId,
+                        appletLogoHover: appletHash != this._selectedAppletId,
                       })}"
                       src=${applet.logoSrc}
                       @click=${() => {
@@ -206,11 +200,13 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
               <div class="column" style="flex: 1; margin: 24px;">
                 <div class="row center-content" style="margin-top: 56px">
                   <div class="column center-content">
-                    <img
-                      class="logo-large"
-                      style=" width: 150px; height: 150px;"
-                      src=${this._info.value!.logo_src}
-                    />
+                    ${this._info.value
+                      ? html`<img
+                          class="logo-large"
+                          style=" width: 150px; height: 150px;"
+                          src=${this._info.value.logo_src}
+                        />`
+                      : html``}
                     <div
                       style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
                     >
@@ -243,62 +239,65 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     } else {
       const applet = this._store.getAppletInfo(this._selectedAppletId)!;
       return html`
-        <div class="column center-content">
-          ${!applet.logoSrc
-            ? html`<div
-                class="logo-placeholder-large"
-                style="width: 100px; height: 100px;"
+        <div class="flex-scrollable-parent">
+          <div class="flex-scrollable-container">
+            <div class="flex-scrollable-y">
+              <div
+                class="column center-content"
+                style="flex: 1; margin-top: 50px;"
               >
-                ${applet.name[0]}
-              </div>`
-            : html`<img class="logo-large" src=${applet.logoSrc!} />`}
-          <div class="row center-content" style="margin-top: 20px;">
-            <div
-              style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
-            >
-              ${applet.name}
+                ${!applet.logoSrc
+                  ? html`<div
+                      class="logo-placeholder-large"
+                      style="width: 100px; height: 100px;"
+                    >
+                      ${applet.name[0]}
+                    </div>`
+                  : html`<img class="logo-large" src=${applet.logoSrc!} />`}
+                <div class="row center-content" style="margin-top: 20px;">
+                  <div
+                    style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
+                  >
+                    ${applet.name}
+                  </div>
+                  <mwc-icon-button-toggle
+                    onIcon="expand_less"
+                    offIcon="expand_more"
+                    @click=${this.toggleAppletDescription}
+                  ></mwc-icon-button-toggle>
+                </div>
+                ${this._showAppletDescription
+                  ? html`<div
+                      style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
+                    >
+                      ${applet.description}
+                    </div>`
+                  : html``}
+                <div
+                  style="margin-top: 70px; font-size: 1.2em; text-align: center;"
+                >
+                  This applet has been added by someone else from your group.
+                </div>
+                <div
+                  style="margin-top: 10px; font-size: 1.2em; text-align: center;"
+                >
+                  You haven't installed it yet.
+                </div>
+                <mwc-button
+                  style="margin-top: 50px;"
+                  raised
+                  @click=${() => this.joinApplet(this._selectedAppletId!)}
+                  >INSTALL</mwc-button
+                >
+              </div>
             </div>
-            <mwc-icon-button-toggle
-              onIcon="expand_less"
-              offIcon="expand_more"
-              @click=${this.toggleAppletDescription}
-            ></mwc-icon-button-toggle>
           </div>
-          ${this._showAppletDescription
-            ? html`<div
-                style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
-              >
-                ${applet.description}
-              </div>`
-            : html``}
-          <div style="margin-top: 70px; font-size: 1.2em; text-align: center;">
-            This applet has been added by someone else from your group.
-          </div>
-          <div style="margin-top: 10px; font-size: 1.2em; text-align: center;">
-            You haven't installed it yet.
-          </div>
-          <mwc-button
-            style="margin-top: 50px;"
-            raised
-            @click=${() => this.joinApplet(this._selectedAppletId!)}
-            >INSTALL</mwc-button
-          >
         </div>
       `;
     }
   }
 
   render() {
-    if (this._loading) {
-      return html`
-        <div class="center-content">
-          <mwc-circular-progress
-            style="margin-top: 100px;"
-          ></mwc-circular-progress>
-        </div>
-      `;
-    }
-
     return html`
       <profile-prompt style="flex: 1; display: flex;">
         <div slot="hero">
@@ -323,7 +322,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           </div>
         </div>
 
-        ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+        ${this.renderJoinErrorSnackbar()}
+        ${this.renderInstallingProgress()}
         ${this.renderSuccessSnackbar()}
 
         <div class="row" style="flex: 1">
@@ -375,6 +375,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-linear-progress": LinearProgress,
       "list-agents-by-status": ListAgentsByStatus,
+      "mwc-snackbar": Snackbar,
     };
   }
 
@@ -420,7 +421,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
 
       .applet-logo {
         cursor: pointer;
-        margin-top: 8px;
+        margin-top: 2px;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -428,12 +429,9 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .applet-logo:hover {
-        box-shadow: 0 0 5px #0000;
-      }
-
       .applet-logo-placeholder {
         text-align: center;
+        justify-content: center;
         font-size: 35px;
         cursor: pointer;
         margin-top: 8px;
@@ -444,9 +442,9 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .applet-logo-placeholder:hover {
-        box-shadow: 0 0 10px #0000;
-        background: gray;
+      .appletLogoHover:hover {
+        /* box-shadow: 0 0 5px #000000; */
+        outline: #303f9f 4px solid;
       }
 
       .logo-large {

@@ -70,9 +70,6 @@ export class WeLogo extends ScopedElementsMixin(LitElement) {
         height: 50px;
         object-fit: cover;
       }
-      .we:hover {
-        box-shadow: 0 0 5px #ffff;
-      }
     `;
   }
 }
