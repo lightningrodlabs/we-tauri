@@ -144,9 +144,7 @@ export class WeStore {
   async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
     const allApplets = await this.appletsService.getAllApplets();
 
-    if (!this._allApplets) {
-      this._allApplets = writable(allApplets);
-    }
+    this._allApplets.update((applets) => ({ ...applets, ...allApplets }));
 
     return derived(this._allApplets, (i) => i);
   }
