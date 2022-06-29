@@ -44,6 +44,12 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     () => [this._store]
   );
 
+  _appletsIAmPlaying = new TaskSubscriber(
+    this,
+    () => this._store.fetchAppletsIAmPlaying(),
+    () => [this._store]
+  );
+
   _allMembers = new TaskSubscriber(
     this,
     () => this._store.profilesStore.fetchAllProfiles(),

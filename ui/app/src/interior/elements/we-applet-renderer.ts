@@ -18,6 +18,8 @@ import { RenderBlock } from "./render-block";
 import { Renderer } from "@lightningrodlabs/we-applet";
 import { Task } from "@lit-labs/task";
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
+
 export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
   @state()
@@ -31,11 +33,15 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
 
   _rendererTask = new Task(
     this,
-    () => this._store.fetchAppletRenderers(this.appletHash),
+    async () => {
+      await sleep(1);
+      return this._store.fetchAppletRenderers(this.appletHash);
+    },
     () => [this._store, this.appletHash]
   );
 
   render() {
+    console.log(this._rendererTask.status);
     return this._rendererTask.render({
       pending: () => html`
         <div class="center-content">
@@ -43,7 +49,12 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
         </div>
       `,
       complete: (renderer) =>
-        html` <render-block .renderer=${renderer.full} style="flex: 1"></render-block> `,
+        html`
+          <render-block
+            .renderer=${renderer.full}
+            style="flex: 1"
+          ></render-block>
+        `,
     });
   }
 
