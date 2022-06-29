@@ -2,9 +2,9 @@
   "name": "we",
   "version": "0.0.1",
   "scripts": {
+    "start": "tsc && concurrently \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
     "build": "tsc && rollup --config rollup.config.js",
-    "build:watch": "tsc --watch --preserveWatchOutput",
-    "start": "tsc && concurrently -k --names tsc,dev-server \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
+    "build:watch": "run-singleton \"tsc --watch --preserveWatchOutput\"",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
@@ -12,7 +12,7 @@
     "@holochain-open-dev/core-types": "^0.2.0",
     "@holochain-open-dev/membrane-invitations": "github:holochain-open-dev/membrane-invitations#ui-build",
     "@holochain-open-dev/peer-status": "^0.0.2",
-    "@holochain-open-dev/profiles": "^0.3.4",
+    "@holochain-open-dev/profiles": "^0.3.5",
     "@holochain-open-dev/utils": "^0.0.14",
     "@holochain/client": "^0.4.1",
     "@lightningrodlabs/we-applet": "0.0.1",
@@ -49,6 +49,7 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-workbox": "^6.2.0",
+    "run-singleton-cli": "^0.0.7",
     "tslib": "^2.3.1",
     "typescript": "4.3.5"
   }

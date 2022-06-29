@@ -39,7 +39,6 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
   private async handleOk(e: any) {
     // if statement is required to prevent ENTER key to close the dialog while the button is disabled
     if (this._name && this._logoSrc) {
-
       this._dialog.close();
       const weId = await this._store.createWe(this._name!, this._logoSrc!);
 
@@ -55,36 +54,37 @@ export class CreateWeDialog extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-  }
-
   render() {
     return html`
       <mwc-dialog id="dialog" heading="Create Group">
-        <select-avatar
-        id="select-avatar"
-          @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
-        ></select-avatar>
+        <div class="row" style="margin-top: 16px">
+          <select-avatar
+            id="select-avatar"
+            @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
+          ></select-avatar>
 
-        <mwc-textfield
-          @input=${(e) => (this._name = e.target.value)}
-          id="name-field"
-          label="Name"
-          autoValidate
-          required
-          outlined
-        ></mwc-textfield>
+          <mwc-textfield
+            @input=${(e) => (this._name = e.target.value)}
+            style="margin-left: 16px"
+            id="name-field"
+            label="Group name"
+            autoValidate
+            required
+            outlined
+          ></mwc-textfield>
+        </div>
 
+        <mwc-button slot="secondaryAction" dialogAction="cancel">
+          cancel
+        </mwc-button>
         <mwc-button
           id="primary-action-button"
           slot="primaryAction"
           .disabled=${!this._name || !this._logoSrc}
           @click=${this.handleOk}
-          >ok</mwc-button
         >
-        <mwc-button slot="secondaryAction" dialogAction="cancel"
-          >cancel</mwc-button
-        >
+          ok
+        </mwc-button>
       </mwc-dialog>
     `;
   }
