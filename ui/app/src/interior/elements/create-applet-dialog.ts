@@ -23,6 +23,12 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext })
   _weStore!: WeStore;
 
+  _allApplets = new TaskSubscriber(
+    this,
+    () => this._weStore.fetchAllApplets(),
+    () => [this._weStore]
+  );
+
   @query("#applet-dialog")
   _appletDialog!: Dialog;
 
@@ -40,6 +46,9 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _installableApplets;
 
+  @state()
+  _duplicateName: boolean = false;
+
   @property()
   _appletInfo: AppletInfo = {
     title: "",
@@ -55,72 +64,23 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   }
 
   get publishDisabled() {
-    return !this._installedAppIdField;
+    return !this._installedAppIdField || this._duplicateName;
   }
 
-  /*
-  async publishDna() {
-    if (this._dnaBundle && this._uiBundle) {
-      const result = await this._weStore.createApplet(
-        this._dnaBundle.file,
-        this._uiBundle.setupRenderers,
-        {
-          dna_file_hash: this._dnaBundle.hash,
-          ui_file_hash: this._uiBundle.hash,
-          name: this._nameField.value,
-          logo_url: this._logoUrl.value,
-        }
+  checkValidity(newValue, nativeValidity) {
+    if (this._allApplets.value) {
+      const allNames = Object.entries(this._allApplets.value!).map(
+        ([appletHash, applet]) => applet.name
       );
-      this.dispatchEvent(
-        new CustomEvent("dna-published", {
-          detail: {
-            zomeDefHash: result,
-          },
-        })
-      );
-    }
-  }
-  async setUIBundleHash(file: File, hash: string) {
-    try {
-      const mod = await importModuleFromFile(file);
-      const setupRenderers: SetupRenderers = mod.default;
-
-      const renderers = setupRenderers(
-        this._weStore.appWebsocket,
-        this._weStore.cellData,
-        this._weStore.whoData
-      );
-      if (!renderers.full || !renderers.blocks) {
-        throw new Error("Malformed lenses");
+      if (allNames.includes(this._installedAppIdField.value)) {
+        this._duplicateName = true;
+        return {
+          valid: false,
+        };
       }
-
-      this._uiBundle = {
-        hash,
-        setupRenderers,
-      };
-      this._invalidUiBundle = false;
-    } catch (e) {
-      console.error(e);
-      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      this._invalidUiBundle = true;
     }
-  }
- */
 
-  checkValidity() {
-    // checking for duplicate names -- doesn't seem to work currently becaus for some reason weStore is undefined here...
-    // console.log("weStore within checkValidity: ", this._weStore);
-    // console.log("Checking validity");
-    // const allApplets = this._weStore.allApplets;
-    // console.log("allApplets:, ", allApplets);
-    // if (allApplets) {
-    //   const allNames = Object.entries(allApplets).map(([appletHash, applet]) => applet.name);
-    //   if (allNames.includes(this._installedAppIdField.value)) {
-    //     return {
-    //       valid: false
-    //     };
-    //   }
-    // }
+    this._duplicateName = false;
     return {
       valid: true,
     };
@@ -147,20 +107,6 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  // public async handleDialogClosing() {$
-  // }
-
-  // renderErrorSnackbar() {
-  //   return html`
-  //     <mwc-snackbar id="error-snackbar" labelText="Installation failed!">
-  //       <mwc-button
-  //         slot="action"
-  //         label="See Documentation"
-  //         @click=${() => window.open("https://github.com/compository/lib")}
-  //       ></mwc-button>
-  //     </mwc-snackbar>
-  //   `;
-  // }
 
   renderErrorSnackbar() {
     return html`
@@ -194,7 +140,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderInstallingProgress()}
 
       <mwc-dialog id="applet-dialog" heading="Add Custom Name">
-        <div class="column" style="padding: 16px;">
+        <div class="column" style="padding: 16px; margin-bottom: 24px;">
           <mwc-textfield
             id="installed-app-id"
             label="Custom Name"
@@ -203,11 +149,14 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
             autoValidate
             value=${this._appletInfo.title}
             @input=${() => this.requestUpdate()}
-            style="margin-bottom: 24px;"
             validateOnInitialRender
             dialogInitialFocus
-            .validityTransform=${this.checkValidity}
+            .validityTransform=${(newValue, nativeValidity) =>
+              this.checkValidity(newValue, nativeValidity)}
           ></mwc-textfield>
+          ${this._duplicateName
+            ? html`<div class="default-font" style="color: #b10323; font-size: 12px; margin-left: 4px;">Name already exists.</div>`
+            : html``}
         </div>
 
         <mwc-button
