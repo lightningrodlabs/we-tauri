@@ -12,6 +12,7 @@ node_modules
 *.tsbuildinfo
 *.happ
 *.dna
-ui.zip`
+ui.zip
+target`
 });
     
