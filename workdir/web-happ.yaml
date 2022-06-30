@@ -2,6 +2,6 @@
 manifest_version: "1"
 name: we
 ui:
-  bundled: "../ui/apps/we/ui.zip"
+  bundled: "../ui/app/ui.zip"
 happ_manifest:
-  bundled: "../dna/workdir/happ/we.happ"
+  bundled: "./we.happ"
