@@ -133,7 +133,7 @@ export class WeStore {
 
   public async getDevhubHapp(): Promise<InstalledAppInfo> {
     const installedApps = await this.adminWebsocket.listApps({});
-    return installedApps.find((app) => app.installed_app_id === "DevHub")!;
+    return installedApps.find((app) => app.installed_app_id === "DevHub-0.0.143")!;
   }
 
   async fetchInfo(): Promise<Readable<WeInfo>> {
