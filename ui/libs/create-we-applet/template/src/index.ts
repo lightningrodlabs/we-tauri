@@ -23,7 +23,7 @@ const peer_statusApplet: WeApplet = {
       full(element: HTMLElement, registry: CustomElementRegistry) {
         registry.define("peer_status-applet", PeerStatusApplet);
         element.innerHTML = `<peer_status-applet></peer_status-applet>`;
-        let appletElement = element.querySelector("peer_status-applet") as any;
+        const appletElement = element.querySelector("peer_status-applet") as any;
 
         appletElement.appWebsocket =  appWebsocket;
         appletElement.profilesStore = weServices.profilesStore;

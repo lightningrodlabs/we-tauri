@@ -32,4 +32,8 @@ console.log(`Or if you want to package it into its own .webhapp:\n`);
 
 console.log(`npm run package\n`);
 
-console.log(`The npm package that has been created is prepared to operate within a larger npm workspace. Follow the instructions in the README of this package to get integrate the scaffolded npm workspace into a larger project.`);
+console.log(`The npm package that has been created is prepared to operate within a larger npm workspace. Follow the instructions here:
+
+https://www.npmjs.com/package/@lightningrodlabs/create-we-applet
+
+to integrate the scaffolded npm workspace into a larger project.`);

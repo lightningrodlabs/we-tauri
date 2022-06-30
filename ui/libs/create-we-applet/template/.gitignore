@@ -5,3 +5,4 @@ node_modules
 *.happ
 *.dna
 ui.zip
+target
