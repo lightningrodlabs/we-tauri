@@ -16,7 +16,7 @@
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle -a DevHub-0.0.143 ./DevHub/DevHub.happ && npm run devhub:ui",
+    "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle -a DevHub ./DevHub/DevHub.happ && npm run devhub:ui",
     "devhub:ui": "wds --config devhub-wds.mjs",
     "playground": "run-singleton \"holochain-playground\"",
     "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.7.0/DevHub.webhapp && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"

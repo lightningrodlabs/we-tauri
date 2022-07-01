@@ -51,6 +51,7 @@ import {
 import { AppletsService } from "./applets-service";
 import { WeService } from "./we-service";
 import { toSrc } from "../processes/import-logsrc-from-file";
+import { getDevHubAppId } from "../processes/devhub/app-id";
 
 export class WeStore {
   private appletsService: AppletsService;
@@ -136,7 +137,7 @@ export class WeStore {
 
   public async getDevhubHapp(): Promise<InstalledAppInfo> {
     const installedApps = await this.adminWebsocket.listApps({});
-    return installedApps.find((app) => app.installed_app_id === "DevHub-0.0.143")!;
+    return installedApps.find((app) => app.installed_app_id === getDevHubAppId())!;
   }
 
   async fetchInfo(): Promise<Readable<WeInfo>> {

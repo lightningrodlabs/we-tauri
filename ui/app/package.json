@@ -24,6 +24,7 @@
     "@scoped-elements/shoelace": "^0.0.8",
     "@webcomponents/scoped-custom-element-registry": "^0.0.5",
     "fflate": "^0.7.3",
+    "js-base64": "^3.7.2",
     "lit": "^2.2.0",
     "lit-svelte-stores": "^0.2.1",
     "uuid": "^8.3.2"

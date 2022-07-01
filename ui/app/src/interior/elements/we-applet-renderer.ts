@@ -41,7 +41,6 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
   );
 
   render() {
-    console.log(this._rendererTask.status);
     return this._rendererTask.render({
       pending: () => html`
         <div class="center-content">
