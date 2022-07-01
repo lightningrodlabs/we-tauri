@@ -42,12 +42,15 @@ import {
   Applet,
   AppletInfo,
   GuiFile,
+  IconFileOption,
+  IconSrcOption,
   PlayingApplet,
   RegisterAppletInput,
   WeInfo,
 } from "./types";
 import { AppletsService } from "./applets-service";
 import { WeService } from "./we-service";
+import { toSrc } from "../processes/import-logsrc-from-file";
 
 export class WeStore {
   private appletsService: AppletsService;
@@ -191,15 +194,14 @@ export class WeStore {
     const installedIds = Object.entries(get(this._appletsIAmPlaying)).map(
       ([entryHash, agentPubKey]) => entryHash
     );
-    console.log("installedIds: ", installedIds);
-    console.log("appletHash: ", appletHash);
-    console.log("included: ", installedIds.includes(appletHash));
+
     return installedIds.includes(appletHash);
   }
 
   getAppletInfo(appletHash: EntryHashB64): Applet | undefined {
     return get(this._allApplets)[appletHash];
   }
+
 
   // async fetchOrderedAppletsList(): Promise<Readable<Record<"joined"|"unjoined", Readable<<EntryHashB64, Applet>> {
 
@@ -268,7 +270,9 @@ export class WeStore {
 
   async fetchAndDecompressWebHapp(
     entryHash: EntryHashB64
-  ): Promise<[AppBundle, GuiFile]> {
+  ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
+
+    console.log("DECOMPRESSING WEBHAPP....")
     const devhubHapp = await this.getDevhubHapp();
 
     const compressedWebHapp = await fetchWebHapp(
@@ -296,9 +300,13 @@ export class WeStore {
     const compressedGui = resources[webappManifest.ui.bundled];
     const decompressedGuiMap = unzipSync(new Uint8Array(compressedGui)) as any;
 
+    console.log("decompressedGuiMap: ", decompressedGuiMap);
+
     const decompressedGui = decompressedGuiMap["index.js"] as GuiFile;
+    const decompressedIcon = decompressedGuiMap["icon.png"] as IconFileOption;
+    const iconSrcOption: IconSrcOption = toSrc(decompressedIcon);
     this.adminWebsocket.listCellIds;
-    return [decompressedHapp, decompressedGui];
+    return [decompressedHapp, decompressedGui, iconSrcOption];
   }
 
   // Installs the given applet to the conductor, and registers it in the We DNA
@@ -308,7 +316,7 @@ export class WeStore {
   ): Promise<EntryHashB64> {
     // --- Install hApp in the conductor---
 
-    const [decompressedHapp, decompressedGui] =
+    const [decompressedHapp, decompressedGui, iconSrcOption] =
       await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.entryHash));
 
     const uid = uuidv4();
@@ -342,7 +350,8 @@ export class WeStore {
     const applet: Applet = {
       name: customName,
       description: appletInfo.description,
-      logoSrc: appletInfo.icon,
+      // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
+      logoSrc: iconSrcOption,
 
       devhubHappReleaseHash: serializeHash(appletInfo.entryHash),
       guiFileHash: guiEntryHash,

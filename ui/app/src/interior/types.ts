@@ -30,7 +30,7 @@ export interface AppletInfo {
   description: string,
   installedAppId?: InstalledAppId,
   entryHash: EntryHash,
-  icon: string | undefined,
+  icon: IconSrcOption,
 }
 
 export interface PlayingApplet {
@@ -45,3 +45,7 @@ export type Signal = {
 
 
 export type GuiFile = Uint8Array;
+
+export type IconFileOption = Uint8Array | undefined;
+
+export type IconSrcOption = string | undefined;
