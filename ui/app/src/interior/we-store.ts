@@ -273,7 +273,6 @@ export class WeStore {
     entryHash: EntryHashB64
   ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
 
-    console.log("DECOMPRESSING WEBHAPP....")
     const devhubHapp = await this.getDevhubHapp();
 
     const compressedWebHapp = await fetchWebHapp(
@@ -301,7 +300,6 @@ export class WeStore {
     const compressedGui = resources[webappManifest.ui.bundled];
     const decompressedGuiMap = unzipSync(new Uint8Array(compressedGui)) as any;
 
-    console.log("decompressedGuiMap: ", decompressedGuiMap);
 
     const decompressedGui = decompressedGuiMap["index.js"] as GuiFile;
     const decompressedIcon = decompressedGuiMap["icon.png"] as IconFileOption;

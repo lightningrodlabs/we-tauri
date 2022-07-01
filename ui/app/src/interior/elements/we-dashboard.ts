@@ -131,7 +131,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
           >
             <mwc-fab
               icon="home"
-              style="--mdc-theme-secondary: #303F9F; --mdc-fab-focus-outline-color: white; --mdc-fab-focus-outline-width: 4px;"
+              class="home-button"
               @click=${() => {
                 this._selectedAppletId = undefined;
               }}
@@ -424,9 +424,17 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         color: #1b245d;
       }
 
+      .home-button {
+        --mdc-theme-secondary: #303F9F;
+        --mdc-fab-focus-outline-color: white;
+        --mdc-fab-focus-outline-width: 4px;
+        margin-bottom: 4px;
+      }
+
       .applet-logo {
         cursor: pointer;
-        margin-top: 2px;
+        margin-top: 4px;
+        margin-bottom: 4px;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -439,7 +447,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
         justify-content: center;
         font-size: 35px;
         cursor: pointer;
-        margin-top: 8px;
+        margin-top: 4px;
+        margin-bottom: 4px;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -478,7 +487,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       }
 
       .highlighted {
-        border: #303f9f 4px solid;
+        outline: #303f9f 4px solid;
       }
 
       .installable-applets-container {

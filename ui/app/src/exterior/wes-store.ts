@@ -70,7 +70,6 @@ export class WesStore {
       status_filter: AppStatusFilter.Running,
     });
 
-    console.log("installed apps", active);
     const activeWes = active.filter((app) =>
       app.installed_app_id.startsWith("we-")
     ).sort((a, b) => a.installed_app_id.localeCompare(b.installed_app_id)); // sorting alphabetically
