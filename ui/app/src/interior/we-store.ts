@@ -305,7 +305,6 @@ export class WeStore {
     const decompressedGui = decompressedGuiMap["index.js"] as GuiFile;
     const decompressedIcon = decompressedGuiMap["icon.png"] as IconFileOption;
     const iconSrcOption: IconSrcOption = toSrc(decompressedIcon);
-    this.adminWebsocket.listCellIds;
     return [decompressedHapp, decompressedGui, iconSrcOption];
   }
 

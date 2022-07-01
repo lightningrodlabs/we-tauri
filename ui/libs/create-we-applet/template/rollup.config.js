@@ -1,8 +1,7 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from "@rollup/plugin-replace";
-import builtins from "rollup-plugin-node-builtins";
-import globals from "rollup-plugin-node-globals";
+import copy from "rollup-plugin-copy";
 
 import babel from "@rollup/plugin-babel";
 import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
@@ -12,14 +11,17 @@ export default {
   input: "out-tsc/index.js",
   output: {
     format: "es",
-    dir: 'dist',
-    sourcemap: false
+    dir: "dist",
+    sourcemap: false,
   },
   watch: {
     clearScreen: false,
   },
-external: [],
+  external: [],
   plugins: [
+    copy({
+      targets: [{ src: "icon.png", dest: "dist" }],
+    }),
     /** Resolve bare module imports */
     nodeResolve({
       browser: true,

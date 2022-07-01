@@ -31,3 +31,4 @@ If your project was scaffolded using `npm init @holochain-open-dev`, here are yo
    3. Add your elements to the HTML for them to render appropriately.
 4. In the `workdir/dna.yaml` file for the generated applet, change the location of the zome.
 5. In the `package.json` file for the generated applect, change the `CARGO_TARGET_DIR` directory to which you will be compiling.
+6. Change the `icon.png` to the icon you would like this applet to have.
