@@ -39,7 +39,6 @@ export async function getAllPublishedApps(
     payload: ["we-applet"],
     provenance: cells.happs.cell_id[1],
   });
-  console.log(allAppsOutput);
   const allApps: Array<ContentAddress<Happ>> = allAppsOutput.payload;
 
   const promises = allApps.map((app) =>

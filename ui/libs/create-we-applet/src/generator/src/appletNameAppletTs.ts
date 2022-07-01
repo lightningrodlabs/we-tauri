@@ -6,7 +6,7 @@ import snakeCase from 'lodash-es/snakeCase';
 
 export const appletNameAppletTs = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
   type: ScNodeType.File,
-  content: `import { ContextProvider } from "@lit-labs/context";
+  content: `import { contextProvider, ContextProvider } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import {
   ProfilesStore,
@@ -21,6 +21,7 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
   @property()
   appWebsocket!: AppWebsocket;
 
+  @contextProvider({context: profilesStoreContext})
   @property()
   profilesStore!: ProfilesStore;
 
@@ -31,8 +32,6 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
   loaded = false;
 
   async firstUpdated() {
-    new ContextProvider(this, profilesStoreContext, this.profilesStore);
-
     // TODO: Initialize any store that you have and create a ContextProvider for it
     //
     // eg:

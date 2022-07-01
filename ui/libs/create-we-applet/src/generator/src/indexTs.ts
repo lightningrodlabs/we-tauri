@@ -31,7 +31,7 @@ const ${appletName}Applet: WeApplet = {
       full(element: HTMLElement, registry: CustomElementRegistry) {
         registry.define("${appletName}-applet", ${appletNameTitleCase}Applet);
         element.innerHTML = \`<${appletName}-applet></${appletName}-applet>\`;
-        let appletElement = element.querySelector("${appletName}-applet") as any;
+        const appletElement = element.querySelector("${appletName}-applet") as any;
 
         appletElement.appWebsocket =  appWebsocket;
         appletElement.profilesStore = weServices.profilesStore;
