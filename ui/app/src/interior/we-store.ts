@@ -391,7 +391,6 @@ export class WeStore {
     const allApplets: Record<EntryHashB64, Applet> = get(this._allApplets);
     let applet = allApplets[appletHash];
 
-    console.log("devhubreleasehash: ", applet.devhubHappReleaseHash);
     // fetch hApp and GUI
     const [decompressedHapp, decompressedGui] =
       await this.fetchAndDecompressWebHapp(applet.devhubHappReleaseHash);
