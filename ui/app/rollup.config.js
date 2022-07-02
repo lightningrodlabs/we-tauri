@@ -33,8 +33,8 @@ export default {
     replace({
       "process.env.NODE_ENV": '"production"',
       "process.env.ENV": `"${process.env.ENV}"`,
-      "process.env.HC_PORT": `"${process.env.HC_PORT || 8888}"`,
-      "process.env.ADMIN_PORT": `"${process.env.ADMIN_PORT || 8889}"`,
+      "process.env.HC_PORT": `undefined`,
+      "process.env.ADMIN_PORT": `undefined`,
     }),
     commonjs({}),
     /** Minify JS */
