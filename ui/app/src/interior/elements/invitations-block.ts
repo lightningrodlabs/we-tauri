@@ -88,7 +88,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
             class="default-font"
             style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;"
           >
-            ask a friend to send you his/her public key
+            ask a friend to send you their public key
           </div>
         </div>
       </mwc-card>

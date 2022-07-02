@@ -4,7 +4,7 @@ Creating a group coherence with holochain apps
 
 ## Context
 
-A key component of group coherence, is that the members of the group know the "rules of the applets" that they are playing together. Since every Holochain DNA is fundamentally a "rules of a applet", we can create a powerful group coherence tool by making it easy to compose DNAs and their UIs inside of a membrane of people. **We** is a DNA and UI that provides this functionality, along with a pattern on how to declare and share functionality across the sub-DNAs that are composed into the group.
+A key component of group coherence, is that the members of the group know the "rules of the games" that they are playing together. Since every Holochain DNA is fundamentally a "rules of a game", we can create a powerful group coherence tool by making it easy to compose DNAs and their UIs inside of a membrane of people. **We** is a DNA and UI that provides this functionality, along with a pattern on how to declare and share functionality across the sub-DNAs that are composed into the group.
 
 # We hApp: DNAs
 
