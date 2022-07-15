@@ -61,7 +61,7 @@ You'll have the `we.webhapp` file in the `/workdir` folder and it's components `
 
 ## Creating We applets
 
-The details on how to create a *we applet* can be found in the README [here](https://github.com/lightningrodlabs/we/tree/main/ui/libs/we-applet).
+The details on how to create a *we applet* can be found [here](docs/how-to-create-an-applet.md).
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
