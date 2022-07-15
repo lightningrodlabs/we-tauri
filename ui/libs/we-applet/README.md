@@ -4,9 +4,9 @@ This package contains the interfaces and contracts that a UI module needs to imp
 
 You can use [@lightningrodlabs/create-we-applet](https://npmjs.com/package/@lightningrodlabs/create-we-applet) to easily scaffold the initial structure for a We Applet.
 
-## Implementing a We Applet
+## Implementing the UI for a we applet
 
-You need to import the `SetupRenderers` type from `@lightningrodlabs/we-applet`, and have only a default export in your file:
+You need to import the `WeApplet` type from `@lightningrodlabs/we-applet`, and have only a default export in your file:
 
 > index.ts.
 
