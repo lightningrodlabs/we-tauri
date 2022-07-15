@@ -47,7 +47,7 @@ A *we group* only consits of an instance of the *we DNA*.
 
 #### we zome
 
-The *we zome*  provides functionalities to retrieve information about the given we, i.e. its DNA properties (see mambrane_invitations zome above) as well as to send and recieve signals about newly added applets.
+The *we zome*  provides functionalities to retrieve information about the given we, i.e. its DNA properties (see membrane_invitations zome above) as well as to send and recieve signals about newly added applets.
 
 #### applets zome
 
