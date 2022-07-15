@@ -4,11 +4,11 @@
 
 
 
-For more about the motivation behind *We*, read [this blogpost]()(to be published).
+For more about the motivation behind *We*, read [this blogpost]() (to be published).
 
 ## Design
 
-For details about the design, read the [design document](DESIGN.md).
+For details about the design, read the [design document](docs/DESIGN.md).
 
 
 
