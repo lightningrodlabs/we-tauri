@@ -68,7 +68,7 @@ pub struct Applet {
 }
 ```
 
-Furthermore it is storing the GUI's of the applets in the agent's source chain as a private entries for offline retrieval at any time:
+Furthermore it is storing the GUI's of the applets in the agent's source chain as private entries for offline retrieval at any time:
 ```=rust
 pub struct AppletGui(SerializedBytes);
 ```
