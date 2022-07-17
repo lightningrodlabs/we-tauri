@@ -10,7 +10,9 @@ For more about the motivation behind *We*, read [blogpost to be published].
 
 For details about the design, read the [design document](docs/DESIGN.md).
 
+## Creating We applets
 
+The details on how to create a *we applet* can be found [here](docs/how-to-create-an-applet.md).
 
 ## Installation
 
@@ -57,11 +59,6 @@ npm run package
 ```
 
 You'll have the `we.webhapp` file in the `/workdir` folder and it's components `we.happ` and `ui.zip` in `dna/workdir/happ` and `ui/apps/we` respectively.
-
-
-## Creating We applets
-
-The details on how to create a *we applet* can be found [here](docs/how-to-create-an-applet.md).
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
