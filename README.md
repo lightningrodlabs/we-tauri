@@ -4,7 +4,7 @@
 
 
 
-For more about the motivation behind *We*, read [this blogpost]() (to be published).
+For more about the motivation behind *We*, read [blogpost to be published].
 
 ## Design
 
