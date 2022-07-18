@@ -1,6 +1,6 @@
 # We Applet
 
-A we applet is a Holochain application that's only intended to be used inside the `We` environment. This means that instead of rendering a full blown web application, it only renders the appropriate elements that the `We` framework requests.
+A *we* applet is a Holochain application that's only intended to be used inside the `We` environment. This means that instead of rendering a full blown web application, it only renders the appropriate elements that the `We` framework requests.
 
 At the technical level, a we applet is just a normal `.webhapp`, with 2 main differences to any other web happ:
 
