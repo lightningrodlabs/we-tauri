@@ -74,8 +74,8 @@ pub struct AppletGui(SerializedBytes);
 
 #### profiles zome
 
-The [profiles zome](https://github.com/holochain-open-dev/profiles) is responsible for storing the profiles of the given *we*. An agent has one overarching profile for each instance of a we which will be used by any applet of that we.
+The [profiles zome](https://github.com/holochain-open-dev/profiles) is responsible for storing the profiles of the given *we*. An agent has one overarching profile for each instance of a we which will be used by any applet of that *we*.
 
 #### peer_status zome
 
-The [peer_status zome](https://github.com/holochain-open-dev/peer-status) adds functionality to see the online status of other agents within the we.
+The [peer_status zome](https://github.com/holochain-open-dev/peer-status) adds functionality to see the online status of other agents within the *we*.
