@@ -1,5 +1,3 @@
-pub mod error;
-
 use std::collections::BTreeMap;
 
 use hdk::prelude::holo_hash::{AgentPubKeyB64, DnaHashB64, EntryHashB64};

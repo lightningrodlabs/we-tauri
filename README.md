@@ -8,11 +8,11 @@ For more about the motivation behind *We*, read [blogpost to be published].
 
 ## Design
 
-For details about the design, read the [design document](docs/DESIGN.md).
+For details about the design, read the [design document](docs/Design.md).
 
 ## Creating We applets
 
-The details on how to create a *we applet* can be found [here](docs/how-to-create-an-applet.md).
+The details on how to create a *we applet* can be found [here](docs/How-to-create-a-we-applet.md).
 
 ## Installation
 
@@ -38,6 +38,7 @@ npm run build:happ
 ```
 
 #### Running the DNA tests
+
 ```bash
 npm run test
 ```

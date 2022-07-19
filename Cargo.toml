@@ -6,6 +6,7 @@ members = [
   "dnas/we/zomes/we",
   "dnas/we/zomes/peer_status",
 ]
+resolver = "2"
 
 [profile.dev]
 opt-level = "z"
