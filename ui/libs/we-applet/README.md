@@ -16,7 +16,7 @@ import { WeApplet, WeServices } from "@lightningrodlabs/we-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const applet: WeApplet = {
-  async gameRenderers(
+  async appletRenderers(
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
