@@ -14,8 +14,8 @@ At the technical level, a we applet is just a normal `.webhapp`, with 2 main dif
 
 This guide assumes that you have the [Holochain Launcher](https://github.com/holochain/launcher) already installed in your computer, and the `We` app installed in your Launcher. 
 
-0. If you don't have a happ or module scaffolded yet, scaffold one by running `npm init @holochain` and completing its instructions.
-1. Go into the happ in which you want to create the applet, and run [the applet scaffolding tool follow all the instructions to setup the applet](https://www.npmjs.com/package/@lightningrodlabs/create-we-applet).
+0. If you don't have a happ or module scaffolded yet, scaffold one by running `npm init @holochain` and complete its instructions.
+1. Go into the happ in which you want to create the applet, and run [the applet scaffolding tool and follow all the instructions to setup the applet](https://www.npmjs.com/package/@lightningrodlabs/create-we-applet).
 2. Develop your UI code in `we-applet/src/index.ts`, complying with the `WeApplet` interface defined in [@lightningrodlabs/we-applet](https://www.npmjs.com/package/@lightningrodlabs/we-applet).
 3. Package your `.webhapp` by going into the `we-applet` folder and running `npm run package`.
 4. Publish the applet into the devhub, with this **required tag**: `we-applet`.
