@@ -1,8 +1,8 @@
 # We
 
-*We* is a Holochain app tha makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs. 
+*We* is a Holochain app that makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs. 
 
-*We* Composed of two management DNA's, together with a defined pattern on how to build *applet* DNAs that are can be installed into a *We* group. Each such group as well as each *applet* used within a group is its own private peer-to-peer network.
+*We* ris composed of two management DNA's, together with a defined pattern on how to build *applet* DNAs that are can be installed into a *We* group. Each such group as well as each *applet* used within a group is its own private peer-to-peer network.
 
 For more about the motivation behind *We*, read [blogpost to be published].
 
