@@ -39,7 +39,7 @@ const applet: WeApplet = {
   },
 };
 
-export default whereApplet;
+export default applet;
 
 ```
 
