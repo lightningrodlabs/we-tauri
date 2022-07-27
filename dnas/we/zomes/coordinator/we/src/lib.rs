@@ -1,7 +1,9 @@
 pub mod error;
 
 pub use error::{WeError, WeResult};
-pub use hdk::prelude::*;
+use hdk::prelude::*;
+use we_integrity::WeInfo;
+
 
 #[hdk_extern]
 fn init(_: ()) -> ExternResult<InitCallbackResult> {
@@ -17,19 +19,12 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
     Ok(InitCallbackResult::Pass)
 }
 
-entry_defs![PathEntry::entry_def()];
-
-#[derive(Clone, Serialize, Deserialize, Debug, SerializedBytes)]
-pub struct WeInfo {
-    logo_src: String,
-    name: String,
-    timestamp: u64,
-}
 
 #[hdk_extern]
 fn get_info(_: ()) -> ExternResult<WeInfo> {
     let dna_info = dna_info()?;
-    let properties = WeInfo::try_from(dna_info.properties)?;
+    let properties = WeInfo::try_from(dna_info.properties)
+        .map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
     Ok(properties)
 }
 /*

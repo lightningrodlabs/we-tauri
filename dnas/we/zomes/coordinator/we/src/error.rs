@@ -23,6 +23,6 @@ pub type WeResult<T> = Result<T, WeError>;
 
 impl From<WeError> for WasmError {
     fn from(c: WeError) -> Self {
-        WasmError::Guest(c.to_string())
+        wasm_error!(WasmErrorInner::Guest(c.to_string()))
     }
 }
