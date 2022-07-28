@@ -1,8 +1,4 @@
-import {
-  serializeHash,
-  deserializeHash,
-  HoloHashMap,
-} from '@holochain-open-dev/utils';
+import { HoloHashMap } from '@holochain-open-dev/utils';
 import { CellClient, HolochainClient } from "@holochain-open-dev/cell-client";
 import { writable, Writable, derived, Readable, get } from "svelte/store";
 
@@ -80,19 +76,19 @@ export class WesStore {
       const cellClient = new CellClient(this.holochainClient, weCell);
 
       return [
-        serializeHash(weCell.cell_id[0]),
+        weCell.cell_id[0],
         new WeStore(
           cellClient,
           this.originalWeDnaHash(),
           this.adminWebsocket,
           this.membraneInvitationsStore.service
         ),
-      ] as [string, WeStore];
+      ] as [DnaHash, WeStore];
     });
 
     this._wes.update((s) => {
       for (const [weId, store] of stores) {
-        s[weId] = store;
+        s.put(weId, store);
       }
       return s;
     });
@@ -153,7 +149,7 @@ export class WesStore {
     const appInfo = this.weAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
-    const myAgentPubKey = serializeHash(weCell.cell_id[1]);
+    const myAgentPubKey = weCell.cell_id[1];
     const weDnaHash = weCell.cell_id[0];
 
     const properties = {
@@ -172,7 +168,7 @@ export class WesStore {
     const installed_app_id = `we-${name}-${timestamp}`;
     const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
       installed_app_id,
-      agent_key: deserializeHash(myAgentPubKey) as Buffer,
+      agent_key: myAgentPubKey as Buffer,
       dnas: [
         {
           hash: newWeHash,

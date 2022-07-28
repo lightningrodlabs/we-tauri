@@ -124,8 +124,8 @@ export class WeStore {
       switch (payload.message.type) {
         case "NewApplet":
           this._allApplets.update((s) => {
-            if (!s[payload.appletHash]) {
-              s[payload.appletHash] = payload.message.content;
+            if (!s.get(payload.appletHash)) {
+              s.put(payload.appletHash, payload.message.content);
             }
             return s;
           });
@@ -198,7 +198,7 @@ export class WeStore {
 
   isInstalled(appletHash: EntryHash) {
     const installedIds = get(this._appletsIAmPlaying).entries().map(
-      ([entryHash, agentPubKey]) => entryHash
+      ([entryHash, _agentPubKey]) => entryHash
     );
 
     return installedIds.includes(appletHash);
