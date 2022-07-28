@@ -20,12 +20,13 @@ import { WeStore } from "../we-store";
 import { CreateAppletDialog } from "./create-applet-dialog";
 import { InstallableApplets } from "./installable-applets";
 import { WeAppletRenderer } from "./we-applet-renderer";
-import { EntryHashB64, serializeHash } from "@holochain-open-dev/core-types";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "../../sharedStyles";
 import { InvitationsBlock } from "./invitations-block";
 import { Applet, PlayingApplet } from "../types";
+import { EntryHash } from "@holochain/client";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 
 export class WeDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -57,7 +58,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
   );
 
   @property()
-  _selectedAppletId: EntryHashB64 | undefined = undefined;
+  _selectedAppletId: EntryHash | undefined = undefined;
 
   @state()
   private _showAppletDescription: boolean = false;
@@ -96,7 +97,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
     this._showAppletDescription = !this._showAppletDescription;
   }
 
-  async joinApplet(appletHash: EntryHashB64) {
+  async joinApplet(appletHash: EntryHash) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._store
       .joinApplet(appletHash)
@@ -120,7 +121,7 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  renderAppletsList(allApplets: Record<EntryHashB64, Applet>) {
+  renderAppletsList(allApplets: HoloHashMap<Applet>) {
     if (allApplets) {
       return html`
         <div class="column we-sidebar">
@@ -138,7 +139,8 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
             ></mwc-fab>
           </sl-tooltip>
 
-          ${Object.entries(allApplets)
+          ${allApplets
+            .entries()
             .sort(([a_hash, a_applet], [b_hash, b_applet]) =>
               a_applet.name.localeCompare(b_applet.name)
             )
@@ -346,10 +348,9 @@ export class WeDashboard extends ScopedElementsMixin(LitElement) {
                 ${this._allMembers.render({
                   complete: (profiles) =>
                     html`<list-agents-by-status
-                      .agents=${Object.keys(profiles).filter(
+                      .agents=${profiles.keys().filter(
                         (agentPubKey) =>
-                          agentPubKey !==
-                          serializeHash(this._store.myAgentPubKey)
+                          agentPubKey !== this._store.myAgentPubKey
                       )}
                     ></list-agents-by-status>`,
                   pending: () => html`

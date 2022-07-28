@@ -1,5 +1,4 @@
-import { AgentPubKeyB64, DnaHashB64, EntryHashB64 } from "@holochain-open-dev/core-types";
-import { EntryHash, InstalledAppId } from "@holochain/client";
+import { AgentPubKey, DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
 
 export interface WeInfo {
   logo_src: string;
@@ -11,16 +10,16 @@ export interface Applet {
   description: string;
   logoSrc: string | undefined;
 
-  devhubHappReleaseHash: EntryHashB64;
-  guiFileHash: EntryHashB64;
+  devhubHappReleaseHash: EntryHash;
+  guiFileHash: EntryHash;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   uid: Record<string, string | undefined>; // Segmented by RoleId
-  dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
+  dnaHashes: Record<string, DnaHash>; // Segmented by RoleId
 }
 
 export interface RegisterAppletInput {
-  appletAgentPubKey: AgentPubKeyB64,
+  appletAgentPubKey: AgentPubKey,
   applet: Applet,
 }
 
@@ -35,11 +34,11 @@ export interface AppletInfo {
 
 export interface PlayingApplet {
   applet: Applet;
-  agentPubKey: AgentPubKeyB64;
+  agentPubKey: AgentPubKey;
 }
 
 export type Signal = {
-  appletHash: EntryHashB64;
+  appletHash: EntryHash;
   message: { type: "NewApplet"; content: Applet };
 };
 

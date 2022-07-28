@@ -1,12 +1,12 @@
 [package]
 authors = ["eric@harris-braun.com"]
 edition = "2018"
-name = "we"
+name = "we_coordinator"
 version = "0.0.1-alpha1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "we"
+name = "we_coordinator"
 
 [dependencies]
 chrono = {version = "0.4", features = ['alloc', 'std']}

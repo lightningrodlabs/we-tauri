@@ -6,7 +6,6 @@ import {
   ContextProvider,
 } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
-import { DnaHashB64 } from "@holochain-open-dev/core-types";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import {
@@ -19,6 +18,7 @@ import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { WeStore } from "../../interior/we-store";
 import { weContext } from "../../interior/context";
+import { DnaHash } from "@holochain/client";
 
 export class WeContext extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext, subscribe: true })
@@ -26,7 +26,7 @@ export class WeContext extends ScopedElementsMixin(LitElement) {
   wesStore!: WesStore;
 
   @property()
-  weId!: DnaHashB64;
+  weId!: DnaHash;
 
   _weStore = new StoreSubscriber(this, () => this.wesStore?.weStore(this.weId));
 

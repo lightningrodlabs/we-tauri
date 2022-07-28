@@ -8,7 +8,6 @@ import {
   CircularProgress,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
 import { query, state, property } from "lit/decorators.js";
 
 import { sharedStyles } from "../../sharedStyles";
@@ -17,6 +16,7 @@ import { weContext } from "../context";
 import { RenderBlock } from "./render-block";
 import { Renderer } from "@lightningrodlabs/we-applet";
 import { Task } from "@lit-labs/task";
+import { AgentPubKey, EntryHash } from "@holochain/client";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 
@@ -26,10 +26,10 @@ export class WeAppletRenderer extends ScopedElementsMixin(LitElement) {
   _store!: WeStore;
 
   @state()
-  _pubKey: AgentPubKeyB64 | undefined;
+  _pubKey: AgentPubKey | undefined;
 
   @property()
-  appletHash!: EntryHashB64;
+  appletHash!: EntryHash;
 
   _rendererTask = new Task(
     this,

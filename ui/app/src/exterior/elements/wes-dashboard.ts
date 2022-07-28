@@ -1,6 +1,6 @@
 import { contextProvided, ContextProvider } from "@lit-labs/context";
 import { state, query } from "lit/decorators.js";
-import { AppWebsocket, AdminWebsocket, InstalledCell } from "@holochain/client";
+import { AppWebsocket, AdminWebsocket, InstalledCell, DnaHash } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
@@ -11,8 +11,7 @@ import {
   Fab,
 } from "@scoped-elements/material-web";
 import { classMap } from "lit/directives/class-map.js";
-import { DnaHashB64 } from "@holochain-open-dev/core-types";
-import { HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloHashMap, HoloIdenticon, serializeHash } from "@holochain-open-dev/utils";
 
 import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
@@ -38,15 +37,15 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
   );
 
   @state()
-  private _selectedWeId: string | undefined;
+  private _selectedWeId: DnaHash | undefined;
 
   @query("#we-dialog")
   _weDialog!: CreateWeDialog;
 
-  renderWeList(wes: Record<DnaHashB64, WeStore>) {
-    return Object.entries(wes)
+  renderWeList(wes: HoloHashMap<WeStore>) {
+    return wes.entries()
       .sort(([a_hash, a_store], [b_hash, b_store]) =>
-        a_hash.localeCompare(b_hash)
+        serializeHash(a_hash).localeCompare(serializeHash(b_hash))
       )
       .map(
         ([weId, weStore]) =>
@@ -77,7 +76,7 @@ export class WesDashboard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  renderContent(wes: Record<DnaHashB64, WeStore>) {
+  renderContent(wes: HoloHashMap<WeStore>) {
     return html`
       <div class="row" style="flex: 1">
         <div class="column wes-sidebar">

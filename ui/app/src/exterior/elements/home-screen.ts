@@ -1,8 +1,3 @@
-import {
-  HeaderHashB64,
-  AgentPubKeyB64,
-  serializeHash,
-} from "@holochain-open-dev/core-types";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
@@ -23,11 +18,12 @@ import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloHashMap, HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeDialog } from "./create-we-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { JoinGroupCard } from "./join-group-card";
 import { ManagingGroupsCard } from "./managing-groups-card";
+import { ActionHash } from "@holochain/client";
 
 export class HomeScreen extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: wesContext })
@@ -47,13 +43,13 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   _copiedSnackbar!: Snackbar;
 
   async join(
-    invitationHeaderHash: HeaderHashB64,
+    invitationActionHash: ActionHash,
     invitation: JoinMembraneInvitation
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
     await this.wesStore
       .joinWe(
-        invitationHeaderHash,
+        invitationActionHash,
         properties.name,
         properties.logo_src,
         properties.timestamp
@@ -70,8 +66,8 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  async removeInvitation(invitationHeaderHash: HeaderHashB64) {
-    await this.wesStore.removeInvitation(invitationHeaderHash);
+  async removeInvitation(invitationActionHash: ActionHash) {
+    await this.wesStore.removeInvitation(invitationActionHash);
   }
 
   weName(invitation: JoinMembraneInvitation) {
@@ -128,9 +124,9 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitations(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<JoinMembraneInvitation>
   ) {
-    if (Object.entries(invitations).length == 0) {
+    if (invitations.entries().length == 0) {
       return html`
         <div class="default-font">You have no open invitations...</div>
         <mwc-button
@@ -142,7 +138,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html`
-        ${Object.entries(invitations)
+        ${invitations.entries()
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
           .map(([headerHash, invitation]) => {
             return html`
@@ -203,7 +199,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitationsBlock(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<JoinMembraneInvitation>
   ) {
     return html`
       ${this.renderErrorSnackbar()}

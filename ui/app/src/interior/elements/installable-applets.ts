@@ -8,7 +8,6 @@ import {
   Card,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
 import { query, state } from "lit/decorators.js";
 import { Task } from "@lit-labs/task";
 

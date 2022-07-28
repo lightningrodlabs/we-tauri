@@ -58,12 +58,12 @@ pub struct Applet {
     pub description: String,
     pub logo_src: Option<String>,
 
-    pub devhub_happ_release_hash: EntryHashB64,
-    pub gui_file_hash: EntryHashB64,
+    pub devhub_happ_release_hash: EntryHash,
+    pub gui_file_hash: EntryHash,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
     pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId
-    pub dna_hashes: BTreeMap<String, DnaHashB64>,      // Segmented by RoleId
+    pub dna_hashes: BTreeMap<String, DnaHash>,      // Segmented by RoleId
 }
 ```
 

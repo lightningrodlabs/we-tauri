@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 
-use hdk::prelude::holo_hash::{AgentPubKeyB64, EntryHashB64};
 pub use hdk::prelude::*;
 use applets_integrity::*;
 
@@ -30,14 +29,14 @@ fn create_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
 
 
 #[hdk_extern]
-pub fn commit_gui_file(input: AppletGui) -> ExternResult<EntryHashB64> {
-    create_entry(EntryTypes::AppletGui(input))?;
-    Ok(hash_entry(&input)?.into())
+pub fn commit_gui_file(input: AppletGui) -> ExternResult<EntryHash> {
+    create_entry(EntryTypes::AppletGui(input.clone()))?;
+    Ok(hash_entry(&input)?)
 }
 
 #[hdk_extern]
 pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
-    create_entry(EntryTypes::Applet(input.applet))?;
+    create_entry(EntryTypes::Applet(input.applet.clone()))?;
 
     let applet_hash = hash_entry(input.applet)?;
 
@@ -52,8 +51,8 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
 }
 
 #[hdk_extern]
-pub fn query_applet_gui(gui_hash: EntryHashB64) -> ExternResult<AppletGui> {
-    let record = get(EntryHash::from(gui_hash), GetOptions::default())?.ok_or(
+pub fn query_applet_gui(gui_hash: EntryHash) -> ExternResult<AppletGui> {
+    let record = get(gui_hash, GetOptions::default())?.ok_or(
         wasm_error!(WasmErrorInner::Guest(String::from("We don't have committed this applet gui"))),
     )?;
 
@@ -70,11 +69,11 @@ pub fn query_applet_gui(gui_hash: EntryHashB64) -> ExternResult<AppletGui> {
 #[serde(rename_all = "camelCase")]
 pub struct PlayingApplet {
     applet: Applet,
-    agent_pub_key: AgentPubKeyB64,
+    agent_pub_key: AgentPubKey,
 }
 
 #[hdk_extern]
-pub fn get_applets_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, PlayingApplet>> {
+pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingApplet)>> {
     let offer_entry_type: EntryType = UnitEntryTypes::Applet.try_into()?;
 
     let filter = ChainQueryFilter::new()
@@ -87,22 +86,29 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Pl
     let filter = ChainQueryFilter::new().action_type(ActionType::CreateLink);
     let create_links = query(filter)?;
 
-    let mut playing_applets: BTreeMap<EntryHashB64, PlayingApplet> = BTreeMap::new();
+    let mut playing_applets: Vec<(EntryHash, PlayingApplet)> = Vec::new();
+
+
 
     for record in create_links {
         if let Action::CreateLink(create_link_action) = record.action() {
-            if create_link_action.link_type == LinkType::from(LinkTypes::AppletToExternalAgent) {
+            let link_type = LinkTypes::try_from(ScopedLinkType {
+                zome_id: create_link_action.zome_id,
+                zome_type: create_link_action.link_type,
+            })?;
+            if link_type == LinkTypes::AppletToExternalAgent {
                 let applet_hash =
-                    EntryHashB64::from(EntryHash::from(create_link_action.base_address.clone()));
+                    EntryHash::from(create_link_action.base_address.clone());
                 if let Some(applet) = applets.get(&applet_hash) {
-                    playing_applets.insert(
-                        applet_hash,
+                    playing_applets.push(
+                        (applet_hash,
                         PlayingApplet {
                             applet: applet.clone(),
-                            agent_pub_key: AgentPubKeyB64::from(AgentPubKey::from(
+                            agent_pub_key: (AgentPubKey::from(
                                 EntryHash::from(create_link_action.target_address.clone()),
                             )),
-                        },
+                        }
+                        ),
                     );
                 }
             }
@@ -114,7 +120,7 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Pl
 }
 
 #[hdk_extern]
-fn get_all_applets(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Applet>> {
+fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet)>> {
     let path = get_applets_path();
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
@@ -126,11 +132,19 @@ fn get_all_applets(_: ()) -> ExternResult<BTreeMap<EntryHashB64, Applet>> {
 
     let applet_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
 
-    applets_from_records(applet_records.into_iter().filter_map(|e| e).collect())
+    Ok(
+        applets_from_records(applet_records
+            .into_iter()
+            .filter_map(|e| e)
+            .collect()
+        )?
+        .into_iter()
+        .collect::<Vec<(EntryHash, Applet)>>()
+    )
 }
 
-fn applets_from_records(applets_records: Vec<Record>) -> ExternResult<BTreeMap<EntryHashB64, Applet>> {
-    let applets: BTreeMap<EntryHashB64, Applet> = applets_records
+fn applets_from_records(applets_records: Vec<Record>) -> ExternResult<BTreeMap<EntryHash, Applet>> {
+    let applets: BTreeMap<EntryHash, Applet> = applets_records
         .into_iter()
         .map(|record| {
             let applet: Applet = record
@@ -140,11 +154,11 @@ fn applets_from_records(applets_records: Vec<Record>) -> ExternResult<BTreeMap<E
                 .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("There is no applet entry"))))?;
 
             Ok((
-                EntryHashB64::from(record.action().entry_hash().unwrap().clone()),
+                record.action().entry_hash().unwrap().clone(),
                 applet,
             ))
         })
-        .collect::<ExternResult<BTreeMap<EntryHashB64, Applet>>>()?;
+        .collect::<ExternResult<BTreeMap<EntryHash, Applet>>>()?;
 
     Ok(applets)
 }

@@ -1,17 +1,6 @@
 use std::collections::BTreeMap;
-
-use hdi::prelude::holo_hash::{AgentPubKeyB64, DnaHashB64, EntryHashB64};
 use hdi::prelude::*;
-
-enum AppletLinkType {
-    AppletToExternalAgent = 0,
-}
-
-impl From<AppletLinkType> for LinkType {
-    fn from(hdk_link_type: AppletLinkType) -> Self {
-        Self(hdk_link_type as u8)
-    }
-}
+use hdi::prelude::holo_hash::DnaHash;
 
 
 #[hdk_entry_defs]
@@ -43,16 +32,17 @@ pub struct Applet {
     pub description: String,
     pub logo_src: Option<String>,
 
-    pub devhub_happ_release_hash: EntryHashB64,
-    pub gui_file_hash: EntryHashB64,
+    pub devhub_happ_release_hash: EntryHash,
+    pub gui_file_hash: EntryHash,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
     pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId
-    pub dna_hashes: BTreeMap<String, DnaHashB64>,      // Segmented by RoleId
+    pub dna_hashes: BTreeMap<String, DnaHash>,      // Segmented by RoleId
 }
 
 
 #[hdk_entry_helper]
+#[derive(Clone)]
 pub struct AppletGui(SerializedBytes);
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -66,5 +56,5 @@ pub struct RegisterAppletInput {
 #[serde(rename_all = "camelCase")]
 pub struct PlayingApplet {
     applet: Applet,
-    agent_pub_key: AgentPubKeyB64,
+    agent_pub_key: AgentPubKey,
 }

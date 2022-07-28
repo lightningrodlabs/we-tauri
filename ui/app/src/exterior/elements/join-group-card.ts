@@ -1,8 +1,4 @@
-import {
-  HeaderHashB64,
-  AgentPubKeyB64,
-  serializeHash,
-} from "@holochain-open-dev/core-types";
+import { ActionHash } from "@holochain/client";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
@@ -23,7 +19,7 @@ import { wesContext } from "../context";
 import { WesStore } from "../wes-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloHashMap, HoloIdenticon, serializeHash } from "@holochain-open-dev/utils";
 import { CreateWeDialog } from "./create-we-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 
@@ -39,13 +35,13 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   _copiedSnackbar!: Snackbar;
 
   async join(
-    invitationHeaderHash: HeaderHashB64,
+    invitationActionHash: ActionHash,
     invitation: JoinMembraneInvitation
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
     await this.wesStore
       .joinWe(
-        invitationHeaderHash,
+        invitationActionHash,
         properties.name,
         properties.logo_src,
         properties.timestamp
@@ -62,8 +58,8 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  async removeInvitation(invitationHeaderHash: HeaderHashB64) {
-    await this.wesStore.removeInvitation(invitationHeaderHash);
+  async removeInvitation(invitationActionHash: ActionHash) {
+    await this.wesStore.removeInvitation(invitationActionHash);
   }
 
   weName(invitation: JoinMembraneInvitation) {
@@ -120,9 +116,9 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitations(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<JoinMembraneInvitation>
   ) {
-    if (Object.entries(invitations).length == 0) {
+    if (invitations.entries().length == 0) {
       return html`
         <div>You have no open invitations...</div>
         <mwc-button
@@ -134,7 +130,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html`
-        ${Object.entries(invitations)
+        ${invitations.entries()
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
           .map(([headerHash, invitation]) => {
             return html`
@@ -194,7 +190,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitationsBlock(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<JoinMembraneInvitation>
   ) {
     return html`
       ${this.renderErrorSnackbar()}
@@ -235,7 +231,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
               <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
               <div style="margin-top: 15px;">
                 <sl-tooltip placement="right" .content=${"copy"}>
-                  <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.wesStore.myAgentPubKey); this._copiedSnackbar.show()}}>
+                  <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(serializeHash(this.wesStore.myAgentPubKey)); this._copiedSnackbar.show()}}>
                       ${this.wesStore.myAgentPubKey}
                   </div>
                 </sl-tooltip>

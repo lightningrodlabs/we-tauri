@@ -5,7 +5,7 @@ use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
 use holochain::{conductor::config::ConductorConfig, sweettest::*};
-use applets::{RegisterAppletInput, Applet};
+use applets_integrity::{RegisterAppletInput, Applet};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn create_applet() {
@@ -29,8 +29,8 @@ async fn create_applet() {
         name: String::from("name"),
         description: String::from("description"),
         logo_src: None,
-        devhub_happ_release_hash: fixt!(EntryHashB64),
-        gui_file_hash: fixt!(EntryHashB64),
+        devhub_happ_release_hash: fixt!(EntryHash),
+        gui_file_hash: fixt!(EntryHash),
         properties: BTreeMap::new(), // Segmented by RoleId
         uid: BTreeMap::new(),        // Segmented by RoleId
         dna_hashes: BTreeMap::new(), // Segmented by RoleId
@@ -40,14 +40,14 @@ async fn create_applet() {
         applet,
     };
 
-    let _entry_hash: EntryHashB64 = conductors[0]
+    let _entry_hash: EntryHash = conductors[0]
         .call(&alice_zome, "create_applet", input)
         .await;
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let all_applets: BTreeMap<EntryHashB64, Applet> =
+    let all_applets: Vec<(EntryHash, Applet)> =
         conductors[1].call(&bob_zome, "get_all_applets", ()).await;
 
-    assert_eq!(all_applets.keys().len(), 1);
+    assert_eq!(all_applets.len(), 1);
 }

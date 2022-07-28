@@ -9,12 +9,13 @@ import {
   Card,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
 import { query, state } from "lit/decorators.js";
 
 import { sharedStyles } from "../../sharedStyles";
 import { WeStore } from "../we-store";
 import { weContext } from "../context";
+import { AgentPubKey } from "@holochain/client";
+import { deserializeHash } from "@holochain-open-dev/utils";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weContext, subscribe: true })
@@ -22,7 +23,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   _store!: WeStore;
 
   @state()
-  _inviteePubKey: AgentPubKeyB64 | undefined;
+  _inviteePubKey: AgentPubKey | undefined;
 
   @query("#snackbar-success")
   _snackbarSuccess!: Snackbar;
@@ -33,7 +34,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @query("#pubkey-field")
   _pubkeyField!: TextField;
 
-  async inviteToJoin(agentPubKey: AgentPubKeyB64) {
+  async inviteToJoin(agentPubKey: AgentPubKey) {
     this._store
       .inviteToJoin(agentPubKey)
       .then((r) => {
@@ -72,7 +73,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
               label="Public Key"
               id="pubkey-field"
               autoValidate
-              @input=${(e) => (this._inviteePubKey = e.target.value)}
+              @input=${(e) => (this._inviteePubKey = deserializeHash(e.target.value))}
               outlined
             ></mwc-textfield>
             <mwc-button
