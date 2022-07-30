@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@holochain-open-dev/cell-client": "^0.6.1",
-    "@holochain-open-dev/core-types": "^0.4.0",
     "@holochain-open-dev/membrane-invitations": "github:holochain-open-dev/membrane-invitations#ui-build-hdk-0.0.142",
     "@holochain-open-dev/peer-status": "github:holochain-open-dev/peer-status#ui-build-hdk-0.0.142",
     "@holochain-open-dev/profiles": "^0.4.2",
