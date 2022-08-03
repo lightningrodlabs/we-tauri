@@ -66,6 +66,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _selectedAppletInstanceId: EntryHash | undefined; // hash of the Applet's entry in group's we dna of the selected Applet instance
 
+  @state()
+  private _specialAppletMode: boolean = false;
+
   @query("#create-we-group-dialog")
   _createWeGroupDialog!: CreateWeGroupDialog;
 
@@ -95,14 +98,19 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         )
       );
       // show all groups that have the currently selected applet class installed in appletClass mode
+      // and show the special modes of the chosen applet class
     } else if (this._dashboardMode === "appletClass") {
-      this.renderWeGroupList(
-        get(
-          this._matrixStore.getGroupInfosForAppletClass(
-            this._selectedAppletClassId!
+      return html`
+        ${this.renderWeGroupList(
+          get(
+            this._matrixStore.getGroupInfosForAppletClass(
+              this._selectedAppletClassId!
+            )
           )
-        )
-      );
+        )}
+
+        ${this.renderSpecialAppletModes()}
+      `;
       // show all applet classes in mainHome mode
     } else {
       this.renderAppletClassList(get(this._allAppletClasses));
@@ -123,12 +131,21 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderAppletClassDashboard() {
-    return html`
-      <applet-class-renderer
-        style="flex: 1"
-        .appletClassId=${this._selectedAppletClassId}
-      ></applet-class-renderer>
-    `;
+    if (this._specialAppletMode) {
+      return html`
+        <applet-class-renderer
+          style="flex: 1"
+          .appletClassId=${this._selectedAppletClassId}
+        ></applet-class-renderer>
+      `;
+    } else {
+      return html`
+        <applet-instance-renderer
+          style="flex: 1"
+          .appletInstanceId=${this._selectedAppletInstanceId}
+        ></applet-instance-renderer>
+      `;
+    }
   }
 
   renderWeGroupList(weGroups: WeGroupInfo[]) {
@@ -141,6 +158,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               .tooltipText=${weGroupInfo.info.name}
               @click=${() => {
                 this._selectedWeGroupId = weGroupInfo.dna_hash;
+                this._specialAppletMode = false;
                 this.requestUpdate();
               }}
               class=${classMap({
@@ -167,7 +185,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
 
-
   renderAppletClassList(appletClasses: AppletClassInfo[]) {
     // do stuff
     return appletClasses.map(
@@ -191,6 +208,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           >
           </sidebar-button>
         `
+      // add special modes here
     );
   }
 
@@ -204,6 +222,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .tooltipText=${appletInstanceInfo.installedAppId}
             @click=${() => {
               this._selectedAppletInstanceId = appletInstanceInfo.appletId;
+              this._specialAppletMode = false;
               this.requestUpdate();
             }}
             class=${classMap({
@@ -218,6 +237,23 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     );
   }
 
+
+  renderSpecialAppletModes() {
+    return html`
+      <sidebar-button
+        logoSrc="merge_view_icon"
+        tooltipText="Birds Eye View"
+        @click=${() => {
+          this._specialAppletMode = true;
+          this.requestUpdate();
+        }}
+        class=${classMap({
+          highlighted: this._specialAppletMode,
+          weLogoHover: !this._specialAppletMode,
+        })}
+      ></sidebar-button>
+    `;
+  }
 
   renderDashboardContent() {
     if (this._dashboardMode === "mainHome") {
@@ -245,6 +281,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this._selectedWeGroupId = undefined;
                 this._selectedAppletClassId = undefined;
                 this._selectedAppletInstanceId = undefined;
+                this._specialAppletMode = false;
                 this._dashboardMode = "mainHome";
               }}
             class=${classMap({
