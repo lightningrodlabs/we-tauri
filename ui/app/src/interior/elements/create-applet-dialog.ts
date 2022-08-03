@@ -54,7 +54,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
     title: "",
     subtitle: "",
     description: "",
-    entryHash: new Uint8Array(0),
+    devhubHappReleaseHash: new Uint8Array(0),
     icon: undefined,
   };
 

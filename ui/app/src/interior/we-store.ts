@@ -40,6 +40,7 @@ import { importModuleFromFile } from "../processes/import-module-from-file";
 import { fetchWebHapp } from "../processes/devhub/get-happs";
 import {
   Applet,
+  AppletGui,
   AppletInfo,
   GuiFile,
   IconFileOption,
@@ -108,11 +109,12 @@ export class WeStore {
 
   constructor(
     protected cellClient: CellClient,
+    protected lobbyClient: CellClient,
     protected weDnaHash: DnaHashB64,
     public adminWebsocket: AdminWebsocket,
     protected membraneInvitationsService: MembraneInvitationsService
   ) {
-    this.appletsService = new AppletsService(cellClient);
+    this.appletsService = new AppletsService(cellClient, lobbyClient);
     this.weService = new WeService(cellClient);
     this.profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     this.peerStatusStore = new PeerStatusStore(cellClient);
@@ -231,9 +233,11 @@ export class WeStore {
 
     const applet = get(this._allApplets)[appletHash];
     const appletAgentPubKey = get(this._appletsIAmPlaying)[appletHash];
-    const rendererBytes = await this.appletsService.queryAppletGui(
-      applet.guiFileHash
+    const appletGui = await this.appletsService.queryAppletGui(
+      applet.devhubHappReleaseHash
     );
+
+    const rendererBytes = appletGui.gui;
 
     const file = new File(
       [new Blob([new Uint8Array(rendererBytes)])],
@@ -241,7 +245,7 @@ export class WeStore {
     );
 
     const mod = await importModuleFromFile(file);
-    const appletGui: WeApplet = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
+    const gui: WeApplet = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
 
     const cell_data: InstalledCell[] = [];
 
@@ -252,7 +256,7 @@ export class WeStore {
       });
     }
 
-    const renderers = await appletGui.appletRenderers(
+    const renderers = await gui.appletRenderers(
       this.appWebsocket,
       this.adminWebsocket,
       { profilesStore: this.profilesStore },
@@ -315,7 +319,7 @@ export class WeStore {
     // --- Install hApp in the conductor---
 
     const [decompressedHapp, decompressedGui, iconSrcOption] =
-      await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.entryHash));
+      await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.devhubHappReleaseHash));
 
     const uid = uuidv4();
     const installedAppId: InstalledAppId = `${uid}-${customName}`;
@@ -332,11 +336,17 @@ export class WeStore {
 
     await this.adminWebsocket.enableApp({ installed_app_id: installedAppId });
 
-    // // --- Register hApp and UI in the We DNA ---
+    // --- Commit UI in the lobby cell as private entry ---
 
-    const guiEntryHash = await this.appletsService.commitGuiFile(
-      decompressedGui
-    );
+    const appletGui: AppletGui = {
+      devhubHappReleaseHash: appletInfo.devhubHappReleaseHash,
+      gui: decompressedGui,
+    }
+
+    const _ = await this.appletsService.commitGuiFile(appletGui);
+
+
+    // --- Register hApp in the We DNA ---
 
     const dnaHashes: Record<string, DnaHashB64> = {};
     const uidByRole: Record<string, string> = {};
@@ -351,8 +361,7 @@ export class WeStore {
       // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
       logoSrc: iconSrcOption,
 
-      devhubHappReleaseHash: serializeHash(appletInfo.entryHash),
-      guiFileHash: guiEntryHash,
+      devhubHappReleaseHash: serializeHash(appletInfo.devhubHappReleaseHash),
 
       properties: {},
       uid: uidByRole,
@@ -426,8 +435,12 @@ export class WeStore {
     await this.appletsService.createApplet(registerAppletInput);
 
     // commit GUI to source chain as private entry
+    const guiToCommit: AppletGui = {
+      devhubHappReleaseHash: deserializeHash(applet.devhubHappReleaseHash),
+      gui: decompressedGui,
+    }
     const guiEntryHash = await this.appletsService.commitGuiFile(
-      decompressedGui
+      guiToCommit
     );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {

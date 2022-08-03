@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "dnas/lobby/zomes/membrane_invitations",
+  "dnas/lobby/zomes/*",
   "dnas/we/zomes/applets",
   "dnas/we/zomes/profiles",
   "dnas/we/zomes/we",

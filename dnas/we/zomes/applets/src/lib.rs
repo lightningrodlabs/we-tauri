@@ -13,7 +13,7 @@ impl From<AppletLinkType> for LinkType {
     }
 }
 
-entry_defs![PathEntry::entry_def(), Applet::entry_def(), AppletGui::entry_def()];
+entry_defs![PathEntry::entry_def(), Applet::entry_def()];
 
 /// A applet
 #[hdk_entry(id = "applet")]
@@ -25,7 +25,7 @@ pub struct Applet {
     pub logo_src: Option<String>,
 
     pub devhub_happ_release_hash: EntryHashB64,
-    pub gui_file_hash: EntryHashB64,
+    // pub gui_file_hash: EntryHashB64,                // not required since the GUI is a private entry
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
     pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId
@@ -53,9 +53,6 @@ fn create_applet(input: RegisterAppletInput) -> ExternResult<EntryHashB64> {
     Ok(applet_hash)
 }
 
-#[hdk_entry(id = "applet_gui", visibility = "private")]
-pub struct AppletGui(SerializedBytes);
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterAppletInput {
@@ -63,11 +60,7 @@ pub struct RegisterAppletInput {
     pub applet: Applet,
 }
 
-#[hdk_extern]
-pub fn commit_gui_file(input: AppletGui) -> ExternResult<EntryHashB64> {
-    create_entry(&input)?;
-    Ok(hash_entry(&input)?.into())
-}
+
 
 #[hdk_extern]
 pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHashB64> {
@@ -85,19 +78,7 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHashB64>
     Ok(applet_hash.into())
 }
 
-#[hdk_extern]
-pub fn query_applet_gui(gui_hash: EntryHashB64) -> ExternResult<AppletGui> {
-    let element = get(EntryHash::from(gui_hash), GetOptions::default())?.ok_or(
-        WasmError::Guest(String::from("We don't have committed this applet gui")),
-    )?;
 
-    let applet_gui: AppletGui = element
-        .entry()
-        .to_app_option()?
-        .ok_or(WasmError::Guest(String::from("Bad applet GUI")))?;
-
-    Ok(applet_gui)
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

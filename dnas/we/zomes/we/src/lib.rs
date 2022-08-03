@@ -26,6 +26,8 @@ pub struct WeInfo {
     timestamp: u64,
 }
 
+
+
 #[hdk_extern]
 fn get_info(_: ()) -> ExternResult<WeInfo> {
     let dna_info = dna_info()?;

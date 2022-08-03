@@ -12,11 +12,15 @@ export interface Applet {
   logoSrc: string | undefined;
 
   devhubHappReleaseHash: EntryHashB64;
-  guiFileHash: EntryHashB64;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   uid: Record<string, string | undefined>; // Segmented by RoleId
   dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
+}
+
+export interface AppletGui {
+  devhubHappReleaseHash: EntryHash,
+  gui: Uint8Array,
 }
 
 export interface RegisterAppletInput {
@@ -29,7 +33,7 @@ export interface AppletInfo {
   subtitle: string,
   description: string,
   installedAppId?: InstalledAppId,
-  entryHash: EntryHash,
+  devhubHappReleaseHash: EntryHash,
   icon: IconSrcOption,
 }
 

@@ -29,6 +29,7 @@ export class WesStore {
   private _wes: Writable<Record<DnaHashB64, WeStore>> = writable({});
   private _selectedWeId: Writable<DnaHashB64 | undefined> = writable(undefined);
 
+
   /** Static info */
   public weStore(weId: DnaHashB64): Readable<WeStore> {
     return derived(this._wes, (wes) => wes[weId]);
@@ -39,6 +40,7 @@ export class WesStore {
   }
 
   public myAgentPubKey: AgentPubKeyB64;
+
 
   constructor(
     protected holochainClient: HolochainClient,
@@ -66,6 +68,12 @@ export class WesStore {
 
   // sorts the Wes alphabetically
   public async fetchWes(): Promise<Readable<Record<DnaHashB64, WeStore>>> {
+
+
+
+    const lobbyCell = this.weAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
+    const lobbyClient = new CellClient(this.holochainClient, lobbyCell);
+
     let active = await this.adminWebsocket.listApps({
       status_filter: AppStatusFilter.Running,
     });
@@ -83,6 +91,7 @@ export class WesStore {
         serializeHash(weCell.cell_id[0]),
         new WeStore(
           cellClient,
+          lobbyClient,
           this.originalWeDnaHash(),
           this.adminWebsocket,
           this.membraneInvitationsStore.service
@@ -150,7 +159,10 @@ export class WesStore {
     logo: string,
     timestamp: number
   ): Promise<DnaHashB64> {
+
     const appInfo = this.weAppInfo;
+
+    const lobbyCell = appInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
     const myAgentPubKey = serializeHash(weCell.cell_id[1]);
@@ -186,9 +198,11 @@ export class WesStore {
 
     const newWeCell = newAppInfo.cell_data[0];
     const cellClient = new CellClient(this.holochainClient, newWeCell);
+    const lobbyClient = new CellClient(this.holochainClient, lobbyCell);
 
     const store = new WeStore(
       cellClient,
+      lobbyClient,
       weDnaHash,
       this.adminWebsocket,
       this.membraneInvitationsStore.service

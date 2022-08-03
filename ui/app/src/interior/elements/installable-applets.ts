@@ -91,7 +91,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
                   subtitle: item.app.content.subtitle,
                   description: item.app.content.description,
                   icon: undefined, // ADD ICON HERE
-                  entryHash: latestRelease.address,
+                  devhubHappReleaseHash: latestRelease.address,
                 };
                 return this.renderInstallableApplet(appletInfo);
               }

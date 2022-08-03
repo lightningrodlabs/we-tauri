@@ -6,3 +6,5 @@ properties: ~
 zomes:
   - name: membrane_invitations
     bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations.wasm
+  - name: applet_guis
+    bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis.wasm
