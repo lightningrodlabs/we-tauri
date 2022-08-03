@@ -40,16 +40,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   _matrixStore!: MatrixStore;
 
-  _allWeGroupInfos = new TaskSubscriber(
+  _allWeGroupInfos = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchAllWeGroupInfos(),
-    () => [this._matrixStore]
+    () => this._matrixStore.weGroupInfos(),
   );
 
-  _allAppletClasses = new TaskSubscriber(
+  _allAppletClasses = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchAllAppletClasses(),
-    () => [this._matrixStore]
+    () => this._matrixStore.appletClasses(),
   );
 
   _matrix = new StoreSubscriber(this, () => this._matrixStore.matrix());
@@ -77,13 +75,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   renderLeftSidebar() {
     // show all we groups in weGroup mode
     if (this._dashboardMode === "weGroup") {
-      this.renderWeGroupList(get(this._allWeGroupInfos));
+      this.renderWeGroupList(this._allWeGroupInfos.value.values());
       // show all applet classes in appletClass mode
     } else if (this._dashboardMode === "appletClass") {
-      this.renderAppletClassList(this._allAppletClasses);
+      this.renderAppletClassList(this._allAppletClasses.value.values());
       // show all we groups in mainHome mode
     } else {
-      this.renderWeGroupList(get(this._allWeGroupInfos));
+      this.renderWeGroupList(this._allWeGroupInfos.value.values());
     }
   }
 
@@ -113,7 +111,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `;
       // show all applet classes in mainHome mode
     } else {
-      this.renderAppletClassList(get(this._allAppletClasses));
+      this.renderAppletClassList(this._allAppletClasses.value.values());
     }
   }
 

@@ -99,7 +99,7 @@ export class MatrixStore {
   public membraneInvitationsStore: MembraneInvitationsStore;
 
   private _matrix: Writable<HoloHashMap<[GroupData, AppletInstanceInfo[]]>> =
-    writable(new HoloHashMap<[GroupData, AppletInstanceData[]]>()); // We Group DnaHashes as keys
+    writable(new HoloHashMap<[GroupData, AppletInstanceInfo[]]>()); // We Group DnaHashes as keys
 
   private _groups: Writable<HoloHashMap<GroupStore>> =
     writable(new HoloHashMap<GroupStore>()); // We Group DnaHashes as keys
@@ -115,6 +115,20 @@ export class MatrixStore {
 
   public matrix(): Readable<HoloHashMap<[GroupData, AppletInstanceInfo[]]>> {
     return derived(this._matrix, (matrix) => matrix);
+  }
+
+  public weGroupInfos(): Readable<HoloHashMap<WeGroupInfo>> {
+    return derived(this._matrix, (matrix) => {
+      let groupInfos = new HoloHashMap<WeGroupInfo>();
+      matrix.entries().forEach(([groupId, [groupData, _appletInstanceInfos]]) => {
+        groupInfos.put(groupId, groupData.info)
+      })
+      return groupInfos;
+    })
+  }
+
+  public appletClasses(): Readable<HoloHashMap<AppletClassInfo>> {
+    return derived(this._installedAppletClasses, (appletClasses) => appletClasses);
   }
 
   public setDashboardMode(mode: DashboardMode) {
