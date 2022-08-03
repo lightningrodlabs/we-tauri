@@ -11,7 +11,7 @@ import {
 import { CellClient, HolochainClient } from "@holochain-open-dev/cell-client";
 import { writable, Writable, derived, Readable, get } from "svelte/store";
 
-import { WeStore } from "../interior/we-store";
+import { WeGroupStore } from "./we-group-store";
 import {
   AdminWebsocket,
   InstalledAppInfo,
@@ -27,7 +27,7 @@ import {
   MembraneInvitationsStore,
 } from "@holochain-open-dev/membrane-invitations";
 import { encode } from "@msgpack/msgpack";
-import { GroupStore } from "./we-store";
+import { GroupStore } from "./we-group-store";
 import { AppletStore } from "./applet-store";
 import { HoloHashMap } from "./holo-hash-map-temp";
 import { AppletTypeStore } from "./applet-type-store";
@@ -37,7 +37,7 @@ import { DashboardMode } from "./types";
 
 
 /**Data of a group */
-export interface GroupData {
+export interface WeGroupData {
   info: WeGroupInfo,
   store: GroupStore,
 }
@@ -98,8 +98,8 @@ export class MatrixStore {
   /** Private */
   public membraneInvitationsStore: MembraneInvitationsStore;
 
-  private _matrix: Writable<HoloHashMap<[GroupData, AppletInstanceInfo[]]>> =
-    writable(new HoloHashMap<[GroupData, AppletInstanceInfo[]]>()); // We Group DnaHashes as keys
+  private _matrix: Writable<HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>> =
+    writable(new HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>()); // We Group DnaHashes as keys
 
   private _groups: Writable<HoloHashMap<GroupStore>> =
     writable(new HoloHashMap<GroupStore>()); // We Group DnaHashes as keys
@@ -113,7 +113,7 @@ export class MatrixStore {
   private _dashboardMode: Writable<DashboardMode> = writable("mainHome");
 
 
-  public matrix(): Readable<HoloHashMap<[GroupData, AppletInstanceInfo[]]>> {
+  public matrix(): Readable<HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>> {
     return derived(this._matrix, (matrix) => matrix);
   }
 
@@ -141,7 +141,7 @@ export class MatrixStore {
 
   private _canvasState: Writable<CanvasState> = writable()
 
-  // private _wes: Writable<Record<DnaHashB64, WeStore>> = writable({});
+  // private _wes: Writable<Record<DnaHashB64, WeGroupStore>> = writable({});
   // private _selectedWeId: Writable<DnaHashB64 | undefined> = writable(undefined);
 
 
@@ -160,11 +160,11 @@ export class MatrixStore {
 
 
   /**Gets an array of all GroupInfo of the groups that have the specified applet installed */
-  public getGroupInfosForAppletClass(devHubReleaseHash: EntryHash): Readable<GroupInfo[]> {
+  public getGroupInfosForAppletClass(devHubReleaseHash: EntryHash): Readable<WeGroupInfo[]> {
     // todo
     return derived(this._matrix, (matrix) => {
-      matrix.values().filter(([groupInfo, appletDatas]) => {
-        appletDatas.map((appletData) => appletData.info.devHubReleaseHash)
+      matrix.values().filter(([groupInfo, appletInfos]) => {
+        appletInfos.map((appletInfo) => appletInfo.devHubReleaseHash)
           .includes(devHubReleaseHash)
       }).map(([groupData, _appletDatas]) => groupData.info)});
   }
@@ -175,7 +175,7 @@ export class MatrixStore {
     return derived(this._matrix, (matrix) => matrix.get(groupDnaHash)[0].store);
   }
 
-  public appletStore(){}
+
 
   /**Fetches a generic renderer for a given  */
   public fetchGenericRenderer(devHubReleaseHash: EntryHash): genericAppletRenderer {
@@ -187,9 +187,14 @@ export class MatrixStore {
   }
 
 
+  public fetchAllAppletsForWeGroup(weGroupId: DnaHash): Promise<Readable<HoloHashMap<Applet>>> {
+
+    const allApplets = await this.appletsService.getAllApplets();
+  }
+
 
   /** Static info */
-  public weStore(weId: DnaHashB64): Readable<WeStore> {
+  public weStore(weId: DnaHashB64): Readable<WeGroupStore> {
     return derived(this._wes, (wes) => wes[weId]);
   }
 
@@ -202,9 +207,9 @@ export class MatrixStore {
   constructor(
     protected holochainClient: HolochainClient,
     protected adminWebsocket: AdminWebsocket,
-    protected weAppInfo: InstalledAppInfo,
+    protected weParentAppInfo: InstalledAppInfo,
   ) {
-    const lobbyCell = weAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
+    const lobbyCell = weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
     const cellClient = new CellClient(holochainClient, lobbyCell);
     this.membraneInvitationsStore = new MembraneInvitationsStore(cellClient);
     this.myAgentPubKey = serializeHash(lobbyCell.cell_id[1]);
@@ -213,42 +218,40 @@ export class MatrixStore {
 
 
   private originalWeDnaHash(): DnaHashB64 {
-    const appInfo = this.weAppInfo;
+    const weParentAppInfo = this.weParentAppInfo;
 
-    const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
+    const weCell = weParentAppInfo.cell_data.find((c) => c.role_id === "we")!;
     return serializeHash(weCell.cell_id[0]);
   }
 
-  public setWeId(id: DnaHashB64 | undefined) {
-    this._selectedWeId.set(id);
-  }
 
   // sorts the Wes alphabetically
-  public async fetchWes(): Promise<Readable<Record<DnaHashB64, WeStore>>> {
-    let active = await this.adminWebsocket.listApps({
-      status_filter: AppStatusFilter.Running,
-    });
+  public async fetchWeGroups(): Promise<Readable<HoloHashMap<WeGroupData>>> { // DnaHashes as keys
 
-    const activeWes = active.filter((app) =>
-      app.installed_app_id.startsWith("we-")
-    ).sort((a, b) => a.installed_app_id.localeCompare(b.installed_app_id)); // sorting alphabetically
+    // 1. fetch all the we group apps
+    let allWeGroups = await this.adminWebsocket.listApps({});
 
-    const stores = activeWes.map((we) => {
-      const weCell = we.cell_data[0];
+    // const activeWes = active.filter((app) =>
+    //   app.installed_app_id.startsWith("we-")
+    // ).sort((a, b) => a.installed_app_id.localeCompare(b.installed_app_id)); // sorting alphabetically
 
-      const cellClient = new CellClient(this.holochainClient, weCell);
+    // 2. create a WeGroupStore for each we group app
+    const stores = allWeGroups.map((group) => {
+      const weGroupCell = group.cell_data[0];
+      const cellClient = new CellClient(this.holochainClient, weGroupCell);
 
       return [
         serializeHash(weCell.cell_id[0]),
-        new WeStore(
+        new WeGroupStore(
           cellClient,
           this.originalWeDnaHash(),
           this.adminWebsocket,
           this.membraneInvitationsStore.service
         ),
-      ] as [string, WeStore];
+      ] as [string, WeGroupStore];
     });
 
+    // 3. update the matrix
     this._wes.update((s) => {
       for (const [weId, store] of stores) {
         s[weId] = store;
@@ -269,7 +272,7 @@ export class MatrixStore {
 
     const newWeHash = await this.installWe(name, logo, timestamp);
 
-    const appInfo = this.weAppInfo;
+    const appInfo = this.weParentAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
     const weDnaHash = serializeHash(weCell.cell_id[0]);
@@ -309,9 +312,9 @@ export class MatrixStore {
     logo: string,
     timestamp: number
   ): Promise<DnaHashB64> {
-    const appInfo = this.weAppInfo;
+    const weParentAppInfo = this.weParentAppInfo;
 
-    const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
+    const weCell = weParentAppInfo.cell_data.find((c) => c.role_id === "we")!;
     const myAgentPubKey = serializeHash(weCell.cell_id[1]);
     const weDnaHash = serializeHash(weCell.cell_id[0]);
 
@@ -346,16 +349,42 @@ export class MatrixStore {
     const newWeCell = newAppInfo.cell_data[0];
     const cellClient = new CellClient(this.holochainClient, newWeCell);
 
-    const store = new WeStore(
+    const lobbyCell = weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
+    const lobbyClient = new CellClient(this.holochainClient, lobbyCell);
+
+    const store = new WeGroupStore(
       cellClient,
+      lobbyClient,
       weDnaHash,
       this.adminWebsocket,
       this.membraneInvitationsStore.service
     );
 
-    this._wes.update((wes) => {
-      wes[serializeHash(newWeCell.cell_id[0])] = store;
-      return wes;
+    this._matrix.update((matrix) => {
+
+      const weGroupId = newWeCell.cell_id[0]; // DnaHash of the newly created We Group Cell
+
+      const weInfo: WeInfo = {
+        logo_src: properties.logo_src,
+        name: properties.name,
+      };
+
+      const weGroupInfo: WeGroupInfo = {
+        info: weInfo,
+        dna_hash: weGroupId,
+        installed_app_id,
+        status: enabledResult.app.status,
+      };
+
+      const weGroupData: WeGroupData = {
+        info: weGroupInfo,
+        store,
+      };
+      if (!matrix.get(weGroupId)) {
+        matrix.put(weGroupId, [weGroupData, []])
+      }
+
+      return matrix;
     });
 
     return serializeHash(newWeHash);
