@@ -4,3 +4,6 @@ import {
   EntryHashB64,
   DnaHashB64,
 } from "@holochain-open-dev/core-types";
+
+
+export type DashboardMode = "mainHome" | "appletClass" | "weGroup";

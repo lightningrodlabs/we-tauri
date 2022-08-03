@@ -1,0 +1,69 @@
+
+
+
+
+
+
+
+import { contextProvided } from "@lit-labs/context";
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { css, html, LitElement } from "lit";
+import { TaskSubscriber } from "lit-svelte-stores";
+import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
+
+import { property, query } from "lit/decorators.js";
+
+export class SidebarButton extends ScopedElementsMixin(LitElement) {
+
+  @property()
+  logoSrc!: string;
+
+  @property()
+  tooltipText!: string;
+
+  @query("#tooltip")
+  _tooltip!: SlTooltip;
+
+  private handleClick(e: any) {
+    this._tooltip.hide();
+    this.dispatchEvent(
+      new Event("click", {
+        composed: true,
+        bubbles: true,
+      })
+    );
+  }
+
+  render() {
+    return html`<sl-tooltip
+      id="tooltip"
+      placement="right"
+      .content=${this.tooltipText}
+      hoist
+    >
+      <img class="we" src="${this.logoSrc}" @click=${this.handleClick} />
+    </sl-tooltip>`;
+  }
+
+  static get scopedElements() {
+    return {
+      "sl-tooltip": SlTooltip,
+    };
+  }
+
+  static get styles() {
+    return css`
+      :host {
+        display: flex;
+      }
+      .we {
+        cursor: pointer;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+      }
+    `;
+  }
+}
+
