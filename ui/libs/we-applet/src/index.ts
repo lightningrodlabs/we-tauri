@@ -34,11 +34,11 @@ export interface WeApplet {
 }
 
 
-interface WeInfo {
+export interface WeInfo {
   logo_src: string;
   name: string;
 }
-interface InstalledAppletInfo {
+export interface InstalledAppletInfo {
   weInfo: WeInfo,
   installedAppInfo: InstalledAppInfo,
 }

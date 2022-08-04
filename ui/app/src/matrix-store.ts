@@ -20,6 +20,7 @@ import {
   DnaHash,
   EntryHash,
   AgentPubKey,
+  InstalledCell,
 } from "@holochain/client";
 import {
   MembraneInvitationsService,
@@ -28,9 +29,10 @@ import {
 import { encode } from "@msgpack/msgpack";
 import { WeGroupStore } from "./we-group-store";
 import { DnaHashMap, EntryHashMap, HoloHashMap } from "./holo-hash-map-temp";
-import { AppletRenderers } from "@lightningrodlabs/we-applet";
+import { AppletRenderers, WeApplet, InstalledAppletInfo } from "@lightningrodlabs/we-applet";
 import { WeInfo } from "./interior/types";
-import { Applet, DashboardMode, PlayingApplet } from "./types";
+import { Applet, AppletGui, DashboardMode, PlayingApplet } from "./types";
+import { importModuleFromFile } from "./processes/import-module-from-file";
 
 
 /**Data of a group */
@@ -48,18 +50,17 @@ export interface WeGroupInfo {
 }
 
 /**Data of a specific instance of an installed Applet */
-export interface AppletInstanceData {
-  info: AppletInstanceInfo,
-  renderers: AppletRenderers,
-}
+// export interface AppletInstanceData {
+//   info: AppletInstanceInfo,
+//   renderers: AppletRenderers,
+// }
 
 /**Info about a specific instance of an installed Applet */
 export interface AppletInstanceInfo {
   appletId: EntryHash, // hash of the Applet entry in the applets zome of the group's we dna
-  devHubHappReleaseHash: EntryHash, // devhub hApp release hash --> allows to recognize applets of the same base dna across groups
-  installedAppId: string,       // installed_app_id in the conductor
-  status: InstalledAppInfoStatus, // status of the app in the conductor
-  name: string,
+  devHubHappReleaseHash: EntryHash,   // devhub hApp release hash --> allows to recognize applets of the same base dna across groups
+  installedAppInfo: InstalledAppInfo, // InstalledAppInfo
+  name: string,                // name of the applet
   logoSrc: string | undefined, // logo of the applet
 }
 
@@ -85,17 +86,7 @@ export interface AppletClassInfo {
 }
 
 
-export interface InstalledAppletInfo {
-  weGroupInfo: WeInfo,
-  weGroupId: DnaHash,
-  appInfo: InstalledAppInfo,
-}
 
-
-export interface CanvasState {
-  type: "main-home" | "group-home" | "applet-group-instance" | "applet-class-renderer",
-  payload:  | undefined,
-}
 
 
 
@@ -118,9 +109,9 @@ export class MatrixStore {
   private _installedAppletClasses: Writable<EntryHashMap<AppletClassInfo>> =
     writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
 
-  private _appletRenderers: EntryHashMap<AppletRenderers> =
-    writable(new EntryHashMap<AppletRenderers>()); // devhub release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+  private _appletGuis: EntryHashMap<WeApplet> = new EntryHashMap<WeApplet>(); // devhub release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
 
+  private lobbyCell: InstalledCell;
 
   private _dashboardMode: Writable<DashboardMode> = writable("mainHome");
   private _selectedAppletInstanceId: EntryHash | undefined = undefined;
@@ -165,6 +156,74 @@ export class MatrixStore {
     return derived(this._installedAppletClasses, (appletClasses) => appletClasses);
   }
 
+
+  /**
+   * Gets InstalledAppletInfo of all applets of this class across all we groups
+   * @param devhubHappReleaseHash
+   * @returns
+   */
+  getInstalledAppletInfoListForClass(devhubHappReleaseHash: EntryHash): InstalledAppletInfo[] {
+    const matrix = get(this._matrix)
+    let appletInfosOfClass: InstalledAppletInfo[] = [];
+    matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
+      const weInfo: WeInfo = weGroupData.info.info;
+      const weGroupId: DnaHash = weGroupData.info.dna_hash;
+      const relevantAppletInstanceInfos = appletInstanceInfos.filter((info) => info.devHubHappReleaseHash == devhubHappReleaseHash);
+      const relevantInstalledAppletInfos = relevantAppletInstanceInfos.map((appletInstanceInfo) => {
+        const installedAppletInfo: InstalledAppletInfo = {
+          weInfo,
+          installedAppInfo: appletInstanceInfo.installedAppInfo,
+        };
+        return installedAppletInfo;
+      });
+
+      appletInfosOfClass = [...appletInfosOfClass, ...relevantInstalledAppletInfos]
+    })
+
+    return appletInfosOfClass;
+  }
+
+
+  /**
+   * Gets the AppletRenderers for an applet class
+   * @param devhubHappReleaseHash
+   */
+  async fetchClassRenderers(devhubHappReleaseHash: EntryHash): Promise<AppletRenderers> {
+    //
+    let gui = this._appletGuis.get(devhubHappReleaseHash);
+    if (!gui) {
+      const appletGui = await this.queryAppletGui(devhubHappReleaseHash);
+      const rendererBytes = appletGui.gui;
+
+      const file = new File(
+        [new Blob([new Uint8Array(rendererBytes)])],
+        "filename"
+      );
+
+      const mod = await importModuleFromFile(file);
+      gui = mod.default;
+
+      this._appletGuis.put(devhubHappReleaseHash, gui); // update the renderers
+    }
+
+    const renderers = await gui.appletRenderers(
+      this.holochainClient.appWebsocket,
+      this.adminWebsocket,
+      {},
+      this.getInstalledAppletInfoListForClass(devhubHappReleaseHash),
+    );
+
+    return renderers;
+  }
+
+
+  async queryAppletGui(devHubHappReleaseHash): Promise<AppletGui> {
+    const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
+    return lobbyClient.callZome("applet_guis", "query_applet_gui", devHubHappReleaseHash);
+  }
+
+
+
   // public setDashboardMode(mode: DashboardMode) {
   //   this._dashboardMode.set(mode);
   // }
@@ -172,8 +231,6 @@ export class MatrixStore {
   public getDashboardMode(): Readable<DashboardMode> {
     return derived(this._dashboardMode, (mode) => mode);
   }
-
-  private _canvasState: Writable<CanvasState> = writable()
 
   // private _wes: Writable<Record<DnaHashB64, WeGroupStore>> = writable({});
   // private _selectedWeId: Writable<DnaHashB64 | undefined> = writable(undefined);
@@ -246,12 +303,12 @@ export class MatrixStore {
    *
    *
    */
-  public async fetchNewAppletInstances(): Promise<Readable<DnaHashMap<NewAppletInstanceInfo[]>> {
+  public async fetchNewAppletInstances(): Promise<Readable<DnaHashMap<NewAppletInstanceInfo[]>>> {
 
     get(this._matrix).entries().map(([weGroupDnaHash, [weGroupData, appletInstanceInfos]]) => {
       const allApplets: EntryHashMap<Applet> = get(await weGroupData.store.fetchAllApplets());
 
-    })
+    });
 
 
   }
@@ -270,6 +327,7 @@ export class MatrixStore {
     protected weParentAppInfo: InstalledAppInfo,
   ) {
     const lobbyCell = weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
+    this.lobbyCell = lobbyCell;
     const cellClient = new CellClient(holochainClient, lobbyCell);
     this.membraneInvitationsStore = new MembraneInvitationsStore(cellClient);
     this.myAgentPubKey = lobbyCell.cell_id[1];
@@ -285,23 +343,77 @@ export class MatrixStore {
   }
 
 
-  // Updating the matrix:
-  // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
-  // 2. fetch installed applet instances from the source chain for each we group (fast source chain query)
-  // 3. combine 1 and 2 to update the _matrix and _installedAppletClasses
+  public fetchAppletGuis(devhubHappReleaseHash: EntryHash) {
+    let gui: WeApplet = this._appletGuis.get(devhubHappReleaseHash);
+    if (gui) return gui;
 
-  public async fetchMatrix(): Promise<Readable<HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>>>{
 
-    const lobbyCell = this.weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
-    const lobbyClient = new CellClient(this.holochainClient, lobbyCell);
 
-    let matrrrrriiix = new HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>();
-    let installedAppletClasses = new HoloHashMap<AppletClassInfo>();
+    const applet = get(this._allApplets)[appletHash];
+    const appletAgentPubKey = get(this._appletsIAmPlaying)[appletHash];
+
+    const appletGui = await this.appletsService.queryAppletGui(
+      applet.devhubHappReleaseHash
+    );
+
+    const rendererBytes = appletGui.gui;
+
+    const file = new File(
+      [new Blob([new Uint8Array(rendererBytes)])],
+      "filename"
+    );
+
+    const mod = await importModuleFromFile(file);
+    gui = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
+
+    const cell_data: InstalledCell[] = [];
+
+    for (const [role_id, dnaHash] of Object.entries(applet.dnaHashes)) {
+      cell_data.push({
+        cell_id: [deserializeHash(dnaHash), deserializeHash(appletAgentPubKey)],
+        role_id,
+      });
+    }
+
+    const renderers = await gui.appletRenderers(
+      this.appWebsocket,
+      this.adminWebsocket,
+      { profilesStore: this.profilesStore },
+      {
+        installed_app_id: "",
+        cell_data,
+        status: { running: null },
+      }
+    );
+
+    // s.renderers is undefined --> maybe because this._appletRenderers is still empty at that point?
+    this._appletRenderers[appletHash] = renderers;
+
+    return renderers;
+
+  }
+
+
+
+  /**
+   * Updates the matrix:
+   * 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
+   * 2. fetch installed applet instances from the source chain for each we group (fast source chain query)
+   * 3. combine 1 and 2 to update the _matrix and _installedAppletClasses
+   * @returns
+   */
+  public async fetchMatrix(): Promise<Readable<DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>>>{
+
+    const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
+
+    let matrrrrriiix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
+    let installedAppletClasses = new EntryHashMap<AppletClassInfo>();
 
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
 
     // fetch groups from conductor
-    let allWeGroups = await this.adminWebsocket.listApps({});
+    let allApps = await this.adminWebsocket.listApps({});
+    let allWeGroups = allApps.filter((app) => app.installed_app_id.startsWith("we-"));
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
@@ -344,9 +456,9 @@ export class MatrixStore {
           const appletInstanceInfo: AppletInstanceInfo = {
             appletId: entryHash,
             devHubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
-            installedAppId: appInfo.installed_app_id,
-            status: appInfo.status,
+            installedAppInfo: allApps.find((app) => this.isSameApp(app, playingApplet.applet))!,
             logoSrc: playingApplet.applet.logoSrc,
+            name: playingApplet.applet.name,
           };
 
           // populate installedAppletClasses along the way
@@ -379,7 +491,20 @@ export class MatrixStore {
   }
 
 
-
+  /**
+   * Checks whether an InstalledAppInfo and an Applet refer to the same applet
+   * @param installedAppInfo
+   * @param applet
+   * @returns
+   */
+  isSameApp(installedAppInfo: InstalledAppInfo, applet: Applet): boolean {
+    installedAppInfo.cell_data.forEach((installedCell) => {
+      if (applet.dnaHashes[installedCell.role_id] != installedCell.cell_id[0]) {
+        return false;
+      }
+    });
+    return true;
+  }
 
   /**
    * Clones the We DNA with a new unique weId as its UID
@@ -468,8 +593,7 @@ export class MatrixStore {
     const newWeCell = newAppInfo.cell_data[0];
     const cellClient = new CellClient(this.holochainClient, newWeCell);
 
-    const lobbyCell = weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
-    const lobbyClient = new CellClient(this.holochainClient, lobbyCell);
+    const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
 
     const store = new WeGroupStore(
       cellClient,
