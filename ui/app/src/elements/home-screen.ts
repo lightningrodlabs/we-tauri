@@ -21,10 +21,10 @@ import {
 
 import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { sharedStyles } from "../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
-import { CreateWeDialog } from "./create-we-dialog";
+import { CreateWeGroupDialog } from "./create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { JoinGroupCard } from "./join-group-card";
 import { ManagingGroupsCard } from "./managing-groups-card";
@@ -38,7 +38,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   );
 
   @query("#we-dialog")
-  _weDialog!: CreateWeDialog;
+  _weGroupDialog!: CreateWeGroupDialog;
 
   @query("#join-group-dialog")
   _joinGroupDialog!: Dialog;
@@ -225,12 +225,9 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y">
-            <create-we-dialog
+            <create-we-group-dialog
               id="we-dialog"
-              @we-added=${(e: CustomEvent) => {
-                this.matrixStore.setWeId(e.detail);
-              }}
-            ></create-we-dialog>
+            ></create-we-group-dialog>
             <mwc-snackbar
               id="copied-snackbar"
               timeoutMs="4000"
@@ -268,7 +265,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "holo-identicon": HoloIdenticon,
-      "create-we-dialog": CreateWeDialog,
+      "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "join-group-card": JoinGroupCard,

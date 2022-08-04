@@ -15,7 +15,7 @@ import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
 
-import { weContext } from "../context";
+import { weGroupContext } from "./context";
 import { WeGroupStore } from "./we-group-store";
 import { CreateAppletDialog } from "./create-applet-dialog";
 import { InstallableApplets } from "./installable-applets";
@@ -26,38 +26,44 @@ import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "./sharedStyles";
 import { InvitationsBlock } from "./elements/invitations-block";
 import { Applet, PlayingApplet } from "../types";
+import { MatrixStore } from "./matrix-store";
+import { matrixContext } from "./context";
+import { EntryHash } from "@holochain/client";
 
 export class WeGroupDashboard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: weContext, subscribe: true })
+  @contextProvided({ context: weGroupContext, subscribe: true })
   @state()
-  _store!: WeGroupStore;
+  _weGroupStore!: WeGroupStore;
 
   _info = new TaskSubscriber(
     this,
     ([store]) => store.fetchInfo(),
-    () => [this._store]
+    () => [this._weGroupStore]
   );
 
   _allApplets = new TaskSubscriber(
     this,
-    () => this._store.fetchAllApplets(),
-    () => [this._store]
+    () => this._weGroupStore.fetchAllApplets(),
+    () => [this._weGroupStore]
   );
 
   _appletsIAmPlaying = new TaskSubscriber(
     this,
-    () => this._store.fetchAppletsIAmPlaying(),
-    () => [this._store]
+    () => this._weGroupStore.fetchAppletsIAmPlaying(),
+    () => [this._weGroupStore]
   );
 
   _allMembers = new TaskSubscriber(
     this,
-    () => this._store.profilesStore.fetchAllProfiles(),
-    () => [this._store]
+    () => this._weGroupStore.profilesStore.fetchAllProfiles(),
+    () => [this._weGroupStore]
   );
 
-  @property()
-  _selectedAppletId: EntryHashB64 | undefined = undefined;
+
+  @contextProvided({ context: matrixContext, subscribe: true })
+  @state()
+  _matrixStore!: MatrixStore;
+
 
   @state()
   private _showAppletDescription: boolean = false;
@@ -96,9 +102,9 @@ export class WeGroupDashboard extends ScopedElementsMixin(LitElement) {
     this._showAppletDescription = !this._showAppletDescription;
   }
 
-  async joinApplet(appletHash: EntryHashB64) {
+  async joinApplet(appletHash: EntryHash) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
-    await this._store
+    await this._weGroupStore
       .joinApplet(appletHash)
       .then(() => {
         (
@@ -133,7 +139,7 @@ export class WeGroupDashboard extends ScopedElementsMixin(LitElement) {
               icon="home"
               class="home-button"
               @click=${() => {
-                this._selectedAppletId = undefined;
+                this._matrixStore.selectedAppletInstanceId = undefined;
               }}
             ></mwc-fab>
           </sl-tooltip>

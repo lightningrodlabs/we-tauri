@@ -54,7 +54,7 @@ import { AppletsService } from "./applets-service";
 import { WeGroupService } from "./we-group-service";
 import { toSrc } from "./processes/import-logsrc-from-file";
 import { getDevHubAppId } from "./processes/devhub/app-id";
-import { HoloHashMap } from "./holo-hash-map-temp";
+import { EntryHashMap } from "./holo-hash-map-temp";
 
 export class WeGroupStore {
   private appletsService: AppletsService;
@@ -62,11 +62,11 @@ export class WeGroupStore {
   public profilesStore: ProfilesStore;
   public peerStatusStore: PeerStatusStore;
 
-  private _allApplets: Writable<HoloHashMap<Applet>> = // Applet entry hashes as keys
-    writable(new HoloHashMap<Applet>());
-  private _appletsIAmPlaying: Writable<HoloHashMap<AgentPubKey>> = // Applet entry hashes as keys
-    writable(new HoloHashMap<AgentPubKey>());
-  private _appletRenderers: HoloHashMap<AppletRenderers> = new HoloHashMap<AppletRenderers>(); // devhub hApp release hashes as keys
+  private _allApplets: Writable<EntryHashMap<Applet>> = // Applet entry hashes as keys
+    writable(new EntryHashMap<Applet>());
+  private _appletsIAmPlaying: Writable<EntryHashMap<AgentPubKey>> = // Applet entry hashes as keys
+    writable(new EntryHashMap<AgentPubKey>());
+  private _appletRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>(); // devhub hApp release hashes as keys
 
   /*
   public applet(appletHash: EntryHashB64): Readable<
@@ -151,7 +151,7 @@ export class WeGroupStore {
   }
 
 
-  async fetchAllApplets(): Promise<Readable<HoloHashMap<Applet>>> {
+  async fetchAllApplets(): Promise<Readable<EntryHashMap<Applet>>> {
     const allApplets = await this.appletsService.getAllApplets();
 
     this._allApplets.update((applets) => {
@@ -165,11 +165,11 @@ export class WeGroupStore {
   }
 
   async fetchAppletsIAmPlaying(): Promise<
-    Readable<HoloHashMap<PlayingApplet>> // keys of type EntryHash
+    Readable<EntryHashMap<PlayingApplet>> // keys of type EntryHash
   > {
     const appletsIAmPlaying: [EntryHash, PlayingApplet][] = await this.appletsService.getAppletsIAmPlaying();
 
-    const myOtherPubKeys: HoloHashMap<AgentPubKey> = new HoloHashMap<AgentPubKey>(); // keys of type EntryHash
+    const myOtherPubKeys: EntryHashMap<AgentPubKey> = new EntryHashMap<AgentPubKey>(); // keys of type EntryHash
 
     for (const [appletHash, playingApplet] of
       appletsIAmPlaying
@@ -189,7 +189,7 @@ export class WeGroupStore {
     return derived(
       [this._appletsIAmPlaying, this._allApplets],
       ([playing, allApplets]) => {
-        const playingApplets: HoloHashMap<PlayingApplet> = new HoloHashMap<PlayingApplet>();
+        const playingApplets: EntryHashMap<PlayingApplet> = new EntryHashMap<PlayingApplet>();
 
         for (const [appletHash, agentPubKey] of playing.entries()) {
           playingApplets.put(appletHash, {
@@ -253,16 +253,16 @@ export class WeGroupStore {
   //   );
   // }
 
-  isInstalled(appletHash: EntryHashB64) {
-    const installedIds = Object.entries(get(this._appletsIAmPlaying)).map(
-      ([entryHash, agentPubKey]) => entryHash
+  isInstalled(appletHash: EntryHash) {
+    const installedIds = get(this._appletsIAmPlaying).entries().map(
+      ([entryHash, _agentPubKey]) => entryHash
     );
 
     return installedIds.includes(appletHash);
   }
 
-  getAppletInfo(appletHash: EntryHashB64): Applet | undefined {
-    return get(this._allApplets)[appletHash];
+  getAppletInfo(appletHash: EntryHash): Applet | undefined {
+    return get(this._allApplets).get(appletHash);
   }
 
 
@@ -451,14 +451,14 @@ export class WeGroupStore {
   }
 
 
-
+  // TODO TODO TODO: Remove applet from matrix store's _newAppletInstances once the agent has joined the Applet
   // Installs the already existing applet in this We to the conductor
   async joinApplet(appletHash: EntryHash): Promise<void> {
     const installedAppletsHashes = get(this._appletsIAmPlaying).entries()
       .map(([entryHash, agentPubKey]) => entryHash);
     if (installedAppletsHashes.includes(appletHash)) return;
 
-    const allApplets: HoloHashMap<Applet> = get(this._allApplets);
+    const allApplets: EntryHashMap<Applet> = get(this._allApplets);
     let applet = allApplets.get(appletHash);
 
     // fetch hApp and GUI

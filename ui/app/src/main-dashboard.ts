@@ -25,6 +25,7 @@ import {
   AppletClassInfo,
   AppletInstanceInfo,
   MatrixStore,
+  NewAppletInstanceInfo,
   WeGroupInfo,
 } from "./matrix-store";
 import { sharedStyles } from "./sharedStyles";
@@ -34,6 +35,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { DashboardMode } from "./types";
 import { SidebarButton } from "./elements/sidebar-button";
 import { CreateWeGroupDialog } from "./elements/create-we-group-dialog";
+import { DnaHashMap } from "./holo-hash-map-temp";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
@@ -49,6 +51,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this,
     () => this._matrixStore.appletClasses(),
   );
+
+  _allNewAppletInstances = new TaskSubscriber(
+    this,
+    () => this._matrixStore.fetchNewAppletInstances(),
+    () => [this._matrixStore]
+  );
+
+
 
   _matrix = new StoreSubscriber(this, () => this._matrixStore.matrix());
 
@@ -67,9 +77,20 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _specialAppletMode: boolean = false;
 
+  @state()
+  private _showAppletDescription: boolean = false;
+
   @query("#create-we-group-dialog")
   _createWeGroupDialog!: CreateWeGroupDialog;
 
+
+  private toggleAppletDescription() {
+    this._showAppletDescription = !this._showAppletDescription;
+  }
+
+  private weGroupStore(weGroupId) {
+    return get(this._matrixStore.matrix()).get(this._selectedWeGroupId!)[0].store
+  }
 
 
   renderLeftSidebar() {
@@ -88,13 +109,23 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   renderTopSidebar() {
     // show all applet instances of the selected group in weGroup mode
     if (this._dashboardMode === "weGroup") {
-      this.renderAppletInstanceList(
-        get(
-          this._matrixStore.getAppletInstanceInfosForGroup(
-            this._selectedWeGroupId!
+      return html`
+        ${this.renderAppletInstanceList(
+          get(
+            this._matrixStore.getAppletInstanceInfosForGroup(
+              this._selectedWeGroupId!
+            )
           )
-        )
-      );
+        )}
+
+        ${this._allNewAppletInstances.render({
+            complete: (allNewAppletInstances) => this.renderNewAppletInstanceList(allNewAppletInstances),
+            pending: () => html``,
+          }
+        )}
+      `
+
+
       // show all groups that have the currently selected applet class installed in appletClass mode
       // and show the special modes of the chosen applet class
     } else if (this._dashboardMode === "appletClass") {
@@ -120,11 +151,69 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       return html`
         <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
       `;
-    } else {
+    } else if (this.weGroupStore(this._selectedWeGroupId).isInstalled(this._selectedAppletInstanceId)) {
       return html` <applet-instance-renderer
         style="flex: 1"
         .appletInstanceId=${this._selectedAppletInstanceId}
       ></applet-instance-renderer>`;
+    } else {
+      const applet = this.weGroupStore(this._selectedWeGroupId).getAppletInfo(this._selectedAppletInstanceId)!;
+      return html`
+        <div class="flex-scrollable-parent">
+          <div class="flex-scrollable-container">
+            <div class="flex-scrollable-y">
+              <div
+                class="column center-content"
+                style="flex: 1; margin-top: 50px;"
+              >
+                ${!applet.logoSrc
+                  ? html`<div
+                      class="logo-placeholder-large"
+                      style="width: 100px; height: 100px;"
+                    >
+                      ${applet.name[0]}
+                    </div>`
+                  : html`<img class="logo-large" src=${applet.logoSrc!} />`}
+                <div class="row center-content" style="margin-top: 20px;">
+                  <div
+                    style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
+                  >
+                    ${applet.name}
+                  </div>
+                  <mwc-icon-button-toggle
+                    onIcon="expand_less"
+                    offIcon="expand_more"
+                    @click=${this.toggleAppletDescription}
+                  ></mwc-icon-button-toggle>
+                </div>
+                ${this._showAppletDescription
+                  ? html`<div
+                      style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
+                    >
+                      ${applet.description}
+                    </div>`
+                  : html``}
+                <div
+                  style="margin-top: 70px; font-size: 1.2em; text-align: center;"
+                >
+                  This applet has been added by someone else from your group.
+                </div>
+                <div
+                  style="margin-top: 10px; font-size: 1.2em; text-align: center;"
+                >
+                  You haven't installed it yet.
+                </div>
+                <mwc-button
+                  style="margin-top: 50px;"
+                  raised
+                  @click=${() => this.weGroupStore(this._selectedWeGroupId).joinApplet(this._selectedAppletInstanceId!)}
+                  >INSTALL</mwc-button
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
   }
 
@@ -192,15 +281,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .logoSrc=${appletClassInfo.logoSrc}
             .tooltipText=${appletClassInfo.name}
             @click=${() => {
-              this._selectedAppletClassId = appletClassInfo.devHubReleaseHash;
+              this._selectedAppletClassId = appletClassInfo.devHubHappReleaseHash;
               this.requestUpdate();
             }}
             class=${classMap({
               highlighted:
-                appletClassInfo.devHubReleaseHash ===
+                appletClassInfo.devHubHappReleaseHash ===
                 this._selectedAppletClassId,
               weLogoHover:
-                appletClassInfo.devHubReleaseHash !=
+                appletClassInfo.devHubHappReleaseHash !=
                 this._selectedAppletClassId,
             })}
           >
@@ -217,7 +306,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         html`
           <sidebar-button
             .logoSrc=${appletInstanceInfo.logoSrc}
-            .tooltipText=${appletInstanceInfo.installedAppId}
+            .tooltipText=${appletInstanceInfo.name}
             @click=${() => {
               this._selectedAppletInstanceId = appletInstanceInfo.appletId;
               this._specialAppletMode = false;
@@ -233,6 +322,32 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           </sidebar-button>
         `
     );
+  }
+
+
+  renderNewAppletInstanceList(allNewAppletInstances: DnaHashMap<NewAppletInstanceInfo[]>) {
+    const relevantNeAppletInstances = allNewAppletInstances.get(this._selectedWeGroupId!);
+    return relevantNeAppletInstances.map(
+      (newAppletInstanceInfo) =>
+        html`
+          <sidebar-button
+            .logoSrc=${newAppletInstanceInfo.logoSrc}
+            .tooltipText=${newAppletInstanceInfo.name}
+            @click=${() => {
+              this._selectedAppletInstanceId = newAppletInstanceInfo.appletId;
+              this._specialAppletMode = false;
+              this.requestUpdate();
+            }}
+            class=${classMap({
+              highlighted:
+                newAppletInstanceInfo.appletId === this._selectedAppletInstanceId,
+              weLogoHover:
+                newAppletInstanceInfo.appletId != this._selectedAppletInstanceId,
+            })}
+          >
+          </sidebar-button>
+        `
+    )
   }
 
 
@@ -255,7 +370,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderDashboardContent() {
     if (this._dashboardMode === "mainHome") {
-      return html` <home-screen></home-screen> `;
+      return html`
+        <home-screen
+          @we-added=${(e: CustomEvent) => {
+            this._selectedWeGroupId = e.detail;
+          }}>
+        </home-screen> `;
     } else if (this._dashboardMode === "weGroup") {
       this.renderWeGroupDashboard();
     } else if (this._dashboardMode === "appletClass") {

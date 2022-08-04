@@ -27,10 +27,10 @@ import {
 } from "@holochain-open-dev/membrane-invitations";
 import { encode } from "@msgpack/msgpack";
 import { WeGroupStore } from "./we-group-store";
-import { HoloHashMap } from "./holo-hash-map-temp";
+import { DnaHashMap, EntryHashMap, HoloHashMap } from "./holo-hash-map-temp";
 import { AppletRenderers } from "@lightningrodlabs/we-applet";
 import { WeInfo } from "./interior/types";
-import { DashboardMode } from "./types";
+import { Applet, DashboardMode, PlayingApplet } from "./types";
 
 
 /**Data of a group */
@@ -59,6 +59,15 @@ export interface AppletInstanceInfo {
   devHubHappReleaseHash: EntryHash, // devhub hApp release hash --> allows to recognize applets of the same base dna across groups
   installedAppId: string,       // installed_app_id in the conductor
   status: InstalledAppInfoStatus, // status of the app in the conductor
+  name: string,
+  logoSrc: string | undefined, // logo of the applet
+}
+
+/**Info about an Applet that was added to the We group by another agent and isn't installed locally yet. */
+export interface NewAppletInstanceInfo {
+  appletId: EntryHash, // hash of the Applet entry in the applets zome of the group's we dna
+  devHubHappReleaseHash: EntryHash, // devhub hApp release hash --> allows to recognize applets of the same base dna across groups
+  name: string,
   logoSrc: string | undefined, // logo of the applet
 }
 
@@ -95,33 +104,56 @@ export class MatrixStore {
   /** Private */
   public membraneInvitationsStore: MembraneInvitationsStore;
 
-  private _matrix: Writable<HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>> = // We Group DnaHashes as keys
-    writable(new HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>());           // AppletInstanceInfo are only the one's that the agent has joined,
+  private _matrix: Writable<DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>> = // We Group DnaHashes as keys
+    writable(new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>());           // AppletInstanceInfo are only the one's that the agent has joined,
                                                                                 // not the ones added to the We by someone else but not installed yet
 
-  private _newAppletInstances: Writable<HoloHashMap<AppletInstanceInfo[]>> =  // We Group DnaHashes as keys
-    writable(new HoloHashMap<AppletClassInfo[]>());                           // Applet instances that have been added to the we group by someone else
-                                                                              // but aren't installed locally yet by the agent.
+  private _newAppletInstances: Writable<DnaHashMap<NewAppletInstanceInfo[]>> =  // We Group DnaHashes as keys
+    writable(new DnaHashMap<NewAppletInstanceInfo[]>());                        // Applet instances that have been added to the we group by someone else
+                                                                               // but aren't installed locally yet by the agent.
 
-  private _groups: Writable<HoloHashMap<WeGroupStore>> =
-    writable(new HoloHashMap<WeGroupStore>()); // We Group DnaHashes as keys
+  // private _groups: Writable<DnaHashMap<WeGroupStore>> =
+  //   writable(new DnaHashMap<WeGroupStore>()); // We Group DnaHashes as keys
 
-  private _installedAppletClasses: Writable<HoloHashMap<AppletClassInfo>> =
-    writable(new HoloHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
+  private _installedAppletClasses: Writable<EntryHashMap<AppletClassInfo>> =
+    writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
 
-  private _appletRenderers: HoloHashMap<AppletRenderers> =
-    writable(new HoloHashMap<AppletRenderers>()); // devhub release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+  private _appletRenderers: EntryHashMap<AppletRenderers> =
+    writable(new EntryHashMap<AppletRenderers>()); // devhub release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+
 
   private _dashboardMode: Writable<DashboardMode> = writable("mainHome");
+  private _selectedAppletInstanceId: EntryHash | undefined = undefined;
+  private _selectedWeGroupId: DnaHash | undefined = undefined;
+
+  public get dashboardMode() {
+    return this._dashboardMode;
+  }
+  public get selectedAppletInstanceId() {
+    return this._selectedAppletInstanceId;
+  }
+  public get selectedWeGroupId() {
+    return this._selectedWeGroupId;
+  }
+
+  public setDashboardMode(mode: DashboardMode) {
+    this._dashboardMode.set(mode);
+  }
+  public set selectedAppletInstanceId(id: EntryHash | undefined) {
+    this._selectedAppletInstanceId = id;
+  }
+  public set selectedWeGroupId(id: DnaHash | undefined) {
+    this._selectedWeGroupId = id;
+  }
 
 
-  public matrix(): Readable<HoloHashMap<[WeGroupData, AppletInstanceInfo[]]>> {
+  public matrix(): Readable<DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>> {
     return derived(this._matrix, (matrix) => matrix);
   }
 
-  public weGroupInfos(): Readable<HoloHashMap<WeGroupInfo>> {
+  public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
     return derived(this._matrix, (matrix) => {
-      let groupInfos = new HoloHashMap<WeGroupInfo>();
+      let groupInfos = new DnaHashMap<WeGroupInfo>();
       matrix.entries().forEach(([groupId, [groupData, _appletInstanceInfos]]) => {
         groupInfos.put(groupId, groupData.info)
       })
@@ -129,13 +161,13 @@ export class MatrixStore {
     })
   }
 
-  public appletClasses(): Readable<HoloHashMap<AppletClassInfo>> {
+  public appletClasses(): Readable<EntryHashMap<AppletClassInfo>> {
     return derived(this._installedAppletClasses, (appletClasses) => appletClasses);
   }
 
-  public setDashboardMode(mode: DashboardMode) {
-    this._dashboardMode.set(mode);
-  }
+  // public setDashboardMode(mode: DashboardMode) {
+  //   this._dashboardMode.set(mode);
+  // }
 
   public getDashboardMode(): Readable<DashboardMode> {
     return derived(this._dashboardMode, (mode) => mode);
@@ -189,22 +221,48 @@ export class MatrixStore {
   // }
 
 
-  public async fetchAllAppletsForWeGroup(weGroupId: DnaHash): Promise<Readable<HoloHashMap<Applet>>> {
-    const groupStore = get(this._matrix).get(weGroupId)[0].store;
-    const allApplets = await groupStore.fetchAllApplets();
+
+  /**
+  Fetching Applet instances that have been added to the specified we group by someone else
+  but aren't installed locally yet by the agent
+  */
+  public async fetchNewAppletInstancesForGroup(weGroupId: EntryHash): Promise<Readable<AppletInstanceInfo[]>> {
+
+    const [weGroupData, installedApplets] = get(this._matrix).get(weGroupId);
+    const appletsIAmPlaying: EntryHashMap<PlayingApplet> = get(await weGroupData.store.fetchAppletsIAmPlaying());  // where the applet entry hashes are the keys
+
+    // return derived(this._matrix, (matrix) => {
+    //   const
+    // })
+
+
+    // update the _newAppletInstances store
+
+
+  }
+
+  /**
+   * Fetching all the applet instances that havent been installed yet.
+   *
+   *
+   */
+  public async fetchNewAppletInstances(): Promise<Readable<DnaHashMap<NewAppletInstanceInfo[]>> {
+
+    get(this._matrix).entries().map(([weGroupDnaHash, [weGroupData, appletInstanceInfos]]) => {
+      const allApplets: EntryHashMap<Applet> = get(await weGroupData.store.fetchAllApplets());
+
+    })
+
+
   }
 
 
   /** Static info */
-  public weStore(weId: DnaHashB64): Readable<WeGroupStore> {
-    return derived(this._wes, (wes) => wes[weId]);
+  public weGroupStore(weId: DnaHash): Readable<WeGroupStore> {
+    return derived(this._matrix, (matrix) => matrix.get(weId)[0].store);
   }
 
-  public get selectedWeId(): Readable<DnaHashB64 | undefined> {
-    return derived(this._selectedWeId, (id) => id);
-  }
-
-  public myAgentPubKey: AgentPubKeyB64;
+  public myAgentPubKey: AgentPubKey;
 
   constructor(
     protected holochainClient: HolochainClient,
@@ -214,7 +272,7 @@ export class MatrixStore {
     const lobbyCell = weParentAppInfo.cell_data.find((cell) => cell.role_id=="lobby")!;
     const cellClient = new CellClient(holochainClient, lobbyCell);
     this.membraneInvitationsStore = new MembraneInvitationsStore(cellClient);
-    this.myAgentPubKey = serializeHash(lobbyCell.cell_id[1]);
+    this.myAgentPubKey = lobbyCell.cell_id[1];
   }
 
 
@@ -328,7 +386,7 @@ export class MatrixStore {
    * @param weName
    * @param weLogo
    */
-  public async createWe(name: string, logo: string): Promise<DnaHashB64> {
+  public async createWe(name: string, logo: string): Promise<DnaHash> {
     const timestamp = Date.now();
 
     const newWeHash = await this.installWe(name, logo, timestamp);
@@ -350,7 +408,7 @@ export class MatrixStore {
       resultingDnaHash: newWeHash,
     });
 
-    return newWeHash;
+    return deserializeHash(newWeHash);
   }
 
   public async joinWe(
