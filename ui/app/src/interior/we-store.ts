@@ -110,7 +110,7 @@ export class WeStore {
   constructor(
     protected cellClient: CellClient,
     protected lobbyClient: CellClient,
-    protected weDnaHash: DnaHashB64,
+    protected weParentDnaHash: DnaHashB64,
     public adminWebsocket: AdminWebsocket,
     protected membraneInvitationsService: MembraneInvitationsService
   ) {
@@ -459,7 +459,7 @@ export class WeStore {
     const properties = encode(info);
     console.log(
       {
-        originalDnaHash: this.weDnaHash,
+        originalDnaHash: this.weParentDnaHash,
         properties,
         uid: undefined,
         resultingDnaHash: weDnaHash,
@@ -468,7 +468,7 @@ export class WeStore {
     );
     await this.membraneInvitationsService.inviteToJoinMembrane(
       {
-        originalDnaHash: this.weDnaHash,
+        originalDnaHash: this.weParentDnaHash,
         properties,
         uid: undefined,
         resultingDnaHash: weDnaHash,

@@ -1,19 +1,29 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
 import { EntryHashB64, AgentPubKeyB64 } from "@holochain-open-dev/core-types";
+import { AgentPubKey, EntryHash } from "@holochain/client";
 import { Applet, AppletGui, PlayingApplet, RegisterAppletInput } from "./types";
 
 export class AppletsService {
   constructor(public cellClient: CellClient, protected lobbyClient: CellClient, protected zomeName = "applets", protected lobbyZomeName = "applet_guis") {}
 
-  async getAllApplets(): Promise<Record<EntryHashB64, Applet>> {
+  // async getAllApplets(): Promise<Record<EntryHashB64, Applet>> {
+  //   return this.callZome("get_all_applets", null);
+  // }
+
+  // async getAppletsIAmPlaying(): Promise<Record<EntryHashB64, PlayingApplet>> {
+  //   return this.callZome("get_applets_i_am_playing", null);
+  // }
+
+  async getAllApplets(): Promise<[EntryHash, Applet][]> {
     return this.callZome("get_all_applets", null);
   }
 
-  async getAppletsIAmPlaying(): Promise<Record<EntryHashB64, PlayingApplet>> {
+  async getAppletsIAmPlaying(): Promise<[EntryHash, PlayingApplet][]> {
     return this.callZome("get_applets_i_am_playing", null);
   }
 
-  async createApplet(registerAppletInput: RegisterAppletInput): Promise<EntryHashB64> {
+
+  async createApplet(registerAppletInput: RegisterAppletInput): Promise<EntryHash> {
     return this.callZome("create_applet", registerAppletInput);
   }
 
@@ -24,13 +34,13 @@ export class AppletsService {
   }
 
   async registerApplet(
-    appletAgentPubKey: AgentPubKeyB64,
+    appletAgentPubKey: AgentPubKey,
     applet: Applet,
-  ): Promise<EntryHashB64> {
+  ): Promise<EntryHash> {
     return this.callZome("register_applet", { appletAgentPubKey, applet });
   }
 
-  async queryAppletGui(devhubHappReleaseHash: EntryHashB64): Promise<AppletGui> {
+  async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<AppletGui> {
     return this.callLobbyZome("query_applet_gui", devhubHappReleaseHash);
   }
 

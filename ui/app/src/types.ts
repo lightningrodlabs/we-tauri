@@ -3,7 +3,7 @@ import {
   EntryHashB64,
   DnaHashB64,
 } from "@holochain-open-dev/core-types";
-import { EntryHash, InstalledAppId } from "@holochain/client";
+import { AgentPubKey, DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
 
 
 export type DashboardMode = "mainHome" | "appletClass" | "weGroup";
@@ -19,11 +19,11 @@ export interface Applet {
   description: string;
   logoSrc: string | undefined;
 
-  devhubHappReleaseHash: EntryHashB64;
+  devhubHappReleaseHash: EntryHash;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   uid: Record<string, string | undefined>; // Segmented by RoleId
-  dnaHashes: Record<string, DnaHashB64>; // Segmented by RoleId
+  dnaHashes: Record<string, DnaHash>; // Segmented by RoleId
 }
 
 export interface AppletGui {
@@ -32,7 +32,7 @@ export interface AppletGui {
 }
 
 export interface RegisterAppletInput {
-  appletAgentPubKey: AgentPubKeyB64,
+  appletAgentPubKey: AgentPubKey,
   applet: Applet,
 }
 
@@ -47,7 +47,7 @@ export interface AppletInfo {
 
 export interface PlayingApplet {
   applet: Applet;
-  agentPubKey: AgentPubKeyB64;
+  agentPubKey: AgentPubKey;
 }
 
 export type Signal = {

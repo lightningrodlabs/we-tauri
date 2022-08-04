@@ -18,6 +18,7 @@ import {
   InstalledAppId,
   AgentPubKey,
   AppBundle,
+  DnaHash,
 } from "@holochain/client";
 import {
   derived,
@@ -36,8 +37,8 @@ import { AppletRenderers, WeApplet } from "@lightningrodlabs/we-applet";
 import { decompressSync, unzipSync } from "fflate";
 import { stringify, v4 as uuidv4 } from "uuid";
 
-import { importModuleFromFile } from "../processes/import-module-from-file";
-import { fetchWebHapp } from "../processes/devhub/get-happs";
+import { importModuleFromFile } from "./processes/import-module-from-file";
+import { fetchWebHapp } from "./processes/devhub/get-happs";
 import {
   Applet,
   AppletGui,
@@ -51,8 +52,9 @@ import {
 } from "./types";
 import { AppletsService } from "./applets-service";
 import { WeGroupService } from "./we-group-service";
-import { toSrc } from "../processes/import-logsrc-from-file";
-import { getDevHubAppId } from "../processes/devhub/app-id";
+import { toSrc } from "./processes/import-logsrc-from-file";
+import { getDevHubAppId } from "./processes/devhub/app-id";
+import { HoloHashMap } from "./holo-hash-map-temp";
 
 export class WeGroupStore {
   private appletsService: AppletsService;
@@ -60,10 +62,11 @@ export class WeGroupStore {
   public profilesStore: ProfilesStore;
   public peerStatusStore: PeerStatusStore;
 
-  private _allApplets: Writable<Record<EntryHashB64, Applet>> = writable({});
-  private _appletsIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
-    writable({});
-  private _appletRenderers: Record<EntryHashB64, AppletRenderers> = {};
+  private _allApplets: Writable<HoloHashMap<Applet>> = // Applet entry hashes as keys
+    writable(new HoloHashMap<Applet>());
+  private _appletsIAmPlaying: Writable<HoloHashMap<AgentPubKey>> = // Applet entry hashes as keys
+    writable(new HoloHashMap<AgentPubKey>());
+  private _appletRenderers: HoloHashMap<AppletRenderers> = new HoloHashMap<AppletRenderers>(); // devhub hApp release hashes as keys
 
   /*
   public applet(appletHash: EntryHashB64): Readable<
@@ -147,51 +150,108 @@ export class WeGroupStore {
     return readable(info);
   }
 
-  async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
+
+  async fetchAllApplets(): Promise<Readable<HoloHashMap<Applet>>> {
     const allApplets = await this.appletsService.getAllApplets();
 
-    this._allApplets.update((applets) => ({ ...applets, ...allApplets }));
+    this._allApplets.update((applets) => {
+      allApplets.forEach(([entryHash, applet]) => {
+        applets.put(entryHash, applet)
+      });
+      return applets;
+    });
 
     return derived(this._allApplets, (i) => i);
   }
 
   async fetchAppletsIAmPlaying(): Promise<
-    Readable<Record<EntryHashB64, PlayingApplet>>
+    Readable<HoloHashMap<PlayingApplet>> // keys of type EntryHash
   > {
-    const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
+    const appletsIAmPlaying: [EntryHash, PlayingApplet][] = await this.appletsService.getAppletsIAmPlaying();
 
-    const applets: Record<EntryHashB64, Applet> = {};
-    const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
+    const myOtherPubKeys: HoloHashMap<AgentPubKey> = new HoloHashMap<AgentPubKey>(); // keys of type EntryHash
 
-    for (const [appletHash, playingApplet] of Object.entries(
+    for (const [appletHash, playingApplet] of
       appletsIAmPlaying
-    )) {
-      myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
-      applets[appletHash] = playingApplet.applet;
+    ) {
+      myOtherPubKeys.put(appletHash, playingApplet.agentPubKey);
     }
 
     this._appletsIAmPlaying.set(myOtherPubKeys);
-    this._allApplets.update((g) => ({
-      ...g,
-      ...applets,
-    }));
+
+    this._allApplets.update((allApplets) => {
+      appletsIAmPlaying.forEach(([entryHash, playingApplet]) => {
+        allApplets.put(entryHash, playingApplet.applet)
+      });
+      return allApplets;
+    });
 
     return derived(
       [this._appletsIAmPlaying, this._allApplets],
       ([playing, allApplets]) => {
-        const playingApplets: Record<EntryHashB64, PlayingApplet> = {};
+        const playingApplets: HoloHashMap<PlayingApplet> = new HoloHashMap<PlayingApplet>();
 
-        for (const [appletHash, agentPubKey] of Object.entries(playing)) {
-          playingApplets[appletHash] = {
+        for (const [appletHash, agentPubKey] of playing.entries()) {
+          playingApplets.put(appletHash, {
             agentPubKey,
-            applet: allApplets[appletHash],
-          };
+            applet: allApplets.get(appletHash),
+          });
         }
 
         return playingApplets;
       }
     );
   }
+
+
+  // old with B64 hashes
+  // async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
+  //   const allApplets = await this.appletsService.getAllApplets();
+
+  //   this._allApplets.update((applets) => ({ ...applets, ...allApplets }));
+
+  //   return derived(this._allApplets, (i) => i);
+  // }
+
+
+
+  // async fetchAppletsIAmPlaying(): Promise<
+  //   Readable<Record<EntryHashB64, PlayingApplet>>
+  // > {
+  //   const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
+
+  //   const applets: Record<EntryHashB64, Applet> = {};
+  //   const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
+
+  //   for (const [appletHash, playingApplet] of Object.entries(
+  //     appletsIAmPlaying
+  //   )) {
+  //     myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
+  //     applets[appletHash] = playingApplet.applet;
+  //   }
+
+  //   this._appletsIAmPlaying.set(myOtherPubKeys);
+  //   this._allApplets.update((g) => ({
+  //     ...g,
+  //     ...applets,
+  //   }));
+
+  //   return derived(
+  //     [this._appletsIAmPlaying, this._allApplets],
+  //     ([playing, allApplets]) => {
+  //       const playingApplets: Record<EntryHashB64, PlayingApplet> = {};
+
+  //       for (const [appletHash, agentPubKey] of Object.entries(playing)) {
+  //         playingApplets[appletHash] = {
+  //           agentPubKey,
+  //           applet: allApplets[appletHash],
+  //         };
+  //       }
+
+  //       return playingApplets;
+  //     }
+  //   );
+  // }
 
   isInstalled(appletHash: EntryHashB64) {
     const installedIds = Object.entries(get(this._appletsIAmPlaying)).map(
@@ -226,13 +286,13 @@ export class WeGroupStore {
   // }
 
   async fetchAppletRenderers(
-    appletHash: EntryHashB64
+    appletHash: EntryHash
   ): Promise<AppletRenderers> {
-    const renderer = this._appletRenderers[appletHash];
+    const renderer = this._appletRenderers.get(appletHash);
     if (renderer) return renderer;
 
-    const applet = get(this._allApplets)[appletHash];
-    const appletAgentPubKey = get(this._appletsIAmPlaying)[appletHash];
+    const applet = get(this._allApplets).get(appletHash);
+    const appletAgentPubKey = get(this._appletsIAmPlaying).get(appletHash);
     const appletGui = await this.appletsService.queryAppletGui(
       applet.devhubHappReleaseHash
     );
@@ -251,7 +311,7 @@ export class WeGroupStore {
 
     for (const [role_id, dnaHash] of Object.entries(applet.dnaHashes)) {
       cell_data.push({
-        cell_id: [deserializeHash(dnaHash), deserializeHash(appletAgentPubKey)],
+        cell_id: [dnaHash, appletAgentPubKey],
         role_id,
       });
     }
@@ -268,13 +328,13 @@ export class WeGroupStore {
     );
 
     // s.renderers is undefined --> maybe because this._appletRenderers is still empty at that point?
-    this._appletRenderers[appletHash] = renderers;
+    this._appletRenderers.put(appletHash, renderers);
 
     return renderers;
   }
 
   async fetchAndDecompressWebHapp(
-    entryHash: EntryHashB64
+    entryHash: EntryHash
   ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
 
     const devhubHapp = await this.getDevhubHapp();
@@ -283,7 +343,7 @@ export class WeGroupStore {
       this.appWebsocket,
       devhubHapp,
       "hApp", // This is chosen arbitrarily at the moment
-      deserializeHash(entryHash)
+      entryHash
     );
 
     // decompress bytearray into .happ and ui.zip (zlibt2)
@@ -315,11 +375,11 @@ export class WeGroupStore {
   async createApplet(
     appletInfo: AppletInfo,
     customName: InstalledAppId
-  ): Promise<EntryHashB64> {
+  ): Promise<EntryHash> {
     // --- Install hApp in the conductor---
 
     const [decompressedHapp, decompressedGui, iconSrcOption] =
-      await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.devhubHappReleaseHash));
+      await this.fetchAndDecompressWebHapp(appletInfo.devhubHappReleaseHash);
 
     const uid = uuidv4();
     const installedAppId: InstalledAppId = `${uid}-${customName}`;
@@ -348,10 +408,10 @@ export class WeGroupStore {
 
     // --- Register hApp in the We DNA ---
 
-    const dnaHashes: Record<string, DnaHashB64> = {};
+    const dnaHashes: Record<string, DnaHash> = {};
     const uidByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
-      dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
+      dnaHashes[cell.role_id] = cell.cell_id[0];
       uidByRole[cell.role_id] = uid;
     });
 
@@ -361,7 +421,7 @@ export class WeGroupStore {
       // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
       logoSrc: iconSrcOption,
 
-      devhubHappReleaseHash: serializeHash(appletInfo.devhubHappReleaseHash),
+      devhubHappReleaseHash: appletInfo.devhubHappReleaseHash,
 
       properties: {},
       uid: uidByRole,
@@ -369,7 +429,7 @@ export class WeGroupStore {
     };
 
     const registerAppletInput: RegisterAppletInput = {
-      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      appletAgentPubKey: appInfo.cell_data[0].cell_id[1], // pick the pubkey of any of the cells since it's the same for the whole hApp
       applet,
     };
 
@@ -378,34 +438,35 @@ export class WeGroupStore {
     );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
-      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
+      appletsIAmPlaying.put(appletHash, this.myAgentPubKey);
       return appletsIAmPlaying;
     });
 
     this._allApplets.update((allApplets) => {
-      allApplets[appletHash] = applet;
+      allApplets.put(appletHash, applet);
       return allApplets;
     });
 
     return appletHash;
   }
 
+
+
   // Installs the already existing applet in this We to the conductor
-  async joinApplet(appletHash: EntryHashB64): Promise<void> {
-    const installedAppletsHashes = Object.entries(
-      get(this._appletsIAmPlaying)
-    ).map(([entryHash, agentPubKey]) => entryHash);
+  async joinApplet(appletHash: EntryHash): Promise<void> {
+    const installedAppletsHashes = get(this._appletsIAmPlaying).entries()
+      .map(([entryHash, agentPubKey]) => entryHash);
     if (installedAppletsHashes.includes(appletHash)) return;
 
-    const allApplets: Record<EntryHashB64, Applet> = get(this._allApplets);
-    let applet = allApplets[appletHash];
+    const allApplets: HoloHashMap<Applet> = get(this._allApplets);
+    let applet = allApplets.get(appletHash);
 
     // fetch hApp and GUI
     const [decompressedHapp, decompressedGui] =
       await this.fetchAndDecompressWebHapp(applet.devhubHappReleaseHash);
 
     if (!applet) {
-      applet = get(await this.fetchAllApplets())[appletHash];
+      applet = get(await this.fetchAllApplets()).get(appletHash);
     }
 
     const uid = Object.values(applet.uid)[0];
@@ -428,7 +489,7 @@ export class WeGroupStore {
 
     // register Applet entry in order to have it in the own source chain
     const registerAppletInput: RegisterAppletInput = {
-      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
+      appletAgentPubKey: appInfo.cell_data[0].cell_id[1], // pick the pubkey of any of the cells
       applet,
     };
 
@@ -436,15 +497,15 @@ export class WeGroupStore {
 
     // commit GUI to source chain as private entry
     const guiToCommit: AppletGui = {
-      devhubHappReleaseHash: deserializeHash(applet.devhubHappReleaseHash),
+      devhubHappReleaseHash: applet.devhubHappReleaseHash,
       gui: decompressedGui,
     }
-    const guiEntryHash = await this.appletsService.commitGuiFile(
+    const _guiEntryHash = await this.appletsService.commitGuiFile(
       guiToCommit
     );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
-      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
+      appletsIAmPlaying.put(appletHash, this.myAgentPubKey);
       return appletsIAmPlaying;
     });
   }
