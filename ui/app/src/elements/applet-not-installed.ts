@@ -12,16 +12,11 @@ import { WeGroupStore } from "../we-group-store";
 import { RenderBlock } from "./render-block";
 
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
-
 
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
-
-  @contextProvided({ context: weGroupContext, subscribe: true })
-  _weGroupStore!: WeGroupStore;
 
   @property()
   appletInstanceId!: EntryHash;
@@ -39,7 +34,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   constructor() {
     super();
-    this.weGroupId = this._weGroupStore.weGroupId;
+    this.weGroupId = this._matrixStore.getWeGroupInfoForAppletInstance(this.appletInstanceId).dna_hash;
   }
 
 
@@ -55,19 +50,19 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
               class="column center-content"
               style="flex: 1; margin-top: 50px;"
             >
-              ${!appletInstanceInfo.classInfo.logoSrc
+              ${!appletInstanceInfo.applet.logoSrc
                 ? html`<div
                     class="logo-placeholder-large"
                     style="width: 100px; height: 100px;"
                   >
-                    ${appletInstanceInfo.classInfo.name[0]}
+                    ${appletInstanceInfo.applet.name[0]}
                   </div>`
-                : html`<img class="logo-large" src=${appletInstanceInfo.classInfo.logoSrc} />`}
+                : html`<img class="logo-large" src=${appletInstanceInfo.applet.logoSrc} />`}
               <div class="row center-content" style="margin-top: 20px;">
                 <div
                   style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
                 >
-                  ${appletInstanceInfo.classInfo.name}
+                  ${appletInstanceInfo.applet.name}
                 </div>
                 <mwc-icon-button-toggle
                   onIcon="expand_less"
@@ -79,7 +74,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                 ? html`<div
                     style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
                   >
-                    ${appletInstanceInfo.classInfo.description}
+                    ${appletInstanceInfo.applet.description}
                   </div>`
                 : html``}
               <div

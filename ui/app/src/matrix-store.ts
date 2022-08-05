@@ -34,7 +34,7 @@ import {
 import { decode, encode } from "@msgpack/msgpack";
 import { WeGroupStore } from "./we-group-store";
 import { DnaHashMap, EntryHashMap, HoloHashMap } from "./holo-hash-map-temp";
-import { AppletRenderers, WeApplet, InstalledAppletInfo } from "@lightningrodlabs/we-applet";
+import { AppletRenderers, WeApplet, InstalledAppletInfo, WeServices } from "@lightningrodlabs/we-applet";
 import { WeInfo } from "./interior/types";
 import { Applet, AppletGui, AppletInfo, DashboardMode, GuiFile, IconFileOption, IconSrcOption, PlayingApplet, RegisterAppletInput } from "./types";
 import { importModuleFromFile } from "./processes/import-module-from-file";
@@ -186,6 +186,15 @@ export class MatrixStore {
     return derived(this._matrix, (matrix) => matrix);
   }
 
+  public profilesStore(weGroupId: DnaHash): Readable<ProfilesStore> {
+    return derived(this._matrix, (matrix) => matrix.get(weGroupId)[0].profilesStore);
+  }
+
+  public peerStatusStore(weGroupId: DnaHash): Readable<PeerStatusStore> {
+    return derived(this._matrix, (matrix) => matrix.get(weGroupId)[0].peerStatusStore);
+  }
+
+
 
   public async getWeGroupInfo(weGroupId: DnaHash): Promise<WeInfo> {
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
@@ -256,7 +265,7 @@ export class MatrixStore {
    * @param devhubHappReleaseHash
    * @returns
    */
-  async fetchAppletInstanceRenderers(weGroupId: DnaHash, appletInstanceId: EntryHash) {
+  async fetchAppletInstanceRenderers(appletInstanceId: EntryHash, weServices: WeServices) {
     // 1. check whether the renderers for this applet instance are already stored, if yes return them
     const maybeRenderers = this._appletInstanceRenderers.get(appletInstanceId);
     if (maybeRenderers) return maybeRenderers;
@@ -271,14 +280,14 @@ export class MatrixStore {
     }
 
     // 3. create the renderers and return them
+    const weGroupId = this.getWeGroupInfoForAppletInstance(appletInstanceId).dna_hash;
     const [weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
-    const profilesStore = weGroupData.profilesStore;
     const installedAppInfo = appInstanceInfos.find((info) => info.appletId === appletInstanceId)!.installedAppInfo;
 
     const renderers = await gui.appletRenderers(
       this.holochainClient.appWebsocket,
       this.adminWebsocket,
-      { profilesStore },
+      weServices,
       installedAppInfo,
     );
 
@@ -370,12 +379,6 @@ export class MatrixStore {
           .forEach((appletInfo) => result.push([groupData.info, appletInfo]));
       });
     });
-  }
-
-
-  public groupStore(groupDnaHash: DnaHash): Readable<WeGroupStore> {
-    // todo
-    return derived(this._matrix, (matrix) => matrix.get(groupDnaHash)[0].store);
   }
 
 
@@ -982,6 +985,16 @@ export class MatrixStore {
 
   // +++++++++++++++      H E L P E R    M E T H O D S    B E L O W      +++++++++++++++++++++++++++++++
 
+
+
+
+  getWeGroupInfoForAppletInstance(appletInstanceId: EntryHash): WeGroupInfo {
+    return get(this._matrix).values()
+      .filter(([_groupData, appletInfos]) => {
+        return appletInfos.filter((appletInfo) => appletInfo.appletId === appletInstanceId)
+          .length > 0;
+      })[0][0].info
+  }
 
 
   /**

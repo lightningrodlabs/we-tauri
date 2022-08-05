@@ -37,6 +37,7 @@ import { DashboardMode, NavigationMode, RenderingMode } from "./types";
 import { SidebarButton } from "./elements/sidebar-button";
 import { CreateWeGroupDialog } from "./elements/create-we-group-dialog";
 import { DnaHashMap } from "./holo-hash-map-temp";
+import { WeGroupContext } from "./elements/we-group-context";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
@@ -165,10 +166,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `;
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
       return html`
-        <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
+        <we-group-context .weGroupId=${this._selectedWeGroupId}>
+          <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
+        </we-group-context>
       `
     } else if (this._dashboardMode === DashboardMode.AppletGroupInstanceRendering) {
-      this.renderAppletInstanceContent();
+      return html`
+        <we-group-context .weGroupId=${this._selectedWeGroupId}>
+          ${this.renderAppletInstanceContent()}
+        </we-group-context>
+      `
     } else if (this._dashboardMode === DashboardMode.AppletClassRendering) {
       return html `
         <applet-class-renderer .appletClassId=${this._selectedAppletClassId}></applet-class-renderer>
@@ -579,6 +586,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "create-we-group-dialog": CreateWeGroupDialog,
       "home-screen": HomeScreen,
       "sl-tooltip": SlTooltip,
+      "we-group-context": WeGroupContext,
     };
   }
 
