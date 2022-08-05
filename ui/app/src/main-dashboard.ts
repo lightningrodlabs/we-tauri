@@ -38,11 +38,18 @@ import { SidebarButton } from "./elements/sidebar-button";
 import { CreateWeGroupDialog } from "./elements/create-we-group-dialog";
 import { DnaHashMap } from "./holo-hash-map-temp";
 import { WeGroupContext } from "./elements/we-group-context";
+import { AppletClassHome } from "./elements/applet-class-home";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
   @state()
   _matrixStore!: MatrixStore;
+
+  _matrix = new TaskSubscriber(
+    this,
+    () => this._matrixStore.fetchMatrix(),
+    () => [this._matrixStore]
+  );
 
   _allWeGroupInfos = new StoreSubscriber(
     this,
@@ -51,16 +58,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   _allAppletClasses = new StoreSubscriber(
     this,
-    () => this._matrixStore.appletClasses(),
+    () => this._matrixStore.installedAppletClasses(),
   );
 
   _newAppletInstances = new TaskSubscriber(
     this,
-    () => this.weGroupStore(this._selectedWeGroupId).fetchNewApplets(),
+    () => this._matrixStore.fetchNewAppletInstances(),
     () => [this._selectedWeGroupId]
   );
-
-  _matrix = new StoreSubscriber(this, () => this._matrixStore.matrix());
 
 
    /**
@@ -76,7 +81,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   private _navigationMode: NavigationMode = NavigationMode.Agnostic;
 
   /**
-   * Distinguishes between rendering modes
+   * Distinguishes between rendering modes, not explicitly required at the moment
    */
   @state()
   private _renderingMode: RenderingMode = RenderingMode.Agnostic;
@@ -99,13 +104,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
 
-
-
-  private weGroupStore(weGroupId) {
-    return get(this._matrixStore.matrix()).get(this._selectedWeGroupId!)[0].store
-  }
-
-
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
@@ -123,6 +121,22 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     // show all applet instances of the selected group in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
       return html`
+
+        <sl-tooltip
+          hoist
+          placement="right"
+          .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!).name} Home"
+        >
+          <mwc-fab
+            icon="home"
+            class="home-button"
+            @click=${() => {
+              this._selectedAppletInstanceId = undefined;
+              this._dashboardMode = DashboardMode.WeGroupHome;
+            }}
+          ></mwc-fab>
+        </sl-tooltip>
+
         ${this.renderAppletInstanceList(
           get(
             this._matrixStore.getAppletInstanceInfosForGroup(
@@ -159,7 +173,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  renderDashBoardContent() {
+  renderDashboardContent() {
     if (this._dashboardMode === DashboardMode.MainHome) {
       return html`
         <home-screen></home-screen>
@@ -170,7 +184,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <we-group-home
             .weGroupId=${this._selectedWeGroupId}
             @applet-installed=${(e: CustomEvent) => {
-                  this._selectedAppletInstanceId = e.detail.appletEntryHash;
+              this._selectedAppletInstanceId = e.detail.appletEntryHash;
             }}
             ></we-group-home>
         </we-group-context>
@@ -187,7 +201,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `
     } else if (this._dashboardMode === DashboardMode.AppletClassHome) {
       return html`
-        You found the sweet spot.
+        <applet-class-home .appletClassId=${this._selectedAppletClassId}></applet-class-home>
       `
     }
   }
@@ -201,88 +215,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <applet-not-installed .appletInstanceId=${this._selectedAppletInstanceId}></applet-not-installed>
         `
       : html`
-         <applet-instance-renderer .appletInstanceId=${this._selectedAppletInstanceId}></applet-instance-renderer>
+          <applet-instance-renderer .appletInstanceId=${this._selectedAppletInstanceId}></applet-instance-renderer>
         `
   }
 
-  renderAppletClassContent() {
-    // todo
-    // check if there is an applet of this class
-  }
-
-
-
-
-  renderWeGroupDashboard() {
-    if (!this._selectedAppletInstanceId) {
-      return html`
-        <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
-      `;
-    } else if (this.weGroupStore(this._selectedWeGroupId).isInstalled(this._selectedAppletInstanceId)) {
-      return html` <applet-instance-renderer
-        style="flex: 1"
-        .appletInstanceId=${this._selectedAppletInstanceId}
-      ></applet-instance-renderer>`;
-    } else {
-      const applet = this.weGroupStore(this._selectedWeGroupId).getAppletInfo(this._selectedAppletInstanceId)!;
-      return html`
-        <div class="flex-scrollable-parent">
-          <div class="flex-scrollable-container">
-            <div class="flex-scrollable-y">
-              <div
-                class="column center-content"
-                style="flex: 1; margin-top: 50px;"
-              >
-                ${!applet.logoSrc
-                  ? html`<div
-                      class="logo-placeholder-large"
-                      style="width: 100px; height: 100px;"
-                    >
-                      ${applet.name[0]}
-                    </div>`
-                  : html`<img class="logo-large" src=${applet.logoSrc!} />`}
-                <div class="row center-content" style="margin-top: 20px;">
-                  <div
-                    style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
-                  >
-                    ${applet.name}
-                  </div>
-                  <mwc-icon-button-toggle
-                    onIcon="expand_less"
-                    offIcon="expand_more"
-                    @click=${this.toggleAppletDescription}
-                  ></mwc-icon-button-toggle>
-                </div>
-                ${this._showAppletDescription
-                  ? html`<div
-                      style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
-                    >
-                      ${applet.description}
-                    </div>`
-                  : html``}
-                <div
-                  style="margin-top: 70px; font-size: 1.2em; text-align: center;"
-                >
-                  This applet has been added by someone else from your group.
-                </div>
-                <div
-                  style="margin-top: 10px; font-size: 1.2em; text-align: center;"
-                >
-                  You haven't installed it yet.
-                </div>
-                <mwc-button
-                  style="margin-top: 50px;"
-                  raised
-                  @click=${() => this.weGroupStore(this._selectedWeGroupId).joinApplet(this._selectedAppletInstanceId!)}
-                  >INSTALL</mwc-button
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-  }
 
   renderAppletClassDashboard() {
     if (this._specialAppletMode) {
@@ -445,6 +381,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .tooltipText=${appletInstanceInfo.applet.name}
             @click=${() => {
               this._selectedAppletInstanceId = appletInstanceInfo.appletId;
+              this._selectedAppletClassId = appletInstanceInfo.applet.devhubHappReleaseHash;
               this._specialAppletMode = false;
               this.requestUpdate();
             }}
@@ -518,22 +455,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  renderDashboardContent() {
-    if (this._dashboardMode === "mainHome") {
-      return html`
-        <home-screen
-          @we-added=${(e: CustomEvent) => {
-            this._selectedWeGroupId = e.detail;
-          }}>
-        </home-screen> `;
-    } else if (this._dashboardMode === "weGroup") {
-      this.renderWeGroupDashboard();
-    } else if (this._dashboardMode === "appletClass") {
-      this.renderAppletClassDashboard();
-    } else {
-      return html`You found the sweet spot.`;
-    }
-  }
+
 
   render() {
     return html`
@@ -549,23 +471,22 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this._selectedWeGroupId = undefined;
                 this._selectedAppletClassId = undefined;
                 this._selectedAppletInstanceId = undefined;
-                this._specialAppletMode = false;
-                this._dashboardMode = "mainHome";
+                this._dashboardMode = DashboardMode.MainHome;
               }}
             class=${classMap({
-              highlighted: this._dashboardMode === "mainHome",
-              weLogoHover: this._dashboardMode !== "mainHome",
+              highlighted: this._dashboardMode === DashboardMode.MainHome,
+              weLogoHover: this._dashboardMode !== DashboardMode.MainHome,
             })}
           ></sidebar-button>
 
           ${this.renderPrimaryNavigation()}
 
-            <span style="flex: 1"></span>
+          <span style="flex: 1"></span>
 
-            <holo-identicon
-              .hash=${this._matrixStore.myAgentPubKey}
-              style="margin-top: 30px;"
-            ></holo-identicon>
+          <holo-identicon
+            .hash=${this._matrixStore.myAgentPubKey}
+            style="margin-top: 30px;"
+          ></holo-identicon>
 
         <div class="column">
           <div class="row top-sidebar">
@@ -592,6 +513,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "home-screen": HomeScreen,
       "sl-tooltip": SlTooltip,
       "we-group-context": WeGroupContext,
+      "applet-class-home": AppletClassHome,
     };
   }
 
@@ -611,7 +533,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         .top-sidebar {
           background-color: #303f9f;
-          overflow-y: auto;
+          overflow-x: auto;
           z-index: 1;
         }
 

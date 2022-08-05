@@ -1,507 +1,507 @@
-import { contextProvided } from "@lit-labs/context";
-import { ListProfiles, ProfilePrompt } from "@holochain-open-dev/profiles";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { ListAgentsByStatus } from "@holochain-open-dev/peer-status";
-import {
-  CircularProgress,
-  Button,
-  Fab,
-  Snackbar,
-  IconButtonToggle,
-  LinearProgress,
-  Card,
-} from "@scoped-elements/material-web";
-import { css, html, LitElement } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
-import { property, query, state } from "lit/decorators.js";
+// import { contextProvided } from "@lit-labs/context";
+// import { ListProfiles, ProfilePrompt } from "@holochain-open-dev/profiles";
+// import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+// import { ListAgentsByStatus } from "@holochain-open-dev/peer-status";
+// import {
+//   CircularProgress,
+//   Button,
+//   Fab,
+//   Snackbar,
+//   IconButtonToggle,
+//   LinearProgress,
+//   Card,
+// } from "@scoped-elements/material-web";
+// import { css, html, LitElement } from "lit";
+// import { TaskSubscriber } from "lit-svelte-stores";
+// import { property, query, state } from "lit/decorators.js";
 
-import { weGroupContext } from "./context";
-import { WeGroupStore } from "./we-group-store";
-import { CreateAppletDialog } from "./create-applet-dialog";
-import { InstallableApplets } from "./installable-applets";
-import { WeAppletRenderer } from "./we-applet-renderer";
-import { EntryHashB64, serializeHash } from "@holochain-open-dev/core-types";
-import { SlTooltip } from "@scoped-elements/shoelace";
-import { classMap } from "lit/directives/class-map.js";
-import { sharedStyles } from "./sharedStyles";
-import { InvitationsBlock } from "./elements/invitations-block";
-import { Applet, PlayingApplet } from "../types";
-import { MatrixStore } from "./matrix-store";
-import { matrixContext } from "./context";
-import { EntryHash } from "@holochain/client";
+// import { weGroupContext } from "./context";
+// import { WeGroupStore } from "./we-group-store";
+// import { CreateAppletDialog } from "./create-applet-dialog";
+// import { InstallableApplets } from "./installable-applets";
+// import { WeAppletRenderer } from "./we-applet-renderer";
+// import { EntryHashB64, serializeHash } from "@holochain-open-dev/core-types";
+// import { SlTooltip } from "@scoped-elements/shoelace";
+// import { classMap } from "lit/directives/class-map.js";
+// import { sharedStyles } from "./sharedStyles";
+// import { InvitationsBlock } from "./elements/invitations-block";
+// import { Applet, PlayingApplet } from "../types";
+// import { MatrixStore } from "./matrix-store";
+// import { matrixContext } from "./context";
+// import { EntryHash } from "@holochain/client";
 
-export class WeGroupDashboard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: weGroupContext, subscribe: true })
-  @state()
-  _weGroupStore!: WeGroupStore;
+// export class WeGroupDashboard extends ScopedElementsMixin(LitElement) {
+//   @contextProvided({ context: weGroupContext, subscribe: true })
+//   @state()
+//   _weGroupStore!: WeGroupStore;
 
-  _info = new TaskSubscriber(
-    this,
-    ([store]) => store.fetchInfo(),
-    () => [this._weGroupStore]
-  );
+//   _info = new TaskSubscriber(
+//     this,
+//     ([store]) => store.fetchInfo(),
+//     () => [this._weGroupStore]
+//   );
 
-  _allApplets = new TaskSubscriber(
-    this,
-    () => this._weGroupStore.fetchAllApplets(),
-    () => [this._weGroupStore]
-  );
+//   _allApplets = new TaskSubscriber(
+//     this,
+//     () => this._weGroupStore.fetchAllApplets(),
+//     () => [this._weGroupStore]
+//   );
 
-  _appletsIAmPlaying = new TaskSubscriber(
-    this,
-    () => this._weGroupStore.fetchAppletsIAmPlaying(),
-    () => [this._weGroupStore]
-  );
+//   _appletsIAmPlaying = new TaskSubscriber(
+//     this,
+//     () => this._weGroupStore.fetchAppletsIAmPlaying(),
+//     () => [this._weGroupStore]
+//   );
 
-  _allMembers = new TaskSubscriber(
-    this,
-    () => this._weGroupStore.profilesStore.fetchAllProfiles(),
-    () => [this._weGroupStore]
-  );
-
-
-  @contextProvided({ context: matrixContext, subscribe: true })
-  @state()
-  _matrixStore!: MatrixStore;
+//   _allMembers = new TaskSubscriber(
+//     this,
+//     () => this._weGroupStore.profilesStore.fetchAllProfiles(),
+//     () => [this._weGroupStore]
+//   );
 
 
-  @state()
-  private _showAppletDescription: boolean = false;
+//   @contextProvided({ context: matrixContext, subscribe: true })
+//   @state()
+//   _matrixStore!: MatrixStore;
 
-  renderJoinErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        id="join-error-snackbar"
-        labelText="Joining failed! (See console for details)"
-      >
-      </mwc-snackbar>
-    `;
-  }
 
-  renderInstallingProgress() {
-    return html`
-      <mwc-snackbar
-        id="installing-progress"
-        timeoutMs="-1"
-        labelText="Installing..."
-      >
-      </mwc-snackbar>
-    `;
-  }
+//   @state()
+//   private _showAppletDescription: boolean = false;
 
-  renderSuccessSnackbar() {
-    return html`
-      <mwc-snackbar
-        id="installation-success"
-        labelText="Installation successful"
-      ></mwc-snackbar>
-    `;
-  }
+//   renderJoinErrorSnackbar() {
+//     return html`
+//       <mwc-snackbar
+//         id="join-error-snackbar"
+//         labelText="Joining failed! (See console for details)"
+//       >
+//       </mwc-snackbar>
+//     `;
+//   }
 
-  toggleAppletDescription() {
-    this._showAppletDescription = !this._showAppletDescription;
-  }
+//   renderInstallingProgress() {
+//     return html`
+//       <mwc-snackbar
+//         id="installing-progress"
+//         timeoutMs="-1"
+//         labelText="Installing..."
+//       >
+//       </mwc-snackbar>
+//     `;
+//   }
 
-  async joinApplet(appletHash: EntryHash) {
-    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
-    await this._weGroupStore
-      .joinApplet(appletHash)
-      .then(() => {
-        (
-          this.shadowRoot?.getElementById("installing-progress") as Snackbar
-        ).close();
-        (
-          this.shadowRoot?.getElementById("installation-success") as Snackbar
-        ).show();
-        this.requestUpdate(); // to show the newly installed applet in case user is still on same page
-      })
-      .catch((e) => {
-        (
-          this.shadowRoot?.getElementById("installing-progress") as Snackbar
-        ).close();
-        (
-          this.shadowRoot?.getElementById("join-error-snackbar") as Snackbar
-        ).show();
-        console.log("Joining error:", e);
-      });
-  }
+//   renderSuccessSnackbar() {
+//     return html`
+//       <mwc-snackbar
+//         id="installation-success"
+//         labelText="Installation successful"
+//       ></mwc-snackbar>
+//     `;
+//   }
 
-  renderAppletsList(allApplets: Record<EntryHashB64, Applet>) {
-    if (allApplets) {
-      return html`
-        <div class="column we-sidebar">
-          <sl-tooltip
-            hoist
-            placement="right"
-            .content="${this._info.value?.name} Home"
-          >
-            <mwc-fab
-              icon="home"
-              class="home-button"
-              @click=${() => {
-                this._matrixStore.selectedAppletInstanceId = undefined;
-              }}
-            ></mwc-fab>
-          </sl-tooltip>
+//   toggleAppletDescription() {
+//     this._showAppletDescription = !this._showAppletDescription;
+//   }
 
-          ${Object.entries(allApplets)
-            .sort(([a_hash, a_applet], [b_hash, b_applet]) =>
-              a_applet.name.localeCompare(b_applet.name)
-            )
-            .map(([appletHash, applet]) => {
-              if (!applet.logoSrc) {
-                return html`
-                  <sl-tooltip
-                    id="tooltip"
-                    placement="right"
-                    .content=${applet.name}
-                  >
-                    <div
-                      class="applet-logo-placeholder
-                        ${classMap({
-                        highlighted: appletHash === this._selectedAppletId,
-                        appletLogoHover: appletHash != this._selectedAppletId,
-                      })}"
-                      @click=${() => {
-                        this._selectedAppletId = appletHash;
-                      }}
-                    >
-                      ${applet.name[0]}
-                    </div>
-                  </sl-tooltip>
-                `;
-              } else {
-                return html`
-                  <sl-tooltip
-                    id="tooltip"
-                    placement="right"
-                    .content=${applet.name}
-                  >
-                    <img
-                      class="applet-logo ${classMap({
-                        highlighted: appletHash === this._selectedAppletId,
-                        appletLogoHover: appletHash != this._selectedAppletId,
-                      })}"
-                      src=${applet.logoSrc}
-                      @click=${() => {
-                        this._selectedAppletId = appletHash;
-                      }}
-                    />
-                  </sl-tooltip>
-                `;
-              }
-            })}
-        </div>
-      `;
-    } else {
-      return html`
-        <mwc-circular-progress indeterminate></mwc-circular-progress>
-      `;
-    }
-  }
+//   async joinApplet(appletHash: EntryHash) {
+//     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+//     await this._weGroupStore
+//       .joinApplet(appletHash)
+//       .then(() => {
+//         (
+//           this.shadowRoot?.getElementById("installing-progress") as Snackbar
+//         ).close();
+//         (
+//           this.shadowRoot?.getElementById("installation-success") as Snackbar
+//         ).show();
+//         this.requestUpdate(); // to show the newly installed applet in case user is still on same page
+//       })
+//       .catch((e) => {
+//         (
+//           this.shadowRoot?.getElementById("installing-progress") as Snackbar
+//         ).close();
+//         (
+//           this.shadowRoot?.getElementById("join-error-snackbar") as Snackbar
+//         ).show();
+//         console.log("Joining error:", e);
+//       });
+//   }
 
-  renderContent() {
-    if (!this._selectedAppletId) {
-      return html`
-        <div class="flex-scrollable-parent">
-          <div class="flex-scrollable-container">
-            <div class="flex-scrollable-y">
-              <div class="column" style="flex: 1; margin: 24px;">
-                <div class="row center-content" style="margin-top: 56px">
-                  <div class="column center-content">
-                    ${this._info.value
-                      ? html`<img
-                          class="logo-large"
-                          style=" width: 150px; height: 150px;"
-                          src=${this._info.value.logo_src}
-                        />`
-                      : html``}
-                    <div
-                      style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
-                    >
-                      ${this._info.value?.name}
-                    </div>
-                  </div>
+//   renderAppletsList(allApplets: Record<EntryHashB64, Applet>) {
+//     if (allApplets) {
+//       return html`
+//         <div class="column we-sidebar">
+//           <sl-tooltip
+//             hoist
+//             placement="right"
+//             .content="${this._info.value?.name} Home"
+//           >
+//             <mwc-fab
+//               icon="home"
+//               class="home-button"
+//               @click=${() => {
+//                 this._matrixStore.selectedAppletInstanceId = undefined;
+//               }}
+//             ></mwc-fab>
+//           </sl-tooltip>
 
-                  <invitations-block
-                    style="margin-left: 50px;"
-                  ></invitations-block>
-                </div>
+//           ${Object.entries(allApplets)
+//             .sort(([a_hash, a_applet], [b_hash, b_applet]) =>
+//               a_applet.name.localeCompare(b_applet.name)
+//             )
+//             .map(([appletHash, applet]) => {
+//               if (!applet.logoSrc) {
+//                 return html`
+//                   <sl-tooltip
+//                     id="tooltip"
+//                     placement="right"
+//                     .content=${applet.name}
+//                   >
+//                     <div
+//                       class="applet-logo-placeholder
+//                         ${classMap({
+//                         highlighted: appletHash === this._selectedAppletId,
+//                         appletLogoHover: appletHash != this._selectedAppletId,
+//                       })}"
+//                       @click=${() => {
+//                         this._selectedAppletId = appletHash;
+//                       }}
+//                     >
+//                       ${applet.name[0]}
+//                     </div>
+//                   </sl-tooltip>
+//                 `;
+//               } else {
+//                 return html`
+//                   <sl-tooltip
+//                     id="tooltip"
+//                     placement="right"
+//                     .content=${applet.name}
+//                   >
+//                     <img
+//                       class="applet-logo ${classMap({
+//                         highlighted: appletHash === this._selectedAppletId,
+//                         appletLogoHover: appletHash != this._selectedAppletId,
+//                       })}"
+//                       src=${applet.logoSrc}
+//                       @click=${() => {
+//                         this._selectedAppletId = appletHash;
+//                       }}
+//                     />
+//                   </sl-tooltip>
+//                 `;
+//               }
+//             })}
+//         </div>
+//       `;
+//     } else {
+//       return html`
+//         <mwc-circular-progress indeterminate></mwc-circular-progress>
+//       `;
+//     }
+//   }
 
-                <div class="row title" style="margin-top: 80px;">
-                  <span style="align-self: start">Applets Library</span>
-                </div>
+//   renderContent() {
+//     if (!this._selectedAppletId) {
+//       return html`
+//         <div class="flex-scrollable-parent">
+//           <div class="flex-scrollable-container">
+//             <div class="flex-scrollable-y">
+//               <div class="column" style="flex: 1; margin: 24px;">
+//                 <div class="row center-content" style="margin-top: 56px">
+//                   <div class="column center-content">
+//                     ${this._info.value
+//                       ? html`<img
+//                           class="logo-large"
+//                           style=" width: 150px; height: 150px;"
+//                           src=${this._info.value.logo_src}
+//                         />`
+//                       : html``}
+//                     <div
+//                       style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
+//                     >
+//                       ${this._info.value?.name}
+//                     </div>
+//                   </div>
 
-                <hr style="width: 100%" />
+//                   <invitations-block
+//                     style="margin-left: 50px;"
+//                   ></invitations-block>
+//                 </div>
 
-                <installable-applets
-                  @applet-installed=${(e: CustomEvent) => {
-                    this._selectedAppletId = e.detail.appletEntryHash;
-                  }}
-                ></installable-applets>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    } else if (this._store.isInstalled(this._selectedAppletId)) {
-      return html` <we-applet-renderer
-        style="flex: 1"
-        .appletHash=${this._selectedAppletId}
-      ></we-applet-renderer>`;
-    } else {
-      const applet = this._store.getAppletInfo(this._selectedAppletId)!;
-      return html`
-        <div class="flex-scrollable-parent">
-          <div class="flex-scrollable-container">
-            <div class="flex-scrollable-y">
-              <div
-                class="column center-content"
-                style="flex: 1; margin-top: 50px;"
-              >
-                ${!applet.logoSrc
-                  ? html`<div
-                      class="logo-placeholder-large"
-                      style="width: 100px; height: 100px;"
-                    >
-                      ${applet.name[0]}
-                    </div>`
-                  : html`<img class="logo-large" src=${applet.logoSrc!} />`}
-                <div class="row center-content" style="margin-top: 20px;">
-                  <div
-                    style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
-                  >
-                    ${applet.name}
-                  </div>
-                  <mwc-icon-button-toggle
-                    onIcon="expand_less"
-                    offIcon="expand_more"
-                    @click=${this.toggleAppletDescription}
-                  ></mwc-icon-button-toggle>
-                </div>
-                ${this._showAppletDescription
-                  ? html`<div
-                      style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
-                    >
-                      ${applet.description}
-                    </div>`
-                  : html``}
-                <div
-                  style="margin-top: 70px; font-size: 1.2em; text-align: center;"
-                >
-                  This applet has been added by someone else from your group.
-                </div>
-                <div
-                  style="margin-top: 10px; font-size: 1.2em; text-align: center;"
-                >
-                  You haven't installed it yet.
-                </div>
-                <mwc-button
-                  style="margin-top: 50px;"
-                  raised
-                  @click=${() => this.joinApplet(this._selectedAppletId!)}
-                  >INSTALL</mwc-button
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-  }
+//                 <div class="row title" style="margin-top: 80px;">
+//                   <span style="align-self: start">Applets Library</span>
+//                 </div>
 
-  render() {
-    return html`
-      <profile-prompt style="flex: 1; display: flex;">
-        <div slot="hero">
-          <div>
-            <div class="column center-content">
-              <img
-                class="we-logo"
-                style="margin-top: 30px;"
-                src=${this._info.value?.logo_src!}
-              />
-              <div
-                style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
-              >
-                ${this._info.value?.name}
-              </div>
-              <div
-                style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
-              >
-                How would you like to appear in this group?
-              </div>
-            </div>
-          </div>
-        </div>
+//                 <hr style="width: 100%" />
 
-        ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-        ${this.renderSuccessSnackbar()}
+//                 <installable-applets
+//                   @applet-installed=${(e: CustomEvent) => {
+//                     this._selectedAppletId = e.detail.appletEntryHash;
+//                   }}
+//                 ></installable-applets>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       `;
+//     } else if (this._store.isInstalled(this._selectedAppletId)) {
+//       return html` <we-applet-renderer
+//         style="flex: 1"
+//         .appletHash=${this._selectedAppletId}
+//       ></we-applet-renderer>`;
+//     } else {
+//       const applet = this._store.getAppletInfo(this._selectedAppletId)!;
+//       return html`
+//         <div class="flex-scrollable-parent">
+//           <div class="flex-scrollable-container">
+//             <div class="flex-scrollable-y">
+//               <div
+//                 class="column center-content"
+//                 style="flex: 1; margin-top: 50px;"
+//               >
+//                 ${!applet.logoSrc
+//                   ? html`<div
+//                       class="logo-placeholder-large"
+//                       style="width: 100px; height: 100px;"
+//                     >
+//                       ${applet.name[0]}
+//                     </div>`
+//                   : html`<img class="logo-large" src=${applet.logoSrc!} />`}
+//                 <div class="row center-content" style="margin-top: 20px;">
+//                   <div
+//                     style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
+//                   >
+//                     ${applet.name}
+//                   </div>
+//                   <mwc-icon-button-toggle
+//                     onIcon="expand_less"
+//                     offIcon="expand_more"
+//                     @click=${this.toggleAppletDescription}
+//                   ></mwc-icon-button-toggle>
+//                 </div>
+//                 ${this._showAppletDescription
+//                   ? html`<div
+//                       style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
+//                     >
+//                       ${applet.description}
+//                     </div>`
+//                   : html``}
+//                 <div
+//                   style="margin-top: 70px; font-size: 1.2em; text-align: center;"
+//                 >
+//                   This applet has been added by someone else from your group.
+//                 </div>
+//                 <div
+//                   style="margin-top: 10px; font-size: 1.2em; text-align: center;"
+//                 >
+//                   You haven't installed it yet.
+//                 </div>
+//                 <mwc-button
+//                   style="margin-top: 50px;"
+//                   raised
+//                   @click=${() => this.joinApplet(this._selectedAppletId!)}
+//                   >INSTALL</mwc-button
+//                 >
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       `;
+//     }
+//   }
 
-        <div class="row" style="flex: 1">
-          ${this._allApplets.render({
-            complete: (applets) => this.renderAppletsList(applets),
-            pending: () => html`
-              <mwc-circular-progress indeterminate></mwc-circular-progress>
-            `,
-          })}
-          ${this.renderContent()}
-          ${this._selectedAppletId
-            ? html``
-            : html` <div class="members-sidebar">
-                ${this._allMembers.render({
-                  complete: (profiles) =>
-                    html`<list-agents-by-status
-                      .agents=${Object.keys(profiles).filter(
-                        (agentPubKey) =>
-                          agentPubKey !==
-                          serializeHash(this._store.myAgentPubKey)
-                      )}
-                    ></list-agents-by-status>`,
-                  pending: () => html`
-                    <mwc-circular-progress
-                      indeterminate
-                    ></mwc-circular-progress>
-                  `,
-                })}
-              </div>`}
-        </div>
+//   render() {
+//     return html`
+//       <profile-prompt style="flex: 1; display: flex;">
+//         <div slot="hero">
+//           <div>
+//             <div class="column center-content">
+//               <img
+//                 class="we-logo"
+//                 style="margin-top: 30px;"
+//                 src=${this._info.value?.logo_src!}
+//               />
+//               <div
+//                 style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
+//               >
+//                 ${this._info.value?.name}
+//               </div>
+//               <div
+//                 style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
+//               >
+//                 How would you like to appear in this group?
+//               </div>
+//             </div>
+//           </div>
+//         </div>
 
-      </profile-prompt>
-    `;
-  }
+//         ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+//         ${this.renderSuccessSnackbar()}
 
-  static get scopedElements() {
-    return {
-      "create-applet-dialog": CreateAppletDialog,
-      "profile-prompt": ProfilePrompt,
-      "installable-applets": InstallableApplets,
-      "mwc-button": Button,
-      "mwc-fab": Fab,
-      "mwc-card": Card,
-      "mwc-circular-progress": CircularProgress,
-      "we-applet-renderer": WeAppletRenderer,
-      "sl-tooltip": SlTooltip,
-      "invitations-block": InvitationsBlock,
-      "mwc-icon-button-toggle": IconButtonToggle,
-      "mwc-linear-progress": LinearProgress,
-      "list-agents-by-status": ListAgentsByStatus,
-      "mwc-snackbar": Snackbar,
-    };
-  }
+//         <div class="row" style="flex: 1">
+//           ${this._allApplets.render({
+//             complete: (applets) => this.renderAppletsList(applets),
+//             pending: () => html`
+//               <mwc-circular-progress indeterminate></mwc-circular-progress>
+//             `,
+//           })}
+//           ${this.renderContent()}
+//           ${this._selectedAppletId
+//             ? html``
+//             : html` <div class="members-sidebar">
+//                 ${this._allMembers.render({
+//                   complete: (profiles) =>
+//                     html`<list-agents-by-status
+//                       .agents=${Object.keys(profiles).filter(
+//                         (agentPubKey) =>
+//                           agentPubKey !==
+//                           serializeHash(this._store.myAgentPubKey)
+//                       )}
+//                     ></list-agents-by-status>`,
+//                   pending: () => html`
+//                     <mwc-circular-progress
+//                       indeterminate
+//                     ></mwc-circular-progress>
+//                   `,
+//                 })}
+//               </div>`}
+//         </div>
 
-  static get styles() {
-    const localStyles = css`
-      :host {
-        display: flex;
-      }
+//       </profile-prompt>
+//     `;
+//   }
 
-      .we-sidebar {
-        padding: 8px;
-        align-items: center;
-        background: #9ca5e3;
-      }
+//   static get scopedElements() {
+//     return {
+//       "create-applet-dialog": CreateAppletDialog,
+//       "profile-prompt": ProfilePrompt,
+//       "installable-applets": InstallableApplets,
+//       "mwc-button": Button,
+//       "mwc-fab": Fab,
+//       "mwc-card": Card,
+//       "mwc-circular-progress": CircularProgress,
+//       "we-applet-renderer": WeAppletRenderer,
+//       "sl-tooltip": SlTooltip,
+//       "invitations-block": InvitationsBlock,
+//       "mwc-icon-button-toggle": IconButtonToggle,
+//       "mwc-linear-progress": LinearProgress,
+//       "list-agents-by-status": ListAgentsByStatus,
+//       "mwc-snackbar": Snackbar,
+//     };
+//   }
 
-      .we-name {
-        text-align: center;
-        border-bottom: solid 1px gray;
-        margin-bottom: 5px;
-        width: 100%;
-      }
+//   static get styles() {
+//     const localStyles = css`
+//       :host {
+//         display: flex;
+//       }
 
-      .we-logo {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-      }
+//       .we-sidebar {
+//         padding: 8px;
+//         align-items: center;
+//         background: #9ca5e3;
+//       }
 
-      .members-sidebar {
-        width: 224px;
-        background-color: #ecebff;
-        padding: 24px;
-      }
+//       .we-name {
+//         text-align: center;
+//         border-bottom: solid 1px gray;
+//         margin-bottom: 5px;
+//         width: 100%;
+//       }
 
-      .members-title {
-        font-size: 1em;
-        font-weight: 600;
-        text-align: right;
-        margin: 25px 25px 20px 25px;
-        color: #1b245d;
-      }
+//       .we-logo {
+//         width: 150px;
+//         height: 150px;
+//         border-radius: 50%;
+//         object-fit: cover;
+//       }
 
-      .home-button {
-        --mdc-theme-secondary: #303F9F;
-        --mdc-fab-focus-outline-color: white;
-        --mdc-fab-focus-outline-width: 4px;
-        margin-bottom: 4px;
-      }
+//       .members-sidebar {
+//         width: 224px;
+//         background-color: #ecebff;
+//         padding: 24px;
+//       }
 
-      .applet-logo {
-        cursor: pointer;
-        margin-top: 4px;
-        margin-bottom: 4px;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        background: white;
-      }
+//       .members-title {
+//         font-size: 1em;
+//         font-weight: 600;
+//         text-align: right;
+//         margin: 25px 25px 20px 25px;
+//         color: #1b245d;
+//       }
 
-      .applet-logo-placeholder {
-        text-align: center;
-        justify-content: center;
-        font-size: 35px;
-        cursor: pointer;
-        margin-top: 4px;
-        margin-bottom: 4px;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        background: white;
-      }
+//       .home-button {
+//         --mdc-theme-secondary: #303F9F;
+//         --mdc-fab-focus-outline-color: white;
+//         --mdc-fab-focus-outline-width: 4px;
+//         margin-bottom: 4px;
+//       }
 
-      .appletLogoHover:hover {
-        /* box-shadow: 0 0 5px #000000; */
-        outline: #303f9f 4px solid;
-      }
+//       .applet-logo {
+//         cursor: pointer;
+//         margin-top: 4px;
+//         margin-bottom: 4px;
+//         border-radius: 50%;
+//         width: 50px;
+//         height: 50px;
+//         object-fit: cover;
+//         background: white;
+//       }
 
-      .logo-large {
-        border-radius: 50%;
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        background: white;
-      }
+//       .applet-logo-placeholder {
+//         text-align: center;
+//         justify-content: center;
+//         font-size: 35px;
+//         cursor: pointer;
+//         margin-top: 4px;
+//         margin-bottom: 4px;
+//         border-radius: 50%;
+//         width: 50px;
+//         height: 50px;
+//         object-fit: cover;
+//         background: white;
+//       }
 
-      .logo-placeholder-large {
-        text-align: center;
-        font-size: 70px;
-        border-radius: 50%;
-        border: 4px solid black;
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        background: white;
-      }
+//       .appletLogoHover:hover {
+//         /* box-shadow: 0 0 5px #000000; */
+//         outline: #303f9f 4px solid;
+//       }
 
-      .applet-card {
-        width: 300px;
-        height: 180px;
-        margin: 10px;
-      }
+//       .logo-large {
+//         border-radius: 50%;
+//         width: 100px;
+//         height: 100px;
+//         object-fit: cover;
+//         background: white;
+//       }
 
-      .highlighted {
-        outline: #303f9f 4px solid;
-      }
+//       .logo-placeholder-large {
+//         text-align: center;
+//         font-size: 70px;
+//         border-radius: 50%;
+//         border: 4px solid black;
+//         width: 100px;
+//         height: 100px;
+//         object-fit: cover;
+//         background: white;
+//       }
 
-      .installable-applets-container {
-        padding: 10px;
-        width: 100%;
-      }
-    `;
+//       .applet-card {
+//         width: 300px;
+//         height: 180px;
+//         margin: 10px;
+//       }
 
-    return [sharedStyles, localStyles];
-  }
-}
+//       .highlighted {
+//         outline: #303f9f 4px solid;
+//       }
+
+//       .installable-applets-container {
+//         padding: 10px;
+//         width: 100%;
+//       }
+//     `;
+
+//     return [sharedStyles, localStyles];
+//   }
+// }

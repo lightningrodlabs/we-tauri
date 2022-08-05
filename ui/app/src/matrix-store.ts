@@ -32,7 +32,6 @@ import {
   MembraneInvitationsStore,
 } from "@holochain-open-dev/membrane-invitations";
 import { decode, encode } from "@msgpack/msgpack";
-import { WeGroupStore } from "./we-group-store";
 import { DnaHashMap, EntryHashMap, HoloHashMap } from "./holo-hash-map-temp";
 import { AppletRenderers, WeApplet, InstalledAppletInfo, WeServices } from "@lightningrodlabs/we-applet";
 import { WeInfo } from "./interior/types";
@@ -195,7 +194,23 @@ export class MatrixStore {
   }
 
 
+  /**
+   * Gets we group info from the matrix store
+   *
+   * @param weGroupId : DnaHash
+   * @returns : WeInfo
+   */
+  public getWeGroupInfo(weGroupId): WeInfo {
+    return get(this._matrix).get(weGroupId)[0].info.info;
+  }
 
+
+  /**
+   * Fetches we group info from the conductor
+   *
+   * @param weGroupId : DnaHash
+   * @returns : Promise<Readable<WeInfo>>
+   */
   public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const zomeName = "we"
@@ -221,6 +236,7 @@ export class MatrixStore {
   }
 
 
+
   /**
    * Gets info about a newly installed applet
    *
@@ -244,7 +260,7 @@ export class MatrixStore {
     })
   }
 
-  public appletClasses(): Readable<EntryHashMap<AppletClassInfo>> {
+  public installedAppletClasses(): Readable<EntryHashMap<AppletClassInfo>> {
     return derived(this._installedAppletClasses, (appletClasses) => appletClasses);
   }
 
@@ -395,7 +411,16 @@ export class MatrixStore {
 
 
 
-  public async fetchAllApplets(weGroupId: DnaHash): Promise<Readable<Applet[]>> {
+  /**
+   * Fetching all applets for the specified we group (query to the DHT)
+   *
+   * @param weGroupId : DnaHash
+   * @returns Promise<Readable<[EntryHash, Applet][]>>
+   */
+  public async fetchAllApplets(weGroupId: DnaHash): Promise<Readable<[EntryHash, Applet][]>> {
+    const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+    const allApplets = await this.appletsService.getAllApplets(cellClient);
+    return readable(allApplets);
 
   }
 
@@ -408,17 +433,32 @@ export class MatrixStore {
   public async fetchNewAppletInstancesForGroup(weGroupId: EntryHash): Promise<Readable<NewAppletInstanceInfo[]>> {
 
     // fetch all applets for that group
+    const allApplets: [EntryHash, Applet][] = get(await this.fetchAllApplets(weGroupId));
 
-    const [weGroupData, installedApplets] = get(this._matrix).get(weGroupId);
-    const appletsIAmPlaying: EntryHashMap<PlayingApplet> = get(await weGroupData.store.fetchAppletsIAmPlaying());  // where the applet entry hashes are the keys
+    const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
 
-    // return derived(this._matrix, (matrix) => {
-    //   const
-    // })
+    // const [weGroupData, installedApplets] = get(this._matrix).get(weGroupId);
+    const appletsIAmPlaying: [EntryHash, PlayingApplet][] = await this.appletsService.getAppletsIAmPlaying(cellClient);  // where the applet entry hashes are the keys
 
+    const newApplets = allApplets.filter(([_entryHash, applet]) => {
+      !appletsIAmPlaying.map(([_entryHash, playingApplet]) => playingApplet.applet)
+        .includes(applet)
+    })
+
+    const newAppletInstanceInfos: NewAppletInstanceInfo[] = newApplets.map(([entryHash, applet]) => {
+      return {
+        appletId: entryHash,
+        applet,
+      };
+    });
 
     // update the _newAppletInstances store
+    this._newAppletInstances.update((hashMap) => {
+      hashMap.put(weGroupId, newAppletInstanceInfos);
+      return hashMap;
+    })
 
+    return readable(newAppletInstanceInfos);
 
   }
 
@@ -441,10 +481,6 @@ export class MatrixStore {
   }
 
 
-  /** Static info */
-  public weGroupStore(weId: DnaHash): Readable<WeGroupStore> {
-    return derived(this._matrix, (matrix) => matrix.get(weId)[0].store);
-  }
 
   private originalWeDnaHash(): DnaHash {
     const weParentAppInfo = this.weParentAppInfo;
@@ -487,16 +523,11 @@ export class MatrixStore {
       const weGroupDnaHash = weGroupCell.cell_id[0];
       const cellClient = new CellClient(this.holochainClient, weGroupCell);
 
-      const store = new WeGroupStore(
-        cellClient,
-        lobbyClient,
-        serializeHash(this.originalWeDnaHash()), // remove serializeHash once membrane_invitations zome is upgraded to hdk 0.0.142
-        this.adminWebsocket,
-        this.membraneInvitationsStore.service
-      );
+      const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
+      const peerStatusStore = new PeerStatusStore(cellClient);
 
       // create WeGroupData object
-      const weInfo: WeInfo = get(await store.fetchInfo());
+      const weInfo: WeInfo = get(await this.fetchWeGroupInfo(weGroupDnaHash));
       const weGroupInfo: WeGroupInfo = {
         info: weInfo,
         dna_hash: weGroupDnaHash,
@@ -506,13 +537,15 @@ export class MatrixStore {
 
       const weGroupData: WeGroupData = {
         info: weGroupInfo,
-        store,
+        cellClient,
+        profilesStore,
+        peerStatusStore,
       };
 
 
       // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
-      const appletsIAmPlaying = await store.fetchAppletsIAmPlaying();
-      const appletInstanceInfos: AppletInstanceInfo[] = get(appletsIAmPlaying).entries()
+      const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying(cellClient);
+      const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying
         .map(([entryHash, playingApplet]) => {
           const appletClassInfo: AppletClassInfo = {
             devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
@@ -523,7 +556,7 @@ export class MatrixStore {
           const appletInstanceInfo: AppletInstanceInfo = {
             appletId: entryHash,
             installedAppInfo: allApps.find((app) => this.isSameApp(app, playingApplet.applet))!,
-            classInfo: appletClassInfo,
+            applet: playingApplet.applet,
           };
 
           // populate installedAppletClasses along the way
@@ -547,7 +580,6 @@ export class MatrixStore {
     })
 
     return derived(this._matrix, (m) => m);
-
   }
 
 
@@ -765,8 +797,9 @@ export class MatrixStore {
       const [decompressedHapp, decompressedGui] =
         await this.fetchAndDecompressWebHapp(newAppletInfo.applet.devhubHappReleaseHash);
 
-      const weGroupCellData = get(this._matrix).get(weGroupId)[0].store.cellData;
-      const cellClient = new CellClient(this.holochainClient, weGroupCellData);
+
+      const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+      const weGroupCellData = cellClient.cell;
 
       const uid = Object.values(newAppletInfo.applet.uid)[0];
       const installedAppId = `${uid}-${newAppletInfo.applet.name}`;
@@ -827,6 +860,21 @@ export class MatrixStore {
         return hashMap;
       });
 
+      // update _installedAppletClasses
+      if (!get(this._installedAppletClasses).get(newAppletInfo.applet.devhubHappReleaseHash)) {
+        this._installedAppletClasses.update((hashMap) => {
+          hashMap.put(
+            newAppletInfo!.applet.devhubHappReleaseHash,
+            {
+              name: newAppletInfo!.applet.name,
+              logoSrc: newAppletInfo!.applet.logoSrc,
+              description: newAppletInfo!.applet.description,
+              devhubHappReleaseHash: newAppletInfo!.applet.devhubHappReleaseHash,
+            }
+          );
+          return hashMap;
+        })
+      }
     }
   }
 
@@ -850,8 +898,8 @@ export class MatrixStore {
     const [decompressedHapp, decompressedGui, iconSrcOption] =
       await this.fetchAndDecompressWebHapp(appletInfo.devhubHappReleaseHash);
 
-    const weGroupCellData = get(this._matrix).get(weGroupId)[0].store.cellData;
-    const cellClient = new CellClient(this.holochainClient, weGroupCellData);
+    const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+    const weGroupCellData = cellClient.cell;
 
     const uid = uuidv4();
     const installedAppId: InstalledAppId = `${uid}-${customName}`;
@@ -925,6 +973,22 @@ export class MatrixStore {
       matrix.get(weGroupId)[1].push(appInstanceInfo)
       return matrix;
     })
+
+    // update _installedAppletClasses
+    if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
+      this._installedAppletClasses.update((hashMap) => {
+        hashMap.put(
+          applet.devhubHappReleaseHash,
+          {
+            name: applet.name,
+            logoSrc: applet.logoSrc,
+            description: applet.description,
+            devhubHappReleaseHash: applet.devhubHappReleaseHash,
+          }
+        );
+        return hashMap;
+      })
+    }
 
     return appletInstanceId;
   }

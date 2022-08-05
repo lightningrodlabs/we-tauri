@@ -1,11 +1,11 @@
-import { EntryHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators";
-import { matrixContext } from "../context";
+import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { RenderBlock } from "./render-block";
@@ -17,25 +17,20 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
+
+  @contextProvided({ context: weGroupContext })
+  weGroupId!: DnaHash;
+
   @property()
   appletInstanceId!: EntryHash;
 
   @state()
   private _showAppletDescription: boolean = false;
 
-  @state()
-  private weGroupId;
-
 
   private toggleAppletDescription() {
     this._showAppletDescription = !this._showAppletDescription;
   }
-
-  constructor() {
-    super();
-    this.weGroupId = this._matrixStore.getWeGroupInfoForAppletInstance(this.appletInstanceId).dna_hash;
-  }
-
 
 
   render() {

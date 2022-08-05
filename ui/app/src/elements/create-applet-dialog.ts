@@ -71,10 +71,10 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
     return !this._installedAppIdField || this._duplicateName;
   }
 
-  checkValidity(newValue, nativeValidity) {
+  checkValidity(_newValue, _nativeValidity) {
     if (this._allApplets.value) {
-      const allNames = Object.entries(this._allApplets.value!).map(
-        ([appletHash, applet]) => applet.name
+      const allNames = this._allApplets.value!.map(
+        ([_appletEntryHash, applet]) => applet.name
       );
       if (allNames.includes(this._installedAppIdField.value)) {
         this._duplicateName = true;
