@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: peer_status-applet
+ui:
+  bundled: "../ui.zip"
+happ_manifest:
+  bundled: "./peer_status-applet.happ"

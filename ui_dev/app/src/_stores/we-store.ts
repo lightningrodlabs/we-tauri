@@ -18,7 +18,6 @@ import {
   InstalledAppId,
   AgentPubKey,
   AppBundle,
-  DnaHash,
 } from "@holochain/client";
 import {
   derived,
@@ -37,11 +36,10 @@ import { AppletRenderers, WeApplet } from "@lightningrodlabs/we-applet";
 import { decompressSync, unzipSync } from "fflate";
 import { stringify, v4 as uuidv4 } from "uuid";
 
-import { importModuleFromFile } from "./processes/import-module-from-file";
-import { fetchWebHapp } from "./processes/devhub/get-happs";
+import { importModuleFromFile } from "../processes/import-module-from-file";
+import { fetchWebHapp } from "../processes/devhub/get-happs";
 import {
   Applet,
-  AppletGui,
   AppletInfo,
   GuiFile,
   IconFileOption,
@@ -51,23 +49,20 @@ import {
   WeInfo,
 } from "./types";
 import { AppletsService } from "./applets-service";
-import { WeGroupService } from "./we-group-service";
-import { toSrc } from "./processes/import-logsrc-from-file";
-import { getDevHubAppId } from "./processes/devhub/app-id";
-import { EntryHashMap } from "./holo-hash-map-temp";
+import { WeService } from "./we-service";
+import { toSrc } from "../processes/import-logsrc-from-file";
+import { getDevHubAppId } from "../processes/devhub/app-id";
 
-export class WeGroupStore {
+export class WeStore {
   private appletsService: AppletsService;
-  private weGroupService: WeGroupService;
+  private weService: WeService;
   public profilesStore: ProfilesStore;
   public peerStatusStore: PeerStatusStore;
-  public weGroupId: DnaHash;
 
-  private _allApplets: Writable<EntryHashMap<Applet>> = // Applet entry hashes as keys
-    writable(new EntryHashMap<Applet>());
-  private _appletsIAmPlaying: Writable<EntryHashMap<AgentPubKey>> = // Applet entry hashes as keys
-    writable(new EntryHashMap<AgentPubKey>());
-  private _appletRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>(); // devhub hApp release hashes as keys
+  private _allApplets: Writable<Record<EntryHashB64, Applet>> = writable({});
+  private _appletsIAmPlaying: Writable<Record<EntryHashB64, AgentPubKeyB64>> =
+    writable({});
+  private _appletRenderers: Record<EntryHashB64, AppletRenderers> = {};
 
   /*
   public applet(appletHash: EntryHashB64): Readable<
@@ -113,16 +108,14 @@ export class WeGroupStore {
 
   constructor(
     protected cellClient: CellClient,
-    protected lobbyClient: CellClient,
-    protected weParentDnaHash: DnaHashB64,
+    protected weDnaHash: DnaHashB64,
     public adminWebsocket: AdminWebsocket,
     protected membraneInvitationsService: MembraneInvitationsService
   ) {
-    this.appletsService = new AppletsService(cellClient, lobbyClient);
-    this.weGroupService = new WeGroupService(cellClient);
+    this.appletsService = new AppletsService(cellClient);
+    this.weService = new WeService(cellClient);
     this.profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     this.peerStatusStore = new PeerStatusStore(cellClient);
-    this.weGroupId = cellClient.cell.cell_id[0];
 
     cellClient.addSignalHandler((signal) => {
       const payload = signal.data.payload;
@@ -148,56 +141,49 @@ export class WeGroupStore {
   }
 
   async fetchInfo(): Promise<Readable<WeInfo>> {
-    const info = await this.weGroupService.getInfo();
+    const info = await this.weService.getInfo();
     return readable(info);
   }
 
-
-  async fetchAllApplets(): Promise<Readable<EntryHashMap<Applet>>> {
+  async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
     const allApplets = await this.appletsService.getAllApplets();
 
-    this._allApplets.update((applets) => {
-      allApplets.forEach(([entryHash, applet]) => {
-        applets.put(entryHash, applet)
-      });
-      return applets;
-    });
+    this._allApplets.update((applets) => ({ ...applets, ...allApplets }));
 
     return derived(this._allApplets, (i) => i);
   }
 
   async fetchAppletsIAmPlaying(): Promise<
-    Readable<EntryHashMap<PlayingApplet>> // keys of type EntryHash
+    Readable<Record<EntryHashB64, PlayingApplet>>
   > {
-    const appletsIAmPlaying: [EntryHash, PlayingApplet][] = await this.appletsService.getAppletsIAmPlaying();
+    const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
 
-    const myOtherPubKeys: EntryHashMap<AgentPubKey> = new EntryHashMap<AgentPubKey>(); // keys of type EntryHash
+    const applets: Record<EntryHashB64, Applet> = {};
+    const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
 
-    for (const [appletHash, playingApplet] of
+    for (const [appletHash, playingApplet] of Object.entries(
       appletsIAmPlaying
-    ) {
-      myOtherPubKeys.put(appletHash, playingApplet.agentPubKey);
+    )) {
+      myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
+      applets[appletHash] = playingApplet.applet;
     }
 
     this._appletsIAmPlaying.set(myOtherPubKeys);
-
-    this._allApplets.update((allApplets) => {
-      appletsIAmPlaying.forEach(([entryHash, playingApplet]) => {
-        allApplets.put(entryHash, playingApplet.applet)
-      });
-      return allApplets;
-    });
+    this._allApplets.update((g) => ({
+      ...g,
+      ...applets,
+    }));
 
     return derived(
       [this._appletsIAmPlaying, this._allApplets],
       ([playing, allApplets]) => {
-        const playingApplets: EntryHashMap<PlayingApplet> = new EntryHashMap<PlayingApplet>();
+        const playingApplets: Record<EntryHashB64, PlayingApplet> = {};
 
-        for (const [appletHash, agentPubKey] of playing.entries()) {
-          playingApplets.put(appletHash, {
+        for (const [appletHash, agentPubKey] of Object.entries(playing)) {
+          playingApplets[appletHash] = {
             agentPubKey,
-            applet: allApplets.get(appletHash),
-          });
+            applet: allApplets[appletHash],
+          };
         }
 
         return playingApplets;
@@ -205,66 +191,16 @@ export class WeGroupStore {
     );
   }
 
-
-  // old with B64 hashes
-  // async fetchAllApplets(): Promise<Readable<Record<EntryHashB64, Applet>>> {
-  //   const allApplets = await this.appletsService.getAllApplets();
-
-  //   this._allApplets.update((applets) => ({ ...applets, ...allApplets }));
-
-  //   return derived(this._allApplets, (i) => i);
-  // }
-
-
-
-  // async fetchAppletsIAmPlaying(): Promise<
-  //   Readable<Record<EntryHashB64, PlayingApplet>>
-  // > {
-  //   const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying();
-
-  //   const applets: Record<EntryHashB64, Applet> = {};
-  //   const myOtherPubKeys: Record<EntryHashB64, AgentPubKeyB64> = {};
-
-  //   for (const [appletHash, playingApplet] of Object.entries(
-  //     appletsIAmPlaying
-  //   )) {
-  //     myOtherPubKeys[appletHash] = playingApplet.agentPubKey;
-  //     applets[appletHash] = playingApplet.applet;
-  //   }
-
-  //   this._appletsIAmPlaying.set(myOtherPubKeys);
-  //   this._allApplets.update((g) => ({
-  //     ...g,
-  //     ...applets,
-  //   }));
-
-  //   return derived(
-  //     [this._appletsIAmPlaying, this._allApplets],
-  //     ([playing, allApplets]) => {
-  //       const playingApplets: Record<EntryHashB64, PlayingApplet> = {};
-
-  //       for (const [appletHash, agentPubKey] of Object.entries(playing)) {
-  //         playingApplets[appletHash] = {
-  //           agentPubKey,
-  //           applet: allApplets[appletHash],
-  //         };
-  //       }
-
-  //       return playingApplets;
-  //     }
-  //   );
-  // }
-
-  isInstalled(appletHash: EntryHash) {
-    const installedIds = get(this._appletsIAmPlaying).entries().map(
-      ([entryHash, _agentPubKey]) => entryHash
+  isInstalled(appletHash: EntryHashB64) {
+    const installedIds = Object.entries(get(this._appletsIAmPlaying)).map(
+      ([entryHash, agentPubKey]) => entryHash
     );
 
     return installedIds.includes(appletHash);
   }
 
-  getAppletInfo(appletHash: EntryHash): Applet | undefined {
-    return get(this._allApplets).get(appletHash);
+  getAppletInfo(appletHash: EntryHashB64): Applet | undefined {
+    return get(this._allApplets)[appletHash];
   }
 
 
@@ -288,18 +224,16 @@ export class WeGroupStore {
   // }
 
   async fetchAppletRenderers(
-    appletHash: EntryHash
+    appletHash: EntryHashB64
   ): Promise<AppletRenderers> {
-    const renderer = this._appletRenderers.get(appletHash);
+    const renderer = this._appletRenderers[appletHash];
     if (renderer) return renderer;
 
-    const applet = get(this._allApplets).get(appletHash);
-    const appletAgentPubKey = get(this._appletsIAmPlaying).get(appletHash);
-    const appletGui = await this.appletsService.queryAppletGui(
-      applet.devhubHappReleaseHash
+    const applet = get(this._allApplets)[appletHash];
+    const appletAgentPubKey = get(this._appletsIAmPlaying)[appletHash];
+    const rendererBytes = await this.appletsService.queryAppletGui(
+      applet.guiFileHash
     );
-
-    const rendererBytes = appletGui.gui;
 
     const file = new File(
       [new Blob([new Uint8Array(rendererBytes)])],
@@ -307,18 +241,18 @@ export class WeGroupStore {
     );
 
     const mod = await importModuleFromFile(file);
-    const gui: WeApplet = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
+    const appletGui: WeApplet = mod.default; // for a Gui to be we-compatible it's default export must be of type WeApplet
 
     const cell_data: InstalledCell[] = [];
 
     for (const [role_id, dnaHash] of Object.entries(applet.dnaHashes)) {
       cell_data.push({
-        cell_id: [dnaHash, appletAgentPubKey],
+        cell_id: [deserializeHash(dnaHash), deserializeHash(appletAgentPubKey)],
         role_id,
       });
     }
 
-    const renderers = await gui.appletRenderers(
+    const renderers = await appletGui.appletRenderers(
       this.appWebsocket,
       this.adminWebsocket,
       { profilesStore: this.profilesStore },
@@ -330,13 +264,13 @@ export class WeGroupStore {
     );
 
     // s.renderers is undefined --> maybe because this._appletRenderers is still empty at that point?
-    this._appletRenderers.put(appletHash, renderers);
+    this._appletRenderers[appletHash] = renderers;
 
     return renderers;
   }
 
   async fetchAndDecompressWebHapp(
-    entryHash: EntryHash
+    entryHash: EntryHashB64
   ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
 
     const devhubHapp = await this.getDevhubHapp();
@@ -345,7 +279,7 @@ export class WeGroupStore {
       this.appWebsocket,
       devhubHapp,
       "hApp", // This is chosen arbitrarily at the moment
-      entryHash
+      deserializeHash(entryHash)
     );
 
     // decompress bytearray into .happ and ui.zip (zlibt2)
@@ -377,11 +311,11 @@ export class WeGroupStore {
   async createApplet(
     appletInfo: AppletInfo,
     customName: InstalledAppId
-  ): Promise<EntryHash> {
+  ): Promise<EntryHashB64> {
     // --- Install hApp in the conductor---
 
     const [decompressedHapp, decompressedGui, iconSrcOption] =
-      await this.fetchAndDecompressWebHapp(appletInfo.devhubHappReleaseHash);
+      await this.fetchAndDecompressWebHapp(serializeHash(appletInfo.entryHash));
 
     const uid = uuidv4();
     const installedAppId: InstalledAppId = `${uid}-${customName}`;
@@ -398,22 +332,16 @@ export class WeGroupStore {
 
     await this.adminWebsocket.enableApp({ installed_app_id: installedAppId });
 
-    // --- Commit UI in the lobby cell as private entry ---
+    // // --- Register hApp and UI in the We DNA ---
 
-    const appletGui: AppletGui = {
-      devhubHappReleaseHash: appletInfo.devhubHappReleaseHash,
-      gui: decompressedGui,
-    }
+    const guiEntryHash = await this.appletsService.commitGuiFile(
+      decompressedGui
+    );
 
-    const _ = await this.appletsService.commitGuiFile(appletGui);
-
-
-    // --- Register hApp in the We DNA ---
-
-    const dnaHashes: Record<string, DnaHash> = {};
+    const dnaHashes: Record<string, DnaHashB64> = {};
     const uidByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
-      dnaHashes[cell.role_id] = cell.cell_id[0];
+      dnaHashes[cell.role_id] = serializeHash(cell.cell_id[0]);
       uidByRole[cell.role_id] = uid;
     });
 
@@ -423,7 +351,8 @@ export class WeGroupStore {
       // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
       logoSrc: iconSrcOption,
 
-      devhubHappReleaseHash: appletInfo.devhubHappReleaseHash,
+      devhubHappReleaseHash: serializeHash(appletInfo.entryHash),
+      guiFileHash: guiEntryHash,
 
       properties: {},
       uid: uidByRole,
@@ -431,7 +360,7 @@ export class WeGroupStore {
     };
 
     const registerAppletInput: RegisterAppletInput = {
-      appletAgentPubKey: appInfo.cell_data[0].cell_id[1], // pick the pubkey of any of the cells since it's the same for the whole hApp
+      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
       applet,
     };
 
@@ -440,35 +369,34 @@ export class WeGroupStore {
     );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
-      appletsIAmPlaying.put(appletHash, this.myAgentPubKey);
+      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
       return appletsIAmPlaying;
     });
 
     this._allApplets.update((allApplets) => {
-      allApplets.put(appletHash, applet);
+      allApplets[appletHash] = applet;
       return allApplets;
     });
 
     return appletHash;
   }
 
-
-  // TODO TODO TODO: Remove applet from matrix store's _newAppletInstances once the agent has joined the Applet
   // Installs the already existing applet in this We to the conductor
-  async joinApplet(appletHash: EntryHash): Promise<void> {
-    const installedAppletsHashes = get(this._appletsIAmPlaying).entries()
-      .map(([entryHash, agentPubKey]) => entryHash);
+  async joinApplet(appletHash: EntryHashB64): Promise<void> {
+    const installedAppletsHashes = Object.entries(
+      get(this._appletsIAmPlaying)
+    ).map(([entryHash, agentPubKey]) => entryHash);
     if (installedAppletsHashes.includes(appletHash)) return;
 
-    const allApplets: EntryHashMap<Applet> = get(this._allApplets);
-    let applet = allApplets.get(appletHash);
+    const allApplets: Record<EntryHashB64, Applet> = get(this._allApplets);
+    let applet = allApplets[appletHash];
 
     // fetch hApp and GUI
     const [decompressedHapp, decompressedGui] =
       await this.fetchAndDecompressWebHapp(applet.devhubHappReleaseHash);
 
     if (!applet) {
-      applet = get(await this.fetchAllApplets()).get(appletHash);
+      applet = get(await this.fetchAllApplets())[appletHash];
     }
 
     const uid = Object.values(applet.uid)[0];
@@ -491,23 +419,19 @@ export class WeGroupStore {
 
     // register Applet entry in order to have it in the own source chain
     const registerAppletInput: RegisterAppletInput = {
-      appletAgentPubKey: appInfo.cell_data[0].cell_id[1], // pick the pubkey of any of the cells
+      appletAgentPubKey: serializeHash(appInfo.cell_data[0].cell_id[1]), // pick the pubkey of any of the cells
       applet,
     };
 
     await this.appletsService.createApplet(registerAppletInput);
 
     // commit GUI to source chain as private entry
-    const guiToCommit: AppletGui = {
-      devhubHappReleaseHash: applet.devhubHappReleaseHash,
-      gui: decompressedGui,
-    }
-    const _guiEntryHash = await this.appletsService.commitGuiFile(
-      guiToCommit
+    const guiEntryHash = await this.appletsService.commitGuiFile(
+      decompressedGui
     );
 
     this._appletsIAmPlaying.update((appletsIAmPlaying) => {
-      appletsIAmPlaying.put(appletHash, this.myAgentPubKey);
+      appletsIAmPlaying[appletHash] = serializeHash(this.myAgentPubKey);
       return appletsIAmPlaying;
     });
   }
@@ -517,12 +441,12 @@ export class WeGroupStore {
     const myAgentPubKey = serializeHash(weCell[1]);
     const weDnaHash = serializeHash(weCell[0]);
 
-    const info = await this.weGroupService.getInfo();
+    const info = await this.weService.getInfo();
 
     const properties = encode(info);
     console.log(
       {
-        originalDnaHash: this.weParentDnaHash,
+        originalDnaHash: this.weDnaHash,
         properties,
         uid: undefined,
         resultingDnaHash: weDnaHash,
@@ -531,7 +455,7 @@ export class WeGroupStore {
     );
     await this.membraneInvitationsService.inviteToJoinMembrane(
       {
-        originalDnaHash: this.weParentDnaHash,
+        originalDnaHash: this.weDnaHash,
         properties,
         uid: undefined,
         resultingDnaHash: weDnaHash,

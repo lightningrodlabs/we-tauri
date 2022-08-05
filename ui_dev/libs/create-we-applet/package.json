@@ -1,0 +1,31 @@
+{
+  "name": "@lightningrodlabs/create-we-applet",
+  "version": "0.0.9",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "bin": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && rollup -c",
+    "generate": "node --es-module-specifier-resolution=node generate.mjs",
+    "test": "npm run build && rimraf fixture && mkdir fixture && cd fixture && node --es-module-specifier-resolution=node ../dist/index.js notebooks"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^18.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.3",
+    "@source-craft/fs": "^0.0.1",
+    "@types/lodash-es": "^4.17.4",
+    "lodash-es": "^4.17.21",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.75.7",
+    "rollup-plugin-add-shebang": "^0.3.1",
+    "typescript": "^4.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

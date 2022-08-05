@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html, body {
+        background: #fafafa;
+        margin: 0px;
+        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+    </style>
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <we-app></we-app>
+
+    <script type="module">
+      import { WeApp } from "./out-tsc/index.js";
+      customElements.define("we-app", WeApp);
+    </script>
+  </body>
+</html>
