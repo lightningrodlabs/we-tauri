@@ -13,20 +13,24 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../sharedStyles";
-import { weGroupContext } from "../context";
-import { WeGroupStore } from "../we-group-store";
 import { getAllPublishedApps } from "../processes/devhub/get-happs";
 import { AppletInfo } from "../types";
 import { TaskSubscriber } from "lit-svelte-stores";
+import { MatrixStore } from "../matrix-store";
+import { matrixContext, weGroupContext } from "../context";
+import { DnaHash } from "@holochain/client";
 
 export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
+  @contextProvided({ context: matrixContext })
+  _matrixStore!: MatrixStore;
+
   @contextProvided({ context: weGroupContext })
-  _weGroupStore!: WeGroupStore;
+  weGroupId!: DnaHash;
 
   _allApplets = new TaskSubscriber(
     this,
-    () => this._weGroupStore.fetchAllApplets(),
-    () => [this._weGroupStore]
+    () => this._matrixStore.fetchAllApplets(this.weGroupId),
+    () => [this._matrixStore]
   );
 
   @query("#applet-dialog")
@@ -89,7 +93,8 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      const appletEntryHash = await this._weGroupStore.createApplet(
+      const appletEntryHash = await this._matrixStore.createApplet(
+        this.weGroupId,
         this._appletInfo,
         this._installedAppIdField.value
       );

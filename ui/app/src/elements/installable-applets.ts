@@ -9,12 +9,10 @@ import {
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
-import { query, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { Task } from "@lit-labs/task";
 
 import { sharedStyles } from "../sharedStyles";
-import { WeGroupStore } from "../we-group-store";
-import { weGroupContext } from "../context";
 import {
   AppWithReleases,
   getAllPublishedApps,
@@ -23,20 +21,26 @@ import {
 
 import { AppletInfo } from "../types";
 import { CreateAppletDialog } from "./create-applet-dialog";
+import { matrixContext, weGroupContext } from "../context";
+import { MatrixStore } from "../matrix-store";
+import { DnaHash } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @contextProvided({ context: matrixContext, subscribe: true })
   @state()
-  _weGroupStore!: WeGroupStore;
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext })
+  weGroupId!: DnaHash;
 
   _installableApplets = new Task(
     this,
     async ([s]) => {
-      const devhubHapp = await this._weGroupStore.getDevhubHapp();
+      const devhubHapp = await this._matrixStore.getDevhubHapp();
 
-      return getAllPublishedApps(this._weGroupStore.appWebsocket, devhubHapp);
+      return getAllPublishedApps(this._matrixStore.appWebsocket, devhubHapp);
     },
-    () => [this._weGroupStore]
+    () => [this._matrixStore]
   );
 
   @state()

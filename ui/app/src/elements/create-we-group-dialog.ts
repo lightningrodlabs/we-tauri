@@ -16,7 +16,7 @@ import { sharedStyles } from "../sharedStyles";
 export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
   /** Dependencies */
   @contextProvided({ context: matrixContext })
-  _store!: MatrixStore;
+  _matrixStore!: MatrixStore;
 
   async open() {
     this._name = "";
@@ -40,7 +40,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
     // if statement is required to prevent ENTER key to close the dialog while the button is disabled
     if (this._name && this._logoSrc) {
       this._dialog.close();
-      const weId = await this._store.createWe(this._name!, this._logoSrc!);
+      const weId = await this._matrixStore.createWeGroup(this._name!, this._logoSrc!);
 
       this.dispatchEvent(
         new CustomEvent("we-added", {

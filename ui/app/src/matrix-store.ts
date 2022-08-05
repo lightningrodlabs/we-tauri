@@ -196,10 +196,11 @@ export class MatrixStore {
 
 
 
-  public async getWeGroupInfo(weGroupId: DnaHash): Promise<WeInfo> {
+  public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const zomeName = "we"
-    return cellClient.callZome(zomeName, "get_info", null);
+    const info = await cellClient.callZome(zomeName, "get_info", null);
+    return readable(info);
   }
 
   /**
@@ -391,6 +392,12 @@ export class MatrixStore {
 
   //   return {};
   // }
+
+
+
+  public async fetchAllApplets(weGroupId: DnaHash): Promise<Readable<Applet[]>> {
+
+  }
 
 
 

@@ -7,10 +7,9 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators";
-import { matrixContext, weGroupContext } from "../context";
+import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
-import { WeGroupStore } from "../we-group-store";
 import { RenderBlock } from "./render-block";
 
 

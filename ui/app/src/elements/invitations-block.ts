@@ -10,16 +10,20 @@ import {
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
-import { query, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 
 import { sharedStyles } from "../sharedStyles";
-import { WeGroupStore } from "../we-group-store";
-import { weGroupContext } from "../context";
+import { MatrixStore } from "../matrix-store";
+import { matrixContext, weGroupContext } from "../context";
+import { DnaHash } from "@holochain/client";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @contextProvided({ context: matrixContext, subscribe: true })
   @state()
-  _store!: WeGroupStore;
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext })
+  weGroupId!: DnaHash;
 
   @state()
   _inviteePubKey: AgentPubKeyB64 | undefined;
@@ -34,8 +38,8 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   _pubkeyField!: TextField;
 
   async inviteToJoin(agentPubKey: AgentPubKeyB64) {
-    this._store
-      .inviteToJoin(agentPubKey)
+    this._matrixStore
+      .inviteToJoinGroup(this.weGroupId, agentPubKey)
       .then((r) => {
         this._pubkeyField.value = "";
         this._inviteePubKey = undefined;

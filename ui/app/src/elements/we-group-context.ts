@@ -10,7 +10,7 @@ import { peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { profilesStoreContext } from "@holochain-open-dev/profiles";
 import { get } from "svelte/store";
 
-import { matrixContext } from "../context";
+import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { DnaHash } from "@holochain/client";
 
@@ -27,6 +27,7 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
   _peerStatusStore = new StoreSubscriber(this, () => this.matrixStore?.peerStatusStore(this.weGroupId));
 
 
+  _weGroupIdProvider!: ContextProvider<typeof weGroupContext>;
   _profilesProvider!: ContextProvider<typeof profilesStoreContext>;
   _peerStatusProvider!: ContextProvider<typeof peerStatusStoreContext>;
 
@@ -36,6 +37,11 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
     const profilesStore = get(this.matrixStore.profilesStore(this.weGroupId));
     const peerStatusStore = get(this.matrixStore.peerStatusStore(this.weGroupId));
 
+    this._weGroupIdProvider = new ContextProvider(
+      this,
+      weGroupContext,
+      this.weGroupId,
+    );
     this._profilesProvider = new ContextProvider(
       this,
       profilesStoreContext,

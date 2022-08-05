@@ -167,7 +167,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
       return html`
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
-          <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
+          <we-group-home
+            .weGroupId=${this._selectedWeGroupId}
+            @applet-installed=${(e: CustomEvent) => {
+                  this._selectedAppletInstanceId = e.detail.appletEntryHash;
+            }}
+            ></we-group-home>
         </we-group-context>
       `
     } else if (this._dashboardMode === DashboardMode.AppletGroupInstanceRendering) {

@@ -24,7 +24,7 @@ import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
-import { CreateWeDialog } from "./create-we-dialog";
+import { CreateWeGroupDialog } from "./create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
@@ -44,7 +44,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
     await this.matrixStore
-      .joinWe(
+      .joinWeGroup(
         invitationHeaderHash,
         properties.name,
         properties.logo_src,
@@ -235,8 +235,14 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
               <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
               <div style="margin-top: 15px;">
                 <sl-tooltip placement="right" .content=${"copy"}>
-                  <div class="pubkey-field default-font" @click=${() => {navigator.clipboard.writeText(this.matrixStore.myAgentPubKey); this._copiedSnackbar.show()}}>
-                      ${this.matrixStore.myAgentPubKey}
+                  <div class="pubkey-field default-font"
+                    @click=${() => {
+                      navigator.clipboard.writeText(
+                        serializeHash(this.matrixStore.myAgentPubKey)
+                      );
+                      this._copiedSnackbar.show()
+                    }}>
+                    ${serializeHash(this.matrixStore.myAgentPubKey)}
                   </div>
                 </sl-tooltip>
                 <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
@@ -266,7 +272,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "holo-identicon": HoloIdenticon,
-      "create-we-dialog": CreateWeDialog,
+      "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
     };

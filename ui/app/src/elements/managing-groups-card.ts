@@ -12,7 +12,7 @@ import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
-import { CreateWeDialog } from "./create-we-dialog";
+import { CreateWeGroupDialog } from "./create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 
 
@@ -54,7 +54,7 @@ export class ManagingGroupsCard extends ScopedElementsMixin(LitElement) {
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "holo-identicon": HoloIdenticon,
-      "create-we-dialog": CreateWeDialog,
+      "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
     };

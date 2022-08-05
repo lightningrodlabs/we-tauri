@@ -52,7 +52,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
     await this.matrixStore
-      .joinWe(
+      .joinWeGroup(
         invitationHeaderHash,
         properties.name,
         properties.logo_src,
