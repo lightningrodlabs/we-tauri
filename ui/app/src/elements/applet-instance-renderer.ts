@@ -26,17 +26,14 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   @property()
   appletInstanceId!: EntryHash;
 
-  @property()
-  devhubHappReleaseHash!: EntryHash;
-
 
   _rendererTask = new Task(
     this,
     async () => {
       await sleep(1);
-      return this._matrixStore.fetchAppletInstanceRenderers(this._weGroupStore.weGroupId, this.appletInstanceId, this.devhubHappReleaseHash);
+      return this._matrixStore.fetchAppletInstanceRenderers(this._weGroupStore.weGroupId, this.appletInstanceId);
     },
-    () => [this._matrixStore, this._weGroupStore, this.appletInstanceId, this.devhubHappReleaseHash]
+    () => [this._matrixStore, this._weGroupStore, this.appletInstanceId]
   );
 
 

@@ -20,11 +20,6 @@ export class GlobalAppletsService {
     return cellClient.callZome("applets", "create_applet", registerAppletInput);
   }
 
-  async commitGuiFile(
-    appletGui: AppletGui
-  ): Promise<EntryHashB64> {
-    return this.callLobbyZome("commit_gui_file", appletGui);
-  }
 
   async registerApplet(
     cellClient: CellClient,
@@ -34,12 +29,25 @@ export class GlobalAppletsService {
     return cellClient.callZome("applets", "register_applet", { appletAgentPubKey, applet });
   }
 
+  /**
+   * Commits the gui file as a private entry to the source chain of the lobby DNA
+   *
+   * @param appletGui
+   * @returns
+   */
+  async commitGuiFile(
+    appletGui: AppletGui
+  ): Promise<void> {
+    return this.callLobbyZome("commit_gui_file", appletGui);
+  }
+
+
   async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<AppletGui> {
     return this.callLobbyZome("query_applet_gui", devhubHappReleaseHash);
   }
 
 
-  private callLobbyZome(fn_name: string, payload: any) {
+  private async callLobbyZome(fn_name: string, payload: any): Promise<any> {
     return this.lobbyClient.callZome("applet_guis", fn_name, payload);
   }
 }

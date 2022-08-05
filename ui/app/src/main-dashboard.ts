@@ -71,7 +71,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   private _dashboardMode: DashboardMode = DashboardMode.MainHome;
 
   /**
-   * Defines the content of the navigation panels (left sidebar and tob bar)
+   * Defines the content of the navigation panels (left sidebar (primary) and top bar (secondary))
    */
   @state()
   private _navigationMode: NavigationMode = NavigationMode.Agnostic;
@@ -103,9 +103,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   _createWeGroupDialog!: CreateWeGroupDialog;
 
 
-  private toggleAppletDescription() {
-    this._showAppletDescription = !this._showAppletDescription;
-  }
 
   private weGroupStore(weGroupId) {
     return get(this._matrixStore.matrix()).get(this._selectedWeGroupId!)[0].store
@@ -175,9 +172,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         <we-group-home .weGroupId=${this._selectedWeGroupId}></we-group-home>
       `
     } else if (this._dashboardMode === DashboardMode.AppletGroupInstanceRendering) {
-      return html `
-        <applet-instance-renderer .appletInstanceId=${this._selectedAppletInstanceId}></applet-instance-renderer>
-      `
+      this.renderAppletInstanceContent();
     } else if (this._dashboardMode === DashboardMode.AppletClassRendering) {
       return html `
         <applet-class-renderer .appletClassId=${this._selectedAppletClassId}></applet-class-renderer>
@@ -191,8 +186,21 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
 
+  renderAppletInstanceContent() {
+    // 1. check whether the selected applet instance is already installed
+    return this._matrixStore.isInstalled(this._selectedAppletInstanceId!)
+      ? html`
+          <applet-not-installed .appletInstanceId=${this._selectedAppletInstanceId}></applet-not-installed>
+        `
+      : html`
+         <applet-instance-renderer .appletInstanceId=${this._selectedAppletInstanceId}></applet-instance-renderer>
+        `
+  }
 
-
+  renderAppletClassContent() {
+    // todo
+    // check if there is an applet of this class
+  }
 
 
 
