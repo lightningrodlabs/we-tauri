@@ -1,5 +1,5 @@
 import { contextProvided, ContextProvider } from "@lit-labs/context";
-import { state } from "lit/decorators";
+import { state } from "lit/decorators.js";
 import { MatrixStore } from "../_stores/matrix-store";
 
 

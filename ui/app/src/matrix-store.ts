@@ -126,8 +126,8 @@ export class MatrixStore {
     writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
 
   private _appletGuis: EntryHashMap<WeApplet> = new EntryHashMap<WeApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
-  private _appletInstanceRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>; // EntryHash of Applet entries in the respective we DNA as keys
-  private _appletClassRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>; // devhub hApp release hashes of applets as keys
+  private _appletInstanceRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>(); // EntryHash of Applet entries in the respective we DNA as keys
+  private _appletClassRenderers: EntryHashMap<AppletRenderers> = new EntryHashMap<AppletRenderers>(); // devhub hApp release hashes of applets as keys
 
   private lobbyCell: InstalledCell;
 
@@ -470,7 +470,7 @@ export class MatrixStore {
   public async fetchNewAppletInstances(): Promise<Readable<DnaHashMap<NewAppletInstanceInfo[]>>> {
 
     const weGroups = get(this._matrix).keys();
-    const hashMap: DnaHashMap<NewAppletInstanceInfo[]> = new DnaHashMap<NewAppletInstanceInfo[]>;
+    const hashMap: DnaHashMap<NewAppletInstanceInfo[]> = new DnaHashMap<NewAppletInstanceInfo[]>();
 
     weGroups.forEach(async (weGroupId) => {
       hashMap.put(weGroupId, get(await this.fetchNewAppletInstancesForGroup(weGroupId)))

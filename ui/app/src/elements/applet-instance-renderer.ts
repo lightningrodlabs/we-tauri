@@ -6,7 +6,7 @@ import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
-import { property, state } from "lit/decorators";
+import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";

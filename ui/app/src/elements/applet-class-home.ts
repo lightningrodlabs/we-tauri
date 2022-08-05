@@ -1,7 +1,7 @@
 import { EntryHash } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
-import { property } from "lit/decorators";
+import { property } from "lit/decorators.js";
 
 
 

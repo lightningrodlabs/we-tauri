@@ -41,7 +41,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
       .content=${this.tooltipText}
       hoist
     >
-      <img class="we" src="${this.logoSrc}" @click=${this.handleClick} />
+      <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
     </sl-tooltip>`;
   }
 
@@ -56,7 +56,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
       :host {
         display: flex;
       }
-      .we {
+      .icon {
         cursor: pointer;
         border-radius: 50%;
         width: 50px;
