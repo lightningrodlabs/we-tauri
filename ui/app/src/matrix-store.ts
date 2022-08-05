@@ -43,12 +43,16 @@ import { fetchWebHapp } from "./processes/devhub/get-happs";
 import { decompressSync, unzipSync } from "fflate";
 import { toSrc } from "./processes/import-logsrc-from-file";
 import { GlobalAppletsService } from "./global-applets-service";
+import { ProfilesService, ProfilesStore } from "@holochain-open-dev/profiles";
+import { PeerStatusStore } from "@holochain-open-dev/peer-status";
 
 
 /**Data of a group */
 export interface WeGroupData {
   info: WeGroupInfo,
-  store: WeGroupStore,
+  cellClient: CellClient,
+  profilesStore: ProfilesStore,
+  peerStatusStore: PeerStatusStore,
 }
 
 /**Info of a group */
@@ -183,6 +187,12 @@ export class MatrixStore {
   }
 
 
+  public async getWeGroupInfo(weGroupId: DnaHash): Promise<WeInfo> {
+    const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+    const zomeName = "we"
+    return cellClient.callZome(zomeName, "get_info", null);
+  }
+
   /**
    * Checks whether the specified applet Instance is installed in the conductor
    *
@@ -262,7 +272,7 @@ export class MatrixStore {
 
     // 3. create the renderers and return them
     const [weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
-    const profilesStore = weGroupData.store.profilesStore;
+    const profilesStore = weGroupData.profilesStore;
     const installedAppInfo = appInstanceInfos.find((info) => info.appletId === appletInstanceId)!.installedAppInfo;
 
     const renderers = await gui.appletRenderers(
@@ -532,6 +542,37 @@ export class MatrixStore {
 
 
 
+  /**
+   * Invite another agent to join the specified We group.
+   *
+   * @param weGroupId : DnaHash
+   * @param agentPubKey : AgentPubKeyB64
+   */
+  public async inviteToJoinGroup(weGroupId: DnaHash, agentPubKey: AgentPubKeyB64): Promise<void> {
+    const weGroupCell = get(this._matrix).get(weGroupId)[0].cellClient.cell.cell_id;
+    const myAgentPubKey = serializeHash(weGroupCell[1]);
+    const weGroupDnaHash = serializeHash(weGroupCell[0]);
+
+    const appInfo = this.weParentAppInfo;
+    const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
+    const weParentDnaHash = serializeHash(weCell.cell_id[0]);
+
+    const info = await this.getWeGroupInfo(weGroupId);
+
+    const properties = encode(info);
+
+    await this.membraneInvitationsStore.service.inviteToJoinMembrane(
+      {
+        originalDnaHash: weParentDnaHash,
+        properties,
+        uid: undefined,
+        resultingDnaHash: weGroupDnaHash,
+      },
+      agentPubKey,
+      undefined
+    );
+  }
+
 
 
   /**
@@ -539,10 +580,10 @@ export class MatrixStore {
    * @param weName
    * @param weLogo
    */
-   public async createWe(name: string, logo: string): Promise<DnaHash> {
+   public async createWeGroup(name: string, logo: string): Promise<DnaHash> {
     const timestamp = Date.now();
 
-    const newWeHash = await this.installWe(name, logo, timestamp);
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, timestamp); // this line also updates the matrix store
 
     const appInfo = this.weParentAppInfo;
 
@@ -558,20 +599,19 @@ export class MatrixStore {
       originalDnaHash: weDnaHash,
       uid: undefined,
       properties: encode(properties),
-      resultingDnaHash: newWeHash,
+      resultingDnaHash: serializeHash(newWeGroupDnaHash),
     });
 
-    return deserializeHash(newWeHash);
+    return newWeGroupDnaHash;
   }
 
-  public async joinWe(
+  public async joinWeGroup(
     invitationHeaderHash: HeaderHashB64,
     name: string,
     logo: string,
     timestamp: number
   ) {
-    await this.installWe(name, logo, timestamp);
-
+    await this.installWeGroup(name, logo, timestamp);
     await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
   }
 
@@ -579,16 +619,17 @@ export class MatrixStore {
     await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
   }
 
-  private async installWe(
+  private async installWeGroup(
     name: string,
     logo: string,
     timestamp: number
-  ): Promise<DnaHashB64> {
+  ): Promise<DnaHash> {
+
     const weParentAppInfo = this.weParentAppInfo;
 
-    const weCell = weParentAppInfo.cell_data.find((c) => c.role_id === "we")!;
-    const myAgentPubKey = serializeHash(weCell.cell_id[1]);
-    const weDnaHash = serializeHash(weCell.cell_id[0]);
+    const weGroupCell = weParentAppInfo.cell_data.find((c) => c.role_id === "we")!;
+    const myAgentPubKey = serializeHash(weGroupCell.cell_id[1]);
+    const weDnaHash = serializeHash(weGroupCell.cell_id[0]);
 
     const properties = {
       logo_src: logo,
@@ -597,7 +638,7 @@ export class MatrixStore {
     };
 
     // Create the We cell
-    const newWeHash = await this.adminWebsocket.registerDna({
+    const newWeGroupHash = await this.adminWebsocket.registerDna({
       hash: deserializeHash(weDnaHash) as Buffer,
       uid: undefined,
       properties,
@@ -609,7 +650,7 @@ export class MatrixStore {
       agent_key: deserializeHash(myAgentPubKey) as Buffer,
       dnas: [
         {
-          hash: newWeHash,
+          hash: newWeGroupHash,
           role_id: name,
         },
       ],
@@ -619,21 +660,41 @@ export class MatrixStore {
     });
 
     const newWeCell = newAppInfo.cell_data[0];
+    const newWeGroupDnaHash: DnaHash = newWeCell.cell_id[0];
     const cellClient = new CellClient(this.holochainClient, newWeCell);
 
-    const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
+    // add signal handler to listen for "NewApplet" events
+    cellClient.addSignalHandler((signal) => {
+      const payload = signal.data.payload;
 
-    const store = new WeGroupStore(
-      cellClient,
-      lobbyClient,
-      weDnaHash,
-      this.adminWebsocket,
-      this.membraneInvitationsStore.service
-    );
+      if (!payload.message) return;
+
+      switch (payload.message.type) {
+        case "NewApplet":
+          this._newAppletInstances.update((store) => {
+
+            const newAppletInstanceInfo: NewAppletInstanceInfo = {
+              appletId: payload.appletHash,
+              applet: payload.message.content,
+            };
+
+            let updatedList = store.get(newWeGroupDnaHash);
+            updatedList.push(newAppletInstanceInfo);
+
+            store.put(newWeGroupDnaHash, updatedList);
+
+            return store;
+          });
+          break;
+      }
+    });
+
+
+    const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
+    const peerStatusStore = new PeerStatusStore(cellClient);
+
 
     this._matrix.update((matrix) => {
-
-      const weGroupId = newWeCell.cell_id[0]; // DnaHash of the newly created We Group Cell
 
       const weInfo: WeInfo = {
         logo_src: properties.logo_src,
@@ -642,23 +703,26 @@ export class MatrixStore {
 
       const weGroupInfo: WeGroupInfo = {
         info: weInfo,
-        dna_hash: weGroupId,
+        dna_hash: newWeGroupDnaHash,
         installed_app_id,
         status: enabledResult.app.status,
       };
 
       const weGroupData: WeGroupData = {
         info: weGroupInfo,
-        store,
+        cellClient,
+        profilesStore,
+        peerStatusStore,
       };
-      if (!matrix.get(weGroupId)) {
-        matrix.put(weGroupId, [weGroupData, []])
+
+      if (!matrix.get(newWeGroupDnaHash)) {
+        matrix.put(newWeGroupDnaHash, [weGroupData, []])
       }
 
       return matrix;
     });
 
-    return serializeHash(newWeHash);
+    return newWeGroupDnaHash;
   }
 
 

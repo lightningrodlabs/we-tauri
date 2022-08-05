@@ -53,13 +53,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     () => this._matrixStore.appletClasses(),
   );
 
-  _allNewAppletInstances = new TaskSubscriber(
+  _newAppletInstances = new TaskSubscriber(
     this,
-    () => this._matrixStore.fetchNewAppletInstances(),
-    () => [this._matrixStore]
+    () => this.weGroupStore(this._selectedWeGroupId).fetchNewApplets(),
+    () => [this._selectedWeGroupId]
   );
-
-
 
   _matrix = new StoreSubscriber(this, () => this._matrixStore.matrix());
 
@@ -82,8 +80,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _renderingMode: RenderingMode = RenderingMode.Agnostic;
 
-
-
   @state()
   private _selectedWeGroupId: DnaHash | undefined; // DNA hash of the selected we group
 
@@ -96,11 +92,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @state()
   private _specialAppletMode: boolean = false;
 
-  @state()
-  private _showAppletDescription: boolean = false;
-
   @query("#create-we-group-dialog")
   _createWeGroupDialog!: CreateWeGroupDialog;
+
+
+
 
 
 
@@ -109,7 +105,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
 
-  renderLeftSidebar() {
+  renderPrimaryNavigation() {
     // show all we groups in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
       this.renderWeGroupIconsPrimary(this._allWeGroupInfos.value.values());
@@ -122,7 +118,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  renderTopSidebar() {
+  renderSecondaryNavigation() {
     // show all applet instances of the selected group in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
       return html`
@@ -134,7 +130,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           )
         )}
 
-        ${this._allNewAppletInstances.render({
+        ${this._newAppletInstances.render({
             complete: (allNewAppletInstances) => this.renderNewAppletInstanceIcons(allNewAppletInstances),
             pending: () => html``,
           }
@@ -409,15 +405,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .logoSrc=${appletClassInfo.logoSrc}
             .tooltipText=${appletClassInfo.name}
             @click=${() => {
-              this._selectedAppletClassId = appletClassInfo.devHubHappReleaseHash;
+              this._selectedAppletClassId = appletClassInfo.devhubHappReleaseHash;
               this.requestUpdate();
             }}
             class=${classMap({
               highlighted:
-                appletClassInfo.devHubHappReleaseHash ===
+                appletClassInfo.devhubHappReleaseHash ===
                 this._selectedAppletClassId,
               weLogoHover:
-                appletClassInfo.devHubHappReleaseHash !=
+                appletClassInfo.devhubHappReleaseHash !=
                 this._selectedAppletClassId,
             })}
           >
@@ -433,8 +429,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       (appletInstanceInfo) =>
         html`
           <sidebar-button
-            .logoSrc=${appletInstanceInfo.logoSrc}
-            .tooltipText=${appletInstanceInfo.name}
+            .logoSrc=${appletInstanceInfo.applet.logoSrc}
+            .tooltipText=${appletInstanceInfo.applet.name}
             @click=${() => {
               this._selectedAppletInstanceId = appletInstanceInfo.appletId;
               this._specialAppletMode = false;
@@ -466,10 +462,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       (newAppletInstanceInfo) =>
         html`
           <sidebar-button
-            .logoSrc=${newAppletInstanceInfo.logoSrc}
-            .tooltipText=${newAppletInstanceInfo.name}
+            .logoSrc=${newAppletInstanceInfo.applet.logoSrc}
+            .tooltipText=${newAppletInstanceInfo.applet.name}
             @click=${() => {
-              this.handleNewAppletInstanceIconClick(appletId);
+              this.handleNewAppletInstanceIconClick(newAppletInstanceInfo.appletId);
               this.requestUpdate();
             }}
             class=${classMap({
@@ -550,7 +546,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             })}
           ></sidebar-button>
 
-          ${this.renderLeftSidebar()}
+          ${this.renderPrimaryNavigation()}
 
             <span style="flex: 1"></span>
 
@@ -561,7 +557,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         <div class="column">
           <div class="row top-sidebar">
-            ${this.renderTopSidebar()}
+            ${this.renderSecondaryNavigation()}
           </div>
           <div
             class="dashboard-content"

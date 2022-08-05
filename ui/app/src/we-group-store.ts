@@ -65,6 +65,7 @@ export class WeGroupStore {
   public peerStatusStore: PeerStatusStore;
   public weGroupId: DnaHash;
 
+
   public get appWebsocket(): AppWebsocket {
     return (this.cellClient as any).client.appWebsocket;
   }
