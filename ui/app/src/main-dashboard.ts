@@ -15,6 +15,7 @@ import {
   Button,
   CircularProgress,
   Fab,
+  Icon,
 } from "@scoped-elements/material-web";
 import { classMap } from "lit/directives/class-map.js";
 import { DnaHashB64 } from "@holochain-open-dev/core-types";
@@ -133,7 +134,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .name} Home"
         >
           <mwc-fab
-            style="margin-right: 6px; border-radius: 50%;"
+            style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
             icon="home"
             class="home-button"
             @click=${() => {
@@ -318,8 +319,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this.requestUpdate();
               }}
               class=${classMap({
-                highlighted: weGroupInfo.dna_hash === this._selectedWeGroupId,
-                primaryIconHover: weGroupInfo.dna_hash != this._selectedWeGroupId,
+                highlightedGroupCentric: weGroupInfo.dna_hash === this._selectedWeGroupId,
+                groupCentricIconHover: weGroupInfo.dna_hash != this._selectedWeGroupId,
               })}
             ></sidebar-button>
           `
@@ -342,6 +343,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    */
   renderWeGroupIconsSecondary(info: [WeGroupInfo, AppletInstanceInfo][]) {
     return html`
+    <span style="width: 18px;"></span>
       ${info.map(
         ([weGroupInfo, appletInstanceInfo]) =>
           html`
@@ -359,8 +361,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this.requestUpdate();
               }}
               class=${classMap({
-                highlighted: appletInstanceInfo.appletId === this._selectedAppletInstanceId,
-                secondaryIconHover: appletInstanceInfo.appletId !== this._selectedAppletInstanceId,
+                highlightedGroupCentric: appletInstanceInfo.appletId === this._selectedAppletInstanceId,
+                groupCentricIconHover: appletInstanceInfo.appletId !== this._selectedAppletInstanceId,
               })}
             ></sidebar-button>
           `
@@ -374,7 +376,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       (appletClassInfo) =>
         html`
           <sidebar-button
-            style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
+            style="margin-top: 4px; margin-bottom: 4px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
             .logoSrc=${appletClassInfo.logoSrc}
             .tooltipText=${appletClassInfo.name}
             @click=${() => {
@@ -383,10 +385,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               this.requestUpdate();
             }}
             class=${classMap({
-              highlighted:
+              highlightedAppletCentric:
                 appletClassInfo.devhubHappReleaseHash ===
                 this._selectedAppletClassId,
-              primaryIconHover:
+              appletCentricIconHover:
                 appletClassInfo.devhubHappReleaseHash !=
                 this._selectedAppletClassId,
             })}
@@ -400,33 +402,37 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
     // do stuff
-    return appletClasses.map(
-      (appletClassInfo) =>
-        html`
-          <sidebar-button
-            style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-            .logoSrc=${appletClassInfo.logoSrc}
-            .tooltipText=${appletClassInfo.name}
-            @click=${() => {
-              this._selectedAppletClassId =
-                appletClassInfo.devhubHappReleaseHash;
-              this._navigationMode = NavigationMode.AppletCentric;
-              this._dashboardMode = DashboardMode.AppletClassHome;
-              this.requestUpdate();
-            }}
-            class=${classMap({
-              highlighted:
-                appletClassInfo.devhubHappReleaseHash ===
-                this._selectedAppletClassId,
-              secondaryIconHover:
-                appletClassInfo.devhubHappReleaseHash !=
-                this._selectedAppletClassId,
-            })}
-          >
-          </sidebar-button>
+    return html`
+      <span style="width: 18px;"></span>
+
+      ${appletClasses.map(
+        (appletClassInfo) =>
+          html`
+            <sidebar-button
+              style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+              .logoSrc=${appletClassInfo.logoSrc}
+              .tooltipText=${appletClassInfo.name}
+              @click=${() => {
+                this._selectedAppletClassId =
+                  appletClassInfo.devhubHappReleaseHash;
+                this._navigationMode = NavigationMode.AppletCentric;
+                this._dashboardMode = DashboardMode.AppletClassHome;
+                this.requestUpdate();
+              }}
+              class=${classMap({
+                highlightedAppletCentric:
+                  appletClassInfo.devhubHappReleaseHash ===
+                  this._selectedAppletClassId,
+                appletCentricIconHover:
+                  appletClassInfo.devhubHappReleaseHash !=
+                  this._selectedAppletClassId,
+              })}
+            >
+            </sidebar-button>
         `
       // add special modes here
-    );
+    )}
+  `;
   }
 
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
@@ -446,9 +452,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               this.requestUpdate();
             }}
             class=${classMap({
-              highlighted:
+              highlightedAppletCentric:
                 appletInstanceInfo.appletId === this._selectedAppletInstanceId,
-              secondaryIconHover:
+              appletCentricIconHover:
                 appletInstanceInfo.appletId != this._selectedAppletInstanceId,
             })}
           >
@@ -492,10 +498,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this.requestUpdate();
               }}
               class=${classMap({
-                highlighted:
+                highlightedAppletCentric:
                   newAppletInstanceInfo.appletId ===
                   this._selectedAppletInstanceId,
-                weLogoHover:
+                appletCentricIconHover:
                   newAppletInstanceInfo.appletId !=
                   this._selectedAppletInstanceId,
               })}
@@ -525,7 +531,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           this.requestUpdate();
         }}
         class=${classMap({
-          highlighted: this._dashboardMode == DashboardMode.AppletClassRendering,
+          highlightedGroupCentric: this._dashboardMode == DashboardMode.AppletClassRendering,
           secondaryIconHover: !this._specialAppletMode,
         })}
       ></sidebar-button>
@@ -539,27 +545,43 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         id="create-we-group-dialog"
       ></create-we-group-dialog>
 
-      <div class="row" style="flex: 1">
-        <div class="column left-sidebar">
-          <div class="column" style="flex: 1; align-items: center; margin: 8px">
-            <sidebar-button
-              style="margin-bottom: 6px; border-radius: 50%;"
-              logoSrc="https://lightningrodlabs.org/projects/we.svg"
-              tooltipText="Home"
-              @click=${() => {
-                this._selectedWeGroupId = undefined;
-                this._selectedAppletClassId = undefined;
-                this._selectedAppletInstanceId = undefined;
-                this._dashboardMode = DashboardMode.MainHome;
-                this._navigationMode = NavigationMode.Agnostic;
-              }}
-              class=${classMap({
-                highlighted: this._dashboardMode === DashboardMode.MainHome,
-                primaryIconHover: this._dashboardMode !== DashboardMode.MainHome,
-              })}
-            ></sidebar-button>
+      <mwc-icon class="navigation-switch" @click=${this.handleNavigationSwitch}>open_in_full</mwc-icon>
 
-            <button @click=${this.handleNavigationSwitch}>switch</button>
+      <div class="row" style="flex: 1">
+        <div class="column">
+          <div class="top-left-corner-bg ${classMap({
+                  tlcbgGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
+                  tlcbgAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
+                })}">
+          </div>
+          <div class="column top-left-corner">
+              <sidebar-button
+                style="border-radius: 50%;"
+                logoSrc="https://lightningrodlabs.org/projects/we.svg"
+                tooltipText="Home"
+                @click=${() => {
+                  this._selectedWeGroupId = undefined;
+                  this._selectedAppletClassId = undefined;
+                  this._selectedAppletInstanceId = undefined;
+                  this._dashboardMode = DashboardMode.MainHome;
+                  this._navigationMode = NavigationMode.Agnostic;
+                }}
+                class=${classMap({
+                  highlightedHome: this._dashboardMode === DashboardMode.MainHome,
+                  homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
+                })}
+              ></sidebar-button>
+          </div>
+
+          <div class="
+            column
+            left-sidebar
+            ${classMap({
+              navBarGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
+              navBarAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
+            })}"
+            style="flex: 1; align-items: center;"
+          >
 
             ${this.renderPrimaryNavigation()}
 
@@ -573,7 +595,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         </div>
 
         <div class="column" style="flex: 1;">
-          <div class="row top-bar">${this.renderSecondaryNavigation()}</div>
+          <div class="
+            row
+            top-bar
+            ${classMap({
+              navBarAppletCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
+              navBarGroupCentric: this._navigationMode === NavigationMode.AppletCentric,
+            })}"
+          >
+          ${this.renderSecondaryNavigation()}
+          </div>
           <div
             class="dashboard-content"
             style="flex: 1; width: 100%; display: flex;"
@@ -588,6 +619,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "mwc-fab": Fab,
+      "mwc-icon": Icon,
       "sidebar-button": SidebarButton,
       "holo-identicon": HoloIdenticon,
       "create-we-group-dialog": CreateWeGroupDialog,
@@ -610,18 +642,49 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           display: flex;
         }
 
+        .top-left-corner {
+          align-items: center;
+          background-color: transparent;
+          margin: 11px 8px 11px 8px;
+          height: 54 px;
+          z-index: 1;
+        }
+
+        .top-left-corner-bg {
+          border-style: solid;
+          border-width: 72px 0 0 72px;
+          position: absolute;
+          z-index: 0;
+        }
+
+        .tlcbgGroupCentric {
+          border-color: #9ca5e3 #9ca5e3 #9ca5e3 #303f9f;
+        }
+
+        .tlcbgAppletCentric {
+          border-color: #303f9f #303f9f #303f9f #9ca5e3;
+        }
+
         .left-sidebar {
-          background-color: #303f9f;
           overflow-y: auto;
+          width: 72px;
+          padding-top: 16px;
           z-index: 1;
         }
 
         .top-bar {
-          background-color: #303f9f;
           overflow-x: auto;
-          z-index: 1;
-          min-height: 70px;
+          z-index: 0.5;
+          min-height: 72px;
           align-items: center;
+        }
+
+        .navBarGroupCentric {
+          background-color: #303f9f;
+        }
+
+        .navBarAppletCentric {
+          background-color: #9ca5e3;
         }
 
         @media (min-width: 640px) {
@@ -630,23 +693,50 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           }
         }
 
-        .highlighted {
+
+        .highlightedAppletCentric {
+          outline: #303f9f 4px solid;
+        }
+
+        .highlightedGroupCentric {
           outline: #9ca5e3 4px solid;
         }
 
-        .primaryIconHover:hover {
+        .highlightedHome {
+          outline: white 4px solid;
+        }
+
+        .homeIconHover:hover {
+          outline: white 4px solid;
+        }
+
+        .groupCentricIconHover:hover {
           /* box-shadow: 0 0 7px #ffffff; */
           outline: #9ca5e3 4px solid;
         }
 
-        .secondaryIconHover:hover {
+        .appletCentricIconHover:hover {
           /* box-shadow: 0 0 7px #ffffff; */
-          outline: #9ca5e3 4px solid;
+          outline: #303f9f 4px solid;
+        }
+
+        .navigation-switch {
+          color: white;
+          cursor: pointer;
+          position: absolute;
+          top: 45px;
+          left: 45px;
+          z-index: 2;
+          --mdc-icon-size: 36px;
+        }
+
+        .navigation-switch:hover {
+          color: #ffff18;
         }
 
         .home-button {
           margin-bottom: 4px;
-          --mdc-theme-secondary: #9ca5e3;
+          --mdc-theme-secondary: #303f9f;
           --mdc-fab-focus-outline-color: white;
           --mdc-fab-focus-outline-width: 4px;
         }

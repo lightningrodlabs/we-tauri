@@ -399,8 +399,8 @@ export class MatrixStore {
       matrix.values().forEach(([groupData, appletInfos]) => {
         console.log("filtering and pushing");
         console.log("applet infos: ", appletInfos);
-        const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
-        console.log("filtered infos: ", filteredInfos);
+        // const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
+        // console.log("filtered infos: ", filteredInfos);
 
         appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString())
           .forEach((appletInfo) => result.push([groupData.info, appletInfo]));
