@@ -389,14 +389,24 @@ export class MatrixStore {
    * Gets an array of [GroupInfo, AppletInstanceInfo] of the installed applet instances of the specified applet class
    * Used to display the group icons in NavifationMode.AppletCentric in the secondary navigation panel.
    */
-  public getInstanceInfosForAppletClass(devHubReleaseHash: EntryHash): Readable<[WeGroupInfo, AppletInstanceInfo][]> {
+  public getInstanceInfosForAppletClass(devhubHappReleaseHash: EntryHash): Readable<[WeGroupInfo, AppletInstanceInfo][]> {
     // todo
     return derived(this._matrix, (matrix) => {
+      console.log("MATRIX: ", matrix);
+      console.log("MATRIX nr of groups: ", matrix.keys().length);
+      console.log("MATRIX values length: ", matrix.values().length);
       let result: [WeGroupInfo, AppletInstanceInfo][] = [];
       matrix.values().forEach(([groupData, appletInfos]) => {
-        appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash === devHubReleaseHash)
+        console.log("filtering and pushing");
+        console.log("applet infos: ", appletInfos);
+        const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
+        console.log("filtered infos: ", filteredInfos);
+
+        appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString())
           .forEach((appletInfo) => result.push([groupData.info, appletInfo]));
       });
+      console.log("RESULT LENGTH: ", result.length);
+      console.log("RESULT: ", result);
       return result;
     });
   }
@@ -579,8 +589,6 @@ export class MatrixStore {
         });
 
         matrrrrriiix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
-        console.log("trying to get the entry of the matrix right back: ", matrrrrriiix.get(weGroupDnaHash));
-        console.log("matrrrix entries within forEach loop: ", matrrrrriiix.entries());
       })
     );
 

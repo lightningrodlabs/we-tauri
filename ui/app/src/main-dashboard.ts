@@ -110,7 +110,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       );
       // show all applet classes in appletClass mode
     } else if (this._navigationMode === NavigationMode.AppletCentric) {
-      return this.renderAppletClassList(this._allAppletClasses.value.values());
+      return this.renderAppletClassListPrimary(this._allAppletClasses.value.values());
       // show all we groups in mainHome mode
     } else {
       return this.renderWeGroupIconsPrimary(
@@ -168,11 +168,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             )
           )
         )}
+
+        <span style="flex: 1"></span>
+
         ${this.renderSpecialAppletModeIcons()}
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
-      this.renderAppletClassList(this._allAppletClasses.value.values());
+      return html`
+        ${this.renderAppletClassListSecondary(this._allAppletClasses.value.values())}
+      `;
     }
   }
 
@@ -345,7 +350,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               .logoSrc=${weGroupInfo.info.logo_src}
               .tooltipText=${weGroupInfo.info.name +
               " - " +
-              appletInstanceInfo.installedAppInfo.installed_app_id}
+              appletInstanceInfo.applet.name}
               @click=${() => {
                 this.handleWeGroupIconSecondaryClick(
                   weGroupInfo.dna_hash,
@@ -354,8 +359,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this.requestUpdate();
               }}
               class=${classMap({
-                highlighted: weGroupInfo.dna_hash === this._selectedWeGroupId,
-                secondaryIconHover: weGroupInfo.dna_hash != this._selectedWeGroupId,
+                highlighted: appletInstanceInfo.appletId === this._selectedAppletInstanceId,
+                secondaryIconHover: appletInstanceInfo.appletId !== this._selectedAppletInstanceId,
               })}
             ></sidebar-button>
           `
@@ -363,7 +368,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  renderAppletClassList(appletClasses: AppletClassInfo[]) {
+  renderAppletClassListPrimary(appletClasses: AppletClassInfo[]) {
     // do stuff
     return appletClasses.map(
       (appletClassInfo) =>
@@ -382,6 +387,38 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 appletClassInfo.devhubHappReleaseHash ===
                 this._selectedAppletClassId,
               primaryIconHover:
+                appletClassInfo.devhubHappReleaseHash !=
+                this._selectedAppletClassId,
+            })}
+          >
+          </sidebar-button>
+        `
+      // add special modes here
+    );
+  }
+
+
+  renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
+    // do stuff
+    return appletClasses.map(
+      (appletClassInfo) =>
+        html`
+          <sidebar-button
+            style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+            .logoSrc=${appletClassInfo.logoSrc}
+            .tooltipText=${appletClassInfo.name}
+            @click=${() => {
+              this._selectedAppletClassId =
+                appletClassInfo.devhubHappReleaseHash;
+              this._navigationMode = NavigationMode.AppletCentric;
+              this._dashboardMode = DashboardMode.AppletClassHome;
+              this.requestUpdate();
+            }}
+            class=${classMap({
+              highlighted:
+                appletClassInfo.devhubHappReleaseHash ===
+                this._selectedAppletClassId,
+              secondaryIconHover:
                 appletClassInfo.devhubHappReleaseHash !=
                 this._selectedAppletClassId,
             })}
@@ -492,6 +529,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           secondaryIconHover: !this._specialAppletMode,
         })}
       ></sidebar-button>
+      <span style="width: 8px;"></span>
     `;
   }
 
