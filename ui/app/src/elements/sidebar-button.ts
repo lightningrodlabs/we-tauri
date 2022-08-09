@@ -36,10 +36,10 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`<sl-tooltip
+      hoist
       id="tooltip"
       placement="right"
       .content=${this.tooltipText}
-      hoist
     >
       <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
     </sl-tooltip>`;

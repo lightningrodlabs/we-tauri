@@ -377,9 +377,11 @@ export class MatrixStore {
   /**Gets an array of all AppletInfo of the applets installed for the specified group */
   public getAppletInstanceInfosForGroup(groupDnaHash: DnaHash): Readable<AppletInstanceInfo[]> {
     // todo
-    return derived(this._matrix, (matrix) => {
-      matrix.get(groupDnaHash)[1];
-    })
+    console.log("matrix.get(groupId): ", get(this._matrix).get(groupDnaHash)[1]);
+    return readable(get(this._matrix).get(groupDnaHash)[1])
+    // return derived(this._matrix, (matrix) => {
+    //   return matrix.get(groupDnaHash)[1];
+    // })
   }
 
 
@@ -395,6 +397,7 @@ export class MatrixStore {
         appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash === devHubReleaseHash)
           .forEach((appletInfo) => result.push([groupData.info, appletInfo]));
       });
+      return result;
     });
   }
 
@@ -435,15 +438,20 @@ export class MatrixStore {
     // fetch all applets for that group
     const allApplets: [EntryHash, Applet][] = get(await this.fetchAllApplets(weGroupId));
 
+    console.log("ALL APPLETS: ", allApplets);
+
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
 
     // const [weGroupData, installedApplets] = get(this._matrix).get(weGroupId);
     const appletsIAmPlaying: [EntryHash, PlayingApplet][] = await this.appletsService.getAppletsIAmPlaying(cellClient);  // where the applet entry hashes are the keys
 
+    console.log("APPLETS I AM PLAYING: ", appletsIAmPlaying);
     const newApplets = allApplets.filter(([_entryHash, applet]) => {
-      !appletsIAmPlaying.map(([_entryHash, playingApplet]) => playingApplet.applet)
-        .includes(applet)
+      return !appletsIAmPlaying.map(([_entryHash, playingApplet]) => JSON.stringify(playingApplet.applet.uid)) // [Applet, Applet, Applet]
+        .includes(JSON.stringify(applet.uid));
     })
+
+    console.log("NEW APPLETS: ", newApplets);
 
     const newAppletInstanceInfos: NewAppletInstanceInfo[] = newApplets.map(([entryHash, applet]) => {
       return {
@@ -468,14 +476,17 @@ export class MatrixStore {
    *
    */
   public async fetchNewAppletInstances(): Promise<Readable<DnaHashMap<NewAppletInstanceInfo[]>>> {
-
+    console.log("FETCHING NEW APPLET INSTANCES");
     const weGroups = get(this._matrix).keys();
     const hashMap: DnaHashMap<NewAppletInstanceInfo[]> = new DnaHashMap<NewAppletInstanceInfo[]>();
 
-    weGroups.forEach(async (weGroupId) => {
+    await Promise.all(
+      weGroups.map(async (weGroupId) => {
       hashMap.put(weGroupId, get(await this.fetchNewAppletInstancesForGroup(weGroupId)))
-    })
-
+    }));
+    console.log("HASHMAP OF NEW APPLET INSTANCES: ", hashMap);
+    console.log("KEYS OF NEW APPLET INSTANCES: ", hashMap.keys());
+    console.log("FIRST NEW APPLET INSTANCES: ", hashMap.get(hashMap.keys()[0]));
     // updating _newAppletInstances is already handled by fetchNewAppletInstancesForGroup
     return readable(hashMap);
   }
@@ -501,6 +512,8 @@ export class MatrixStore {
    */
   public async fetchMatrix(): Promise<Readable<DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>>>{
 
+    console.log("FETCHING THE MATRIX");
+
     const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
 
     let matrrrrriiix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
@@ -515,60 +528,65 @@ export class MatrixStore {
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
 
+    await Promise.all(
+      allWeGroups.map(async (appInfo) => {
 
-    allWeGroups.map(async (appInfo) => {
+      // create store
+        const weGroupCell = appInfo.cell_data[0];
+        const weGroupDnaHash = weGroupCell.cell_id[0];
+        const cellClient = new CellClient(this.holochainClient, weGroupCell);
 
-    // create store
-      const weGroupCell = appInfo.cell_data[0];
-      const weGroupDnaHash = weGroupCell.cell_id[0];
-      const cellClient = new CellClient(this.holochainClient, weGroupCell);
+        const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
+        const peerStatusStore = new PeerStatusStore(cellClient);
 
-      const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
-      const peerStatusStore = new PeerStatusStore(cellClient);
+        // create WeGroupData object
+        const weInfo: WeInfo = await cellClient.callZome("we", "get_info", null);
+        const weGroupInfo: WeGroupInfo = {
+          info: weInfo,
+          dna_hash: weGroupDnaHash,
+          installed_app_id: appInfo.installed_app_id,
+          status: appInfo.status,
+        };
 
-      // create WeGroupData object
-      const weInfo: WeInfo = get(await this.fetchWeGroupInfo(weGroupDnaHash));
-      const weGroupInfo: WeGroupInfo = {
-        info: weInfo,
-        dna_hash: weGroupDnaHash,
-        installed_app_id: appInfo.installed_app_id,
-        status: appInfo.status,
-      };
-
-      const weGroupData: WeGroupData = {
-        info: weGroupInfo,
-        cellClient,
-        profilesStore,
-        peerStatusStore,
-      };
+        const weGroupData: WeGroupData = {
+          info: weGroupInfo,
+          cellClient,
+          profilesStore,
+          peerStatusStore,
+        };
 
 
-      // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
-      const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying(cellClient);
-      const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying
-        .map(([entryHash, playingApplet]) => {
-          const appletClassInfo: AppletClassInfo = {
-            devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
-            name: playingApplet.applet.name,
-            logoSrc: playingApplet.applet.logoSrc,
-            description: playingApplet.applet.description,
-          }
-          const appletInstanceInfo: AppletInstanceInfo = {
-            appletId: entryHash,
-            installedAppInfo: allApps.find((app) => this.isSameApp(app, playingApplet.applet))!,
-            applet: playingApplet.applet,
-          };
+        // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
+        const appletsIAmPlaying = await this.appletsService.getAppletsIAmPlaying(cellClient);
+        const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying
+          .map(([entryHash, playingApplet]) => {
+            const appletClassInfo: AppletClassInfo = {
+              devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
+              name: playingApplet.applet.name,
+              logoSrc: playingApplet.applet.logoSrc,
+              description: playingApplet.applet.description,
+            }
+            const appletInstanceInfo: AppletInstanceInfo = {
+              appletId: entryHash,
+              installedAppInfo: allApps.find((app) => this.isSameApp(app, playingApplet.applet))!,
+              applet: playingApplet.applet,
+            };
 
-          // populate installedAppletClasses along the way
-          installedAppletClasses.put(playingApplet.applet.devhubHappReleaseHash, appletClassInfo);
+            // populate installedAppletClasses along the way
+            installedAppletClasses.put(playingApplet.applet.devhubHappReleaseHash, appletClassInfo);
 
-          return appletInstanceInfo;
+            return appletInstanceInfo;
         });
 
-      matrrrrriiix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
-    })
+        matrrrrriiix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
+        console.log("trying to get the entry of the matrix right back: ", matrrrrriiix.get(weGroupDnaHash));
+        console.log("matrrrix entries within forEach loop: ", matrrrrriiix.entries());
+      })
+    );
+
 
     // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
+    // this._matrix.set(matrrrrriiix);
     this._matrix.update((matrix) => {
       matrrrrriiix.entries().forEach(([key, value]) => matrix.put(key, value));
       return matrix;
@@ -578,6 +596,8 @@ export class MatrixStore {
       installedAppletClasses.entries().forEach(([key, value]) => appletClasses.put(key, value));
       return appletClasses;
     })
+    console.log("installed applet classes: ", installedAppletClasses);
+    console.log("installed applet classes entries: ", installedAppletClasses.entries());
 
     return derived(this._matrix, (m) => m);
   }

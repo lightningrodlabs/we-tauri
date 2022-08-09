@@ -2,7 +2,7 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { CircularProgress } from "@scoped-elements/material-web";
+import { Button, CircularProgress, IconButtonToggle } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../context";
@@ -99,18 +99,39 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
     return {
       "render-block": RenderBlock,
       "mwc-circular-progress": CircularProgress,
+      "mwc-button": Button,
+      "mwc-icon-button-toggle": IconButtonToggle,
     };
   }
 
-  static styles = [
-    sharedStyles,
-    css`
+  static get styles() {
+    const localStyles = css`
       :host {
         display: flex;
-        position: relative;
       }
-    `,
-  ];
+
+      .logo-large {
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background: white;
+      }
+
+      .logo-placeholder-large {
+        text-align: center;
+        font-size: 70px;
+        border-radius: 50%;
+        border: 4px solid black;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        background: white;
+      }
+    `;
+
+    return [sharedStyles, localStyles];
+  }
 
 
 }
