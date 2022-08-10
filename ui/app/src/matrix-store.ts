@@ -399,6 +399,7 @@ export class MatrixStore {
       matrix.values().forEach(([groupData, appletInfos]) => {
         console.log("filtering and pushing");
         console.log("applet infos: ", appletInfos);
+        console.log("devhubHappReleaseHash input: ", devhubHappReleaseHash);
         // const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
         // console.log("filtered infos: ", filteredInfos);
 
@@ -887,6 +888,8 @@ export class MatrixStore {
         hashMap.put(weGroupId, filteredArray);
         return hashMap;
       });
+
+      console.log("UPDATED new applets ARRAY: ", get(this._newAppletInstances).keys());
 
       // update _installedAppletClasses
       if (!get(this._installedAppletClasses).get(newAppletInfo.applet.devhubHappReleaseHash)) {

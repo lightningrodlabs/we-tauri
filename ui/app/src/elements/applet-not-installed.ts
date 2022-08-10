@@ -32,6 +32,24 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
     this._showAppletDescription = !this._showAppletDescription;
   }
 
+  async joinApplet() {
+    console.log("I AM JOINNNIIINNNG THIS APPPLET");
+    await this._matrixStore.joinApplet(this.weGroupId, this.appletInstanceId)
+      .then(() => {
+        console.log("I JOINNNNEEEEEDDDD THIS APPLET");
+        this.dispatchEvent(
+          new CustomEvent("applet-installed", {
+            detail: { appletEntryHash: this.appletInstanceId },
+            composed: true,
+            bubbles: true,
+            }
+          )
+        );
+        console.log("I DSPAAATTTCHEEEED THE EVVVVENT");
+      }).catch((e) => {
+        console.log("INSTALLATION FAILED: ", e);
+      })
+  }
 
   render() {
 
@@ -84,7 +102,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
               <mwc-button
                 style="margin-top: 50px;"
                 raised
-                @click=${() => this._matrixStore.joinApplet(this.weGroupId, this.appletInstanceId!)}
+                @click=${async () => await this.joinApplet()}
                 >INSTALL</mwc-button
               >
             </div>

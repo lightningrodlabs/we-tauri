@@ -21,6 +21,9 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
   @property()
   tooltipText!: string;
 
+  @property()
+  placement: "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end" = "right";
+
   @query("#tooltip")
   _tooltip!: SlTooltip;
 
@@ -38,7 +41,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     return html`<sl-tooltip
       hoist
       id="tooltip"
-      placement="right"
+      placement="${this.placement}"
       .content=${this.tooltipText}
     >
       <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
