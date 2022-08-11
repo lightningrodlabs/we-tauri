@@ -137,7 +137,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <mwc-fab
             style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
             icon="home"
-            class="home-button"
+            class="group-home-button"
             @click=${() => {
               this._selectedAppletInstanceId = undefined;
               this._dashboardMode = DashboardMode.WeGroupHome;
@@ -163,6 +163,17 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       // and show the special modes of the chosen applet class
     } else if (this._navigationMode === NavigationMode.AppletCentric) {
       return html`
+        <mwc-fab
+          style="margin-left: 18px; margin-right: -12px; border-radius: 50%;"
+          icon="home"
+          class="applet-home-button"
+          @click=${() => {
+            this._selectedAppletInstanceId = undefined;
+            this._selectedWeGroupId = undefined;
+            this._dashboardMode = DashboardMode.AppletClassHome;
+          }}
+        ></mwc-fab>
+
         ${this.renderWeGroupIconsSecondary(
           get(
             this._matrixStore.getInstanceInfosForAppletClass(
@@ -215,6 +226,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     } else if (this._dashboardMode === DashboardMode.AppletClassHome) {
       return html`
         <applet-class-home
+          style="flex: 1;"
           .appletClassId=${this._selectedAppletClassId}
         ></applet-class-home>
       `;
@@ -266,7 +278,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       this._dashboardMode = DashboardMode.WeGroupHome;
     }
     this._selectedWeGroupId = weGroupId;
-    this.requestUpdate();
   }
 
   handleWeGroupIconSecondaryClick(weGroupId: DnaHash, appletId: EntryHash) {
@@ -287,6 +298,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   handleNavigationSwitch() {
     if (this._navigationMode === NavigationMode.AppletCentric) {
+      if (this._selectedAppletInstanceId == undefined) { // for example when "Merge Eye View" is selected
+        // select the first group in the list and show it's Group Home Page and set the selected class Id to undefined
+        this._selectedWeGroupId = this._allWeGroupInfos.value.keys()[0];
+        this._selectedAppletClassId = undefined;
+        this._dashboardMode = DashboardMode.WeGroupHome;
+      }
+
       this._navigationMode = NavigationMode.GroupCentric;
       (this.shadowRoot?.getElementById("applet-centric-snackbar") as Snackbar).close();
       (this.shadowRoot?.getElementById("group-centric-snackbar") as Snackbar).show();
@@ -294,6 +312,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         this._dashboardMode = DashboardMode.WeGroupHome;
       }
     } else if (this._navigationMode === NavigationMode.GroupCentric) {
+      if (this._selectedAppletClassId == undefined) {
+        // choose the first class Id in the list
+        this._selectedAppletClassId = this._allAppletClasses.value.keys()[0];
+        this._dashboardMode = DashboardMode.AppletClassHome;
+      }
       this._navigationMode = NavigationMode.AppletCentric;
       (this.shadowRoot?.getElementById("group-centric-snackbar") as Snackbar).close();
       (this.shadowRoot?.getElementById("applet-centric-snackbar") as Snackbar).show();
@@ -567,7 +590,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar id="group-centric-snackbar" labelText="Group-Centric Navigation" style="text-align: center;"></mwc-snackbar>
 
       <div class="navigation-switch-container ${classMap({
-          invisible: this._dashboardMode == DashboardMode.MainHome || this._selectedAppletInstanceId == undefined })}
+          invisible: this._dashboardMode == DashboardMode.MainHome })}
       ">
         <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
           <mwc-icon class="navigation-switch" @click=${this.handleNavigationSwitch}>open_in_full</mwc-icon>
@@ -775,9 +798,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           left: 42px;
         }
 
-        .home-button {
+        .group-home-button {
           margin-bottom: 4px;
           --mdc-theme-secondary: #303f9f;
+          --mdc-fab-focus-outline-color: white;
+          --mdc-fab-focus-outline-width: 4px;
+        }
+
+        .applet-home-button {
+          margin-bottom: 4px;
+          --mdc-theme-secondary: #9ca5e3;
           --mdc-fab-focus-outline-color: white;
           --mdc-fab-focus-outline-width: 4px;
         }

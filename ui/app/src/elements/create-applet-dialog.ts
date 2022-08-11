@@ -30,7 +30,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   _allApplets = new TaskSubscriber(
     this,
     () => this._matrixStore.fetchAllApplets(this.weGroupId),
-    () => [this._matrixStore]
+    () => [this._matrixStore, this.weGroupId]
   );
 
   @query("#applet-dialog")
@@ -93,6 +93,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
+      console.log("CREATING APPLET FOR GROUP WITH ID: ", this.weGroupId);
       const appletEntryHash = await this._matrixStore.createApplet(
         this.weGroupId,
         this._appletInfo,

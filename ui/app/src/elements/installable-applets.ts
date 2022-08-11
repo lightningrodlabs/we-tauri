@@ -40,7 +40,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
 
       return getAllPublishedApps(this._matrixStore.appWebsocket, devhubHapp);
     },
-    () => [this._matrixStore]
+    () => [this._matrixStore, this.weGroupId]
   );
 
   @state()

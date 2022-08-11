@@ -230,6 +230,21 @@ export class MatrixStore {
     return readable(info);
   }
 
+
+
+  public getAppletClassInfo(appletClassId: EntryHash): Readable<AppletClassInfo | undefined> {
+    console.log("trying to find the right classInfo");
+    // const classStrings = get(this._installedAppletClasses).keys().map(())
+
+    return derived(this._installedAppletClasses, (hashMap) => {
+      const maybeClass = hashMap.entries()
+        .find(([classId, classInfo]) => JSON.stringify(classId) === JSON.stringify(appletClassId));
+      console.log("MAYBE CLASS: ", maybeClass);
+      return maybeClass ? maybeClass[1] : undefined;
+    })
+  }
+
+
   /**
    * Checks whether the specified applet Instance is installed in the conductor
    *
@@ -624,7 +639,7 @@ export class MatrixStore {
               applet: playingApplet.applet,
             };
 
-            console.log("MATRIX FILLING: APPLET NAME: ", playingApplet.applet.name,"INSTALLED APP ID",  appletInstanceInfo.installedAppInfo.installed_app_id);
+            // console.log("MATRIX FILLING: APPLET NAME: ", playingApplet.applet.name,"INSTALLED APP ID",  appletInstanceInfo.installedAppInfo.installed_app_id);
 
             // populate installedAppletClasses along the way
             installedAppletClasses.put(

@@ -2,6 +2,12 @@ import { css } from "lit";
 
 export const sharedStyles = css`
 
+
+
+  .default-font {
+        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+
   .column {
     display: flex;
     flex-direction: column;
@@ -16,7 +22,7 @@ export const sharedStyles = css`
     align-items: center;
   }
 
-  .title {    
+  .title {
     font-size: 20px;
   }
 
