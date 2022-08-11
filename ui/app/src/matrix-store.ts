@@ -44,7 +44,6 @@ import {
   InstalledAppletInfo,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import { WeInfo } from "./interior/types";
 import {
   Applet,
   AppletGui,
@@ -55,6 +54,7 @@ import {
   IconSrcOption,
   PlayingApplet,
   RegisterAppletInput,
+  WeInfo,
 } from "./types";
 import { importModuleFromFile } from "./processes/import-module-from-file";
 import { getDevHubAppId } from "./processes/devhub/app-id";
@@ -1174,10 +1174,11 @@ export class MatrixStore {
     const matrix = get(this._matrix);
     let appletInfosOfClass: InstalledAppletInfo[] = [];
     matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
+      console.log("appletInstanceInfos: ", appletInstanceInfos);
       const weInfo: WeInfo = weGroupData.info.info;
       const weGroupId: DnaHash = weGroupData.info.dna_hash;
       const relevantAppletInstanceInfos = appletInstanceInfos.filter(
-        (info) => info.applet.devhubHappReleaseHash == devhubHappReleaseHash
+        (info) => JSON.stringify(info.applet.devhubHappReleaseHash) === JSON.stringify(devhubHappReleaseHash)
       );
       const relevantInstalledAppletInfos = relevantAppletInstanceInfos.map(
         (appletInstanceInfo) => {
@@ -1188,6 +1189,8 @@ export class MatrixStore {
           return installedAppletInfo;
         }
       );
+
+      console.log("relevantAppletInfos: ", relevantInstalledAppletInfos);
 
       appletInfosOfClass = [
         ...appletInfosOfClass,
@@ -1213,12 +1216,9 @@ export class MatrixStore {
     installedAppInfo.cell_data.forEach((installedCell) => {
       if (!applet.dnaHashes[installedCell.role_id] ||
       JSON.stringify(applet.dnaHashes[installedCell.role_id]) !== JSON.stringify(installedCell.cell_id[0])) {
-        console.log("IS **NOT** THE SAME APP!", installedAppInfo.installed_app_id, "<->", applet.name)
         isSame = false;
       }
     });
-
-    if (isSame) console.log("IS THE **SAME** APP!", installedAppInfo.installed_app_id, "<->", applet.name);
     return isSame;
   }
 }

@@ -266,6 +266,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       this._dashboardMode = DashboardMode.WeGroupHome;
     }
     this._selectedWeGroupId = weGroupId;
+    this.requestUpdate();
   }
 
   handleWeGroupIconSecondaryClick(weGroupId: DnaHash, appletId: EntryHash) {

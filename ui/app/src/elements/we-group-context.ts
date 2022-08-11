@@ -60,6 +60,7 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
     if (changedValues.has("weGroupId")) {
       this._profilesProvider.setValue(this._profilesStore.value);
       this._peerStatusProvider.setValue(this._peerStatusStore.value);
+      this._weGroupIdProvider.setValue(this.weGroupId);
     }
   }
 

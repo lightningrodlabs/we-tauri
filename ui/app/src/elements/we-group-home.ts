@@ -34,7 +34,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   _info = new TaskSubscriber(
     this,
     () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
-    () => [this._matrixStore]
+    () => [this._matrixStore, this.weGroupId]
   );
 
   _allMembers = new TaskSubscriber(
