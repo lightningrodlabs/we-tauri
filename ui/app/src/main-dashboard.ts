@@ -208,6 +208,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     } else if (this._dashboardMode === DashboardMode.AppletClassRendering) {
       return html`
         <applet-class-renderer
+          style="display: flex; flex: 1;"
           .appletClassId=${this._selectedAppletClassId}
         ></applet-class-renderer>
       `;
@@ -260,14 +261,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
-    this._selectedWeGroupId = weGroupId;
     this._navigationMode = NavigationMode.GroupCentric;
-    if (
-      this._dashboardMode !== DashboardMode.WeGroupHome &&
-      this._dashboardMode !== DashboardMode.AppletGroupInstanceRendering
-    ) {
+    if (this._selectedWeGroupId !== weGroupId) {
       this._dashboardMode = DashboardMode.WeGroupHome;
     }
+    this._selectedWeGroupId = weGroupId;
   }
 
   handleWeGroupIconSecondaryClick(weGroupId: DnaHash, appletId: EntryHash) {
@@ -281,8 +279,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
   }
 
-  handleBirdsEyeViewClick() {
+  handleMergeEyeViewClick() {
     this._dashboardMode = DashboardMode.AppletClassRendering;
+    this._selectedAppletInstanceId = undefined;
   }
 
   handleNavigationSwitch() {
@@ -482,8 +481,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   renderNewAppletInstanceIcons(
     allNewAppletInstances: DnaHashMap<NewAppletInstanceInfo[]>
   ) {
-
-    console.log(this._selectedWeGroupId!);
     const relevantNewAppletInstances = allNewAppletInstances.get(
       this._selectedWeGroupId!
     );
@@ -535,9 +532,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         placement="bottom"
         style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
         logoSrc="https://drive.switch.ch/index.php/s/wGKK6ZXLuxRb3EY/download"
-        tooltipText="Birds Eye View"
+        tooltipText="Merge Eye View"
         @click=${() => {
-          this.handleBirdsEyeViewClick();
+          this.handleMergeEyeViewClick();
           this.requestUpdate();
         }}
         class=${classMap({
@@ -576,7 +573,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         </sl-tooltip>
       </div>
 
-      <div class="row" style="flex: 1">
+      <div class="row" style="flex: 1"
+        @we-added=${(e) => { this._selectedWeGroupId = e.detail }}
+      >
         <div class="column">
           <div class="top-left-corner-bg ${classMap({
                   tlcbgGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,

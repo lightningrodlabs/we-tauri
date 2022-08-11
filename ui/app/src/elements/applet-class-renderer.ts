@@ -41,7 +41,7 @@ export class AppletClassRenderer extends ScopedElementsMixin(LitElement) {
         html`
           <render-block
             .renderer=${renderer.blocks.find(
-              (renderBlock) => renderBlock.name === "applet-class-renderer"
+              (renderBlock) => renderBlock.name === "merge-eye-view"
               )?.render
             }
             style="flex: 1"

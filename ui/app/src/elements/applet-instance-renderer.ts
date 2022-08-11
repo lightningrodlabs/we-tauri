@@ -35,6 +35,7 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
     this,
     async () => {
       await sleep(1);
+      console.log("FETCHING APPLET INSTANCE RENDERERS FOR ID: ", this.appletInstanceId);
       return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId, {
         profilesStore: this._profilesStore,
       });
