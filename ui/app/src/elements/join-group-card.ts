@@ -31,8 +31,10 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
   matrixStore!: MatrixStore;
 
-  _myInvitations = new TaskSubscriber(this, () =>
-    this.matrixStore.membraneInvitationsStore.fetchMyInvitations()
+  _myInvitations = new TaskSubscriber(
+    this,
+    () => this.matrixStore.membraneInvitationsStore.fetchMyInvitations(),
+    () => [this.matrixStore],
   );
 
   @query("#copied-snackbar")
@@ -47,7 +49,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       .joinWeGroup(
         invitationHeaderHash,
         properties.name,
-        properties.logo_src,
+        properties.logoSrc,
         properties.timestamp
       )
       .then()

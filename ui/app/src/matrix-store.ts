@@ -595,6 +595,31 @@ export class MatrixStore {
         const weGroupDnaHash = weGroupCell.cell_id[0];
         const weGroupCellClient = new CellClient(this.holochainClient, weGroupCell);
 
+        // add signal handler to listen for "NewApplet" events
+        weGroupCellClient.addSignalHandler((signal) => {
+          const payload = signal.data.payload;
+
+          if (!payload.message) return;
+
+          switch (payload.message.type) {
+            case "NewApplet":
+              this._newAppletInstances.update((store) => {
+                const newAppletInstanceInfo: NewAppletInstanceInfo = {
+                  appletId: payload.appletHash,
+                  applet: payload.message.content,
+                };
+
+                let updatedList = store.get(weGroupDnaHash);
+                updatedList.push(newAppletInstanceInfo);
+
+                store.put(weGroupDnaHash, updatedList);
+
+                return store;
+              });
+              break;
+          }
+        });
+
         const profilesStore = new ProfilesStore(
           new ProfilesService(weGroupCellClient)
         );
@@ -1134,6 +1159,7 @@ export class MatrixStore {
   }
 
   // +++++++++++++++      H E L P E R    M E T H O D S    B E L O W      +++++++++++++++++++++++++++++++
+
 
   getWeGroupInfoForAppletInstance(appletInstanceId: EntryHash): WeGroupInfo {
     return get(this._matrix)
