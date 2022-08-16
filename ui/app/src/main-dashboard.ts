@@ -579,6 +579,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
 
+  handleWeGroupAdded(e: CustomEvent) {
+    this._selectedWeGroupId = e.detail;
+    this._selectedAppletInstanceId = undefined;
+    this._selectedAppletClassId = undefined;
+    this._dashboardMode = DashboardMode.WeGroupHome;
+  }
+
+
 
   handleAppletInstalled(e: CustomEvent) {
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
@@ -591,6 +599,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <create-we-group-dialog
+        @we-added=${(e) => this.handleWeGroupAdded(e)}
         id="create-we-group-dialog"
       ></create-we-group-dialog>
 
@@ -605,9 +614,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         </sl-tooltip>
       </div>
 
-      <div class="row" style="flex: 1"
-        @we-added=${(e) => { this._selectedWeGroupId = e.detail }}
-      >
+      <div class="row" style="flex: 1">
         <div class="column">
           <div class="top-left-corner-bg ${classMap({
                   tlcbgGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
