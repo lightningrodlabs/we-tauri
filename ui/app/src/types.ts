@@ -54,7 +54,7 @@ export enum RenderingMode {
 
 
 export interface WeInfo {
-  logo_src: string;
+  logoSrc: string;
   name: string;
 }
 

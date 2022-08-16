@@ -3,7 +3,7 @@ import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
@@ -26,6 +26,8 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
   //   () => [this._matrixStore, this.appletClassId]
   // );
 
+  @state()
+  private _showHelp: boolean = false;
 
   render() {
     const appletClassInfo = get(this._matrixStore.getAppletClassInfo(this.appletClassId))
@@ -33,8 +35,8 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
     <div class="column" style="flex: 1; align-items: center; position: relative;">
 
 
-      <div class="applet-instances-container">On the left end of the top bar you can see all instances of this applet in all of your groups.</div>
-      <div class="special-mode-container">On that end of the top bar you can see special modes this applet may provide.</div>
+      <div class="applet-instances-container ${this._showHelp ? "" : "invisible"}">On the left end of the top bar you can see all instances of this applet in all of your groups.</div>
+      <div class="special-mode-container ${this._showHelp ? "" : "invisible"}">On that end of the top bar you can see special modes this applet may provide.</div>
 
       ${ appletClassInfo!.logoSrc
         ? html`<img src=${appletClassInfo!.logoSrc!} />`
@@ -59,6 +61,10 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
       .title {
         font-size: 1.4em;
         margin-top: 50px;
+      }
+
+      .invisible {
+        display: none;
       }
 
       .content {

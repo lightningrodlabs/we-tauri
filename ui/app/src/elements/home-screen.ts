@@ -55,7 +55,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       .joinWeGroup(
         invitationHeaderHash,
         properties.name,
-        properties.logo_src,
+        properties.logoSrc,
         properties.timestamp
       )
       .then()
@@ -79,7 +79,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   }
 
   weImg(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).logo_src;
+    return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
   }
 
   inviter(invitation: JoinMembraneInvitation) {

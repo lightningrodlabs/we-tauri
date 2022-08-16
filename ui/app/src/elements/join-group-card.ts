@@ -71,7 +71,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   }
 
   weImg(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).logo_src;
+    return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
   }
 
   inviter(invitation: JoinMembraneInvitation) {

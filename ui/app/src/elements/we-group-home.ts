@@ -126,7 +126,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     ? html`<img
                         class="logo-large"
                         style=" width: 150px; height: 150px;"
-                        src=${this._info.value.logo_src}
+                        src=${this._info.value.logoSrc}
                       />`
                     : html``}
                   <div
@@ -165,7 +165,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               <img
                 class="we-logo"
                 style="margin-top: 30px;"
-                src=${this._info.value?.logo_src!}
+                src=${this._info.value?.logoSrc!}
               />
               <div
                 style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"

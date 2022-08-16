@@ -723,7 +723,7 @@ export class MatrixStore {
     const weDnaHash = serializeHash(weCell.cell_id[0]);
 
     const properties = {
-      logo_src: logo,
+      logoSrc: logo,
       name: name,
       timestamp,
     };
@@ -765,7 +765,7 @@ export class MatrixStore {
     const weDnaHash = serializeHash(weGroupCell.cell_id[0]);
 
     const properties = {
-      logo_src: logo,
+      logoSrc: logo,
       name: name,
       timestamp,
     };
@@ -826,7 +826,7 @@ export class MatrixStore {
 
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
-        logo_src: properties.logo_src,
+        logoSrc: properties.logoSrc,
         name: properties.name,
       };
 

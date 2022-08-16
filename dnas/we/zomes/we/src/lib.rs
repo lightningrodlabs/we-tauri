@@ -20,6 +20,7 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
 entry_defs![PathEntry::entry_def()];
 
 #[derive(Clone, Serialize, Deserialize, Debug, SerializedBytes)]
+#[serde(rename_all = "camelCase")]
 pub struct WeInfo {
     logo_src: String,
     name: String,

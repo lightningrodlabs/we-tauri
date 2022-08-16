@@ -276,6 +276,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
       this._dashboardMode = DashboardMode.WeGroupHome;
+      this._selectedAppletInstanceId = undefined;
+      this._selectedAppletClassId = undefined;
     }
     this._selectedWeGroupId = weGroupId;
   }
@@ -338,7 +340,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           html`
             <sidebar-button
               style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
-              .logoSrc=${weGroupInfo.info.logo_src}
+              .logoSrc=${weGroupInfo.info.logoSrc}
               .tooltipText=${weGroupInfo.info.name}
               @click=${() => {
                 this.handleWeGroupIconPrimaryClick(weGroupInfo.dna_hash);
@@ -377,7 +379,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               <sidebar-button
                 placement="bottom"
                 style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-                .logoSrc=${weGroupInfo.info.logo_src}
+                .logoSrc=${weGroupInfo.info.logoSrc}
                 .tooltipText=${weGroupInfo.info.name +
                 " - " +
                 appletInstanceInfo.applet.name}

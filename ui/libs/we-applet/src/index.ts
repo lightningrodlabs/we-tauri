@@ -35,7 +35,7 @@ export interface WeApplet {
 
 
 export interface WeInfo {
-  logo_src: string;
+  logoSrc: string;
   name: string;
 }
 export interface InstalledAppletInfo {
