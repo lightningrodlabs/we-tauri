@@ -293,6 +293,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
   }
 
+  handleAppletClassIconClick(classId: EntryHash) {
+    if (this._selectedAppletClassId !== classId) {
+      this._selectedAppletClassId = classId;
+      this._selectedAppletInstanceId = undefined;
+      this._dashboardMode = DashboardMode.AppletClassHome;
+    }
+  }
+
   handleMergeEyeViewClick() {
     this._dashboardMode = DashboardMode.AppletClassRendering;
     this._selectedAppletInstanceId = undefined;
@@ -411,9 +419,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             .logoSrc=${appletClassInfo.logoSrc}
             .tooltipText=${appletClassInfo.name}
             @click=${() => {
-              this._selectedAppletClassId =
-                appletClassInfo.devhubHappReleaseHash;
-              this.requestUpdate();
+              this.handleAppletClassIconClick(appletClassInfo.devhubHappReleaseHash)
             }}
             class=${classMap({
               highlightedAppletCentric:
