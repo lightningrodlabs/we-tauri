@@ -18,7 +18,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   _matrixStore!: MatrixStore;
 
 
-  @contextProvided({ context: weGroupContext })
+  @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @property()

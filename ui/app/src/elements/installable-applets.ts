@@ -30,7 +30,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext })
+  @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _installableApplets = new Task(

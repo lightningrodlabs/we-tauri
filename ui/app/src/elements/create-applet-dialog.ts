@@ -5,7 +5,6 @@ import { contextProvided } from "@lit-labs/context";
 import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
-  Card,
   Button,
   Snackbar,
   Dialog,
@@ -13,7 +12,6 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../sharedStyles";
-import { getAllPublishedApps } from "../processes/devhub/get-happs";
 import { AppletInfo } from "../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../matrix-store";
@@ -24,7 +22,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext })
+  @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _allApplets = new TaskSubscriber(

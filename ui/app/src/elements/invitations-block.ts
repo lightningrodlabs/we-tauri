@@ -22,7 +22,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext })
+  @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @state()

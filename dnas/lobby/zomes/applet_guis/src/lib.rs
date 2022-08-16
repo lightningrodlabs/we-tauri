@@ -8,7 +8,6 @@ entry_defs![PathEntry::entry_def(), AppletGui::entry_def()];
 pub fn query_applet_gui(devhub_happ_release_hash: EntryHash) -> ExternResult<AppletGui> {
 
   println!("+_+_+_+_+_+_+_+_+_+_+_+ QUERY APPLET GUI");
-  debug!("+_+_+_+_+_+_+_+_+_+_+_+ QUERY APPLET GUI");
 
   // query source chain
   let filter = ChainQueryFilter::new()
