@@ -40,7 +40,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
 
-  async join(
+  async joinGroup(
     invitationHeaderHash: HeaderHashB64,
     invitation: JoinMembraneInvitation
   ) {
@@ -52,7 +52,15 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         properties.logoSrc,
         properties.timestamp
       )
-      .then()
+      .then((weGroupId) => {
+        this.dispatchEvent(
+          new CustomEvent("we-group-joined", {
+            detail: weGroupId,
+            bubbles: true,
+            composed: true,
+          })
+        );
+      })
       .catch((e) => {
         if (e.data.data) {
           if (e.data.data.includes("AppAlreadyInstalled")) {
@@ -164,7 +172,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                         raised
                         label="JOIN"
                         icon="check"
-                        @click=${() => this.join(headerHash, invitation)}
+                        @click=${() => this.joinGroup(headerHash, invitation)}
                       ></mwc-button>
                       <mwc-button
                         class="delete-invitation"

@@ -355,8 +355,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 this.requestUpdate();
               }}
               class=${classMap({
-                highlightedGroupCentric: weGroupInfo.dna_hash === this._selectedWeGroupId,
-                groupCentricIconHover: weGroupInfo.dna_hash != this._selectedWeGroupId,
+                highlightedGroupCentric: JSON.stringify(weGroupInfo.dna_hash) === JSON.stringify(this._selectedWeGroupId),
+                groupCentricIconHover: JSON.stringify(weGroupInfo.dna_hash) != JSON.stringify(this._selectedWeGroupId),
               })}
             ></sidebar-button>
           `
@@ -390,7 +390,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 .logoSrc=${weGroupInfo.info.logoSrc}
                 .tooltipText=${weGroupInfo.info.name +
                 " - " +
-                appletInstanceInfo.applet.name}
+                appletInstanceInfo.applet.customName}
                 @click=${() => {
                   this.handleWeGroupIconSecondaryClick(
                     weGroupInfo.dna_hash,
@@ -399,8 +399,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                   this.requestUpdate();
                 }}
                 class=${classMap({
-                  highlightedGroupCentric: appletInstanceInfo.appletId === this._selectedAppletInstanceId,
-                  groupCentricIconHover: appletInstanceInfo.appletId !== this._selectedAppletInstanceId,
+                  highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                  groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
                 })}
               ></sidebar-button>
             </applet-icon-badge>
@@ -417,14 +417,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <sidebar-button
             style="margin-top: 4px; margin-bottom: 4px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
             .logoSrc=${appletClassInfo.logoSrc}
-            .tooltipText=${appletClassInfo.name}
+            .tooltipText=${appletClassInfo.title}
             @click=${() => {
               this.handleAppletClassIconClick(appletClassInfo.devhubHappReleaseHash)
             }}
             class=${classMap({
               highlightedAppletCentric:
-                appletClassInfo.devhubHappReleaseHash ===
-                this._selectedAppletClassId,
+                JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
+                JSON.stringify(this._selectedAppletClassId),
               appletCentricIconHover:
                 appletClassInfo.devhubHappReleaseHash !=
                 this._selectedAppletClassId,
@@ -449,7 +449,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               placement="bottom"
               style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
               .logoSrc=${appletClassInfo.logoSrc}
-              .tooltipText=${appletClassInfo.name}
+              .tooltipText=${appletClassInfo.title}
               @click=${() => {
                 this._selectedAppletClassId =
                   appletClassInfo.devhubHappReleaseHash;
@@ -459,8 +459,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               }}
               class=${classMap({
                 highlightedAppletCentric:
-                  appletClassInfo.devhubHappReleaseHash ===
-                  this._selectedAppletClassId,
+                  JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
+                  JSON.stringify(this._selectedAppletClassId),
                 appletCentricIconHover:
                   appletClassInfo.devhubHappReleaseHash !=
                   this._selectedAppletClassId,
@@ -482,7 +482,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             placement="bottom"
             style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
             .logoSrc=${appletInstanceInfo.applet.logoSrc}
-            .tooltipText=${appletInstanceInfo.applet.name}
+            .tooltipText=${appletInstanceInfo.applet.customName}
             @click=${() => {
               this._selectedAppletInstanceId = appletInstanceInfo.appletId;
               this._selectedAppletClassId =
@@ -492,9 +492,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             }}
             class=${classMap({
               highlightedAppletCentric:
-                appletInstanceInfo.appletId === this._selectedAppletInstanceId,
+              JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
               appletCentricIconHover:
-                appletInstanceInfo.appletId != this._selectedAppletInstanceId,
+              JSON.stringify(appletInstanceInfo.appletId) != JSON.stringify(this._selectedAppletInstanceId),
             })}
           >
           </sidebar-button>
@@ -527,7 +527,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 placement="bottom"
                 style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
                 .logoSrc=${newAppletInstanceInfo.applet.logoSrc}
-                .tooltipText=${newAppletInstanceInfo.applet.name}
+                .tooltipText=${newAppletInstanceInfo.applet.customName}
                 @click=${() => {
                   this.handleNewAppletInstanceIconClick(
                     newAppletInstanceInfo.appletId
@@ -536,11 +536,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 }}
                 class=${classMap({
                   highlightedAppletCentric:
-                    newAppletInstanceInfo.appletId ===
-                    this._selectedAppletInstanceId,
+                  JSON.stringify(newAppletInstanceInfo.appletId) ===
+                    JSON.stringify(this._selectedAppletInstanceId),
                   appletCentricIconHover:
-                    newAppletInstanceInfo.appletId !=
-                    this._selectedAppletInstanceId,
+                  JSON.stringify(newAppletInstanceInfo.appletId) !=
+                    JSON.stringify(this._selectedAppletInstanceId),
                 })}
               >
               </sidebar-button>
@@ -584,14 +584,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
     this._dashboardMode = DashboardMode.WeGroupHome;
+    this._navigationMode = NavigationMode.GroupCentric;
   }
-
 
 
   handleAppletInstalled(e: CustomEvent) {
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
     this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(e.detail.appletEntryHash)?.applet.devhubHappReleaseHash;
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
+    this._navigationMode = NavigationMode.GroupCentric;
     this._newAppletInstances.run();
     this.requestUpdate();
   }
@@ -614,7 +615,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         </sl-tooltip>
       </div>
 
-      <div class="row" style="flex: 1">
+      <div class="row" style="flex: 1" @we-group-joined=${(e) => this.handleWeGroupAdded(e)}>
         <div class="column">
           <div class="top-left-corner-bg ${classMap({
                   tlcbgGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,

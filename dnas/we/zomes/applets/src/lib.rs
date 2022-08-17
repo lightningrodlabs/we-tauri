@@ -20,7 +20,9 @@ entry_defs![PathEntry::entry_def(), Applet::entry_def()];
 #[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Applet {
-    pub name: String,
+    pub custom_name: String, // name of the applet instance as chosen by the person adding it to the group,
+
+    pub title: String, // title of the applet in the devhub
     pub description: String,
     pub logo_src: Option<String>,
 

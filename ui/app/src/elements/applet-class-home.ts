@@ -42,7 +42,7 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
         ? html`<img src=${appletClassInfo!.logoSrc!} />`
         : html ``
       }
-      <div class="title default-font">This is the Home of the <b>${appletClassInfo!.name}</b> Applet</div>
+      <div class="title default-font">This is the Home of the <b>${appletClassInfo!.title}</b> Applet</div>
       <div class="content default-font">In future versions of <b>We</b> and/or this Applet you may be able to customize what you see on this page.</div>
 
 

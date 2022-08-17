@@ -26,7 +26,8 @@ async fn create_applet() {
     let bob_zome = bobbo.zome("applets");
 
     let applet = Applet {
-        name: String::from("name"),
+        custom_name: String::from("custom name"),
+        title: String::from("Some applet title"),
         description: String::from("description"),
         logo_src: None,
         devhub_happ_release_hash: fixt!(EntryHash),

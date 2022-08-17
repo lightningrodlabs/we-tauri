@@ -116,7 +116,7 @@ export interface AppletClassData {
 /**Info about a type of Applet of which one or many may be installed */
 export interface AppletClassInfo {
   devhubHappReleaseHash: EntryHash;
-  name: string;
+  title: string; // title of the applet in the devhub
   logoSrc: string | undefined;
   description: string;
 }
@@ -652,7 +652,7 @@ export class MatrixStore {
           ([entryHash, playingApplet]) => {
             const appletClassInfo: AppletClassInfo = {
               devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
-              name: playingApplet.applet.name, // THIS IS NOT CORRECT. IT SHOULD INSTEAD BE THE TITLE OF THE APPLET IN THE DEVHUB!
+              title: playingApplet.applet.title,
               logoSrc: playingApplet.applet.logoSrc,
               description: playingApplet.applet.description,
             };
@@ -767,9 +767,10 @@ export class MatrixStore {
     name: string,
     logo: string,
     timestamp: number
-  ) {
-    await this.installWeGroup(name, logo, timestamp);
+  ): Promise<DnaHash> {
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, timestamp);
     await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
+    return newWeGroupDnaHash;
   }
 
   public async removeInvitation(invitationHeaderHash: HeaderHashB64) {
@@ -920,7 +921,7 @@ export class MatrixStore {
       const weGroupCellData = cellClient.cell;
 
       const uid = Object.values(newAppletInfo.applet.uid)[0];
-      const installedAppId = `${uid}-${newAppletInfo.applet.name}`;
+      const installedAppId = `${uid}-${newAppletInfo.applet.customName}`;
 
       // install app bundle
       const request: InstallAppBundleRequest = {
@@ -990,7 +991,7 @@ export class MatrixStore {
       ) {
         this._installedAppletClasses.update((hashMap) => {
           hashMap.put(newAppletInfo!.applet.devhubHappReleaseHash, {
-            name: newAppletInfo!.applet.name,
+            title: newAppletInfo!.applet.title,
             logoSrc: newAppletInfo!.applet.logoSrc,
             description: newAppletInfo!.applet.description,
             devhubHappReleaseHash: newAppletInfo!.applet.devhubHappReleaseHash,
@@ -1058,7 +1059,8 @@ export class MatrixStore {
     });
 
     const applet: Applet = {
-      name: customName,
+      customName,
+      title: appletInfo.title,
       description: appletInfo.description,
       // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
       logoSrc: iconSrcOption,
@@ -1097,7 +1099,7 @@ export class MatrixStore {
     if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
       this._installedAppletClasses.update((hashMap) => {
         hashMap.put(applet.devhubHappReleaseHash, {
-          name: applet.name,
+          title: applet.title,
           logoSrc: applet.logoSrc,
           description: applet.description,
           devhubHappReleaseHash: applet.devhubHappReleaseHash,

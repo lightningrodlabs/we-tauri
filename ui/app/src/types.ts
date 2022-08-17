@@ -59,7 +59,8 @@ export interface WeInfo {
 }
 
 export interface Applet {
-  name: string;
+  customName: string; // name of the applet instance as chosen by the person adding it to the group,
+  title: string; // title of the applet in the devhub
   description: string;
   logoSrc: string | undefined;
 

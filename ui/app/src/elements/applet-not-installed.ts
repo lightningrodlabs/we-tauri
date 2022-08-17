@@ -67,14 +67,14 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                     class="logo-placeholder-large"
                     style="width: 100px; height: 100px;"
                   >
-                    ${appletInstanceInfo.applet.name[0]}
+                    ${appletInstanceInfo.applet.customName[0]}
                   </div>`
                 : html`<img class="logo-large" src=${appletInstanceInfo.applet.logoSrc} />`}
               <div class="row center-content" style="margin-top: 20px;">
                 <div
                   style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
                 >
-                  ${appletInstanceInfo.applet.name}
+                  ${appletInstanceInfo.applet.customName}
                 </div>
                 <mwc-icon-button-toggle
                   onIcon="expand_less"
