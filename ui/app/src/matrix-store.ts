@@ -36,7 +36,6 @@ import {
   ActionHash,
 } from "@holochain/client";
 import {
-  MembraneInvitationsService,
   MembraneInvitationsStore,
 } from "@holochain-open-dev/membrane-invitations";
 import { decode, encode } from "@msgpack/msgpack";
@@ -186,7 +185,8 @@ export class MatrixStore {
     this.lobbyCell = lobbyCell;
     const lobbyCellClient = new CellClient(holochainClient, lobbyCell);
     this.membraneInvitationsStore = new MembraneInvitationsStore(
-      lobbyCellClient
+      lobbyCellClient,
+      "membrane_invitations_coordinator"
     );
     this.myAgentPubKey = lobbyCell.cell_id[1];
     this.appletsService = new GlobalAppletsService(lobbyCellClient);
