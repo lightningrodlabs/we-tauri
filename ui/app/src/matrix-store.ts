@@ -1,11 +1,13 @@
 import {
   EntryHashB64,
-  HeaderHashB64,
+  ActionHashB64,
   AgentPubKeyB64,
   DnaHashB64,
+} from "@holochain-open-dev/core-types";
+import {
   serializeHash,
   deserializeHash,
-} from "@holochain-open-dev/core-types";
+} from "@holochain-open-dev/utils";
 import { CellClient, HolochainClient } from "@holochain-open-dev/cell-client";
 import {
   writable,
@@ -31,13 +33,14 @@ import {
   AppWebsocket,
   InstallAppBundleRequest,
   InstalledAppId,
+  ActionHash,
 } from "@holochain/client";
 import {
   MembraneInvitationsService,
   MembraneInvitationsStore,
 } from "@holochain-open-dev/membrane-invitations";
 import { decode, encode } from "@msgpack/msgpack";
-import { DnaHashMap, EntryHashMap, HoloHashMap } from "./holo-hash-map-temp";
+import { DnaHashMap, EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import {
   AppletRenderers,
   WeApplet,
@@ -705,16 +708,16 @@ export class MatrixStore {
    */
   public async inviteToJoinGroup(
     weGroupId: DnaHash,
-    agentPubKey: AgentPubKeyB64
+    agentPubKey: AgentPubKey
   ): Promise<void> {
     const weGroupCell = get(this._matrix).get(weGroupId)[0].cellClient.cell
       .cell_id;
     const myAgentPubKey = serializeHash(weGroupCell[1]);
-    const weGroupDnaHash = serializeHash(weGroupCell[0]);
+    const weGroupDnaHash = weGroupCell[0];
 
     const appInfo = this.weParentAppInfo;
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
-    const weParentDnaHash = serializeHash(weCell.cell_id[0]);
+    const weParentDnaHash = weCell.cell_id[0];
 
     const info = await this.getWeGroupInfo(weGroupId);
 
@@ -745,7 +748,7 @@ export class MatrixStore {
     const appInfo = this.weParentAppInfo;
 
     const weCell = appInfo.cell_data.find((c) => c.role_id === "we")!;
-    const weDnaHash = serializeHash(weCell.cell_id[0]);
+    const weDnaHash = weCell.cell_id[0];
 
     const properties = {
       logoSrc: logo,
@@ -756,25 +759,25 @@ export class MatrixStore {
       originalDnaHash: weDnaHash,
       uid: undefined,
       properties: encode(properties),
-      resultingDnaHash: serializeHash(newWeGroupDnaHash),
+      resultingDnaHash: newWeGroupDnaHash,
     });
 
     return newWeGroupDnaHash;
   }
 
   public async joinWeGroup(
-    invitationHeaderHash: HeaderHashB64,
+    invitationActionHash: ActionHash,
     name: string,
     logo: string,
     timestamp: number
   ): Promise<DnaHash> {
     const newWeGroupDnaHash = await this.installWeGroup(name, logo, timestamp);
-    await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
+    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
     return newWeGroupDnaHash;
   }
 
-  public async removeInvitation(invitationHeaderHash: HeaderHashB64) {
-    await this.membraneInvitationsStore.removeInvitation(invitationHeaderHash);
+  public async removeInvitation(invitationActionHash: ActionHash) {
+    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
   }
 
   private async installWeGroup(

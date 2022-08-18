@@ -1,9 +1,6 @@
-import { contextProvided, ContextProvider } from "@lit-labs/context";
+import { contextProvided } from "@lit-labs/context";
 import { state, query } from "lit/decorators.js";
 import {
-  AppWebsocket,
-  AdminWebsocket,
-  InstalledCell,
   DnaHash,
   EntryHash,
 } from "@holochain/client";
@@ -11,15 +8,11 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
-  IconButton,
-  Button,
-  CircularProgress,
   Fab,
   Icon,
   Snackbar,
 } from "@scoped-elements/material-web";
 import { classMap } from "lit/directives/class-map.js";
-import { DnaHashB64 } from "@holochain-open-dev/core-types";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
 
 import { matrixContext } from "./context";
@@ -38,7 +31,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { DashboardMode, NavigationMode, RenderingMode } from "./types";
 import { SidebarButton } from "./elements/sidebar-button";
 import { CreateWeGroupDialog } from "./elements/create-we-group-dialog";
-import { DnaHashMap } from "./holo-hash-map-temp";
+import { DnaHashMap } from "@holochain-open-dev/utils";
 import { WeGroupContext } from "./elements/we-group-context";
 import { AppletClassHome } from "./elements/applet-class-home";
 import { WeGroupHome } from "./elements/we-group-home";

@@ -1,4 +1,4 @@
-import { serializeHash } from "@holochain-open-dev/core-types";
+import { serializeHash } from "@holochain-open-dev/utils";
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
@@ -192,10 +192,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               ${this._allMembers.render({
                 complete: (profiles) =>
                   html`<list-agents-by-status
-                    .agents=${Object.keys(profiles).filter(
+                    .agents=${profiles.keys().filter(
                       (agentPubKey) =>
-                        agentPubKey !==
-                        serializeHash(this._matrixStore.myAgentPubKey)
+                        JSON.stringify(agentPubKey) !==
+                        JSON.stringify(this._matrixStore.myAgentPubKey)
                     )}
                   ></list-agents-by-status>`,
                 pending: () => html`

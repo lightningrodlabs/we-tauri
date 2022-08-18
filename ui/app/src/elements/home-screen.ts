@@ -1,8 +1,3 @@
-import {
-  HeaderHashB64,
-  AgentPubKeyB64,
-  serializeHash,
-} from "@holochain-open-dev/core-types";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";

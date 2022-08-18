@@ -1,16 +1,11 @@
-import { HeaderHashB64, AgentPubKeyB64, serializeHash } from "@holochain-open-dev/core-types";
-import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
-import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
 import { Button, List, ListItem, Card, Snackbar, Icon, Dialog } from "@scoped-elements/material-web";
 
 import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
-import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeGroupDialog } from "./create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";

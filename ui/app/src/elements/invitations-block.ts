@@ -16,6 +16,7 @@ import { sharedStyles } from "../sharedStyles";
 import { MatrixStore } from "../matrix-store";
 import { matrixContext, weGroupContext } from "../context";
 import { DnaHash } from "@holochain/client";
+import { deserializeHash } from "@holochain-open-dev/utils";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -39,7 +40,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
 
   async inviteToJoin(agentPubKey: AgentPubKeyB64) {
     this._matrixStore
-      .inviteToJoinGroup(this.weGroupId, agentPubKey)
+      .inviteToJoinGroup(this.weGroupId, deserializeHash(agentPubKey))
       .then((r) => {
         this._pubkeyField.value = "";
         this._inviteePubKey = undefined;

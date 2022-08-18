@@ -1,8 +1,4 @@
-import {
-  HeaderHashB64,
-  AgentPubKeyB64,
-  serializeHash,
-} from "@holochain-open-dev/core-types";
+import { serializeHash } from "@holochain-open-dev/utils";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
@@ -23,9 +19,10 @@ import { matrixContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloHashMap, HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeGroupDialog } from "./create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
+import { ActionHash } from "@holochain/client";
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
@@ -41,13 +38,13 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   _copiedSnackbar!: Snackbar;
 
   async joinGroup(
-    invitationHeaderHash: HeaderHashB64,
+    invitationActionHash: ActionHash,
     invitation: JoinMembraneInvitation
   ) {
     const properties = decode(invitation.cloneDnaRecipe.properties) as any;
     await this.matrixStore
       .joinWeGroup(
-        invitationHeaderHash,
+        invitationActionHash,
         properties.name,
         properties.logoSrc,
         properties.timestamp
@@ -72,8 +69,8 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  async removeInvitation(invitationHeaderHash: HeaderHashB64) {
-    await this.matrixStore.removeInvitation(invitationHeaderHash);
+  async removeInvitation(invitationActionHash: ActionHash) {
+    await this.matrixStore.removeInvitation(invitationActionHash);
   }
 
   weName(invitation: JoinMembraneInvitation) {
@@ -130,9 +127,9 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitations(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>
   ) {
-    if (Object.entries(invitations).length == 0) {
+    if (invitations.entries().length == 0) {
       return html`
         <div>You have no open invitations...</div>
         <mwc-button
@@ -144,9 +141,9 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html`
-        ${Object.entries(invitations)
+        ${invitations.entries()
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
-          .map(([headerHash, invitation]) => {
+          .map(([actionHash, invitation]) => {
             return html`
               <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="max-width: 800px; margin: 5px;">
@@ -172,14 +169,14 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                         raised
                         label="JOIN"
                         icon="check"
-                        @click=${() => this.joinGroup(headerHash, invitation)}
+                        @click=${() => this.joinGroup(actionHash, invitation)}
                       ></mwc-button>
                       <mwc-button
                         class="delete-invitation"
                         raised
                         label="REJECT"
                         icon="close"
-                        @click=${() => this.removeInvitation(headerHash)}
+                        @click=${() => this.removeInvitation(actionHash)}
                       >
                       </mwc-button>
                     </div>
@@ -204,7 +201,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   }
 
   renderInvitationsBlock(
-    invitations: Record<HeaderHashB64, JoinMembraneInvitation>
+    invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>
   ) {
     return html`
       ${this.renderErrorSnackbar()}
