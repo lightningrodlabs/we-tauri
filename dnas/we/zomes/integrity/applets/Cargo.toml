@@ -1,12 +1,16 @@
 [package]
 authors = ["eric@harris-braun.com"]
 edition = "2021"
-name = "profiles"
+name = "applets_integrity"
 version = "0.0.1-alpha1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "profiles"
+name = "applets_integrity"
 
 [dependencies]
-hc_zome_profiles = {git = "https://github.com/holochain-open-dev/profiles", rev = "for-hdk-v0.0.136"}
+derive_more = "0.99"
+serde = "1"
+thiserror = "1.0.20"
+
+hdi = "0.0.14"

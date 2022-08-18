@@ -1,15 +1,35 @@
 ---
 manifest_version: "1"
 name: we
-uid: 00000000-0000-0000-0000-000000000000
-properties:
-  logo_url: "https://cdn.pngsumo.com/dot-in-a-circle-free-shapes-icons-circled-dot-png-512_512.png"
-zomes:
-  - name: we
-    bundled: ../../../target/wasm32-unknown-unknown/release/we.wasm
-  - name: applets
-    bundled: ../../../target/wasm32-unknown-unknown/release/applets.wasm
-  - name: profiles
-    bundled: ../../../target/wasm32-unknown-unknown/release/profiles.wasm
-  - name: peer_status
-    bundled: ../../../target/wasm32-unknown-unknown/release/peer_status.wasm
+integrity:
+  uuid: 00000000-0000-0000-0000-000000000000
+  properties: ~
+  origin_time: 2022-07-25T13:55:49.200Z
+  zomes:
+  - name: we_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/we_integrity.wasm
+  - name: applets_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/applets_integrity.wasm
+  - name: profiles_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
+  - name: peer_status_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_integrity.wasm
+
+coordinator:
+  zomes:
+    - name: we
+      bundled: ../../../target/wasm32-unknown-unknown/release/we_coordinator.wasm
+      dependencies:
+        - name: we_integrity
+    - name: applets
+      bundled: ../../../target/wasm32-unknown-unknown/release/applets_coordinator.wasm
+      dependencies:
+        - name: applets_integrity
+    - name: profiles
+      bundled: ../../../target/wasm32-unknown-unknown/release/profiles_coordinator.wasm
+      dependencies:
+        - name: profiles_integrity
+    - name: peer_status
+      bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_coordinator.wasm
+      dependencies:
+        - name: peer_status_integrity

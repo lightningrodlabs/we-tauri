@@ -1,10 +1,22 @@
 ---
 manifest_version: "1"
 name: lobby
-uid: 00000000-0000-0000-0000-000000000000
-properties: ~
-zomes:
-  - name: membrane_invitations
-    bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations.wasm
-  - name: applet_guis
-    bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis.wasm
+integrity:
+  uuid: 00000000-0000-0000-0000-000000000000
+  properties: ~
+  origin_time: 2022-07-25T13:55:49.200Z
+  zomes:
+    - name: membrane_invitations_integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations_integrity.wasm
+    - name: applet_guis_integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis_integrity.wasm
+coordinator:
+  zomes:
+    - name: membrane_invitations_coordinator
+      bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations_coordinator.wasm
+      dependencies:
+        - name: membrane_invitations_integrity
+    - name: applet_guis_coordinator
+      bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis_coordinator.wasm
+      dependencies:
+        - name: applet_guis_integrity

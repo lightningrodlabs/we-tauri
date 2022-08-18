@@ -1,30 +1,30 @@
 [package]
 authors = ["eric@harris-braun.com"]
-edition = "2018"
-name = "applet_guis"
+edition = "2021"
+name = "we_coordinator"
 version = "0.0.1-alpha1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "applet_guis"
+name = "we_coordinator"
 
 [dependencies]
 chrono = {version = "0.4", features = ['alloc', 'std']}
 derive_more = "0.99"
 serde = "1.0.123"
 thiserror = "1.0.20"
-hdk = {version = "0.0.136", features = ["encoding"]}
+hdk = {version = "0.0.142", features = ["encoding"]}
+we_integrity = { path = "../../integrity/we"}
+
 
 [dev-dependencies]
 #holochain = { git = "https://github.com/holochain/holochain.git", branch = "develop", features = ["test_utils"] }
 #holochain_types = { git = "https://github.com/holochain/holochain.git", branch = "develop", features = ["test_utils"] }
 # holochain = { path = "../../../chain/crates/holochain/"}
 # holochain_types = { path = "../../../chain/crates/holochain_types/"}
+futures = "0.3.1"
 nanoid = "0.3"
 observability = "0.1.2"
 stream-cancel = "0.8.0"
-fixt = "0.0.11"
-futures = {version = "0.3.1", default-features = false}
-hdk = {version = "0.0.136", features = ["encoding", "test_utils"]}
-holochain = {version = "0.0.143", default-features = false, features = ["test_utils"]}
 tokio = {version = "1.3", features = ["full"]}
+

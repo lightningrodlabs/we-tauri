@@ -5,14 +5,14 @@ use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
 use holochain::{conductor::config::ConductorConfig, sweettest::*};
-use applets::{RegisterAppletInput, Applet};
+use applets_integrity::{RegisterAppletInput, Applet};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn create_applet() {
     // Use prebuilt DNA file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../workdir/we.dna");
+        .join("../../../workdir/we.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
@@ -40,14 +40,14 @@ async fn create_applet() {
         applet,
     };
 
-    let _entry_hash: EntryHashB64 = conductors[0]
+    let _entry_hash: EntryHash = conductors[0]
         .call(&alice_zome, "create_applet", input)
         .await;
 
     consistency_10s(&[&alice, &bobbo]).await;
 
-    let all_applets: BTreeMap<EntryHashB64, Applet> =
+    let all_applets: Vec<(EntryHash, Applet)> =
         conductors[1].call(&bob_zome, "get_all_applets", ()).await;
 
-    assert_eq!(all_applets.keys().len(), 1);
+    assert_eq!(all_applets.len(), 1);
 }
