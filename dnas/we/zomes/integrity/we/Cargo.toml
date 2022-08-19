@@ -9,9 +9,9 @@ crate-type = ["cdylib", "rlib"]
 name = "we_integrity"
 
 [dependencies]
-chrono = {version = "0.4", features = ['alloc', 'std']}
 derive_more = "0.99"
 serde = "1.0.123"
 thiserror = "1.0.20"
+chrono = { version = "=0.4.22", default-features = false, features = ["alloc", "clock", "std", "oldtime", "serde"], optional = true }
 
-hdi = "0.0.14"
+hdi = "0.0.18"
