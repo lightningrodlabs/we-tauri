@@ -350,7 +350,7 @@ export class MatrixStore {
       this.holochainClient.appWebsocket,
       this.adminWebsocket,
       weServices,
-      installedAppInfo
+      [{weInfo: this.getWeGroupInfo(weGroupId), installedAppInfo}]
     );
 
     console.log("RENDERER GETS CELL WITH ID: ", installedAppInfo.cell_data[0].cell_id);
