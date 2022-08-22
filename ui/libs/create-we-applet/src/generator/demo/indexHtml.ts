@@ -46,7 +46,7 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
               new ProfilesService(new ProfilesZomeMock())
             ),
           },
-          appInfo
+          [{ weInfo: { name: "Demo We Group", logoSrc: ""}, installedAppInfo: appInfo}]
         );
         renderers.full(container, window.customElements);
       }
@@ -56,4 +56,3 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
 </html>
 `
 });
-    

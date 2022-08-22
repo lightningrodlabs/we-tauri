@@ -16,6 +16,7 @@ import {
   WeApplet,
   AppletRenderers,
   WeServices,
+  InstalledAppletInfo[],
 } from "@lightningrodlabs/we-applet";
 
 import { ${appletNameTitleCase}Applet } from "./${appletName}-applet";
@@ -25,7 +26,7 @@ const ${appletName}Applet: WeApplet = {
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
-    appletAppInfo: InstalledAppInfo
+    appletAppInfo: InstalledAppletInfo[]
   ): Promise<AppletRenderers> {
     return {
       full(element: HTMLElement, registry: CustomElementRegistry) {
@@ -45,4 +46,3 @@ const ${appletName}Applet: WeApplet = {
 export default ${appletName}Applet;
 `
 });
-    

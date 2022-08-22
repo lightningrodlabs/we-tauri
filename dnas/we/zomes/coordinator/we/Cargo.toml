@@ -14,7 +14,7 @@ serde = "1.0.123"
 thiserror = "1.0.20"
 chrono = { version = "=0.4.22", default-features = false, features = ["alloc", "clock", "std", "oldtime", "serde"], optional = true }
 
-hdk = {version = "0.0.146", features = ["encoding"]}
+hdk = {version = "0.0.147", features = ["encoding"]}
 we_integrity = { path = "../../integrity/we"}
 
 

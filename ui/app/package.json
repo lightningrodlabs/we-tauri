@@ -8,12 +8,12 @@
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
-    "@holochain-open-dev/cell-client": "^0.7.1",
-    "@holochain-open-dev/core-types": "^0.4.0",
-    "@holochain-open-dev/membrane-invitations": "github:holochain-open-dev/membrane-invitations#ui-build-hdk-0.0.142",
-    "@holochain-open-dev/peer-status": "github:holochain-open-dev/peer-status#ui-build-hdk-0.0.142",
-    "@holochain-open-dev/profiles": "^0.5.0",
-    "@holochain-open-dev/utils": "^0.3.1",
+    "@holochain-open-dev/cell-client": "^0.7.2",
+    "@holochain-open-dev/core-types": "^0.4.1",
+    "@holochain-open-dev/membrane-invitations": "github:holochain-open-dev/membrane-invitations#ui-build-hdk-0.0.147",
+    "@holochain-open-dev/peer-status": "^0.1.0",
+    "@holochain-open-dev/profiles": "^0.5.1",
+    "@holochain-open-dev/utils": "^0.3.2",
     "@holochain/client": "^0.7.0",
     "@lightningrodlabs/we-applet": "file:../libs/we-applet",
     "@lit-labs/context": "^0.1.1",
