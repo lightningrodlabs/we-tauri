@@ -12,7 +12,7 @@ export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
   "scripts": {
     "start": "npm run build:happ && cross-env HC_PORT=\$(port) ADMIN_PORT=\$(port) concurrently \\"npm run start:happ\\" \\"npm run start:ui\\"",
     "start:ui": "concurrently -k --names tsc,dev-server \\"npm run build:watch\\" \\"wds --config ./web-dev-server.config.mjs\\"",
-    "start:happ": "RUST_LOG=warn WASM_LOG=debug hc s -f=\$ADMIN_PORT generate ./workdir/${appletName}-applet.happ --run=\$HC_PORT -a ${appletName}-applet network mdns",
+    "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \\"pass\\" | hc s --piped -f=\$ADMIN_PORT generate ./workdir/${appletName}-applet.happ --run=\$HC_PORT -a ${appletName}-applet network mdns",
     "build": "rimraf dist && tsc && rollup --config rollup.config.js",
     "build:watch": "tsc -w --preserveWatchOutput",
     "package": "npm run build:happ && npm run package:ui && hc web-app pack ./workdir",
