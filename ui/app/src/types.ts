@@ -1,8 +1,4 @@
-import {
-  AgentPubKeyB64,
-  EntryHashB64,
-  DnaHashB64,
-} from "@holochain-open-dev/core-types";
+import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import { AgentPubKey, DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
 
 
@@ -13,7 +9,6 @@ export enum DashboardMode {
   AppletClassHome,
   AppletClassRendering,
 }
-// export type DashboardMode = "mainHome" | "appletClass" | "weGroup";
 
 /**
  * appletCentricNavigation lets you choose the applet *class* on the main panel and will only display the groups
@@ -34,7 +29,6 @@ export enum NavigationMode {
   Agnostic,
 }
 
-// export type NavigationMode = "appletCentricNavigation" | "groupCentricNavigation" | "agnosticNavigation";
 
 //
 /**
@@ -50,13 +44,7 @@ export enum RenderingMode {
   GroupCentric,
   Agnostic,
 }
-// export type RenderingMode = "agentCentricRendering" | "groupCentricRendering" | "agnosticRendering";
 
-
-export interface WeInfo {
-  logoSrc: string;
-  name: string;
-}
 
 export interface Applet {
   customName: string; // name of the applet instance as chosen by the person adding it to the group,

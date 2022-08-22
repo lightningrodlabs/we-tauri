@@ -45,6 +45,7 @@ import {
   WeApplet,
   InstalledAppletInfo,
   WeServices,
+  WeInfo,
 } from "@lightningrodlabs/we-applet";
 import {
   Applet,
@@ -56,7 +57,6 @@ import {
   IconSrcOption,
   PlayingApplet,
   RegisterAppletInput,
-  WeInfo,
 } from "./types";
 import { importModuleFromFile } from "./processes/import-module-from-file";
 import { getDevHubAppId } from "./processes/devhub/app-id";

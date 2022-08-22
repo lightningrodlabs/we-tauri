@@ -1,5 +1,5 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
-import { WeInfo } from "./types";
+import { WeInfo } from "@lightningrodlabs/we-applet";
 
 export class WeGroupService {
   constructor(public cellClient: CellClient, protected zomeName = "we") {}

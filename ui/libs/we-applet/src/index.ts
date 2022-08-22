@@ -29,7 +29,7 @@ export interface WeApplet {
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weStore: WeServices,
-    appletInfo: InstalledAppletInfo[], // type depending on whether it is a cross-we renderer or not
+    appletInfo: InstalledAppletInfo[],
   ) => Promise<AppletRenderers>;
 }
 
