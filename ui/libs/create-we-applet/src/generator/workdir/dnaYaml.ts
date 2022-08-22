@@ -9,7 +9,7 @@ export const dnaYaml = ({appletName}: {appletName: string;}): ScFile => ({
   content: `---
 manifest_version: "1"
 name: ${appletName}
-integrity
+integrity:
   uid: 00000000-0000-0000-0000-000000000000
   properties: ~
   zomes:
