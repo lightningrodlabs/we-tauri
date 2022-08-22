@@ -1,10 +1,4 @@
 import {
-  EntryHashB64,
-  ActionHashB64,
-  AgentPubKeyB64,
-  DnaHashB64,
-} from "@holochain-open-dev/core-types";
-import {
   serializeHash,
   deserializeHash,
 } from "@holochain-open-dev/utils";
@@ -17,7 +11,7 @@ import {
   get,
   readable,
 } from "svelte/store";
-import { stringify, v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   AdminWebsocket,
@@ -228,7 +222,7 @@ export class MatrixStore {
    */
   public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
-    const zomeName = "we";
+    const zomeName = "we_coordinator";
     const info = await cellClient.callZome(zomeName, "get_info", null);
     return readable(info);
   }
@@ -575,7 +569,7 @@ export class MatrixStore {
 
     const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
 
-    let matrrrrriiix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
+    let matrix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
     let installedAppletClasses = new EntryHashMap<AppletClassInfo>();
 
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
@@ -630,7 +624,7 @@ export class MatrixStore {
 
         // create WeGroupData object
         const weInfo: WeInfo = await weGroupCellClient.callZome(
-          "we",
+          "we_coordinator",
           "get_info",
           null
         );
@@ -679,14 +673,14 @@ export class MatrixStore {
           }
         );
 
-        matrrrrriiix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
+        matrix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
       })
     );
 
     // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
-    // this._matrix.set(matrrrrriiix);
+    // this._matrix.set(matrix);
     this._matrix.update((matrix) => {
-      matrrrrriiix.entries().forEach(([key, value]) => matrix.put(key, value));
+      matrix.entries().forEach(([key, value]) => matrix.put(key, value));
       return matrix;
     });
 
@@ -915,10 +909,10 @@ export class MatrixStore {
       );
     } else {
       // fetch hApp and GUI   <---- COULD BE IMPROVED BY TAKING IT FROM LOCAL STORAGE IN CASE THE SAME APPLET CLASS HAS BEEN INSTALLED EARLIER
-      const [decompressedHapp, decompressedGui] =
-        await this.fetchAndDecompressWebHapp(
-          newAppletInfo.applet.devhubHappReleaseHash
-        );
+      // add logic here in case webhapp is installed from the file system.
+      const compressedWebHapp = await this.fetchWebHapp(newAppletInfo.applet.devhubHappReleaseHash);
+      const [decompressedHapp, decompressedGui, _iconSrcOption] = this.decompressWebHapp(compressedWebHapp);
+
 
       const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
       const weGroupCellData = cellClient.cell;
@@ -981,10 +975,10 @@ export class MatrixStore {
         return hashMap;
       });
 
-      console.log(
-        "UPDATED new applets ARRAY: ",
-        get(this._newAppletInstances).keys()
-      );
+      // console.log(
+      //   "UPDATED new applets ARRAY: ",
+      //   get(this._newAppletInstances).keys()
+      // );
 
       // update _installedAppletClasses
       if (
@@ -1015,12 +1009,22 @@ export class MatrixStore {
   async createApplet(
     weGroupId: DnaHash,
     appletInfo: AppletInfo,
-    customName: InstalledAppId
+    customName: InstalledAppId,
+    compressedWebHapp?: Uint8Array,
   ): Promise<EntryHash> {
     // --- Install hApp in the conductor---
 
-    const [decompressedHapp, decompressedGui, iconSrcOption] =
-      await this.fetchAndDecompressWebHapp(appletInfo.devhubHappReleaseHash);
+    let decompressedHapp: AppBundle;
+    let decompressedGui: Uint8Array;
+    let iconSrcOption: IconSrcOption;
+
+    if (!compressedWebHapp) {
+      const compressedWebHapp = await this.fetchWebHapp(appletInfo.devhubHappReleaseHash);
+      [decompressedHapp, decompressedGui, iconSrcOption] =
+      await this.decompressWebHapp(compressedWebHapp);
+    } else {
+      [decompressedHapp, decompressedGui, iconSrcOption] = this.decompressWebHapp(compressedWebHapp);
+    }
 
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const weGroupCellData = cellClient.cell;
@@ -1121,15 +1125,9 @@ export class MatrixStore {
     )!;
   }
 
-  /**
-   * Fetches and decompresses a webhapp from the devhub
-   *
-   * @param entryHash
-   * @returns [AppBundle, GuiFile, IconSrcOption]
-   */
-  async fetchAndDecompressWebHapp(
-    entryHash: EntryHash
-  ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
+
+
+  async fetchWebHapp(entryHash: EntryHash): Promise<Uint8Array> {
     const devhubHapp = await this.getDevhubHapp();
 
     const compressedWebHapp = await fetchWebHapp(
@@ -1138,6 +1136,19 @@ export class MatrixStore {
       "hApp", // This is chosen arbitrarily at the moment
       entryHash
     );
+
+    return compressedWebHapp;
+  }
+
+  /**
+   * Decompresses a webhapp
+   *
+   * @param compressedWebHapp: Uint8Array
+   * @returns [AppBundle, GuiFile, IconSrcOption]
+   */
+  decompressWebHapp(
+    compressedWebHapp: Uint8Array
+  ): [AppBundle, GuiFile, IconSrcOption] {
 
     // decompress bytearray into .happ and ui.zip (zlibt2)
     const bundle = decode(
@@ -1162,6 +1173,18 @@ export class MatrixStore {
     const iconSrcOption: IconSrcOption = toSrc(decompressedIcon);
     return [decompressedHapp, decompressedGui, iconSrcOption];
   }
+
+
+  /**
+   * Install an applet from the file system. Only for test or demo purposes.
+   *
+   */
+  async installFromFileSystem() {
+
+  }
+
+
+
 
   // +++++++++++++++      H E L P E R    M E T H O D S    B E L O W      +++++++++++++++++++++++++++++++
 

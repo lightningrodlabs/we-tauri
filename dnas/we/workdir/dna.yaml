@@ -17,11 +17,11 @@ integrity:
 
 coordinator:
   zomes:
-    - name: we
+    - name: we_coordinator
       bundled: ../../../target/wasm32-unknown-unknown/release/we_coordinator.wasm
       dependencies:
         - name: we_integrity
-    - name: applets
+    - name: applets_coordinator
       bundled: ../../../target/wasm32-unknown-unknown/release/applets_coordinator.wasm
       dependencies:
         - name: applets_integrity

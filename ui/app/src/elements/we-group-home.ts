@@ -1,4 +1,3 @@
-import { serializeHash } from "@holochain-open-dev/utils";
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
@@ -8,12 +7,13 @@ import { Button, Card, CircularProgress, Fab, IconButtonToggle, LinearProgress, 
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { property, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { InstallableApplets } from "./installable-applets";
 import { InvitationsBlock } from "./invitations-block";
+import { InstallFromFsDialog } from "./install-from-file-system";
 
 
 
@@ -46,6 +46,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
   @state()
   private _showAppletDescription: boolean = false;
+
+  @query("#install-from-fs-dialog")
+  _installFromFsDialog!: InstallFromFsDialog;
 
 
   renderJoinErrorSnackbar() {
@@ -141,6 +144,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                 ></invitations-block>
               </div>
 
+              <mwc-button label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
+              <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
+
               <div class="row title" style="margin-top: 80px;">
                 <span style="align-self: start">Applets Library</span>
               </div>
@@ -225,6 +231,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-linear-progress": LinearProgress,
       "list-agents-by-status": ListAgentsByStatus,
       "mwc-snackbar": Snackbar,
+      "install-from-fs-dialog": InstallFromFsDialog,
     };
   }
 
