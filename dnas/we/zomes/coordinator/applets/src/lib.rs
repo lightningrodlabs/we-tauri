@@ -70,9 +70,21 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
     let mut playing_applets: Vec<(EntryHash, PlayingApplet)> = Vec::new();
 
 
+    let zid = zome_info()?.id;
+    debug!("%*%*%* ZomeId of get_applets_i_am_playing: {:?}", zid);
 
     for record in create_links {
         if let Action::CreateLink(create_link_action) = record.action() {
+            // The conversion to a ScopedLinkType fails if the zome_id of the CreateLink Action is not the same as
+            // the zome_id of this zome.
+            if create_link_action.zome_id != zid {
+                debug!("%*%*%* wrong zome Id!");
+                debug!("%*%*%* ZomeId of CreateLink Action: {:?}", create_link_action.zome_id);
+                debug!("%*%*%* LinkType: {:?}", create_link_action.link_type);
+                debug!("%*%*%* LinkType: {:?}", create_link_action.link_type);
+                debug!("%*%*%* All LinkTypes: AppletPath (0), AnchorToApplet (1), AppletToExternalAgent (2)");
+                continue;
+            }
             let link_type = LinkTypes::try_from(ScopedLinkType {
                 zome_id: create_link_action.zome_id,
                 zome_type: create_link_action.link_type,

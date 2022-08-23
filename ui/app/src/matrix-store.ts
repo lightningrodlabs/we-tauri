@@ -284,6 +284,7 @@ export class MatrixStore {
         .forEach(([groupId, [groupData, _appletInstanceInfos]]) => {
           groupInfos.put(groupId, groupData.info);
         });
+      console.log("GROUP INFOS: ", groupInfos);
       return groupInfos;
     });
   }
@@ -391,7 +392,7 @@ export class MatrixStore {
   async queryAppletGui(devhubHappReleaseHash): Promise<WeApplet> {
     const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
     const appletGui = await lobbyClient.callZome(
-      "applet_guis",
+      "applet_guis_coordinator",
       "query_applet_gui",
       devhubHappReleaseHash
     );
@@ -580,6 +581,8 @@ export class MatrixStore {
       app.installed_app_id.startsWith("we-")
     );
 
+    console.log("ALL WE GROUPS: ", allWeGroups);
+
     console.log("ALL APPS: ", allApps);
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
@@ -642,9 +645,12 @@ export class MatrixStore {
           peerStatusStore,
         };
 
+        console.log("trying to get applets I am playing:");
         // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
         const appletsIAmPlaying =
           await this.appletsService.getAppletsIAmPlaying(weGroupCellClient);
+
+        console.log("appletsIamPlaying: ", appletsIAmPlaying);
         const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying.map(
           ([entryHash, playingApplet]) => {
             const appletClassInfo: AppletClassInfo = {
@@ -673,16 +679,24 @@ export class MatrixStore {
           }
         );
 
+        
+
+        console.log("matrix input: ", [weGroupData, appletInstanceInfos]);
+
         matrix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
       })
     );
 
+    console.log("matrix after loop: ", matrix);
+
     // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
     // this._matrix.set(matrix);
-    this._matrix.update((matrix) => {
-      matrix.entries().forEach(([key, value]) => matrix.put(key, value));
-      return matrix;
+    this._matrix.update((m) => {
+      matrix.entries().forEach(([key, value]) => m.put(key, value));
+      return m;
     });
+
+    console.log("this._matrix after filling up: ", get(this._matrix));
 
     this._installedAppletClasses.update((appletClasses) => {
       installedAppletClasses
