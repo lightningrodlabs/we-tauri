@@ -41,6 +41,8 @@ import { AppletNotInstalled } from "./elements/applet-not-installed";
 import { NotificationDot } from "./elements/notification-dot";
 import { InactiveOverlay } from "./elements/inactive-overlay";
 import { AppletIconBadge } from "./elements/applet-icon-badge";
+import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
+import { weLogoIcon } from "./icons/we-logo-icon";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
@@ -556,7 +558,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       <sidebar-button
         placement="bottom"
         style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-        logoSrc="https://drive.switch.ch/index.php/s/wGKK6ZXLuxRb3EY/download"
+        logoSrc="${mergeEyeViewIcon}"
         tooltipText="Merge Eye View"
         @click=${() => {
           this.handleMergeEyeViewClick();
@@ -618,7 +620,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <div class="column top-left-corner">
               <sidebar-button
                 style="border-radius: 50%;"
-                logoSrc="https://lightningrodlabs.org/projects/we.svg"
+                logoSrc="${weLogoIcon}"
                 tooltipText="Home"
                 @click=${() => {
                   this._selectedWeGroupId = undefined;
