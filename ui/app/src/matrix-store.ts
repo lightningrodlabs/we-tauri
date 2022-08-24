@@ -284,7 +284,6 @@ export class MatrixStore {
         .forEach(([groupId, [groupData, _appletInstanceInfos]]) => {
           groupInfos.put(groupId, groupData.info);
         });
-      console.log("GROUP INFOS: ", groupInfos);
       return groupInfos;
     });
   }

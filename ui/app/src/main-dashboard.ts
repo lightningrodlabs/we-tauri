@@ -8,6 +8,7 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
+  CircularProgress,
   Fab,
   Icon,
   Snackbar,
@@ -225,6 +226,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           .appletClassId=${this._selectedAppletClassId}
         ></applet-class-home>
       `;
+    } else if (this._dashboardMode === DashboardMode.Loading) {
+      console.log("DASHBOARD MODE LOADING!");
+      return html`
+        <div class="center-content" style="flex: 1;display: flex;">
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
+        </div>
+      `
     }
   }
 
@@ -575,10 +583,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this.requestUpdate();
   }
 
+  showLoading() {
+    this._dashboardMode = DashboardMode.Loading;
+    this.requestUpdate();
+  }
+
   render() {
     return html`
       <create-we-group-dialog
         @we-added=${(e) => this.handleWeGroupAdded(e)}
+        @creating-we=${(e) => this.showLoading()}
         id="create-we-group-dialog"
       ></create-we-group-dialog>
 
@@ -682,6 +696,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "notification-dot": NotificationDot,
       "inactive-overlay": InactiveOverlay,
       "applet-icon-badge": AppletIconBadge,
+      "mwc-circular-progress": CircularProgress,
     };
   }
 

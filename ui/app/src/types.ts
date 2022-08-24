@@ -8,6 +8,7 @@ export enum DashboardMode {
   AppletGroupInstanceRendering,
   AppletClassHome,
   AppletClassRendering,
+  Loading,
 }
 
 /**

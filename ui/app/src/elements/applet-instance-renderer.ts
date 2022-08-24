@@ -47,7 +47,7 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   render() {
     return this._rendererTask.render({
       pending: () => html`
-        <div class="center-content">
+        <div class="row center-content" style="flex: 1;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
       `,

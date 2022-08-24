@@ -36,7 +36,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
   render() {
     if (this.loading)
-      return html`<div class="row center-content">
+      return html`<div class="row center-content" style="flex: 1;">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
 

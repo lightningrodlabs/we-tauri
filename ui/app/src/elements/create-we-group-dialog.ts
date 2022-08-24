@@ -40,6 +40,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
     // if statement is required to prevent ENTER key to close the dialog while the button is disabled
     if (this._name && this._logoSrc) {
       this._dialog.close();
+      this.dispatchEvent(new CustomEvent("creating-we", {})); // required to display loading screen in the dashboard
       const weId = await this._matrixStore.createWeGroup(this._name!, this._logoSrc!);
 
       this.dispatchEvent(

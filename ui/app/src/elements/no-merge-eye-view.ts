@@ -9,6 +9,7 @@ import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
 import { get } from "svelte/store";
 import { mergeEyeViewSadIcon } from "../icons/merge-eye-view-sad";
+import { Icon } from "@scoped-elements/material-web";
 
 
 
@@ -31,9 +32,22 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
       <img src=${mergeEyeViewSadIcon} />
       <div class="title default-font">The <b>${appletClassInfo!.title}</b> Applet does not support Merge Eye View (...yet?).</div>
 
+        <div class="row create-applet-link center-content">
+          <a href="https://www.npmjs.com/package/@lightningrodlabs/create-we-applet">create your own we-applet</a>
+          <mwc-icon style="margin-left: 6px; --mdc-icon-size: 17px;">open_in_new</mwc-icon>
+        </div>
+
+
     </div>
     `
   }
+
+  static get scopedElements() {
+    return {
+      "mwc-icon": Icon,
+    };
+  }
+
 
   static styles = [
     sharedStyles,
@@ -43,9 +57,25 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
         position: relative;
       }
 
+      a {
+        color: #232f7b;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #4b5aba;
+      }
+
       .title {
         font-size: 1.4em;
         margin-top: 50px;
+      }
+
+      .create-applet-link {
+        color: #232f7b;
+        font-size: 17px;
+        margin-top: 147px;
+        font-weight: bold;
       }
 
       .invisible {
