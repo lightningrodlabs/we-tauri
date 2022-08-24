@@ -38,7 +38,7 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
         applet_hash.clone(),
         input.applet_agent_pub_key,
         LinkTypes::AppletToExternalAgent,
-        (), // Maybe applet hash?
+        LinkTag::new(String::from("AppletToExternalAgent")), // Maybe applet hash?
     )?;
 
     Ok(applet_hash.into())
@@ -70,26 +70,29 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
     let mut playing_applets: Vec<(EntryHash, PlayingApplet)> = Vec::new();
 
 
-    let zid = zome_info()?.id;
-    debug!("%*%*%* ZomeId of get_applets_i_am_playing: {:?}", zid);
+    // let zid = zome_info()?.id;
+    // debug!("%*%*%* ZomeId of get_applets_i_am_playing: {:?}", zid);
 
     for record in create_links {
         if let Action::CreateLink(create_link_action) = record.action() {
             // The conversion to a ScopedLinkType fails if the zome_id of the CreateLink Action is not the same as
             // the zome_id of this zome.
-            if create_link_action.zome_id != zid {
-                debug!("%*%*%* wrong zome Id!");
-                debug!("%*%*%* ZomeId of CreateLink Action: {:?}", create_link_action.zome_id);
-                debug!("%*%*%* LinkType: {:?}", create_link_action.link_type);
-                debug!("%*%*%* LinkType: {:?}", create_link_action.link_type);
-                debug!("%*%*%* All LinkTypes: AppletPath (0), AnchorToApplet (1), AppletToExternalAgent (2)");
-                continue;
-            }
-            let link_type = LinkTypes::try_from(ScopedLinkType {
-                zome_id: create_link_action.zome_id,
-                zome_type: create_link_action.link_type,
-            })?;
-            if link_type == LinkTypes::AppletToExternalAgent {
+            // if create_link_action.zome_id != zid {
+            //     debug!("%*%*%* wrong zome Id!");
+            //     debug!("%*%*%* ZomeId of CreateLink Action: {:?}", create_link_action.zome_id);
+            //     debug!("%*%*%* LinkType: {:?}", create_link_action.link_type);
+            //     debug!("%*%*%* All LinkTypes: AppletPath (0), AnchorToApplet (1), AppletToExternalAgent (2)");
+            //     continue;
+            // }
+            // let link_type = LinkTypes::try_from(ScopedLinkType {
+            //     zome_id: create_link_action.zome_id,
+            //     zome_type: create_link_action.link_type,
+            // })?;
+            // if link_type == LinkTypes::AppletToExternalAgent {
+
+            let link_tag = create_link_action.tag.clone();
+            if link_tag == LinkTag::new(String::from("AppletToExternalAgent")) {
+                debug!("%*%*%*%*%* SAME LinkTag !!! :)");
                 let applet_hash =
                     EntryHash::from(create_link_action.base_address.clone());
                 if let Some(applet) = applets.get(&applet_hash) {

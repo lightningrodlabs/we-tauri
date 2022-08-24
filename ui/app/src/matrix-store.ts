@@ -316,7 +316,7 @@ export class MatrixStore {
     weServices: WeServices
   ) {
 
-    console.log("FETCHING RENDERER!");
+    console.log("FETCHING RENDERER! >> for applet instance id: ", serializeHash(appletInstanceId));
     // // 1. check whether the renderers for this applet instance are already stored, if yes return them
     // const maybeRenderers = this._appletInstanceRenderers.get(appletInstanceId);
     // if (maybeRenderers) return maybeRenderers;
@@ -334,21 +334,23 @@ export class MatrixStore {
     // 3. create the renderers and return them
     const weGroupId =
       this.getWeGroupInfoForAppletInstance(appletInstanceId).dna_hash;
-    console.log("WE GROUP ID: ", weGroupId);
-    const [weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
+    console.log("WE GROUP ID: ", serializeHash(weGroupId));
+    const [_weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
     console.log("APPLET INSTANCE INFOS: ", appInstanceInfos);
     const installedAppInfo = appInstanceInfos.find(
-      (info) => info.appletId === appletInstanceId
+      (info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
     )!.installedAppInfo;
+
+    console.log("INSTALLED APP INFO: ", installedAppInfo);
 
     const renderers = await gui.appletRenderers(
       this.holochainClient.appWebsocket,
       this.adminWebsocket,
       weServices,
-      [{weInfo: this.getWeGroupInfo(weGroupId), installedAppInfo}]
+      [{ weInfo: this.getWeGroupInfo(weGroupId), installedAppInfo }]
     );
 
-    console.log("RENDERER GETS CELL WITH ID: ", installedAppInfo.cell_data[0].cell_id);
+    console.log("RENDERER GETS CELL WITH DNA Hash: ", serializeHash(installedAppInfo.cell_data[0].cell_id[0]));
 
     return renderers;
   }
@@ -556,6 +558,12 @@ export class MatrixStore {
     return weCell.cell_id[0];
   }
 
+
+
+
+
+
+
   /**
    * Updates the matrix:
    * 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
@@ -568,7 +576,7 @@ export class MatrixStore {
   > {
     console.log("FETCHING THE MATRIX");
 
-    const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
+    // const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
 
     let matrix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
     let installedAppletClasses = new EntryHashMap<AppletClassInfo>();
@@ -581,9 +589,15 @@ export class MatrixStore {
       app.installed_app_id.startsWith("we-")
     );
 
-    console.log("ALL WE GROUPS: ", allWeGroups);
+    console.log("ALL WE GROUPS: ", allWeGroups); // we have different groups at this point
 
-    console.log("ALL APPS: ", allApps);
+
+    allWeGroups.forEach((info) => {
+      console.log("CELL DATA: ", info.cell_data);
+      console.log("CELL DNA HASH: ", serializeHash(info.cell_data[0].cell_id[0]));
+    })
+
+    console.log("ALL APPS: ", allApps); // we see different apps at this point
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
@@ -592,6 +606,7 @@ export class MatrixStore {
       allWeGroups.map(async (weGroupAppInfo) => {
         // create store
         const weGroupCell = weGroupAppInfo.cell_data[0];
+        console.log("We Group CELL DNA hash: ", serializeHash(weGroupCell.cell_id[0]));
         const weGroupDnaHash = weGroupCell.cell_id[0];
         const weGroupCellClient = new CellClient(this.holochainClient, weGroupCell);
 
@@ -659,6 +674,8 @@ export class MatrixStore {
               logoSrc: playingApplet.applet.logoSrc,
               description: playingApplet.applet.description,
             };
+            console.log("~~~~ APPLET: ", playingApplet.applet);
+
             const appletInstanceInfo: AppletInstanceInfo = {
               appletId: entryHash,
               installedAppInfo: allApps.find((app) =>
@@ -679,7 +696,7 @@ export class MatrixStore {
           }
         );
 
-        
+        console.log("&/&/&/ appletInstanceInfos: ", appletInstanceInfos);
 
         console.log("matrix input: ", [weGroupData, appletInstanceInfos]);
 
@@ -690,11 +707,11 @@ export class MatrixStore {
     console.log("matrix after loop: ", matrix);
 
     // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
-    // this._matrix.set(matrix);
-    this._matrix.update((m) => {
-      matrix.entries().forEach(([key, value]) => m.put(key, value));
-      return m;
-    });
+    this._matrix.set(matrix);
+    // this._matrix.update((m) => {
+    //   matrix.entries().forEach(([key, value]) => m.put(key, value));
+    //   return m;
+    // });
 
     console.log("this._matrix after filling up: ", get(this._matrix));
 
@@ -707,6 +724,10 @@ export class MatrixStore {
 
     return derived(this._matrix, (m) => m);
   }
+
+
+
+
 
   /**
    * Invite another agent to join the specified We group.
@@ -931,8 +952,8 @@ export class MatrixStore {
       const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
       const weGroupCellData = cellClient.cell;
 
-      const uid = Object.values(newAppletInfo.applet.uid)[0];
-      const installedAppId = `${uid}-${newAppletInfo.applet.customName}`;
+      const network_seed = Object.values(newAppletInfo.applet.uid)[0];
+      const installedAppId = `${network_seed}-${newAppletInfo.applet.customName}`;
 
       // install app bundle
       const request: InstallAppBundleRequest = {
@@ -940,8 +961,8 @@ export class MatrixStore {
         installed_app_id: installedAppId,
         membrane_proofs: {},
         bundle: decompressedHapp,
-        uid,
-      };
+        network_seed: network_seed,
+      } as any;
 
       await this.adminWebsocket.installAppBundle(request);
 
@@ -1035,24 +1056,24 @@ export class MatrixStore {
     if (!compressedWebHapp) {
       const compressedWebHapp = await this.fetchWebHapp(appletInfo.devhubHappReleaseHash);
       [decompressedHapp, decompressedGui, iconSrcOption] =
-      await this.decompressWebHapp(compressedWebHapp);
+        await this.decompressWebHapp(compressedWebHapp);
     } else {
       [decompressedHapp, decompressedGui, iconSrcOption] = this.decompressWebHapp(compressedWebHapp);
     }
 
-    const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
-    const weGroupCellData = cellClient.cell;
+    const weGroupCellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+    const weGroupCellData = weGroupCellClient.cell;
 
-    const uid = uuidv4();
-    const installedAppId: InstalledAppId = `${uid}-${customName}`;
+    const network_seed = uuidv4();
+    const installedAppId: InstalledAppId = `${network_seed}-${customName}`;
 
     const request: InstallAppBundleRequest = {
       agent_key: weGroupCellData.cell_id[1],
       installed_app_id: installedAppId,
       membrane_proofs: {},
       bundle: decompressedHapp,
-      uid: uid,
-    };
+      network_seed: network_seed,
+    } as any;
 
     await this.adminWebsocket.installAppBundle(request);
 
@@ -1060,6 +1081,11 @@ export class MatrixStore {
       installed_app_id: installedAppId,
     });
     const appInfo = enabledApp.app;
+
+    console.log("@createApplet: Network Seed: ", network_seed);
+    console.log("@createApplet: installedAppId: ", installedAppId);
+    console.log("@createApplet: appInfo of installed Applet:", appInfo);
+    console.log("@createApplet: DNAHash of installed Applet:", serializeHash(appInfo.cell_data[0].cell_id[0]));
 
     // --- Commit UI in the lobby cell as private entry ---
 
@@ -1076,7 +1102,7 @@ export class MatrixStore {
     const uidByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = cell.cell_id[0];
-      uidByRole[cell.role_id] = uid;
+      uidByRole[cell.role_id] = network_seed;
     });
 
     const applet: Applet = {
@@ -1099,9 +1125,11 @@ export class MatrixStore {
     };
 
     const appletInstanceId = await this.appletsService.createApplet(
-      cellClient,
+      weGroupCellClient,
       registerAppletInput
     );
+
+    console.log("@createApplet: appletInstanceId: ", serializeHash(appletInstanceId));
 
     const appInstanceInfo: AppletInstanceInfo = {
       appletId: appletInstanceId,
@@ -1294,14 +1322,19 @@ export class MatrixStore {
    */
   isSameApp(installedAppInfo: InstalledAppInfo, applet: Applet): boolean {
 
-    let isSame = true
-
+    let isSame = true;
     installedAppInfo.cell_data.forEach((installedCell) => {
-      if (!applet.dnaHashes[installedCell.role_id] ||
-      JSON.stringify(applet.dnaHashes[installedCell.role_id]) !== JSON.stringify(installedCell.cell_id[0])) {
+      const dnaHashOfRoleId = applet.dnaHashes[installedCell.role_id];
+      if (!dnaHashOfRoleId ||
+        serializeHash(dnaHashOfRoleId) !== serializeHash(installedCell.cell_id[0])) {
         isSame = false;
       }
     });
+
+    isSame
+      ? console.log("%*%*%* SAAAME APP: ", installedAppInfo.installed_app_id, "<<->>", applet.customName)
+      : console.log("%*%*%* NOT THE SAME APP: ", installedAppInfo.installed_app_id, "<<->>", applet.customName)
+
     return isSame;
   }
 }

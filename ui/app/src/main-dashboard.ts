@@ -249,23 +249,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `;
   }
 
-  renderAppletClassDashboard() {
-    if (this._specialAppletMode) {
-      return html`
-        <applet-class-renderer
-          style="display:flex; flex: 1"
-          .appletClassId=${this._selectedAppletClassId}
-        ></applet-class-renderer>
-      `;
-    } else {
-      return html`
-        <applet-instance-renderer
-          style="display: flex; flex: 1"
-          .appletInstanceId=${this._selectedAppletInstanceId}
-        ></applet-instance-renderer>
-      `;
-    }
-  }
 
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
     this._navigationMode = NavigationMode.GroupCentric;

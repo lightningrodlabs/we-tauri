@@ -126,6 +126,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "hdi",
+ "hdk",
  "serde",
  "thiserror",
 ]

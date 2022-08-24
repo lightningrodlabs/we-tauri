@@ -47,9 +47,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   @state()
   private _showAppletDescription: boolean = false;
 
-  @query("#install-from-fs-dialog")
-  _installFromFsDialog!: InstallFromFsDialog;
-
 
   renderJoinErrorSnackbar() {
     return html`
@@ -143,9 +140,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                   style="margin-left: 50px;"
                 ></invitations-block>
               </div>
-
-              <mwc-button label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
-              <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
 
               <div class="row title" style="margin-top: 80px;">
                 <span style="align-self: start">Applets Library</span>

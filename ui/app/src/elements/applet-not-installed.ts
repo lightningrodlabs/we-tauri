@@ -2,7 +2,7 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, CircularProgress, IconButtonToggle } from "@scoped-elements/material-web";
+import { Button, CircularProgress, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../context";
@@ -33,10 +33,10 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   }
 
   async joinApplet() {
-    console.log("I AM JOINNNIIINNNG THIS APPPLET");
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+
     await this._matrixStore.joinApplet(this.weGroupId, this.appletInstanceId)
       .then(() => {
-        console.log("I JOINNNNEEEEEDDDD THIS APPLET");
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
             detail: { appletEntryHash: this.appletInstanceId },
@@ -45,16 +45,49 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
             }
           )
         );
-        console.log("I DSPAAATTTCHEEEED THE EVVVVENT");
+        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
+        (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
       }).catch((e) => {
         console.log("INSTALLATION FAILED: ", e);
+        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
       })
+  }
+
+
+  renderErrorSnackbar() {
+    return html`
+      <mwc-snackbar
+        id="error-snackbar"
+        labelText="Installation failed! (See console for details)"
+      >
+      </mwc-snackbar>
+    `;
+  }
+
+  renderSuccessSnackbar() {
+    return html`
+      <mwc-snackbar
+        id="success-snackbar"
+        labelText="Installation successful"
+      ></mwc-snackbar>
+    `;
+  }
+
+  renderInstallingProgress() {
+    return html`
+      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
+      </mwc-snackbar>
+    `;
   }
 
   render() {
 
     const appletInstanceInfo = this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)!;
     return html`
+
+      ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
+      ${this.renderInstallingProgress()}
+
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y">
@@ -119,6 +152,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       "mwc-circular-progress": CircularProgress,
       "mwc-button": Button,
       "mwc-icon-button-toggle": IconButtonToggle,
+      "mwc-snackbar": Snackbar,
     };
   }
 
