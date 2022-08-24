@@ -600,7 +600,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar id="group-centric-snackbar" labelText="Group-Centric Navigation" style="text-align: center;"></mwc-snackbar>
 
       <div class="navigation-switch-container ${classMap({
-          invisible: this._dashboardMode == DashboardMode.MainHome })}
+          invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
       ">
         <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
           <mwc-icon class="navigation-switch" @click=${this.handleNavigationSwitch}>open_in_full</mwc-icon>
