@@ -36,7 +36,7 @@ pub struct Applet {
     // pub gui_file_hash: EntryHash, // not required since the GUI is a private entry
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
-    pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId
+    pub network_seed: BTreeMap<String, Option<String>>,         // Segmented by RoleId
     pub dna_hashes: BTreeMap<String, DnaHash>,      // Segmented by RoleId
 }
 

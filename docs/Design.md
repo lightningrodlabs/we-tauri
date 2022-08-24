@@ -35,7 +35,7 @@ The [*membrane invitations*](https://github.com/holochain-open-dev/membrane-invi
     timestamp: u64,
 }
 ```
-as well as a UUID to ensure the *we group* has it's own private DHT.
+as well as a UUID as Network Seed to ensure the *we group* has it's own private DHT.
 
 
 ## We group
@@ -62,7 +62,7 @@ pub struct Applet {
     pub gui_file_hash: EntryHashB64,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
-    pub uid: BTreeMap<String, Option<String>>,         // Segmented by RoleId
+    pub network_seed: BTreeMap<String, Option<String>>,         // Segmented by RoleId
     pub dna_hashes: BTreeMap<String, DnaHashB64>,      // Segmented by RoleId
 }
 ```

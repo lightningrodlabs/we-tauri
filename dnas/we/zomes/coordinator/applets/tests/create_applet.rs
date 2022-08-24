@@ -32,7 +32,7 @@ async fn create_applet() {
         logo_src: None,
         devhub_happ_release_hash: fixt!(EntryHash),
         properties: BTreeMap::new(), // Segmented by RoleId
-        uid: BTreeMap::new(),        // Segmented by RoleId
+        network_seed: BTreeMap::new(),        // Segmented by RoleId
         dna_hashes: BTreeMap::new(), // Segmented by RoleId
     };
     let input = RegisterAppletInput {

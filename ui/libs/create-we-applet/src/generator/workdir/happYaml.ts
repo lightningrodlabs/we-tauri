@@ -18,7 +18,7 @@ roles:
     dna:
       bundled: "./${appletName}.dna"
       properties: ~
-      uuid: ~
+      network_seed: ~
       version: ~
       clone_limit: 100`
 });

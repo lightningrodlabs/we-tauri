@@ -157,58 +157,65 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
 
   render() {
-    return html`
-      <profile-prompt style="flex: 1; display: flex;">
-        <div slot="hero">
-          <div>
-            <div class="column center-content">
-              <img
-                class="we-logo"
-                style="margin-top: 30px;"
-                src=${this._info.value?.logoSrc!}
-              />
-              <div
-                style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
-              >
-                ${this._info.value?.name}
-              </div>
-              <div
-                style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
-              >
-                How would you like to appear in this group?
+    return this._info.render({
+      pending: () => html`
+        <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
+        </div>
+        `,
+      complete: (info) => html`
+          <profile-prompt style="flex: 1; display: flex;">
+            <div slot="hero">
+              <div>
+                <div class="column center-content">
+                  <img
+                    class="we-logo"
+                    style="margin-top: 30px;"
+                    src=${info.logoSrc!}
+                  />
+                  <div
+                    style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
+                  >
+                    ${info.name}
+                  </div>
+                  <div
+                    style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
+                  >
+                    How would you like to appear in this group?
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-        ${this.renderSuccessSnackbar()}
+            ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+            ${this.renderSuccessSnackbar()}
 
-        <div class="row" style="flex: 1">
+            <div class="row" style="flex: 1">
 
-          ${this.renderContent()}
+              ${this.renderContent()}
 
-          <div class="members-sidebar">
-              ${this._allMembers.render({
-                complete: (profiles) =>
-                  html`<list-agents-by-status
-                    .agents=${profiles.keys().filter(
-                      (agentPubKey) =>
-                        JSON.stringify(agentPubKey) !==
-                        JSON.stringify(this._matrixStore.myAgentPubKey)
-                    )}
-                  ></list-agents-by-status>`,
-                pending: () => html`
-                  <mwc-circular-progress
-                    indeterminate
-                  ></mwc-circular-progress>
-                `,
-              })}
+              <div class="members-sidebar">
+                  ${this._allMembers.render({
+                    complete: (profiles) =>
+                      html`<list-agents-by-status
+                        .agents=${profiles.keys().filter(
+                          (agentPubKey) =>
+                            JSON.stringify(agentPubKey) !==
+                            JSON.stringify(this._matrixStore.myAgentPubKey)
+                        )}
+                      ></list-agents-by-status>`,
+                    pending: () => html`
+                      <mwc-circular-progress
+                        indeterminate
+                      ></mwc-circular-progress>
+                    `,
+                  })}
+                </div>
             </div>
-        </div>
 
-      </profile-prompt>
-    `;
+          </profile-prompt>
+        `
+    })
   }
 
   static get scopedElements() {

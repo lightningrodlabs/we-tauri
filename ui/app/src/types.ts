@@ -55,7 +55,7 @@ export interface Applet {
   devhubHappReleaseHash: EntryHash;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
-  uid: Record<string, string | undefined>; // Segmented by RoleId
+  networkSeed: Record<string, string | undefined>; // Segmented by RoleId
   dnaHashes: Record<string, DnaHash>; // Segmented by RoleId
 }
 

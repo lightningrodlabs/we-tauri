@@ -503,9 +503,9 @@ export class MatrixStore {
     const newApplets = allApplets.filter(([_entryHash, applet]) => {
       return !appletsIAmPlaying
         .map(([_entryHash, playingApplet]) =>
-          JSON.stringify(playingApplet.applet.uid)
+          JSON.stringify(playingApplet.applet.networkSeed)
         ) // [Applet, Applet, Applet]
-        .includes(JSON.stringify(applet.uid));
+        .includes(JSON.stringify(applet.networkSeed));
     });
 
     const newAppletInstanceInfos: NewAppletInstanceInfo[] = newApplets.map(
@@ -752,6 +752,7 @@ export class MatrixStore {
 
     const properties = encode(info);
 
+    // membrane invitations API will need to change uid --> network_seed
     await this.membraneInvitationsStore.service.inviteToJoinMembrane(
       {
         originalDnaHash: weParentDnaHash,
@@ -952,7 +953,7 @@ export class MatrixStore {
       const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
       const weGroupCellData = cellClient.cell;
 
-      const network_seed = Object.values(newAppletInfo.applet.uid)[0];
+      const network_seed = Object.values(newAppletInfo.applet.networkSeed)[0];
       const installedAppId = `${network_seed}-${newAppletInfo.applet.customName}`;
 
       // install app bundle
@@ -1099,10 +1100,10 @@ export class MatrixStore {
     // --- Register hApp in the We DNA ---
 
     const dnaHashes: Record<string, DnaHash> = {};
-    const uidByRole: Record<string, string> = {};
+    const networkSeedByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = cell.cell_id[0];
-      uidByRole[cell.role_id] = network_seed;
+      networkSeedByRole[cell.role_id] = network_seed;
     });
 
     const applet: Applet = {
@@ -1115,7 +1116,7 @@ export class MatrixStore {
       devhubHappReleaseHash: appletInfo.devhubHappReleaseHash,
 
       properties: {},
-      uid: uidByRole,
+      networkSeed: networkSeedByRole,
       dnaHashes: dnaHashes,
     };
 
