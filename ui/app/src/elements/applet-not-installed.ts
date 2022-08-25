@@ -2,12 +2,13 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, CircularProgress, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
+import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { sharedStyles } from "../sharedStyles";
+import { JoinFromFsDialog } from "./join-from-file-system";
 import { RenderBlock } from "./render-block";
 
 
@@ -26,6 +27,9 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   @state()
   private _showAppletDescription: boolean = false;
+
+  @query("#join-from-fs-dialog")
+  joinFromFsDialog!: JoinFromFsDialog;
 
 
   private toggleAppletDescription() {
@@ -88,6 +92,8 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
+      <join-from-fs-dialog .appletInstanceId=${this.appletInstanceId} id="join-from-fs-dialog"></join-from-fs-dialog>
+
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y">
@@ -136,7 +142,14 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                 style="margin-top: 50px;"
                 raised
                 @click=${async () => await this.joinApplet()}
-                >INSTALL</mwc-button
+                >Automatically Install from the DevHub</mwc-button
+              >
+
+              <mwc-button
+                style="margin-top: 10px;"
+                raised
+                @click=${async () => this.joinFromFsDialog.open()}
+                >Upload from Filesystem</mwc-button
               >
             </div>
           </div>
@@ -153,6 +166,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-snackbar": Snackbar,
+      "join-from-fs-dialog": JoinFromFsDialog,
     };
   }
 

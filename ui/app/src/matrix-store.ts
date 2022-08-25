@@ -912,6 +912,8 @@ export class MatrixStore {
     return newWeGroupDnaHash;
   }
 
+
+
   /**
    * Installs the already existing applet in the specified We group to the conductor
    *
@@ -921,8 +923,10 @@ export class MatrixStore {
    */
   async joinApplet(
     weGroupId: DnaHash,
-    appletInstanceId: EntryHash
+    appletInstanceId: EntryHash,
+    compressedWebHappInput?: Uint8Array,
   ): Promise<void> {
+
     const isAlreadyInstalled = this.isInstalled(appletInstanceId);
     if (isAlreadyInstalled) return;
 
@@ -945,7 +949,14 @@ export class MatrixStore {
     } else {
       // fetch hApp and GUI   <---- COULD BE IMPROVED BY TAKING IT FROM LOCAL STORAGE IN CASE THE SAME APPLET CLASS HAS BEEN INSTALLED EARLIER
       // add logic here in case webhapp is installed from the file system.
-      const compressedWebHapp = await this.fetchWebHapp(newAppletInfo.applet.devhubHappReleaseHash);
+      let compressedWebHapp: Uint8Array;
+
+      if (!compressedWebHappInput) {
+        compressedWebHapp = await this.fetchWebHapp(newAppletInfo.applet.devhubHappReleaseHash);
+      } else {
+        compressedWebHapp = compressedWebHappInput;
+      }
+
       const [decompressedHapp, decompressedGui, _iconSrcOption] = this.decompressWebHapp(compressedWebHapp);
 
 
