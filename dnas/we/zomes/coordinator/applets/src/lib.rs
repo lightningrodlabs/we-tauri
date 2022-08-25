@@ -92,7 +92,7 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
 
             let link_tag = create_link_action.tag.clone();
             if link_tag == LinkTag::new(String::from("AppletToExternalAgent")) {
-                debug!("%*%*%*%*%* SAME LinkTag !!! :)");
+                // debug!("%*%*%*%*%* SAME LinkTag !!! :)");
                 let applet_hash =
                     EntryHash::from(create_link_action.base_address.clone());
                 if let Some(applet) = applets.get(&applet_hash) {
@@ -111,7 +111,7 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
         }
     }
 
-    debug!(">>>>> playing_applets: {:?}", playing_applets);
+    // debug!(">>>>> playing_applets: {:?}", playing_applets);
     Ok(playing_applets)
 }
 
