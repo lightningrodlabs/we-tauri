@@ -8,12 +8,12 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
-import { InstallableApplets } from "./installable-applets";
-import { InvitationsBlock } from "./invitations-block";
-import { InstallFromFsDialog } from "./install-from-file-system";
+import { matrixContext, weGroupContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
+import { InstallableApplets } from "../components/installable-applets";
+import { InvitationsBlock } from "../components/invitations-block";
+import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 
 
 

@@ -26,22 +26,22 @@ import {
   WeGroupInfo,
 } from "./matrix-store";
 import { sharedStyles } from "./sharedStyles";
-import { HomeScreen } from "./elements/home-screen";
+import { HomeScreen } from "./elements/dashboard/home-screen";
 import { get } from "svelte/store";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DashboardMode, NavigationMode, RenderingMode } from "./types";
-import { SidebarButton } from "./elements/sidebar-button";
-import { CreateWeGroupDialog } from "./elements/create-we-group-dialog";
+import { SidebarButton } from "./elements/components/sidebar-button";
+import { CreateWeGroupDialog } from "./elements/dialogs/create-we-group-dialog";
 import { DnaHashMap } from "@holochain-open-dev/utils";
 import { WeGroupContext } from "./elements/we-group-context";
-import { AppletClassHome } from "./elements/applet-class-home";
-import { WeGroupHome } from "./elements/we-group-home";
-import { AppletClassRenderer } from "./elements/applet-class-renderer";
-import { AppletInstanceRenderer } from "./elements/applet-instance-renderer";
-import { AppletNotInstalled } from "./elements/applet-not-installed";
-import { NotificationDot } from "./elements/notification-dot";
-import { InactiveOverlay } from "./elements/inactive-overlay";
-import { AppletIconBadge } from "./elements/applet-icon-badge";
+import { AppletClassHome } from "./elements/dashboard/applet-class-home";
+import { WeGroupHome } from "./elements/dashboard/we-group-home";
+import { AppletClassRenderer } from "./elements/dashboard/applet-class-renderer";
+import { AppletInstanceRenderer } from "./elements/dashboard/applet-instance-renderer";
+import { AppletNotInstalled } from "./elements/dashboard/applet-not-installed";
+import { NotificationDot } from "./elements/components/notification-dot";
+import { InactiveOverlay } from "./elements/components/inactive-overlay";
+import { AppletIconBadge } from "./elements/components/applet-icon-badge";
 import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
 import { weLogoIcon } from "./icons/we-logo-icon";
 
@@ -227,7 +227,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         ></applet-class-home>
       `;
     } else if (this._dashboardMode === DashboardMode.Loading) {
-      console.log("DASHBOARD MODE LOADING!");
       return html`
         <div class="center-content" style="flex: 1;display: flex;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -238,7 +237,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderAppletInstanceContent() {
     // 1. check whether the selected applet instance is already installed
-    console.log("Is the applet installed?", this._matrixStore.isInstalled(this._selectedAppletInstanceId!));
     return this._matrixStore.isInstalled(this._selectedAppletInstanceId!)
       ? html`
         <applet-instance-renderer
@@ -575,7 +573,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
   handleAppletInstalled(e: CustomEvent) {
-    console.log("APPLET INSTALLED!");
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
     this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(e.detail.appletEntryHash)?.applet.devhubHappReleaseHash;
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;

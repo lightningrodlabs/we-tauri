@@ -5,11 +5,11 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
-import { JoinFromFsDialog } from "./join-from-file-system";
-import { RenderBlock } from "./render-block";
+import { matrixContext, weGroupContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
+import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
+import { RenderBlock } from "../components/render-block";
 
 
 

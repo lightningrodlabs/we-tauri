@@ -7,10 +7,10 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
-import { RenderBlock } from "./render-block";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
+import { RenderBlock } from "../components/render-block";
 
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
@@ -35,7 +35,6 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
     this,
     async () => {
       await sleep(1);
-      console.log("FETCHING APPLET INSTANCE RENDERERS FOR ID: ", this.appletInstanceId);
       return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId, {
         profilesStore: this._profilesStore,
       });

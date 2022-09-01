@@ -5,11 +5,11 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
 import { NoMergeEyeView } from "./no-merge-eye-view";
-import { RenderBlock } from "./render-block";
+import { RenderBlock } from "../components/render-block";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 

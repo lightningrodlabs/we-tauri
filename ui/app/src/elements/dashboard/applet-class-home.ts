@@ -4,9 +4,9 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { property, state } from "lit/decorators.js";
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
 import { get } from "svelte/store";
 
 

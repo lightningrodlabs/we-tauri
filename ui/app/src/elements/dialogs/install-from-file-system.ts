@@ -12,11 +12,11 @@ import {
   TextArea,
 } from "@scoped-elements/material-web";
 
-import { sharedStyles } from "../sharedStyles";
-import { AppletInfo } from "../types";
+import { sharedStyles } from "../../sharedStyles";
+import { AppletInfo } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { MatrixStore } from "../matrix-store";
-import { matrixContext, weGroupContext } from "../context";
+import { MatrixStore } from "../../matrix-store";
+import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 import { fakeEntryHash } from "@holochain-open-dev/utils";
 
@@ -101,8 +101,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      console.log("CREATING APPLET FOR GROUP WITH ID: ", this.weGroupId);
-
       const appletInfo: AppletInfo = {
         title: this._installedAppIdField.value, // for the applet class name we just take the user defined name for now.
         subtitle: this._subtitleField.value,
@@ -146,12 +144,10 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     reader.onload = (e) => {
       console.log(e.target?.result);
     }
-    console.log("FILES: ", files);
     reader.readAsArrayBuffer(files[0]);
     // TODO! make typing right here
     reader.onloadend = (_e) => {
       const buffer = reader.result as ArrayBuffer;
-      console.log("BUFFER: ", buffer);
       const ui8 = new Uint8Array(buffer);
       this._fileBytes = ui8;
     }

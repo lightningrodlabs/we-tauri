@@ -9,16 +9,18 @@ import {
   Snackbar,
   Dialog,
   CircularProgress,
+  TextArea,
 } from "@scoped-elements/material-web";
 
-import { sharedStyles } from "../sharedStyles";
-import { AppletInfo } from "../types";
+import { sharedStyles } from "../../sharedStyles";
+import { AppletInfo } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { MatrixStore } from "../matrix-store";
-import { matrixContext, weGroupContext } from "../context";
-import { DnaHash } from "@holochain/client";
+import { MatrixStore } from "../../matrix-store";
+import { matrixContext, weGroupContext } from "../../context";
+import { DnaHash, EntryHash } from "@holochain/client";
+import { fakeEntryHash } from "@holochain-open-dev/utils";
 
-export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
+export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
   _matrixStore!: MatrixStore;
 
@@ -31,11 +33,21 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
     () => [this._matrixStore, this.weGroupId]
   );
 
+  @property()
+  appletInstanceId!: EntryHash;
+
   @query("#applet-dialog")
   _appletDialog!: Dialog;
 
   @query("#installed-app-id")
   _installedAppIdField!: TextField;
+
+  @query("#subtitle-field")
+  _subtitleField!: TextArea;
+
+  @query("#description-field")
+  _descriptionField!: TextArea;
+
 
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
@@ -51,22 +63,23 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _duplicateName: boolean = false;
 
-  @property()
-  _appletInfo: AppletInfo = {
-    title: "",
-    subtitle: "",
-    description: "",
-    devhubHappReleaseHash: new Uint8Array(0),
-    icon: undefined,
-  };
 
-  open(appletInfo: AppletInfo) {
+  @state()
+  _fileBytes: Uint8Array | undefined = undefined;
+
+  open() {
     this._appletDialog.show();
-    this._appletInfo = appletInfo;
+  }
+
+  close() {
+    this._fileBytes = undefined;
+    this._subtitleField.value = "";
+    this._installedAppIdField.value = "";
+    this._descriptionField.value = "";
   }
 
   get publishDisabled() {
-    return !this._installedAppIdField || this._duplicateName;
+    return !this._fileBytes;
   }
 
   checkValidity(_newValue, _nativeValidity) {
@@ -88,15 +101,16 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
     };
   }
 
-  async createApplet() {
+  async joinApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      console.log("CREATING APPLET FOR GROUP WITH ID: ", this.weGroupId);
-      const appletEntryHash = await this._matrixStore.createApplet(
+
+      await this._matrixStore.joinApplet(
         this.weGroupId,
-        this._appletInfo,
-        this._installedAppIdField.value
+        this.appletInstanceId,
+        this._fileBytes, // compressed webhapp as Uint8Array
       );
+      const appletEntryHash = this.appletInstanceId;
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
       ).close();
@@ -115,6 +129,23 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       ).close();
       (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
       console.log("Installation error:", e);
+    }
+  }
+
+  // TODO! make typing right here
+  loadFileBytes(e: any) {
+    const files: FileList = e.target.files;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      console.log(e.target?.result);
+    }
+    reader.readAsArrayBuffer(files[0]);
+    // TODO! make typing right here
+    reader.onloadend = (_e) => {
+      const buffer = reader.result as ArrayBuffer;
+      const ui8 = new Uint8Array(buffer);
+      this._fileBytes = ui8;
     }
   }
 
@@ -150,29 +181,19 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderInstallingProgress()}
 
       <mwc-dialog id="applet-dialog" heading="Add Custom Name">
-        <div class="column" style="padding: 16px; margin-bottom: 24px;">
-          <mwc-textfield
-            id="installed-app-id"
-            label="Custom Name"
-            required
-            outlined
-            autoValidate
-            value=${this._appletInfo.title}
-            @input=${() => this.requestUpdate()}
-            validateOnInitialRender
-            dialogInitialFocus
-            .validityTransform=${(newValue, nativeValidity) =>
-              this.checkValidity(newValue, nativeValidity)}
-          ></mwc-textfield>
-          ${this._duplicateName
-            ? html`<div
+
+        <div>Upload the <b>same</b> .webhapp file as the person that installed it to the group:</div>
+
+        <input type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes}>
+        ${this._fileBytes
+            ? html``
+            : html`<div
                 class="default-font"
                 style="color: #b10323; font-size: 12px; margin-left: 4px;"
               >
-                Name already exists.
+                No file selected.
               </div>`
-            : html``}
-        </div>
+          }
 
         <mwc-button
           slot="secondaryAction"
@@ -185,7 +206,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.createApplet()}
+          @click=${() => this.joinApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;
@@ -198,6 +219,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       "mwc-dialog": Dialog,
       "mwc-snackbar": Snackbar,
       "mwc-circular-progress": CircularProgress,
+      "mwc-textarea": TextArea,
     };
   }
 

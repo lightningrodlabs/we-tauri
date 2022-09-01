@@ -12,9 +12,9 @@ import { contextProvided } from "@lit-labs/context";
 import { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
 import { property, query, state } from "lit/decorators.js";
 
-import { sharedStyles } from "../sharedStyles";
-import { MatrixStore } from "../matrix-store";
-import { matrixContext, weGroupContext } from "../context";
+import { sharedStyles } from "../../sharedStyles";
+import { MatrixStore } from "../../matrix-store";
+import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 import { deserializeHash } from "@holochain-open-dev/utils";
 

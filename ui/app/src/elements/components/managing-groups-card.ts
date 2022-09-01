@@ -3,11 +3,11 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
 import { Button, List, ListItem, Card, Snackbar, Icon, Dialog } from "@scoped-elements/material-web";
 
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
-import { CreateWeGroupDialog } from "./create-we-group-dialog";
+import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 
 

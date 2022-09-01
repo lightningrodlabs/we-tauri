@@ -12,17 +12,17 @@ import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
 import { property, query, state } from "lit/decorators.js";
 import { Task } from "@lit-labs/task";
 
-import { sharedStyles } from "../sharedStyles";
+import { sharedStyles } from "../../sharedStyles";
 import {
   AppWithReleases,
   getAllPublishedApps,
   getLatestRelease,
-} from "../processes/devhub/get-happs";
+} from "../../processes/devhub/get-happs";
 
-import { AppletInfo } from "../types";
-import { CreateAppletDialog } from "./create-applet-dialog";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
+import { AppletInfo } from "../../types";
+import { CreateAppletDialog } from "../dialogs/create-applet-dialog";
+import { matrixContext, weGroupContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
 import { DnaHash } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {

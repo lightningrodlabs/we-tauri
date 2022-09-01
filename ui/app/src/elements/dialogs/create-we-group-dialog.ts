@@ -6,9 +6,9 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Dialog, TextField, Button } from "@scoped-elements/material-web";
 import { SelectAvatar } from "@holochain-open-dev/utils";
 
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
 
 /**
  * @element we-applet

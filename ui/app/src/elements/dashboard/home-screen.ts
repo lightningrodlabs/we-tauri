@@ -14,15 +14,15 @@ import {
   Dialog,
 } from "@scoped-elements/material-web";
 
-import { matrixContext } from "../context";
-import { MatrixStore } from "../matrix-store";
-import { sharedStyles } from "../sharedStyles";
+import { matrixContext } from "../../context";
+import { MatrixStore } from "../../matrix-store";
+import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/utils";
-import { CreateWeGroupDialog } from "./create-we-group-dialog";
+import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { JoinGroupCard } from "./join-group-card";
-import { ManagingGroupsCard } from "./managing-groups-card";
+import { JoinGroupCard } from "../components/join-group-card";
+import { ManagingGroupsCard } from "../components/managing-groups-card";
 
 export class HomeScreen extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext })
