@@ -1,5 +1,5 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
-import { ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
+import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -204,7 +204,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
               ${this.renderContent()}
 
-              <div class="members-sidebar">
+              <div class="column members-sidebar">
+                  <my-profile style="margin-bottom: 20px;"></my-profile>
                   ${this._allMembers.render({
                     complete: (profiles) =>
                       html`<list-agents-by-status
@@ -231,6 +232,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "profile-prompt": ProfilePrompt,
+      "my-profile": MyProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
