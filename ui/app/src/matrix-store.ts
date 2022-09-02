@@ -647,33 +647,37 @@ export class MatrixStore {
         const appletsIAmPlaying =
           await this.appletsService.getAppletsIAmPlaying(weGroupCellClient);
 
-        const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying.map(
-          ([entryHash, playingApplet]) => {
-            const appletClassInfo: AppletClassInfo = {
-              devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
-              title: playingApplet.applet.title,
-              logoSrc: playingApplet.applet.logoSrc,
-              description: playingApplet.applet.description,
-            };
+        const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying
+          .filter(([_entryHash, playingApplet]) => {
+            return !!allApps.find((app) => this.isSameApp(app, playingApplet.applet))
+          })
+          .map(
+            ([entryHash, playingApplet]) => {
+              const appletClassInfo: AppletClassInfo = {
+                devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
+                title: playingApplet.applet.title,
+                logoSrc: playingApplet.applet.logoSrc,
+                description: playingApplet.applet.description,
+              };
 
-            const appletInstanceInfo: AppletInstanceInfo = {
-              appletId: entryHash,
-              installedAppInfo: allApps.find((app) =>
-                this.isSameApp(app, playingApplet.applet)
-              )!,
-              applet: playingApplet.applet,
-            };
+              const appletInstanceInfo: AppletInstanceInfo = {
+                appletId: entryHash,
+                installedAppInfo: allApps.find((app) =>
+                  this.isSameApp(app, playingApplet.applet)
+                )!,
+                applet: playingApplet.applet,
+              };
 
 
-            // populate installedAppletClasses along the way
-            installedAppletClasses.put(
-              playingApplet.applet.devhubHappReleaseHash,
-              appletClassInfo
-            );
+              // populate installedAppletClasses along the way
+              installedAppletClasses.put(
+                playingApplet.applet.devhubHappReleaseHash,
+                appletClassInfo
+              );
 
-            return appletInstanceInfo;
-          }
-        );
+              return appletInstanceInfo;
+            }
+          );
 
         matrix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
       })
@@ -1175,6 +1179,11 @@ export class MatrixStore {
     await this.fetchMatrix();
   }
 
+  async uninstallApp(appInfo: InstalledAppInfo): Promise<void> {
+    await this.adminWebsocket.uninstallApp({ installed_app_id: appInfo.installed_app_id });
+    // update matrix to reflect the change in rendering
+    await this.fetchMatrix();
+  }
 
   async fetchWebHapp(entryHash: EntryHash): Promise<Uint8Array> {
     const devhubHapp = await this.getDevhubHapp();

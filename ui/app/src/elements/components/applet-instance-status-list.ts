@@ -24,6 +24,7 @@ import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, InstalledAppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
+import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
 export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     
@@ -40,6 +41,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
+
+
+  @query("#uninstall-applet-dialog")
+  _uninstallAppletDialog!: UninstallAppletDialog;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -94,6 +99,17 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       });
   }
 
+  async uninstallApp(appInfo: InstalledAppInfo) {
+    console.log("Uninstalling applet: ", appInfo);
+    this.matrixStore.uninstallApp(appInfo)
+      .then(() => {
+        (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
+        this.requestUpdate();
+      }).catch((e) => {
+        console.log("Error: ", e);
+        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      });
+  }
 
 
 
@@ -117,7 +133,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
-            @click=${() => this.requestUpdate()}
+            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
             icon="refresh"
             >Refresh</mwc-button
           >
@@ -168,9 +184,13 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                       <mwc-button
                         class="delete-button"
                         raised
-                        label="DELETE"
+                        label="UNINSTALL"
                         icon="delete"
-                        @click=${() => console.log("clicked DELETE button.")}
+                        @click=${() => {
+                          this._uninstallAppletDialog.installedAppInfo = appletInfo.installedAppInfo;
+                          this._uninstallAppletDialog.open();
+                          }
+                        }
                       >
                       </mwc-button>
                     </div>
@@ -182,7 +202,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
-            @click=${() => this.requestUpdate()}
+            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
             icon="refresh"
             >Refresh</mwc-button
           >
@@ -204,7 +224,18 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         timeoutMs="4000"
         labelText="Applet started."
       ></mwc-snackbar>
+      <mwc-snackbar
+        id="app-uninstalled-snackbar"
+        timeoutMs="4000"
+        labelText="Applet uninstalled."
+      ></mwc-snackbar>
       ${this.renderErrorSnackbar()}
+
+
+      <uninstall-applet-dialog
+        id="uninstall-applet-dialog"
+        @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
+      ></uninstall-applet-dialog>
 
 
       ${this.renderAppStates()}
@@ -223,6 +254,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
+      "uninstall-applet-dialog": UninstallAppletDialog,
     };
   }
 

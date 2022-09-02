@@ -140,11 +140,21 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
         <applet-instance-status-list></applet-instance-status-list>
 
-        <div style="display: flex; justify-content: center; margin-top: 90px; margin-bottom: 50px;">
+
+
+      
+        <div class="row title" style="margin-top: 30px;">
+          <span style="align-self: start; margin-top: 20px;">Danger Zone</span>
+        </div>
+        <hr style="width: 100%" />
+
+        <div style="display: flex; align-items: center; margin-top: 20px; margin-bottom: 50px;">
+          <div>Leave group and delete all applets: </div>
+          <span style="flex: 1"></span>
           <mwc-button
             raised
-            style="width: 280px; --mdc-theme-primary: #cf0000"
-            label="Leave Group and Delete All Applets"
+            style="--mdc-theme-primary: #cf0000"
+            label="Leave Group"
             @click=${() => this._leaveGroupDialog.open()}
           ></mwc-button>
         </div>
