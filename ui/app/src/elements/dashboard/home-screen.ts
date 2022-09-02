@@ -25,7 +25,7 @@ import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
 
 export class HomeScreen extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
   _myInvitations = new TaskSubscriber(this, () =>

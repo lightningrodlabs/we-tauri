@@ -12,7 +12,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 
 
 export class ManagingGroupsCard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
 

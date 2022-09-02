@@ -25,7 +25,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash } from "@holochain/client";
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
   _myInvitations = new TaskSubscriber(

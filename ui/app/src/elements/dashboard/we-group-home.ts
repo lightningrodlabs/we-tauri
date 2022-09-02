@@ -3,7 +3,7 @@ import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, Card, CircularProgress, Fab, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
+import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
@@ -14,6 +14,7 @@ import { sharedStyles } from "../../sharedStyles";
 import { InstallableApplets } from "../components/installable-applets";
 import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
+import { WeGroupSettings } from "./we-group-settings";
 
 
 
@@ -45,7 +46,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
 
   @state()
-  private _showAppletDescription: boolean = false;
+  private _showSettings: boolean = false;
 
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
@@ -81,9 +82,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  toggleAppletDescription() {
-    this._showAppletDescription = !this._showAppletDescription;
-  }
 
   async joinApplet(appletInstanceId: EntryHash) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
@@ -122,43 +120,49 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y">
-            <div class="column" style="flex: 1; margin: 24px;">
-              <div class="row center-content" style="margin-top: 56px">
-                <div class="column center-content">
-                  ${this._info.value
-                    ? html`<img
-                        class="logo-large"
-                        style=" width: 150px; height: 150px;"
-                        src=${this._info.value.logoSrc}
-                      />`
-                    : html``}
-                  <div
-                    style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
-                  >
-                    ${this._info.value?.name}
+            ${this._showSettings
+              ? html`<we-group-settings @back-home=${() => {this._showSettings = false}}></we-group-settings>`
+              : html`
+                  <div class="column" style="flex: 1; margin: 24px; position: relative">
+                    <mwc-icon-button class="settings-icon" icon="settings" @click=${() => {this._showSettings = true}}></mwc-icon-button>
+                    <div class="row center-content" style="margin-top: 56px">
+                      <div class="column center-content">
+                        ${this._info.value
+                          ? html`<img
+                              class="logo-large"
+                              style=" width: 150px; height: 150px;"
+                              src=${this._info.value.logoSrc}
+                            />`
+                          : html``}
+                        <div
+                          style="font-size: 1.4em; margin-top: 30px; font-weight: bold;"
+                        >
+                          ${this._info.value?.name}
+                        </div>
+                      </div>
+
+                      <invitations-block
+                        style="margin-left: 50px;"
+                      ></invitations-block>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; margin-top: 90px;">
+                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
+                    </div>
+
+                    <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
+
+
+                    <div class="row title" style="margin-top: -20px;">
+                      <span style="align-self: start">Applets Library</span>
+                    </div>
+
+                    <hr style="width: 100%" />
+
+                    <installable-applets></installable-applets>
                   </div>
-                </div>
-
-                <invitations-block
-                  style="margin-left: 50px;"
-                ></invitations-block>
-              </div>
-
-              <div style="display: flex; justify-content: flex-end; margin-top: 90px;">
-                <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
-              </div>
-
-              <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
-
-
-              <div class="row title" style="margin-top: -20px;">
-                <span style="align-self: start">Applets Library</span>
-              </div>
-
-              <hr style="width: 100%" />
-
-              <installable-applets></installable-applets>
-            </div>
+                `
+            }
           </div>
         </div>
       </div>
@@ -237,6 +241,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-fab": Fab,
       "mwc-card": Card,
+      "mwc-icon-button": IconButton,
       "mwc-circular-progress": CircularProgress,
       "sl-tooltip": SlTooltip,
       "invitations-block": InvitationsBlock,
@@ -245,6 +250,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "list-agents-by-status": ListAgentsByStatus,
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
+      "we-group-settings": WeGroupSettings,
     };
   }
 
@@ -255,6 +261,13 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         display: flex;
       }
 
+      .settings-icon {
+        cursor: pointer;
+        --mdc-icon-size: 32px;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
 
       .we-name {
         text-align: center;

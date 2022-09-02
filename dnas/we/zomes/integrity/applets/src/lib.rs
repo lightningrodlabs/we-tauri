@@ -26,9 +26,10 @@ pub enum LinkTypes {
 #[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Applet {
-    pub custom_name: String, // name of the applet instance as chosen by the person adding it to the group,
+    pub custom_name: String,    // name of the applet "instance" as chosen by the person adding it to the group,
+                                // (is also used as part of the installed_app_id in the conductor)
 
-    pub title: String, // title of the applet in the devhub
+    pub title: String, // title of the applet in the devhub, defines the "class" name of the applet
     pub description: String,
     pub logo_src: Option<String>,
 

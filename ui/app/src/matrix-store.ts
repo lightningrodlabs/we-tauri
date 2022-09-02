@@ -190,17 +190,17 @@ export class MatrixStore {
     return derived(this._matrix, (matrix) => matrix);
   }
 
-  public profilesStore(weGroupId: DnaHash): Readable<ProfilesStore> {
+  public profilesStore(weGroupId: DnaHash): Readable<ProfilesStore | undefined> {
     return derived(
       this._matrix,
-      (matrix) => matrix.get(weGroupId)[0].profilesStore
+      (matrix) => matrix.get(weGroupId)? matrix.get(weGroupId)[0].profilesStore : undefined
     );
   }
 
-  public peerStatusStore(weGroupId: DnaHash): Readable<PeerStatusStore> {
+  public peerStatusStore(weGroupId: DnaHash): Readable<PeerStatusStore | undefined> {
     return derived(
       this._matrix,
-      (matrix) => matrix.get(weGroupId)[0].peerStatusStore
+      (matrix) => matrix.get(weGroupId)? matrix.get(weGroupId)[0].peerStatusStore : undefined
     );
   }
 
@@ -210,8 +210,10 @@ export class MatrixStore {
    * @param weGroupId : DnaHash
    * @returns : WeInfo
    */
-  public getWeGroupInfo(weGroupId): WeInfo {
-    return get(this._matrix).get(weGroupId)[0].info.info;
+  public getWeGroupInfo(weGroupId): WeInfo | undefined {
+    if (weGroupId) {
+      return get(this._matrix).get(weGroupId) ? get(this._matrix).get(weGroupId)[0].info.info : undefined;
+    }
   }
 
   /**
@@ -340,7 +342,7 @@ export class MatrixStore {
       this.holochainClient.appWebsocket,
       this.adminWebsocket,
       weServices,
-      [{ weInfo: this.getWeGroupInfo(weGroupId), installedAppInfo }]
+      [{ weInfo: this.getWeGroupInfo(weGroupId)!, installedAppInfo }]
     );
 
 
@@ -417,9 +419,9 @@ export class MatrixStore {
   /**Gets an array of all AppletInfo of the applets installed for the specified group */
   public getAppletInstanceInfosForGroup(
     groupDnaHash: DnaHash
-  ): Readable<AppletInstanceInfo[]> {
+  ): Readable<AppletInstanceInfo[] | undefined> {
     // todo
-    return readable(get(this._matrix).get(groupDnaHash)[1]);
+    return readable(get(this._matrix).get(groupDnaHash) ? get(this._matrix).get(groupDnaHash)[1] : undefined);
     // return derived(this._matrix, (matrix) => {
     //   return matrix.get(groupDnaHash)[1];
     // })
@@ -576,14 +578,11 @@ export class MatrixStore {
     // fetch groups from conductor
     let allApps = await this.adminWebsocket.listApps({});
     let allWeGroups = allApps.filter((app) =>
-      app.installed_app_id.startsWith("we-")
+      app.installed_app_id.startsWith("group@we-")
     );
 
 
-
-
-
-
+  
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
 
@@ -688,13 +687,7 @@ export class MatrixStore {
     //   return m;
     // });
 
-
-    this._installedAppletClasses.update((appletClasses) => {
-      installedAppletClasses
-        .entries()
-        .forEach(([key, value]) => appletClasses.put(key, value));
-      return appletClasses;
-    });
+    this._installedAppletClasses.set(installedAppletClasses);
 
     return derived(this._matrix, (m) => m);
   }
@@ -780,10 +773,6 @@ export class MatrixStore {
     return newWeGroupDnaHash;
   }
 
-  public async removeInvitation(invitationActionHash: ActionHash) {
-    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
-  }
-
   private async installWeGroup(
     name: string,
     logo: string,
@@ -810,7 +799,7 @@ export class MatrixStore {
       properties,
     });
 
-    const installed_app_id = `we-${name}-${timestamp}`;
+    const installed_app_id = `group@we-${name}-${timestamp}`;
     const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
       installed_app_id,
       agent_key: deserializeHash(myAgentPubKey) as Buffer,
@@ -888,6 +877,34 @@ export class MatrixStore {
   }
 
 
+  async leaveWeGroup(weGroupId: DnaHash, deleteApplets?: boolean) {
+    
+    const weGroup = get(this._matrix).get(weGroupId);
+
+    // uninstall all applet cells
+    if (deleteApplets === true){
+      const groupApplets: AppletInstanceInfo[] = weGroup[1];
+
+      await Promise.all(
+        groupApplets.map(async (appletInfo) => {
+          await this.adminWebsocket.uninstallApp({ installed_app_id: appletInfo.installedAppInfo.installed_app_id });
+          console.log("uninstalled applet with installed_app_id: ", appletInfo.installedAppInfo.installed_app_id);
+        })
+      )
+    }
+
+    // uninstall we group cell
+    await this.adminWebsocket.uninstallApp({ installed_app_id: weGroup[0].info.installed_app_id });
+    console.log("uninstalled we group with installed_app_id: ", weGroup[0].info.installed_app_id);
+
+    // update matrix
+    await this.fetchMatrix();
+  }
+
+
+  public async removeInvitation(invitationActionHash: ActionHash) {
+    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
+  }
 
   /**
    * Installs the already existing applet in the specified We group to the conductor
@@ -1047,7 +1064,7 @@ export class MatrixStore {
     const weGroupCellData = weGroupCellClient.cell;
 
     const network_seed = uuidv4();
-    const installedAppId: InstalledAppId = `${network_seed}-${customName}`;
+    const installedAppId: InstalledAppId = `applet@we-${network_seed}-${customName}`;
 
     const request: InstallAppBundleRequest = {
       agent_key: weGroupCellData.cell_id[1],

@@ -21,7 +21,7 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { fakeEntryHash } from "@holochain-open-dev/utils";
 
 export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
   @contextProvided({ context: weGroupContext, subscribe: true })

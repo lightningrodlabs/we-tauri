@@ -22,7 +22,6 @@ import {
   AppletInstanceInfo,
   MatrixStore,
   NewAppletInstanceInfo,
-  WeGroupData,
   WeGroupInfo,
 } from "./matrix-store";
 import { sharedStyles } from "./sharedStyles";
@@ -46,7 +45,7 @@ import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
 import { weLogoIcon } from "./icons/we-logo-icon";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
@@ -121,14 +120,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderSecondaryNavigation() {
+    console.log("rendering secondary naviation.");
     // show all applet instances of the selected group in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
+      const appletInstanceInfos = get(this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId!));
       return html`
         <sl-tooltip
           hoist
           placement="bottom"
-          .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!)
-            .name} Home"
+          .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!)?.name} Home"
         >
           <mwc-fab
             style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
@@ -141,13 +141,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           ></mwc-fab>
         </sl-tooltip>
 
-        ${this.renderAppletInstanceList(
-          get(
-            this._matrixStore.getAppletInstanceInfosForGroup(
-              this._selectedWeGroupId!
-            )
-          )
-        )}
+        ${appletInstanceInfos
+          ? this.renderAppletInstanceList(appletInstanceInfos)
+          : html``
+        }
         ${this._newAppletInstances.render({
           complete: (allNewAppletInstances) =>
             this.renderNewAppletInstanceIcons(allNewAppletInstances),
@@ -184,6 +181,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
+      console.log("@renderSecondaryNavigation: all applet classes: ", this._allAppletClasses.value.values());
       return html`
         ${this.renderAppletClassListSecondary(this._allAppletClasses.value.values())}
       `;
@@ -572,6 +570,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
 
+  handleWeGroupLeft(e: CustomEvent) {
+    this._selectedAppletInstanceId = undefined;
+    this._selectedAppletClassId = undefined;
+    this._selectedWeGroupId = undefined;
+    this._dashboardMode = DashboardMode.MainHome;
+    this._navigationMode = NavigationMode.Agnostic;
+    console.log("handling we group left.");
+  }
+
+
   handleAppletInstalled(e: CustomEvent) {
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
     this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(e.detail.appletEntryHash)?.applet.devhubHappReleaseHash;
@@ -605,7 +613,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         </sl-tooltip>
       </div>
 
-      <div class="row" style="flex: 1" @we-group-joined=${(e) => this.handleWeGroupAdded(e)}>
+      <div
+        class="row"
+        style="flex: 1"
+        @we-group-joined=${(e) => this.handleWeGroupAdded(e)}
+        @group-left=${(e) => this.handleWeGroupLeft(e)}
+      >
         <div class="column">
           <div class="top-left-corner-bg ${classMap({
                   tlcbgGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,

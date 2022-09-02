@@ -15,7 +15,7 @@ import { sharedStyles } from "../../sharedStyles";
  */
 export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
   /** Dependencies */
-  @contextProvided({ context: matrixContext })
+  @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
   async open() {
