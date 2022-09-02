@@ -44,6 +44,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
   async leaveGroup() {
     (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).show();
     try {
+      const weGroupName = this._matrixStore.getWeGroupInfo(this.weGroupId)?.name;
       await this._matrixStore.leaveWeGroup(this.weGroupId, true);
       console.log("group  left successfully.");
       (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).close();
@@ -51,6 +52,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
       console.log("snackbars handled.");
       this.dispatchEvent(
         new CustomEvent("group-left", {
+          detail: { weGroupName },
           composed: true,
           bubbles: true,
         })

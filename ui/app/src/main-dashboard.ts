@@ -120,7 +120,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderSecondaryNavigation() {
-    console.log("rendering secondary naviation.");
     // show all applet instances of the selected group in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
       const appletInstanceInfos = get(this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId!));
@@ -181,7 +180,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
-      console.log("@renderSecondaryNavigation: all applet classes: ", this._allAppletClasses.value.values());
       return html`
         ${this.renderAppletClassListSecondary(this._allAppletClasses.value.values())}
       `;
@@ -576,7 +574,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this._selectedWeGroupId = undefined;
     this._dashboardMode = DashboardMode.MainHome;
     this._navigationMode = NavigationMode.Agnostic;
-    console.log("handling we group left.");
+    (this.shadowRoot?.getElementById("group-left-snackbar") as Snackbar).show();
   }
 
 
@@ -594,6 +592,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     this.requestUpdate();
   }
 
+
   render() {
     return html`
       <create-we-group-dialog
@@ -604,6 +603,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
       <mwc-snackbar id="applet-centric-snackbar" labelText="Applet-Centric Navigation" style="text-align: center;"></mwc-snackbar>
       <mwc-snackbar id="group-centric-snackbar" labelText="Group-Centric Navigation" style="text-align: center;"></mwc-snackbar>
+      <mwc-snackbar id="group-left-snackbar" labelText="Group left." style="text-align: center;"></mwc-snackbar>
 
       <div class="navigation-switch-container ${classMap({
           invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
