@@ -731,7 +731,7 @@ export class MatrixStore {
       {
         originalDnaHash: weParentDnaHash,
         properties,
-        uid: undefined,
+        networkSeed: undefined,
         resultingDnaHash: weGroupDnaHash,
       },
       agentPubKey,
@@ -761,7 +761,7 @@ export class MatrixStore {
     };
     await this.membraneInvitationsStore.service.createCloneDnaRecipe({
       originalDnaHash: weDnaHash,
-      uid: undefined,
+      networkSeed: undefined,
       properties: encode(properties),
       resultingDnaHash: newWeGroupDnaHash,
     });
@@ -806,7 +806,7 @@ export class MatrixStore {
     // Create the We cell
     const newWeGroupHash = await this.adminWebsocket.registerDna({
       hash: deserializeHash(weDnaHash) as Buffer,
-      uid: undefined,
+      network_seed: undefined,
       properties,
     });
 
@@ -948,7 +948,7 @@ export class MatrixStore {
         membrane_proofs: {},
         bundle: decompressedHapp,
         network_seed: network_seed,
-      } as any;
+      };
 
       await this.adminWebsocket.installAppBundle(request);
 
@@ -1055,7 +1055,7 @@ export class MatrixStore {
       membrane_proofs: {},
       bundle: decompressedHapp,
       network_seed: network_seed,
-    } as any;
+    };
 
     await this.adminWebsocket.installAppBundle(request);
 
