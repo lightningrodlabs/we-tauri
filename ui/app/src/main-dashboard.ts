@@ -323,22 +323,24 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    */
   renderWeGroupIconsPrimary(weGroups: WeGroupInfo[]) {
     return html`
-      ${weGroups.map(
-        (weGroupInfo) =>
-          html`
-            <sidebar-button
-              style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
-              .logoSrc=${weGroupInfo.info.logoSrc}
-              .tooltipText=${weGroupInfo.info.name}
-              @click=${() => {
-                this.handleWeGroupIconPrimaryClick(weGroupInfo.dna_hash);
-                this.requestUpdate();
-              }}
-              class=${classMap({
-                highlightedGroupCentric: JSON.stringify(weGroupInfo.dna_hash) === JSON.stringify(this._selectedWeGroupId),
-                groupCentricIconHover: JSON.stringify(weGroupInfo.dna_hash) != JSON.stringify(this._selectedWeGroupId),
-              })}
-            ></sidebar-button>
+      ${weGroups
+        .sort((a,b) => a.info.name.localeCompare(b.info.name))
+        .map(
+          (weGroupInfo) =>
+            html`
+              <sidebar-button
+                style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
+                .logoSrc=${weGroupInfo.info.logoSrc}
+                .tooltipText=${weGroupInfo.info.name}
+                @click=${() => {
+                  this.handleWeGroupIconPrimaryClick(weGroupInfo.dna_hash);
+                  this.requestUpdate();
+                }}
+                class=${classMap({
+                  highlightedGroupCentric: JSON.stringify(weGroupInfo.dna_hash) === JSON.stringify(this._selectedWeGroupId),
+                  groupCentricIconHover: JSON.stringify(weGroupInfo.dna_hash) != JSON.stringify(this._selectedWeGroupId),
+                })}
+              ></sidebar-button>
           `
       )}
 
@@ -360,82 +362,53 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   renderWeGroupIconsSecondary(info: [WeGroupInfo, AppletInstanceInfo][]) {
     return html`
     <span style="width: 18px;"></span>
-      ${info.map(
-        ([weGroupInfo, appletInstanceInfo]) =>
-          html`
-            <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
-              <sidebar-button
-                placement="bottom"
-                style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-                .logoSrc=${weGroupInfo.info.logoSrc}
-                .tooltipText=${weGroupInfo.info.name +
-                " - " +
-                appletInstanceInfo.applet.customName}
-                @click=${() => {
-                  this.handleWeGroupIconSecondaryClick(
-                    weGroupInfo.dna_hash,
-                    appletInstanceInfo.appletId
-                  );
-                  this.requestUpdate();
-                }}
-                class=${classMap({
-                  highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
-                  groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
-                })}
-              ></sidebar-button>
-            </applet-icon-badge>
-          `
+      ${info
+        .sort(([weGroupInfo_a, appletInstanceInfo_a], [weGroupInfo_b, appletInstanceInfo_b]) => {
+          // sort by group name and applet instance name
+          return weGroupInfo_a.info.name.localeCompare(weGroupInfo_b.info.name) * appletInstanceInfo_a.applet.customName.localeCompare(appletInstanceInfo_b.applet.customName)
+        })
+        .map(
+          ([weGroupInfo, appletInstanceInfo]) =>
+            html`
+              <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
+                <sidebar-button
+                  placement="bottom"
+                  style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+                  .logoSrc=${weGroupInfo.info.logoSrc}
+                  .tooltipText=${weGroupInfo.info.name +
+                  " - " +
+                  appletInstanceInfo.applet.customName}
+                  @click=${() => {
+                    this.handleWeGroupIconSecondaryClick(
+                      weGroupInfo.dna_hash,
+                      appletInstanceInfo.appletId
+                    );
+                    this.requestUpdate();
+                  }}
+                  class=${classMap({
+                    highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                    groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
+                  })}
+                ></sidebar-button>
+              </applet-icon-badge>
+            `
       )}
     `;
   }
 
   renderAppletClassListPrimary(appletClasses: AppletClassInfo[]) {
     // do stuff
-    return appletClasses.map(
-      (appletClassInfo) =>
-        html`
-          <sidebar-button
-            style="margin-top: 4px; margin-bottom: 4px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
-            .logoSrc=${appletClassInfo.logoSrc}
-            .tooltipText=${appletClassInfo.title}
-            @click=${() => {
-              this.handleAppletClassIconClick(appletClassInfo.devhubHappReleaseHash)
-            }}
-            class=${classMap({
-              highlightedAppletCentric:
-                JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
-                JSON.stringify(this._selectedAppletClassId),
-              appletCentricIconHover:
-                appletClassInfo.devhubHappReleaseHash !=
-                this._selectedAppletClassId,
-            })}
-          >
-          </sidebar-button>
-        `
-      // add special modes here
-    );
-  }
-
-
-  renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
-    // do stuff
-    return html`
-      <span style="width: 18px;"></span>
-
-      ${appletClasses.map(
+    return appletClasses
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .map(
         (appletClassInfo) =>
           html`
             <sidebar-button
-              placement="bottom"
-              style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+              style="margin-top: 4px; margin-bottom: 4px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
               .logoSrc=${appletClassInfo.logoSrc}
               .tooltipText=${appletClassInfo.title}
               @click=${() => {
-                this._selectedAppletClassId =
-                  appletClassInfo.devhubHappReleaseHash;
-                this._navigationMode = NavigationMode.AppletCentric;
-                this._dashboardMode = DashboardMode.AppletClassHome;
-                this.requestUpdate();
+                this.handleAppletClassIconClick(appletClassInfo.devhubHappReleaseHash)
               }}
               class=${classMap({
                 highlightedAppletCentric:
@@ -447,7 +420,45 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               })}
             >
             </sidebar-button>
-        `
+          `
+      // add special modes here
+    );
+  }
+
+
+  renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
+    // do stuff
+    return html`
+      <span style="width: 18px;"></span>
+
+      ${appletClasses
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map(
+          (appletClassInfo) =>
+            html`
+              <sidebar-button
+                placement="bottom"
+                style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+                .logoSrc=${appletClassInfo.logoSrc}
+                .tooltipText=${appletClassInfo.title}
+                @click=${() => {
+                  this._selectedAppletClassId =
+                    appletClassInfo.devhubHappReleaseHash;
+                  this._navigationMode = NavigationMode.AppletCentric;
+                  this._dashboardMode = DashboardMode.AppletClassHome;
+                  this.requestUpdate();
+                }}
+                class=${classMap({
+                  highlightedAppletCentric:
+                    JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
+                    JSON.stringify(this._selectedAppletClassId),
+                  appletCentricIconHover:
+                    appletClassInfo.devhubHappReleaseHash !=
+                    this._selectedAppletClassId,
+                })}
+              >
+              </sidebar-button>
+          `
       // add special modes here
     )}
   `;
@@ -455,7 +466,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
     // do stuff
-    return appletInstances.map(
+    return appletInstances
+      .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
+      .map(
       (appletInstanceInfo) =>
         html`
           <sidebar-button

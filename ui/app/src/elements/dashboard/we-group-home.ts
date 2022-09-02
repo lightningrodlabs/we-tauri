@@ -265,8 +265,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         cursor: pointer;
         --mdc-icon-size: 32px;
         position: absolute;
-        top: 20px;
-        right: 20px;
+        top: 0;
+        right: 0;
       }
 
       .we-name {

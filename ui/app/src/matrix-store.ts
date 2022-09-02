@@ -1163,6 +1163,19 @@ export class MatrixStore {
 
 
 
+  async disableApp(appInfo: InstalledAppInfo): Promise<void> {
+    await this.adminWebsocket.disableApp({ installed_app_id: appInfo.installed_app_id });
+    // update matrix to reflect the change in rendering
+    await this.fetchMatrix();
+  }
+
+  async enableApp(appInfo: InstalledAppInfo): Promise<void> {
+    await this.adminWebsocket.enableApp({ installed_app_id: appInfo.installed_app_id });
+    // update matrix to reflect the change in rendering
+    await this.fetchMatrix();
+  }
+
+
   async fetchWebHapp(entryHash: EntryHash): Promise<Uint8Array> {
     const devhubHapp = await this.getDevhubHapp();
 

@@ -2,7 +2,7 @@ import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profile
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, CircularProgress, IconButton, LinearProgress, Snackbar } from "@scoped-elements/material-web";
+import { Button, CircularProgress, Icon, IconButton, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
@@ -10,6 +10,7 @@ import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
+import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
 import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 
@@ -124,11 +125,21 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
   renderContent() {
     return html`
-      <div class="column" style="flex: 1; margin: 24px;">
+      <div class="column" style="flex: 1; margin: 24px; position: relative;">
+        <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
+
         <mwc-icon-button class="back-home" @click=${this.backHome} icon="close"></mwc-icon-button>
         
-        <div><h2>Group Settings</h2></div>
+        <div class="row center-content"><h2>Group Settings</h2><mwc-icon style="margin-left: 10px;">build</mwc-icon></div>
          
+        <div class="row title" style="margin-top: 30px;">
+          <span style="align-self: start">Applet Instances</span>
+        </div>
+
+        <hr style="width: 100%" />
+
+        <applet-instance-status-list></applet-instance-status-list>
+
         <div style="display: flex; justify-content: center; margin-top: 90px; margin-bottom: 50px;">
           <mwc-button
             raised
@@ -137,17 +148,6 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
             @click=${() => this._leaveGroupDialog.open()}
           ></mwc-button>
         </div>
-
-        <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
-
-
-        <div class="row title">
-          <span style="align-self: start">Applet Instances</span>
-        </div>
-
-        <hr style="width: 100%" />
-
-        <!-- <applet-instances></applet-instances> -->
       </div>
     `;
   }
@@ -170,12 +170,14 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     return {
       "mwc-button": Button,
       "mwc-icon-button": IconButton,
+      "mwc-icon": Icon,
       "mwc-circular-progress": CircularProgress,
       "sl-tooltip": SlTooltip,
       "invitations-block": InvitationsBlock,
       "mwc-linear-progress": LinearProgress,
       "mwc-snackbar": Snackbar,
       "leave-group-dialog": LeaveGroupDialog,
+      "applet-instance-status-list": AppletInstanceStatusList,
     };
   }
 
@@ -190,8 +192,8 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         cursor: pointer;
         --mdc-icon-size: 32px;
         position: absolute;
-        top: 20px;
-        right: 20px;
+        top: 0;
+        right: 0;
       }
 
     `;
