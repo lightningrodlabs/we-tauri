@@ -16,7 +16,7 @@ import {
   WeApplet,
   AppletRenderers,
   WeServices,
-  InstalledAppletInfo[],
+  InstalledAppletInfo,
 } from "@lightningrodlabs/we-applet";
 
 import { ${appletNameTitleCase}Applet } from "./${appletName}-applet";
