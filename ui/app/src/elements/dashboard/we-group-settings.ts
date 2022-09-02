@@ -127,9 +127,10 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     return html`
       <div class="column" style="flex: 1; margin: 24px; position: relative;">
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
-
-        <mwc-icon-button class="back-home" @click=${this.backHome} icon="close"></mwc-icon-button>
         
+        <sl-tooltip placement="bottom" content="Close Settings" hoist>
+          <mwc-icon-button class="back-home" @click=${this.backHome} icon="close"></mwc-icon-button>
+        </sl-tooltip>      
         <div class="row center-content"><h2>Group Settings</h2><mwc-icon style="margin-left: 10px;">build</mwc-icon></div>
          
         <div class="row title" style="margin-top: 30px;">

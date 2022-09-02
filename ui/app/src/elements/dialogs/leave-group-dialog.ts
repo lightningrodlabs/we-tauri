@@ -109,7 +109,6 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
 
 
         <mwc-button
-          raised
           slot="secondaryAction"
           dialogAction="cancel"
           label="cancel"

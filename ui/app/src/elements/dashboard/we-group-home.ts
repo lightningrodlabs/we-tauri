@@ -124,7 +124,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               ? html`<we-group-settings @back-home=${() => {this._showSettings = false}}></we-group-settings>`
               : html`
                   <div class="column" style="flex: 1; margin: 24px; position: relative">
-                    <mwc-icon-button class="settings-icon" icon="settings" @click=${() => {this._showSettings = true}}></mwc-icon-button>
+                    <sl-tooltip placement="bottom" content="Group Settings" hoist>
+                      <mwc-icon-button class="settings-icon" icon="settings" @click=${() => {this._showSettings = true}}></mwc-icon-button>
+                    </sl-tooltip>
                     <div class="row center-content" style="margin-top: 56px">
                       <div class="column center-content">
                         ${this._info.value

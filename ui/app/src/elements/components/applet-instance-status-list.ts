@@ -159,7 +159,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                       />
                     <strong>${appletInfo.applet.customName}</strong>
                     <div class="row" style="margin-left: auto; align-items: center;">
-                      <span style="color: gray; margin-right: 15px;">${appStatus}</span>
+                      <span style="color: gray; margin-right: 25px;">${appStatus}</span>
                       
                       ${appStatus === "RUNNING"
                         ? html`

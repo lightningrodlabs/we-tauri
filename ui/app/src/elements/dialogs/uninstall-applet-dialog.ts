@@ -44,7 +44,6 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
         Are you sure you want to uninstall this applet? This will delete all data you have stored within this applet.
 
         <mwc-button
-          raised
           slot="secondaryAction"
           dialogAction="cancel"
           label="cancel"
