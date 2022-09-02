@@ -365,7 +365,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       ${info
         .sort(([weGroupInfo_a, appletInstanceInfo_a], [weGroupInfo_b, appletInstanceInfo_b]) => {
           // sort by group name and applet instance name
-          return weGroupInfo_a.info.name.localeCompare(weGroupInfo_b.info.name) * appletInstanceInfo_a.applet.customName.localeCompare(appletInstanceInfo_b.applet.customName)
+          if (weGroupInfo_a.info.name === weGroupInfo_b.info.name) {
+            return appletInstanceInfo_a.applet.customName.localeCompare(appletInstanceInfo_b.applet.customName)
+          } else {
+            return weGroupInfo_a.info.name.localeCompare(weGroupInfo_b.info.name);
+          }
         })
         .map(
           ([weGroupInfo, appletInstanceInfo]) =>

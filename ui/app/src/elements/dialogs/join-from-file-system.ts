@@ -13,12 +13,10 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
-import { AppletInfo } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, EntryHash } from "@holochain/client";
-import { fakeEntryHash } from "@holochain-open-dev/utils";
 
 export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
