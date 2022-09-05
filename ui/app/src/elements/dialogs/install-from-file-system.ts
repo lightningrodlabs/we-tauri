@@ -12,13 +12,16 @@ import {
   TextArea,
 } from "@scoped-elements/material-web";
 
+import md5 from 'md5';
+
 import { sharedStyles } from "../../sharedStyles";
 import { AppletInfo } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { fakeEntryHash } from "@holochain-open-dev/utils";
+import { fakeMd5SeededEntryHash } from "../../utils";
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -64,6 +67,9 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _fileBytes: Uint8Array | undefined = undefined;
 
+  @state()
+  _fakeDevhubHappReleaseHash: EntryHash | undefined = undefined;
+
   open() {
     this._appletDialog.show();
   }
@@ -105,7 +111,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         title: this._installedAppIdField.value, // for the applet class name we just take the user defined name for now.
         subtitle: this._subtitleField.value,
         description: this._descriptionField.value,
-        devhubHappReleaseHash: fakeEntryHash(),
+        devhubHappReleaseHash: this._fakeDevhubHappReleaseHash!,
         icon: undefined,
       };
 
@@ -149,7 +155,12 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     reader.onloadend = (_e) => {
       const buffer = reader.result as ArrayBuffer;
       const ui8 = new Uint8Array(buffer);
+      // create a fake devhub happ release hash from the filehash --> used to compare when joining an applet
+      // to ensure it is the same applet and to allow recognizing same applets across groups
+      const md5FileHash = new Uint8Array(md5(ui8, { asBytes: true }));
+      this._fakeDevhubHappReleaseHash = fakeMd5SeededEntryHash(md5FileHash);
       this._fileBytes = ui8;
+      console.log("fake devhub happ release hash: ", this._fakeDevhubHappReleaseHash);
     }
   }
 

@@ -52,7 +52,8 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
         (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
         (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
       }).catch((e) => {
-        console.log("INSTALLATION FAILED: ", e);
+        console.log("Installation Error: ", e);
+        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
         (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
       })
   }
@@ -139,17 +140,16 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                 You haven't installed it yet.
               </div>
               <mwc-button
-                style="margin-top: 50px;"
+                style="margin-top: 65px;"
                 raised
                 @click=${async () => await this.joinApplet()}
                 >Automatically Install from the DevHub</mwc-button
               >
 
               <mwc-button
-                style="margin-top: 10px;"
-                raised
+                style="margin-top: 15px;"
                 @click=${async () => this.joinFromFsDialog.open()}
-                >Upload from Filesystem</mwc-button
+                >Upload from Filesystem instead</mwc-button
               >
             </div>
           </div>

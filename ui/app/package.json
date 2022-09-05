@@ -27,6 +27,7 @@
     "js-base64": "^3.7.2",
     "lit": "^2.2.0",
     "lit-svelte-stores": "^0.2.1",
+    "md5": "^2.3.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
@@ -37,6 +38,7 @@
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-typescript": "^8.2.5",
+    "@types/md5": "^2.3.2",
     "@web/dev-server": "^0.1.21",
     "@web/rollup-plugin-html": "^1.9.1",
     "@web/rollup-plugin-import-meta-assets": "^1.0.7",

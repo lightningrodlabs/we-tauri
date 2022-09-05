@@ -1,4 +1,12 @@
 import { DisabledAppReason, InstalledAppInfo } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
+
+
+export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
+  return new Uint8Array([0x84, 0x21, 0x24, ...md5Hash, ...new Uint8Array(20)]);
+}
+
+
 
 
 export function getStatus(app: InstalledAppInfo): string {
@@ -55,3 +63,6 @@ export function getReason(app: InstalledAppInfo): string | undefined {
     ).paused.reason.error;
   }
 }
+
+
+

@@ -127,37 +127,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
         font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
       }
 
-      .title {
-        align-items: center;
-        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
-        font-size: 1.2em;
-        text-align: center;
-      }
 
-      .accept-invitation {
-        --mdc-theme-primary: #17c200;
-      }
-
-      .delete-invitation {
-        --mdc-theme-primary: #cf0000;
-        margin-left: 5px;
-      }
-
-      .we-image {
-        height: 30px;
-        width: 30px;
-        border-radius: 50%;
-      }
-
-      .pubkey-field {
-        color: black;
-        background: #f4f0fa;
-        border-radius: 4px;
-        overflow-x: scroll;
-        padding: 10px;
-        white-space: nowrap;
-        cursor: pointer;
-      }
     `;
 
     return [sharedStyles, localStyles];

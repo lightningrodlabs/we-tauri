@@ -254,7 +254,7 @@ export class MatrixStore {
       .map(([_groupData, appletInfos]) => appletInfos)
       .flat()
       .find(
-        (appletInstanceInfo) => appletInstanceInfo.appletId == appletInstanceId
+        (appletInstanceInfo) => JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(appletInstanceId)
       );
 
     if (maybeInstalled) return true;
@@ -273,7 +273,7 @@ export class MatrixStore {
     return get(this._newAppletInstances)
       .values()
       .flat()
-      .find((info) => info.appletId === appletInstanceId);
+      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
   }
 
   public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
@@ -582,7 +582,7 @@ export class MatrixStore {
     );
 
 
-  
+
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
 
@@ -882,7 +882,7 @@ export class MatrixStore {
 
 
   async leaveWeGroup(weGroupId: DnaHash, deleteApplets?: boolean) {
-    
+
     const weGroup = get(this._matrix).get(weGroupId);
 
     // uninstall all applet cells
@@ -931,11 +931,11 @@ export class MatrixStore {
     );
     let newAppletInfo = newApplets
       .get(weGroupId)
-      .find((info) => info.appletId === appletInstanceId);
+      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
     if (!newAppletInfo) {
       newAppletInfo = get(
         await this.fetchNewAppletInstancesForGroup(weGroupId)
-      ).find((info) => info.appletId === appletInstanceId);
+      ).find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
     }
 
     if (!newAppletInfo) {
@@ -1253,11 +1253,14 @@ export class MatrixStore {
       .filter(([_groupData, appletInfos]) => {
         return (
           appletInfos.filter(
-            (appletInfo) => appletInfo.appletId === appletInstanceId
+            (appletInfo) => JSON.stringify(appletInfo.appletId) === JSON.stringify(appletInstanceId)
           ).length > 0
         );
       })[0][0].info;
   }
+
+
+
 
   /**
    * Gets the AppletInstanceInfo for the specified applet instance id
@@ -1273,7 +1276,7 @@ export class MatrixStore {
       .map(([_groupData, appletInfos]) => appletInfos)
       .flat()
       .find(
-        (appletInstanceInfo) => appletInstanceInfo.appletId == appletInstanceId
+        (appletInstanceInfo) => JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(appletInstanceId)
       );
   }
 
