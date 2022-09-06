@@ -11,6 +11,7 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
+import { DeletedAppletInstanceList } from "../components/deleted-applet-instance-list";
 import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 
@@ -127,23 +128,31 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     return html`
       <div class="column" style="flex: 1; margin: 24px; position: relative;">
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
-        
+
         <sl-tooltip placement="bottom" content="Close Settings" hoist>
           <mwc-icon-button class="back-home" @click=${this.backHome} icon="close"></mwc-icon-button>
-        </sl-tooltip>      
+        </sl-tooltip>
         <div class="row center-content"><h2>Group Settings</h2><mwc-icon style="margin-left: 10px;">build</mwc-icon></div>
-         
+
         <div class="row title" style="margin-top: 30px;">
-          <span style="align-self: start">Applet Instances</span>
+          <span style="align-self: start">Installed Applets</span>
         </div>
 
         <hr style="width: 100%" />
 
         <applet-instance-status-list></applet-instance-status-list>
 
+        <div class="row title" style="margin-top: 30px;">
+          <span style="align-self: start">Uninstalled Applets</span>
+        </div>
+
+        <hr style="width: 100%" />
+
+        <deleted-applet-instance-list></deleted-applet-instance-list>
 
 
-      
+
+
         <div class="row title" style="margin-top: 30px;">
           <span style="align-self: start; margin-top: 20px;">Danger Zone</span>
         </div>
@@ -189,6 +198,7 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       "mwc-snackbar": Snackbar,
       "leave-group-dialog": LeaveGroupDialog,
       "applet-instance-status-list": AppletInstanceStatusList,
+      "deleted-applet-instance-list": DeletedAppletInstanceList,
     };
   }
 

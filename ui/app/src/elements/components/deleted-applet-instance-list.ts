@@ -1,10 +1,9 @@
-import { serializeHash } from "@holochain-open-dev/utils";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber } from "lit-svelte-stores";
 import {
   Button,
   List,
@@ -22,11 +21,11 @@ import { query } from "lit/decorators.js";
 import { HoloHashMap, HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { ActionHash, DnaHash, InstalledAppInfo } from "@holochain/client";
+import { ActionHash, DnaHash, EntryHash, InstalledAppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
-export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
+export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -34,17 +33,17 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  _installedApplets = new StoreSubscriber(
+  _uninstalledApplets = new StoreSubscriber(
     this,
-    () => this.matrixStore.getAppletInstanceInfosForGroup(this.weGroupId)
+    () => this.matrixStore.getUninstalledAppletInstanceInfosForGroup(this.weGroupId)
   );
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
 
 
-  @query("#uninstall-applet-dialog")
-  _uninstallAppletDialog!: UninstallAppletDialog;
+  @query("#reinstall-applet-dialog")
+  _reinstallAppletDialog!: UninstallAppletDialog;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -77,39 +76,19 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   }
 
 
-  async disableApp(appInfo: InstalledAppInfo) {
-    this.matrixStore.disableApp(appInfo)
-      .then(() => {
-        (this.shadowRoot?.getElementById("app-disabled-snackbar") as Snackbar).show();
-        this.requestUpdate();
-      }).catch((e) => {
-        console.log("Error: ", e);
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      });
-  }
 
-  async enableApp(appInfo: InstalledAppInfo) {
-    this.matrixStore.enableApp(appInfo)
-      .then(() => {
-        (this.shadowRoot?.getElementById("app-enabled-snackbar") as Snackbar).show();
-        this.requestUpdate();
-      }).catch((e) => {
-        console.log("Error: ", e);
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      });
-  }
-
-  async uninstallApp(appInfo: InstalledAppInfo) {
-    console.log("Uninstalling applet: ", appInfo);
-    this.matrixStore.uninstallApp(appInfo)
-      .then(async () => {
-        (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
-        await this.matrixStore.fetchMatrix();
-        this.requestUpdate();
-      }).catch((e) => {
-        console.log("Error: ", e);
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      });
+  async reinstallApp(appletInstanceId: EntryHash) {
+    console.log("reinstall applet pushed!")
+    // TODO!
+    // console.log("Uninstalling applet: ", appInfo);
+    // this.matrixStore.uninstallApp(appInfo)
+    //   .then(() => {
+    //     (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
+    //     this.requestUpdate();
+    //   }).catch((e) => {
+    //     console.log("Error: ", e);
+    //     (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+    //   });
   }
 
 
@@ -126,7 +105,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   }
 
   renderAppStates() {
-    const appletInstanceInfos = this._installedApplets.value;
+    const appletInstanceInfos = this._uninstalledApplets.value;
     if (appletInstanceInfos!.length == 0 || !appletInstanceInfos) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
@@ -143,15 +122,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     } else {
       return html`
         ${appletInstanceInfos
-          .sort((info_a, info_b) => { // show disabled applets on top, then sort alphabetically
-            if (getStatus(info_a.installedAppInfo) !== getStatus(info_b.installedAppInfo)) {
-              return getStatus(info_a.installedAppInfo).localeCompare(getStatus(info_b.installedAppInfo));
-            } else {
-              return info_a.applet.customName.localeCompare(info_b.applet.customName)
-            }
-           })
+          .sort((info_a, info_b) => info_a.applet.customName.localeCompare(info_b.applet.customName)) // sort alphabetically
           .map((appletInfo) => {
-            const appStatus = getStatus(appletInfo.installedAppInfo);
             return html`
               <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="margin: 5px;">
@@ -166,36 +138,14 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                       />
                     <strong>${appletInfo.applet.customName}</strong>
                     <div class="row" style="margin-left: auto; align-items: center;">
-                      <span style="color: gray; margin-right: 25px;">${appStatus}</span>
 
-                      ${appStatus === "RUNNING"
-                        ? html`
-                          <mwc-button
-                            class="disable-button"
-                            raised
-                            label="DISABLE"
-                            icon="stop"
-                            @click=${async () => await this.disableApp(appletInfo.installedAppInfo)}
-                          ></mwc-button>
-                          `
-                        : html`
-                          <mwc-button
-                            class="start-button"
-                            raised
-                            label="START"
-                            icon="play_arrow"
-                            @click=${async () => await this.enableApp(appletInfo.installedAppInfo)}
-                          ></mwc-button>
-                          `
-                      }
                       <mwc-button
-                        class="delete-button"
+                        class="reinstall-button"
                         raised
-                        label="UNINSTALL"
+                        label="REINSTALL"
                         icon="delete"
                         @click=${() => {
-                          this._uninstallAppletDialog.installedAppInfo = appletInfo.installedAppInfo;
-                          this._uninstallAppletDialog.open();
+                          this._reinstallAppletDialog.open();
                           }
                         }
                       >
@@ -240,8 +190,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
 
       <uninstall-applet-dialog
-        id="uninstall-applet-dialog"
-        @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
+        id="reinstall-applet-dialog"
+        @confirm-uninstall=${(e) => this.reinstallApp(e.detail.installedAppInfo)}
       ></uninstall-applet-dialog>
 
 
@@ -284,17 +234,15 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       }
 
       .start-button {
-        width: 130px;
         --mdc-theme-primary: #17c200;
       }
 
       .disable-button {
-        width: 130px;
-        --mdc-theme-primary: #f9a70a;
+        --mdc-theme-primary: #f9a70a;;
       }
 
-      .delete-button {
-        --mdc-theme-primary: #cf0000;
+      .reinstall-button {
+        --mdc-theme-primary: #17c200;
         margin-left: 5px;
       }
 

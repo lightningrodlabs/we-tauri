@@ -90,6 +90,12 @@ export interface AppletInstanceInfo {
   applet: Applet;
 }
 
+
+export interface UninstalledAppletInstanceInfo {
+  appletId: EntryHash; // hash of the Applet entry in the applets zome of the group's we dna
+  applet: Applet;
+}
+
 /**
  * Info about an Applet that was added to the We group by another agent and isn't installed locally yet.
  *
@@ -122,7 +128,11 @@ export class MatrixStore {
   /** Private */
   private _matrix: Writable<DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>> = // We Group DnaHashes as keys
     writable(new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>()); // AppletInstanceInfo are only the one's that the agent has joined,
-  // not the ones added to the We by someone else but not installed yet
+  // not the ones added to the We by someone else but not installed yet and also not the ones deleted
+
+  private _uninstalledAppletInstances: Writable<DnaHashMap<UninstalledAppletInstanceInfo[]>> = // We Group DnaHashes as keys
+    writable(new DnaHashMap<UninstalledAppletInstanceInfo[]>());
+
 
   private _newAppletInstances: Writable<DnaHashMap<NewAppletInstanceInfo[]>> = // We Group DnaHashes as keys
     writable(new DnaHashMap<NewAppletInstanceInfo[]>()); // Applet instances that have been added to the we group by someone else
@@ -416,15 +426,22 @@ export class MatrixStore {
     // do stuff
   }
 
+
   /**Gets an array of all AppletInfo of the applets installed for the specified group */
   public getAppletInstanceInfosForGroup(
     groupDnaHash: DnaHash
   ): Readable<AppletInstanceInfo[] | undefined> {
-    // todo
     return readable(get(this._matrix).get(groupDnaHash) ? get(this._matrix).get(groupDnaHash)[1] : undefined);
     // return derived(this._matrix, (matrix) => {
     //   return matrix.get(groupDnaHash)[1];
     // })
+  }
+
+  /**Gets an array of all AppletInfo of the applets installed for the specified group */
+  public getUninstalledAppletInstanceInfosForGroup(
+    groupDnaHash: DnaHash
+  ): Readable<UninstalledAppletInstanceInfo[] | undefined> {
+    return readable(get(this._uninstalledAppletInstances).get(groupDnaHash) ? get(this._uninstalledAppletInstances).get(groupDnaHash) : undefined);
   }
 
   /**
@@ -572,6 +589,7 @@ export class MatrixStore {
 
     let matrix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
     let installedAppletClasses = new EntryHashMap<AppletClassInfo>();
+    let uninstalledAppletInstances = new DnaHashMap<UninstalledAppletInstanceInfo[]>();
 
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
 
@@ -679,6 +697,25 @@ export class MatrixStore {
             }
           );
 
+        // filter out deleted applets as well (would be a bit more efficient if done together with the loop above)
+        const uninstalledAppletInstanceInfos: UninstalledAppletInstanceInfo[] = appletsIAmPlaying
+          .filter(([_entryHash, playingApplet]) => {
+            return !allApps.find((app) => this.isSameApp(app, playingApplet.applet))
+          })
+          .map(
+            ([entryHash, playingApplet]) => {
+
+              const uninstalledAppletInstanceInfo: UninstalledAppletInstanceInfo = {
+                appletId: entryHash,
+                applet: playingApplet.applet,
+              };
+
+              return uninstalledAppletInstanceInfo;
+            }
+          );
+
+        uninstalledAppletInstances.put(weGroupDnaHash, uninstalledAppletInstanceInfos);
+
         matrix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
       })
     );
@@ -692,6 +729,7 @@ export class MatrixStore {
     // });
 
     this._installedAppletClasses.set(installedAppletClasses);
+    this._uninstalledAppletInstances.set(uninstalledAppletInstances);
 
     return derived(this._matrix, (m) => m);
   }

@@ -43,6 +43,8 @@ import { InactiveOverlay } from "./elements/components/inactive-overlay";
 import { AppletIconBadge } from "./elements/components/applet-icon-badge";
 import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
 import { weLogoIcon } from "./icons/we-logo-icon";
+import { getStatus } from "./utils";
+import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -233,7 +235,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderAppletInstanceContent() {
     // 1. check whether the selected applet instance is already installed
-    return this._matrixStore.isInstalled(this._selectedAppletInstanceId!)
+    if (this._matrixStore.isInstalled(this._selectedAppletInstanceId!)) {
+      return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.installedAppInfo) === "RUNNING"
       ? html`
         <applet-instance-renderer
           style="display: flex; flex: 1;"
@@ -241,7 +244,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         >
         </applet-instance-renderer>
       `
-      : html`
+      : html`<applet-not-running style="display: flex; flex: 1;"></applet-not-running>`
+    } else {
+      return html`
         <applet-not-installed
           @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           style="display: flex; flex: 1;"
@@ -249,6 +254,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         >
         </applet-not-installed>
       `;
+    }
   }
 
 
@@ -288,11 +294,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   handleNavigationSwitch() {
     if (this._navigationMode === NavigationMode.AppletCentric) {
-      if (this._selectedAppletInstanceId == undefined) { // for example when "Merge Eye View" is selected
+      if (this._selectedAppletInstanceId === undefined) { // for example when "Merge Eye View" is selected
         // select the first group in the list and show it's Group Home Page and set the selected class Id to undefined
         this._selectedWeGroupId = this._allWeGroupInfos.value.keys()[0];
         this._selectedAppletClassId = undefined;
         this._dashboardMode = DashboardMode.WeGroupHome;
+      } else { // if selected applet is not running, make selected applet Id undefined again
+        if (getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId)?.installedAppInfo!) !== "RUNNING") {
+          this._selectedAppletInstanceId = undefined;
+          this._dashboardMode = DashboardMode.WeGroupHome;
+        }
       }
 
       this._navigationMode = NavigationMode.GroupCentric;
@@ -302,7 +313,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         this._dashboardMode = DashboardMode.WeGroupHome;
       }
     } else if (this._navigationMode === NavigationMode.GroupCentric) {
-      if (this._selectedAppletClassId == undefined) {
+      if (this._selectedAppletClassId === undefined) {
         // choose the first class Id in the list
         this._selectedAppletClassId = this._allAppletClasses.value.keys()[0];
         this._dashboardMode = DashboardMode.AppletClassHome;
@@ -373,29 +384,58 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         })
         .map(
           ([weGroupInfo, appletInstanceInfo]) =>
-            html`
-              <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
-                <sidebar-button
-                  placement="bottom"
-                  style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-                  .logoSrc=${weGroupInfo.info.logoSrc}
-                  .tooltipText=${weGroupInfo.info.name +
-                  " - " +
-                  appletInstanceInfo.applet.customName}
-                  @click=${() => {
-                    this.handleWeGroupIconSecondaryClick(
-                      weGroupInfo.dna_hash,
-                      appletInstanceInfo.appletId
-                    );
-                    this.requestUpdate();
-                  }}
-                  class=${classMap({
-                    highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
-                    groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
-                  })}
-                ></sidebar-button>
-              </applet-icon-badge>
-            `
+            {
+              return getStatus(appletInstanceInfo.installedAppInfo) === "RUNNING"
+                ? html`
+                    <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
+                      <sidebar-button
+                        placement="bottom"
+                        style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+                        .logoSrc=${weGroupInfo.info.logoSrc}
+                        .tooltipText=${weGroupInfo.info.name +
+                        " - " +
+                        appletInstanceInfo.applet.customName}
+                        @click=${() => {
+                          this.handleWeGroupIconSecondaryClick(
+                            weGroupInfo.dna_hash,
+                            appletInstanceInfo.appletId
+                          );
+                          this.requestUpdate();
+                        }}
+                        class=${classMap({
+                          highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                          groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
+                        })}
+                      ></sidebar-button>
+                    </applet-icon-badge>
+                  `
+              : html`
+                  <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
+                    <inactive-overlay>
+                      <sidebar-button
+                        placement="bottom"
+                        style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+                        .logoSrc=${weGroupInfo.info.logoSrc}
+                        .tooltipText=${weGroupInfo.info.name +
+                        " - " +
+                        appletInstanceInfo.applet.customName +
+                        " (Disabled)"}
+                        @click=${() => {
+                          this.handleWeGroupIconSecondaryClick(
+                            weGroupInfo.dna_hash,
+                            appletInstanceInfo.appletId
+                          );
+                          this.requestUpdate();
+                        }}
+                        class=${classMap({
+                          highlightedGroupCentric: JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                          groupCentricIconHover: JSON.stringify(appletInstanceInfo.appletId) !== JSON.stringify(this._selectedAppletInstanceId),
+                        })}
+                      ></sidebar-button>
+                    </inactive-overlay>
+                  </applet-icon-badge>
+              `
+            }
       )}
     `;
   }
@@ -473,29 +513,36 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     return appletInstances
       .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
       .map(
-      (appletInstanceInfo) =>
-        html`
-          <sidebar-button
-            placement="bottom"
-            style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
-            .logoSrc=${appletInstanceInfo.applet.logoSrc}
-            .tooltipText=${appletInstanceInfo.applet.customName}
-            @click=${() => {
-              this._selectedAppletInstanceId = appletInstanceInfo.appletId;
-              this._selectedAppletClassId =
-                appletInstanceInfo.applet.devhubHappReleaseHash;
-              this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-              this.requestUpdate();
-            }}
-            class=${classMap({
-              highlightedAppletCentric:
-              JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
-              appletCentricIconHover:
-              JSON.stringify(appletInstanceInfo.appletId) != JSON.stringify(this._selectedAppletInstanceId),
-            })}
-          >
-          </sidebar-button>
-        `
+      (appletInstanceInfo) => {
+        return getStatus(appletInstanceInfo.installedAppInfo) === "RUNNING"
+        ? html`
+            <sidebar-button
+              placement="bottom"
+              style="margin-left: 4px; margin-right: 4px; border-radius: 50%;"
+              .logoSrc=${appletInstanceInfo.applet.logoSrc}
+              .tooltipText=${appletInstanceInfo.applet.customName}
+              @click=${() => {
+                this._selectedAppletInstanceId = appletInstanceInfo.appletId;
+                this._selectedAppletClassId =
+                  appletInstanceInfo.applet.devhubHappReleaseHash;
+                this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
+                this.requestUpdate();
+              }}
+              class=${classMap({
+                highlightedAppletCentric:
+                JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                appletCentricIconHover:
+                JSON.stringify(appletInstanceInfo.appletId) != JSON.stringify(this._selectedAppletInstanceId),
+              })}
+            >
+            </sidebar-button>
+          `
+        : html``
+      }
+
+
+
+
     );
   }
 
@@ -725,6 +772,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "inactive-overlay": InactiveOverlay,
       "applet-icon-badge": AppletIconBadge,
       "mwc-circular-progress": CircularProgress,
+      "applet-not-running": AppletNotRunning,
     };
   }
 

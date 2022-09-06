@@ -50,7 +50,6 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
         ></mwc-button>
         <mwc-button
           raised
-          style="--mdc-theme-primary: #cf0000;"
           id="primary-action-button"
           slot="primaryAction"
           dialogAction="close"

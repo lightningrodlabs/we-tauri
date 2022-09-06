@@ -10,7 +10,6 @@ export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
 
 
 export function getStatus(app: InstalledAppInfo): string {
-  console.log(app);
   if (isAppRunning(app)) {
     return "RUNNING"
   } else if (isAppDisabled(app)) {

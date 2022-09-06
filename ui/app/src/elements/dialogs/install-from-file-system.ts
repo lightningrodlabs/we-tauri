@@ -195,11 +195,11 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
-      <mwc-dialog id="applet-dialog" heading="Add Custom Name">
+      <mwc-dialog id="applet-dialog" heading="Install Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
           <mwc-textfield
             id="installed-app-id"
-            label="Custom Name"
+            label="Applet Name"
             required
             outlined
             autoValidate
@@ -217,9 +217,9 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                 Name already exists.
               </div>`
             : html``}
-        </div>
 
         <mwc-textfield
+            style="margin-top: 7px;"
             id="subtitle-field"
             label="subtitle"
             outlined
@@ -227,13 +227,21 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
           ></mwc-textfield>
 
         <mwc-textarea
+          style="margin-top: 7px;"
           id="description-field"
           label="description"
           outlined
         >
         </mwc-textarea>
 
-        <input type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes}>
+        <span style="margin-top: 7px;">Select file:</span>
+        <input
+          style="margin-top: 7px;"
+          type="file"
+          id="filepicker"
+          accept=".webhapp"
+          @change=${this.loadFileBytes}
+        >
         ${this._fileBytes
             ? html``
             : html`<div
@@ -243,6 +251,8 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                 No file selected.
               </div>`
           }
+
+        </div>
 
         <mwc-button
           slot="secondaryAction"
