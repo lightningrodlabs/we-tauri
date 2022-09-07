@@ -98,9 +98,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       const devhubHappReleaseHash = this.reinstall
         ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash
         : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
-      console.log("appletInstanceId: ", this.appletInstanceId);
-      console.log("devhubHappReleaseHash: ", devhubHappReleaseHash);
-      console.log("new devhubHappReleaseHash: ", this._fakeDevhubHappReleaseHash);
       return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
     } else {
       return false;
@@ -115,7 +112,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   async joinApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      debugger
       await this._matrixStore.joinApplet(
         this.weGroupId,
         this.appletInstanceId,
@@ -147,7 +143,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   async reinstallApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      debugger
       await this._matrixStore.reinstallApplet(
         this.weGroupId,
         this.appletInstanceId,

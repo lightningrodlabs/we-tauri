@@ -126,10 +126,6 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)!
       : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)!
 
-    console.log("@applet-not-installed: AppletInstanceInfo: ", appletInstanceInfo);
-    console.log("@applet-not-installed: appletInstanceId: ", this.appletInstanceId);
-    console.log("@applet-not-installed: reinstall: ", this.reinstall);
-
     return html`
 
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
