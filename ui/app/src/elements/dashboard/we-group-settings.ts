@@ -11,9 +11,10 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
-import { DeletedAppletInstanceList } from "../components/deleted-applet-instance-list";
+import { UninstalledAppletInstanceList } from "../components/uninstalled-applet-instance-list";
 import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
+import { AppletNotInstalled } from "./applet-not-installed";
 
 
 
@@ -43,6 +44,12 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
   @state()
   private _showAppletDescription: boolean = false;
+
+  @state()
+  private _showReinstallScreen: boolean = false;
+
+  @state()
+  private _reinstallAppletId: EntryHash | undefined;
 
   @query("#leave-group-dialog")
   _leaveGroupDialog!: LeaveGroupDialog;
@@ -125,6 +132,17 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
 
   renderContent() {
+    if (this._showReinstallScreen) {
+      return html`
+          <applet-not-installed
+            style="display: flex; flex: 1;"
+            .appletInstanceId=${this._reinstallAppletId}
+            reinstall
+            @cancel-reinstall=${() => { this._showReinstallScreen = false; this._reinstallAppletId = undefined; }}>
+          </applet-not-installed>
+      `
+    }
+
     return html`
       <div class="column" style="flex: 1; margin: 24px; position: relative;">
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
@@ -148,9 +166,14 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
         <hr style="width: 100%" />
 
-        <deleted-applet-instance-list></deleted-applet-instance-list>
 
-
+        <uninstalled-applet-instance-list
+          @reinstall-applet=${(e: CustomEvent) => {
+            this._reinstallAppletId = e.detail;
+            this._showReinstallScreen = true;
+            }
+          }>
+        </uninstalled-applet-instance-list>
 
 
         <div class="row title" style="margin-top: 30px;">
@@ -196,9 +219,10 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       "invitations-block": InvitationsBlock,
       "mwc-linear-progress": LinearProgress,
       "mwc-snackbar": Snackbar,
+      "applet-not-installed": AppletNotInstalled,
       "leave-group-dialog": LeaveGroupDialog,
       "applet-instance-status-list": AppletInstanceStatusList,
-      "deleted-applet-instance-list": DeletedAppletInstanceList,
+      "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
     };
   }
 

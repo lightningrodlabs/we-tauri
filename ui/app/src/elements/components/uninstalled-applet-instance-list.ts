@@ -25,7 +25,7 @@ import { ActionHash, DnaHash, EntryHash, InstalledAppInfo } from "@holochain/cli
 import { getStatus } from "../../utils";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
-export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
+export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -38,57 +38,16 @@ export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
     () => this.matrixStore.getUninstalledAppletInstanceInfosForGroup(this.weGroupId)
   );
 
-  @query("#copied-snackbar")
-  _copiedSnackbar!: Snackbar;
 
 
-  @query("#reinstall-applet-dialog")
-  _reinstallAppletDialog!: UninstallAppletDialog;
-
-  async joinGroup(
-    invitationActionHash: ActionHash,
-    invitation: JoinMembraneInvitation
-  ) {
-    const properties = decode(invitation.cloneDnaRecipe.properties) as any;
-    await this.matrixStore
-      .joinWeGroup(
-        invitationActionHash,
-        properties.name,
-        properties.logoSrc,
-        properties.timestamp
-      )
-      .then((weGroupId) => {
-        this.dispatchEvent(
-          new CustomEvent("we-group-joined", {
-            detail: weGroupId,
-            bubbles: true,
-            composed: true,
-          })
-        );
+  reinstallApp(appletInstanceId: EntryHash) {
+    this.dispatchEvent(
+      new CustomEvent("reinstall-applet", {
+        detail: appletInstanceId,
+        bubbles: true,
+        composed: true,
       })
-      .catch((e) => {
-        if (e.data.data) {
-          if (e.data.data.includes("AppAlreadyInstalled")) {
-            (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-          }
-        }
-      });
-  }
-
-
-
-  async reinstallApp(appletInstanceId: EntryHash) {
-    console.log("reinstall applet pushed!")
-    // TODO!
-    // console.log("Uninstalling applet: ", appInfo);
-    // this.matrixStore.uninstallApp(appInfo)
-    //   .then(() => {
-    //     (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
-    //     this.requestUpdate();
-    //   }).catch((e) => {
-    //     console.log("Error: ", e);
-    //     (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-    //   });
+    );
   }
 
 
@@ -143,11 +102,7 @@ export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
                         class="reinstall-button"
                         raised
                         label="REINSTALL"
-                        icon="delete"
-                        @click=${() => {
-                          this._reinstallAppletDialog.open();
-                          }
-                        }
+                        @click=${() => this.reinstallApp(appletInfo.appletId)}
                       >
                       </mwc-button>
                     </div>
@@ -155,7 +110,8 @@ export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
                 </mwc-card>
               </div>
             `;
-          })}
+          })
+        }
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
@@ -187,12 +143,6 @@ export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
         labelText="Applet uninstalled."
       ></mwc-snackbar>
       ${this.renderErrorSnackbar()}
-
-
-      <uninstall-applet-dialog
-        id="reinstall-applet-dialog"
-        @confirm-uninstall=${(e) => this.reinstallApp(e.detail.installedAppInfo)}
-      ></uninstall-applet-dialog>
 
 
       ${this.renderAppStates()}
@@ -242,7 +192,7 @@ export class DeletedAppletInstanceList extends ScopedElementsMixin(LitElement) {
       }
 
       .reinstall-button {
-        --mdc-theme-primary: #17c200;
+        /* --mdc-theme-primary: #17c200; */
         margin-left: 5px;
       }
 

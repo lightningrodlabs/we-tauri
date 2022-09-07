@@ -271,20 +271,6 @@ export class MatrixStore {
     return false;
   }
 
-  /**
-   * Gets info about a newly installed applet
-   *
-   * @param appletInstanceId : EntryHash
-   * @returns NewAppletInstanceInfo | undefined
-   */
-  public getNewAppletInstanceInfo(
-    appletInstanceId: EntryHash
-  ): NewAppletInstanceInfo | undefined {
-    return get(this._newAppletInstances)
-      .values()
-      .flat()
-      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
-  }
 
   public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
     return derived(this._matrix, (matrix) => {
@@ -998,7 +984,7 @@ export class MatrixStore {
       const weGroupCellData = cellClient.cell;
 
       const network_seed = Object.values(newAppletInfo.applet.networkSeed)[0];
-      const installedAppId = `${network_seed}-${newAppletInfo.applet.customName}`;
+      const installedAppId = `applet@we-${network_seed}-${newAppletInfo.applet.customName}`;
 
       // install app bundle
       const request: InstallAppBundleRequest = {
@@ -1196,12 +1182,123 @@ export class MatrixStore {
     return appletInstanceId;
   }
 
-  public async getDevhubHapp(): Promise<InstalledAppInfo> {
-    const installedApps = await this.adminWebsocket.listApps({});
-    return installedApps.find(
-      (app) => app.installed_app_id === getDevHubAppId()
-    )!;
+
+
+
+  /**
+   * Installs the already existing applet in the specified We group to the conductor
+   *
+   * @param weGroupId : DnaHash
+   * @param appletInstanceId : EntryHash
+   * @returns void
+   */
+   async reinstallApplet(
+    weGroupId: DnaHash,
+    appletInstanceId: EntryHash,
+    compressedWebHappInput?: Uint8Array,
+  ): Promise<void> {
+
+    const isAlreadyInstalled = this.isInstalled(appletInstanceId);
+    if (isAlreadyInstalled) return;
+
+    const uninstalledApplets: DnaHashMap<NewAppletInstanceInfo[]> = get(
+      this._uninstalledAppletInstances
+    );
+    let uninstalledAppletInfo = uninstalledApplets
+      .get(weGroupId)
+      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
+
+    if (!uninstalledAppletInfo) {
+      console.error(
+        "Could not find the applet in the record of uninstalled applets."
+      );
+    } else {
+      // fetch hApp and GUI   <---- COULD BE IMPROVED BY TAKING IT FROM LOCAL STORAGE IN CASE THE SAME APPLET CLASS HAS BEEN INSTALLED EARLIER
+      // add logic here in case webhapp is installed from the file system.
+      let compressedWebHapp: Uint8Array;
+
+      if (!compressedWebHappInput) {
+        compressedWebHapp = await this.fetchWebHapp(uninstalledAppletInfo.applet.devhubHappReleaseHash);
+      } else {
+        compressedWebHapp = compressedWebHappInput;
+      }
+
+      const [decompressedHapp, decompressedGui, _iconSrcOption] = this.decompressWebHapp(compressedWebHapp);
+
+
+      const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
+      const weGroupCellData = cellClient.cell;
+
+      const network_seed = Object.values(uninstalledAppletInfo.applet.networkSeed)[0];
+      const installedAppId = `applet@we-${network_seed}-${uninstalledAppletInfo.applet.customName}`;
+
+      // install app bundle
+      const request: InstallAppBundleRequest = {
+        agent_key: weGroupCellData.cell_id[1],
+        installed_app_id: installedAppId,
+        membrane_proofs: {},
+        bundle: decompressedHapp,
+        network_seed: network_seed,
+      };
+
+      await this.adminWebsocket.installAppBundle(request);
+
+      const enabledAppInfo = await this.adminWebsocket.enableApp({
+        installed_app_id: installedAppId,
+      });
+
+      const appInfo = enabledAppInfo.app;
+
+      // <--- no need to re-register applet -->
+      // <--- no need to re-commit GUI to source chain as private entry -->
+
+      const appInstanceInfo: AppletInstanceInfo = {
+        appletId: appletInstanceId,
+        installedAppInfo: appInfo,
+        applet: uninstalledAppletInfo.applet,
+      };
+      // update stores
+      // update _matrix
+      this._matrix.update((matrix) => {
+        matrix.get(weGroupId)[1].push(appInstanceInfo);
+        return matrix;
+      });
+
+      // update _uninstalledAppletInstances
+      this._uninstalledAppletInstances.update((hashMap) => {
+        const filteredArray = hashMap
+          .get(weGroupId)
+          .filter((info) => info.appletId != appletInstanceId);
+        hashMap.put(weGroupId, filteredArray);
+        return hashMap;
+      });
+
+
+      // update _installedAppletClasses
+      if (
+        !get(this._installedAppletClasses).get(
+          uninstalledAppletInfo.applet.devhubHappReleaseHash
+        )
+      ) {
+        this._installedAppletClasses.update((hashMap) => {
+          hashMap.put(uninstalledAppletInfo!.applet.devhubHappReleaseHash, {
+            title: uninstalledAppletInfo!.applet.title,
+            logoSrc: uninstalledAppletInfo!.applet.logoSrc,
+            description: uninstalledAppletInfo!.applet.description,
+            devhubHappReleaseHash: uninstalledAppletInfo!.applet.devhubHappReleaseHash,
+          });
+          return hashMap;
+        });
+      }
+    }
   }
+
+
+
+
+
+
+
 
 
 
@@ -1285,6 +1382,16 @@ export class MatrixStore {
   // +++++++++++++++      H E L P E R    M E T H O D S    B E L O W      +++++++++++++++++++++++++++++++
 
 
+
+  public async getDevhubHapp(): Promise<InstalledAppInfo> {
+    const installedApps = await this.adminWebsocket.listApps({});
+    return installedApps.find(
+      (app) => app.installed_app_id === getDevHubAppId()
+    )!;
+  }
+
+
+
   getWeGroupInfoForAppletInstance(appletInstanceId: EntryHash): WeGroupInfo {
     return get(this._matrix)
       .values()
@@ -1298,6 +1405,36 @@ export class MatrixStore {
   }
 
 
+  /**
+   * Gets info about an uninstalled applet
+   *
+   * @param appletInstanceId : EntryHash
+   * @returns NewAppletInstanceInfo | undefined
+   */
+   public getUninstalledAppletInstanceInfo(
+    appletInstanceId: EntryHash
+  ): NewAppletInstanceInfo | undefined {
+    return get(this._uninstalledAppletInstances)
+      .values()
+      .flat()
+      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
+  }
+
+
+  /**
+   * Gets info about a newly installed applet
+   *
+   * @param appletInstanceId : EntryHash
+   * @returns NewAppletInstanceInfo | undefined
+   */
+   public getNewAppletInstanceInfo(
+    appletInstanceId: EntryHash
+  ): NewAppletInstanceInfo | undefined {
+    return get(this._newAppletInstances)
+      .values()
+      .flat()
+      .find((info) => JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId));
+  }
 
 
   /**

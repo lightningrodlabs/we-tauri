@@ -41,7 +41,7 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
     return html`
       <mwc-dialog id="leave-group-dialog" heading="Uninstall Applet">
 
-        Are you sure you want to uninstall this applet? This will delete all data you have stored within this applet.
+        Are you sure you want to uninstall this applet? This will <strong>delete all data</strong> you have stored within this applet.
 
         <mwc-button
           slot="secondaryAction"

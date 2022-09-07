@@ -198,7 +198,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
           <we-group-home
             style="display: flex; flex: 1;"
-            }}
+            @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           ></we-group-home>
         </we-group-context>
       `;

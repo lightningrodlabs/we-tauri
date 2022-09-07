@@ -37,6 +37,9 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @property()
   appletInstanceId!: EntryHash;
 
+  @property({ type: Boolean })
+  reinstall = false;
+
   @query("#applet-dialog")
   _appletDialog!: Dialog;
 
@@ -92,7 +95,9 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   fileHashOk() {
     if (this._fakeDevhubHappReleaseHash) {
-      const devhubHappReleaseHash = this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
+      const devhubHappReleaseHash = this.reinstall
+        ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash
+        : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
       console.log("appletInstanceId: ", this.appletInstanceId);
       console.log("devhubHappReleaseHash: ", devhubHappReleaseHash);
       console.log("new devhubHappReleaseHash: ", this._fakeDevhubHappReleaseHash);
@@ -110,7 +115,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   async joinApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-
+      debugger
       await this._matrixStore.joinApplet(
         this.weGroupId,
         this.appletInstanceId,
@@ -137,6 +142,39 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       console.log("Installation error:", e);
     }
   }
+
+
+  async reinstallApplet() {
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+    try {
+      debugger
+      await this._matrixStore.reinstallApplet(
+        this.weGroupId,
+        this.appletInstanceId,
+        this._fileBytes, // compressed webhapp as Uint8Array
+      );
+      const appletEntryHash = this.appletInstanceId;
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+
+      this.dispatchEvent(
+        new CustomEvent("applet-installed", {
+          detail: { appletEntryHash },
+          composed: true,
+          bubbles: true,
+        })
+      );
+    } catch (e) {
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      console.log("Installation error:", e);
+    }
+  }
+
 
   // TODO! make typing right here
   loadFileBytes(e: any) {
@@ -227,7 +265,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.joinApplet()}
+          @click=${() => this.reinstall ? this.reinstallApplet() : this.joinApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;

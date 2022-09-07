@@ -119,9 +119,13 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     return html`
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
-          <div class="flex-scrollable-y">
+          <div class="flex-scrollable-y" style="display: flex; height: 100%;">
             ${this._showSettings
-              ? html`<we-group-settings @back-home=${() => {this._showSettings = false}}></we-group-settings>`
+              ? html`
+                  <we-group-settings
+                  @back-home=${() => {this._showSettings = false}}
+                  style="display: flex; flex: 1;">
+                  </we-group-settings>`
               : html`
                   <div class="column" style="flex: 1; margin: 24px; position: relative">
                     <sl-tooltip placement="bottom" content="Group Settings" hoist>
