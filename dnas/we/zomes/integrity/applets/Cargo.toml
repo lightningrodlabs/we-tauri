@@ -15,5 +15,5 @@ thiserror = "1.0.20"
 chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 
 
-hdi = "0.0.19"
-hdk = "0.0.147"
+hdi = "0.1.2"
+hdk = "0.0.152"
