@@ -240,6 +240,16 @@ export class MatrixStore {
   }
 
 
+  /**
+   * Gets we group info from the matrix store
+   *
+   * @returns : WeGroupInfo[]
+   */
+   public getAllWeGroupInfos(): Readable<WeGroupInfo[]> {
+    return readable(get(this._matrix).values().map(([groupData, _]) => groupData.info));
+  }
+
+
 
   public getAppletClassInfo(appletClassId: EntryHash): Readable<AppletClassInfo | undefined> {
     // const classStrings = get(this._installedAppletClasses).keys().map(())

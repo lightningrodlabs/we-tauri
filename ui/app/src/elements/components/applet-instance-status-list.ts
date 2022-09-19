@@ -13,18 +13,20 @@ import {
   Snackbar,
   Icon,
   Dialog,
+  IconButton,
 } from "@scoped-elements/material-web";
 
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloHashMap, HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloIdenticon } from "@holochain-open-dev/utils";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, InstalledAppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
+import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 
 export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
@@ -45,6 +47,9 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @query("#uninstall-applet-dialog")
   _uninstallAppletDialog!: UninstallAppletDialog;
+
+  @query("#federate-applet-dialog")
+  _federateAppletDialog!: FederateAppletDialog;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -168,6 +173,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                     <div class="row" style="margin-left: auto; align-items: center;">
                       <span style="color: gray; margin-right: 25px;">${appStatus}</span>
 
+                      <sl-tooltip placement="top" content="federate" hoist>
+                        <mwc-icon-button icon="share" style="margin-right: 10px;" @click=${() => this._federateAppletDialog.open(appletInfo)}></mwc-icon-button>
+                      </sl-tooltip>
+
                       ${appStatus === "RUNNING"
                         ? html`
                           <mwc-button
@@ -244,6 +253,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
       ></uninstall-applet-dialog>
 
+      <federate-applet-dialog
+        id="federate-applet-dialog"
+      ></federate-applet-dialog>
+
 
       ${this.renderAppStates()}
     `;
@@ -252,6 +265,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "mwc-button": Button,
+      "mwc-icon-button": IconButton,
       "mwc-list": List,
       "mwc-list-item": ListItem,
       "mwc-card": Card,
@@ -262,6 +276,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "uninstall-applet-dialog": UninstallAppletDialog,
+      "federate-applet-dialog": FederateAppletDialog,
     };
   }
 
