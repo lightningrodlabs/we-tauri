@@ -19,6 +19,7 @@ import { DnaHash } from "@holochain/client";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { get } from "svelte/store";
 import { classMap } from "lit/directives/class-map.js";
+import { AppletInfo } from "../../types";
 
 export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -29,6 +30,9 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   @state()
   _selectedGroup: DnaHash | undefined;
+
+  @state()
+  _appletInfo: AppletInstanceInfo | undefined;
 
 
   @query("#federate-dialog")
@@ -44,8 +48,11 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
 
   open(appletInfo: AppletInstanceInfo) {
+    this._appletInfo = appletInfo;
+    this._selectedGroup = undefined;
     this._federateDialog.show();
   }
+
 
   get federateDisabled() {
     return !this._federateDialog;
@@ -54,32 +61,42 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   async federateApplet() {
     console.log("FEDARATING FOR GROUP WITH HASH: ", this._selectedGroup);
-    // (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
-    // try {
-    //   const appletEntryHash = await this._matrixStore.createApplet(
-    //     this.weGroupId,
-    //     this._appletInfo,
-    //     this._installedAppIdField.value
-    //   );
-    //   (
-    //     this.shadowRoot?.getElementById("installing-progress") as Snackbar
-    //   ).close();
-    //   (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+    try {
+      const appletInfo: AppletInfo = {
+        title: this._appletInfo!.applet.title,
+        subtitle: undefined,
+        description: this._appletInfo!.applet.description,
+        icon: this._appletInfo!.applet.logoSrc,
+        devhubHappReleaseHash: this._appletInfo!.applet.devhubHappReleaseHash,
+      };
 
-    //   this.dispatchEvent(
-    //     new CustomEvent("applet-installed", {
-    //       detail: { appletEntryHash },
-    //       composed: true,
-    //       bubbles: true,
-    //     })
-    //   );
-    // } catch (e) {
-    //   (
-    //     this.shadowRoot?.getElementById("installing-progress") as Snackbar
-    //   ).close();
-    //   (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-    //   console.log("Installation error:", e);
-    // }
+      const appletEntryHash = await this._matrixStore.createApplet(
+        this._selectedGroup!,
+        appletInfo,
+        this._appletInfo!.applet.customName,
+        true,
+        Object.entries(this._appletInfo!.applet.networkSeed)[0][1],
+      );
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+
+      this.dispatchEvent(
+        new CustomEvent("applet-installed", {
+          detail: { appletEntryHash, weGroupId: this.weGroupId },
+          composed: true,
+          bubbles: true,
+        })
+      );
+    } catch (e) {
+      (
+        this.shadowRoot?.getElementById("installing-progress") as Snackbar
+      ).close();
+      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      console.log("Installation error:", e);
+    }
   }
 
   renderErrorSnackbar() {
@@ -103,7 +120,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
+      <mwc-snackbar id="installing-progress" labelText="Installing to other group..." .timeoutMs=${-1}>
       </mwc-snackbar>
     `;
   }

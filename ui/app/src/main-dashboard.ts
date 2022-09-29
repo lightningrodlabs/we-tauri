@@ -643,6 +643,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
   handleAppletInstalled(e: CustomEvent) {
+    this._selectedWeGroupId = e.detail.weGroupId;
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
     this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(e.detail.appletEntryHash)?.applet.devhubHappReleaseHash;
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;

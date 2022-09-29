@@ -72,12 +72,13 @@ export interface RegisterAppletInput {
 
 export interface AppletInfo {
   title: string,
-  subtitle: string,
+  subtitle: string | undefined,
   description: string,
   installedAppId?: InstalledAppId,
   devhubHappReleaseHash: EntryHash,
   icon: IconSrcOption,
 }
+
 
 export interface PlayingApplet {
   applet: Applet;

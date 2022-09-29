@@ -1082,6 +1082,8 @@ export class MatrixStore {
     weGroupId: DnaHash,
     appletInfo: AppletInfo,
     customName: InstalledAppId,
+    _federated: boolean, // not used for now but may be required for the future
+    networkSeed?: string,
     compressedWebHapp?: Uint8Array,
   ): Promise<EntryHash> {
     // --- Install hApp in the conductor---
@@ -1101,15 +1103,16 @@ export class MatrixStore {
     const weGroupCellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const weGroupCellData = weGroupCellClient.cell;
 
-    const network_seed = uuidv4();
-    const installedAppId: InstalledAppId = `applet@we-${network_seed}-${customName}`;
+    networkSeed = networkSeed ? networkSeed : uuidv4(); // generate random network seed if not provided
+
+    const installedAppId: InstalledAppId = `applet@we-${networkSeed}-${customName}`;
 
     const request: InstallAppBundleRequest = {
       agent_key: weGroupCellData.cell_id[1],
       installed_app_id: installedAppId,
       membrane_proofs: {},
       bundle: decompressedHapp,
-      network_seed: network_seed,
+      network_seed: networkSeed,
     };
 
     await this.adminWebsocket.installAppBundle(request);
@@ -1135,7 +1138,7 @@ export class MatrixStore {
     const networkSeedByRole: Record<string, string> = {};
     appInfo.cell_data.forEach((cell) => {
       dnaHashes[cell.role_id] = cell.cell_id[0];
-      networkSeedByRole[cell.role_id] = network_seed;
+      networkSeedByRole[cell.role_id] = networkSeed!;
     });
 
     const applet: Applet = {

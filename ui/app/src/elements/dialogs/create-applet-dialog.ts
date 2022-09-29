@@ -94,7 +94,8 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
       const appletEntryHash = await this._matrixStore.createApplet(
         this.weGroupId,
         this._appletInfo,
-        this._installedAppIdField.value
+        this._installedAppIdField.value,
+        false, // not federated
       );
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar

@@ -8,7 +8,7 @@
   "scripts": {
     "start": "npm run network 2",
     "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently-repeat \"npm run start:agent\"",
-    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"npm run start:happ\" \"npm run start -w we\"",
+    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
@@ -18,7 +18,7 @@
     "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle --app-id DevHub ./DevHub/DevHub.happ && npm run devhub:ui",
     "devhub:ui": "wds --config devhub-wds.mjs",
     "playground": "run-singleton \"holochain-playground\"",
-    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/ohR2dFz6CWSjGqn/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
+    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/8xdcHKQmjkmrGGn/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.8",

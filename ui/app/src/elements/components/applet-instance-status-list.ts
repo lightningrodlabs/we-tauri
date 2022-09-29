@@ -253,9 +253,9 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
       ></uninstall-applet-dialog>
 
-      <federate-applet-dialog
+      <!-- <federate-applet-dialog
         id="federate-applet-dialog"
-      ></federate-applet-dialog>
+      ></federate-applet-dialog> -->
 
 
       ${this.renderAppStates()}

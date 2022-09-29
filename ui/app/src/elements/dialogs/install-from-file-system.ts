@@ -42,9 +42,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @query("#installed-app-id")
   _installedAppIdField!: TextField;
 
-  @query("#subtitle-field")
-  _subtitleField!: TextArea;
-
   @query("#description-field")
   _descriptionField!: TextArea;
 
@@ -76,7 +73,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   close() {
     this._fileBytes = undefined;
-    this._subtitleField.value = "";
     this._installedAppIdField.value = "";
     this._descriptionField.value = "";
   }
@@ -109,7 +105,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     try {
       const appletInfo: AppletInfo = {
         title: this._installedAppIdField.value, // for the applet class name we just take the user defined name for now.
-        subtitle: this._subtitleField.value,
+        subtitle: undefined,
         description: this._descriptionField.value,
         devhubHappReleaseHash: this._fakeDevhubHappReleaseHash!,
         icon: undefined,
@@ -119,6 +115,8 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         this.weGroupId,
         appletInfo,
         this._installedAppIdField.value,
+        false, // federated applets cannot be installed from filesystem for now
+        undefined, // provide no network seed
         this._fileBytes, // compressed webhapp as Uint8Array
       );
       (
@@ -220,14 +218,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                 Name already exists.
               </div>`
             : html``}
-
-        <mwc-textfield
-            style="margin-top: 7px;"
-            id="subtitle-field"
-            label="subtitle"
-            outlined
-            @input=${() => this.requestUpdate()}
-          ></mwc-textfield>
 
         <mwc-textarea
           style="margin-top: 7px;"
