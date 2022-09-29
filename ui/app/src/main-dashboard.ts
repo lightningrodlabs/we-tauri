@@ -157,16 +157,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       // and show the special modes of the chosen applet class
     } else if (this._navigationMode === NavigationMode.AppletCentric) {
       return html`
-        <mwc-fab
-          style="margin-left: 18px; margin-right: -12px; border-radius: 50%;"
-          icon="home"
-          class="applet-home-button"
-          @click=${() => {
-            this._selectedAppletInstanceId = undefined;
-            this._selectedWeGroupId = undefined;
-            this._dashboardMode = DashboardMode.AppletClassHome;
-          }}
-        ></mwc-fab>
 
         ${this.renderWeGroupIconsSecondary(
           get(
@@ -217,7 +207,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           .appletClassId=${this._selectedAppletClassId}
         ></applet-class-renderer>
       `;
-    } else if (this._dashboardMode === DashboardMode.AppletClassHome) {
+    } else if (this._dashboardMode === DashboardMode.AppletClassHome) { // Not used currently as Applet Class Home is disabled and button removed
       return html`
         <applet-class-home
           style="flex: 1;"
@@ -282,8 +272,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   handleAppletClassIconClick(classId: EntryHash) {
     if (this._selectedAppletClassId !== classId) {
       this._selectedAppletClassId = classId;
-      this._selectedAppletInstanceId = undefined;
-      this._dashboardMode = DashboardMode.AppletClassHome;
+      // this._selectedAppletInstanceId = undefined;
+      // this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below and commented out line above instead.
+      this._selectedAppletInstanceId = get(
+        this._matrixStore.getInstanceInfosForAppletClass(
+          this._selectedAppletClassId
+        ))[0][1].appletId;
+      this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     }
   }
 
@@ -309,20 +304,30 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       this._navigationMode = NavigationMode.GroupCentric;
       (this.shadowRoot?.getElementById("applet-centric-snackbar") as Snackbar).close();
       (this.shadowRoot?.getElementById("group-centric-snackbar") as Snackbar).show();
-      if (this._dashboardMode === DashboardMode.AppletClassHome) {
+      if (this._dashboardMode === DashboardMode.AppletClassHome) { // Not used currently as Applet Class Home is disabled and button removed.
         this._dashboardMode = DashboardMode.WeGroupHome;
       }
     } else if (this._navigationMode === NavigationMode.GroupCentric) {
       if (this._selectedAppletClassId === undefined) {
         // choose the first class Id in the list
         this._selectedAppletClassId = this._allAppletClasses.value.keys()[0];
-        this._dashboardMode = DashboardMode.AppletClassHome;
+        // this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
+        this._selectedAppletInstanceId = get(
+          this._matrixStore.getInstanceInfosForAppletClass(
+            this._selectedAppletClassId
+          ))[0][1].appletId;
+        this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
       }
       this._navigationMode = NavigationMode.AppletCentric;
       (this.shadowRoot?.getElementById("group-centric-snackbar") as Snackbar).close();
       (this.shadowRoot?.getElementById("applet-centric-snackbar") as Snackbar).show();
       if (this._dashboardMode === DashboardMode.WeGroupHome) {
-        this._dashboardMode = DashboardMode.AppletClassHome;
+        //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
+        this._selectedAppletInstanceId = get(
+          this._matrixStore.getInstanceInfosForAppletClass(
+            this._selectedAppletClassId
+          ))[0][1].appletId;
+        this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
       }
     }
   }
@@ -489,7 +494,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                   this._selectedAppletClassId =
                     appletClassInfo.devhubHappReleaseHash;
                   this._navigationMode = NavigationMode.AppletCentric;
-                  this._dashboardMode = DashboardMode.AppletClassHome;
+                  //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
+                  const [weGroupInfo, appletInstanceInfo] = get(
+                    this._matrixStore.getInstanceInfosForAppletClass(
+                      this._selectedAppletClassId
+                    )).sort((appletInfo_a, applet_info_b) => appletInfo_a[0].info.name.localeCompare(applet_info_b[0].info.name))[0]; // sort alphabetically by group name first
+                  this._selectedAppletInstanceId = appletInstanceInfo.appletId;
+                  this._selectedWeGroupId = weGroupInfo.dna_hash;
+                  this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
                   this.requestUpdate();
                 }}
                 class=${classMap({
@@ -643,12 +655,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
   handleAppletInstalled(e: CustomEvent) {
+    console.log("@handleAppletInstalled: WE GROUP ID: ", e.detail.weGroupId);
     this._selectedWeGroupId = e.detail.weGroupId;
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
     this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(e.detail.appletEntryHash)?.applet.devhubHappReleaseHash;
+    this._newAppletInstances.run();
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
-    this._newAppletInstances.run();
     this.requestUpdate();
   }
 

@@ -97,7 +97,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         this.requestUpdate(); // to show the newly installed applet in case user is still on same page
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: appletInstanceId },
+            detail: { appletEntryHash: appletInstanceId, weGroupId: this.weGroupId },
             composed: true,
             bubbles: true,
         })

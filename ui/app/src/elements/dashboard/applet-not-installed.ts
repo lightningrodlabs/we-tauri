@@ -46,7 +46,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: this.appletInstanceId },
+            detail: { appletEntryHash: this.appletInstanceId, weGroupId: this.weGroupId },
             composed: true,
             bubbles: true,
             }
@@ -69,7 +69,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: this.appletInstanceId },
+            detail: { appletEntryHash: this.appletInstanceId, weGroupId: this.weGroupId },
             composed: true,
             bubbles: true,
             }

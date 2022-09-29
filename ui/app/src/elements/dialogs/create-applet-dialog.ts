@@ -104,7 +104,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
 
       this.dispatchEvent(
         new CustomEvent("applet-installed", {
-          detail: { appletEntryHash },
+          detail: { appletEntryHash, weGroupId: this.weGroupId },
           composed: true,
           bubbles: true,
         })
