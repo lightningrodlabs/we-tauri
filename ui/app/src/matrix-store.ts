@@ -1386,13 +1386,13 @@ export class MatrixStore {
 
   // +++++++++++++++      P L U G I N   Z O M E  M E T H O D S ++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public async supportsFederation(appletInstanceId: EntryHash): Promise<boolean> {
+  // public async supportsFederation(appletInstanceId: EntryHash): Promise<boolean> {
 
-    let appletInstanceInfo = this.getAppletInstanceInfo(appletInstanceId);
-    appletInstanceInfo?.installedAppInfo.
+  //   let appletInstanceInfo = this.getAppletInstanceInfo(appletInstanceId);
+  //   appletInstanceInfo?.installedAppInfo.
 
-    return false;
-  }
+  //   return false;
+  // }
 
 
 
