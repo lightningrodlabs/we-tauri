@@ -592,7 +592,8 @@ export class MatrixStore {
     // fetch groups from conductor
     let allApps = await this.adminWebsocket.listApps({});
     let allWeGroups = allApps.filter((app) =>
-      app.installed_app_id.startsWith("group@we-")
+      app.installed_app_id.startsWith("group@we-") &&
+      JSON.stringify(app.cell_data[0].cell_id[1]) === JSON.stringify(this.myAgentPubKey) // only consider applets installed with the same public key
     );
 
 
@@ -1381,14 +1382,17 @@ export class MatrixStore {
   }
 
 
-  /**
-   * Install an applet from the file system. Only for test or demo purposes.
-   *
-   */
-  async installFromFileSystem() {
 
+
+  // +++++++++++++++      P L U G I N   Z O M E  M E T H O D S ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public async supportsFederation(appletInstanceId: EntryHash): Promise<boolean> {
+
+    let appletInstanceInfo = this.getAppletInstanceInfo(appletInstanceId);
+    appletInstanceInfo?.installedAppInfo.
+
+    return false;
   }
-
 
 
 
