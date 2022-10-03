@@ -95,7 +95,6 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
         this.weGroupId,
         this._appletInfo,
         this._installedAppIdField.value,
-        false, // not federated
       );
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar

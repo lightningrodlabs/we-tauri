@@ -10,6 +10,7 @@ import {
   Dialog,
   CircularProgress,
   Card,
+  Icon,
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
@@ -60,23 +61,13 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
 
   async federateApplet() {
-    console.log("FEDARATING FOR GROUP WITH HASH: ", this._selectedGroup);
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      const appletInfo: AppletInfo = {
-        title: this._appletInfo!.applet.title,
-        subtitle: undefined,
-        description: this._appletInfo!.applet.description,
-        icon: this._appletInfo!.applet.logoSrc,
-        devhubHappReleaseHash: this._appletInfo!.applet.devhubHappReleaseHash,
-      };
 
-      const appletEntryHash = await this._matrixStore.createApplet(
+      const appletEntryHash = await this._matrixStore.federateApplet(
+        this.weGroupId,
         this._selectedGroup!,
-        appletInfo,
-        this._appletInfo!.applet.customName,
-        true,
-        Object.entries(this._appletInfo!.applet.networkSeed)[0][1],
+        this._appletInfo!,
       );
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
@@ -85,7 +76,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
       this.dispatchEvent(
         new CustomEvent("applet-installed", {
-          detail: { appletEntryHash, weGroupId: this.weGroupId },
+          detail: { appletEntryHash, weGroupId: this._selectedGroup },
           composed: true,
           bubbles: true,
         })
@@ -132,34 +123,67 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
       <mwc-dialog id="federate-dialog" heading="Federate Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
-          Choose a group to share this applet with.<br><br>
-          <strong>Note:</strong> Once access to this applet is granted to another group, it cannot be revoked.
-          ${this._allGroups.value
-            .filter((weGroupInfo) => JSON.stringify(weGroupInfo.dna_hash) !== JSON.stringify(this.weGroupId))
-            .map((weGroupInfo) => html`
-            <mwc-card
-              style="margin: 5px; cursor: pointer;"
-              class="group-card ${classMap({
-                  selected: JSON.stringify(this._selectedGroup) === JSON.stringify(weGroupInfo.dna_hash),
-                  highlighted: JSON.stringify(this._selectedGroup) !== JSON.stringify(weGroupInfo.dna_hash)
-                })
-              }"
-              @click=${() => {this._selectedGroup = weGroupInfo.dna_hash}}
-            >
-              <div
-                class="row"
-                style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
-              >
-                <img
-                  style="margin-right: 10px;"
-                  class="group-image"
-                  src=${weGroupInfo.info.logoSrc}
-                />
-                <strong>${weGroupInfo.info.name}</strong>
-              </div>
-            </mwc-card>
-            `
-          )}
+          <div style="margin-bottom: 20px;">Choose a group to share this applet with.</div>
+          <b>Note:</b>
+          <ul>
+            <li>Federating applets only works for applets installed from the DevHub.</li>
+            <li>Once access to this applet is granted to another group, it cannot be revoked.</li>
+          </ul>
+
+          <span style="margin-bottom: 10px;"><b>Groups:</b></span>
+
+          ${this._appletInfo
+            ? this._allGroups.value
+              .filter((weGroupInfo) => JSON.stringify(weGroupInfo.dna_hash) !== JSON.stringify(this.weGroupId))
+              .map((weGroupInfo) => {
+                if(this._matrixStore.isInstalledInGroup(this._appletInfo!.appletId, weGroupInfo.dna_hash)) {
+                  return html `
+                    <mwc-card
+                      style="margin: 5px; opacity: 30%;"
+                      title="Applet already shared with this group"
+                    >
+                      <div
+                        class="row"
+                        style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                      >
+                        <img
+                          style="margin-right: 10px;"
+                          class="group-image"
+                          src=${weGroupInfo.info.logoSrc}
+                        />
+                        <strong>${weGroupInfo.info.name}</strong>
+                        <span style="display: flex; flex: 1;"></span>
+                        <mwc-icon style="margin-right: 10px;">share</mwc-icon>
+                      </div>
+                    </mwc-card>
+                  `
+                }
+                return html`
+                  <mwc-card
+                    style="margin: 5px; cursor: pointer;"
+                    class="group-card ${classMap({
+                        selected: JSON.stringify(this._selectedGroup) === JSON.stringify(weGroupInfo.dna_hash),
+                        highlighted: JSON.stringify(this._selectedGroup) !== JSON.stringify(weGroupInfo.dna_hash)
+                      })
+                    }"
+                    @click=${() => {this._selectedGroup = weGroupInfo.dna_hash}}
+                  >
+                    <div
+                      class="row"
+                      style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                    >
+                      <img
+                        style="margin-right: 10px;"
+                        class="group-image"
+                        src=${weGroupInfo.info.logoSrc}
+                      />
+                      <strong>${weGroupInfo.info.name}</strong>
+                    </div>
+                  </mwc-card>
+                `
+              })
+            : html`! Applet Info not defined !`
+          }
         </div>
 
         <mwc-button
@@ -187,6 +211,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
       "mwc-snackbar": Snackbar,
       "mwc-circular-progress": CircularProgress,
       "mwc-card": Card,
+      "mwc-icon": Icon,
     };
   }
 

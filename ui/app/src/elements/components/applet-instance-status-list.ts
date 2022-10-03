@@ -173,6 +173,9 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                     <div class="row" style="margin-left: auto; align-items: center;">
                       <span style="color: gray; margin-right: 25px;">${appStatus}</span>
 
+                      <sl-tooltip placement="top" content="federate" hoist>
+                        <mwc-icon-button icon="share" style="margin-right: 10px;" @click=${() => this._federateAppletDialog.open(appletInfo)}></mwc-icon-button>
+                      </sl-tooltip>
 
                       ${appStatus === "RUNNING"
                         ? html`
@@ -250,9 +253,9 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
       ></uninstall-applet-dialog>
 
-      <!-- <federate-applet-dialog
+      <federate-applet-dialog
         id="federate-applet-dialog"
-      ></federate-applet-dialog> -->
+      ></federate-applet-dialog>
 
 
       ${this.renderAppStates()}

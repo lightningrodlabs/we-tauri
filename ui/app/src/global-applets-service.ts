@@ -1,16 +1,16 @@
 import { CellClient } from "@holochain-open-dev/cell-client";
-import { AgentPubKey, EntryHash } from "@holochain/client";
+import { ActionHash, AgentPubKey, DnaHash, EntryHash } from "@holochain/client";
 import { Applet, AppletGui, PlayingApplet, RegisterAppletInput } from "./types";
 
 export class GlobalAppletsService {
   constructor(protected lobbyClient: CellClient) {}
 
 
-  async getAllApplets(cellClient: CellClient): Promise<[EntryHash, Applet][]> {
+  async getAllApplets(cellClient: CellClient): Promise<[EntryHash, Applet, DnaHash[]][]> {
     return cellClient.callZome("applets_coordinator", "get_all_applets", null);
   }
 
-  async getAppletsIAmPlaying(cellClient: CellClient): Promise<[EntryHash, PlayingApplet][]> {
+  async getAppletsIAmPlaying(cellClient: CellClient): Promise<[EntryHash, PlayingApplet, DnaHash[]][]> {
     return cellClient.callZome("applets_coordinator", "get_applets_i_am_playing", null);
   }
 
@@ -26,6 +26,14 @@ export class GlobalAppletsService {
     applet: Applet,
   ): Promise<EntryHash> {
     return cellClient.callZome("applets_coordinator", "register_applet", { appletAgentPubKey, applet });
+  }
+
+  async federateApplet(
+    cellClient: CellClient,
+    appletHash: EntryHash,
+    weGroupDnaHash: DnaHash,
+  ): Promise<ActionHash> {
+    return cellClient.callZome("applets_coordinator", "federate_applet", { appletHash, weGroupDnaHash });
   }
 
   /**

@@ -39,11 +39,12 @@ pub enum Message {
 pub struct SignalPayload {
     applet_hash: EntryHashB64,
     message: Message,
+    federated_groups: Vec<DnaHash>,
 }
 
 impl SignalPayload {
-    fn new(applet_hash: EntryHashB64, message: Message) -> Self {
-        SignalPayload { applet_hash, message }
+    fn new(applet_hash: EntryHashB64, message: Message, federated_groups: Vec<DnaHash>) -> Self {
+        SignalPayload { applet_hash, message, federated_groups }
     }
 }
 

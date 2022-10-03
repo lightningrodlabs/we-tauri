@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 pub use hdk::prelude::*;
 use applets_integrity::*;
-
+use hdk::prelude::holo_hash::*;
 
 
 fn get_applets_path() -> Path {
@@ -46,6 +46,33 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
 
 
 
+#[hdk_extern]
+pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
+    create_link(
+        input.applet_hash,
+        input.we_group_dna_hash.retype(hash_type::Entry),
+        LinkTypes::AppletToInvitedGroup,
+        LinkTag::new(String::from("AppletToInvitedGroup"))
+    )
+}
+
+
+#[hdk_extern]
+pub fn get_federated_groups(applet_hash: EntryHash) -> ExternResult<Vec<DnaHash>> {
+    let links = get_links(
+        applet_hash,
+         LinkTypes::AppletToInvitedGroup,
+          Some(LinkTag::new("AppletToInvitedGroup"))
+    )?;
+    Ok(links.iter()
+        .map(|link| EntryHash::from(link.target.clone()).retype(hash_type::Dna))
+        .collect::<Vec<DnaHash>>()
+    )
+
+}
+
+
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayingApplet {
@@ -54,7 +81,7 @@ pub struct PlayingApplet {
 }
 
 #[hdk_extern]
-pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingApplet)>> {
+pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingApplet, Vec<DnaHash>)>> {
     let offer_entry_type: EntryType = UnitEntryTypes::Applet.try_into()?;
 
     let filter = ChainQueryFilter::new()
@@ -67,7 +94,7 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
     let filter = ChainQueryFilter::new().action_type(ActionType::CreateLink);
     let create_links = query(filter)?;
 
-    let mut playing_applets: Vec<(EntryHash, PlayingApplet)> = Vec::new();
+    let mut playing_applets: Vec<(EntryHash, PlayingApplet, Vec<DnaHash>)> = Vec::new();
 
 
     // let zid = zome_info()?.id;
@@ -96,6 +123,9 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
                 let applet_hash =
                     EntryHash::from(create_link_action.base_address.clone());
                 if let Some(applet) = applets.get(&applet_hash) {
+                    // check for federation
+                    let federated_groups: Vec<DnaHash> = get_federated_groups(applet_hash.clone())?;
+
                     playing_applets.push(
                         (applet_hash,
                         PlayingApplet {
@@ -103,7 +133,8 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
                             agent_pub_key: (AgentPubKey::from(
                                 EntryHash::from(create_link_action.target_address.clone()),
                             )),
-                        }
+                        },
+                        federated_groups,
                         ),
                     );
                 }
@@ -116,7 +147,7 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
 }
 
 #[hdk_extern]
-fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet)>> {
+fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet, Vec<DnaHash>)>> {
     let path = get_applets_path();
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
@@ -128,15 +159,21 @@ fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet)>> {
 
     let applet_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
 
-    Ok(
-        applets_from_records(applet_records
+    let applets = applets_from_records(applet_records
             .into_iter()
             .filter_map(|e| e)
             .collect()
         )?
         .into_iter()
-        .collect::<Vec<(EntryHash, Applet)>>()
-    )
+        .collect::<Vec<(EntryHash, Applet)>>();
+
+    // get federated groups
+    let mut federated_applets: Vec<(EntryHash, Applet, Vec<DnaHash>)> = Vec::new();
+    for (entry_hash, applet) in applets {
+        let federated_groups: Vec<DnaHash> = get_federated_groups(entry_hash.clone())?;
+        federated_applets.push((entry_hash, applet, federated_groups));
+    }
+    Ok(federated_applets)
 }
 
 fn applets_from_records(applets_records: Vec<Record>) -> ExternResult<BTreeMap<EntryHash, Applet>> {

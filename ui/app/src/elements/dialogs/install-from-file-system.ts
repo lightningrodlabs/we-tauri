@@ -115,8 +115,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         this.weGroupId,
         appletInfo,
         this._installedAppIdField.value,
-        false, // federated applets cannot be installed from filesystem for now
-        undefined, // provide no network seed
         this._fileBytes, // compressed webhapp as Uint8Array
       );
       (
@@ -196,7 +194,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       <mwc-dialog id="applet-dialog" heading="Install Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
           <div style="margin-bottom: 30px;">
-            <strong>Note: </strong>It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across groups.
+            <strong>Note: </strong>It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across groups and it allows features like federation.
           </div>
           <mwc-textfield
             id="installed-app-id"

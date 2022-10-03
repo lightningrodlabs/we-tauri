@@ -12,8 +12,8 @@ export class NotificationDot extends ScopedElementsMixin(LitElement) {
   render() {
     return html`
       <div style="position: relative; display: inline-block;">
-          <slot></slot>
-          <span class="notification-dot"></span>
+        <slot></slot>
+        <span class="notification-dot"></span>
       </div>
     `;
   }

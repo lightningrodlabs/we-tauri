@@ -16,6 +16,7 @@ pub enum LinkTypes {
     AppletPath,
     AnchorToApplet,
     AppletToExternalAgent,
+    AppletToInvitedGroup, // links to "first-order" neighbor groups if an app is being federated
 }
 
 
@@ -54,4 +55,13 @@ pub struct RegisterAppletInput {
 pub struct PlayingApplet {
     applet: Applet,
     agent_pub_key: AgentPubKey,
+}
+
+
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FederateAppletInput {
+    pub applet_hash: EntryHash,
+    pub we_group_dna_hash: DnaHash,
 }

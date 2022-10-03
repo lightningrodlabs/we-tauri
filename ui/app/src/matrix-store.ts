@@ -88,12 +88,14 @@ export interface AppletInstanceInfo {
   appletId: EntryHash; // hash of the Applet entry in the applets zome of the group's we dna
   installedAppInfo: InstalledAppInfo; // InstalledAppInfo
   applet: Applet;
+  federatedGroups: DnaHash[];
 }
 
 
 export interface UninstalledAppletInstanceInfo {
   appletId: EntryHash; // hash of the Applet entry in the applets zome of the group's we dna
   applet: Applet;
+  federatedGroups: DnaHash[];
 }
 
 /**
@@ -107,6 +109,7 @@ export interface UninstalledAppletInstanceInfo {
 export interface NewAppletInstanceInfo {
   appletId: EntryHash; // hash of the Applet entry in the applets zome of the group's we dna
   applet: Applet;
+  federatedGroups: DnaHash[];
 }
 
 /**Data of a type of Applet of which one or many may be installed */
@@ -280,6 +283,24 @@ export class MatrixStore {
     if (maybeInstalled) return true;
     return false;
   }
+
+  /**
+   * Checks whether the specified applet Instance is installed in the conductor
+   *
+   * @param weGroupId
+   * @param appletInstanceId
+   */
+  public isInstalledInGroup(appletInstanceId: EntryHash, weGroupId: DnaHash): boolean {
+    const maybeInstalled = get(this._matrix)
+      .get(weGroupId)[1]
+      .find(
+        (appletInstanceInfo) => JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(appletInstanceId)
+      );
+
+    if (maybeInstalled) return true;
+    return false;
+  }
+
 
 
   public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
@@ -482,7 +503,7 @@ export class MatrixStore {
    */
   public async fetchAllApplets(
     weGroupId: DnaHash
-  ): Promise<Readable<[EntryHash, Applet][]>> {
+  ): Promise<Readable<[EntryHash, Applet, DnaHash[]][]>> {
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const allApplets = await this.appletsService.getAllApplets(cellClient);
     return readable(allApplets);
@@ -496,29 +517,30 @@ export class MatrixStore {
     weGroupId: EntryHash
   ): Promise<Readable<NewAppletInstanceInfo[]>> {
     // fetch all applets for that group
-    const allApplets: [EntryHash, Applet][] = get(
+    const allApplets: [EntryHash, Applet, DnaHash[]][] = get(
       await this.fetchAllApplets(weGroupId)
     );
 
     const cellClient = get(this._matrix).get(weGroupId)[0].cellClient;
 
     // const [weGroupData, installedApplets] = get(this._matrix).get(weGroupId);
-    const appletsIAmPlaying: [EntryHash, PlayingApplet][] =
+    const appletsIAmPlaying: [EntryHash, PlayingApplet, DnaHash[]][] =
       await this.appletsService.getAppletsIAmPlaying(cellClient); // where the applet entry hashes are the keys
 
-    const newApplets = allApplets.filter(([_entryHash, applet]) => {
+    const newApplets = allApplets.filter(([_entryHash, applet, _federatedGroups]) => {
       return !appletsIAmPlaying
-        .map(([_entryHash, playingApplet]) =>
+        .map(([_entryHash, playingApplet, _federatedGroups]) =>
           JSON.stringify(playingApplet.applet.networkSeed)
         ) // [Applet, Applet, Applet]
         .includes(JSON.stringify(applet.networkSeed));
     });
 
     const newAppletInstanceInfos: NewAppletInstanceInfo[] = newApplets.map(
-      ([entryHash, applet]) => {
+      ([entryHash, applet, federatedGroups]) => {
         return {
           appletId: entryHash,
           applet,
+          federatedGroups,
         };
       }
     );
@@ -620,6 +642,7 @@ export class MatrixStore {
                 const newAppletInstanceInfo: NewAppletInstanceInfo = {
                   appletId: payload.appletHash,
                   applet: payload.message.content,
+                  federatedGroups: payload.federatedGroups,
                 };
 
                 let updatedList = store.get(weGroupDnaHash);
@@ -663,11 +686,11 @@ export class MatrixStore {
           await this.appletsService.getAppletsIAmPlaying(weGroupCellClient);
 
         const appletInstanceInfos: AppletInstanceInfo[] = appletsIAmPlaying
-          .filter(([_entryHash, playingApplet]) => {
+          .filter(([_entryHash, playingApplet, _federatedGroups]) => {
             return !!allApps.find((app) => this.isSameApp(app, playingApplet.applet))
           })
           .map(
-            ([entryHash, playingApplet]) => {
+            ([entryHash, playingApplet, federatedGroups]) => {
               const appletClassInfo: AppletClassInfo = {
                 devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
                 title: playingApplet.applet.title,
@@ -681,6 +704,7 @@ export class MatrixStore {
                   this.isSameApp(app, playingApplet.applet)
                 )!,
                 applet: playingApplet.applet,
+                federatedGroups,
               };
 
 
@@ -696,15 +720,16 @@ export class MatrixStore {
 
         // filter out deleted applets as well (would be a bit more efficient if done together with the loop above)
         const uninstalledAppletInstanceInfos: UninstalledAppletInstanceInfo[] = appletsIAmPlaying
-          .filter(([_entryHash, playingApplet]) => {
+          .filter(([_entryHash, playingApplet, _federatedGroups]) => {
             return !allApps.find((app) => this.isSameApp(app, playingApplet.applet))
           })
           .map(
-            ([entryHash, playingApplet]) => {
+            ([entryHash, playingApplet, federatedGroups]) => {
 
               const uninstalledAppletInstanceInfo: UninstalledAppletInstanceInfo = {
                 appletId: entryHash,
                 applet: playingApplet.applet,
+                federatedGroups
               };
 
               return uninstalledAppletInstanceInfo;
@@ -869,6 +894,7 @@ export class MatrixStore {
             const newAppletInstanceInfo: NewAppletInstanceInfo = {
               appletId: payload.appletHash,
               applet: payload.message.content,
+              federatedGroups: payload.federatedGroups
             };
 
             let updatedList = store.get(newWeGroupDnaHash);
@@ -1006,7 +1032,14 @@ export class MatrixStore {
         network_seed: network_seed,
       };
 
-      await this.adminWebsocket.installAppBundle(request);
+
+      this.adminWebsocket.installAppBundle(request).then().catch((e) => {
+        // exact same applet can only be installed once to the conductor
+        if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+          throw new Error(e);
+        }
+      });
+
 
       const enabledAppInfo = await this.adminWebsocket.enableApp({
         installed_app_id: installedAppId,
@@ -1035,6 +1068,7 @@ export class MatrixStore {
         appletId: appletInstanceId,
         installedAppInfo: appInfo,
         applet: newAppletInfo.applet,
+        federatedGroups: newAppletInfo.federatedGroups,
       };
       // update stores
       // update _matrix
@@ -1083,8 +1117,6 @@ export class MatrixStore {
     weGroupId: DnaHash,
     appletInfo: AppletInfo,
     customName: InstalledAppId,
-    _federated: boolean, // not used for now but may be required for the future
-    networkSeed?: string,
     compressedWebHapp?: Uint8Array,
   ): Promise<EntryHash> {
     // --- Install hApp in the conductor---
@@ -1104,7 +1136,7 @@ export class MatrixStore {
     const weGroupCellClient = get(this._matrix).get(weGroupId)[0].cellClient;
     const weGroupCellData = weGroupCellClient.cell;
 
-    networkSeed = networkSeed ? networkSeed : uuidv4(); // generate random network seed if not provided
+    const networkSeed = uuidv4(); // generate random network seed if not provided
 
     const installedAppId: InstalledAppId = `applet@we-${networkSeed}-${customName}`;
 
@@ -1116,13 +1148,16 @@ export class MatrixStore {
       network_seed: networkSeed,
     };
 
-    await this.adminWebsocket.installAppBundle(request);
+    await this.adminWebsocket.installAppBundle(request).then().catch((e) => {
+      if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+        throw new Error(e);
+      }
+    });
 
     const enabledApp = await this.adminWebsocket.enableApp({
       installed_app_id: installedAppId,
     });
     const appInfo = enabledApp.app;
-
 
     // --- Commit UI in the lobby cell as private entry ---
 
@@ -1171,6 +1206,7 @@ export class MatrixStore {
       appletId: appletInstanceId,
       installedAppInfo: appInfo,
       applet: applet,
+      federatedGroups: [],
     };
 
     // update stores
@@ -1212,7 +1248,7 @@ export class MatrixStore {
     compressedWebHappInput?: Uint8Array,
   ): Promise<void> {
 
-    const isAlreadyInstalled = this.isInstalled(appletInstanceId);
+    const isAlreadyInstalled = this.isInstalledInGroup(appletInstanceId, weGroupId);
     if (isAlreadyInstalled) return;
 
     const uninstalledApplets: DnaHashMap<NewAppletInstanceInfo[]> = get(
@@ -1255,7 +1291,12 @@ export class MatrixStore {
         network_seed: network_seed,
       };
 
-      await this.adminWebsocket.installAppBundle(request);
+      this.adminWebsocket.installAppBundle(request).then().catch((e) => {
+        if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+          throw new Error(e);
+        }
+      });
+
 
       const enabledAppInfo = await this.adminWebsocket.enableApp({
         installed_app_id: installedAppId,
@@ -1270,6 +1311,7 @@ export class MatrixStore {
         appletId: appletInstanceId,
         installedAppInfo: appInfo,
         applet: uninstalledAppletInfo.applet,
+        federatedGroups: uninstalledAppletInfo.federatedGroups,
       };
       // update stores
       // update _matrix
@@ -1309,8 +1351,136 @@ export class MatrixStore {
 
 
 
+  /**
+   * Installs the given applet to the conductor, and registers it in the We DNA
+   *
+   * @param appletInfo
+   * @param customName
+   * @returns
+   */
+   async federateApplet(
+    callingGroupId: DnaHash, // Dna Hash of the group initiating the federation
+    federatedGroupId: DnaHash, // Dna Hash of the group with which the applet is federated with
+    appletInstanceInfo: AppletInstanceInfo, // applet instance info of the applet to be federated
+    // compressedWebHapp?: Uint8Array, // federating only possible via the devhub!
+  ): Promise<EntryHash> {
+    // --- Install hApp in the conductor---
 
 
+    const compressedWebHapp = await this.fetchWebHapp(appletInstanceInfo.applet.devhubHappReleaseHash);
+    const [decompressedHapp, decompressedGui, iconSrcOption] =
+        await this.decompressWebHapp(compressedWebHapp);
+
+
+    const callingGroupCellClient = get(this._matrix).get(callingGroupId)[0].cellClient;
+
+    const weGroupCellClient = get(this._matrix).get(federatedGroupId)[0].cellClient;
+    const weGroupCellData = weGroupCellClient.cell;
+
+    const networkSeed = Object.values(appletInstanceInfo.applet.networkSeed)[0]; // assume network seed of all cells of this applet are equal
+    const customName = appletInstanceInfo.applet.customName;
+
+    const installedAppId: InstalledAppId = `applet@we-${networkSeed}-${customName}`;
+
+    // if applet is already federated with this group, throw an error
+    const existingApplets = get(this.getAppletInstanceInfosForGroup(federatedGroupId));
+    if(existingApplets) {
+      existingApplets.forEach((appletInstanceInfo) => {
+        if (appletInstanceInfo.installedAppInfo.installed_app_id === installedAppId) {
+          throw new Error(`The applet with id ${installedAppId} is already installed for this group.`)
+        }
+      })
+    }
+
+    const request: InstallAppBundleRequest = {
+      agent_key: weGroupCellData.cell_id[1],
+      installed_app_id: installedAppId,
+      membrane_proofs: {},
+      bundle: decompressedHapp,
+      network_seed: networkSeed,
+    };
+
+    this.adminWebsocket.installAppBundle(request).then().catch((e) => {
+      if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+        throw new Error(e);
+      }
+    });
+
+    const enabledApp = await this.adminWebsocket.enableApp({
+      installed_app_id: installedAppId,
+    });
+    const appInfo = enabledApp.app;
+
+
+    // --- Commiting UI in the lobby cell as private entry not required ---
+
+    // --- Register hApp in the We DNA ---
+
+    const dnaHashes: Record<string, DnaHash> = {};
+    const networkSeedByRole: Record<string, string> = {};
+    appInfo.cell_data.forEach((cell) => {
+      dnaHashes[cell.role_id] = cell.cell_id[0];
+      networkSeedByRole[cell.role_id] = networkSeed!;
+    });
+
+    const applet: Applet = {
+      customName,
+      title: appletInstanceInfo.applet.title,
+      description: appletInstanceInfo.applet.description,
+      // logoSrc: appletInfo.icon, // this line should be taken instead once icons are supported by the devhub
+      logoSrc: iconSrcOption,
+
+      devhubHappReleaseHash: appletInstanceInfo.applet.devhubHappReleaseHash,
+
+      properties: {},
+      networkSeed: networkSeedByRole,
+      dnaHashes: dnaHashes,
+    };
+
+    const registerAppletInput: RegisterAppletInput = {
+      appletAgentPubKey: appInfo.cell_data[0].cell_id[1], // pick the pubkey of any of the cells since it's the same for the whole hApp
+      applet,
+    };
+
+    const appletInstanceId = await this.appletsService.createApplet(
+      weGroupCellClient,
+      registerAppletInput
+    );
+
+    // federate applet in the backend, once for the calling group and once for the federated group
+    await this.appletsService.federateApplet(weGroupCellClient, appletInstanceId, callingGroupId);
+    await this.appletsService.federateApplet(callingGroupCellClient, appletInstanceId, federatedGroupId);
+
+
+    const appInstanceInfo: AppletInstanceInfo = {
+      appletId: appletInstanceId,
+      installedAppInfo: appInfo,
+      applet: applet,
+      federatedGroups: [callingGroupId],
+    };
+
+    // update stores
+    // update _matrix
+    this._matrix.update((matrix) => {
+      matrix.get(federatedGroupId)[1].push(appInstanceInfo);
+      return matrix;
+    });
+
+    // update _installedAppletClasses
+    if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
+      this._installedAppletClasses.update((hashMap) => {
+        hashMap.put(applet.devhubHappReleaseHash, {
+          title: applet.title,
+          logoSrc: applet.logoSrc,
+          description: applet.description,
+          devhubHappReleaseHash: applet.devhubHappReleaseHash,
+        });
+        return hashMap;
+      });
+    }
+
+    return appletInstanceId;
+  }
 
 
 
