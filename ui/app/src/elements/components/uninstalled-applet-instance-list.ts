@@ -18,7 +18,7 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloHashMap, HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, EntryHash, InstalledAppInfo } from "@holochain/client";

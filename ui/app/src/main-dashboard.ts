@@ -14,7 +14,7 @@ import {
   Snackbar,
 } from "@scoped-elements/material-web";
 import { classMap } from "lit/directives/class-map.js";
-import { HoloIdenticon } from "@holochain-open-dev/utils";
+import { HoloIdenticon } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "./context";
 import {
