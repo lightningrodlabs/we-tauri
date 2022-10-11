@@ -4,7 +4,7 @@ import { state, query, property } from "lit/decorators.js";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Dialog, TextField, Button } from "@scoped-elements/material-web";
-import { SelectAvatar } from "@holochain-open-dev/utils";
+import { SelectAvatar } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";

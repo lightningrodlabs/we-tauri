@@ -49,7 +49,7 @@ export class IconDot extends ScopedElementsMixin(LitElement) {
         width: 17px;
         left: 5px;
         top: 0px;
-        border: 1px solid white;
+        /* border: 1px solid white; */
       }
 
       .invisible {
