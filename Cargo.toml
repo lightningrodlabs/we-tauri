@@ -1,10 +1,9 @@
 [workspace]
 members = [
-  "dnas/lobby/zomes/membrane_invitations",
-  "dnas/we/zomes/applets",
-  "dnas/we/zomes/profiles",
-  "dnas/we/zomes/we",
-  "dnas/we/zomes/peer_status",
+  "dnas/lobby/zomes/coordinator/*",
+  "dnas/lobby/zomes/integrity/*",
+  "dnas/we/zomes/coordinator/*",
+  "dnas/we/zomes/integrity/*",
 ]
 resolver = "2"
 

@@ -6,12 +6,12 @@ import { LitElement, html, css } from "lit";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 import { sharedStyles } from "./sharedStyles";
-import { WesStore } from "./exterior/wes-store";
-import { wesContext } from "./exterior/context";
-import { WesDashboard } from "./exterior/elements/wes-dashboard";
+import { MatrixStore } from "./matrix-store";
+import { matrixContext } from "./context";
+import { MainDashboard } from "./main-dashboard";
 
 export class WeApp extends ScopedElementsMixin(LitElement) {
-  private _store!: WesStore;
+  private _matrixStore!: MatrixStore;
 
   @state()
   loading = true;
@@ -28,24 +28,24 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const holochainClient = new HolochainClient(appWebsocket);
 
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-    this._store = new WesStore(holochainClient, adminWebsocket, weAppInfo);
-    new ContextProvider(this, wesContext, this._store);
+    this._matrixStore = new MatrixStore(holochainClient, adminWebsocket, weAppInfo);
+    new ContextProvider(this, matrixContext, this._matrixStore);
 
     this.loading = false;
   }
 
   render() {
     if (this.loading)
-      return html`<div class="row center-content">
+      return html`<div class="row center-content" style="flex: 1;">
         <mwc-circular-progress indeterminate></mwc-circular-progress>
       </div>`;
 
-    return html` <wes-dashboard style="flex: 1;"></wes-dashboard> `;
+    return html` <main-dashboard style="flex: 1;"></main-dashboard> `;
   }
 
   static get scopedElements() {
     return {
-      "wes-dashboard": WesDashboard,
+      "main-dashboard": MainDashboard,
     };
   }
 

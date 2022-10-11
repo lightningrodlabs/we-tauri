@@ -1,0 +1,17 @@
+[package]
+authors = ["guillem.cordoba@gmail.com", "eric@harris-braun.com", "tatsuya.g.sato@yumeville.com"]
+description = "Peer Status zome for any Holochain app"
+documentation = "https://holochain-open-dev.github.io/peer-status"
+edition = "2021"
+homepage = "https://docs.rs/hc_zome_peer_status"
+license = "MIT"
+name = "peer_status_integrity"
+repository = "https://github.com/holochain-open-dev/peer-status"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "peer_status_integrity"
+
+[dependencies]
+hc_zome_peer_status_integrity = {git = "https://github.com/holochain-open-dev/peer-status", rev = "for-hdk-v0.0.152", package = "hc_zome_peer_status_integrity"}

@@ -12,7 +12,7 @@ export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
   "scripts": {
     "start": "npm run build:happ && cross-env HC_PORT=\$(port) ADMIN_PORT=\$(port) concurrently \\"npm run start:happ\\" \\"npm run start:ui\\"",
     "start:ui": "concurrently -k --names tsc,dev-server \\"npm run build:watch\\" \\"wds --config ./web-dev-server.config.mjs\\"",
-    "start:happ": "RUST_LOG=warn WASM_LOG=debug hc s -f=\$ADMIN_PORT generate ./workdir/${appletName}-applet.happ --run=\$HC_PORT -a ${appletName}-applet network mdns",
+    "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \\"pass\\" | hc s --piped -f=\$ADMIN_PORT generate ./workdir/${appletName}-applet.happ --run=\$HC_PORT -a ${appletName}-applet network mdns",
     "build": "rimraf dist && tsc && rollup --config rollup.config.js",
     "build:watch": "tsc -w --preserveWatchOutput",
     "package": "npm run build:happ && npm run package:ui && hc web-app pack ./workdir",
@@ -22,9 +22,9 @@ export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown"
   },
   "dependencies": {
-    "@holochain-open-dev/profiles": "^0.3.4",
-    "@holochain/client": "^0.4.1",
-    "@lightningrodlabs/we-applet": "^0.0.1",
+    "@holochain-open-dev/profiles": "^0.5.2",
+    "@holochain/client": "^0.8.0",
+    "@lightningrodlabs/we-applet": "^0.1.1",
     "@lit-labs/context": "^0.1.2",
     "@open-wc/scoped-elements": "^2.0.1",
     "@scoped-elements/material-web": "^0.0.19",
@@ -56,4 +56,3 @@ export const packageJson = ({appletName}: {appletName: string;}): ScFile => ({
 }
 `
 });
-    

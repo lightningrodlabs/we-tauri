@@ -1,8 +1,4 @@
 import { ScFile, ScNodeType } from '@source-craft/types';
-import camelCase from 'lodash-es/camelCase';
-import kebabCase from 'lodash-es/kebabCase';
-import upperFirst from 'lodash-es/upperFirst';
-import snakeCase from 'lodash-es/snakeCase';
 
 export const webDevServerConfigMjs = (): ScFile => ({
   type: ScNodeType.File,
@@ -32,6 +28,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
 
   /** Set appIndex to enable SPA routing */
   appIndex: "./demo/index.html",
+  rootDir: '../',
   clearTerminalOnReload: false,
 
   plugins: [
@@ -50,4 +47,3 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
 });
 `
 });
-    

@@ -21,7 +21,7 @@ export interface AppletRenderers {
 }
 
 export interface WeServices {
-  profilesStore: ProfilesStore;
+  profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
 }
 
 export interface WeApplet {
@@ -29,6 +29,16 @@ export interface WeApplet {
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weStore: WeServices,
-    appletInfo: InstalledAppInfo
+    appletInfo: InstalledAppletInfo[],
   ) => Promise<AppletRenderers>;
+}
+
+
+export interface WeInfo {
+  logoSrc: string;
+  name: string;
+}
+export interface InstalledAppletInfo {
+  weInfo: WeInfo,
+  installedAppInfo: InstalledAppInfo,
 }

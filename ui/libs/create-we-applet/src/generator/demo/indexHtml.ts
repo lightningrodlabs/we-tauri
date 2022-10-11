@@ -1,10 +1,6 @@
 import { ScFile, ScNodeType } from '@source-craft/types';
-import camelCase from 'lodash-es/camelCase';
-import kebabCase from 'lodash-es/kebabCase';
-import upperFirst from 'lodash-es/upperFirst';
-import snakeCase from 'lodash-es/snakeCase';
 
-export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
+export const indexHtml = ({appletName}: {appletName: string}): ScFile => ({
   type: ScNodeType.File,
   content: `<!DOCTYPE html>
 <html>
@@ -46,7 +42,7 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
               new ProfilesService(new ProfilesZomeMock())
             ),
           },
-          appInfo
+          [{ weInfo: { name: "Demo We Group", logoSrc: ""}, installedAppInfo: appInfo}]
         );
         renderers.full(container, window.customElements);
       }
@@ -56,4 +52,3 @@ export const indexHtml = ({appletName}: {appletName: string;}): ScFile => ({
 </html>
 `
 });
-    

@@ -50,7 +50,7 @@ export default {
         [
           require.resolve("@babel/preset-env"),
           {
-            targets: [],
+            targets: ['defaults', 'not IE 11', 'safari >13', 'not op_mini all', 'last 3 Chrome versions'],
             modules: false,
             bugfixes: true,
           },

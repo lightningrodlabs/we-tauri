@@ -10,7 +10,7 @@ roles:
     dna:
       bundled: "../dnas/lobby/workdir/lobby.dna"
       properties: ~
-      uuid: ~
+      network_seed: ~
       version: ~
       clone_limit: 100
   - id: we
@@ -20,6 +20,6 @@ roles:
     dna:
       bundled: "../dnas/we/workdir/we.dna"
       properties: ~
-      uuid: ~
+      network_seed: ~
       version: ~
       clone_limit: 100

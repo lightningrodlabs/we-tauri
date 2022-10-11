@@ -1,5 +1,5 @@
-import { IconFileOption, IconSrcOption } from "../interior/types";
 import { Base64 } from "js-base64";
+import { IconFileOption, IconSrcOption } from "../types";
 
 export function toSrc(png: IconFileOption): IconSrcOption {
   if (png) {

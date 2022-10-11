@@ -1,0 +1,18 @@
+[package]
+authors = ["eric@harris-braun.com"]
+edition = "2021"
+name = "applet_guis_integrity"
+version = "0.0.1-alpha1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "applet_guis_integrity"
+
+[dependencies]
+chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
+derive_more = "0.99"
+serde = "1.0.123"
+thiserror = "1.0.20"
+
+hdi = "0.1.2"
+

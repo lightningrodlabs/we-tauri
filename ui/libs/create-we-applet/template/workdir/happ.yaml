@@ -10,6 +10,6 @@ roles:
     dna:
       bundled: "./peer_status.dna"
       properties: ~
-      uuid: ~
+      network_seed: ~
       version: ~
       clone_limit: 100

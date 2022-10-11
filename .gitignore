@@ -9,3 +9,7 @@ dist/
 web_assets.zip
 DevHub/
 .running
+
+# custom holochain binaries
+holochain-v0.0.155-x86_64-unknown-linux-gnu
+holochain-v0.0.156-x86_64-unknown-linux-gnu

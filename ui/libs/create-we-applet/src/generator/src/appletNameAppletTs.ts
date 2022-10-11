@@ -1,8 +1,4 @@
 import { ScFile, ScNodeType } from '@source-craft/types';
-import camelCase from 'lodash-es/camelCase';
-import kebabCase from 'lodash-es/kebabCase';
-import upperFirst from 'lodash-es/upperFirst';
-import snakeCase from 'lodash-es/snakeCase';
 
 export const appletNameAppletTs = ({appletNameTitleCase, appletName}: {appletNameTitleCase: string; appletName: string;}): ScFile => ({
   type: ScNodeType.File,
@@ -16,6 +12,7 @@ import { InstalledAppInfo, AppWebsocket } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { LitElement, html, css } from "lit";
+import { InstalledAppletInfo } from "@lightningrodlabs/we-applet";
 
 export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement) {
   @property()
@@ -26,7 +23,7 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
   profilesStore!: ProfilesStore;
 
   @property()
-  appletAppInfo!: InstalledAppInfo;
+  appletAppInfo!: InstalledAppletInfo[];
 
   @state()
   loaded = false;
@@ -70,4 +67,3 @@ export class ${appletNameTitleCase}Applet extends ScopedElementsMixin(LitElement
 }
 `
 });
-    

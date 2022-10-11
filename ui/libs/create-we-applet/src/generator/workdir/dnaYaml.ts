@@ -9,10 +9,17 @@ export const dnaYaml = ({appletName}: {appletName: string;}): ScFile => ({
   content: `---
 manifest_version: "1"
 name: ${appletName}
-uid: 00000000-0000-0000-0000-000000000000
-zomes:
-  - name: ${appletName}
-    bundled: ../target/wasm32-unknown-unknown/release/${appletName}.wasm
+integrity:
+network_seed: 00000000-0000-0000-0000-000000000000
+  properties: ~
+  zomes:
+    - name: ${appletName}_integrity
+      bundled: ../target/wasm32-unknown-unknown/release/${appletName}_integrity.wasm
+coordinator:
+  zomes:
+    - name: ${appletName}
+      bundled: ../target/wasm32-unknown-unknown/release/${appletName}.wasm
+      dependencies:
+        - name: ${appletName}_integrity
 `
 });
-    

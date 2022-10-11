@@ -19,7 +19,7 @@ npx @lightningrodlabs/create-we-applet notebooks
 This will create a `we-applet` folder, with the necessary setup to create a We Applet. This would usually be a small NPM workspace inside a bigger repository.
 
 
-If your project was scaffolded using `npm init @holochain-open-dev`, here are your next steps:
+If your project was scaffolded using `npm init @holochain`, here are your next steps:
 
 1. In your root `package.json`:
    1. Include the newly scaffolded package in the `workspaces` field.
