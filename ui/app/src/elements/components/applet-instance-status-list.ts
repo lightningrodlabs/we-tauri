@@ -111,6 +111,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
         await this.matrixStore.fetchMatrix();
         this.requestUpdate();
+        // force page refresh to clear remaining intervals, timeouts etc.
+        window.location.reload();
       }).catch((e) => {
         console.log("Error: ", e);
         (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
