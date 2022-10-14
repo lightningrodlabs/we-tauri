@@ -861,7 +861,7 @@ export class MatrixStore {
       hash: deserializeHash(weDnaHash) as Buffer,
       network_seed: undefined,
       properties,
-    });
+    } as any);
 
     const installed_app_id = `group@we-${name}-${timestamp}`;
     const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
