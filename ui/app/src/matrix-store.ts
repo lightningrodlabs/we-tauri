@@ -1617,6 +1617,7 @@ export class MatrixStore {
    public getNewAppletInstanceInfo(
     appletInstanceId: EntryHash
   ): NewAppletInstanceInfo | undefined {
+    console.log("@matrix-store: @getNewAppletInstanceInfo: this._newAppletInstances: ", get(this._newAppletInstances));
     return get(this._newAppletInstances)
       .values()
       .flat()

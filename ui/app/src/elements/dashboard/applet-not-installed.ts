@@ -122,9 +122,18 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   render() {
 
-    const appletInstanceInfo: AppletInstanceInfo | NewAppletInstanceInfo = this.reinstall
-      ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)!
-      : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)!
+    const appletInstanceInfo: AppletInstanceInfo | NewAppletInstanceInfo | undefined = this.reinstall
+      ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)
+      : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)
+    console.log("RENDERING with appletinstance ID: ", this.appletInstanceId);
+    console.log("RENDERING reinstall: ", this.reinstall);
+    if (!appletInstanceInfo) {
+      return html `
+        <div class="center-content" style="flex: 1;display: flex;">
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
+        </div>
+      `
+    }
 
     return html`
 
@@ -206,17 +215,13 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                 @click=${async () => this.joinFromFsDialog.open()}
                 >Upload from Filesystem instead</mwc-button
               >
-              ${this.reinstall
-                ? html`
-                    <mwc-button
-                      raised
-                      style="margin-top: 30px;"
-                      @click=${this.cancelReinstall}
-                      >Cancel</mwc-button
-                    >
-                  `
-                : html``
-              }
+
+              <mwc-button
+                raised
+                style="margin-top: 30px;"
+                @click=${this.cancelReinstall}
+                >Cancel</mwc-button
+              >
             </div>
           </div>
         </div>

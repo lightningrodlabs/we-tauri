@@ -176,7 +176,13 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                       <span style="color: gray; margin-right: 25px;">${appStatus}</span>
 
                       <sl-tooltip placement="top" content="federate" hoist>
-                        <mwc-icon-button icon="share" style="margin-right: 10px;" @click=${() => this._federateAppletDialog.open(appletInfo)}></mwc-icon-button>
+                        <mwc-button
+                          icon="share"
+                          style="margin-right: 10px;"
+                          @click=${() => this._federateAppletDialog.open(appletInfo)}
+                          label="federate"
+                        >
+                        </mwc-button>
                       </sl-tooltip>
 
                       ${appStatus === "RUNNING"

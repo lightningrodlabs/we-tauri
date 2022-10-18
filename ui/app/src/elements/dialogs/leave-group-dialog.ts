@@ -107,6 +107,8 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
           <li>delete your profile for this group</li>
         </ul>
 
+        Other members of the group will still have access to their instances of the group's applets.
+
 
         <mwc-button
           slot="secondaryAction"

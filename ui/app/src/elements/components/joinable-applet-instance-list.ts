@@ -3,7 +3,7 @@ import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import { StoreSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
   Button,
   List,
@@ -17,15 +17,13 @@ import {
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { ActionHash, DnaHash, EntryHash, InstalledAppInfo } from "@holochain/client";
-import { getStatus } from "../../utils";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
-export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
+export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -33,16 +31,17 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  _uninstalledApplets = new StoreSubscriber(
+  _joinableApplets = new TaskSubscriber(
     this,
-    () => this.matrixStore.getUninstalledAppletInstanceInfosForGroup(this.weGroupId)
+    () => this.matrixStore.fetchNewAppletInstancesForGroup(this.weGroupId),
+    () => [this.weGroupId, this.matrixStore]
   );
 
 
 
-  reinstallApp(appletInstanceId: EntryHash) {
+  joinApplet(appletInstanceId: EntryHash) {
     this.dispatchEvent(
-      new CustomEvent("reinstall-applet", {
+      new CustomEvent("join-applet", {
         detail: appletInstanceId,
         bubbles: true,
         composed: true,
@@ -64,11 +63,12 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   }
 
   renderAppStates() {
-    const appletInstanceInfos = this._uninstalledApplets.value;
+    const appletInstanceInfos = this._joinableApplets.value;
     if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
+      console.log("NO APPLET INSTANCES TO JOIN!!");
       // TODO! make sure that this refresh button actually does anything.
       return html`
-        <div style="margin-top: 10px;">There are no uninstalled applet instances.</div>
+        <div style="margin-top: 10px;">There are no applet instances you haven't joined.</div>
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
@@ -99,10 +99,10 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
                     <div class="row" style="margin-left: auto; align-items: center;">
 
                       <mwc-button
-                        class="reinstall-button"
+                        class="join-button"
                         raised
-                        label="REINSTALL"
-                        @click=${() => this.reinstallApp(appletInfo.appletId)}
+                        label="JOIN"
+                        @click=${() => this.joinApplet(appletInfo.appletId)}
                       >
                       </mwc-button>
                     </div>
@@ -200,16 +200,6 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
         height: 30px;
         width: 30px;
         border-radius: 50%;
-      }
-
-      .pubkey-field {
-        color: black;
-        background: #f4f0fa;
-        border-radius: 4px;
-        overflow-x: auto;
-        padding: 10px;
-        white-space: nowrap;
-        cursor: pointer;
       }
     `;
 

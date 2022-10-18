@@ -15,6 +15,7 @@ import { UninstalledAppletInstanceList } from "../components/uninstalled-applet-
 import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 import { AppletNotInstalled } from "./applet-not-installed";
+import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
 
 
 
@@ -44,12 +45,6 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
   @state()
   private _showAppletDescription: boolean = false;
-
-  @state()
-  private _showReinstallScreen: boolean = false;
-
-  @state()
-  private _reinstallAppletId: EntryHash | undefined;
 
   @query("#leave-group-dialog")
   _leaveGroupDialog!: LeaveGroupDialog;
@@ -121,41 +116,23 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
   }
 
 
-  backHome() {
-    this.dispatchEvent(
-      new CustomEvent("back-home", {
-        composed: true,
-        bubbles: true,
-      })
-    )
-  }
 
 
   renderContent() {
-    if (this._showReinstallScreen) {
-      return html`
-          <applet-not-installed
-            style="display: flex; flex: 1;"
-            .appletInstanceId=${this._reinstallAppletId}
-            reinstall
-            @cancel-reinstall=${() => { this._showReinstallScreen = false; this._reinstallAppletId = undefined; }}>
-          </applet-not-installed>
-      `
-    }
 
     return html`
       <div class="column" style="flex: 1; margin: 24px; position: relative;">
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
 
-        <sl-tooltip placement="bottom" content="Close Settings" hoist>
-          <mwc-icon-button class="back-home" @click=${this.backHome} icon="close"></mwc-icon-button>
-        </sl-tooltip>
-        <div class="row center-content"><h2>Group Settings</h2><mwc-icon style="margin-left: 10px;">build</mwc-icon></div>
+        <div class="row title" style="margin-top: 30px;">
+          <span style="align-self: start" title="Applet instances initiated by another group member">Applets to Join</span>
+        </div>
+        <hr style="width: 100%" />
+        <joinable-applet-instance-list></joinable-applet-instance-list>
 
         <div class="row title" style="margin-top: 30px;">
           <span style="align-self: start">Installed Applets</span>
         </div>
-
         <hr style="width: 100%" />
 
         <applet-instance-status-list></applet-instance-status-list>
@@ -163,17 +140,9 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         <div class="row title" style="margin-top: 30px;">
           <span style="align-self: start">Uninstalled Applets</span>
         </div>
-
         <hr style="width: 100%" />
 
-
-        <uninstalled-applet-instance-list
-          @reinstall-applet=${(e: CustomEvent) => {
-            this._reinstallAppletId = e.detail;
-            this._showReinstallScreen = true;
-            }
-          }>
-        </uninstalled-applet-instance-list>
+        <uninstalled-applet-instance-list></uninstalled-applet-instance-list>
 
 
         <div class="row title" style="margin-top: 30px;">
@@ -219,10 +188,10 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       "invitations-block": InvitationsBlock,
       "mwc-linear-progress": LinearProgress,
       "mwc-snackbar": Snackbar,
-      "applet-not-installed": AppletNotInstalled,
       "leave-group-dialog": LeaveGroupDialog,
       "applet-instance-status-list": AppletInstanceStatusList,
       "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
+      "joinable-applet-instance-list": JoinableAppletInstanceList,
     };
   }
 
@@ -232,15 +201,6 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       :host {
         display: flex;
       }
-
-      .back-home {
-        cursor: pointer;
-        --mdc-icon-size: 32px;
-        position: absolute;
-        top: 0;
-        right: 0;
-      }
-
     `;
 
     return [sharedStyles, localStyles];

@@ -147,11 +147,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           ? this.renderAppletInstanceList(appletInstanceInfos)
           : html``
         }
-        ${this._newAppletInstances.render({
-          complete: (allNewAppletInstances) =>
-            this.renderNewAppletInstanceIcons(allNewAppletInstances),
-          pending: () => html``,
-        })}
       `;
 
       // show all groups that have the currently selected applet class installed in NavigationMode.AppletCentric

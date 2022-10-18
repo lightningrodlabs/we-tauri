@@ -14,6 +14,7 @@ import { sharedStyles } from "../../sharedStyles";
 import { InstallableApplets } from "../components/installable-applets";
 import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
+import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
 
 
@@ -46,7 +47,16 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
 
   @state()
-  private _showSettings: boolean = false;
+  private _showLibrary: boolean = false;
+
+  @state()
+  private _showInstallScreen: boolean = false;
+
+  @state()
+  private _installAppletId: EntryHash | undefined;
+
+  @state()
+  private _reinstall: boolean = false;
 
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
@@ -116,27 +126,60 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
 
   renderContent() {
+    if (this._showInstallScreen) {
+      return html`
+          ${this._reinstall
+            ? html`
+              <applet-not-installed
+                style="display: flex; flex: 1;"
+                .appletInstanceId=${this._installAppletId}
+                reinstall
+                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+              </applet-not-installed>
+              `
+            : html`
+              <applet-not-installed
+                style="display: flex; flex: 1;"
+                .appletInstanceId=${this._installAppletId}
+                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+              </applet-not-installed>
+            `
+          }
+      `
+    }
+
     return html`
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y" style="display: flex; height: 100%;">
-            ${this._showSettings
+            ${this._showLibrary
               ? html`
-                  <we-group-settings
-                  @back-home=${() => {this._showSettings = false}}
-                  style="display: flex; flex: 1;">
-                  </we-group-settings>`
+                <div class="column" style="flex: 1; margin: 24px; position: relative">
+                  <sl-tooltip placement="right" content="Close Settings" hoist>
+                    <mwc-icon-button class="back-home" @click=${() => this._showLibrary = false} icon="arrow_back"></mwc-icon-button>
+                  </sl-tooltip>
+
+                  <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
+                  </div>
+
+                  <div class="row center-content" style="margin-top: 10px;"><h2>Applet Library</h2></div>
+
+                  <hr style="width: 100%" />
+                  <installable-applets></installable-applets>
+
+                  <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
+
+                </div>
+                `
               : html`
                   <div class="column" style="flex: 1; margin: 24px; position: relative">
-                    <sl-tooltip placement="bottom" content="Group Settings" hoist>
-                      <mwc-icon-button class="settings-icon" icon="settings" @click=${() => {this._showSettings = true}}></mwc-icon-button>
-                    </sl-tooltip>
-                    <div class="row center-content" style="margin-top: 56px">
-                      <div class="column center-content">
+                    <div class="row" style="margin-top: 20px">
+                      <div class="column center-content" style="width: 50%;">
                         ${this._info.value
                           ? html`<img
                               class="logo-large"
-                              style=" width: 150px; height: 150px;"
+                              style=" width: 200px; height: 200px;"
                               src=${this._info.value.logoSrc}
                             />`
                           : html``}
@@ -147,25 +190,44 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         </div>
                       </div>
 
-                      <invitations-block
-                        style="margin-left: 50px;"
-                      ></invitations-block>
+                      <div class="column center-content" style="margin-left: 30px; width: 50%;">
+                        <invitations-block style="margin: 10px;"></invitations-block>
+
+                        <mwc-card style="width: 440px; margin: 10px;">
+                          <div style="margin: 20px;">
+                            <div class="row">
+                              <span class="title"
+                                >Initiate New Applet Instance</span
+                              >
+                            </div>
+                            <div style="margin-top: 10px;">
+                              Initiate a new Applet instance from scratch that other group members will be able to join.
+                            </div>
+                            <div class="row center-content" style="margin-top: 20px;">
+                              <mwc-button raised style="width: 250px;" label="Applet Library" @click=${() => this._showLibrary = true}></mwc-button>
+                            </div>
+                          </div>
+                        </mwc-card>
+
+
+                      </div>
                     </div>
 
-                    <div style="display: flex; justify-content: flex-end; margin-top: 90px;">
-                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
-                    </div>
+                    <we-group-settings
+                      @join-applet=${(e: CustomEvent) => {
+                        this._installAppletId = e.detail;
+                        this._reinstall = false;
+                        this._showInstallScreen = true;
+                        }
+                      }
+                      @reinstall-applet=${(e: CustomEvent) => {
+                        this._installAppletId = e.detail;
+                        this._reinstall = true;
+                        this._showInstallScreen = true;
+                        }
+                      }
+                    ></we-group-settings>
 
-                    <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
-
-
-                    <div class="row title" style="margin-top: -20px;">
-                      <span style="align-self: start">Applets Library</span>
-                    </div>
-
-                    <hr style="width: 100%" />
-
-                    <installable-applets></installable-applets>
                   </div>
                 `
             }
@@ -257,6 +319,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,
+      "applet-not-installed": AppletNotInstalled,
     };
   }
 
@@ -342,6 +405,14 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       .installable-applets-container {
         padding: 10px;
         width: 100%;
+      }
+
+      .back-home {
+        cursor: pointer;
+        --mdc-icon-size: 32px;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     `;
 
