@@ -22,8 +22,8 @@ async fn create_applet() {
 
     let ((alice,), (bobbo,)) = apps.into_tuples();
 
-    let alice_zome = alice.zome("applets");
-    let bob_zome = bobbo.zome("applets");
+    let alice_zome = alice.zome("applets_coordinator");
+    let bob_zome = bobbo.zome("applets_coordinator");
 
     let applet = Applet {
         custom_name: String::from("custom name"),
