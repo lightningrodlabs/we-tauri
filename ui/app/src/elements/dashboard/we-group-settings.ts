@@ -125,7 +125,7 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
 
         <div class="row title" style="margin-top: 30px;">
-          <span style="align-self: start" title="Applet instances initiated by another group member">Applets to Join</span>
+          <span style="align-self: start" title="applet instances initiated by other group members">Applets to Join</span>
         </div>
         <hr style="width: 100%" />
         <joinable-applet-instance-list></joinable-applet-instance-list>

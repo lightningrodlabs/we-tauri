@@ -65,7 +65,6 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
   renderAppStates() {
     const appletInstanceInfos = this._joinableApplets.value;
     if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
-      console.log("NO APPLET INSTANCES TO JOIN!!");
       // TODO! make sure that this refresh button actually does anything.
       return html`
         <div style="margin-top: 10px;">There are no applet instances you haven't joined.</div>

@@ -519,7 +519,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
-    console.log("@renderAppletInstanceList: appletInstances: ", appletInstances);
     // do stuff
     return appletInstances
       .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
