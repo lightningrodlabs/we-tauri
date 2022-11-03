@@ -20,7 +20,7 @@ const applet: WeApplet = {
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weServices: WeServices,
-    appletInfo: InstalledAppInfo  // This will contain all the cells that your applet has installed
+    appletInfo: InstalledAppletInfo[] // Contains info about which app instance(s) should be rendered. Potentially applets across different groups 
   ): Promise<AppletRenderers> {
     // Maybe instantiate a store?
 
