@@ -1,0 +1,7 @@
+---
+manifest_version: "1"
+name: sensemaker_happ
+ui:
+  bundled: "../ui/dist.zip"
+happ_manifest:
+  bundled: "./sensemaker_happ.happ"
