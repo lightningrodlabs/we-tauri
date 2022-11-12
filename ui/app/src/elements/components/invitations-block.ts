@@ -39,6 +39,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   _pubkeyField!: TextField;
 
   async inviteToJoin(agentPubKey: AgentPubKeyB64) {
+
     this._matrixStore
       .inviteToJoinGroup(this.weGroupId, deserializeHash(agentPubKey))
       .then((r) => {

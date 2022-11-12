@@ -783,14 +783,19 @@ export class MatrixStore {
 
     const properties = encode(info);
 
+    const recipe = {
+      originalDnaHash: weParentDnaHash,
+      properties,
+      networkSeed: undefined,
+      resultingDnaHash: weGroupDnaHash,
+    };
+
+    // create clone dna recipe to make sure it's in the DHT
+    await this.membraneInvitationsStore.service.createCloneDnaRecipe(recipe);
+
     // membrane invitations API will need to change uid --> network_seed
     await this.membraneInvitationsStore.service.inviteToJoinMembrane(
-      {
-        originalDnaHash: weParentDnaHash,
-        properties,
-        networkSeed: undefined,
-        resultingDnaHash: weGroupDnaHash,
-      },
+      recipe,
       agentPubKey,
       undefined
     );
@@ -816,7 +821,9 @@ export class MatrixStore {
       name: name,
       timestamp,
     };
-    await this.membraneInvitationsStore.service.createCloneDnaRecipe({
+
+
+    const _recipeActionHash = await this.membraneInvitationsStore.service.createCloneDnaRecipe({
       originalDnaHash: weDnaHash,
       networkSeed: undefined,
       properties: encode(properties),

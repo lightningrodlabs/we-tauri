@@ -28,9 +28,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
-  _myInvitations = new TaskSubscriber(this, () =>
-    this.matrixStore.membraneInvitationsStore.fetchMyInvitations()
-  );
 
   @query("#we-dialog")
   _weGroupDialog!: CreateWeGroupDialog;
