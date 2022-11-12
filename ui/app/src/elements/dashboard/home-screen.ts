@@ -54,7 +54,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar
         style="text-align: center;"
         id="error-snackbar"
-        labelText="You are already part of this We!"
+        labelText="You are already part of this Group!"
       >
       </mwc-snackbar>
     `;
