@@ -144,6 +144,9 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       return html`
         ${invitations.entries()
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
+          .filter((obj, idx, arr) => {
+            return arr.map(mapObj => JSON.stringify(mapObj[1].cloneDnaRecipe.resultingDnaHash)).indexOf(JSON.stringify(obj[1].cloneDnaRecipe.resultingDnaHash)) === idx
+          })
           .map(([actionHash, invitation]) => {
             return html`
               <div class="column" style="align-items: right; width: 100%;">
