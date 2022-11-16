@@ -1,0 +1,22 @@
+use std::collections::BTreeMap;
+
+use hdi::prelude::*;
+
+#[hdk_entry_helper]
+#[derive(Clone)]
+pub struct Method {
+    pub name: String,
+    pub target_resource_type_eh: EntryHash,
+    pub input_dimension_ehs: Vec<EntryHash>,
+    pub output_dimension_eh: EntryHash,
+    pub program: String, // making string for now, in design doc it is `AST`
+    pub can_compute_live: bool,
+    pub must_publish_dataset: bool,
+}
+
+#[hdk_entry_helper]
+#[derive(Clone)]
+pub struct DataSet {
+    pub from: EntryHash, // method
+    pub data_points: BTreeMap<EntryHash, Vec<EntryHash>>, //<DimensionEh, Vec<AssessmentEh>>
+}
