@@ -1357,6 +1357,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_provider"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "hdk",
+ "serde",
+ "test_provider_integrity",
+]
+
+[[package]]
+name = "test_provider_integrity"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "hdi",
+ "serde",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"

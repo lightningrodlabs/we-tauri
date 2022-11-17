@@ -21,6 +21,7 @@ export default () => test("range CRUD tests", async (t) => {
       await scenario.shareAllAgents();
       await pause(500)
 
+      // create an entry type in the provider DNA
       const createPost = {
         "title": "Intro",
         "content": "anger!!"
@@ -55,6 +56,11 @@ export default () => test("range CRUD tests", async (t) => {
         "range": integerRange,
       }
 
+      const createDimension2 = {
+        "name": "quality",
+        "range": integerRange,
+      }
+
       // Alice creates a dimension
       const createDimensionEntryHash: EntryHash = await alice.cells[0].callZome({
         zome_name: "sensemaker",
@@ -63,6 +69,12 @@ export default () => test("range CRUD tests", async (t) => {
       });
       t.ok(createDimensionEntryHash);
 
+      const createDimensionEntryHash2: EntryHash = await alice.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "create_dimension",
+        payload: createDimension2,
+      });
+      t.ok(createDimensionEntryHash2);
       // Wait for the created entry to be propagated to the other node.
       await pause(100);
 
@@ -75,6 +87,15 @@ export default () => test("range CRUD tests", async (t) => {
       });
       t.deepEqual(createDimension, decode((createReadOutput.entry as any).Present.entry) as any);
     
+      // get all dimensions
+      const getDimensionsOutput: Record[] = await bob.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "get_dimensions",
+        payload: null,
+      });
+      t.equal(getDimensionsOutput.length, 2)
+      
+
       const createResourceType = {
         "name": "angryPost",
         //@ts-ignore
