@@ -28,6 +28,7 @@ pub enum EntryTypes {
 #[hdk_link_types]
 pub enum LinkTypes {
     Dimensions,
+    Assessment,
 }
 
 #[hdk_extern]
