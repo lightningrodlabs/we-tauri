@@ -16,15 +16,9 @@ export default () => test("range CRUD tests", async (t) => {
 
 
       const [alice, bob] = await scenario.addPlayersWithHapps([dnas, dnas]);
+      await pause(500)
 
       await scenario.shareAllAgents();
-
-      // pub struct Assessment {
-      //     pub value: RangeValue,
-      //     pub dimension_eh: EntryHash,
-      //     pub subject_eh: EntryHash,
-      //     pub maybe_input_dataset: Option<DataSet>,
-      // }
 
       const createPost = {
         "title": "Intro",
@@ -37,6 +31,18 @@ export default () => test("range CRUD tests", async (t) => {
       });
       t.ok(createPostEntryHash);
 
+      await pause(200);
+
+      // Bob gets the created post
+      const readPostOutput: Record = await bob.cells[1].callZome({
+        zome_name: "test_provider",
+        fn_name: "get_post",
+        payload: createPostEntryHash,
+      });
+
+      t.deepEqual(createPost, decode((readPostOutput.entry as any).Present.entry) as any);
+
+      // create range for dimension
       const integerRange = {
         "name": "10-scale",
         "kind": {
@@ -49,28 +55,58 @@ export default () => test("range CRUD tests", async (t) => {
         "range": integerRange,
       }
 
-      // Alice creates a range
-      const createEntryHash: EntryHash = await alice.cells[0].callZome({
+      // Alice creates a dimension
+      const createDimensionEntryHash: EntryHash = await alice.cells[0].callZome({
         zome_name: "sensemaker",
         fn_name: "create_dimension",
         payload: createDimension,
       });
-      t.ok(createEntryHash);
+      t.ok(createDimensionEntryHash);
 
       // Wait for the created entry to be propagated to the other node.
       await pause(100);
 
 
-      // Bob gets the created range
+      // Bob gets the created dimension
       const createReadOutput: Record = await bob.cells[0].callZome({
         zome_name: "sensemaker",
         fn_name: "get_dimension",
-        payload: createEntryHash,
+        payload: createDimensionEntryHash,
       });
       t.deepEqual(createDimension, decode((createReadOutput.entry as any).Present.entry) as any);
+    
+
+      // create an assessment on the Post
+      const createAssessment = {
+        "value": { "Integer": 2 },
+        "dimension_eh": createDimensionEntryHash,
+        "subject_eh": createPostEntryHash,
+        "maybe_input_dataset": null,
+      }
+
+      const createAssessmentEntryHash: EntryHash = await alice.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "create_assessment",
+        payload: createAssessment,
+      });
+      t.ok(createAssessmentEntryHash);
+
+      // Wait for the created entry to be propagated to the other node.
+      await pause(100);
+
+
+      // Bob gets the created assessment
+      const createAssessmentReadOutput: Record = await bob.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "get_assessment",
+        payload: createAssessmentEntryHash,
+      });
+      t.deepEqual(createAssessment, decode((createAssessmentReadOutput.entry as any).Present.entry) as any);
+
     }
     catch (e) {
       console.log(e)
+      t.ok(null)
     }
   });
 });
