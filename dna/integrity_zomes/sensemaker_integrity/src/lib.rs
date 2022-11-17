@@ -3,21 +3,18 @@ mod assessment;
 mod cultural_context;
 mod dimension;
 mod method;
-mod range;
 mod resource_type;
 
-use assessment::Assessment;
-use cultural_context::{CulturalContext, ContextResult, Threshold};
-use dimension::Dimension;
-use method::{Method, DataSet};
-use resource_type::ResourceType;
-pub use range::Range;
+pub use assessment::Assessment;
+pub use cultural_context::{CulturalContext, ContextResult, Threshold};
+pub use dimension::Dimension;
+pub use method::{Method, DataSet};
+pub use resource_type::ResourceType;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     #[entry_def()]
-    Range(Range),
     Assessment(Assessment),
     CulturalContext(CulturalContext),
     ContextResult(ContextResult),
