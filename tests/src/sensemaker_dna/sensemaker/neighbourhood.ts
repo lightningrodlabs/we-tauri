@@ -19,6 +19,7 @@ export default () => test("range CRUD tests", async (t) => {
       await pause(500)
 
       await scenario.shareAllAgents();
+      await pause(500)
 
       const createPost = {
         "title": "Intro",
@@ -39,7 +40,6 @@ export default () => test("range CRUD tests", async (t) => {
         fn_name: "get_post",
         payload: createPostEntryHash,
       });
-
       t.deepEqual(createPost, decode((readPostOutput.entry as any).Present.entry) as any);
 
       // create range for dimension
@@ -75,6 +75,32 @@ export default () => test("range CRUD tests", async (t) => {
       });
       t.deepEqual(createDimension, decode((createReadOutput.entry as any).Present.entry) as any);
     
+      const createResourceType = {
+        "name": "angryPost",
+        //@ts-ignore
+        "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
+        "dimension_ehs": [createDimensionEntryHash],
+      }
+
+      // Alice creates a resource type
+      const createResourceTypeEntryHash: EntryHash = await alice.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "create_resource_type",
+        payload: createResourceType,
+      });
+      t.ok(createResourceTypeEntryHash);
+
+      // Wait for the created entry to be propagated to the other node.
+      await pause(100);
+
+
+      // Bob gets the created resource type
+      const createResourceTypeReadOutput: Record = await bob.cells[0].callZome({
+        zome_name: "sensemaker",
+        fn_name: "get_resource_type",
+        payload: createResourceTypeEntryHash,
+      });
+      t.deepEqual(createResourceType, decode((createResourceTypeReadOutput.entry as any).Present.entry) as any);
 
       // create an assessment on the Post
       const createAssessment = {
