@@ -1,0 +1,18 @@
+---
+manifest_version: "1"
+name: test_provider_dna
+integrity:
+  uuid: 00000000-0000-0000-0000-000000000000
+  properties: ~
+  origin_time: 2022-11-11T15:30:58.853Z
+  zomes:
+    - name: test_provider_integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/test_provider_integrity.wasm
+
+coordinator:
+  zomes:
+    - name: test_provider
+      bundled: ../../../target/wasm32-unknown-unknown/release/test_provider.wasm
+      dependencies:
+        - name: test_provider_integrity
+

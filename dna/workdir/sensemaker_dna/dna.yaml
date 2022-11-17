@@ -7,12 +7,12 @@ integrity:
   origin_time: 2022-11-11T15:30:58.853Z
   zomes:
     - name: sensemaker_integrity
-      bundled: ../../target/wasm32-unknown-unknown/release/sensemaker_integrity.wasm
+      bundled: ../../../target/wasm32-unknown-unknown/release/sensemaker_integrity.wasm
 
 coordinator:
   zomes:
     - name: sensemaker
-      bundled: ../../target/wasm32-unknown-unknown/release/sensemaker.wasm
+      bundled: ../../../target/wasm32-unknown-unknown/release/sensemaker.wasm
       dependencies:
         - name: sensemaker_integrity
 
