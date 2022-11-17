@@ -1,3 +1,12 @@
-
 mod range;
+mod assessment;
+mod cultural_context;
+mod dimension;
+mod method;
+mod resource_type;
 pub use range::*;
+pub use assessment::*;
+pub use cultural_context::*;
+pub use dimension::*;
+pub use method::*;
+pub use resource_type::*;

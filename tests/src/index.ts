@@ -1,5 +1,5 @@
 
-import sensemaker_range from './sensemaker_dna/sensemaker/range';
-sensemaker_range();
+import sensemaker_dimension from './sensemaker_dna/sensemaker/neighbourhood';
+sensemaker_dimension();
 
 
