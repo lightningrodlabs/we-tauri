@@ -14,10 +14,10 @@ pub fn create_assessment(assessment: Assessment) -> ExternResult<EntryHash> {
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;
     create_link(
-      assessment_typed_path(assessment.subject_eh, assessment.dimension_eh)?.path_entry_hash()?,
-      assessment_eh.clone(),
-      LinkTypes::Assessment,
-      (),
+        assessment_typed_path(assessment.subject_eh, assessment.dimension_eh)?.path_entry_hash()?,
+        assessment_eh.clone(),
+        LinkTypes::Assessment,
+        (),
     )?;
     Ok(assessment_eh)
 }
@@ -38,16 +38,15 @@ pub fn delete_assessment(action_hash: ActionHash) -> ExternResult<ActionHash> {
     delete_entry(action_hash)
 }
 
-fn assessment_typed_path(
+pub fn assessment_typed_path(
     resource_eh: EntryHash,
     dimension_eh: EntryHash,
 ) -> ExternResult<TypedPath> {
-  let resource_eh_string = EntryHashB64::from(resource_eh).to_string(); 
-  let dimension_eh_string = EntryHashB64::from(dimension_eh).to_string();
-  Ok(Path::from(format!(
+    let resource_eh_string = EntryHashB64::from(resource_eh).to_string();
+    let dimension_eh_string = EntryHashB64::from(dimension_eh).to_string();
+    Ok(Path::from(format!(
         "all_assessed_resources.{}.{}",
-        resource_eh_string, 
-        dimension_eh_string
+        resource_eh_string, dimension_eh_string
     ))
     .typed(LinkTypes::Assessment)?)
 }

@@ -9,7 +9,7 @@ pub struct Method {
     pub target_resource_type_eh: EntryHash,
     pub input_dimension_ehs: Vec<EntryHash>,
     pub output_dimension_eh: EntryHash,
-    pub program: String, // making string for now, in design doc it is `AST`
+    pub program: Program, // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
     pub must_publish_dataset: bool,
 }
@@ -19,4 +19,10 @@ pub struct Method {
 pub struct DataSet {
     pub from: EntryHash, // method
     pub data_points: BTreeMap<EntryHash, Vec<EntryHash>>, //<DimensionEh, Vec<AssessmentEh>>
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Program {
+    Sum,
+    Average,
 }

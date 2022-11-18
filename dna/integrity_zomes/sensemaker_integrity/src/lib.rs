@@ -7,8 +7,8 @@ mod resource_type;
 
 pub use assessment::Assessment;
 pub use cultural_context::{CulturalContext, ContextResult, Threshold};
-pub use dimension::Dimension;
-pub use method::{Method, DataSet};
+pub use dimension::{Dimension, RangeValue};
+pub use method::{Method, DataSet, Program};
 pub use resource_type::ResourceType;
 
 #[hdk_entry_defs]
