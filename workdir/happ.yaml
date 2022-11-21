@@ -9,7 +9,7 @@ roles:
       strategy: create
       deferred: false
     dna:
-      bundled: "../dna/workdir/sensemaker_dna/sensemaker_dna.dna"
+      bundled: "../dnas/sensemaker/workdir/sensemaker.dna"
       properties: ~
       uuid: ~
       version: ~

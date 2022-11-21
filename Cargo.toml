@@ -1,8 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-  "dna/integrity_zomes/*",
-  "dna/coordinator_zomes/*"
+  "dnas/sensemaker/zomes/coordinator/*",
+  "dnas/sensemaker/zomes/integrity/*",
+  "dnas/test_provider/zomes/coordinator/*",
+  "dnas/test_provider/zomes/integrity/*",
 ]
 
 [profile.dev]
