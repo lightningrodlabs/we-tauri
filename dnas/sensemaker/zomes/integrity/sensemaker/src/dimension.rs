@@ -4,7 +4,7 @@ use hdi::prelude::*;
 #[derive(Clone)]
 pub struct Dimension {
     pub name: String,
-    pub range: Range,
+    pub range_eh: EntryHash,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
