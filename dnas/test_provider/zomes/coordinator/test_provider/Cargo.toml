@@ -1,17 +1,16 @@
 [package]
 edition = "2021"
-name = "sensemaker"
+name = "test_provider"
 version = "0.0.1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "sensemaker"
+name = "test_provider"
 
 [dependencies]
 serde = "=1.0.136"
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 derive_more = "0"
-sensemaker_integrity = { path = "../../integrity_zomes/sensemaker_integrity" }
+test_provider_integrity = { path = "../../integrity/test_provider" }
 
-hdk = { version = "0.0.160", default-features = false }
-holo_hash = {version = "=0.0.35", features = ["encoding"]}
+hdk = "0.0.160"
