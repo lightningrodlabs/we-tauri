@@ -5,7 +5,7 @@ use hdi::prelude::*;
 #[derive(Clone)]
 pub struct Dimension {
     pub name: String,
-    pub range_eh: EntryHash,
+    pub range: Range,
 }
 
 #[hdk_entry_helper]
@@ -23,7 +23,6 @@ pub enum RangeKind {
     // Tag(Vec<String>),
     // Emoji(Vec<char>),
     // TagTree(HashMap<String, String>)
-
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -3,13 +3,23 @@ manifest_version: "1"
 name: sensemaker_happ
 description: ~
 roles:
-
   - id: sensemaker_dna
     provisioning:
       strategy: create
       deferred: false
     dna:
       bundled: "../dnas/sensemaker/workdir/sensemaker.dna"
+      properties: ~
+      uuid: ~
+      version: ~
+      clone_limit: 0
+  
+  - id: test_provider_dna
+    provisioning:
+      strategy: create
+      deferred: false
+    dna:
+      bundled: "../dnas/test_provider/workdir/test_provider_dna.dna"
       properties: ~
       uuid: ~
       version: ~
