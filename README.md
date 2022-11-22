@@ -1,4 +1,18 @@
-# sensemaker-lite
+<h1 align="center">
+  <div>👋 Welcome to</div>
+  <img src="https://neighbourhoods.network/visual-assets/nh-white-banner.png" alt="Logo" height="280">
+  <div>Sensemaker-Lite</div>
+</h1>
+
+<div align="center">
+
+[![Join the Neighbourhoods discord server](https://img.shields.io/discord/854211588184735774.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.gg/neighbourhoods)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?)](https://github.com/neighbour-hoods/sensemaker-lite/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+[![made with hearth by neighbourhoods](https://img.shields.io/badge/made%20with%20%E2%99%A5%20-cc14cc.svg?)](https://github.com/neighbour-hoods)
+
+</div>
+
+
 
 ## Environment Setup
 
