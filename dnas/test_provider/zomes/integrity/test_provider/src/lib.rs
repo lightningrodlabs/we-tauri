@@ -1,18 +1,16 @@
 use hdi::prelude::*;
+mod post;
 
-mod range;
-pub use range::Range;
-
+pub use post::Post;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
-#[entry_def()]
-Range(Range),
-
+    #[entry_def()]
+    Post(Post),
 }
 
 #[hdk_extern]
 pub fn validate(_op: Op) -> ExternResult<ValidateCallbackResult> {
-  Ok(ValidateCallbackResult::Valid)
+    Ok(ValidateCallbackResult::Valid)
 }

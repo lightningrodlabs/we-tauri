@@ -1,4 +1,4 @@
-# sensemaker_happ
+# sensemaker-lite
 
 ## Environment Setup
 
