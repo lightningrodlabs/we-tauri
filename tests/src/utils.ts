@@ -28,7 +28,7 @@ export const installAgent = async (
         console.log(`generating key for: ${agentName}:`);
         agent_key = await admin.generateAgentPubKey();
         dnaHash_ss = await admin.registerDna(
-            { path: sensemakerDna, properties: { community_activator: ca_key ? serializeHash(ca_key) : serializeHash(agent_key) } } as any);
+            { path: sensemakerDna, modifiers: { properties: { community_activator: ca_key ? serializeHash(ca_key) : serializeHash(agent_key) } } } as any);
         dnaHash_provider = await admin.registerDna(
             { path: testProviderDna });
         let dna_ss = {
