@@ -4,6 +4,19 @@ use sensemaker_integrity::EntryTypes;
 use sensemaker_integrity::LinkTypes;
 
 #[hdk_extern]
+pub fn create_dimension(dimension: Dimension) -> ExternResult<EntryHash> {
+    create_entry(&EntryTypes::Dimension(dimension.clone()))?;
+    let dimension_eh = hash_entry(&EntryTypes::Dimension(dimension.clone()))?;
+    create_link(
+        dimensions_typed_path()?.path_entry_hash()?,
+        dimension_eh.clone(),
+        LinkTypes::Dimensions,
+        (),
+    )?;
+    Ok(dimension_eh)
+}
+
+#[hdk_extern]
 pub fn get_dimension(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
     get(entry_hash, GetOptions::default())
 }
@@ -20,18 +33,6 @@ pub fn get_dimensions(_: ()) -> ExternResult<Vec<Option<Record>>> {
     .collect::<ExternResult<Vec<Option<Record>>>>()
 }
 
-#[hdk_extern]
-pub fn create_dimension(dimension: Dimension) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::Dimension(dimension.clone()))?;
-    let dimension_eh = hash_entry(&EntryTypes::Dimension(dimension.clone()))?;
-    create_link(
-        dimensions_typed_path()?.path_entry_hash()?,
-        dimension_eh.clone(),
-        LinkTypes::Dimensions,
-        (),
-    )?;
-    Ok(dimension_eh)
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateDimensionInput {
