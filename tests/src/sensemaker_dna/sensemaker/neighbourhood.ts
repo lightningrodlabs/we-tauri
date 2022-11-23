@@ -194,7 +194,7 @@ export default () => {
         const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
           "sensemaker",
           "create_assessment",
-          createAssessment,
+          createAssessment2,
           true
         );
         t.ok(createAssessmentEntryHash2);
@@ -265,8 +265,36 @@ export default () => {
         t.deepEqual(totalLikenessMethod, decode((createMethodReadOutput.entry as any).Present.entry) as any);
 
         // compute objective dimension
-        
+        const runMethodInput = {
+          "resource_eh": createPostEntryHash,
+          "method_eh": createMethodEntryHash,
+        }
 
+        const runMethodOutput: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "run_method",
+          runMethodInput,
+          true
+        )
+        t.ok(runMethodOutput);
+
+        await pause(100)
+
+
+        const readObjectiveAssessmentOutput: Record = await callZomeBob(
+          "sensemaker",
+          "get_assessment",
+          runMethodOutput,
+          true
+        );
+
+        const objectiveAssessment = {
+          "value": { "Integer": createAssessment.value.Integer + createAssessment2.value.Integer },
+          "dimension_eh": createObjectiveDimensionEntryHash,
+          "subject_eh": createPostEntryHash,
+          "maybe_input_dataset": null,
+        }
+        t.deepEqual(objectiveAssessment, decode((readObjectiveAssessmentOutput.entry as any).Present.entry) as any);
 
       }
 
