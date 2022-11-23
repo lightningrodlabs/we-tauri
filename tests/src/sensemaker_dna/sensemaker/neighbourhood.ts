@@ -183,6 +183,24 @@ export default () => {
         // Wait for the created entry to be propagated to the other node.
         await pause(100);
 
+        // create a second assessment on the Post
+        const createAssessment2 = {
+          "value": { "Integer": 4 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash,
+          "maybe_input_dataset": null,
+        }
+
+        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createAssessment,
+          true
+        );
+        t.ok(createAssessmentEntryHash2);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(100);
 
         // Bob gets the created assessment
         const createAssessmentReadOutput: Record = await callZomeBob(
@@ -193,7 +211,65 @@ export default () => {
         );
         t.deepEqual(createAssessment, decode((createAssessmentReadOutput.entry as any).Present.entry) as any);
 
+        // define objective dimension
+
+        const integerRange2 = {
+          "name": "10-scale",
+          "kind": {
+            "Integer": { "min": 0, "max": 1000000 }
+          },
+        };
+
+        const createObjectiveDimension = {
+          "name": "total_likeness",
+          "range": integerRange2,
+        }
+
+        // Alice creates a dimension
+        const createObjectiveDimensionEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createObjectiveDimension,
+          true
+        )
+        t.ok(createObjectiveDimensionEntryHash);
+
+        // create a method
+        const totalLikenessMethod = {
+          "name": "total_likeness_method",
+          "target_resource_type_eh": createResourceTypeEntryHash,
+          "input_dimension_ehs": [createDimensionEntryHash],
+          "output_dimension_eh": createObjectiveDimensionEntryHash,
+          "program": { "Sum": null },
+          "can_compute_live": false,
+          "must_publish_dataset": false,
+        }
+
+        const createMethodEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_method",
+          totalLikenessMethod,
+          true
+        )
+        t.ok(createMethodEntryHash);
+        
+        await pause(100)
+
+        // Bob gets the created method
+        const createMethodReadOutput: Record = await callZomeBob(
+          "sensemaker",
+          "get_method",
+          createMethodEntryHash,
+          true
+        );
+        t.deepEqual(totalLikenessMethod, decode((createMethodReadOutput.entry as any).Present.entry) as any);
+
+        // compute objective dimension
+        
+
+
       }
+
       catch (e) {
         console.log(e)
         t.ok(null)
