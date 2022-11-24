@@ -39,4 +39,3 @@ pub enum ThresholdKind {
     LessThan,
     Equal,
 }
-
