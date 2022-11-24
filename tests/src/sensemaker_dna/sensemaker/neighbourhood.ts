@@ -1,6 +1,6 @@
 
 import { DnaSource, Record, ActionHash, EntryHash } from "@holochain/client";
-import { pause, runScenario, Scenario, createConductor, addAllAgentsToAllConductors } from "@holochain/tryorama";
+import { pause, runScenario, Scenario, createConductor, addAllAgentsToAllConductors, cleanAllConductors } from "@holochain/tryorama";
 import { decode } from '@msgpack/msgpack';
 import { ok } from "assert";
 import pkg from 'tape-promise/tape';
@@ -302,6 +302,10 @@ export default () => {
         console.log(e)
         t.ok(null)
       }
+    
+      await alice.shutDown();
+      await bob.shutDown();
+      await cleanAllConductors();
     });
   });
   // test("test CA progenitor pattern", async (t) => {
