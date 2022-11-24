@@ -1,10 +1,7 @@
 {
   "name": "we-dev",
   "private": true,
-  "workspaces": [
-    "ui/app",
-    "ui/libs/*"
-  ],
+  "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "npm run network 2",
     "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently-repeat \"npm run start:agent\"",
@@ -21,7 +18,7 @@
     "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/8xdcHKQmjkmrGGn/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
   },
   "devDependencies": {
-    "@holochain-playground/cli": "^0.0.8",
+    "@holochain-playground/cli": "^0.0.11",
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
     "cross-env": "^7.0.3",
