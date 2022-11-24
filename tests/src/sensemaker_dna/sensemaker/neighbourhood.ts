@@ -472,14 +472,14 @@ export default () => {
 
         const threshold = {
           "dimension_eh": createDimensionEntryHash,
-          "kind": "Equal",
+          "kind": { "Equal": null },
           "value": { "Integer": 5 },
         }
         const culturalContext = {
           "name": "testcontext",
           "resource_type_eh": createResourceTypeEntryHash,
           "thresholds": [threshold],
-          "order_by": [[createDimensionEntryHash, "Biggest"]], // DimensionEh
+          "order_by": [[createDimensionEntryHash, { "Biggest": null }]], // DimensionEh
         }
         try {
           await callZomeBob(
