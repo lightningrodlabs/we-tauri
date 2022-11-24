@@ -3,15 +3,13 @@ use std::collections::BTreeMap;
 use hdk::prelude::*;
 use sensemaker_integrity::Assessment;
 use sensemaker_integrity::EntryTypes;
-use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::Method;
 use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
-use crate::assessment_typed_path;
 use crate::create_assessment;
-use crate::get_assessment;
 use crate::utils::entry_from_record;
+use crate::utils::get_assessments_for_resource;
 
 #[hdk_extern]
 pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
@@ -32,24 +30,25 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         // get assessments from the input dimensions
         // compute the value - which would be a range value in the dimension that is created
         // for each dimension_eh, get the assessments
-        let mut assessments: BTreeMap<EntryHash, Vec<Assessment>> = BTreeMap::new();
-        for dimension_eh in method.clone().input_dimension_ehs {
-            let mut dimension_assessments: Vec<Assessment> = Vec::new();
-            let links = get_links(
-                assessment_typed_path(input.resource_eh.clone(), dimension_eh.clone())?
-                    .path_entry_hash()?,
-                LinkTypes::Assessment,
-                None,
-            )?;
-            for link in links {
-                let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
-                if let Some(record) = maybe_assessment {
-                    let assessment = entry_from_record::<Assessment>(record)?;
-                    dimension_assessments.push(assessment)
-                }
-            }
-            assessments.insert(dimension_eh.clone(), dimension_assessments);
-        }
+        let assessments = get_assessments_for_resource(input.resource_eh.clone(), method.input_dimension_ehs.clone())?;
+        // let mut assessments: BTreeMap<EntryHash, Vec<Assessment>> = BTreeMap::new();
+        // for dimension_eh in method.clone().input_dimension_ehs {
+        //     let mut dimension_assessments: Vec<Assessment> = Vec::new();
+        //     let links = get_links(
+        //         assessment_typed_path(input.resource_eh.clone(), dimension_eh.clone())?
+        //             .path_entry_hash()?,
+        //         LinkTypes::Assessment,
+        //         None,
+        //     )?;
+        //     for link in links {
+        //         let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
+        //         if let Some(record) = maybe_assessment {
+        //             let assessment = entry_from_record::<Assessment>(record)?;
+        //             dimension_assessments.push(assessment)
+        //         }
+        //     }
+        //     assessments.insert(dimension_eh.clone(), dimension_assessments);
+        // }
         // now have all assessments with the associated dimension hash
         // stored as a BTreeMap in case its important to know which dimension the assessment is on
         // now check what program it is, and depending on the range value type do math accordingly
