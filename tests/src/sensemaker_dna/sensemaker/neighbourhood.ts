@@ -25,6 +25,7 @@ const setUpAliceandBob = async (s) => {
 
 
 export default () => {
+  /*
   test("SM entry type CRUD tests", async (t) => {
     await runScenario(async scenario => {
 
@@ -505,6 +506,7 @@ export default () => {
       await cleanAllConductors();
     })
   })
+  */
   test("test context result creation", async (t) => {
     await runScenario(async scenario => {
 
@@ -537,8 +539,8 @@ export default () => {
 
         // create an entry type in the provider DNA
         const createPost = {
-          "title": "Intro",
-          "content": "anger!!"
+          "title": "post 1",
+          "content": "hey!"
         };
         const createPostEntryHash: EntryHash = await callZomeAlice(
           "test_provider",
@@ -547,6 +549,27 @@ export default () => {
         );
         t.ok(createPostEntryHash);
 
+        const createPost2 = {
+          "title": "post 2",
+          "content": "bye!"
+        };
+        const createPostEntryHash2: EntryHash = await callZomeAlice(
+          "test_provider",
+          "create_post",
+          createPost2,
+        );
+        t.ok(createPostEntryHash2);
+
+        const createPost3 = {
+          "title": "post 3",
+          "content": "I'm back!"
+        };
+        const createPostEntryHash3: EntryHash = await callZomeAlice(
+          "test_provider",
+          "create_post",
+          createPost3,
+        );
+        t.ok(createPostEntryHash3);
         await pause(500);
 
         // Bob gets the created post
@@ -555,7 +578,6 @@ export default () => {
           "get_post",
           createPostEntryHash
         );
-        console.log(readPostOutput);
         t.deepEqual(createPost, decode((readPostOutput.entry as any).Present.entry) as any);
 
         // create range for dimension
@@ -571,11 +593,6 @@ export default () => {
           "range": integerRange,
         }
 
-        const createDimension2 = {
-          "name": "quality",
-          "range": integerRange,
-        }
-
         // Alice creates a dimension
         const createDimensionEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
@@ -585,13 +602,6 @@ export default () => {
         )
         t.ok(createDimensionEntryHash);
 
-        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
-          "sensemaker",
-          "create_dimension",
-          createDimension2,
-          true
-        );
-        t.ok(createDimensionEntryHash2);
         // Wait for the created entry to be propagated to the other node.
         await pause(100);
 
@@ -604,16 +614,6 @@ export default () => {
           true
         );
         t.deepEqual(createDimension, decode((createReadOutput.entry as any).Present.entry) as any);
-
-        // get all dimensions
-        const getDimensionsOutput: Record[] = await callZomeBob(
-          "sensemaker",
-          "get_dimensions",
-          null,
-          true
-        );
-        t.equal(getDimensionsOutput.length, 2)
-
 
         const createResourceType = {
           "name": "angryPost",
@@ -645,51 +645,110 @@ export default () => {
         t.deepEqual(createResourceType, decode((createResourceTypeReadOutput.entry as any).Present.entry) as any);
 
         // create an assessment on the Post
-        const createAssessment = {
-          "value": { "Integer": 2 },
-          "dimension_eh": createDimensionEntryHash,
-          "subject_eh": createPostEntryHash,
-          "maybe_input_dataset": null,
-        }
-
-        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
-          "sensemaker",
-          "create_assessment",
-          createAssessment,
-          true
-        );
-        t.ok(createAssessmentEntryHash);
-
-        // Wait for the created entry to be propagated to the other node.
-        await pause(100);
-
-        // create a second assessment on the Post
-        const createAssessment2 = {
+        const createP1Assessment = {
           "value": { "Integer": 4 },
           "dimension_eh": createDimensionEntryHash,
           "subject_eh": createPostEntryHash,
           "maybe_input_dataset": null,
         }
 
-        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP1AssessmentEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
           "create_assessment",
-          createAssessment2,
+          createP1Assessment,
           true
         );
-        t.ok(createAssessmentEntryHash2);
+        t.ok(createP1AssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
         await pause(100);
 
-        // Bob gets the created assessment
-        const createAssessmentReadOutput: Record = await callZomeBob(
+        // create a second assessment on the Post
+        const createP1Assessment2 = {
+          "value": { "Integer": 4 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash,
+          "maybe_input_dataset": null,
+        }
+
+        const createP1AssessmentEntryHash2: EntryHash = await callZomeAlice(
           "sensemaker",
-          "get_assessment",
-          createAssessmentEntryHash,
+          "create_assessment",
+          createP1Assessment2,
           true
         );
-        t.deepEqual(createAssessment, decode((createAssessmentReadOutput.entry as any).Present.entry) as any);
+        t.ok(createP1AssessmentEntryHash2);
+
+
+        const createP2Assessment = {
+          "value": { "Integer": 3 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash2,
+          "maybe_input_dataset": null,
+        }
+
+        const createP2AssessmentEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createP2Assessment,
+          true
+        );
+        t.ok(createP2AssessmentEntryHash);
+
+        // create an assessment on the Post
+        const createP2Assessment2 = {
+          "value": { "Integer": 3 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash2,
+          "maybe_input_dataset": null,
+        }
+
+        const createP2AssessmentEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createP2Assessment2,
+          true
+        );
+        t.ok(createP2AssessmentEntryHash2);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(100);
+
+        // create a second assessment on the Post
+        const createP3Assessment = {
+          "value": { "Integer": 2 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash3,
+          "maybe_input_dataset": null,
+        }
+
+        const createP3AssessmentEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createP3Assessment,
+          true
+        );
+        t.ok(createP3AssessmentEntryHash);
+
+
+        const createP3Assessment2 = {
+          "value": { "Integer": 2 },
+          "dimension_eh": createDimensionEntryHash,
+          "subject_eh": createPostEntryHash3,
+          "maybe_input_dataset": null,
+        }
+
+        const createP3AssessmentEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createP3Assessment2,
+          true
+        );
+        t.ok(createP3AssessmentEntryHash2);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(100);
+
 
         // define objective dimension
 
@@ -758,8 +817,33 @@ export default () => {
         )
         t.ok(runMethodOutput);
 
-        await pause(100)
+        const runMethodInput2 = {
+          "resource_eh": createPostEntryHash2,
+          "method_eh": createMethodEntryHash,
+        }
 
+        const runMethodOutput2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "run_method",
+          runMethodInput2,
+          true
+        )
+        t.ok(runMethodOutput2);
+
+        const runMethodInput3 = {
+          "resource_eh": createPostEntryHash3,
+          "method_eh": createMethodEntryHash,
+        }
+
+        const runMethodOutput3: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "run_method",
+          runMethodInput3,
+          true
+        )
+        t.ok(runMethodOutput3);
+
+        await pause(100)
 
         const readObjectiveAssessmentOutput: Record = await callZomeBob(
           "sensemaker",
@@ -769,13 +853,42 @@ export default () => {
         );
 
         const objectiveAssessment = {
-          "value": { "Integer": createAssessment.value.Integer + createAssessment2.value.Integer },
+          "value": { "Integer": createP1Assessment.value.Integer + createP1Assessment2.value.Integer },
           "dimension_eh": createObjectiveDimensionEntryHash,
           "subject_eh": createPostEntryHash,
           "maybe_input_dataset": null,
         }
         t.deepEqual(objectiveAssessment, decode((readObjectiveAssessmentOutput.entry as any).Present.entry) as any);
 
+        const readObjectiveAssessmentOutput2: Record = await callZomeBob(
+          "sensemaker",
+          "get_assessment",
+          runMethodOutput2,
+          true
+        );
+
+        const objectiveAssessment2 = {
+          "value": { "Integer": createP2Assessment.value.Integer + createP2Assessment2.value.Integer },
+          "dimension_eh": createObjectiveDimensionEntryHash,
+          "subject_eh": createPostEntryHash2,
+          "maybe_input_dataset": null,
+        }
+        t.deepEqual(objectiveAssessment2, decode((readObjectiveAssessmentOutput2.entry as any).Present.entry) as any);
+
+        const readObjectiveAssessmentOutput3: Record = await callZomeBob(
+          "sensemaker",
+          "get_assessment",
+          runMethodOutput3,
+          true
+        );
+
+        const objectiveAssessment3 = {
+          "value": { "Integer": createP3Assessment.value.Integer + createP3Assessment2.value.Integer },
+          "dimension_eh": createObjectiveDimensionEntryHash,
+          "subject_eh": createPostEntryHash3,
+          "maybe_input_dataset": null,
+        }
+        t.deepEqual(objectiveAssessment3, decode((readObjectiveAssessmentOutput3.entry as any).Present.entry) as any);
         // create context and threshold
 
         // create 3 objective assessments, 2 meet threshold and test ordering, 1 doesn't meet to test threshold
