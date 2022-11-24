@@ -302,6 +302,10 @@ export default () => {
         console.log(e)
         t.ok(null)
       }
+    
+      await alice.shutDown();
+      await bob.shutDown();
+      await cleanAllConductors();
     });
   });
   test("test CA progenitor pattern", async (t) => {
