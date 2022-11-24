@@ -31,24 +31,6 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         // compute the value - which would be a range value in the dimension that is created
         // for each dimension_eh, get the assessments
         let assessments = get_assessments_for_resource(input.resource_eh.clone(), method.input_dimension_ehs.clone())?;
-        // let mut assessments: BTreeMap<EntryHash, Vec<Assessment>> = BTreeMap::new();
-        // for dimension_eh in method.clone().input_dimension_ehs {
-        //     let mut dimension_assessments: Vec<Assessment> = Vec::new();
-        //     let links = get_links(
-        //         assessment_typed_path(input.resource_eh.clone(), dimension_eh.clone())?
-        //             .path_entry_hash()?,
-        //         LinkTypes::Assessment,
-        //         None,
-        //     )?;
-        //     for link in links {
-        //         let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
-        //         if let Some(record) = maybe_assessment {
-        //             let assessment = entry_from_record::<Assessment>(record)?;
-        //             dimension_assessments.push(assessment)
-        //         }
-        //     }
-        //     assessments.insert(dimension_eh.clone(), dimension_assessments);
-        // }
         // now have all assessments with the associated dimension hash
         // stored as a BTreeMap in case its important to know which dimension the assessment is on
         // now check what program it is, and depending on the range value type do math accordingly
