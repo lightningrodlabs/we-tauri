@@ -55,7 +55,7 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         // now check what program it is, and depending on the range value type do math accordingly
         // if doing multiple input dimensions, will want to make sure they are of compatible types for arithmetic.
 
-        let maybe_objective_assessment = compute_objective_assessment(method, assessments)?;
+        let maybe_objective_assessment = compute_objective_assessment(method, assessments, input.resource_eh)?;
         if let Some(objective_assessment) = maybe_objective_assessment {
             Ok(Some(create_assessment(objective_assessment)?))
         } else {
@@ -69,6 +69,7 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
 fn compute_objective_assessment(
     method: Method,
     assessments: BTreeMap<EntryHash, Vec<Assessment>>,
+    subject_eh: EntryHash,
 ) -> ExternResult<Option<Assessment>> {
     //
     match method.program {
@@ -90,7 +91,7 @@ fn compute_objective_assessment(
             let assessment = Assessment {
                 value: RangeValue::Integer(sum),
                 dimension_eh: method.output_dimension_eh,
-                subject_eh: method.target_resource_type_eh, // this isn't right, it should be the entryhash of the resource, which would need to be passed in
+                subject_eh,
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))
