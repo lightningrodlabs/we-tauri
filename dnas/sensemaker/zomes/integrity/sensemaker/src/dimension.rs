@@ -23,7 +23,7 @@ pub struct Range {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RangeKind {
     Integer { min: u32, max: u32 },
-    // Float {min: f32, max: f32},
+    Float {min: f32, max: f32},
     // Tag(Vec<String>),
     // Emoji(Vec<char>),
     // TagTree(HashMap<String, String>)
@@ -60,19 +60,18 @@ impl RangeValue {
         }
     }
 
-    pub fn compare(&self, other_range_value: RangeValue) -> Ordering {
+    pub fn compare(&self, other_range_value: RangeValue) -> ExternResult<Ordering> {
         match self {
             RangeValue::Integer(self_value) => {
                 if let RangeValue::Integer(other_value) = other_range_value {
-                    self_value.cmp(&other_value)
+                    Ok(self_value.cmp(&other_value))
                 }
                 // could put `if else` here for compatible range types that are not the same
                 else {
-                    // Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types for comparison"))))
-                    Ordering::Equal
+                    Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types for comparison"))))
                 }
             },
-            RangeValue::Float(_) => Ordering::Equal, // TODO: fix this along with other range value types
+            RangeValue::Float(_) => Ok(Ordering::Equal), // TODO: fix this along with other range value types
         }
 
     }

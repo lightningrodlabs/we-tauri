@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
@@ -107,9 +108,13 @@ pub fn order_resources(
         }
       }
     }
-    let ordered_for_dimension = order_by_dimension(unordered_for_dimension, ordering_kind);
+    let ordered_for_dimension = order_by_dimension(unordered_for_dimension, ordering_kind)?;
     ordered_by_dimension.insert(dimension_eh, ordered_for_dimension);
   }
+  // for now we take the last (dimension_eh, ordering_kind) pair for simplicity
+  // in future will probably want to return something like `BTreeMap<DimensionEntryHash, Vec<ResourceEntryHash>>`
+  // so have an ordered list of resources for each dimension passed in
+
   let maybe_dim_order_pair = order_by.last();
   if let Some(dim_order_pair) = maybe_dim_order_pair {
     let (dimension_eh, _) = dim_order_pair;
@@ -127,19 +132,51 @@ pub fn order_resources(
   }
 }
 
-pub fn order_by_dimension(mut unordered_for_dimension: Vec<(EntryHash, Assessment)>, ordering_kind: OrderingKind) -> Vec<EntryHash> {
+pub fn order_by_dimension(mut unordered_for_dimension: Vec<(EntryHash, Assessment)>, ordering_kind: OrderingKind) -> ExternResult<Vec<EntryHash>> {
+  let mut comparison_error = wasm_error!(WasmErrorInner::Guest(String::from("")));
+  let mut comparison_errored = false;
   match ordering_kind {
     OrderingKind::Biggest => {
       unordered_for_dimension.sort_by(
-        |(_, a_assessment), (_, b_assessment)| b_assessment.value.compare(a_assessment.clone().value)
+        |(_, a_assessment), (_, b_assessment)| {
+
+          match b_assessment.value.compare(a_assessment.clone().value) {
+            Ok(ordering) => ordering,
+            Err(wasm_error) => {
+              comparison_errored = true;
+              comparison_error = wasm_error;
+              Ordering::Equal
+            },
+          }
+        }
       );
-      unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
+      if comparison_errored {
+        Err(comparison_error)
+      }
+      else {
+        Ok(unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect())
+      }
     },
     OrderingKind::Smallest => {
       unordered_for_dimension.sort_by(
-        |(_, a_assessment), (_, b_assessment)| a_assessment.value.compare(b_assessment.clone().value)
+        |(_, a_assessment), (_, b_assessment)| {
+
+          match a_assessment.value.compare(b_assessment.clone().value) {
+            Ok(ordering) => ordering,
+            Err(wasm_error) => {
+              comparison_errored = true;
+              comparison_error = wasm_error;
+              Ordering::Equal
+            },
+          }
+        }
       );
-      unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
+      if comparison_errored {
+        Err(comparison_error)
+      }
+      else {
+        Ok(unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect())
+      }
     },
   }
 }

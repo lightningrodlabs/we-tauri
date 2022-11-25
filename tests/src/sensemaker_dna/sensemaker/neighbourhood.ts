@@ -903,6 +903,11 @@ export default () => {
           "kind": { "GreaterThan": null },
           "value": { "Integer": 5 },
         }
+        const threshold2 = {
+          "dimension_eh": createObjectiveDimensionEntryHash,
+          "kind": { "GreaterThan": null },
+          "value": { "Float": 5.0 },
+        }
         const culturalContext = {
           "name": "more than 5 total likeness, biggest to smallest",
           "resource_type_eh": createResourceTypeEntryHash,
@@ -933,6 +938,20 @@ export default () => {
         )
         t.ok(createContextEntryHash2);
 
+        const culturalContext3 = {
+          "name": "float threshold",
+          "resource_type_eh": createResourceTypeEntryHash,
+          "thresholds": [threshold2],
+          "order_by": [[createObjectiveDimensionEntryHash, { "Smallest": null }]], // DimensionEh
+        }
+
+        const createContextEntryHash3: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_cultural_context",
+          culturalContext3,
+          true
+        )
+        t.ok(createContextEntryHash3);
         await pause(100)
 
         const readCulturalContext: Record = await callZomeBob(
@@ -955,6 +974,11 @@ export default () => {
           "context_eh": createContextEntryHash2,
           "can_publish_result": false,
         }
+        const contextResultInput3 = {
+          "resource_ehs": [createPostEntryHash, createPostEntryHash2, createPostEntryHash3],
+          "context_eh": createContextEntryHash3,
+          "can_publish_result": false,
+        }
 
         const contextResultOutput: [any] = await callZomeAlice(
           "sensemaker",
@@ -974,6 +998,28 @@ export default () => {
         )
         t.deepEqual(contextResultOutput2.length, 2);
         t.deepEqual(contextResultOutput2, [createPostEntryHash2, createPostEntryHash])
+        
+        // try comparing incompatible types
+        try {
+          const contextResultOutput3: [any] = await callZomeAlice(
+            "sensemaker",
+            "compute_context",
+            contextResultInput3,
+            true
+          )
+          // this zome call should fail
+          t.ok(null)
+        }
+        catch (e) {
+          const expectedError = {
+            type: 'error',
+            data: {
+              type: 'ribosome_error',
+              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/dimension.rs", line: 56, error: Guest("incompatible range types for threshold comparison") }'
+            }
+          }
+          t.deepEqual(expectedError, e)
+        }
       }
 
       catch (e) {
