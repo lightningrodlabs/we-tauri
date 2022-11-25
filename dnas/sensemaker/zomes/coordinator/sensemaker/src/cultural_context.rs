@@ -49,19 +49,21 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
     // this is for convenience, so that we know which order is associated with which dimension
     let mut dimension_ordering_kind: BTreeMap<EntryHash, OrderingKind> = BTreeMap::new();
 
-    for (dimension_eh, ordering_kind) in cultural_context.order_by {
+    for (dimension_eh, ordering_kind) in cultural_context.order_by.clone() {
       dimension_ehs.push(dimension_eh.clone());
       dimension_ordering_kind.insert(dimension_eh, ordering_kind);
     }
     let mut all_resource_assessments: BTreeMap<EntryHash, BTreeMap<EntryHash, Vec<Assessment>>> = BTreeMap::new();
-    let mut context_result: Vec<EntryHash> = Vec::new();
+    let mut unordered_context_result: Vec<(EntryHash, BTreeMap<EntryHash, Vec<Assessment>>)> = Vec::new();
     for resource_eh in compute_context_input.resource_ehs {
+      // we should really only be using one assessment per dimension per resource, since these are objective dimensions
+      // for now going to just take the last one, but we will need to clarify exactly how to handle these situations
       let resource_assessments = get_assessments_for_resource(resource_eh.clone(), dimension_ehs.clone())?;
       all_resource_assessments.insert(resource_eh.clone(), resource_assessments.clone());
       
       // check the assessments against all thresholds?
       // flatten the assessment map and compare
-      let assessments = flatten_btree_map(resource_assessments);
+      let assessments = flatten_btree_map(resource_assessments.clone());
       // for each assessment, check against each threshold
       // TODO: clarify the exact comparison logic between multiple assessments and thresholds
       let mut meets_threshold = true;
@@ -74,15 +76,71 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
       }
       if meets_threshold {
         // TODO: will also need to add a relevant value to be able to order as well
-        context_result.push(resource_eh)
+        unordered_context_result.push((resource_eh, resource_assessments))
       }
     }
-
-    return Ok(context_result);
+    return Ok(order_resources(unordered_context_result, cultural_context.order_by)?);
+    // return Ok(context_result);
   }
   else {
     // TODO: better handling of this case
     return Ok(vec![]);
+  }
+}
+
+pub fn order_resources(
+  unordered_context_result: Vec<(EntryHash, BTreeMap<EntryHash, Vec<Assessment>>)>, 
+  order_by: Vec<(EntryHash, OrderingKind)>,
+) -> ExternResult<Vec<EntryHash>> {
+  // get things into a format that can be ordered more easily
+  // for each dimension type, make an ordered list, return just the one
+  // want Vec<(EntryHash, Assessment)> for each dimension so then can order it based on the ordering kind
+  let mut ordered_by_dimension: BTreeMap<EntryHash, Vec<EntryHash>> = BTreeMap::new();
+  for (dimension_eh, ordering_kind) in order_by.clone() {
+    let mut unordered_for_dimension = Vec::new();
+    for (resource_eh, resource_assessments) in unordered_context_result.clone() {
+      let maybe_assessments = resource_assessments.get(&dimension_eh);
+      if let Some(assessments) = maybe_assessments {
+        let maybe_last_assessment = assessments.last();
+        if let Some(last_assessment) = maybe_last_assessment {
+          unordered_for_dimension.push((resource_eh, last_assessment.clone()))
+        }
+      }
+    }
+    let ordered_for_dimension = order_by_dimension(unordered_for_dimension, ordering_kind);
+    ordered_by_dimension.insert(dimension_eh, ordered_for_dimension);
+  }
+  let maybe_dim_order_pair = order_by.last();
+  if let Some(dim_order_pair) = maybe_dim_order_pair {
+    let (dimension_eh, _) = dim_order_pair;
+    let maybe_ordered_on_dim = ordered_by_dimension.get(dimension_eh);
+    if let Some(ordered_on_dim) = maybe_ordered_on_dim {
+      Ok(ordered_on_dim.clone())
+    }
+    else {
+      Ok(vec![])
+    }
+  }
+  // TODO: better error handling
+  else {
+    Ok(vec![])
+  }
+}
+
+pub fn order_by_dimension(unordered_for_dimension: Vec<(EntryHash, Assessment)>, ordering_kind: OrderingKind) -> Vec<EntryHash> {
+  match ordering_kind {
+    OrderingKind::Biggest => {
+      unordered_for_dimension.clone().sort_by(
+        |(_, a_assessment), (_, b_assessment)| b_assessment.value.compare(a_assessment.clone().value)
+      );
+      unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
+    },
+    OrderingKind::Smallest => {
+      unordered_for_dimension.clone().sort_by(
+        |(_, a_assessment), (_, b_assessment)| a_assessment.value.compare(b_assessment.clone().value)
+      );
+      unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
+    },
   }
 }
 

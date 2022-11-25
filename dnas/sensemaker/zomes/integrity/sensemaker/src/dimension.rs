@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use hdi::prelude::*;
 
 use crate::{ThresholdKind, Threshold};
@@ -51,10 +53,27 @@ impl RangeValue {
                 }
                 // could put `if else` here for compatible range types that are not the same
                 else {
-                    Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types"))))
+                    Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types for threshold comparison"))))
                 }
             },
             RangeValue::Float(_) => Ok(false),
         }
+    }
+
+    pub fn compare(&self, other_range_value: RangeValue) -> Ordering {
+        match self {
+            RangeValue::Integer(self_value) => {
+                if let RangeValue::Integer(other_value) = other_range_value {
+                    self_value.cmp(&other_value)
+                }
+                // could put `if else` here for compatible range types that are not the same
+                else {
+                    // Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types for comparison"))))
+                    Ordering::Equal
+                }
+            },
+            RangeValue::Float(_) => Ordering::Equal, // TODO: fix this along with other range value types
+        }
+
     }
 }
