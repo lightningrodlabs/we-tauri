@@ -25,7 +25,6 @@ const setUpAliceandBob = async (s) => {
 
 
 export default () => {
-  /*
   test("SM entry type CRUD tests", async (t) => {
     await runScenario(async scenario => {
 
@@ -506,7 +505,6 @@ export default () => {
       await cleanAllConductors();
     })
   })
-  */
   test("test context result creation", async (t) => {
     await runScenario(async scenario => {
 
