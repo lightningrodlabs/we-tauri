@@ -62,7 +62,6 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
       // check the assessments against all thresholds?
       // flatten the assessment map and compare
       let assessments = flatten_btree_map(resource_assessments);
-      
       // for each assessment, check against each threshold
       // TODO: clarify the exact comparison logic between multiple assessments and thresholds
       let mut meets_threshold = true;
@@ -80,10 +79,9 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
     }
 
     return Ok(context_result);
-
-
   }
   else {
+    // TODO: better handling of this case
     return Ok(vec![]);
   }
 }
