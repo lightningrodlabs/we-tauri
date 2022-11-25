@@ -4,7 +4,7 @@
     "wizard-version": "v0.1",
     "config-version": 1,
     "creator": "John Doe <john@doe.org>",
-    "requiredApps": [{"name":"AgendaItem", "provider hash":"0x8ahe898hae8ah2982..."}],
+    "requiredApps": [{"name":"AgendaItem", "provider hash":"<real hash goes here>"}],
     "ranges": [
         { "name": "timeRange", "kind": "Integer", "min": "1", "max": "600" },
         { "name": "voteRange", "kind": "Integer", "min": 0, "max": 1 },
