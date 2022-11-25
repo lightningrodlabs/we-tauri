@@ -886,9 +886,11 @@ export class MatrixStore {
     // Create the We cell
     const newWeGroupHash = await this.adminWebsocket.registerDna({
       hash: deserializeHash(weDnaHash) as Buffer,
-      network_seed: undefined,
-      properties,
-    } as any);
+      modifiers: {
+        network_seed: undefined,
+        properties,
+      }
+    });
 
     const installed_app_id = `group@we-${name}-${timestamp}`;
     const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
