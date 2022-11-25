@@ -1,4 +1,6 @@
 use hdi::prelude::*;
+
+use crate::{ThresholdKind, Threshold};
 // use std::collections::HashMap;
 
 #[hdk_entry_helper]
@@ -28,8 +30,31 @@ pub enum RangeKind {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RangeValue {
     Integer(u32),
-    // Float(f32),
+    Float(f32),
     // Tag(String),
     // Emoji(char),
     // TagTree((String, String))
+}
+
+impl RangeValue {
+    pub fn meets_threshold(&self, threshold: Threshold) -> ExternResult<bool> {
+        // check that same variant type
+        match self {
+            RangeValue::Integer(self_value) => {
+                let other_range_value = threshold.value;
+                if let RangeValue::Integer(other_value) = other_range_value {
+                    match threshold.kind {
+                        ThresholdKind::GreaterThan => Ok(*self_value > other_value),
+                        ThresholdKind::LessThan => Ok(*self_value < other_value),
+                        ThresholdKind::Equal => Ok(*self_value == other_value),
+                    }
+                }
+                // could put `if else` here for compatible range types that are not the same
+                else {
+                    Err(wasm_error!(WasmErrorInner::Guest(String::from("incompatible range types"))))
+                }
+            },
+            RangeValue::Float(_) => Ok(false),
+        }
+    }
 }

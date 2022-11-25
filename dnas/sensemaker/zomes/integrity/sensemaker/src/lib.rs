@@ -7,7 +7,7 @@ mod resource_type;
 mod util;
 
 pub use assessment::Assessment;
-pub use cultural_context::{ContextResult, CulturalContext, Threshold};
+pub use cultural_context::{ContextResult, CulturalContext, Threshold, OrderingKind, ThresholdKind};
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
 pub use resource_type::ResourceType;

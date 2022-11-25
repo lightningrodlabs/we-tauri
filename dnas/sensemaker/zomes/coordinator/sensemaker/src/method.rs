@@ -9,6 +9,7 @@ use sensemaker_integrity::RangeValue;
 
 use crate::create_assessment;
 use crate::utils::entry_from_record;
+use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource;
 
 #[hdk_extern]
@@ -56,17 +57,12 @@ fn compute_objective_assessment(
     match method.program {
         Program::Sum => {
             // collapse into vec for easy computation - will have to be more careful if of different types
-            let flat_assessments = assessments
-                .values()
-                .map(|assessment_vec| assessment_vec.clone())
-                .collect::<Vec<Vec<Assessment>>>()
-                .into_iter()
-                .flatten()
-                .collect::<Vec<Assessment>>();
+            let flat_assessments = flatten_btree_map(assessments);
             let mut sum: u32 = 0;
             for assessment in flat_assessments {
                 match assessment.value {
                     RangeValue::Integer(value) => sum = sum + value,
+                    RangeValue::Float(_) => (), // TODO: complete this
                 }
             }
             let assessment = Assessment {

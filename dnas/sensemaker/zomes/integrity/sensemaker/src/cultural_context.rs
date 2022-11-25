@@ -23,8 +23,8 @@ pub struct ContextResult {
 #[derive(Clone)]
 pub struct Threshold {
     pub dimension_eh: EntryHash,
-    kind: ThresholdKind,
-    value: RangeValue,
+    pub kind: ThresholdKind,
+    pub value: RangeValue,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
