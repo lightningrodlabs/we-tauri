@@ -76,7 +76,6 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
         }
       }
       if meets_threshold {
-        // TODO: will also need to add a relevant value to be able to order as well
         unordered_context_result.push((resource_eh, resource_assessments))
       }
     }
