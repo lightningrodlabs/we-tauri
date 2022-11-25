@@ -154,7 +154,7 @@ fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet, Vec<DnaHash>)>
 
     let get_input = links
         .into_iter()
-        .map(|link| GetInput::new(link.target.into(), GetOptions::default()))
+        .map(|link| GetInput::new(AnyDhtHash::from(EntryHash::from(link.target)), GetOptions::default()))
         .collect();
 
     let applet_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
