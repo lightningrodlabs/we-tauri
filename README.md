@@ -1,6 +1,6 @@
 <h1 align="center">
   <div>👋 Welcome to</div>
-  <img src="https://neighbourhoods.network/visual-assets/nh-white-banner.png" alt="Logo" height="280">
+  <img src="https://neighbourhoods.network/visual-assets/nh-white-banner.png" alt="Logo" width="500">
   <div>Sensemaker-Lite</div>
 </h1>
 
