@@ -31,13 +31,17 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         // get assessments from the input dimensions
         // compute the value - which would be a range value in the dimension that is created
         // for each dimension_eh, get the assessments
-        let assessments = get_assessments_for_resource(input.resource_eh.clone(), method.input_dimension_ehs.clone())?;
+        let assessments = get_assessments_for_resource(
+            input.resource_eh.clone(),
+            method.input_dimension_ehs.clone(),
+        )?;
         // now have all assessments with the associated dimension hash
         // stored as a BTreeMap in case its important to know which dimension the assessment is on
         // now check what program it is, and depending on the range value type do math accordingly
         // if doing multiple input dimensions, will want to make sure they are of compatible types for arithmetic.
 
-        let maybe_objective_assessment = compute_objective_assessment(method, assessments, input.resource_eh)?;
+        let maybe_objective_assessment =
+            compute_objective_assessment(method, assessments, input.resource_eh)?;
         if let Some(objective_assessment) = maybe_objective_assessment {
             Ok(Some(create_assessment(objective_assessment)?))
         } else {
