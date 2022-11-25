@@ -889,7 +889,29 @@ export default () => {
           "maybe_input_dataset": null,
         }
         t.deepEqual(objectiveAssessment3, decode((readObjectiveAssessmentOutput3.entry as any).Present.entry) as any);
+
+
+
         // create context and threshold
+        const threshold = {
+          "dimension_eh": createDimensionEntryHash,
+          "kind": { "GreaterThan": null },
+          "value": { "Integer": 5 },
+        }
+        const culturalContext = {
+          "name": "more than 5 total likeness",
+          "resource_type_eh": createResourceTypeEntryHash,
+          "thresholds": [threshold],
+          "order_by": [[createDimensionEntryHash, { "Biggest": null }]], // DimensionEh
+        }
+
+        const createContextEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_cultural_context",
+          culturalContext,
+          true
+        )
+        t.ok(createContextEntryHash);
 
         // create 3 objective assessments, 2 meet threshold and test ordering, 1 doesn't meet to test threshold
         // 2 likes, 1 like, 0 likes
