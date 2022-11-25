@@ -904,7 +904,7 @@ export default () => {
           "value": { "Integer": 5 },
         }
         const culturalContext = {
-          "name": "more than 5 total likeness",
+          "name": "more than 5 total likeness, biggest to smallest",
           "resource_type_eh": createResourceTypeEntryHash,
           "thresholds": [threshold],
           "order_by": [[createObjectiveDimensionEntryHash, { "Biggest": null }]], // DimensionEh
@@ -917,6 +917,21 @@ export default () => {
           true
         )
         t.ok(createContextEntryHash);
+
+        const culturalContext2 = {
+          "name": "more than 5 total likeness, smallest to biggest",
+          "resource_type_eh": createResourceTypeEntryHash,
+          "thresholds": [threshold],
+          "order_by": [[createObjectiveDimensionEntryHash, { "Smallest": null }]], // DimensionEh
+        }
+
+        const createContextEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_cultural_context",
+          culturalContext2,
+          true
+        )
+        t.ok(createContextEntryHash2);
 
         await pause(100)
 
@@ -935,6 +950,11 @@ export default () => {
           "can_publish_result": false,
         }
 
+        const contextResultInput2 = {
+          "resource_ehs": [createPostEntryHash, createPostEntryHash2, createPostEntryHash3],
+          "context_eh": createContextEntryHash2,
+          "can_publish_result": false,
+        }
 
         const contextResultOutput: [any] = await callZomeAlice(
           "sensemaker",
@@ -942,11 +962,18 @@ export default () => {
           contextResultInput,
           true
         )
-        console.log('context result', contextResultOutput)
-        console.log([createPostEntryHash, createPostEntryHash2])
+
         t.deepEqual(contextResultOutput.length, 2);
-        t.ok(contextResultOutput.find((eh) => Buffer.compare(eh, createPostEntryHash)));
-        t.ok(contextResultOutput.find((eh) => Buffer.compare(eh, createPostEntryHash2)));
+        t.deepEqual(contextResultOutput, [createPostEntryHash, createPostEntryHash2])
+
+        const contextResultOutput2: [any] = await callZomeAlice(
+          "sensemaker",
+          "compute_context",
+          contextResultInput2,
+          true
+        )
+        t.deepEqual(contextResultOutput2.length, 2);
+        t.deepEqual(contextResultOutput2, [createPostEntryHash2, createPostEntryHash])
       }
 
       catch (e) {

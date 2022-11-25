@@ -127,16 +127,16 @@ pub fn order_resources(
   }
 }
 
-pub fn order_by_dimension(unordered_for_dimension: Vec<(EntryHash, Assessment)>, ordering_kind: OrderingKind) -> Vec<EntryHash> {
+pub fn order_by_dimension(mut unordered_for_dimension: Vec<(EntryHash, Assessment)>, ordering_kind: OrderingKind) -> Vec<EntryHash> {
   match ordering_kind {
     OrderingKind::Biggest => {
-      unordered_for_dimension.clone().sort_by(
+      unordered_for_dimension.sort_by(
         |(_, a_assessment), (_, b_assessment)| b_assessment.value.compare(a_assessment.clone().value)
       );
       unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
     },
     OrderingKind::Smallest => {
-      unordered_for_dimension.clone().sort_by(
+      unordered_for_dimension.sort_by(
         |(_, a_assessment), (_, b_assessment)| a_assessment.value.compare(b_assessment.clone().value)
       );
       unordered_for_dimension.into_iter().map(|(resource_eh, _)| resource_eh).collect()
