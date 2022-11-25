@@ -1,0 +1,49 @@
+{
+    "neighbourhood": "Rated Agenda",
+    "sensemaker-version": "v0.1",
+    "wizard-version": "v0.1",
+    "config-version": 1,
+    "creator": "John Doe <john@doe.org>",
+    "requiredApps": [{"name":"AgendaItem", "provider hash":"0x8ahe898hae8ah2982..."}],
+    "ranges": [
+        { "name": "timeRange", "kind": "Integer", "min": "1", "max": "600" },
+        { "name": "voteRange", "kind": "Integer", "min": 0, "max": 1 },
+        { "name": "ratioRange", "kind": "Float", "min": "0.0", "max": "1.0" }
+    ],
+    "dimensions": [
+        { "name": "duration", "range": "timeRange" },
+        { "name": "upvote", "range": "voteRange" },       
+        { "name": "upvoteRatio", "range": "ratioRange" }
+    ],
+    "resources": [
+        {
+            "name": "AgendaItemResource",
+            "base_type": "AgendaItem",
+            "dimensions": ["duration", "upvote", "upvoteRatio"]
+        }
+    ],
+    "methods": [
+        {
+            "name": "computeUpvoteRatio",
+            "target_resource_type": "AgendaItemResource",
+            "input_dimensions": ["upvote"],
+            "output_dimension": "upvoteRatio",
+            "program": "Sum"
+        }
+        
+    ],
+    "contexts": [
+        {
+            "name": "PrioritizedAgenda",
+            "resource_type": "AgendaItemResource",
+            "thresholds": [
+                {"dimension":"duration", "kind": "LessThan", "value":{"Integer": "2"}},
+                {"dimension": "upvoteRatio", "kind": "GreaterThan", "value": {"Float": "0.0"}}
+            ],
+            "order_by": [
+                {"dimension": "upvoteRatio", "order": "Biggest"},
+                {"dimension": "duration", "order": "Biggest"}
+            ]
+        }
+    ]
+}
