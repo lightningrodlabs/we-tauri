@@ -1005,35 +1005,16 @@ export class MatrixStore {
 
     // uninstall we group cell
     // archive we group cell
-    console.log("ARCHIVING CLONED CELL!");
-    console.log("App info of parent app: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
     await this.appWebsocket.archiveCloneCell({
       app_id: this.weParentAppInfo.installed_app_id,
       clone_cell_id: weGroup[0].info.installedCell.role_id,
     })
 
-    console.log("App info of AFTER ARCHIVING: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
-
-    console.log("Trying to restore cloned cell. ");
-    await this.adminWebsocket.restoreCloneCell({
-      app_id: this.weParentAppInfo.installed_app_id,
-      clone_cell_id: weGroup[0].info.installedCell.role_id,
-    });
-
-    console.log("App info after restoring cloned cell: ",  await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
-
-    console.log("DELETING ARCHIVED CLONED CELL!");
-    console.log("parent app info installed app id: ", this.weParentAppInfo.installed_app_id);
-    console.log("App info of parent app: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
     // delete archived we group cell
     await this.adminWebsocket.deleteArchivedCloneCells({
       app_id: this.weParentAppInfo.installed_app_id,
-      role_id: weGroup[0].info.installedCell.role_id,
+      role_id: 'we',
     });
-    console.log(
-      "uninstalled we group with clone_id: ",
-      weGroup[0].info.installedCell.role_id
-    );
 
     // update matrix
     await this.fetchMatrix();
