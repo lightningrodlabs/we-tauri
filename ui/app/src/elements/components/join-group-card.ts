@@ -48,7 +48,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         invitationActionHash,
         properties.name,
         properties.logoSrc,
-        properties.timestamp
+        properties.networkSeed,
       )
       .then((weGroupId) => {
         this.dispatchEvent(

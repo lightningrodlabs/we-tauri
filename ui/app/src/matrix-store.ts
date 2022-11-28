@@ -29,6 +29,8 @@ import {
   InstallAppBundleRequest,
   InstalledAppId,
   ActionHash,
+  CellId,
+  RoleId,
 } from "@holochain/client";
 import {
   CloneDnaRecipe,
@@ -66,6 +68,7 @@ import { toSrc } from "./processes/import-logsrc-from-file";
 import { GlobalAppletsService } from "./global-applets-service";
 import { ProfilesService, ProfilesStore } from "@holochain-open-dev/profiles";
 import { PeerStatusStore } from "@holochain-open-dev/peer-status";
+import md5 from "md5";
 
 /**Data of a group */
 export interface WeGroupData {
@@ -78,9 +81,10 @@ export interface WeGroupData {
 /**Info of a group */
 export interface WeGroupInfo {
   info: WeInfo;
-  dna_hash: DnaHash; // dna hash of the group's we dna
-  installed_app_id: string;
-  status: InstalledAppInfoStatus;
+  installedCell: InstalledCell;
+  dna_hash: DnaHash;
+  // cloneName: string; // TODO! uncomment once implemented in the js-client
+  // status: InstalledAppInfoStatus; // not supported (at the moment?) with cloned cells.
 }
 
 /**Data of a specific instance of an installed Applet */
@@ -125,7 +129,7 @@ export interface AppletClassData {
 
 /**Info about a type of Applet of which one or many may be installed */
 export interface AppletClassInfo {
-  devhubHappReleaseHash: EntryHash;
+  devhubHappReleaseHash: EntryHash; // TODO change this to integrity zome hashes via getDnaDefinition??
   title: string; // title of the applet in the devhub
   logoSrc: string | undefined;
   description: string;
@@ -380,7 +384,7 @@ export class MatrixStore {
 
     // 3. create the renderers and return them
     const weGroupId =
-      this.getWeGroupInfoForAppletInstance(appletInstanceId).dna_hash;
+      this.getWeGroupInfoForAppletInstance(appletInstanceId).installedCell.cell_id[0];
     const [_weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
     const installedAppInfo = appInstanceInfos.find(
       (info) =>
@@ -634,24 +638,19 @@ export class MatrixStore {
       UninstalledAppletInstanceInfo[]
     >();
 
-    // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
+    let weParentAppInfo: InstalledAppInfo = await this.appWebsocket.appInfo({ installed_app_id: this.weParentAppInfo.installed_app_id });
 
-    // fetch groups from conductor
+    // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
-    let allWeGroups = allApps.filter(
-      (app) =>
-        app.installed_app_id.startsWith("group@we-") &&
-        JSON.stringify(app.cell_data[0].cell_id[1]) ===
-          JSON.stringify(this.myAgentPubKey) // only consider applets installed with the same public key
-    );
+
+    // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
+    let allGroupClones = weParentAppInfo.cell_data.filter((cell) => cell.role_id.includes("we."));
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
-
     await Promise.all(
-      allWeGroups.map(async (weGroupAppInfo) => {
+      allGroupClones.map(async (weGroupCell) => {
         // create store
-        const weGroupCell = weGroupAppInfo.cell_data[0];
         const weGroupDnaHash = weGroupCell.cell_id[0];
         const weGroupCellClient = new CellClient(
           this.holochainClient,
@@ -697,9 +696,9 @@ export class MatrixStore {
         );
         const weGroupInfo: WeGroupInfo = {
           info: weInfo,
-          dna_hash: weGroupDnaHash,
-          installed_app_id: weGroupAppInfo.installed_app_id,
-          status: weGroupAppInfo.status,
+          installedCell: weGroupCell,
+          dna_hash: weGroupCell.cell_id[0],
+          // cloneName: [not implemented in the js-client yet],
         };
 
         const weGroupData: WeGroupData = {
@@ -827,9 +826,11 @@ export class MatrixStore {
    * @param weLogo
    */
   public async createWeGroup(name: string, logo: string): Promise<DnaHash> {
-    const timestamp = Date.now();
 
-    const newWeGroupDnaHash = await this.installWeGroup(name, logo, timestamp); // this line also updates the matrix store
+    // generate random network seed (maybe use random words instead later, e.g. https://www.npmjs.com/package/generate-passphrase)
+    const networkSeed = uuidv4();
+
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed); // this line also updates the matrix store
 
     const appInfo = this.weParentAppInfo;
 
@@ -839,7 +840,7 @@ export class MatrixStore {
     const properties = {
       logoSrc: logo,
       name: name,
-      timestamp,
+      networkSeed,
     };
 
     const _recipeActionHash =
@@ -857,9 +858,9 @@ export class MatrixStore {
     invitationActionHash: ActionHash,
     name: string,
     logo: string,
-    timestamp: number
+    networkSeed: string,
   ): Promise<DnaHash> {
-    const newWeGroupDnaHash = await this.installWeGroup(name, logo, timestamp);
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed);
     await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
     return newWeGroupDnaHash;
   }
@@ -867,7 +868,7 @@ export class MatrixStore {
   private async installWeGroup(
     name: string,
     logo: string,
-    timestamp: number
+    networkSeed: string
   ): Promise<DnaHash> {
     const weParentAppInfo = this.weParentAppInfo;
 
@@ -880,36 +881,47 @@ export class MatrixStore {
     const properties = {
       logoSrc: logo,
       name: name,
-      timestamp,
+      networkSeed,
     };
 
+    // hash network seed to not expose it in the app id but still
+    // be able to detect the cell based on the network seed
+    const hashedNetworkSeed = md5(networkSeed, { asString: true });
+
+    const cloneName = `group@we-${name}-${hashedNetworkSeed}`;
+
     // Create the We cell
-    const newWeGroupHash = await this.adminWebsocket.registerDna({
-      hash: deserializeHash(weDnaHash) as Buffer,
+    const clonedCell = await this.appWebsocket.createCloneCell({
+      app_id: weParentAppInfo.installed_app_id,
+      role_id: "we",
       modifiers: {
-        network_seed: undefined,
+        network_seed: networkSeed,
         properties,
-      }
+        origin_time: Date.now(),
+      },
+      name: cloneName,
     });
 
-    const installed_app_id = `group@we-${name}-${timestamp}`;
-    const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
-      installed_app_id,
-      agent_key: deserializeHash(myAgentPubKey) as Buffer,
-      dnas: [
-        {
-          hash: newWeGroupHash,
-          role_id: name,
-        },
-      ],
-    });
-    const enabledResult = await this.adminWebsocket.enableApp({
-      installed_app_id,
-    });
+    console.log("CREATED GROUP CELL CLONE: ", clonedCell);
 
-    const newWeCell = newAppInfo.cell_data[0];
-    const newWeGroupDnaHash: DnaHash = newWeCell.cell_id[0];
-    const cellClient = new CellClient(this.holochainClient, newWeCell);
+    const newWeGroupCellId = clonedCell.cell_id;
+
+    const cellClient = new CellClient(this.holochainClient, clonedCell);
+
+
+    // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
+    //   installed_app_id,
+    //   agent_key: deserializeHash(myAgentPubKey) as Buffer,
+    //   dnas: [
+    //     {
+    //       hash: newWeGroupHash,
+    //       role_id: name,
+    //     },
+    //   ],
+    // });
+    // const enabledResult = await this.adminWebsocket.enableApp({
+    //   installed_app_id,
+    // });
 
     // add signal handler to listen for "NewApplet" events
     cellClient.addSignalHandler((signal) => {
@@ -926,10 +938,10 @@ export class MatrixStore {
               federatedGroups: payload.federatedGroups,
             };
 
-            let updatedList = store.get(newWeGroupDnaHash);
+            let updatedList = store.get(newWeGroupCellId[0]);
             updatedList.push(newAppletInstanceInfo);
 
-            store.put(newWeGroupDnaHash, updatedList);
+            store.put(newWeGroupCellId[0], updatedList);
 
             return store;
           });
@@ -948,9 +960,10 @@ export class MatrixStore {
 
       const weGroupInfo: WeGroupInfo = {
         info: weInfo,
-        dna_hash: newWeGroupDnaHash,
-        installed_app_id,
-        status: enabledResult.app.status,
+        installedCell: clonedCell,
+        dna_hash: clonedCell.cell_id[0],
+        // cloneName, // TODO! once implemented in the js-client
+        // status: NOT AVAILABLE FOR CLONED CELLS AT THE MOMENT
       };
 
       const weGroupData: WeGroupData = {
@@ -960,14 +973,14 @@ export class MatrixStore {
         peerStatusStore,
       };
 
-      if (!matrix.get(newWeGroupDnaHash)) {
-        matrix.put(newWeGroupDnaHash, [weGroupData, []]);
+      if (!matrix.get(newWeGroupCellId[0])) {
+        matrix.put(newWeGroupCellId[0], [weGroupData, []]);
       }
 
       return matrix;
     });
 
-    return newWeGroupDnaHash;
+    return newWeGroupCellId[0];
   }
 
   async leaveWeGroup(weGroupId: DnaHash, deleteApplets?: boolean) {
@@ -991,12 +1004,35 @@ export class MatrixStore {
     }
 
     // uninstall we group cell
-    await this.adminWebsocket.uninstallApp({
-      installed_app_id: weGroup[0].info.installed_app_id,
+    // archive we group cell
+    console.log("ARCHIVING CLONED CELL!");
+    console.log("App info of parent app: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
+    await this.appWebsocket.archiveCloneCell({
+      app_id: this.weParentAppInfo.installed_app_id,
+      clone_cell_id: weGroup[0].info.installedCell.role_id,
+    })
+
+    console.log("App info of AFTER ARCHIVING: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
+
+    console.log("Trying to restore cloned cell. ");
+    await this.adminWebsocket.restoreCloneCell({
+      app_id: this.weParentAppInfo.installed_app_id,
+      clone_cell_id: weGroup[0].info.installedCell.role_id,
+    });
+
+    console.log("App info after restoring cloned cell: ",  await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
+
+    console.log("DELETING ARCHIVED CLONED CELL!");
+    console.log("parent app info installed app id: ", this.weParentAppInfo.installed_app_id);
+    console.log("App info of parent app: ", await this.appWebsocket.appInfo({installed_app_id: this.weParentAppInfo.installed_app_id}));
+    // delete archived we group cell
+    await this.adminWebsocket.deleteArchivedCloneCells({
+      app_id: this.weParentAppInfo.installed_app_id,
+      role_id: weGroup[0].info.installedCell.role_id,
     });
     console.log(
-      "uninstalled we group with installed_app_id: ",
-      weGroup[0].info.installed_app_id
+      "uninstalled we group with clone_id: ",
+      weGroup[0].info.installedCell.role_id
     );
 
     // update matrix
@@ -1742,7 +1778,7 @@ export class MatrixStore {
     let appletInfosOfClass: InstalledAppletInfo[] = [];
     matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
       const weInfo: WeInfo = weGroupData.info.info;
-      const weGroupId: DnaHash = weGroupData.info.dna_hash;
+      const weGroupId: DnaHash = weGroupData.info.installedCell.cell_id[0];
       const relevantAppletInstanceInfos = appletInstanceInfos.filter(
         (info) =>
           JSON.stringify(info.applet.devhubHappReleaseHash) ===
