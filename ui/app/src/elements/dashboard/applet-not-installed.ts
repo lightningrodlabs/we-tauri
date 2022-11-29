@@ -28,8 +28,8 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   @state()
   private _showAppletDescription: boolean = false;
 
-  @property({ type: Boolean })
-  reinstall = false;
+  @property()
+  mode!: "reinstall" | "join";
 
   @query("#join-from-fs-dialog")
   joinFromFsDialog!: JoinFromFsDialog;
@@ -122,11 +122,9 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   render() {
 
-    const appletInstanceInfo: AppletInstanceInfo | NewAppletInstanceInfo | undefined = this.reinstall
+    const appletInstanceInfo: AppletInstanceInfo | NewAppletInstanceInfo | undefined = this.mode == "reinstall"
       ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)
       : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)
-    console.log("RENDERING with appletinstance ID: ", this.appletInstanceId);
-    console.log("RENDERING reinstall: ", this.reinstall);
     if (!appletInstanceInfo) {
       return html `
         <div class="center-content" style="flex: 1;display: flex;">
@@ -141,7 +139,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       ${this.renderInstallingProgress()}
 
       <join-from-fs-dialog
-        reinstall=${this.reinstall}
+        mode=${this.mode}
         .appletInstanceId=${this.appletInstanceId}
         id="join-from-fs-dialog">
       </join-from-fs-dialog>
@@ -181,7 +179,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                   </div>`
                 : html``}
 
-              ${this.reinstall
+              ${this.mode == "reinstall"
                 ? html`
                     <div
                       style="margin-top: 70px; font-size: 1.2em; text-align: center;"
@@ -206,7 +204,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
               <mwc-button
                 style="margin-top: 65px;"
                 raised
-                @click=${async () => this.reinstall ? await this.reinstallApplet() : await this.joinApplet()}
+                @click=${async () => this.mode == "reinstall" ? await this.reinstallApplet() : await this.joinApplet()}
                 >Automatically Install from the DevHub</mwc-button
               >
 
