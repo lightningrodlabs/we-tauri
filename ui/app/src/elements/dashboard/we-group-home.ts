@@ -56,7 +56,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   private _installAppletId: EntryHash | undefined;
 
   @state()
-  private _reinstall: boolean = false;
+  private _installMode: "reinstall" | "join" = "join";
 
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
@@ -128,12 +128,12 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   renderContent() {
     if (this._showInstallScreen) {
       return html`
-          ${this._reinstall
+          ${this._installMode == "reinstall"
             ? html`
               <applet-not-installed
                 style="display: flex; flex: 1;"
                 .appletInstanceId=${this._installAppletId}
-                reinstall
+                .mode=${"reinstall"}
                 @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
               </applet-not-installed>
               `
@@ -141,6 +141,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               <applet-not-installed
                 style="display: flex; flex: 1;"
                 .appletInstanceId=${this._installAppletId}
+                .mode=${"join"}
                 @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
               </applet-not-installed>
             `
@@ -216,13 +217,13 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     <we-group-settings
                       @join-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
-                        this._reinstall = false;
+                        this._installMode = "join";
                         this._showInstallScreen = true;
                         }
                       }
                       @reinstall-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
-                        this._reinstall = true;
+                        this._installMode = "reinstall";
                         this._showInstallScreen = true;
                         }
                       }

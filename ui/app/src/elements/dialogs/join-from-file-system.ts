@@ -37,8 +37,8 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @property()
   appletInstanceId!: EntryHash;
 
-  @property({ type: Boolean })
-  reinstall = false;
+  @property()
+  mode: "reinstall" | "join" = "join";
 
   @query("#applet-dialog")
   _appletDialog!: Dialog;
@@ -95,10 +95,10 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   fileHashOk() {
     if (this._fakeDevhubHappReleaseHash) {
-      const devhubHappReleaseHash = this.reinstall
+      const devhubHappReleaseHash = this.mode == "reinstall"
         ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash
         : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
-      return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
+     return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
     } else {
       return false;
     }
@@ -260,7 +260,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.reinstall ? this.reinstallApplet() : this.joinApplet()}
+          @click=${() => this.mode == "reinstall" ? this.reinstallApplet() : this.joinApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;
