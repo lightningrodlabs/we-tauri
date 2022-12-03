@@ -1,6 +1,6 @@
-use hdi::prelude::*;
 use crate::dimension::RangeValue;
 use crate::method::DataSet;
+use hdi::prelude::*;
 
 #[hdk_entry_helper]
 #[derive(Clone)]
