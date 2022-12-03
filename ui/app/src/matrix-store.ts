@@ -877,6 +877,11 @@ export class MatrixStore {
     const myAgentPubKey = serializeHash(weGroupCell.cell_id[1]);
     const weDnaHash = serializeHash(weGroupCell.cell_id[0]);
 
+    const sensemakerCell = weParentAppInfo.cell_data.find(
+      (c) => c.role_id === "sensemaker"
+    )!;
+    const sensemakerDnaHash = serializeHash(sensemakerCell.cell_id[0]);
+
     const properties = {
       logoSrc: logo,
       name: name,
@@ -890,6 +895,13 @@ export class MatrixStore {
       properties,
     } as any);
 
+    // Create the sensemaker cell
+    const newSensemakerHash = await this.adminWebsocket.registerDna({
+      hash: deserializeHash(sensemakerDnaHash) as Buffer,
+      network_seed: undefined,
+      properties,
+    } as any);
+
     const installed_app_id = `group@we-${name}-${timestamp}`;
     const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
       installed_app_id,
@@ -899,11 +911,16 @@ export class MatrixStore {
           hash: newWeGroupHash,
           role_id: name,
         },
+        {
+          hash: newSensemakerHash,
+          role_id: `${name}-sensemaker`,
+        },
       ],
     });
     const enabledResult = await this.adminWebsocket.enableApp({
       installed_app_id,
     });
+
 
     const newWeCell = newAppInfo.cell_data[0];
     const newWeGroupDnaHash: DnaHash = newWeCell.cell_id[0];
