@@ -17,7 +17,7 @@ pub struct Method {
 #[hdk_entry_helper]
 #[derive(Clone)]
 pub struct DataSet {
-    pub from: EntryHash, // method
+    pub from: EntryHash,                                  // method
     pub data_points: BTreeMap<EntryHash, Vec<EntryHash>>, //<DimensionEh, Vec<AssessmentEh>>
 }
 

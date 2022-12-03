@@ -33,7 +33,6 @@ pub fn get_dimensions(_: ()) -> ExternResult<Vec<Option<Record>>> {
     .collect::<ExternResult<Vec<Option<Record>>>>()
 }
 
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateDimensionInput {
     original_action_hash: ActionHash,
