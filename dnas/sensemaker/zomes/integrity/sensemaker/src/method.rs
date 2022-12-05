@@ -7,9 +7,9 @@ use hdi::prelude::*;
 pub struct Method {
     pub name: String,
     pub target_resource_type_eh: EntryHash,
-    pub input_dimension_ehs: Vec<EntryHash>,
-    pub output_dimension_eh: EntryHash,
-    pub program: Program, // making enum for now, in design doc it is `AST`
+    pub input_dimension_ehs: Vec<EntryHash>, // Validation: make sure it is subjective
+    pub output_dimension_eh: EntryHash,      // Validation: make sure it is objective
+    pub program: Program,                    // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
     pub must_publish_dataset: bool,
 }

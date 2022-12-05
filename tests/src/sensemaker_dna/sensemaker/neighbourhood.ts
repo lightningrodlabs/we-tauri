@@ -89,11 +89,13 @@ export default () => {
         const createDimension = {
           "name": "likeness",
           "range": integerRange,
+          "computed": false
         }
 
         const createDimension2 = {
           "name": "quality",
           "range": integerRange,
+          "computed": false
         }
 
         // Alice creates a dimension
@@ -223,6 +225,7 @@ export default () => {
         const createObjectiveDimension = {
           "name": "total_likeness",
           "range": integerRange2,
+          "computed": true
         }
 
         // Alice creates a dimension
@@ -303,7 +306,7 @@ export default () => {
         console.log(e)
         t.ok(null)
       }
-    
+
       await alice.shutDown();
       await bob.shutDown();
       await cleanAllConductors();
@@ -367,6 +370,7 @@ export default () => {
       const createDimension = {
         "name": "likeness",
         "range": integerRange,
+        "computed": false
       }
 
       // Alice creates a dimension
@@ -594,6 +598,7 @@ export default () => {
         const createDimension = {
           "name": "likeness",
           "range": integerRange,
+          "computed": false
         }
 
         // Alice creates a dimension
@@ -765,6 +770,7 @@ export default () => {
         const createObjectiveDimension = {
           "name": "total_likeness",
           "range": integerRange2,
+          "computed": true
         }
 
         // Alice creates a dimension
@@ -959,7 +965,7 @@ export default () => {
           true
         )
         t.deepEqual(culturalContext, decode((readCulturalContext.entry as any).Present.entry) as any);
-        
+
 
         const contextResultInput = {
           "resource_ehs": [createPostEntryHash, createPostEntryHash2, createPostEntryHash3],
@@ -996,7 +1002,7 @@ export default () => {
         )
         t.deepEqual(contextResultOutput2.length, 2);
         t.deepEqual(contextResultOutput2, [createPostEntryHash2, createPostEntryHash])
-        
+
         // try comparing incompatible types
         try {
           const contextResultOutput3: [any] = await callZomeAlice(
@@ -1024,7 +1030,7 @@ export default () => {
         console.log(e)
         t.ok(null)
       }
-    
+
       await alice.shutDown();
       await bob.shutDown();
       await cleanAllConductors();

@@ -3,8 +3,8 @@ mod assessment;
 mod cultural_context;
 mod dimension;
 mod method;
+mod properties;
 mod resource_type;
-mod util;
 
 pub use assessment::Assessment;
 pub use cultural_context::{
@@ -12,8 +12,8 @@ pub use cultural_context::{
 };
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
+pub use properties::is_community_activator;
 pub use resource_type::ResourceType;
-pub use util::is_community_activator;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
