@@ -1,49 +1,53 @@
-import { CellClient } from '@holochain-open-dev/cell-client';
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
+import { SensemakerService } from './sensemakerService';
 import { Assessment, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
 
-export class SensemakerService {
-  constructor(public cellClient: CellClient, public zomeName = 'sensemaker') {}
+export class SensemakerStore {
+  // store any value here that would benefit from being a store
+  // like cultural context entry hash and then the context result vec
 
-    
+  /** Static info */
+  public myAgentPubKey: AgentPubKey;
+
+  constructor(
+    protected service: SensemakerService,
+  ) {
+    this.myAgentPubKey = service.cellClient.cell.cell_id[1];
+  }
 
   async createDimension(dimension: Dimension): Promise<EntryHash> {
-    return this.callZome('create_dimension', dimension);
+    return await this.service.createDimension(dimension) 
   }
 
   async createResourceType(resourceType: ResourceType): Promise<EntryHash> {
-    return this.callZome('create_resource_type', resourceType);
+    return await this.service.createResourceType(resourceType) 
   }
 
   async createAssessment(assessment: Assessment): Promise<EntryHash> {
-    return this.callZome('create_assessment', assessment);
+    return await this.service.createAssessment(assessment) 
   }
 
   async getAssessment(assessmentEh: EntryHash): Promise<Record> {
-    return this.callZome('get_assessment', assessmentEh);
+    return await this.service.getAssessment(assessmentEh) 
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
-    return this.callZome('create_method', method);
+    return await this.service.createMethod(method) 
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<EntryHash> {
-    return this.callZome('run_method', runMethodInput);
+    return await this.service.runMethod(runMethodInput) 
   }
 
   async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
-    return this.callZome('create_cultural_context', culturalContext);
+    return await this.service.createCulturalContext(culturalContext) 
   }
 
   async getCulturalContext(culturalContextEh: EntryHash): Promise<Record> {
-    return this.callZome('get_cultural_context', culturalContextEh);
+    return await this.service.getCulturalContext(culturalContextEh) 
   }
 
   async computeContext(computeContextInput: EntryHash): Promise<Record> {
-    return this.callZome('compute_context', computeContextInput);
-  }
-
-  private callZome(fn_name: string, payload: any) {
-    return this.cellClient.callZome(this.zomeName, fn_name, payload);
+    return await this.service.computeContext(computeContextInput) 
   }
 }

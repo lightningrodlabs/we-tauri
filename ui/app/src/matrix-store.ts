@@ -46,6 +46,8 @@ import {
   InstalledAppletInfo,
   WeServices,
   WeInfo,
+  SensemakerStore,
+  SensemakerService,
 } from "@lightningrodlabs/we-applet";
 import {
   Applet,
@@ -73,6 +75,7 @@ export interface WeGroupData {
   cellClient: CellClient;
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
+  sensemakerStore: SensemakerStore;
 }
 
 /**Info of a group */
@@ -688,6 +691,9 @@ export class MatrixStore {
           new ProfilesService(weGroupCellClient)
         );
         const peerStatusStore = new PeerStatusStore(weGroupCellClient);
+        const sensemakerStore = new SensemakerStore(
+          new SensemakerService(weGroupCellClient)
+        );
 
         // create WeGroupData object
         const weInfo: WeInfo = await weGroupCellClient.callZome(
@@ -707,6 +713,7 @@ export class MatrixStore {
           cellClient: weGroupCellClient,
           profilesStore,
           peerStatusStore,
+          sensemakerStore,
         };
 
         // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
@@ -954,6 +961,7 @@ export class MatrixStore {
 
     const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     const peerStatusStore = new PeerStatusStore(cellClient);
+    const sensemakerService = new SensemakerService(cellClient);
 
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
@@ -973,6 +981,7 @@ export class MatrixStore {
         cellClient,
         profilesStore,
         peerStatusStore,
+        sensemakerService,
       };
 
       if (!matrix.get(newWeGroupDnaHash)) {
