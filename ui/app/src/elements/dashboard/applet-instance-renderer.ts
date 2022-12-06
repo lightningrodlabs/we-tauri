@@ -1,6 +1,7 @@
 import { PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { EntryHash } from "@holochain/client";
+import { SensemakerStore, sensemakerStoreContext } from "@lightningrodlabs/we-applet";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -24,6 +25,9 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: profilesStoreContext, subscribe: true })
   _profilesStore!: ProfilesStore;
 
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
+
   @contextProvided({ context: peerStatusStoreContext, subscribe: true })
   _peerStatusStore!: PeerStatusStore;
 
@@ -37,6 +41,7 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
       await sleep(1);
       return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId, {
         profilesStore: this._profilesStore,
+        sensemakerStore: this._sensemakerStore,
       });
     },
     () => [this._matrixStore, this.appletInstanceId]

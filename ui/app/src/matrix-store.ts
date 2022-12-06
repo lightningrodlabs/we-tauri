@@ -48,6 +48,8 @@ import {
   InstalledAppletInfo,
   WeServices,
   WeInfo,
+  SensemakerStore,
+  SensemakerService,
 } from "@lightningrodlabs/we-applet";
 import {
   Applet,
@@ -76,6 +78,7 @@ export interface WeGroupData {
   cellClient: CellClient;
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
+  sensemakerStore: SensemakerStore;
 }
 
 /**Info of a group */
@@ -687,6 +690,9 @@ export class MatrixStore {
           new ProfilesService(weGroupCellClient)
         );
         const peerStatusStore = new PeerStatusStore(weGroupCellClient);
+        const sensemakerStore = new SensemakerStore(
+          new SensemakerService(weGroupCellClient)
+        );
 
         // create WeGroupData object
         const weInfo: WeInfo = await weGroupCellClient.callZome(
@@ -706,6 +712,7 @@ export class MatrixStore {
           cellClient: weGroupCellClient,
           profilesStore,
           peerStatusStore,
+          sensemakerStore,
         };
 
         // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
@@ -878,6 +885,11 @@ export class MatrixStore {
     const myAgentPubKey = serializeHash(weGroupCell.cell_id[1]);
     const weDnaHash = serializeHash(weGroupCell.cell_id[0]);
 
+    const sensemakerCell = weParentAppInfo.cell_data.find(
+      (c) => c.role_id === "sensemaker"
+    )!;
+    const sensemakerDnaHash = serializeHash(sensemakerCell.cell_id[0]);
+
     const properties = {
       logoSrc: logo,
       name: name,
@@ -890,38 +902,45 @@ export class MatrixStore {
 
     const cloneName = `group@we-${name}-${hashedNetworkSeed}`;
 
+    // TODO: switch to cell cloning, like in We
+    
     // Create the We cell
-    const clonedCell = await this.appWebsocket.createCloneCell({
-      app_id: weParentAppInfo.installed_app_id,
-      role_id: "we",
-      modifiers: {
-        network_seed: networkSeed,
-        properties,
-        origin_time: Date.now(),
-      },
-      name: cloneName,
+    const newWeGroupHash = await this.adminWebsocket.registerDna({
+      hash: deserializeHash(weDnaHash) as Buffer,
+      network_seed: undefined,
+      properties,
+    } as any);
+
+    // Create the sensemaker cell
+    const newSensemakerHash = await this.adminWebsocket.registerDna({
+      hash: deserializeHash(sensemakerDnaHash) as Buffer,
+      network_seed: undefined,
+      properties,
+    } as any);
+
+    const installed_app_id = `group@we-${name}-${timestamp}`;
+    const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
+      installed_app_id,
+      agent_key: deserializeHash(myAgentPubKey) as Buffer,
+      dnas: [
+        {
+          hash: newWeGroupHash,
+          role_id: name,
+        },
+        {
+          hash: newSensemakerHash,
+          role_id: `${name}-sensemaker`,
+        },
+      ],
+    });
+    const enabledResult = await this.adminWebsocket.enableApp({
+      installed_app_id,
     });
 
-    console.log("CREATED GROUP CELL CLONE: ", clonedCell);
 
-    const newWeGroupCellId = clonedCell.cell_id;
-
-    const cellClient = new CellClient(this.holochainClient, clonedCell);
-
-
-    // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
-    //   installed_app_id,
-    //   agent_key: deserializeHash(myAgentPubKey) as Buffer,
-    //   dnas: [
-    //     {
-    //       hash: newWeGroupHash,
-    //       role_id: name,
-    //     },
-    //   ],
-    // });
-    // const enabledResult = await this.adminWebsocket.enableApp({
-    //   installed_app_id,
-    // });
+    const newWeCell = newAppInfo.cell_data[0];
+    const newWeGroupDnaHash: DnaHash = newWeCell.cell_id[0];
+    const cellClient = new CellClient(this.holochainClient, newWeCell);
 
     // add signal handler to listen for "NewApplet" events
     cellClient.addSignalHandler((signal) => {
@@ -951,6 +970,7 @@ export class MatrixStore {
 
     const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     const peerStatusStore = new PeerStatusStore(cellClient);
+    const sensemakerService = new SensemakerService(cellClient);
 
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
@@ -971,6 +991,7 @@ export class MatrixStore {
         cellClient,
         profilesStore,
         peerStatusStore,
+        sensemakerService,
       };
 
       if (!matrix.get(newWeGroupCellId[0])) {
