@@ -12,3 +12,9 @@ opt-level = "z"
 
 [profile.release]
 opt-level = "z"
+
+[workspace.dependencies]
+hdi = "0.1"
+hdk = { version = "0.0.161" }
+serde = "1"
+holochain = {version = "0.0.173"}
