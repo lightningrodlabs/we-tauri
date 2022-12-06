@@ -6,7 +6,7 @@ pub use hdi::prelude::*;
 pub struct WeInfo {
     logo_src: String,
     name: String,
-    timestamp: u64,
+    network_seed: String,
 }
 
 

@@ -53,7 +53,7 @@ async fn commit_gui() -> ExternResult<()> {
 
     println!("GUI FILE COMMITED.");
     println!("dummy_release_hash: {:?}", dummy_release_hash);
-    consistency_10s(&[&alice, &bobbo]).await;
+    consistency_10s([&alice, &bobbo]).await;
     println!("about to call query_applet_gui");
 
     let queried_gui: AppletGui =

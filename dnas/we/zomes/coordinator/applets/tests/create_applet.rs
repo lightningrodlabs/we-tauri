@@ -44,7 +44,7 @@ async fn create_applet() {
         .call(&alice_zome, "create_applet", input)
         .await;
 
-    consistency_10s(&[&alice, &bobbo]).await;
+    consistency_10s([&alice, &bobbo]).await;
 
     let all_applets: Vec<(EntryHash, Applet)> =
         conductors[1].call(&bob_zome, "get_all_applets", ()).await;

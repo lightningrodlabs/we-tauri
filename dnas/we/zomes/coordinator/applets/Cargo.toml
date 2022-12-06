@@ -9,17 +9,14 @@ crate-type = ["cdylib", "rlib"]
 name = "applets_coordinator"
 
 [dependencies]
-derive_more = "0.99"
-hdk = {version = "0.0.152", features = ["encoding"]}
-serde = "1"
-thiserror = "1.0.20"
-chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
+hdk = { workspace = true }
+serde = { workspace = true }
 
 applets_integrity = { path = "../../integrity/applets" }
 
 [dev-dependencies]
 fixt = "0.0.14"
 futures = {version = "0.3.1", default-features = false}
-hdk = {version = "0.0.152", features = ["encoding", "test_utils"]}
-holochain = {version = "0.0.162", default-features = false, features = ["test_utils"]}
+hdk = { workspace = true, features = ["encoding", "test_utils"]}
+holochain = { workspace = true, default-features = false, features = ["test_utils"]}
 tokio = {version = "1.3", features = ["full"]}
