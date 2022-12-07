@@ -234,6 +234,14 @@ export class MatrixStore {
     );
   }
 
+  public sensemakerStore(
+    weGroupId: DnaHash
+  ): Readable<SensemakerStore | undefined> {
+    return derived(this._matrix, (matrix) =>
+      matrix.get(weGroupId) ? matrix.get(weGroupId)[0].sensemakerStore : undefined
+    );
+  }
+
   /**
    * Gets we group info from the matrix store
    *
