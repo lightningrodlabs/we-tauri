@@ -927,6 +927,7 @@ export class MatrixStore {
     const newWeGroupCellId = clonedCell.cell_id;
 
     const cellClient = new CellClient(this.holochainClient, clonedCell);
+    const sensemakerCellClient = new CellClient(this.holochainClient, clonedSensemakerCell);
 
     // add signal handler to listen for "NewApplet" events
     // TODO: will probably want to add signal handler for sensemaker-lite as well
@@ -957,7 +958,7 @@ export class MatrixStore {
 
     const profilesStore = new ProfilesStore(new ProfilesService(cellClient));
     const peerStatusStore = new PeerStatusStore(cellClient);
-    const sensemakerStore = new SensemakerStore(new SensemakerService(cellClient));
+    const sensemakerStore = new SensemakerStore(new SensemakerService(sensemakerCellClient));
 
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
