@@ -922,12 +922,16 @@ export class MatrixStore {
       name: cloneName,
     });
     
+    const sensemaker_properties = {
+      ...properties,
+      community_activator: serializeHash(clonedCell.cell_id[1])
+    };
     const clonedSensemakerCell = await this.appWebsocket.createCloneCell({
       app_id: weParentAppInfo.installed_app_id,
       role_id: "sensemaker",
       modifiers: {
         network_seed: networkSeed,
-        properties,
+        properties: sensemaker_properties,
         origin_time: Date.now(),
       },
       name: sensemakerCloneName,
