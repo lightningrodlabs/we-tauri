@@ -9,10 +9,7 @@ crate-type = ["cdylib", "rlib"]
 name = "applet_guis_integrity"
 
 [dependencies]
-chrono = { version = "=0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
-derive_more = "0.99"
-serde = "1.0.123"
-thiserror = "1.0.20"
+hdi = { workspace = true }
+serde = { workspace = true }
 
-hdi = "0.1.2"
 
