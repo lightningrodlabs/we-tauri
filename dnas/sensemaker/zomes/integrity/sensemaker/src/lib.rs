@@ -12,7 +12,7 @@ pub use cultural_context::{
 };
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
-pub use properties::is_community_activator;
+pub use properties::*;
 pub use resource_type::ResourceType;
 
 #[hdk_entry_defs]
@@ -124,7 +124,7 @@ fn validate_author_as_ca(
                             activity.action.hashed.author().clone()
                         }
                     };
-                    if let true = is_community_activator(author)? {
+                    if let true = Properties::is_community_activator(author)? {
                         Ok(ValidateCallbackResult::Valid)
                     } else {
                         Ok(ValidateCallbackResult::Invalid(String::from(
