@@ -2,6 +2,8 @@ use std::collections::BTreeMap;
 
 use hdi::prelude::*;
 
+use crate::{properties::ConfigMethod, ResourceType};
+
 #[hdk_entry_helper]
 #[derive(Clone)]
 pub struct Method {
@@ -12,6 +14,29 @@ pub struct Method {
     pub program: Program,                    // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
     pub must_publish_dataset: bool,
+}
+
+impl TryFrom<ConfigMethod> for Method {
+    type Error = WasmError;
+    fn try_from(value: ConfigMethod) -> Result<Self, Self::Error> {
+        let input_dimension_ehs = value
+            .input_dimensions
+            .into_iter()
+            .map(|dimension| hash_entry(dimension))
+            .collect::<ExternResult<Vec<EntryHash>>>()?;
+        let output_dimension_eh = hash_entry(value.output_dimension)?;
+        let resource: ResourceType = value.target_resource_type.try_into()?;
+        let method = Method {
+            name: value.name,
+            target_resource_type_eh: hash_entry(resource)?,
+            input_dimension_ehs,
+            output_dimension_eh,
+            program: value.program,
+            can_compute_live: value.can_compute_live,
+            must_publish_dataset: value.must_publish_dataset,
+        };
+        Ok(method)
+    }
 }
 
 #[hdk_entry_helper]
