@@ -1,21 +1,18 @@
 import {
   AppEntryType,
-  DnaProperties,
   InstalledAppInfo,
 } from "@holochain/client";
 import {
-  AdminApiResponseAppInstalled,
   Conductor,
   createConductor,
 } from "@holochain/tryorama";
 import {
   addAllAgentsToAllConductors,
-  enableAndGetAgentHapp,
 } from "@holochain/tryorama/lib/common";
 import { serializeHash } from "@holochain-open-dev/utils";
 import path from "path";
 import { fileURLToPath } from "url";
-import { Base64 } from "js-base64";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -33,7 +30,7 @@ export const installAgent = async (
   agentName: string,
   ca_key?: Uint8Array,
   with_config: boolean = false,
-  resource_base_type?: AppEntryType
+  resource_base_type?: any
 ) => {
   let agentsHapps: Array<InstalledAppInfo> = [];
   let agent_key;
@@ -47,28 +44,17 @@ export const installAgent = async (
     console.log(`generating key for: ${agentName}:`);
     agent_key = await admin.generateAgentPubKey();
 
-    dnaHash_ss = !with_config
-      ? await admin.registerDna({
-          path: sensemakerDna,
-          modifiers: {
-            properties: {
-              community_activator: ca_key
-                ? serializeHash(ca_key)
-                : serializeHash(agent_key),
-            },
-          },
-        } as any)
-      : await admin.registerDna({
-          path: sensemakerDna,
-          modifiers: {
-            properties: {
-              community_activator: ca_key
-                ? serializeHash(ca_key)
-                : serializeHash(agent_key),
-              config: sampleConfig(resource_base_type!),
-            },
-          },
-        } as any);
+    dnaHash_ss = await admin.registerDna({
+      path: sensemakerDna,
+      modifiers: {
+        properties: {
+          community_activator: ca_key
+            ? serializeHash(ca_key)
+            : serializeHash(agent_key),
+          config: with_config ? sampleConfig(resource_base_type!) : null
+        },
+      },
+    } as any)
     dnaHash_provider = await admin.registerDna({ path: testProviderDna });
     let dna_ss = {
       hash: dnaHash_ss!,
@@ -103,52 +89,6 @@ export const installAgent = async (
     agent_key,
     ss_cell_id,
     provider_cell_id,
-  };
-};
-
-export const setUpAliceandBob = async (
-  s,
-  with_config: boolean = false,
-  resource_base_type?: AppEntryType
-) => {
-  const alice = await createConductor();
-  const bob = await createConductor();
-  const {
-    agentsHapps: alice_happs,
-    agent_key: alice_agent_key,
-    ss_cell_id: ss_cell_id_alice,
-    provider_cell_id: provider_cell_id_alice,
-  } = await installAgent(
-    alice,
-    "alice",
-    undefined,
-    with_config,
-    resource_base_type
-  );
-  const {
-    agentsHapps: bob_happs,
-    agent_key: bob_agent_key,
-    ss_cell_id: ss_cell_id_bob,
-    provider_cell_id: provider_cell_id_bob,
-  } = await installAgent(
-    bob,
-    "bob",
-    alice_agent_key,
-    with_config,
-    resource_base_type
-  );
-  await addAllAgentsToAllConductors([alice, bob]);
-  return {
-    alice,
-    bob,
-    alice_happs,
-    bob_happs,
-    alice_agent_key,
-    bob_agent_key,
-    ss_cell_id_alice,
-    ss_cell_id_bob,
-    provider_cell_id_alice,
-    provider_cell_id_bob,
   };
 };
 
