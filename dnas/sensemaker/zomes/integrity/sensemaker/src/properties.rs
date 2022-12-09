@@ -8,7 +8,7 @@ use crate::{
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct Properties {
     pub community_activator: AgentPubKeyB64,
-    pub config: SensemakerConfig,
+    pub config: Option<SensemakerConfig>,
 }
 
 impl Properties {
@@ -61,7 +61,7 @@ impl SensemakerConfig {
         let _check_result_contexts: Vec<bool> = self
             .contexts
             .into_iter()
-            .map(|context| context.check_format(dimension_ehs.clone()))
+            .map(|context| context.check_format())
             .collect::<ExternResult<Vec<bool>>>()?;
 
         Ok(())
@@ -100,7 +100,7 @@ impl ConfigResourceType {
 pub struct ConfigMethod {
     pub name: String,
     pub target_resource_type: ConfigResourceType,
-    pub input_dimensions: Vec<Dimension>, // check if it's subjective
+    pub input_dimensions: Vec<Dimension>, // check if it's subjective (for now)
     pub output_dimension: Dimension,      // check if it's objective
     pub program: Program,                 // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
@@ -114,17 +114,18 @@ impl ConfigMethod {
         let output_dimension_eh = converted_method.output_dimension_eh;
 
         // check that the dimensions in input_dimensions are all subjective
+        // NOTE: in the future, we might want to also allow objective dimensions in the input dimensions.
         if let false = self
             .input_dimensions
             .into_iter()
-            .all(|dimension| dimension.comptued == false)
+            .all(|dimension| dimension.computed == false)
         {
             let error = format!("method name {} has one or more input dimensions that are not a subjective dimension. All dimensions in input dimension must be subjective", self.name);
             return Err(wasm_error!(WasmErrorInner::Guest(error)));
         }
 
         // check that the dimension in output_dimension is objective
-        if self.output_dimension.comptued == false {
+        if self.output_dimension.computed == false {
             let error = format!("method name {} has a subjective dimension defined in the output_dimension. output_dimension must be an objective dimension", self.name);
             return Err(wasm_error!(WasmErrorInner::Guest(error)));
         }
@@ -162,34 +163,54 @@ pub struct ConfigCulturalContext {
 }
 
 impl ConfigCulturalContext {
-    pub fn check_format(self, dimension_ehs: Vec<EntryHash>) -> ExternResult<bool> {
+    pub fn check_format(self) -> ExternResult<bool> {
         let converted_cc: CulturalContext = CulturalContext::try_from(self.to_owned())?;
+
+        let dimension_ehs_in_resource = self
+            .resource_type
+            .dimensions
+            .into_iter()
+            .map(|dimension| hash_entry(dimension))
+            .collect::<ExternResult<Vec<EntryHash>>>()?;
+
         let threholds_dimension_ehs = converted_cc
             .thresholds
             .into_iter()
             .map(|th| th.dimension_eh)
             .collect::<Vec<EntryHash>>();
+
         let order_by_dimension_ehs = converted_cc
             .order_by
             .into_iter()
             .map(|order| order.0)
             .collect::<Vec<EntryHash>>();
 
-        // check if dimension in all threholds exist in root dimensions
+        // check that dimension in all threholds exist in the resrource type used for this context
         if let false = threholds_dimension_ehs
             .into_iter()
-            .all(|eh| dimension_ehs.contains(&eh))
+            .all(|eh| dimension_ehs_in_resource.contains(&eh))
         {
             let error = format!("cultural context name {} has one or more threhold with dimension not found in root dimensions", self.name);
             return Err(wasm_error!(WasmErrorInner::Guest(error)));
         }
 
-        // check if Dimension in order by exist in root dimensions
+        // check that Dimension in order by exist in the resrource type used for this context
         if let false = order_by_dimension_ehs
             .into_iter()
-            .all(|eh| dimension_ehs.contains(&eh))
+            .all(|eh| dimension_ehs_in_resource.contains(&eh))
         {
             let error = format!("cultural context name {} has one or more order_by with dimension not found in root dimensions", self.name);
+            return Err(wasm_error!(WasmErrorInner::Guest(error)));
+        }
+
+        // check that Dimension in order_by is objective
+        if let false = self
+            .order_by
+            .into_iter()
+            .map(|order_by| order_by.0)
+            .all(|dimension| dimension.computed == false)
+        {
+            let error = format!("cultural context name {} has one or more dimensions that are not an objective dimension in the order_by field. All dimensions in order_by must be objective", self.name);
             return Err(wasm_error!(WasmErrorInner::Guest(error)));
         }
 

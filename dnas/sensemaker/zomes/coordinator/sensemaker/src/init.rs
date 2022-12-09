@@ -1,12 +1,15 @@
 use hdk::prelude::*;
 // use sensemaker_integrity::CulturalContext;
 // use sensemaker_integrity::Method;
+// use sensemaker_integrity::Properties;
 // use sensemaker_integrity::ResourceType;
-// use sensemaker_integrity::{Properties, SensemakerConfig};
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
-    // let config = Properties::get()?.config;
+    // // let config = Properties::get()?.config;
+    // let Some(config) = Properties::get()?.config else {
+    //     return Ok(InitCallbackResult::Pass)
+    // };
     // // check the format of the config passed from Wizard
     // config.check_format()?;
 
@@ -16,7 +19,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     // let _dimension_ehs = config
     //     .dimensions
     //     .into_iter()
-    //     .map(|dimension| create_entry(dimension)?)
+    //     .map(|dimension| create_entry(dimension))
     //     .collect::<ExternResult<Vec<ActionHash>>>()?;
 
     // // resource types
@@ -24,8 +27,8 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     //     .resources
     //     .into_iter()
     //     .map(|resource| {
-    //         let converted_resource_type = ResourceType::try_from(resource)?;
-    //         create_entry(converted_resource_type)?
+    //         let converted_resource_type = ResourceType::try_from(resource);
+    //         create_entry(converted_resource_type)
     //     })
     //     .collect::<ExternResult<Vec<ActionHash>>>()?;
 
@@ -34,8 +37,8 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     //     .methods
     //     .into_iter()
     //     .map(|method| {
-    //         let converted_method = Method::try_from(method)?;
-    //         create_entry(converted_method)?
+    //         let converted_method = Method::try_from(method);
+    //         create_entry(converted_method)
     //     })
     //     .collect::<ExternResult<Vec<ActionHash>>>()?;
 
@@ -44,8 +47,8 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     //     .contexts
     //     .into_iter()
     //     .map(|context| {
-    //         let converted_context = CulturalContext::try_from(context)?;
-    //         create_entry(converted_context)?
+    //         let converted_context = CulturalContext::try_from(context);
+    //         create_entry(converted_context)
     //     })
     //     .collect::<ExternResult<Vec<ActionHash>>>()?;
 

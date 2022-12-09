@@ -12,7 +12,7 @@ pub struct Dimension {
     pub range: Range,
     // identifies whether a dimension is objective or subjective
     // can be used to validate dimensions ehs being passed as io in method
-    pub comptued: bool,
+    pub computed: bool,
 }
 
 #[hdk_entry_helper]
