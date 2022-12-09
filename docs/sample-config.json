@@ -1,6 +1,5 @@
 {
     "neighbourhood": "Rated Agenda",
-    "sensemaker-version": "v0.1",
     "wizard-version": "v0.1",
     "config-version": "v1-inclusive",
     "creator": "John Doe <john@doe.org>",
@@ -19,15 +18,15 @@
         {
             "name": "AgendaItemResource",
             "base_type": "AgendaItem",
-            "dimensions": [ "duration", "upvote", "upvoteRatio" ]
+            "dimensions": [ { "name": "duration", "range": "timeRange" }, { "name": "upvote", "range": "voteRange" }, { "name": "upvoteRatio", "range": "ratioRange", "computed": true } ]
         }
     ],
     "methods": [
         {
             "name": "computeUpvoteRatio",
             "target_resource_type": "AgendaItemResource",
-            "input_dimensions": [ "upvote" ],
-            "output_dimension": "upvoteRatio",
+            "input_dimensions": [ { "name": "upvote", "range": "voteRange" } ],
+            "output_dimension": { "name": "upvoteRatio", "range": "ratioRange", "computed": true },
             "program": "Sum",
             "can_compute_live": false, // will do live method computation each time a new assessment comes in
             "must_publish_dataset": false // publish the dataset used for each computation
@@ -39,12 +38,12 @@
             "name": "PrioritizedAgenda",
             "resource_type": "AgendaItemResource",
             "thresholds": [
-                { "dimension": "duration", "kind": "LessThan", "value": { "Integer": "2"} },
-                { "dimension": "upvoteRatio", "kind": "GreaterThan", "value": { "Float": "0.0" } }
+                { "dimension": { "name": "duration", "range": "timeRange" }, "kind": "LessThan", "value": { "Integer": "2"} },
+                { "dimension": { "name": "upvoteRatio", "range": "ratioRange", "computed": true }, "kind": "GreaterThan", "value": { "Float": "0.0" } }
             ],
             "order_by": [
-                { "dimension": "upvoteRatio", "order": "Biggest" },
-                { "dimension": "duration", "order": "Biggest" }
+                { "dimension": { "name": "upvoteRatio", "range": "ratioRange", "computed": true }, "order": "Biggest" },
+                { "dimension": { "name": "duration", "range": "timeRange" }, "order": "Biggest" }
             ]
         }
     ]
