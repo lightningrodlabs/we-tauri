@@ -1,9 +1,8 @@
 {
     "neighbourhood": "Rated Agenda",
-    "wizard-version": "v0.1",
-    "config-version": "v1-inclusive",
+    "wizard_version": "v0.1",
+    "config_version": "v1-inclusive",
     "creator": "John Doe <john@doe.org>",
-    "requiredApps": [ { "name":"AgendaItem", "version":"v1.0" } ],
     "ranges": [
         { "name": "timeRange", "kind": "Integer", "min": "1", "max": "600" },
         { "name": "voteRange", "kind": "Integer", "min": 0, "max": 1 },
