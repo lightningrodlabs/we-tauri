@@ -107,12 +107,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
       },
       {
         name: "total_likeness",
-        range: {
-          name: "10-scale",
-          kind: {
-            Integer: { min: 0, max: 1000000 },
-          },
-        },
+        range: { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } },
         computed: true,
       },
     ],
@@ -187,14 +182,9 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
         },
         thresholds: [
           {
-            dimension_eh: {
+            dimension: {
               name: "total_likeness",
-              range: {
-                name: "10-scale",
-                kind: {
-                  Integer: { min: 0, max: 1000000 },
-                },
-              },
+              range: { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } },
               computed: true,
             },
             kind: { GreaterThan: null },
@@ -219,7 +209,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
       },
       {
         name: "more than 5 total likeness, smallest to biggest",
-        resource_type_eh: {
+        resource_type: {
           name: "angryPost",
           base_types: [resource_base_type],
           dimensions: [
@@ -235,7 +225,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
         },
         thresholds: [
           {
-            dimension_eh: {
+            dimension: {
               name: "total_likeness",
               range: {
                 name: "10-scale",

@@ -1,6 +1,5 @@
-use std::cmp::Ordering;
-
 use hdi::prelude::*;
+use std::cmp::Ordering;
 
 use crate::{Threshold, ThresholdKind};
 // use std::collections::HashMap;

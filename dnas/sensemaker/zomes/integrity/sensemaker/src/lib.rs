@@ -28,12 +28,14 @@ pub enum EntryTypes {
     DataSet(DataSet),
     ResourceType(ResourceType),
     Range(Range),
+    SensemakerConfig(SensemakerConfig),
 }
 
 #[hdk_link_types]
 pub enum LinkTypes {
     Dimensions,
     Assessment,
+    CAToSensemakerConfig,
 }
 
 #[hdk_extern]

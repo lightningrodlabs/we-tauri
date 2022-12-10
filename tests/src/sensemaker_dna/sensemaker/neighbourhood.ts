@@ -978,7 +978,7 @@ export default () => {
             type: "error",
             data: {
               type: "ribosome_error",
-              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/dimension.rs", line: 56, error: Guest("incompatible range types for threshold comparison") }',
+              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/dimension.rs", line: 58, error: Guest("incompatible range types for threshold comparison") }',
             },
           };
           t.deepEqual(expectedError, e);
