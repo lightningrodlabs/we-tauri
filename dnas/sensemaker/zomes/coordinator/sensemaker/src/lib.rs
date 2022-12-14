@@ -1,11 +1,15 @@
 mod assessment;
 mod cultural_context;
 mod dimension;
+mod init;
 mod method;
 mod resource_type;
+mod sensemaker_config;
 mod utils;
 pub use assessment::*;
 pub use cultural_context::*;
 pub use dimension::*;
+pub use init::*;
 pub use method::*;
 pub use resource_type::*;
+pub use sensemaker_config::*;

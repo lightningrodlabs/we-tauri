@@ -3,8 +3,8 @@ mod assessment;
 mod cultural_context;
 mod dimension;
 mod method;
+mod properties;
 mod resource_type;
-mod util;
 
 pub use assessment::Assessment;
 pub use cultural_context::{
@@ -12,8 +12,8 @@ pub use cultural_context::{
 };
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
+pub use properties::*;
 pub use resource_type::ResourceType;
-pub use util::is_community_activator;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
@@ -28,12 +28,14 @@ pub enum EntryTypes {
     DataSet(DataSet),
     ResourceType(ResourceType),
     Range(Range),
+    SensemakerConfig(SensemakerConfig),
 }
 
 #[hdk_link_types]
 pub enum LinkTypes {
     Dimensions,
     Assessment,
+    CAToSensemakerConfig,
 }
 
 #[hdk_extern]
@@ -124,7 +126,7 @@ fn validate_author_as_ca(
                             activity.action.hashed.author().clone()
                         }
                     };
-                    if let true = is_community_activator(author)? {
+                    if let true = Properties::is_community_activator(author)? {
                         Ok(ValidateCallbackResult::Valid)
                     } else {
                         Ok(ValidateCallbackResult::Invalid(String::from(

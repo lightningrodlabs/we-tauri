@@ -1,34 +1,56 @@
 {
     "neighbourhood": "Rated Agenda",
-    "sensemaker-version": "v0.1",
-    "wizard-version": "v0.1",
-    "config-version": "v1-inclusive",
+    "wizard_version": "v0.1",
+    "config_version": "v1-inclusive",
     "creator": "John Doe <john@doe.org>",
-    "requiredApps": [ { "name":"AgendaItem", "version":"v1.0" } ],
-    "ranges": [
-        { "name": "timeRange", "kind": "Integer", "min": "1", "max": "600" },
-        { "name": "voteRange", "kind": "Integer", "min": 0, "max": 1 },
-        { "name": "ratioRange", "kind": "Float", "min": "0.0", "max": "1.0" }
-    ],
+    // commenting out ranges for now since this is only a part of dimension
+    // "ranges": [
+    //     { "name": "timeRange", "kind": "Integer", "min": "1", "max": "600" },
+    //     { "name": "voteRange", "kind": "Integer", "min": 0, "max": 1 },
+    //     { "name": "ratioRange", "kind": "Float", "min": "0.0", "max": "1.0" }
+    // ],
     "dimensions": [
-        { "name": "duration", "range": "timeRange" },
-        { "name": "upvote", "range": "voteRange" },
-        { "name": "upvoteRatio", "range": "ratioRange", "computed": true }
+        { "name": "duration", "range": { "name": "timeRange", "kind": { "Integer": { "min": 1, "max": 600 }}}, "computed": false},
+        { "name": "upvote", "range": { "name": "voteRange", "kind": { "Integer": {"min": 0, "max": 1 }}}, "computed": false },
+        { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": { "Float": { "min": "0.0", "max": "1.0" }}}, "computed": true }
     ],
     "resources": [
         {
             "name": "AgendaItemResource",
-            "base_type": "AgendaItem",
-            "dimensions": [ "duration", "upvote", "upvoteRatio" ]
+            "base_type": "AgendaItem", // this should be the actualy AppEntryDef of the entry from Provider DNA
+
+            // these dimensions need to be the dimensions defined at the root of this config sample
+            "dimensions": [ 
+                { "name": "duration", "range": { "name": "timeRange", "kind": { "Integer": { "min": 1, "max": 600 }}}, "computed": false }, 
+                { "name": "upvote", "range": { "name": "voteRange", "kind": { "Integer": {"min": 0, "max": 1 }}}, "computed": false },
+                { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": { "Float": { "min": "0.0", "max": "1.0" }}}, "computed": true }
+            ]
         }
     ],
     "methods": [
         {
             "name": "computeUpvoteRatio",
-            "target_resource_type": "AgendaItemResource",
-            "input_dimensions": [ "upvote" ],
-            "output_dimension": "upvoteRatio",
-            "program": "Sum",
+
+            // this should be the resource type defined at the root of this config sample
+            "target_resource_type": {
+                "name": "AgendaItemResource",
+                "base_type": "AgendaItem", // this should be the actualy AppEntryDef of the entry from Provider DNA
+                "dimensions": [ 
+                    { "name": "duration", "range": { "name": "timeRange", "kind": { "Integer": { "min": 1, "max": 600 }}}, "computed": false }, 
+                    { "name": "upvote", "range": { "name": "voteRange", "kind": { "Integer": { "min": 0, "max": 1 }}}, "computed": false },
+                    { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": { "Float": { "min": "0.0", "max": "1.0" }}}, "computed": true }
+                ]
+            },
+
+            // dimensions here should all be subjective (?)
+            // dimensions here should be dimensions defined at the root of this config sample
+            "input_dimensions": [ { "name": "upvote", "range": { "name": "voteRange", "kind": { "Integer": {"min": 0, "max": 1 }}}, "computed": false } ],
+
+            // dimensions here should be objective
+            // dimensions here should be dimensions defined at the root of this config sample
+            "output_dimension": { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": {"Float": { "min": "0.0", "max": "1.0" }}}, "computed": true },
+
+            "program": { "Sum": null },
             "can_compute_live": false, // will do live method computation each time a new assessment comes in
             "must_publish_dataset": false // publish the dataset used for each computation
         }
@@ -37,14 +59,29 @@
     "contexts": [
         {
             "name": "PrioritizedAgenda",
-            "resource_type": "AgendaItemResource",
+
+            // this should be the resource type defined at the root of this config sample
+            "resource_type": {
+                "name": "AgendaItemResource",
+                "base_type": "AgendaItem", // this should be the actualy AppEntryDef of the entry from Provider DNA
+                "dimensions": [ 
+                    { "name": "duration", "range": { "name": "timeRange", "kind": { "Integer": { "min": 1, "max": 600 }}}, "computed": false }, 
+                    { "name": "upvote", "range": { "name": "voteRange", "kind": { "Integer": {"min": 0, "max": 1 }}}, "computed": false },
+                    { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": { "Float": { "min": "0.0", "max": "1.0" }}}, "computed": true }
+                ]
+            },
+
+            // dimensions here should be dimensions defined at the root of this config sample
             "thresholds": [
-                { "dimension": "duration", "kind": "LessThan", "value": { "Integer": "2"} },
-                { "dimension": "upvoteRatio", "kind": "GreaterThan", "value": { "Float": "0.0" } }
+                { "dimension":{ "name": "duration", "range": { "name": "timeRange", "kind": { "Integer": { "min": 1, "max": 600 }}}, "computed": false }, "kind": { "LessThan": null }, "value": { "Integer": "2"}},
+                { "dimension":  { "name": "upvoteRatio", "range": { "name": "ratioRange", "kind": {"Float": { "min": "0.0", "max": "1.0" }}}, "kind": { "GreaterThan": null }, "value": { "Float": "0.0" }}}
             ],
+            
+            // dimension here should be found in the dimensions used in thresholds (?)
+            // dimensions here should be dimensions defined at the root of this config sample
             "order_by": [
-                { "dimension": "upvoteRatio", "order": "Biggest" },
-                { "dimension": "duration", "order": "Biggest" }
+                [{ "dimension": { "name": "upvoteRatio", "range": "ratioRange", "computed": true }}, { "LessThan": null }],
+                [{ "dimension": { "name": "duration", "range": "timeRange" }}, { "Biggest": null }]
             ]
         }
     ]

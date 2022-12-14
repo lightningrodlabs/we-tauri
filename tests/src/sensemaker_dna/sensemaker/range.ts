@@ -5,13 +5,13 @@ import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
 const { test } = pkg;
 
-import { sensemakerDnaDna } from "../../utils";
+import { sensemakerDna } from "../../utils";
 
 
 export default () => test("range CRUD tests", async (t) => {
   await runScenario(async scenario => {
 
-    const dnas: DnaSource[] = [{ path: sensemakerDnaDna }];
+    const dnas: DnaSource[] = [{ path: sensemakerDna }];
 
     const [alice, bob] = await scenario.addPlayersWithHapps([dnas, dnas]);
 

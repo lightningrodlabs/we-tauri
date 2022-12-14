@@ -1,6 +1,5 @@
-use std::cmp::Ordering;
-
 use hdi::prelude::*;
+use std::cmp::Ordering;
 
 use crate::{Threshold, ThresholdKind};
 // use std::collections::HashMap;
@@ -10,6 +9,9 @@ use crate::{Threshold, ThresholdKind};
 pub struct Dimension {
     pub name: String,
     pub range: Range,
+    // identifies whether a dimension is objective or subjective
+    // can be used to validate dimensions ehs being passed as io in method
+    pub computed: bool,
 }
 
 #[hdk_entry_helper]
