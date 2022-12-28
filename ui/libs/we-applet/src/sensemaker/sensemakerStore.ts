@@ -1,6 +1,6 @@
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { Assessment, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { Assessment, ComputeContextInput, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
 
 export class SensemakerStore {
   // store any value here that would benefit from being a store
@@ -47,7 +47,7 @@ export class SensemakerStore {
     return await this.service.getCulturalContext(culturalContextEh) 
   }
 
-  async computeContext(computeContextInput: EntryHash): Promise<Record> {
+  async computeContext(computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
     return await this.service.computeContext(computeContextInput) 
   }
 }

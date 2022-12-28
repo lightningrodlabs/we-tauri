@@ -1,6 +1,6 @@
 import { CellClient } from '@holochain-open-dev/cell-client';
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
-import { Assessment, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { Assessment, ComputeContextInput, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
 
 export class SensemakerService {
   constructor(public cellClient: CellClient, public zomeName = 'sensemaker') {}
@@ -39,7 +39,7 @@ export class SensemakerService {
     return this.callZome('get_cultural_context', culturalContextEh);
   }
 
-  async computeContext(computeContextInput: EntryHash): Promise<Record> {
+  async computeContext(computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
     return this.callZome('compute_context', computeContextInput);
   }
 
