@@ -20,7 +20,7 @@ pub fn entry_from_record<T: TryFrom<SerializedBytes, Error = SerializedBytesErro
 
 // NOTE: when using the to get objective assessments, we need to clarify what it means for multiple objective assessments to be created for a resource
 // do we always assume the most up to date? how will these affect checking against thresholds?
-pub fn get_assessments_for_resource(
+pub fn get_assessments_for_resource_inner(
     resource_eh: EntryHash,
     dimension_ehs: Vec<EntryHash>,
 ) -> ExternResult<BTreeMap<EntryHash, Vec<Assessment>>> {

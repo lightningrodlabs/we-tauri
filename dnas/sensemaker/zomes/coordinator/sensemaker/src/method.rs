@@ -10,7 +10,7 @@ use sensemaker_integrity::RangeValue;
 use crate::create_assessment;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
-use crate::utils::get_assessments_for_resource;
+use crate::utils::get_assessments_for_resource_inner;
 
 #[hdk_extern]
 pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
@@ -31,7 +31,7 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         // get assessments from the input dimensions
         // compute the value - which would be a range value in the dimension that is created
         // for each dimension_eh, get the assessments
-        let assessments = get_assessments_for_resource(
+        let assessments = get_assessments_for_resource_inner(
             input.resource_eh.clone(),
             method.input_dimension_ehs.clone(),
         )?;

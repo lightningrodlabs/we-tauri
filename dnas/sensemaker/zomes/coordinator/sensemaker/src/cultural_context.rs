@@ -9,7 +9,7 @@ use sensemaker_integrity::OrderingKind;
 
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
-use crate::utils::get_assessments_for_resource;
+use crate::utils::get_assessments_for_resource_inner;
 
 #[hdk_extern]
 pub fn get_cultural_context(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
@@ -62,7 +62,7 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
             // we should really only be using one assessment per dimension per resource, since these are objective dimensions
             // for now going to just take the last one, but we will need to clarify exactly how to handle these situations
             let resource_assessments =
-                get_assessments_for_resource(resource_eh.clone(), dimension_ehs.clone())?;
+                get_assessments_for_resource_inner(resource_eh.clone(), dimension_ehs.clone())?;
             all_resource_assessments.insert(resource_eh.clone(), resource_assessments.clone());
 
             // check the assessments against all thresholds?

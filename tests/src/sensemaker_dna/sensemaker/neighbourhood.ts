@@ -286,6 +286,21 @@ export default () => {
           decode((createAssessmentReadOutput.entry as any).Present.entry) as any
         );
 
+        const getAssessmentsForResourceInput = {
+          resource_eh: createPostEntryHash,
+          dimension_eh: createDimensionEntryHash,
+        }
+        const assessmentsForResource: any[] = await callZomeBob(
+          "sensemaker",
+          "get_assessments_for_resource",
+          getAssessmentsForResourceInput,
+          true
+        );
+        t.ok(assessmentsForResource.length === 2)
+        console.log('assessments for resource', assessmentsForResource)
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify(createAssessment)))
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify(createAssessment2)))
+
         // define objective dimension
 
         const integerRange2 = {
