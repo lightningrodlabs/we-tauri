@@ -5,6 +5,7 @@ export type Option<Inner> = Inner | null
 export interface Dimension {
     name: string,
     range: Range,
+    computed: boolean,
 }
 
 export interface Range {
