@@ -282,7 +282,7 @@ export default () => {
           true
         );
         t.deepEqual(
-          createAssessment,
+          {...createAssessment, author: alice_agent_key},
           decode((createAssessmentReadOutput.entry as any).Present.entry) as any
         );
 
@@ -298,8 +298,8 @@ export default () => {
         );
         t.ok(assessmentsForResource.length === 2)
         console.log('assessments for resource', assessmentsForResource)
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify(createAssessment)))
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify(createAssessment2)))
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({...createAssessment, author: alice_agent_key})))
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({...createAssessment2, author: alice_agent_key})))
 
         // define objective dimension
 
@@ -390,6 +390,7 @@ export default () => {
           dimension_eh: createObjectiveDimensionEntryHash,
           subject_eh: createPostEntryHash,
           maybe_input_dataset: null,
+          author: alice_agent_key,
         };
         t.deepEqual(
           objectiveAssessment,
@@ -800,6 +801,7 @@ export default () => {
           dimension_eh: createObjectiveDimensionEntryHash,
           subject_eh: createPostEntryHash,
           maybe_input_dataset: null,
+          author: alice_agent_key,
         };
         t.deepEqual(
           objectiveAssessment,
@@ -824,6 +826,7 @@ export default () => {
           dimension_eh: createObjectiveDimensionEntryHash,
           subject_eh: createPostEntryHash2,
           maybe_input_dataset: null,
+          author: alice_agent_key,
         };
         t.deepEqual(
           objectiveAssessment2,
@@ -848,6 +851,7 @@ export default () => {
           dimension_eh: createObjectiveDimensionEntryHash,
           subject_eh: createPostEntryHash3,
           maybe_input_dataset: null,
+          author: alice_agent_key,
         };
         t.deepEqual(
           objectiveAssessment3,

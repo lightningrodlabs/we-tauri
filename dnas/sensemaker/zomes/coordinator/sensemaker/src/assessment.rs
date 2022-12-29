@@ -1,8 +1,10 @@
 use hdk::prelude::*;
 use holo_hash::EntryHashB64;
 use sensemaker_integrity::Assessment;
+use sensemaker_integrity::DataSet;
 use sensemaker_integrity::EntryTypes;
 use sensemaker_integrity::LinkTypes;
+use sensemaker_integrity::RangeValue;
 
 use crate::utils::get_assessments_for_resource_inner;
 
@@ -25,8 +27,23 @@ pub fn get_assessments_for_resource(input: GetAssessmentsForResourceInput) -> Ex
     Ok(flat_assessments.clone())
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct CreateAssessmentInput {
+    pub value: RangeValue,
+    pub dimension_eh: EntryHash,
+    pub subject_eh: EntryHash, // assuming this is the EH of the resource being assessed
+    pub maybe_input_dataset: Option<DataSet>,
+}
+
 #[hdk_extern]
-pub fn create_assessment(assessment: Assessment) -> ExternResult<EntryHash> {
+pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, subject_eh, maybe_input_dataset }: CreateAssessmentInput) -> ExternResult<EntryHash> {
+    let assessment = Assessment {
+        value,
+        dimension_eh,
+        subject_eh,
+        maybe_input_dataset,
+        author: agent_info()?.agent_latest_pubkey,
+    };
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;
     create_link(

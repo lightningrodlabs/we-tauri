@@ -9,4 +9,5 @@ pub struct Assessment {
     pub dimension_eh: EntryHash,
     pub subject_eh: EntryHash, // assuming this is the EH of the resource being assessed
     pub maybe_input_dataset: Option<DataSet>,
+    pub author: AgentPubKey,
 }

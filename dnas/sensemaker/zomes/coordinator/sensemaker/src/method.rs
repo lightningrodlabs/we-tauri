@@ -7,6 +7,7 @@ use sensemaker_integrity::Method;
 use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
+use crate::CreateAssessmentInput;
 use crate::create_assessment;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
@@ -56,7 +57,7 @@ fn compute_objective_assessment(
     method: Method,
     assessments: BTreeMap<EntryHash, Vec<Assessment>>,
     subject_eh: EntryHash,
-) -> ExternResult<Option<Assessment>> {
+) -> ExternResult<Option<CreateAssessmentInput>> {
     //
     match method.program {
         Program::Sum => {
@@ -69,7 +70,7 @@ fn compute_objective_assessment(
                     RangeValue::Float(_) => (), // TODO: complete this
                 }
             }
-            let assessment = Assessment {
+            let assessment = CreateAssessmentInput {
                 value: RangeValue::Integer(sum),
                 dimension_eh: method.output_dimension_eh,
                 subject_eh,
