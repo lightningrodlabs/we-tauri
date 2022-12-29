@@ -1,4 +1,4 @@
-import { AppEntryType, EntryHash } from "@holochain/client"
+import { AgentPubKey, AppEntryType, EntryHash } from "@holochain/client"
 
 export type Option<Inner> = Inner | null
 
@@ -45,11 +45,20 @@ export interface ResourceType {
     dimension_ehs: Array<EntryHash>,
 }
 
-export interface Assessment {
+export interface CreateAssessmentInput {
     value: RangeValue,
     dimension_eh: EntryHash,
     subject_eh: EntryHash,
     maybe_input_dataSet: Option<DataSet>, // For objective Dimensions only
+}
+
+export type Assessment = CreateAssessmentInput & {
+    author: AgentPubKey
+}
+
+export interface GetAssessmentsForResourceInput {
+    resource_eh: EntryHash,
+    dimension_eh: EntryHash,
 }
 
 export interface Method {
@@ -67,7 +76,7 @@ export interface RunMethodInput {
     method_eh: EntryHash,
 }
 export interface DataSet {
-    from: EntryHash,            
+    from: EntryHash,
     data_points: {
         [key: string]: Array<EntryHash>, // key cannot be of type Uint8Array, specifying as string for now as we are not currently using `DataSet`
     }

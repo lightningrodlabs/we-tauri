@@ -1,6 +1,6 @@
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { Assessment, ComputeContextInput, CulturalContext, Dimension, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
 
 export class SensemakerStore {
   // store any value here that would benefit from being a store
@@ -23,12 +23,16 @@ export class SensemakerStore {
     return await this.service.createResourceType(resourceType) 
   }
 
-  async createAssessment(assessment: Assessment): Promise<EntryHash> {
+  async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
     return await this.service.createAssessment(assessment) 
   }
 
   async getAssessment(assessmentEh: EntryHash): Promise<Record> {
     return await this.service.getAssessment(assessmentEh) 
+  }
+
+  async getAssessmentForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
+    return await this.service.getAssessmentsForResource(getAssessmentsInput) 
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
