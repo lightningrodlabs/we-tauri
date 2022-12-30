@@ -63,7 +63,7 @@ export interface GetAssessmentsForResourceInput {
 }
 
 export interface Method {
-    name: String,
+    name: string,
     target_resource_type_eh: EntryHash,
     input_dimension_ehs: Array<EntryHash>,
     output_dimension_eh: EntryHash,
@@ -94,7 +94,7 @@ export interface ProgramAverage {
 }
 
 export interface CulturalContext {
-    name: String,
+    name: string,
     resource_type_eh: EntryHash,
     thresholds: Array<Threshold>,
     order_by: Array<[EntryHash, OrderingKind]>, // DimensionEh
@@ -140,4 +140,21 @@ export interface ThresholdKindLessThan {
 
 export interface ThresholdKindEqual {
     Equal: null,
+}
+export interface AppletConfig {
+    dimensions: {
+        [dimensionName: string]: EntryHash,
+    },
+    resourceTypes: {
+        [resourceTypeName: string]: EntryHash,
+    },
+    methods: {
+        [methodName: string]: EntryHash,
+    },
+    contexts: {
+        [contextName: string]: EntryHash,
+    },
+    contextResults: {
+        [contextName: string]: Array<EntryHash>,
+    }
 }

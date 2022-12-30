@@ -1,10 +1,25 @@
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { AppletConfig, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { derived, get, Writable, writable } from 'svelte/store';
+import {
+  Dictionary,
+} from '@holochain-open-dev/core-types';
+import { serializeHash } from "@holochain-open-dev/utils";
 
 export class SensemakerStore {
   // store any value here that would benefit from being a store
   // like cultural context entry hash and then the context result vec
+
+  #appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resourceTypes: {}, methods: {}, contexts: {}, contextResults: {} });
+
+  // TODO: update the structure of this store to include dimension and resource type
+  /*
+  {
+    [resourceEh: string]: Array<Assessment>
+  }
+  */
+  #resourceAssessments: Writable<Dictionary<Array<Assessment>>> = writable({});
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -15,16 +30,41 @@ export class SensemakerStore {
     this.myAgentPubKey = service.cellClient.cell.cell_id[1];
   }
 
+  resourceAssessments() {
+    return derived(this.#resourceAssessments, resourceAssessments => resourceAssessments)
+  }
+
+  appletConfig() {
+    return derived(this.#appletConfig, appletConfig => appletConfig)
+  }
+
   async createDimension(dimension: Dimension): Promise<EntryHash> {
-    return await this.service.createDimension(dimension) 
+    const dimensionEh = await this.service.createDimension(dimension);
+    this.#appletConfig.update(appletConfig => {
+      appletConfig.dimensions[dimension.name] = dimensionEh;
+      return appletConfig;
+    });
+    return dimensionEh;
   }
 
   async createResourceType(resourceType: ResourceType): Promise<EntryHash> {
-    return await this.service.createResourceType(resourceType) 
+    const resourceTypeEh = await this.service.createResourceType(resourceType);
+    this.#appletConfig.update(appletConfig => {
+      appletConfig.resourceTypes[resourceType.name] = resourceTypeEh;
+      return appletConfig;
+    });
+    return resourceTypeEh;
   }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
-    return await this.service.createAssessment(assessment) 
+    const assessmentEh = await this.service.createAssessment(assessment);
+    this.#resourceAssessments.update(resourceAssessments => {
+      const maybePrevAssessments = resourceAssessments[serializeHash(assessment.subject_eh)];
+      const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
+      resourceAssessments[serializeHash(assessment.subject_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey}]
+      return resourceAssessments;
+    })
+    return assessmentEh;
   }
 
   async getAssessment(assessmentEh: EntryHash): Promise<Record> {
@@ -36,7 +76,12 @@ export class SensemakerStore {
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
-    return await this.service.createMethod(method) 
+    const methodEh = await this.service.createMethod(method);
+    this.#appletConfig.update(appletConfig => {
+      appletConfig.methods[method.name] = methodEh;
+      return appletConfig;
+    });
+    return methodEh;
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<EntryHash> {
@@ -44,14 +89,24 @@ export class SensemakerStore {
   }
 
   async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
-    return await this.service.createCulturalContext(culturalContext) 
+    const contextEh = await this.service.createCulturalContext(culturalContext);
+    this.#appletConfig.update(appletConfig => {
+      appletConfig.contexts[culturalContext.name] = contextEh;
+      return appletConfig;
+    });
+    return contextEh;
   }
 
   async getCulturalContext(culturalContextEh: EntryHash): Promise<Record> {
     return await this.service.getCulturalContext(culturalContextEh) 
   }
 
-  async computeContext(computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
-    return await this.service.computeContext(computeContextInput) 
+  async computeContext(contextName: string, computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
+    const contextResult = await this.service.computeContext(computeContextInput);
+    this.#appletConfig.update(appletConfig => {
+      appletConfig.contextResults[contextName] = contextResult;
+      return appletConfig;
+    });
+    return contextResult;
   }
 }
