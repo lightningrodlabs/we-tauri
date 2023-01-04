@@ -2,7 +2,6 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { contextProvided } from "@lit-labs/context";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Button,
@@ -12,11 +11,11 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
-import { AppletInfo } from "../../types";
+import { AppletMetaData } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash } from "@holochain/client";
+import { DnaHash, EntryHashB64 } from "@holochain/client";
 
 export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -52,7 +51,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
   _duplicateName: boolean = false;
 
   @property()
-  _appletInfo: AppletInfo = {
+  _appletInfo: AppletMetaData = {
     title: "",
     subtitle: "",
     description: "",
@@ -60,7 +59,7 @@ export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
     icon: undefined,
   };
 
-  open(appletInfo: AppletInfo) {
+  open(appletInfo: AppletMetaData) {
     this._appletDialog.show();
     this._appletInfo = appletInfo;
   }

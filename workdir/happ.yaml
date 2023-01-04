@@ -3,7 +3,7 @@ manifest_version: "1"
 name: we
 description: ~
 roles:
-  - id: lobby
+  - name: lobby
     provisioning:
       strategy: create
       deferred: false
@@ -13,7 +13,7 @@ roles:
       network_seed: ~
       version: ~
       clone_limit: 100
-  - id: we
+  - name: we
     provisioning:
       strategy: create
       deferred: true

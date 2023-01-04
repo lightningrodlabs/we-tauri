@@ -2,7 +2,7 @@ import { ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   AdminWebsocket,
   AppWebsocket,
-  InstalledAppInfo,
+  AppInfo,
 } from "@holochain/client";
 
 export type Renderer = (
@@ -29,7 +29,7 @@ export interface WeApplet {
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weStore: WeServices,
-    appletInfo: InstalledAppletInfo[],
+    appletInfo: AppletInfo[],
   ) => Promise<AppletRenderers>;
 }
 
@@ -38,7 +38,7 @@ export interface WeInfo {
   logoSrc: string;
   name: string;
 }
-export interface InstalledAppletInfo {
+export interface AppletInfo {
   weInfo: WeInfo,
-  installedAppInfo: InstalledAppInfo,
+  appInfo: AppInfo,
 }

@@ -25,10 +25,8 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       `ws://localhost:${process.env.HC_PORT}`,
     );
 
-    const holochainClient = new HolochainClient(appWebsocket);
-
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-    this._matrixStore = new MatrixStore(holochainClient, adminWebsocket, weAppInfo);
+    this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
 
     this.loading = false;

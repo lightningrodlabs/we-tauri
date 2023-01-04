@@ -8,7 +8,6 @@ import {
   Card,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64, EntryHashB64 } from "@holochain-open-dev/core-types";
 import { property, query, state } from "lit/decorators.js";
 import { Task } from "@lit-labs/task";
 
@@ -19,11 +18,11 @@ import {
   getLatestRelease,
 } from "../../processes/devhub/get-happs";
 
-import { AppletInfo } from "../../types";
+import { AppletMetaData } from "../../types";
 import { CreateAppletDialog } from "../dialogs/create-applet-dialog";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { DnaHash } from "@holochain/client";
+import { DnaHash, AgentPubKeyB64, EntryHashB64 } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -44,12 +43,12 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   );
 
   @state()
-  private _selectedAppletInfo: AppletInfo | undefined;
+  private _selectedAppletInfo: AppletMetaData | undefined;
 
   @query("#applet-dialog")
   _appletDialog!: CreateAppletDialog;
 
-  renderInstallableApplet(appletInfo: AppletInfo) {
+  renderInstallableApplet(appletInfo: AppletMetaData) {
     return html`
       <mwc-card class="applet-card">
         <div style="height: 145px;">
@@ -90,7 +89,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
               let latestRelease = getLatestRelease(item);
 
               if (latestRelease) {
-                let appletInfo: AppletInfo = {
+                let appletInfo: AppletMetaData = {
                   title: item.app.content.title,
                   subtitle: item.app.content.subtitle,
                   description: item.app.content.description,

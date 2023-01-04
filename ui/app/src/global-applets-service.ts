@@ -1,39 +1,62 @@
-import { CellClient } from "@holochain-open-dev/cell-client";
-import { ActionHash, AgentPubKey, DnaHash, EntryHash } from "@holochain/client";
+import { ActionHash, AgentPubKey, DnaHash, EntryHash, CellId, AppAgentWebsocket } from "@holochain/client";
 import { Applet, AppletGui, PlayingApplet, RegisterAppletInput } from "./types";
 
 export class GlobalAppletsService {
-  constructor(protected lobbyClient: CellClient) {}
+  constructor(protected appAgentWebsocket: AppAgentWebsocket) {}
 
-
-  async getAllApplets(cellClient: CellClient): Promise<[EntryHash, Applet, DnaHash[]][]> {
-    return cellClient.callZome("applets_coordinator", "get_all_applets", null);
+  async getAllApplets(cellId: CellId): Promise<[EntryHash, Applet, DnaHash[]][]> {
+    return this.appAgentWebsocket.callZome({
+      cell_id: cellId,
+      zome_name: "applets_coordinator",
+      fn_name: "get_all_applets",
+      payload: null,
+    });
   }
 
-  async getAppletsIAmPlaying(cellClient: CellClient): Promise<[EntryHash, PlayingApplet, DnaHash[]][]> {
-    return cellClient.callZome("applets_coordinator", "get_applets_i_am_playing", null);
+  async getAppletsIAmPlaying(cellId: CellId): Promise<[EntryHash, PlayingApplet, DnaHash[]][]> {
+    return this.appAgentWebsocket.callZome({
+      cell_id: cellId,
+      zome_name: "applets_coordinator",
+      fn_name: "get_applets_i_am_playing",
+      payload: null,
+  });
   }
 
 
-  async createApplet(cellClient: CellClient, registerAppletInput: RegisterAppletInput): Promise<EntryHash> {
-    return cellClient.callZome("applets_coordinator", "create_applet", registerAppletInput);
+  async createApplet(cellId: CellId, registerAppletInput: RegisterAppletInput): Promise<EntryHash> {
+    return this.appAgentWebsocket.callZome({
+      cell_id: cellId,
+      zome_name: "applets_coordinator",
+      fn_name: "create_applet",
+      payload: registerAppletInput
+    });
   }
 
 
   async registerApplet(
-    cellClient: CellClient,
+    cellId: CellId,
     appletAgentPubKey: AgentPubKey,
     applet: Applet,
   ): Promise<EntryHash> {
-    return cellClient.callZome("applets_coordinator", "register_applet", { appletAgentPubKey, applet });
+    return this.appAgentWebsocket.callZome({
+      cell_id: cellId,
+      zome_name: "applets_coordinator",
+      fn_name: "register_applet",
+      payload: { appletAgentPubKey, applet }
+    });
   }
 
   async federateApplet(
-    cellClient: CellClient,
+    cellId: CellId,
     appletHash: EntryHash,
     weGroupDnaHash: DnaHash,
   ): Promise<ActionHash> {
-    return cellClient.callZome("applets_coordinator", "federate_applet", { appletHash, weGroupDnaHash });
+    return this.appAgentWebsocket.callZome({
+      cell_id: cellId,
+      zome_name: "applets_coordinator",
+      fn_name: "federate_applet",
+      payload: { appletHash, weGroupDnaHash }
+    });
   }
 
   /**
@@ -45,16 +68,22 @@ export class GlobalAppletsService {
   async commitGuiFile(
     appletGui: AppletGui
   ): Promise<void> {
-    return this.callLobbyZome("commit_gui_file", appletGui);
+    return this.appAgentWebsocket.callZome({
+      role_name: "lobby",
+      zome_name: "applet_guis",
+      fn_name: "commit_gui_file",
+      payload: appletGui
+    });
   }
 
 
   async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<AppletGui> {
-    return this.callLobbyZome("query_applet_gui", devhubHappReleaseHash);
+    return this.appAgentWebsocket.callZome({
+      role_name: "lobby",
+      zome_name: "applet_guis",
+      fn_name: "query_applet_gui",
+      payload: devhubHappReleaseHash,
+    });
   }
 
-
-  private async callLobbyZome(fn_name: string, payload: any): Promise<any> {
-    return this.lobbyClient.callZome("applet_guis_coordinator", fn_name, payload);
-  }
 }
