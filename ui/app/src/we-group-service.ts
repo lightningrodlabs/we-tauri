@@ -1,4 +1,3 @@
-import { CellClient } from "@holochain-open-dev/cell-client";
 import { AppAgentWebsocket, CellId } from "@holochain/client";
 import { WeInfo } from "@lightningrodlabs/we-applet";
 

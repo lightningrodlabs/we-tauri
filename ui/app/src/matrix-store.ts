@@ -1,7 +1,6 @@
 import {
   EntryRecord,
 } from "@holochain-open-dev/utils";
-import { CellClient, HolochainClient } from "@holochain-open-dev/cell-client";
 import {
   writable,
   Writable,
@@ -212,10 +211,13 @@ export class MatrixStore {
   ) {
     const appAgentWebsocket = await AppAgentWebsocket.connect(appWebsocket, "we");
 
+    console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(
       appAgentWebsocket,
+      "lobby",
       "membrane_invitations_coordinator"
     );
+    console.log("@matrix-store: MembraneInvitationsStore: ", membraneInvitationsStore);
 
     const appletsService = new GlobalAppletsService(appAgentWebsocket);
 
@@ -709,7 +711,7 @@ export class MatrixStore {
         const profilesStore = new ProfilesStore(
           new ProfilesService(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
-        const peerStatusStore = new PeerStatusStore(weGroupCellClient);
+        const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
 
         // create WeGroupData object
         const weInfo: WeInfo = await weGroupAgentWebsocket.callZome({

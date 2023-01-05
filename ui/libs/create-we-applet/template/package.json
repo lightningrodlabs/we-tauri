@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@holochain-open-dev/profiles": "^0.5.1",
-    "@holochain/client": "^0.7.0",
+    "@holochain/client": "^0.11.9",
     "@lightningrodlabs/we-applet": "^0.1.0",
     "@lit-labs/context": "^0.1.2",
     "@open-wc/scoped-elements": "^2.0.1",
