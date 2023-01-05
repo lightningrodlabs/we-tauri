@@ -14,7 +14,7 @@ import { Task } from "@lit-labs/task";
 import { sharedStyles } from "../../sharedStyles";
 import {
   AppWithReleases,
-  getAllPublishedApps,
+  getAllAppsWithGui,
   getLatestRelease,
 } from "../../processes/devhub/get-happs";
 
@@ -37,7 +37,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
     async ([s]) => {
       const devhubHapp = await this._matrixStore.getDevhubHapp();
 
-      return getAllPublishedApps(this._matrixStore.appWebsocket, devhubHapp);
+      return getAllAppsWithGui(this._matrixStore.appWebsocket, devhubHapp);
     },
     () => [this._matrixStore, this.weGroupId]
   );
@@ -95,6 +95,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
                   description: item.app.content.description,
                   icon: undefined, // ADD ICON HERE
                   devhubHappReleaseHash: latestRelease.address,
+                  devhubGuiReleaseHash: latestRelease.content.official_gui!,
                 };
                 return this.renderInstallableApplet(appletInfo);
               }

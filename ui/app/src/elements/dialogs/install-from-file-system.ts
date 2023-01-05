@@ -106,6 +106,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         subtitle: undefined,
         description: this._descriptionField.value,
         devhubHappReleaseHash: this._fakeDevhubHappReleaseHash!,
+        devhubGuiReleaseHash: this._fakeDevhubHappReleaseHash!, // just take the same fake hash for the GUI hash
         icon: undefined,
       };
 
