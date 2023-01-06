@@ -88,7 +88,7 @@ export default () =>
 
                 let app_entry_type: AppEntryType = { id: 0, zome_id: 0, visibility: { Public: null } };
                 const resourceType: ResourceType = {
-                    name: "task-item",
+                    name: "task_item",
                     base_types: [app_entry_type],
                     dimension_ehs: [dimensionHash]
                 }
@@ -169,10 +169,13 @@ export default () =>
                 // create a config type
                 const appletConfig = {
                     name: "todo",
-                    dimensions: [dimensionHash, objectiveDimensionHash],
-                    resources: [resourceTypeEh],
-                    methods: [methodEh],
-                    contexts: [contextEh],
+                    dimensions: {
+                        importance: dimensionHash,
+                        total_importance: objectiveDimensionHash
+                    },
+                    resources: { task_item: resourceTypeEh },
+                    methods: { total_importance_method: methodEh },
+                    contexts: { most_important_tasks: contextEh },
                 }
                 const appletConfigInput = {
                     name: appletConfig.name,
@@ -207,7 +210,7 @@ export default () =>
                 );
                 t.ok(maybeAppletConfig);
                 t.deepEqual(JSON.stringify(maybeAppletConfig), JSON.stringify(appletConfig))
-
+                console.log(maybeAppletConfig)
             } catch (e) {
                 console.log(e);
                 t.ok(null);

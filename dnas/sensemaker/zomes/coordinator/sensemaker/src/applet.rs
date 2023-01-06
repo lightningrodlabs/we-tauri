@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use hdk::prelude::*;
 use sensemaker_integrity::{Dimension, ConfigResourceType, ConfigMethod, ConfigCulturalContext, AppletConfig, LinkTypes, EntryTypes, ResourceType, Method, CulturalContext};
 
@@ -24,30 +26,31 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
     }
     else {
         // applet config doesn't exist, create it
-        let dimensions = applet_config_input.dimensions
-            .into_iter()
-            .map(|dimension| {
-                create_dimension(dimension)
-            })
-            .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let resources = applet_config_input.resources
-            .into_iter()
-            .map(|config_resource_type| {
-                create_resource_type(ResourceType::try_from(config_resource_type)?)
-            })
-            .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let methods = applet_config_input.methods
-            .into_iter()
-            .map(|config_method| {
-                create_method(Method::try_from(config_method)?)
-            })
-            .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let contexts = applet_config_input.contexts
-            .into_iter()
-            .map(|config_context| {
-                create_cultural_context(CulturalContext::try_from(config_context)?)
-            })
-            .collect::<ExternResult<Vec<EntryHash>>>()?;
+        let mut dimensions: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for dimension in applet_config_input.dimensions {
+            dimensions.insert(dimension.name.clone(), create_dimension(dimension)?);
+        }
+        let mut resources: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for config_resource_type in applet_config_input.resources {
+            resources.insert(
+                config_resource_type.name.clone(),
+                create_resource_type(ResourceType::try_from(config_resource_type)?)?
+            );
+        }
+        let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for config_method in applet_config_input.methods {
+            methods.insert(
+                config_method.name.clone(),
+                create_method(Method::try_from(config_method)?)?
+            );
+        }
+        let mut contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for config_context in applet_config_input.contexts {
+            contexts.insert(
+                config_context.name.clone(),
+                create_cultural_context(CulturalContext::try_from(config_context)?)?
+            );
+        }
         let applet_config = AppletConfig {
             name: applet_config_input.name,
             dimensions,
