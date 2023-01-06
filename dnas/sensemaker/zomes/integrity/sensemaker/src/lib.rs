@@ -5,6 +5,7 @@ mod dimension;
 mod method;
 mod properties;
 mod resource_type;
+mod applet;
 
 pub use assessment::Assessment;
 pub use cultural_context::{
@@ -14,6 +15,7 @@ pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
 pub use properties::*;
 pub use resource_type::ResourceType;
+pub use applet::AppletConfig;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
@@ -29,6 +31,7 @@ pub enum EntryTypes {
     ResourceType(ResourceType),
     Range(Range),
     SensemakerConfig(SensemakerConfig),
+    AppletConfig(AppletConfig),
 }
 
 #[hdk_link_types]
@@ -36,6 +39,8 @@ pub enum LinkTypes {
     Dimensions,
     Assessment,
     CAToSensemakerConfig,
+    AppletName,
+    AppletConfig,
 }
 
 #[hdk_extern]
