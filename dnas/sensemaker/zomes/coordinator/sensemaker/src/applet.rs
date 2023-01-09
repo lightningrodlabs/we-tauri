@@ -11,9 +11,9 @@ pub struct AppletConfigInput {
     // pub ranges: Vec<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: Vec<Dimension>,
     // the base_type field in ResourceType needs to be bridged call
-    pub resources: Vec<ConfigResourceType>,
+    pub resource_types: Vec<ConfigResourceType>,
     pub methods: Vec<ConfigMethod>,
-    pub contexts: Vec<ConfigCulturalContext>,
+    pub cultural_contexts: Vec<ConfigCulturalContext>,
 }
 
 #[hdk_extern]
@@ -30,9 +30,9 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
         for dimension in applet_config_input.dimensions {
             dimensions.insert(dimension.name.clone(), create_dimension(dimension)?);
         }
-        let mut resources: BTreeMap<String, EntryHash> = BTreeMap::new();
-        for config_resource_type in applet_config_input.resources {
-            resources.insert(
+        let mut resource_types: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for config_resource_type in applet_config_input.resource_types {
+            resource_types.insert(
                 config_resource_type.name.clone(),
                 create_resource_type(ResourceType::try_from(config_resource_type)?)?
             );
@@ -44,9 +44,9 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
                 create_method(Method::try_from(config_method)?)?
             );
         }
-        let mut contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
-        for config_context in applet_config_input.contexts {
-            contexts.insert(
+        let mut cultural_contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
+        for config_context in applet_config_input.cultural_contexts {
+            cultural_contexts.insert(
                 config_context.name.clone(),
                 create_cultural_context(CulturalContext::try_from(config_context)?)?
             );
@@ -54,9 +54,9 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
         let applet_config = AppletConfig {
             name: applet_config_input.name,
             dimensions,
-            resources,
+            resource_types,
             methods,
-            contexts,
+            cultural_contexts,
         };
         create_entry(&EntryTypes::AppletConfig(applet_config.clone()))?;
         let applet_config_eh = hash_entry(&EntryTypes::AppletConfig(applet_config.clone()))?;

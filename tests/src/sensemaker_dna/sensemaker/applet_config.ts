@@ -1,7 +1,7 @@
 import { DnaSource, Record, ActionHash, EntryHash, AppEntryType } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { CulturalContext, Dimension, ResourceType, Threshold } from "@neighbourhoods/nh-we-applet"
+import { CulturalContext, Dimension, ResourceType, Threshold, Range, ConfigResourceType, Method, ConfigMethod, ConfigThreshold, ConfigCulturalContext, AppletConfig, AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types"
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
@@ -44,7 +44,7 @@ export default () =>
                 await scenario.shareAllAgents();
                 await pause(500);
 
-                const integerRange = {
+                const integerRange: Range = {
                     "name": "1-scale",
                     "kind": {
                         "Integer": { "min": 0, "max": 1 }
@@ -66,14 +66,14 @@ export default () =>
                 t.ok(dimensionHash);
                 console.log('dimension hash', dimensionHash)
 
-                const integerRange2 = {
+                const integerRange2: Range = {
                     name: "1-scale-total",
                     kind: {
                         Integer: { min: 0, max: 1000000 },
                     },
                 };
 
-                const objectiveDimension = {
+                const objectiveDimension: Dimension = {
                     name: "total_importance",
                     range: integerRange2,
                     computed: true,
@@ -93,7 +93,7 @@ export default () =>
                     dimension_ehs: [dimensionHash]
                 }
 
-                const configResourceType = {
+                const configResourceType: ConfigResourceType = {
                     name: resourceType.name,
                     base_types: resourceType.base_types,
                     dimensions: [dimension]
@@ -108,7 +108,7 @@ export default () =>
                 t.ok(resourceTypeEh);
 
                 const methodName = "total_importance_method"
-                const totalImportanceMethod = {
+                const totalImportanceMethod: Method = {
                     name: methodName,
                     target_resource_type_eh: resourceTypeEh,
                     input_dimension_ehs: [dimensionHash],
@@ -117,7 +117,7 @@ export default () =>
                     can_compute_live: false,
                     must_publish_dataset: false,
                 };
-                const configMethod = {
+                const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
                     target_resource_type: configResourceType,
                     input_dimensions: [dimension], // check if it's subjective (for now)
@@ -139,7 +139,7 @@ export default () =>
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
                 };
-                const configThreshold = {
+                const configThreshold: ConfigThreshold = {
                     dimension: objectiveDimension,
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
@@ -151,7 +151,7 @@ export default () =>
                     thresholds: [threshold],
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
-                const configCulturalContext = {
+                const configCulturalContext: ConfigCulturalContext = {
                     name: culturalContext.name,
                     resource_type: configResourceType,
                     thresholds: [configThreshold],
@@ -167,22 +167,22 @@ export default () =>
                 t.ok(contextEh);
 
                 // create a config type
-                const appletConfig = {
+                const appletConfig: AppletConfig = {
                     name: "todo",
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resources: { task_item: resourceTypeEh },
+                    resource_types: { task_item: resourceTypeEh },
                     methods: { total_importance_method: methodEh },
-                    contexts: { most_important_tasks: contextEh },
+                    cultural_contexts: { most_important_tasks: contextEh },
                 }
-                const appletConfigInput = {
+                const appletConfigInput: AppletConfigInput = {
                     name: appletConfig.name,
                     dimensions: [dimension, objectiveDimension],
-                    resources: [configResourceType],
+                    resource_types: [configResourceType],
                     methods: [configMethod],
-                    contexts: [configCulturalContext],
+                    cultural_contexts: [configCulturalContext],
                 }
 
                 let maybeAppletConfig: any = await callZomeAlice(
