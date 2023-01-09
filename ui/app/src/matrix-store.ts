@@ -275,13 +275,23 @@ export class MatrixStore {
    */
   public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
     const appAgentWebsocket = get(this._matrix).get(weGroupId)[0].appAgentWebsocket;
-    const info = await appAgentWebsocket.callZome({
-      role_name: "we",
-      zome_name: "we_coordinator",
-      fn_name: "get_info",
-      payload: null,
-    });
-    return readable(info);
+    console.log("Fetching we group info...");
+
+    try {
+      const info = await appAgentWebsocket.callZome({
+        cell_id: [weGroupId, appAgentWebsocket.myPubKey],
+        zome_name: "we_coordinator",
+        fn_name: "get_info",
+        payload: null,
+      });
+      return readable(info);
+    } catch (e) {
+      console.log("Failed to fetch we group info: ", e);
+      return readable({
+        logoSrc: "",
+        name: "FETCHING GROUP INFO FAILED!"
+      });
+    }
   }
 
   /**
@@ -926,6 +936,10 @@ export class MatrixStore {
     });
 
     console.log("CREATED GROUP CELL CLONE: ", clonedCell);
+    console.log("...with DNA hash: ", encodeHashToBase64(clonedCell.cell_id[0]));
+
+    const dnaDefinition = await this.adminWebsocket.getDnaDefinition(clonedCell.cell_id[0]);
+    console.log("DnaDefinition of created clone: ", dnaDefinition);
 
     const newWeGroupCellId = clonedCell.cell_id;
 
