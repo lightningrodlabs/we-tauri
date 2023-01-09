@@ -550,9 +550,9 @@ dependencies = [
 
 [[package]]
 name = "hdk"
-version = "0.0.160"
+version = "0.0.161"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d5f998a4562c7eeb094d10839a7f3b968b66fc4d2204c126b210408b38dfa70"
+checksum = "9268b5af95355fd3a3790566318e0f2cc1172355523e6230ffc785cb10fe272d"
 dependencies = [
  "getrandom",
  "hdi",
@@ -684,9 +684,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_zome_types"
-version = "0.0.55"
+version = "0.0.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "476b736e1efc57790c432fb1f03fd3ca394c85d381ff6d82f1f10269b2cef4ac"
+checksum = "868b379af1236ec283564caf3193c70b84fe5bed78c03eb93c16523d64470509"
 dependencies = [
  "holo_hash",
  "holochain_integrity_types",
