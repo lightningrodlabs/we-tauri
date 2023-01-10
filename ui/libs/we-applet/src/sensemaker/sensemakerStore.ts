@@ -1,17 +1,22 @@
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from '@neighbourhoods/sensemaker-lite-types';
 import { derived, get, Writable, writable } from 'svelte/store';
 import {
   Dictionary,
 } from '@holochain-open-dev/core-types';
 import { serializeHash } from "@holochain-open-dev/utils";
+import { Option } from './sensemakerTypes';
 
+interface ContextResults {
+  [culturalContextName: string]: EntryHash[],
+}
 export class SensemakerStore {
   // store any value here that would benefit from being a store
   // like cultural context entry hash and then the context result vec
 
-  #appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resourceTypes: {}, methods: {}, contexts: {}, contextResults: {} });
+  #appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resource_types: {}, methods: {}, cultural_contexts: {}, name: "" });
+  #contextResults: Writable<ContextResults> = writable({});
 
   // TODO: update the structure of this store to include dimension and resource type
   /*
@@ -38,6 +43,10 @@ export class SensemakerStore {
     return derived(this.#appletConfig, appletConfig => appletConfig)
   }
 
+  contextResults() {
+    return derived(this.#contextResults, contextResults => contextResults)
+  }
+
   async createDimension(dimension: Dimension): Promise<EntryHash> {
     const dimensionEh = await this.service.createDimension(dimension);
     this.#appletConfig.update(appletConfig => {
@@ -50,7 +59,7 @@ export class SensemakerStore {
   async createResourceType(resourceType: ResourceType): Promise<EntryHash> {
     const resourceTypeEh = await this.service.createResourceType(resourceType);
     this.#appletConfig.update(appletConfig => {
-      appletConfig.resourceTypes[resourceType.name] = resourceTypeEh;
+      appletConfig.resource_types[resourceType.name] = resourceTypeEh;
       return appletConfig;
     });
     return resourceTypeEh;
@@ -91,7 +100,7 @@ export class SensemakerStore {
   async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
     const contextEh = await this.service.createCulturalContext(culturalContext);
     this.#appletConfig.update(appletConfig => {
-      appletConfig.contexts[culturalContext.name] = contextEh;
+      appletConfig.cultural_contexts[culturalContext.name] = contextEh;
       return appletConfig;
     });
     return contextEh;
@@ -103,10 +112,20 @@ export class SensemakerStore {
 
   async computeContext(contextName: string, computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
     const contextResult = await this.service.computeContext(computeContextInput);
-    this.#appletConfig.update(appletConfig => {
-      appletConfig.contextResults[contextName] = contextResult;
-      return appletConfig;
+    this.#contextResults.update(contextResults => {
+      contextResults[contextName] = contextResult;
+      return contextResults;
     });
     return contextResult;
+  }
+
+  async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
+    return await this.service.checkIfAppletConfigExists(appletName);
+  }
+
+  async registerApplet(appletConfigInput: AppletConfigInput): Promise<AppletConfig> {
+    const appletConfig = await this.service.registerApplet(appletConfigInput);
+    this.#appletConfig.update(() => appletConfig);
+    return appletConfig;
   }
 }

@@ -1,6 +1,7 @@
 import { CellClient } from '@holochain-open-dev/cell-client';
 import { AgentPubKey, EntryHash, Record } from '@holochain/client';
-import { Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from './sensemakerTypes';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from '@neighbourhoods/sensemaker-lite-types';
+import { Option } from './sensemakerTypes';
 
 export class SensemakerService {
   constructor(public cellClient: CellClient, public zomeName = 'sensemaker') {}
@@ -45,6 +46,14 @@ export class SensemakerService {
 
   async computeContext(computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
     return this.callZome('compute_context', computeContextInput);
+  }
+
+  async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
+    return this.callZome('check_if_applet_config_exists', appletName);
+  }
+
+  async registerApplet(appletConfig: AppletConfigInput): Promise<AppletConfig> {
+    return this.callZome('register_applet', appletConfig);
   }
 
   private callZome(fn_name: string, payload: any) {

@@ -29,7 +29,6 @@ export interface WeServices {
 export { SensemakerStore } from "./sensemaker/sensemakerStore";
 export { SensemakerService } from "./sensemaker/sensemakerService";
 export { sensemakerStoreContext } from "./sensemaker/context";
-export * from "./sensemaker/sensemakerTypes";
 export interface WeApplet {
   appletRenderers: (
     appWebsocket: AppWebsocket,
