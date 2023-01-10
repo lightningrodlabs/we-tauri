@@ -81,7 +81,12 @@ export class SensemakerStore {
   }
 
   async getAssessmentForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
-    return await this.service.getAssessmentsForResource(getAssessmentsInput) 
+    const resourceAssessments = await this.service.getAssessmentsForResource(getAssessmentsInput);
+    this.#resourceAssessments.update(resourceAssessmentsPrev => {
+      resourceAssessmentsPrev[serializeHash(getAssessmentsInput.resource_eh)] = resourceAssessments;
+      return resourceAssessmentsPrev
+    });
+    return resourceAssessments;
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
@@ -120,7 +125,11 @@ export class SensemakerStore {
   }
 
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
-    return await this.service.checkIfAppletConfigExists(appletName);
+    const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
+    if (maybeAppletConfig) {
+      this.#appletConfig.update(() => maybeAppletConfig)
+    }
+    return maybeAppletConfig;
   }
 
   async registerApplet(appletConfigInput: AppletConfigInput): Promise<AppletConfig> {
