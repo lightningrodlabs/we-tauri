@@ -11,7 +11,7 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
-import { InstalledAppInfo } from "@holochain/client";
+import { AppInfo } from "@holochain/client";
 
 export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
 
@@ -20,7 +20,7 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
   _uninstallAppletDialog!: Dialog;
 
   @property({ type: Object })
-  installedAppInfo: InstalledAppInfo | undefined;
+  installedAppInfo: AppInfo | undefined;
 
 
   open() {

@@ -2,7 +2,6 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { contextProvided } from "@lit-labs/context";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Button,
@@ -20,7 +19,6 @@ import { DnaHash } from "@holochain/client";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { get } from "svelte/store";
 import { classMap } from "lit/directives/class-map.js";
-import { AppletInfo } from "../../types";
 
 export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
