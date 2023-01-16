@@ -1,3 +1,4 @@
+mod applet;
 mod assessment;
 mod cultural_context;
 mod dimension;
@@ -6,7 +7,7 @@ mod method;
 mod resource_type;
 mod sensemaker_config;
 mod utils;
-mod applet;
+pub use applet::*;
 pub use assessment::*;
 pub use cultural_context::*;
 pub use dimension::*;
@@ -14,4 +15,3 @@ pub use init::*;
 pub use method::*;
 pub use resource_type::*;
 pub use sensemaker_config::*;
-pub use applet::*;
