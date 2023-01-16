@@ -1,9 +1,15 @@
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
-use sensemaker_integrity::{Dimension, ConfigResourceType, ConfigMethod, ConfigCulturalContext, AppletConfig, LinkTypes, EntryTypes, ResourceType, Method, CulturalContext};
+use sensemaker_integrity::{
+    AppletConfig, ConfigCulturalContext, ConfigMethod, ConfigResourceType, CulturalContext,
+    Dimension, EntryTypes, LinkTypes, Method, ResourceType,
+};
 
-use crate::{utils::entry_from_record, create_dimension, create_resource_type, create_method, create_cultural_context};
+use crate::{
+    create_cultural_context, create_dimension, create_method, create_resource_type,
+    utils::entry_from_record,
+};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AppletConfigInput {
@@ -23,8 +29,7 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
     if let Some(applet_config) = maybe_applet_config {
         // applet config already exists, return it
         Ok(applet_config)
-    }
-    else {
+    } else {
         // applet config doesn't exist, create it
         let mut dimensions: BTreeMap<String, EntryHash> = BTreeMap::new();
         for dimension in applet_config_input.dimensions {
@@ -34,21 +39,21 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
         for config_resource_type in applet_config_input.resource_types {
             resource_types.insert(
                 config_resource_type.name.clone(),
-                create_resource_type(ResourceType::try_from(config_resource_type)?)?
+                create_resource_type(ResourceType::try_from(config_resource_type)?)?,
             );
         }
         let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();
         for config_method in applet_config_input.methods {
             methods.insert(
                 config_method.name.clone(),
-                create_method(Method::try_from(config_method)?)?
+                create_method(Method::try_from(config_method)?)?,
             );
         }
         let mut cultural_contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
         for config_context in applet_config_input.cultural_contexts {
             cultural_contexts.insert(
                 config_context.name.clone(),
-                create_cultural_context(CulturalContext::try_from(config_context)?)?
+                create_cultural_context(CulturalContext::try_from(config_context)?)?,
             );
         }
         let applet_config = AppletConfig {
@@ -68,7 +73,6 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
         )?;
         Ok(applet_config)
     }
-
 }
 
 #[hdk_extern]
@@ -77,27 +81,24 @@ pub fn check_if_applet_config_exists(applet_name: String) -> ExternResult<Option
         applet_config_typed_path(applet_name)?.path_entry_hash()?,
         LinkTypes::AppletConfig,
         None,
-    )?; 
+    )?;
     let maybe_last_link = links.last();
 
     if let Some(link) = maybe_last_link {
         let maybe_record = get(EntryHash::from(link.clone().target), GetOptions::default())?;
         if let Some(record) = maybe_record {
             Ok(Some(entry_from_record::<AppletConfig>(record)?))
-        }
-        else {
+        } else {
             Err(wasm_error!(WasmErrorInner::Guest(String::from(
                 "unable to get applet config entry from entry hash"
             ))))
         }
-    }
-    else {
+    } else {
         // config doesn't exist
         Ok(None)
     }
 }
 
 fn applet_config_typed_path(applet_name: String) -> ExternResult<TypedPath> {
-    Ok(Path::from(format!("all_applets.{}", applet_name))
-    .typed(LinkTypes::AppletName)?)
+    Ok(Path::from(format!("all_applets.{}", applet_name)).typed(LinkTypes::AppletName)?)
 }
