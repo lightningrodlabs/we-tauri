@@ -26,44 +26,44 @@ export default {
   plugins: [
     /** Enable using HTML as rollup entrypoint */
     html({
-      // minify: true,
+      minify: true,
     }),
     /** Resolve bare module imports */
     nodeResolve({
       browser: true,
       preferBuiltins: false,
     }),
-    // replace({
-    //   "process.env.NODE_ENV": '"production"',
-    //   "process.env.ENV": `"${process.env.ENV}"`,
-    //   "process.env.HC_PORT": `undefined`,
-    //   "process.env.ADMIN_PORT": `undefined`,
-    // }),
+    replace({
+      "process.env.NODE_ENV": '"production"',
+      "process.env.ENV": `"${process.env.ENV}"`,
+      "process.env.HC_PORT": `undefined`,
+      "process.env.ADMIN_PORT": `undefined`,
+    }),
     commonjs({}),
     typescript({
       sourceMap: !production,
       inlineSources: !production,
     }),
     /** Minify JS */
-    // terser(),
+    terser(),
     /** Bundle assets references via import.meta.url */
     importMetaAssets(),
     /** Compile JS to a lower language target */
-    // babel({
-    //   exclude: /node_modules/,
+    babel({
+      exclude: /node_modules/,
 
-    //   babelHelpers: "bundled",
-    //   presets: [
-    //     [
-    //       require.resolve("@babel/preset-env"),
-    //       {
-    //         targets: ['defaults', 'not IE 11', 'safari >13', 'not op_mini all', 'last 3 Chrome versions'],
-    //         modules: false,
-    //         bugfixes: true,
-    //       },
-    //     ],
-    //   ],
-    //   plugins: [],
-    // }),
+      babelHelpers: "bundled",
+      presets: [
+        [
+          require.resolve("@babel/preset-env"),
+          {
+            targets: ['defaults', 'not IE 11', 'safari >13', 'not op_mini all', 'last 3 Chrome versions'],
+            modules: false,
+            bugfixes: true,
+          },
+        ],
+      ],
+      plugins: [],
+    }),
   ],
 };
