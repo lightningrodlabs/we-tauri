@@ -3,7 +3,7 @@ manifest_version: "1"
 name: sensemaker_happ
 description: ~
 roles:
-  - id: sensemaker_dna
+  - name: sensemaker_dna
     provisioning:
       strategy: create
       deferred: false
@@ -14,7 +14,7 @@ roles:
       version: ~
       clone_limit: 0
   
-  - id: test_provider_dna
+  - name: test_provider_dna
     provisioning:
       strategy: create
       deferred: false
