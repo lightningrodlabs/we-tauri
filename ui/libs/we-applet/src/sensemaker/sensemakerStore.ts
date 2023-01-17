@@ -15,8 +15,16 @@ export class SensemakerStore {
   // store any value here that would benefit from being a store
   // like cultural context entry hash and then the context result vec
 
+  // TODO: update applet config to include multiple applets
+  // {
+    // [appletName: string]: AppletConfig
+  // }
   #appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resource_types: {}, methods: {}, cultural_contexts: {}, name: "" });
   #contextResults: Writable<ContextResults> = writable({});
+  // #dashboardData: Writable<>
+  // {
+    // 
+  // }
 
   // TODO: update the structure of this store to include dimension and resource type
   /*

@@ -1,6 +1,7 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
+import { SensemakerStore, sensemakerStoreContext } from "@lightningrodlabs/we-applet";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
@@ -26,6 +27,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: profilesStoreContext, subscribe: true })
   _profilesStore!: ProfilesStore;
+
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
 
   @contextProvided({ context: peerStatusStoreContext, subscribe: true })
   _peerStatusStore!: PeerStatusStore;
