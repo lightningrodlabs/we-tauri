@@ -4,7 +4,7 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently \"npm run build:watch -w we\" \"npm run launch:happ\"",
+    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-we-applet && concurrently \"npm run build:watch -w we\" \"npm run launch:happ\"",
     "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
     "launch:happ": "RUST_LOG=warn echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ -w --ui-path ui/app/dist network mdns",
@@ -17,7 +17,7 @@
     "devhub:ui": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
     "playground": "run-singleton \"holochain-playground\"",
     "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/bFlG9VjNcjfa1D8/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp",
-    "download-sensemaker": "rimraf dnas/sensemaker/workdir/sensemaker.dna && curl -L --output dnas/sensemaker/workdir/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.1-alpha/sensemaker.dna"
+    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.2-alpha/sensemaker.dna"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",

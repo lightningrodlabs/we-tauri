@@ -1,6 +1,6 @@
 {
-  "name": "@lightningrodlabs/we-applet",
-  "version": "0.1.3",
+  "name": "@neighbourhoods/nh-we-applet",
+  "version": "0.0.4",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -16,7 +16,8 @@
   "type": "module",
   "dependencies": {
     "@holochain/client": "^0.11.9",
-    "@holochain-open-dev/profiles": "^0.9.3"
+    "@holochain-open-dev/profiles": "^0.9.3",
+    "@neighbourhoods/sensemaker-lite-types": "0.1.0"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.4",
