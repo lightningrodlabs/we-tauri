@@ -40,9 +40,9 @@ export const installAgent = async (
   try {
     const admin = conductor.adminWs();
 
-    const sensemakerLocation = pathToFileURL(sensemakerDna);
     console.log(`generating key for: ${agentName}:`);
     agent_key = await admin.generateAgentPubKey();
+
     const req: InstallAppRequest = {
       installed_app_id: `${agentName}_sensemaker`,
       agent_key,
@@ -54,63 +54,42 @@ export const installAgent = async (
           description: "",
           roles: [{
             name: "sensemaker_dna",
-            // provisioning: {
-            //   create: {
-            //     deferred: false,
-            //   }
-            // },
             provisioning: {
               //@ts-ignore
               strategy: 'create',
               deferred: false,
             },
             dna: {
-              // modifiers: {
-              properties: {
-                community_activator: ca_key
-                  ? serializeHash(ca_key)
-                  : serializeHash(agent_key),
-                config: with_config ? sampleConfig(resource_base_type!) : null
+              //@ts-ignore
+              modifiers: {
+                properties: {
+                  community_activator: ca_key
+                    ? serializeHash(ca_key)
+                    : serializeHash(agent_key),
+                  config: with_config ? sampleConfig(resource_base_type!) : null
+                },
               },
-              // },
-              // location: sensemakerDna,
-              // location: sensemakerLocation,
-              // location: {
                 //@ts-ignore
               path: sensemakerDna,
-              // }
-              // path: sensemakerDna,
             }
           }, {
             name: "test_provider_dna",
-            // provisioning: {
-            //   create: {
-            //     deferred: false,
-            //   }
-            // },
             provisioning: {
               //@ts-ignore
               strategy: 'create',
               deferred: false,
             },
             dna: {
-              // location: testProviderDna,
-              // location: {
-                //@ts-ignore
-                path: testProviderDna,
-              // }
+              //@ts-ignore
+              path: testProviderDna,
             }
           }],
         },
         resources: {},
       }
     };
-    console.log(`installing happ for: ${agentName}`);
     //@ts-ignore
     const agentHapp: AppInfo = await admin.installApp(req);
-    console.log("++++++++ ======== ++++++++")
-    console.log('agent happ', agentHapp)
-    console.log("++++++++ ======== ++++++++")
     const ssCellInfo = agentHapp.cell_info["sensemaker_dna"][0]
     ss_cell_id = ("Provisioned" in ssCellInfo) ? ssCellInfo.Provisioned.cell_id : ss_cell_id
     const providerCellInfo = agentHapp.cell_info["test_provider_dna"][0]
