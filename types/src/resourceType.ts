@@ -1,9 +1,9 @@
-import { AppEntryType, EntryHash } from "@holochain/client";
+import { AppEntryDef, EntryHash } from "@holochain/client";
 import { Dimension } from "./dimension";
 
 interface CoreResourceType {
     name: string,
-    base_types: Array<AppEntryType>,
+    base_types: Array<AppEntryDef>,
 }
 export type ResourceType = CoreResourceType & {
     dimension_ehs: Array<EntryHash>,
