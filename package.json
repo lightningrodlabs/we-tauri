@@ -17,7 +17,7 @@
     "devhub:ui": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
     "playground": "run-singleton \"holochain-playground\"",
     "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/bFlG9VjNcjfa1D8/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp",
-    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.2-alpha/sensemaker.dna"
+    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.3-alpha/sensemaker.dna"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",

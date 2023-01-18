@@ -23,7 +23,7 @@ roles:
       network_seed: ~
       version: ~
       clone_limit: 100
-  - id: sensemaker
+  - name: sensemaker
     provisioning:
       strategy: create
       deferred: false

@@ -35,6 +35,7 @@ import {
   Cell,
   AppSignal,
   StemCell,
+  CellInfo,
 } from "@holochain/client";
 import {
   CloneDnaRecipe,
@@ -673,24 +674,38 @@ export class MatrixStore {
 
     // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
-
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
-    let allGroupClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo);
+    // not sure if the ordering here is deterministic as to ensure that the we group cells match the sensemaker cells
+    let allWeClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo);
+    let allSensemakerClones = weParentAppInfo.cell_info["sensemaker"].filter((cellInfo) => "Cloned" in cellInfo);
+    if(allWeClones.length != allSensemakerClones.length){
+      throw new Error("The number of we group cells and sensemaker cells is not equal, but they should be.");
+    }
+
+    let allGroupClones: [CellInfo, CellInfo][] = allWeClones.map((weCellInfo, index) => {
+      return [weCellInfo, allSensemakerClones[index]]
+    });
+    
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
     await Promise.all(
-      allGroupClones.map(async (weGroupCell) => {
+      allGroupClones.map(async ([weGroupCell, sensemakerGroupCell]) => {
         // create store
         const weGroupCellInfo = (weGroupCell as { "Cloned": Cell }).Cloned;
         const weGroupCellId = weGroupCellInfo.cell_id;
         const weGroupDnaHash = weGroupCellId[0];
+
+        const sensemakerGroupCellInfo = (sensemakerGroupCell as { "Cloned": Cell }).Cloned;
+        const sensemakerGroupCellId = sensemakerGroupCellInfo.cell_id;
+        const sensemakerGroupDnaHash = sensemakerGroupCellId[0];
 
         // create dedicated AppAgentWebsocket for each We group
         const weGroupAgentWebsocket = await AppAgentWebsocket.connect(this.appWebsocket, "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
+        // TODO: add signal handling for sensemaker cell
         // add signal handler to listen for "NewApplet" events
         weGroupAgentWebsocket.on("signal", (signal: AppSignal) => {
           const payload = signal.data.payload;
@@ -725,7 +740,7 @@ export class MatrixStore {
 
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
         const sensemakerStore = new SensemakerStore(
-          new SensemakerService(weGroupCellClient)
+          new SensemakerService(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!)
         );
 
         // create WeGroupData object
@@ -917,16 +932,16 @@ export class MatrixStore {
   ): Promise<DnaHash> {
     const weParentAppInfo = this.weParentAppInfo;
 
-    const weGroupCell = weParentAppInfo.cell_data.find(
-      (c) => c.role_id === "we"
-    )!;
-    const myAgentPubKey = serializeHash(weGroupCell.cell_id[1]);
-    const weDnaHash = serializeHash(weGroupCell.cell_id[0]);
+    // const weGroupCell = weParentAppInfo.cell_data.find(
+    //   (c) => c.role_id === "we"
+    // )!;
+    // const myAgentPubKey = encodeHashToBase64(weGroupCell.cell_id[1]);
+    // const weDnaHash = encodeHashToBase64(weGroupCell.cell_id[0]);
 
-    const sensemakerCell = weParentAppInfo.cell_data.find(
-      (c) => c.role_id === "sensemaker"
-    )!;
-    const sensemakerDnaHash = serializeHash(sensemakerCell.cell_id[0]);
+    // const sensemakerCell = weParentAppInfo.cell_data.find(
+    //   (c) => c.role_id === "sensemaker"
+    // )!;
+    // const sensemakerDnaHash = encodeHashToBase64(sensemakerCell.cell_id[0]);
 
     const properties = {
       logoSrc: logo,
@@ -981,11 +996,11 @@ export class MatrixStore {
     
     const sensemaker_properties = {
       ...properties,
-      community_activator: serializeHash(clonedCell.cell_id[1])
+      community_activator: encodeHashToBase64(clonedCell.cell_id[1])
     };
     const clonedSensemakerCell = await this.appWebsocket.createCloneCell({
       app_id: weParentAppInfo.installed_app_id,
-      role_id: "sensemaker",
+      role_name: "sensemaker",
       modifiers: {
         network_seed: networkSeed,
         properties: sensemaker_properties,
@@ -993,14 +1008,9 @@ export class MatrixStore {
       },
       name: sensemakerCloneName,
     });
-    const newWeGroupCellId = clonedCell.cell_id;
-
-    const cellClient = new CellClient(this.holochainClient, clonedCell);
-    const sensemakerCellClient = new CellClient(this.holochainClient, clonedSensemakerCell);
 
     // add signal handler to listen for "NewApplet" events
     // TODO: will probably want to add signal handler for sensemaker-lite as well
-    // cellClient.addSignalHandler((signal) => {
     appAgentWebsocket.on("signal", (signal) => {
 
       const payload = signal.data.payload;
@@ -1035,10 +1045,13 @@ export class MatrixStore {
     const cellInfo = appInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo)
       .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
     const cell = (cellInfo as { "Cloned": Cell }).Cloned!;
+    const sensemakerCellInfo = appInfo.cell_info["sensemaker"].filter((cellInfo) => "Cloned" in cellInfo)
+      .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
+    const sensemakeCell = (cellInfo as { "Cloned": Cell }).Cloned!;
 
     const profilesStore = new ProfilesStore(new ProfilesService(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
-    const sensemakerStore = new SensemakerStore(new SensemakerService(sensemakerCellClient));
+    const sensemakerStore = new SensemakerStore(new SensemakerService(appAgentWebsocket, sensemakeCell.clone_id!));
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
