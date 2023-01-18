@@ -1,11 +1,8 @@
-import { AgentPubKey, EntryHash, Record } from '@holochain/client';
+import { AgentPubKey, encodeHashToBase64, EntryHash, Record } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
 import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from '@neighbourhoods/sensemaker-lite-types';
 import { derived, get, Writable, writable } from 'svelte/store';
-import {
-  Dictionary,
-} from '@holochain-open-dev/core-types';
-import { serializeHash } from "@holochain-open-dev/utils";
+import { EntryHashMap } from '@holochain-open-dev/utils'
 import { Option } from './sensemakerTypes';
 
 interface ContextResults {
@@ -24,7 +21,7 @@ export class SensemakerStore {
     [resourceEh: string]: Array<Assessment>
   }
   */
-  #resourceAssessments: Writable<Dictionary<Array<Assessment>>> = writable({});
+  #resourceAssessments: Writable<EntryHashMap<Array<Assessment>>> = writable(new EntryHashMap());
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -32,7 +29,7 @@ export class SensemakerStore {
   constructor(
     protected service: SensemakerService,
   ) {
-    this.myAgentPubKey = service.cellClient.cell.cell_id[1];
+    this.myAgentPubKey = service.myPubKey();
   }
 
   resourceAssessments() {
@@ -68,9 +65,9 @@ export class SensemakerStore {
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
     const assessmentEh = await this.service.createAssessment(assessment);
     this.#resourceAssessments.update(resourceAssessments => {
-      const maybePrevAssessments = resourceAssessments[serializeHash(assessment.subject_eh)];
+      const maybePrevAssessments = resourceAssessments[encodeHashToBase64(assessment.subject_eh)];
       const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
-      resourceAssessments[serializeHash(assessment.subject_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey}]
+      resourceAssessments[encodeHashToBase64(assessment.subject_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey}]
       return resourceAssessments;
     })
     return assessmentEh;
@@ -83,7 +80,7 @@ export class SensemakerStore {
   async getAssessmentForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
     const resourceAssessments = await this.service.getAssessmentsForResource(getAssessmentsInput);
     this.#resourceAssessments.update(resourceAssessmentsPrev => {
-      resourceAssessmentsPrev[serializeHash(getAssessmentsInput.resource_eh)] = resourceAssessments;
+      resourceAssessmentsPrev[encodeHashToBase64(getAssessmentsInput.resource_eh)] = resourceAssessments;
       return resourceAssessmentsPrev
     });
     return resourceAssessments;

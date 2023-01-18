@@ -1,11 +1,17 @@
-import { CellClient } from '@holochain-open-dev/cell-client';
-import { AgentPubKey, EntryHash, Record } from '@holochain/client';
+import { AgentPubKey, AppAgentCallZomeRequest, AppAgentClient, EntryHash, Record, RoleName } from '@holochain/client';
 import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceType, RunMethodInput } from '@neighbourhoods/sensemaker-lite-types';
 import { Option } from './sensemakerTypes';
 
 export class SensemakerService {
-  constructor(public cellClient: CellClient, public zomeName = 'sensemaker') {}
+  constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker') {}
 
+    /**
+   * Get my agentkey, if it has been created
+   * @returns my AgentPubKey
+   */
+    myPubKey(): AgentPubKey {
+      return this.client.myPubKey
+    }
     
 
   async createDimension(dimension: Dimension): Promise<EntryHash> {
@@ -57,6 +63,12 @@ export class SensemakerService {
   }
 
   private callZome(fn_name: string, payload: any) {
-    return this.cellClient.callZome(this.zomeName, fn_name, payload);
+    const req: AppAgentCallZomeRequest = {
+      role_name: this.roleName,
+      zome_name: this.zomeName,
+      fn_name,
+      payload
+    }
+    return this.client.callZome(req);
   }
 }
