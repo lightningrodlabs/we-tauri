@@ -75,10 +75,10 @@ export const installAgent = async (
               // },
               // location: sensemakerDna,
               // location: sensemakerLocation,
-              location: {
+              // location: {
                 //@ts-ignore
-                path: sensemakerDna,
-              }
+              path: sensemakerDna,
+              // }
               // path: sensemakerDna,
             }
           }, {
@@ -95,10 +95,10 @@ export const installAgent = async (
             },
             dna: {
               // location: testProviderDna,
-              location: {
+              // location: {
                 //@ts-ignore
                 path: testProviderDna,
-              }
+              // }
             }
           }],
         },
