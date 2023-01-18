@@ -1,11 +1,11 @@
-import { DnaSource, Record, ActionHash, EntryHash } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
 import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
-let app_entry_def = { id: 0, zome_id: 0, visibility: { Public: null } };
+let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () =>
     test("test Sensemaker Configuration", async (t) => {
         await runScenario(async (scenario) => {
