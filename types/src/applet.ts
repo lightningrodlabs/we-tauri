@@ -2,6 +2,7 @@ import { EntryHash } from "@holochain/client";
 import { ConfigCulturalContext } from "./culturalContext";
 import { Dimension } from "./dimension";
 import { ConfigMethod } from "./method";
+import { CommonConfig } from "./properties";
 import { ConfigResourceType } from "./resourceType";
 
 export interface AppletConfig {
@@ -20,9 +21,8 @@ export interface AppletConfig {
     }
 }
 
-export interface AppletConfigInput {
+export type AppletConfigInput = CommonConfig & {
     name: string,
-    // pub ranges: Array<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
     dimensions: Array<Dimension>,
     resource_types: Array<ConfigResourceType>,
     methods: Array<ConfigMethod>,
