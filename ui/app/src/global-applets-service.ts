@@ -70,7 +70,7 @@ export class GlobalAppletsService {
   ): Promise<void> {
     return this.appAgentWebsocket.callZome({
       role_name: "lobby",
-      zome_name: "applet_guis",
+      zome_name: "applet_guis_coordinator",
       fn_name: "commit_gui_file",
       payload: appletGui
     });
@@ -80,7 +80,7 @@ export class GlobalAppletsService {
   async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<AppletGui> {
     return this.appAgentWebsocket.callZome({
       role_name: "lobby",
-      zome_name: "applet_guis",
+      zome_name: "applet_guis_coordinator",
       fn_name: "query_applet_gui",
       payload: devhubHappReleaseHash,
     });

@@ -61,10 +61,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
 
-  firstUpdated() {
-    console.log("@we-group-home: weGroupId: ", encodeHashToBase64(this.weGroupId));
-  }
-
 
   renderJoinErrorSnackbar() {
     return html`
