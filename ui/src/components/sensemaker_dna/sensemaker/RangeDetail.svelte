@@ -2,7 +2,7 @@
 import { onMount, getContext } from 'svelte';
 import '@material/mwc-circular-progress';
 import { decode } from '@msgpack/msgpack';
-import { InstalledCell, Record, ActionHash, AppWebsocket, InstalledAppInfo } from '@holochain/client';
+import { InstalledCell, Record, ActionHash, AppWebsocket, AppInfo } from '@holochain/client';
 import { appInfoContext, appWebsocketContext } from '../../../contexts';
 import { Range } from '../../../types/sensemaker_dna/sensemaker';
 import '@type-craft/title/title-detail';
