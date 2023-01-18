@@ -5,7 +5,7 @@ import pkg from "tape-promise/tape";
 import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
-let app_entry_type = { id: 0, zome_id: 0, visibility: { Public: null } };
+let app_entry_def = { id: 0, zome_id: 0, visibility: { Public: null } };
 export default () =>
     test("test Sensemaker Configuration", async (t) => {
         await runScenario(async (scenario) => {
@@ -20,7 +20,7 @@ export default () =>
                 ss_cell_id_bob,
                 provider_cell_id_alice,
                 provider_cell_id_bob,
-            } = await setUpAliceandBob(true, app_entry_type);
+            } = await setUpAliceandBob(true, app_entry_def);
 
             const callZomeAlice = async (
                 zome_name,

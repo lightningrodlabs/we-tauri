@@ -4,7 +4,7 @@ import sensemaker_community_activator from './sensemaker_dna/sensemaker/communit
 import sensemaker_config from './sensemaker_dna/sensemaker/sm_config';
 import applet_config from './sensemaker_dna/sensemaker/applet_config';
 sensemaker_dimension();
-sensemaker_config();
-sensemaker_community_activator();
-applet_config();
+// sensemaker_config();
+// sensemaker_community_activator();
+// applet_config();
 
