@@ -459,6 +459,7 @@ export class MatrixStore {
     }
 
     // 2. create the renderers and return them
+
     const renderers = await gui.appletRenderers(
       this.appWebsocket,
       this.adminWebsocket,
@@ -1046,12 +1047,12 @@ export class MatrixStore {
       .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
     const cell = (cellInfo as { "Cloned": Cell }).Cloned!;
     const sensemakerCellInfo = appInfo.cell_info["sensemaker"].filter((cellInfo) => "Cloned" in cellInfo)
-      .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
-    const sensemakeCell = (cellInfo as { "Cloned": Cell }).Cloned!;
+      .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedSensemakerCell.cell_id));
+    const sensemakerCell = (sensemakerCellInfo as { "Cloned": Cell }).Cloned!;
 
     const profilesStore = new ProfilesStore(new ProfilesService(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
-    const sensemakerStore = new SensemakerStore(new SensemakerService(appAgentWebsocket, sensemakeCell.clone_id!));
+    const sensemakerStore = new SensemakerStore(new SensemakerService(appAgentWebsocket, sensemakerCell.clone_id!));
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
