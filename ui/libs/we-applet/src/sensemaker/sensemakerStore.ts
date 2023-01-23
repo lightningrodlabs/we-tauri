@@ -21,7 +21,7 @@ export class SensemakerStore {
     [resourceEh: string]: Array<Assessment>
   }
   */
-  #resourceAssessments: Writable<EntryHashMap<Array<Assessment>>> = writable(new EntryHashMap());
+  #resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
