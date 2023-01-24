@@ -1,4 +1,3 @@
-import { serializeHash } from "@holochain-open-dev/utils";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
@@ -23,7 +22,7 @@ import { HoloHashMap } from "@holochain-open-dev/utils";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { ActionHash } from "@holochain/client";
+import { ActionHash, encodeHashToBase64 } from "@holochain/client";
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -249,11 +248,11 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                   <div class="pubkey-field default-font"
                     @click=${() => {
                       navigator.clipboard.writeText(
-                        serializeHash(this.matrixStore.myAgentPubKey)
+                        encodeHashToBase64(this.matrixStore.myAgentPubKey)
                       );
                       this._copiedSnackbar.show()
                     }}>
-                    ${serializeHash(this.matrixStore.myAgentPubKey)}
+                    ${encodeHashToBase64(this.matrixStore.myAgentPubKey)}
                   </div>
                 </sl-tooltip>
                 <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">

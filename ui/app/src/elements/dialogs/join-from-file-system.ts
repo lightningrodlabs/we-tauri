@@ -2,7 +2,6 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { contextProvided } from "@lit-labs/context";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Button,
@@ -18,7 +17,7 @@ import { sharedStyles } from "../../sharedStyles";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash, EntryHash } from "@holochain/client";
+import { DnaHash, EntryHash, EntryHashB64 } from "@holochain/client";
 import { fakeMd5SeededEntryHash } from "../../utils";
 
 export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {

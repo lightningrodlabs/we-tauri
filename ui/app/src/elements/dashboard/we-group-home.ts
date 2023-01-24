@@ -1,6 +1,6 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
-import { DnaHash, EntryHash } from "@holochain/client";
+import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";

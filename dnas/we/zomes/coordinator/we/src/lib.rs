@@ -14,7 +14,7 @@ fn init(_: ()) -> ExternResult<InitCallbackResult> {
         tag: "".into(),
         // empty access converts to unrestricted
         access: ().into(),
-        functions,
+        functions: GrantedFunctions::Listed(functions),
     })?;
     Ok(InitCallbackResult::Pass)
 }

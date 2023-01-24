@@ -9,14 +9,12 @@ import {
   Card,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { AgentPubKeyB64 } from "@holochain-open-dev/core-types";
 import { property, query, state } from "lit/decorators.js";
 
 import { sharedStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash } from "@holochain/client";
-import { deserializeHash } from "@holochain-open-dev/utils";
+import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -41,7 +39,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   async inviteToJoin(agentPubKey: AgentPubKeyB64) {
 
     this._matrixStore
-      .inviteToJoinGroup(this.weGroupId, deserializeHash(agentPubKey))
+      .inviteToJoinGroup(this.weGroupId, decodeHashFromBase64(agentPubKey))
       .then((r) => {
         this._pubkeyField.value = "";
         this._inviteePubKey = undefined;

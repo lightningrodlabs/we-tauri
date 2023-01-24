@@ -222,7 +222,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   renderAppletInstanceContent() {
     // 1. check whether the selected applet instance is already installed
     if (this._matrixStore.isInstalled(this._selectedAppletInstanceId!)) {
-      return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.installedAppInfo) === "RUNNING"
+      return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo) === "RUNNING"
       ? html`
         <applet-instance-renderer
           style="display: flex; flex: 1;"
@@ -291,7 +291,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         this._selectedAppletClassId = undefined;
         this._dashboardMode = DashboardMode.WeGroupHome;
       } else { // if selected applet is not running, make selected applet Id undefined again
-        if (getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId)?.installedAppInfo!) !== "RUNNING") {
+        if (getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId)?.appInfo!) !== "RUNNING") {
           this._selectedAppletInstanceId = undefined;
           this._dashboardMode = DashboardMode.WeGroupHome;
         }
@@ -386,7 +386,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         .map(
           ([weGroupInfo, appletInstanceInfo]) =>
             {
-              return getStatus(appletInstanceInfo.installedAppInfo) === "RUNNING"
+              return getStatus(appletInstanceInfo.appInfo) === "RUNNING"
                 ? html`
                     <icon-dot icon="share" invisible=${appletInstanceInfo.federatedGroups.length === 0}>
                       <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
@@ -524,7 +524,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
       .map(
       (appletInstanceInfo) => {
-        return getStatus(appletInstanceInfo.installedAppInfo) === "RUNNING"
+        return getStatus(appletInstanceInfo.appInfo) === "RUNNING"
         ? html`
             <icon-dot icon="share" invisible=${appletInstanceInfo.federatedGroups.length === 0}>
               <sidebar-button

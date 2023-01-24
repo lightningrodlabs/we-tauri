@@ -1,14 +1,24 @@
-import { CellClient } from "@holochain-open-dev/cell-client";
+import { AppAgentWebsocket, CellId } from "@holochain/client";
 import { WeInfo } from "@lightningrodlabs/we-applet";
 
 export class WeGroupService {
-  constructor(public cellClient: CellClient, protected zomeName = "we_coordinator") {}
+  constructor(public client: AppAgentWebsocket, protected cellId: CellId, protected zomeName = "we_coordinator") {}
 
   async getInfo(): Promise<WeInfo> {
-    return this.callZome("get_info", null);
+    return this.client.callZome({
+      cell_id: this.cellId,
+      zome_name: "we",
+      fn_name: "get_info",
+      payload: null
+    });
   }
 
   private callZome(fn_name: string, payload: any) {
-    return this.cellClient.callZome(this.zomeName, fn_name, payload);
+    return this.client.callZome({
+      cell_id: this.cellId,
+      zome_name: this.zomeName,
+      fn_name,
+      payload
+  });
   }
 }
