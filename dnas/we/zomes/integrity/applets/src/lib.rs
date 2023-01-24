@@ -35,6 +35,7 @@ pub struct Applet {
     pub logo_src: Option<String>,
 
     pub devhub_happ_release_hash: EntryHash,
+    pub devhub_gui_release_hash: EntryHash,
     // pub gui_file_hash: EntryHash, // not required since the GUI is a private entry
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId

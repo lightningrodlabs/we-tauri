@@ -1,4 +1,4 @@
-import { DisabledAppReason, InstalledAppInfo } from "@holochain/client";
+import { CellId, CellInfo, DisabledAppReason, AppInfo } from "@holochain/client";
 import { EntryHash } from "@holochain/client";
 
 
@@ -9,7 +9,7 @@ export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
 
 
 
-export function getStatus(app: InstalledAppInfo): string {
+export function getStatus(app: AppInfo): string {
   if (isAppRunning(app)) {
     return "RUNNING"
   } else if (isAppDisabled(app)) {
@@ -21,16 +21,16 @@ export function getStatus(app: InstalledAppInfo): string {
   }
 }
 
-export function isAppRunning(app: InstalledAppInfo): boolean {
+export function isAppRunning(app: AppInfo): boolean {
   return Object.keys(app.status).includes("running");
 }
-export function isAppDisabled(app: InstalledAppInfo): boolean {
+export function isAppDisabled(app: AppInfo): boolean {
   return Object.keys(app.status).includes("disabled");
 }
-export function isAppPaused(app: InstalledAppInfo): boolean {
+export function isAppPaused(app: AppInfo): boolean {
   return Object.keys(app.status).includes("paused");
 }
-export function getReason(app: InstalledAppInfo): string | undefined {
+export function getReason(app: AppInfo): string | undefined {
   if (isAppRunning(app)) return undefined;
   if (isAppDisabled(app)) {
     const reason = (
@@ -64,4 +64,31 @@ export function getReason(app: InstalledAppInfo): string | undefined {
 }
 
 
+export function getCellId(cellInfo: CellInfo): CellId | undefined {
+  if ("Provisioned" in cellInfo) {
+    return cellInfo.Provisioned.cell_id;
+  }
+  if ("Cloned" in cellInfo) {
+    return cellInfo.Cloned.cell_id;
+  }
+  return undefined;
+}
 
+export function getCellName(cellInfo: CellInfo): string | undefined {
+  if ("Provisioned" in cellInfo) {
+    return cellInfo.Provisioned.name;
+  }
+  if ("Cloned" in cellInfo) {
+    return cellInfo.Cloned.name;
+  }
+  if ("Stem" in cellInfo) {
+    return cellInfo.Stem.name;
+  }
+}
+
+
+export function flattenCells(cell_info: Record<string, CellInfo[]>): [string, CellInfo][] {
+  return Object.entries(cell_info).map(([roleName, cellInfos]) => {
+    return cellInfos.map((CellInfo) => [roleName, CellInfo])
+  }).flat() as any
+}
