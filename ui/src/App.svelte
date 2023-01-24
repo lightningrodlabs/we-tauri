@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, setContext } from 'svelte';
-  import { AppWebsocket, ActionHash, InstalledAppInfo } from '@holochain/client';
+  import { AppWebsocket, ActionHash, AppInfo } from '@holochain/client';
   import '@material/mwc-circular-progress';
 
   import { appWebsocketContext, appInfoContext } from './contexts';
@@ -8,7 +8,7 @@
 import RangeDetail from './components/sensemaker_dna/sensemaker/RangeDetail.svelte';
 
   let appWebsocket: AppWebsocket | undefined;
-  let appInfo: InstalledAppInfo | undefined;
+  let appInfo: AppInfo | undefined;
   let loading = true;
   let actionHash: ActionHash | undefined;
 

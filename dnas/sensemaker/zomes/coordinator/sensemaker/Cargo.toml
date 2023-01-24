@@ -14,4 +14,4 @@ derive_more = "0"
 sensemaker_integrity = { path = "../../integrity/sensemaker" }
 
 hdk = { workspace = true }
-holo_hash = {version = "=0.0.35", features = ["encoding"]}
+holo_hash = {version = "0.1.0-beta-rc.0", features = ["encoding"]}

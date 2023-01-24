@@ -1,4 +1,4 @@
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryType } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import { CulturalContext, Dimension, ResourceType, Threshold, Range, ConfigResourceType, Method, ConfigMethod, ConfigThreshold, ConfigCulturalContext, AppletConfig, AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types"
@@ -7,7 +7,7 @@ import pkg from "tape-promise/tape";
 import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
-let app_entry_type = { id: 0, zome_id: 0, visibility: { Public: null } };
+let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () =>
     test("test Sensemaker Configuration", async (t) => {
         await runScenario(async (scenario) => {
@@ -22,7 +22,7 @@ export default () =>
                 ss_cell_id_bob,
                 provider_cell_id_alice,
                 provider_cell_id_bob,
-            } = await setUpAliceandBob(true, app_entry_type);
+            } = await setUpAliceandBob(true, app_entry_def);
 
             const callZomeAlice = async (
                 zome_name,
@@ -86,10 +86,10 @@ export default () =>
                 );
                 t.ok(objectiveDimensionHash);
 
-                let app_entry_type: AppEntryType = { id: 0, zome_id: 0, visibility: { Public: null } };
+                let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
                 const resourceType: ResourceType = {
                     name: "task_item",
-                    base_types: [app_entry_type],
+                    base_types: [app_entry_def],
                     dimension_ehs: [dimensionHash]
                 }
 
