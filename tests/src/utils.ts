@@ -1,6 +1,5 @@
 import {
-  AppEntryDef,
-  AppInfo,
+  AppEntryType,
   InstallAppRequest,
 } from "@holochain/client";
 import {
@@ -33,7 +32,7 @@ export const installAgent = async (
   with_config: boolean = false,
   resource_base_type?: any
 ) => {
-  let agentsHapps: Array<AppInfo> = [];
+  let agentsHapps: Array<any> = [];
   let agent_key;
   let ss_cell_id;
   let provider_cell_id;
@@ -46,6 +45,7 @@ export const installAgent = async (
     const req: InstallAppRequest = {
       installed_app_id: `${agentName}_sensemaker`,
       agent_key,
+      //@ts-ignore
       membrane_proofs: {},
       bundle: {
         manifest: {
@@ -69,7 +69,7 @@ export const installAgent = async (
                   config: with_config ? sampleConfig(resource_base_type!) : null
                 },
               },
-                //@ts-ignore
+              //@ts-ignore
               path: sensemakerDna,
             }
           }, {
@@ -109,7 +109,7 @@ export const installAgent = async (
   };
 };
 
-export const sampleConfig = (resource_base_type: AppEntryDef) => {
+export const sampleConfig = (resource_base_type: AppEntryType) => {
   let config = {
     neighbourhood: "Posting Board",
     wizard_version: "v0.1",

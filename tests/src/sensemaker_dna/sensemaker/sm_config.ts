@@ -1,4 +1,4 @@
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, AppEntryType } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
@@ -6,7 +6,7 @@ import { setUpAliceandBob } from "./neighbourhood";
 import { sampleConfig } from "../../utils";
 const { test } = pkg;
 
-let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
+let app_entry_type: AppEntryType = { id: 0, zome_id: 0, visibility: { Public: null } };
 export default () =>
   test("test Sensemaker Configuration", async (t) => {
     await runScenario(async (scenario) => {
@@ -21,7 +21,7 @@ export default () =>
         ss_cell_id_bob,
         provider_cell_id_alice,
         provider_cell_id_bob,
-      } = await setUpAliceandBob(true, app_entry_def);
+      } = await setUpAliceandBob(true, app_entry_type);
 
       const callZomeAlice = async (
         zome_name,
@@ -239,4 +239,4 @@ test("test Adding of additional Configuration", async (t) => {
     await cleanAllConductors();
   });
 });
-};
+
