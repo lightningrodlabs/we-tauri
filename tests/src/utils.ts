@@ -2,17 +2,13 @@ import {
   AppEntryDef,
   AppInfo,
   InstallAppRequest,
+  encodeHashToBase64
 } from "@holochain/client";
 import {
   Conductor,
-  createConductor,
 } from "@holochain/tryorama";
-import {
-  addAllAgentsToAllConductors,
-} from "@holochain/tryorama/lib/common";
-import { serializeHash } from "@holochain-open-dev/utils";
 import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,8 +60,8 @@ export const installAgent = async (
               modifiers: {
                 properties: {
                   community_activator: ca_key
-                    ? serializeHash(ca_key)
-                    : serializeHash(agent_key),
+                    ? encodeHashToBase64(ca_key)
+                    : encodeHashToBase64(agent_key),
                   config: with_config ? sampleConfig(resource_base_type!) : null
                 },
               },
