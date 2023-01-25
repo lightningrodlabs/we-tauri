@@ -1,17 +1,13 @@
+import { serializeHash } from "@holochain-open-dev/utils";
 import {
   AppEntryDef,
-  InstallAppRequest,
+  InstallAppRequest
 } from "@holochain/client";
 import {
-  Conductor,
-  createConductor,
+  Conductor
 } from "@holochain/tryorama";
-import {
-  addAllAgentsToAllConductors,
-} from "@holochain/tryorama/lib/common";
-import { serializeHash } from "@holochain-open-dev/utils";
 import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,10 +59,14 @@ export const installAgent = async (
               //@ts-ignore
               modifiers: {
                 properties: {
-                  community_activator: ca_key
-                    ? serializeHash(ca_key)
-                    : serializeHash(agent_key),
-                  config: with_config ? sampleConfig(resource_base_type!) : null
+                  sensemaker_config: {
+                    neighbourhood: "Rated Agenda",
+                    wizard_version: "v0.1",
+                    community_activator: ca_key
+                      ? serializeHash(ca_key)
+                      : serializeHash(agent_key),
+                  },
+                  applet_configs: with_config ? [sampleAppletConfig(resource_base_type!)] : [],
                 },
               },
               //@ts-ignore
@@ -109,12 +109,9 @@ export const installAgent = async (
   };
 };
 
-export const sampleConfig = (resource_base_def: AppEntryDef) => {
+export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
   let config = {
-    neighbourhood: "Posting Board",
-    wizard_version: "v0.1",
-    config_version: "v1-inclusive",
-    creator: "John Doe <john@doe.org>",
+    name: "sample applet config",
     //   ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }],
     dimensions: [
       {
@@ -128,7 +125,7 @@ export const sampleConfig = (resource_base_def: AppEntryDef) => {
         computed: true,
       },
     ],
-    resources: [
+    resource_types: [
       {
         name: "angryPost",
         base_types: [resource_base_def],
@@ -180,7 +177,7 @@ export const sampleConfig = (resource_base_def: AppEntryDef) => {
         must_publish_dataset: false,
       },
     ],
-    contexts: [
+    cultural_contexts: [
       {
         name: "more than 5 total likeness, biggest to smallest",
         resource_type: {

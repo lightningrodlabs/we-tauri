@@ -1,8 +1,6 @@
 use hdk::prelude::*;
 use sensemaker_integrity::{LinkTypes, Properties, SensemakerConfig};
 
-use crate::utils::try_from_entry;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateConfigurtionInput {
     original_action_hash: ActionHash, // this must be the original Create Action Hash
@@ -10,7 +8,7 @@ pub struct UpdateConfigurtionInput {
 }
 
 #[hdk_extern]
-pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<SensemakerConfig>> {
+pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<Record>> {
     let ca_key: AgentPubKey = Properties::get()?
         .sensemaker_config
         .community_activator
@@ -26,9 +24,9 @@ pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<SensemakerConf
 
     // get the SM config eh from first link assuming that there is only one sensemaker config created, since subsequent ones are all udpates.
     // can unwrap since links is not empty
-    let config_eh: EntryHash = links.get(0).unwrap().target.clone().into();
+    let original_config_eh: EntryHash = links.get(0).unwrap().target.clone().into();
     // get detail and immediately return None if None
-    let detail = get_details(config_eh.clone(), GetOptions::default())?;
+    let detail = get_details(original_config_eh.clone(), GetOptions::default())?;
 
     if detail.is_none() {
         return Ok(None);
@@ -53,16 +51,7 @@ pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<SensemakerConf
 
                         // get the entry from the entry hash
                         if let Some(record) = get(updated_entry_hash, GetOptions::default())? {
-                            // match the recordEntry and return unreachable except the Present arm
-                            match record.entry() {
-                                RecordEntry::Present(entry) => {
-                                    // convert the entry to SensemakerConfig and return Ok(Some(config))
-                                    let updated_config: SensemakerConfig =
-                                        try_from_entry(entry.to_owned())?;
-                                    Ok(Some(updated_config))
-                                }
-                                _ => unreachable!(),
-                            }
+                            Ok(Some(record))
                         } else {
                             Ok(None)
                         }
@@ -71,8 +60,7 @@ pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<SensemakerConf
                 }
             } else {
                 // return the original sensemakerConfig if there is no update visible
-                let original_config: SensemakerConfig = try_from_entry(entry_detail.entry)?;
-                Ok(Some(original_config))
+                get(original_config_eh, GetOptions::default())
             }
         }
         Details::Record(_) => unreachable!(), // this arm is unreachable given that we provided entry hash

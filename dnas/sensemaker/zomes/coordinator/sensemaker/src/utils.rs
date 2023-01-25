@@ -18,20 +18,6 @@ pub fn entry_from_record<T: TryFrom<SerializedBytes, Error = SerializedBytesErro
         ))))?)
 }
 
-pub fn try_from_entry<T: TryFrom<SerializedBytes>>(entry: Entry) -> ExternResult<T> {
-    match entry {
-        Entry::App(content) => match T::try_from(content.into_sb()) {
-            Ok(e) => Ok(e),
-            Err(_) => Err(wasm_error!(WasmErrorInner::Guest(String::from(
-                "Could not convert entry"
-            )))),
-        },
-        _ => Err(wasm_error!(WasmErrorInner::Guest(String::from(
-            "Entry is not an app entry"
-        )))),
-    }
-}
-
 // NOTE: when using the to get objective assessments, we need to clarify what it means for multiple objective assessments to be created for a resource
 // do we always assume the most up to date? how will these affect checking against thresholds?
 pub fn get_assessments_for_resource_inner(
