@@ -1,10 +1,7 @@
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
-use sensemaker_integrity::{
-    Assessment, CulturalContext, Dimension, EntryTypes, LinkTypes, Method, RawSensemakerConfig,
-    ResourceType, SensemakerConfig,
-};
+use sensemaker_integrity::{Assessment, LinkTypes};
 
 use crate::{assessment_typed_path, get_assessment};
 
@@ -19,6 +16,20 @@ pub fn entry_from_record<T: TryFrom<SerializedBytes, Error = SerializedBytesErro
         .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
             "Malformed bytes"
         ))))?)
+}
+
+pub fn try_from_entry<T: TryFrom<SerializedBytes>>(entry: Entry) -> ExternResult<T> {
+    match entry {
+        Entry::App(content) => match T::try_from(content.into_sb()) {
+            Ok(e) => Ok(e),
+            Err(_) => Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Could not convert entry"
+            )))),
+        },
+        _ => Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Entry is not an app entry"
+        )))),
+    }
 }
 
 // NOTE: when using the to get objective assessments, we need to clarify what it means for multiple objective assessments to be created for a resource
@@ -56,64 +67,4 @@ pub fn flatten_btree_map<K, V: Clone>(btree_map: BTreeMap<K, Vec<V>>) -> Vec<V> 
         .into_iter()
         .flatten()
         .collect::<Vec<V>>()
-}
-
-// create all entries specified in the config
-pub fn create_entries_from_config(
-    config: RawSensemakerConfig,
-    ca_key: AgentPubKey,
-) -> ExternResult<EntryHash> {
-    // dimensions
-    let _dimension_ehs = config
-        .dimensions
-        .clone()
-        .into_iter()
-        .map(|dimension: Dimension| create_entry(&EntryTypes::Dimension(dimension)))
-        .collect::<ExternResult<Vec<ActionHash>>>()?;
-
-    // resource types
-    let _resource_type_ehs = config
-        .resources
-        .clone()
-        .into_iter()
-        .map(|resource| {
-            let converted_resource_type = ResourceType::try_from(resource)?;
-            create_entry(&EntryTypes::ResourceType(converted_resource_type))
-        })
-        .collect::<ExternResult<Vec<ActionHash>>>()?;
-
-    // methods
-    let _method_ehs = config
-        .methods
-        .clone()
-        .into_iter()
-        .map(|method| {
-            let converted_method = Method::try_from(method)?;
-            create_entry(&EntryTypes::Method(converted_method))
-        })
-        .collect::<ExternResult<Vec<ActionHash>>>()?;
-
-    // contexts
-    let _context_ehs = config
-        .contexts
-        .clone()
-        .into_iter()
-        .map(|context| {
-            let converted_context = CulturalContext::try_from(context)?;
-            create_entry(&EntryTypes::CulturalContext(converted_context))
-        })
-        .collect::<ExternResult<Vec<ActionHash>>>()?;
-
-    // create the config entry and link it off of the community activator
-
-    let converted_config = SensemakerConfig::try_from(config)?;
-    create_entry(&EntryTypes::SensemakerConfig(converted_config.clone()))?;
-    create_link(
-        ca_key,
-        hash_entry(converted_config.clone())?,
-        LinkTypes::CAToSensemakerConfig,
-        (),
-    )?;
-    let config_eh = hash_entry(converted_config)?;
-    Ok(config_eh)
 }

@@ -1,8 +1,8 @@
 use hdi::prelude::*;
 
 use crate::{
+    applet::{ConfigCulturalContext, ConfigThreshold},
     dimension::RangeValue,
-    properties::{ConfigCulturalContext, ConfigThreshold},
     ResourceType,
 };
 

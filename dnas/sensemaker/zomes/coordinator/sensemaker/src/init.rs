@@ -1,6 +1,6 @@
-use crate::utils::create_entries_from_config;
+use crate::create_entries_from_applet_config;
 use hdk::prelude::*;
-use sensemaker_integrity::Properties;
+use sensemaker_integrity::{EntryTypes, LinkTypes, Properties};
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
@@ -9,12 +9,21 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     if let false = Properties::is_community_activator(my_key.clone())? {
         return Ok(InitCallbackResult::Pass);
     }
-    if let Some(config) = prop.config {
-        // check the format of the config passed from Wizard
+
+    // create the sensemaker entry from the prop and link it from the community activator
+    let sensemaker_eh = hash_entry(prop.sensemaker_config.clone())?;
+    create_entry(&EntryTypes::SensemakerConfig(prop.sensemaker_config))?;
+    create_link(
+        my_key.clone(),
+        sensemaker_eh.clone(),
+        LinkTypes::CAToSensemakerConfig,
+        LinkTag::new("sensemaker"),
+    )?;
+
+    // for each config, check the format and creat the config entries with the helper function
+    for config in prop.applet_configs {
         config.clone().check_format()?;
-        create_entries_from_config(config, my_key)?;
-    } else {
-        return Ok(InitCallbackResult::Pass);
+        create_entries_from_applet_config(config)?;
     }
     return Ok(InitCallbackResult::Pass);
 }

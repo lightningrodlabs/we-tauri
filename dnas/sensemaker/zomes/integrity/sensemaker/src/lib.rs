@@ -7,14 +7,14 @@ mod method;
 mod properties;
 mod resource_type;
 
-pub use applet::AppletConfig;
+pub use applet::{AppletConfig, AppletConfigInput};
 pub use assessment::Assessment;
 pub use cultural_context::{
     ContextResult, CulturalContext, OrderingKind, Threshold, ThresholdKind,
 };
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
-pub use properties::{RawSensemakerConfig, SensemakerConfig, *};
+pub use properties::{Properties, SensemakerConfig};
 pub use resource_type::ResourceType;
 
 #[hdk_entry_defs]
