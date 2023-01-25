@@ -1,5 +1,5 @@
 import {
-  AppEntryType,
+  AppEntryDef,
   InstallAppRequest,
 } from "@holochain/client";
 import {
@@ -109,7 +109,7 @@ export const installAgent = async (
   };
 };
 
-export const sampleConfig = (resource_base_type: AppEntryType) => {
+export const sampleConfig = (resource_base_def: AppEntryDef) => {
   let config = {
     neighbourhood: "Posting Board",
     wizard_version: "v0.1",
@@ -131,7 +131,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
     resources: [
       {
         name: "angryPost",
-        base_types: [resource_base_type],
+        base_types: [resource_base_def],
         dimensions: [
           {
             name: "likeness",
@@ -146,7 +146,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
         name: "total_likeness_method",
         target_resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",
@@ -185,7 +185,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
         name: "more than 5 total likeness, biggest to smallest",
         resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",
@@ -228,7 +228,7 @@ export const sampleConfig = (resource_base_type: AppEntryType) => {
         name: "more than 5 total likeness, smallest to biggest",
         resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",
