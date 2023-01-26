@@ -124,7 +124,7 @@ impl TryFrom<RawSensemakerConfig> for SensemakerConfig {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigResourceType {
     pub name: String,
-    pub base_types: Vec<AppEntryType>,
+    pub base_types: Vec<AppEntryDef>,
     pub dimensions: Vec<Dimension>,
 }
 

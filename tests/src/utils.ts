@@ -1,15 +1,12 @@
 import {
-  AppEntryType,
-  InstalledAppInfo,
+  AppEntryDef,
+  AppInfo,
+  InstallAppRequest,
+  encodeHashToBase64
 } from "@holochain/client";
 import {
   Conductor,
-  createConductor,
 } from "@holochain/tryorama";
-import {
-  addAllAgentsToAllConductors,
-} from "@holochain/tryorama/lib/common";
-import { serializeHash } from "@holochain-open-dev/utils";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -32,51 +29,67 @@ export const installAgent = async (
   with_config: boolean = false,
   resource_base_type?: any
 ) => {
-  let agentsHapps: Array<InstalledAppInfo> = [];
+  let agentsHapps: Array<AppInfo> = [];
   let agent_key;
   let ss_cell_id;
   let provider_cell_id;
   try {
     const admin = conductor.adminWs();
-    let dnaHash_ss: Uint8Array | null;
-    let dnaHash_provider: Uint8Array | null;
 
     console.log(`generating key for: ${agentName}:`);
     agent_key = await admin.generateAgentPubKey();
 
-    dnaHash_ss = await admin.registerDna({
-      path: sensemakerDna,
-      modifiers: {
-        properties: {
-          community_activator: ca_key
-            ? serializeHash(ca_key)
-            : serializeHash(agent_key),
-          config: with_config ? sampleConfig(resource_base_type!) : null
-        },
-      },
-    } as any)
-    dnaHash_provider = await admin.registerDna({ path: testProviderDna });
-    let dna_ss = {
-      hash: dnaHash_ss!,
-      role_id: "sensemaker",
-    };
-    let dna_provider = {
-      hash: dnaHash_provider!,
-      role_id: "test_provider_dna",
-    };
-
-    const req = {
+    const req: InstallAppRequest = {
       installed_app_id: `${agentName}_sensemaker`,
       agent_key,
-      dnas: [dna_ss, dna_provider],
+      membrane_proofs: {},
+      bundle: {
+        manifest: {
+          manifest_version: "1",
+          name: "sensemaker_happ",
+          description: "",
+          roles: [{
+            name: "sensemaker_dna",
+            provisioning: {
+              //@ts-ignore
+              strategy: 'create',
+              deferred: false,
+            },
+            dna: {
+              //@ts-ignore
+              modifiers: {
+                properties: {
+                  community_activator: ca_key
+                    ? encodeHashToBase64(ca_key)
+                    : encodeHashToBase64(agent_key),
+                  config: with_config ? sampleConfig(resource_base_type!) : null
+                },
+              },
+                //@ts-ignore
+              path: sensemakerDna,
+            }
+          }, {
+            name: "test_provider_dna",
+            provisioning: {
+              //@ts-ignore
+              strategy: 'create',
+              deferred: false,
+            },
+            dna: {
+              //@ts-ignore
+              path: testProviderDna,
+            }
+          }],
+        },
+        resources: {},
+      }
     };
-    console.log(`installing happ for: ${agentName}`);
-    const agentHapp = await admin.installApp(req);
-    agentHapp.cell_data.forEach((cell) => {
-      ss_cell_id = cell.role_id === "sensemaker" ? cell.cell_id : ss_cell_id;
-      provider_cell_id =
-        cell.role_id === "test_provider_dna" ? cell.cell_id : provider_cell_id;
-    });
+    //@ts-ignore
+    const agentHapp: AppInfo = await admin.installApp(req);
+    const ssCellInfo = agentHapp.cell_info["sensemaker_dna"][0]
+    ss_cell_id = ("Provisioned" in ssCellInfo) ? ssCellInfo.Provisioned.cell_id : ss_cell_id
+    const providerCellInfo = agentHapp.cell_info["test_provider_dna"][0]
+    provider_cell_id = ("Provisioned" in providerCellInfo) ? providerCellInfo.Provisioned.cell_id : provider_cell_id
     await admin.enableApp({ installed_app_id: agentHapp.installed_app_id });
     console.log("app installed", agentHapp);
     agentsHapps.push(agentHapp);
@@ -92,7 +105,7 @@ export const installAgent = async (
   };
 };
 
-export const sampleConfig = (resource_base_type: AppEntryType) => {
+export const sampleConfig = (resource_base_type: AppEntryDef) => {
   let config = {
     neighbourhood: "Posting Board",
     wizard_version: "v0.1",

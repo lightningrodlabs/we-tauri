@@ -3,18 +3,20 @@
   "private": true,
   "workspaces": [
     "ui",
-    "tests"
+    "tests",
+    "types"
   ],
   "scripts": {
     "start": "npm run network 2",
     "network": "hc s clean && npm run build:happ && concurrently-repeat \"npm run start:agent\"",
     "start:agent": "cross-env HC_PORT=$(port) concurrently -k \"npm run start:happ\" \"sleep 5 && npm run start -w ui\"",
-    "test": "npm run build:happ && npm t -w tests",
+    "test": "npm run build:happ && npm run build:types && npm t -w tests",
     "start:happ": "concurrently \"RUST_LOG=warn echo \"pass\" | hc s --piped generate ./workdir/sensemaker_happ.happ --run=$HC_PORT -a sensemaker_happ network mdns\" \"npm run playground\"",
     "package": "npm run build:happ && npm run package -w ui && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
+    "build:types": "npm run build -w types",
     "playground": "run-singleton \"holochain-playground\""
   },
   "devDependencies": {

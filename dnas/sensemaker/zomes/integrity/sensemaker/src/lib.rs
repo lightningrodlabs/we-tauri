@@ -115,8 +115,8 @@ fn validate_author_as_ca(
     entry_type: EntryType,
 ) -> ExternResult<ValidateCallbackResult> {
     return match entry_type {
-        EntryType::App(app_entry_type) => {
-            return match app_entry_type.id {
+        EntryType::App(app_entry_def) => {
+            return match app_entry_def.entry_index {
                 // cultura context, dimension, method, resource type, range
                 EntryDefIndex(1) | EntryDefIndex(4) | EntryDefIndex(5) | EntryDefIndex(7)
                 | EntryDefIndex(8) => {

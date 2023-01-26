@@ -6,7 +6,7 @@ use crate::properties::ConfigResourceType;
 #[derive(Clone)]
 pub struct ResourceType {
     pub name: String,
-    pub base_types: Vec<AppEntryType>,
+    pub base_types: Vec<AppEntryDef>,
     pub dimension_ehs: Vec<EntryHash>,
 }
 

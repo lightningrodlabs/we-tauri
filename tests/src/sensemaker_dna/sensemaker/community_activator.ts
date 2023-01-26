@@ -31,8 +31,10 @@ export default () => test("test CA progenitor pattern", async (t) => {
             });
         }
 
+        const pauseDuration = 1000;
+
         await scenario.shareAllAgents();
-        await pause(500)
+        await pause(pauseDuration)
 
         // create an entry type in the provider DNA
         const createPost = {
@@ -45,7 +47,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             createPost,
         );
 
-        await pause(500);
+        await pause(pauseDuration);
 
         const readPostOutput: Record = await callZomeBob(
             "test_provider",
@@ -74,7 +76,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             createDimension,
             true
         )
-
+        
         // Bob creates a dimension but fails
         try {
             await callZomeBob(
@@ -109,7 +111,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         );
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob creates a resource type but fails
         try {
@@ -130,7 +132,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         }
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Alice creates a method
         const totalLikenessMethod = {

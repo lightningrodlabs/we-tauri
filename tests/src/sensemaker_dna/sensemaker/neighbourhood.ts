@@ -105,8 +105,9 @@ export default () => {
         });
       };
       try {
+        const pauseDuration = 1000;
         await scenario.shareAllAgents();
-        await pause(500);
+        await pause(pauseDuration);
 
         // create an entry type in the provider DNA
         const createPost = {
@@ -119,8 +120,9 @@ export default () => {
           createPost
         );
         t.ok(createPostEntryHash);
+        console.log('post hash', createPostEntryHash)
 
-        await pause(500);
+        await pause(pauseDuration);
 
         // Bob gets the created post
         const readPostOutput: Record = await callZomeBob(
@@ -171,7 +173,7 @@ export default () => {
         );
         t.ok(createDimensionEntryHash2);
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created dimension
         const createReadOutput: Record = await callZomeBob(
@@ -220,7 +222,7 @@ export default () => {
         t.ok(createResourceTypeEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created resource type
         const createResourceTypeReadOutput: Record = await callZomeBob(
@@ -253,7 +255,7 @@ export default () => {
         t.ok(createAssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // create a second assessment on the Post
         const createAssessment2 = {
@@ -272,7 +274,7 @@ export default () => {
         t.ok(createAssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created assessment
         const createAssessmentReadOutput: Record = await callZomeBob(
@@ -345,7 +347,7 @@ export default () => {
         );
         t.ok(createMethodEntryHash);
 
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created method
         const createMethodReadOutput: Record = await callZomeBob(
@@ -373,7 +375,7 @@ export default () => {
         );
         t.ok(runMethodOutput);
 
-        await pause(100);
+        await pause(pauseDuration);
 
         const readObjectiveAssessmentOutput: Record = await callZomeBob(
           "sensemaker",
@@ -459,8 +461,9 @@ export default () => {
         // threshold > 5 likes
         // order biggest to smallest
 
+        const pauseDuration = 1000
         await scenario.shareAllAgents();
-        await pause(500);
+        await pause(pauseDuration);
 
         // create an entry type in the provider DNA
         const createPost = {
@@ -495,7 +498,7 @@ export default () => {
           createPost3
         );
         t.ok(createPostEntryHash3);
-        await pause(500);
+        await pause(pauseDuration);
 
         // Bob gets the created post
         const readPostOutput: Record = await callZomeBob(
@@ -532,7 +535,7 @@ export default () => {
         t.ok(createDimensionEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created dimension
         const createReadOutput: Record = await callZomeBob(
@@ -566,7 +569,7 @@ export default () => {
         t.ok(createResourceTypeEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created resource type
         const createResourceTypeReadOutput: Record = await callZomeBob(
@@ -599,7 +602,7 @@ export default () => {
         t.ok(createP1AssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // create a second assessment on the Post
         const createP1Assessment2 = {
@@ -649,7 +652,7 @@ export default () => {
         t.ok(createP2AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // create a second assessment on the Post
         const createP3Assessment = {
@@ -683,7 +686,7 @@ export default () => {
         t.ok(createP3AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
-        await pause(100);
+        await pause(pauseDuration);
 
         // define objective dimension
 
@@ -729,7 +732,7 @@ export default () => {
         );
         t.ok(createMethodEntryHash);
 
-        await pause(100);
+        await pause(pauseDuration);
 
         // Bob gets the created method
         const createMethodReadOutput: Record = await callZomeBob(
@@ -783,7 +786,7 @@ export default () => {
         );
         t.ok(runMethodOutput3);
 
-        await pause(100);
+        await pause(pauseDuration);
 
         const readObjectiveAssessmentOutput: Record = await callZomeBob(
           "sensemaker",
@@ -915,7 +918,7 @@ export default () => {
           true
         );
         t.ok(createContextEntryHash3);
-        await pause(100);
+        await pause(pauseDuration);
 
         const readCulturalContext: Record = await callZomeBob(
           "sensemaker",
