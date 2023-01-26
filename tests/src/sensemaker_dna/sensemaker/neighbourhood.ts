@@ -8,6 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
+import { Assessment } from "@neighbourhoods/sensemaker-lite-types";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -1005,6 +1006,16 @@ export default () => {
           };
           t.deepEqual(expectedError, e);
         }
+
+        // fetch all assessments
+        const allAssessments: [number, number, number, Array<Assessment>] = await callZomeAlice(
+          "sensemaker",
+          "get_all_assessments",
+          null,
+          true
+        );
+        t.deepEqual(allAssessments.length, 9);
+
       } catch (e) {
         console.log(e);
         t.ok(null);

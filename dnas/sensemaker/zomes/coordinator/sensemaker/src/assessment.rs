@@ -6,7 +6,10 @@ use sensemaker_integrity::EntryTypes;
 use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::RangeValue;
 
+use crate::utils::entry_from_record;
 use crate::utils::get_assessments_for_resource_inner;
+
+const ALL_ASSESSED_RESOURCES_BASE: &str = "all_assessed_resources";
 
 #[hdk_extern]
 pub fn get_assessment(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
@@ -46,8 +49,11 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, subject_eh
     };
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;
+    let assessment_path = assessment_typed_path(assessment.subject_eh.clone(), assessment.dimension_eh)?;
+    // ensure the path components are created so we can fetch child paths later
+    assessment_path.clone().ensure()?;
     create_link(
-        assessment_typed_path(assessment.subject_eh, assessment.dimension_eh)?.path_entry_hash()?,
+        assessment_path.path_entry_hash()?,
         assessment_eh.clone(),
         LinkTypes::Assessment,
         (),
@@ -55,6 +61,35 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, subject_eh
     Ok(assessment_eh)
 }
 
+#[hdk_extern]
+pub fn get_all_assessments(_:()) -> ExternResult<Vec<Assessment>> {
+    let base_path = all_assessments_typed_path()?;
+    let assessed_resources_typed_paths = base_path.children_paths()?;
+    let mut all_assessments: Vec<Vec<Assessment>> = vec![];
+
+    // for each resource that has been assessed, crawl all children to get each dimension that it has been assessed along
+    for assessed_resource_path in assessed_resources_typed_paths {
+        let assessed_dimensions_for_resource_typed_paths = assessed_resource_path.children_paths()?;
+        
+        // for each dimension that a resource has been assessed, get the assessment
+        for assessed_dimension_path in assessed_dimensions_for_resource_typed_paths {
+            let assessments = get_links(assessed_dimension_path.path_entry_hash()?, LinkTypes::Assessment, None)?.into_iter().map(|link| {
+                let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
+                if let Some(record) = maybe_assessment {
+                    let assessment = entry_from_record::<Assessment>(record)?;
+                    Ok(Some(assessment))
+                }
+                else {
+                    Ok(None)
+                }
+            }).collect::<ExternResult<Vec<Option<Assessment>>>>()?.into_iter().filter_map(|maybe_assessment| {
+                maybe_assessment
+            }).collect::<Vec<Assessment>>();
+            all_assessments.push(assessments);
+        }
+    }
+    Ok(all_assessments.into_iter().flatten().collect())
+}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateAssessmentInput {
     original_action_hash: ActionHash,
@@ -78,8 +113,13 @@ pub fn assessment_typed_path(
     let resource_eh_string = EntryHashB64::from(resource_eh).to_string();
     let dimension_eh_string = EntryHashB64::from(dimension_eh).to_string();
     Ok(Path::from(format!(
-        "all_assessed_resources.{}.{}",
-        resource_eh_string, dimension_eh_string
+        "{}.{}.{}",
+        ALL_ASSESSED_RESOURCES_BASE, resource_eh_string, dimension_eh_string
     ))
+    .typed(LinkTypes::Assessment)?)
+}
+
+pub fn all_assessments_typed_path() -> ExternResult<TypedPath> {
+    Ok(Path::from(ALL_ASSESSED_RESOURCES_BASE)
     .typed(LinkTypes::Assessment)?)
 }
