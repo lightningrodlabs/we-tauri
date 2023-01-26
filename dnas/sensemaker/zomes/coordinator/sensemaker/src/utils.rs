@@ -54,3 +54,16 @@ pub fn flatten_btree_map<K, V: Clone>(btree_map: BTreeMap<K, Vec<V>>) -> Vec<V> 
         .flatten()
         .collect::<Vec<V>>()
 }
+
+pub fn leaf_from_path(path: TypedPath) -> ExternResult<Option<String>> {
+    let leaf = path.leaf();
+    if let Some(component) = leaf {
+        let leaf_string: String = component
+            .try_into()
+            .map_err(|err| wasm_error!(WasmErrorInner::from(err)))?;
+        Ok(Some(leaf_string))
+    }
+    else {
+        Ok(None)
+    }
+}
