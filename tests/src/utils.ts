@@ -1,10 +1,11 @@
-import { serializeHash } from "@holochain-open-dev/utils";
 import {
   AppEntryDef,
-  InstallAppRequest
+  AppInfo,
+  InstallAppRequest,
+  encodeHashToBase64
 } from "@holochain/client";
 import {
-  Conductor
+  Conductor,
 } from "@holochain/tryorama";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -63,8 +64,8 @@ export const installAgent = async (
                     neighbourhood: "Rated Agenda",
                     wizard_version: "v0.1",
                     community_activator: ca_key
-                      ? serializeHash(ca_key)
-                      : serializeHash(agent_key),
+                      ? encodeHashToBase64(ca_key)
+                      : encodeHashToBase64(agent_key),
                   },
                   applet_configs: with_config ? [sampleAppletConfig(resource_base_type!)] : [],
                 },
