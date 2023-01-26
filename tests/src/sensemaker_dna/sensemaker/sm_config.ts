@@ -1,5 +1,4 @@
-import { serializeHash } from "@holochain-open-dev/utils";
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef, encodeHashToBase64 } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
@@ -189,7 +188,7 @@ test("test updating of sensemaker config", async (t) => {
         updated_sensemaker_config: {
           neighbourhood: "Rated Agenda 2",
           wizard_version: "v0.2",
-          community_activator: serializeHash(alice_agent_key),
+          community_activator: encodeHashToBase64(alice_agent_key),
         }
       }
 
