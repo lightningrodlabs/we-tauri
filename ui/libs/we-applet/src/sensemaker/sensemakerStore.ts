@@ -18,6 +18,7 @@ export class SensemakerStore {
   // }
   #appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resource_types: {}, methods: {}, cultural_contexts: {}, name: "" });
   #contextResults: Writable<ContextResults> = writable({});
+  #allAssessments: Writable<Array<Assessment>> = writable([]);
   // #dashboardData: Writable<>
   // {
     // 
@@ -42,6 +43,10 @@ export class SensemakerStore {
 
   resourceAssessments() {
     return derived(this.#resourceAssessments, resourceAssessments => resourceAssessments)
+  }
+
+  allAssessments() {
+    return derived(this.#allAssessments, allAssessments => allAssessments)
   }
 
   appletConfig() {
@@ -83,6 +88,10 @@ export class SensemakerStore {
 
   async getAssessment(assessmentEh: EntryHash): Promise<Record> {
     return await this.service.getAssessment(assessmentEh) 
+  }
+
+  async getAllAssessments(): Promise<Array<Assessment>> {
+    return await this.service.getAllAssessments() 
   }
 
   async getAssessmentForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {

@@ -30,6 +30,10 @@ export class SensemakerService {
     return this.callZome('get_assessment', assessmentEh);
   }
 
+  async getAllAssessments(): Promise<Array<Assessment>> {
+    return this.callZome('get_all_assessments', null);
+  }
+
   async getAssessmentsForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
     return this.callZome('get_assessments_for_resource', getAssessmentsInput);
   }
