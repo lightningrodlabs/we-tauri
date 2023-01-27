@@ -1,5 +1,5 @@
 
-import { DnaSource, Record, ActionHash } from "@holochain/client";
+import { DnaSource, Record, ActionHash, AppBundleSource } from "@holochain/client";
 import { pause, runScenario } from "@holochain/tryorama";
 import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
@@ -11,9 +11,9 @@ import { sensemakerDna } from "../../utils";
 export default () => test("range CRUD tests", async (t) => {
   await runScenario(async scenario => {
 
-    const dnas: DnaSource[] = [{ path: sensemakerDna }];
+    const dnas: AppBundleSource = { path: sensemakerDna };
 
-    const [alice, bob] = await scenario.addPlayersWithHapps([dnas, dnas]);
+    const [alice, bob] = await scenario.addPlayersWithApps([{ appBundleSource: dnas }, { appBundleSource: dnas }]);
 
     await scenario.shareAllAgents();
 

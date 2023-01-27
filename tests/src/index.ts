@@ -5,6 +5,6 @@ import sensemaker_config from './sensemaker_dna/sensemaker/sm_config';
 import applet_config from './sensemaker_dna/sensemaker/applet_config';
 neighbourhood();
 sensemaker_config();
-sensemaker_community_activator();
 applet_config();
+sensemaker_community_activator();
 

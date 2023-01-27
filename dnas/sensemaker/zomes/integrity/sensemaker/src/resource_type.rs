@@ -1,6 +1,6 @@
 use hdi::prelude::*;
 
-use crate::properties::ConfigResourceType;
+use crate::applet::ConfigResourceType;
 
 #[hdk_entry_helper]
 #[derive(Clone)]

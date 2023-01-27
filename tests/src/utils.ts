@@ -29,7 +29,7 @@ export const installAgent = async (
   with_config: boolean = false,
   resource_base_type?: any
 ) => {
-  let agentsHapps: Array<AppInfo> = [];
+  let agentsHapps: Array<any> = [];
   let agent_key;
   let ss_cell_id;
   let provider_cell_id;
@@ -42,6 +42,7 @@ export const installAgent = async (
     const req: InstallAppRequest = {
       installed_app_id: `${agentName}_sensemaker`,
       agent_key,
+      //@ts-ignore
       membrane_proofs: {},
       bundle: {
         manifest: {
@@ -59,13 +60,17 @@ export const installAgent = async (
               //@ts-ignore
               modifiers: {
                 properties: {
-                  community_activator: ca_key
-                    ? encodeHashToBase64(ca_key)
-                    : encodeHashToBase64(agent_key),
-                  config: with_config ? sampleConfig(resource_base_type!) : null
+                  sensemaker_config: {
+                    neighbourhood: "Rated Agenda",
+                    wizard_version: "v0.1",
+                    community_activator: ca_key
+                      ? encodeHashToBase64(ca_key)
+                      : encodeHashToBase64(agent_key),
+                  },
+                  applet_configs: with_config ? [sampleAppletConfig(resource_base_type!)] : [],
                 },
               },
-                //@ts-ignore
+              //@ts-ignore
               path: sensemakerDna,
             }
           }, {
@@ -105,12 +110,9 @@ export const installAgent = async (
   };
 };
 
-export const sampleConfig = (resource_base_type: AppEntryDef) => {
+export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
   let config = {
-    neighbourhood: "Posting Board",
-    wizard_version: "v0.1",
-    config_version: "v1-inclusive",
-    creator: "John Doe <john@doe.org>",
+    name: "sample applet config",
     //   ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }],
     dimensions: [
       {
@@ -124,10 +126,10 @@ export const sampleConfig = (resource_base_type: AppEntryDef) => {
         computed: true,
       },
     ],
-    resources: [
+    resource_types: [
       {
         name: "angryPost",
-        base_types: [resource_base_type],
+        base_types: [resource_base_def],
         dimensions: [
           {
             name: "likeness",
@@ -142,7 +144,7 @@ export const sampleConfig = (resource_base_type: AppEntryDef) => {
         name: "total_likeness_method",
         target_resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",
@@ -176,12 +178,12 @@ export const sampleConfig = (resource_base_type: AppEntryDef) => {
         must_publish_dataset: false,
       },
     ],
-    contexts: [
+    cultural_contexts: [
       {
         name: "more than 5 total likeness, biggest to smallest",
         resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",
@@ -224,7 +226,7 @@ export const sampleConfig = (resource_base_type: AppEntryDef) => {
         name: "more than 5 total likeness, smallest to biggest",
         resource_type: {
           name: "angryPost",
-          base_types: [resource_base_type],
+          base_types: [resource_base_def],
           dimensions: [
             {
               name: "likeness",

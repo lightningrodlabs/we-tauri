@@ -34,11 +34,15 @@ pub struct AssessmentWithDimensionAndResource {
 }
 
 #[hdk_extern]
-pub fn get_assessments_for_resource(input: GetAssessmentsForResourceInput) -> ExternResult<Vec<Assessment>> {
+pub fn get_assessments_for_resource(
+    input: GetAssessmentsForResourceInput,
+) -> ExternResult<Vec<Assessment>> {
     let dimension_ehs = vec![input.dimension_eh.clone()];
     let assessments = get_assessments_for_resource_inner(input.resource_eh, dimension_ehs)?;
     let maybe_flat_assessments = assessments.get(&input.dimension_eh);
-    let flat_assessments = maybe_flat_assessments.ok_or(wasm_error!(WasmErrorInner::Guest(String::from("No Assessments found for resource"))))?;
+    let flat_assessments = maybe_flat_assessments.ok_or(wasm_error!(WasmErrorInner::Guest(
+        String::from("No Assessments found for resource")
+    )))?;
     Ok(flat_assessments.clone())
 }
 

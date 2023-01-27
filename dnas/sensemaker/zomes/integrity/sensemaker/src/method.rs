@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use hdi::prelude::*;
 
-use crate::{properties::ConfigMethod, ResourceType};
+use crate::{applet::ConfigMethod, ResourceType};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
