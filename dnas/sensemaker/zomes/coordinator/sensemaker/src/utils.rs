@@ -55,15 +55,23 @@ pub fn flatten_btree_map<K, V: Clone>(btree_map: BTreeMap<K, Vec<V>>) -> Vec<V> 
         .collect::<Vec<V>>()
 }
 
-pub fn leaf_from_path(path: TypedPath) -> ExternResult<Option<String>> {
-    let leaf = path.leaf();
-    if let Some(component) = leaf {
-        let leaf_string: String = component
-            .try_into()
-            .map_err(|err| wasm_error!(WasmErrorInner::from(err)))?;
-        Ok(Some(leaf_string))
-    }
-    else {
-        Ok(None)
+pub fn fetch_provider_resource(resource_eh: EntryHash, _resource_type_eh: EntryHash) -> ExternResult<Option<Record>> {
+    // make a bridge call to the provider zome
+    let response = call(
+        CallTargetCell::OtherRole("test_provider_dna".into()),
+        ZomeName::from("test_provider"),
+        "get_post".into(),
+        None,
+        resource_eh,
+    )?;
+    match response {
+        ZomeCallResponse::Ok(result) => {
+            let maybe_record: Option<Record> = result.decode().map_err(|err| wasm_error!(WasmErrorInner::from(err)))?;
+
+            Ok(maybe_record)
+        }
+        _ => Err(wasm_error!(WasmErrorInner::Guest(
+            "Error making the bridge call to provider dna".into()
+        ))),
     }
 }

@@ -9,8 +9,8 @@ use sensemaker_integrity::RangeValue;
 
 use crate::get_dimension;
 use crate::utils::entry_from_record;
+use crate::utils::fetch_provider_resource;
 use crate::utils::get_assessments_for_resource_inner;
-use crate::utils::leaf_from_path;
 
 const ALL_ASSESSED_RESOURCES_BASE: &str = "all_assessed_resources";
 
@@ -95,10 +95,12 @@ pub fn get_all_assessments(_:()) -> ExternResult<Vec<AssessmentWithDimensionAndR
                         Some(record) => Some(entry_from_record::<Dimension>(record)?),
                         None => None
                     };
+                    // attempt a bridge call to the provider zome to get the resource
+                    let resource = fetch_provider_resource(assessment.resource_eh.clone(), assessment.resource_type_eh.clone())?;
                     Ok(Some(AssessmentWithDimensionAndResource {
                         assessment,
                         dimension,
-                        resource: None
+                        resource
                     }))
                 }
                 else {

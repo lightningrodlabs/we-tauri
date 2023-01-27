@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment } from "@neighbourhoods/sensemaker-lite-types";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -240,10 +240,11 @@ export default () => {
         );
 
         // create an assessment on the Post
-        const createAssessment = {
+        const createAssessment: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -259,10 +260,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createAssessment2 = {
+        const createAssessment2: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -385,13 +387,14 @@ export default () => {
           true
         );
 
-        const objectiveAssessment = {
+        const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              createAssessment.value.Integer + createAssessment2.value.Integer,
+              (createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -587,10 +590,11 @@ export default () => {
         );
 
         // create an assessment on the Post
-        const createP1Assessment = {
+        const createP1Assessment: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -606,10 +610,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createP1Assessment2 = {
+        const createP1Assessment2: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -621,10 +626,11 @@ export default () => {
         );
         t.ok(createP1AssessmentEntryHash2);
 
-        const createP2Assessment = {
+        const createP2Assessment: CreateAssessmentInput = {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -637,10 +643,11 @@ export default () => {
         t.ok(createP2AssessmentEntryHash);
 
         // create an assessment on the Post
-        const createP2Assessment2 = {
+        const createP2Assessment2: CreateAssessmentInput = {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -656,10 +663,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createP3Assessment = {
+        const createP3Assessment: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -671,10 +679,11 @@ export default () => {
         );
         t.ok(createP3AssessmentEntryHash);
 
-        const createP3Assessment2 = {
+        const createP3Assessment2: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -796,14 +805,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment = {
+        const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              createP1Assessment.value.Integer +
-              createP1Assessment2.value.Integer,
+              (createP1Assessment.value as RangeValueInteger).Integer +
+              (createP1Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -821,14 +831,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment2 = {
+        const objectiveAssessment2: Assessment = {
           value: {
             Integer:
-              createP2Assessment.value.Integer +
-              createP2Assessment2.value.Integer,
+              (createP2Assessment.value as RangeValueInteger).Integer +
+              (createP2Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -846,14 +857,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment3 = {
+        const objectiveAssessment3: Assessment = {
           value: {
             Integer:
-              createP3Assessment.value.Integer +
-              createP3Assessment2.value.Integer,
+              (createP3Assessment.value as RangeValueInteger).Integer +
+              (createP3Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_type_eh: createResourceTypeEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -1008,12 +1020,14 @@ export default () => {
         }
 
         // fetch all assessments
-        const allAssessments: [number, number, number, Array<Assessment>] = await callZomeAlice(
+        const allAssessments: Array<AssessmentWithDimensionAndResource> = await callZomeAlice(
           "sensemaker",
           "get_all_assessments",
           null,
           true
         );
+        console.log('all assessments', allAssessments)
+        console.log('post from bridge', decode((allAssessments[0].resource!.entry as any).Present.entry) as any)
         t.deepEqual(allAssessments.length, 9);
 
       } catch (e) {
