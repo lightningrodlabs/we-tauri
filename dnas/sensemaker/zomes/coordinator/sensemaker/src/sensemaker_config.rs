@@ -2,7 +2,7 @@ use hdk::prelude::*;
 use sensemaker_integrity::{LinkTypes, Properties, SensemakerConfig};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UpdateConfigurtionInput {
+pub struct UpdateConfigurationInput {
     original_action_hash: ActionHash, // this must be the original Create Action Hash
     updated_sensemaker_config: SensemakerConfig,
 }
@@ -68,7 +68,7 @@ pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-pub fn update_sensemaker_config(config: UpdateConfigurtionInput) -> ExternResult<ActionHash> {
+pub fn update_sensemaker_config(config: UpdateConfigurationInput) -> ExternResult<ActionHash> {
     // update the original config entry
     update_entry(
         config.original_action_hash,
