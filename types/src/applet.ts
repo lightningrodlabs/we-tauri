@@ -22,7 +22,6 @@ export interface AppletConfig {
 
 export interface AppletConfigInput {
     name: string,
-    // pub ranges: Array<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
     dimensions: Array<Dimension>,
     resource_types: Array<ConfigResourceType>,
     methods: Array<ConfigMethod>,

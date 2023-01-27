@@ -1,7 +1,7 @@
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef } from "@holochain/client";
+import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
-import { decode } from "@msgpack/msgpack";
-import { CulturalContext, Dimension, ResourceType, Threshold, Range, ConfigResourceType, Method, ConfigMethod, ConfigThreshold, ConfigCulturalContext, AppletConfig, AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types"
+//@ts-ignore
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceType, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
@@ -87,12 +87,16 @@ export default () =>
                 t.ok(objectiveDimensionHash);
 
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
-                const resourceType: ResourceType = {
+                // waiting for sensemaker-lite-types to be updated
+                // const resourceType: ResourceType = {
+                const resourceType: any = {
                     name: "task_item",
                     base_types: [app_entry_def],
                     dimension_ehs: [dimensionHash]
                 }
 
+                // waiting for sensemaker-lite-types to be updated
+                // const configResourceType: ConfigResourceType = {
                 const configResourceType: ConfigResourceType = {
                     name: resourceType.name,
                     base_types: resourceType.base_types,
@@ -199,6 +203,7 @@ export default () =>
                     appletConfigInput,
                     true
                 );
+                console.log("this is the applet config added", returnedAppletConfig);
                 t.ok(returnedAppletConfig);
                 t.deepEqual(JSON.stringify(returnedAppletConfig), JSON.stringify(appletConfig))
 

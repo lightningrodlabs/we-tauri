@@ -7,11 +7,11 @@ use sensemaker_integrity::Method;
 use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
-use crate::CreateAssessmentInput;
 use crate::create_assessment;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
+use crate::CreateAssessmentInput;
 
 #[hdk_extern]
 pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {

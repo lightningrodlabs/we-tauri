@@ -1,6 +1,10 @@
 use hdi::prelude::*;
 
-use crate::{dimension::RangeValue, properties::{ConfigCulturalContext, ConfigThreshold}, ResourceType};
+use crate::{
+    applet::{ConfigCulturalContext, ConfigThreshold},
+    dimension::RangeValue,
+    ResourceType,
+};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
@@ -25,7 +29,9 @@ impl TryFrom<ConfigCulturalContext> for CulturalContext {
             if let Ok(dimension_eh) = hash_entry(item.0) {
                 order_by.push((dimension_eh, item.1));
             } else {
-                return error!("failed to convert dimension found in cultural context to entry hash");
+                return error!(
+                    "failed to convert dimension found in cultural context to entry hash"
+                );
             }
         });
 
