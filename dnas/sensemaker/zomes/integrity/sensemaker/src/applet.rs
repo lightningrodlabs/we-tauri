@@ -11,6 +11,7 @@ use crate::{
 #[derive(Clone)]
 pub struct AppletConfig {
     pub name: String,
+    pub role_name: Option<String>,
     // pub ranges: Vec<EntryHash>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: BTreeMap<String, EntryHash>,
     // the base_type field in ResourceType needs to be bridged call

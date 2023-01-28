@@ -6,6 +6,7 @@ import { ConfigResourceType } from "./resourceType";
 
 export interface AppletConfig {
     name: string,
+    role_name: string,
     dimensions: {
         [dimensionName: string]: EntryHash,
     },
@@ -26,4 +27,9 @@ export interface AppletConfigInput {
     resource_types: Array<ConfigResourceType>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,
+}
+
+export interface CreateAppletConfigInput {
+    applet_config_input: AppletConfigInput,
+    role_name: string,
 }

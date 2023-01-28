@@ -3,6 +3,11 @@ use test_provider_integrity::EntryTypes;
 use test_provider_integrity::Post;
 
 #[hdk_extern]
+pub fn get_resource(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
+    get(entry_hash, GetOptions::default())
+}
+
+#[hdk_extern]
 pub fn get_post(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
     get(entry_hash, GetOptions::default())
 }

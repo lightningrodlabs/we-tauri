@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -724,7 +724,7 @@ export default () => {
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
-        const totalLikenessMethod = {
+        const totalLikenessMethod: Method = {
           name: "total_likeness_method",
           target_resource_type_eh: createResourceTypeEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
@@ -1027,7 +1027,6 @@ export default () => {
           true
         );
         console.log('all assessments', allAssessments)
-        console.log('post from bridge', decode((allAssessments[0].resource!.entry as any).Present.entry) as any)
         t.deepEqual(allAssessments.length, 9);
 
       } catch (e) {

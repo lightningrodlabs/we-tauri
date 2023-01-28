@@ -23,7 +23,7 @@ pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
     // for each config, check the format and creat the config entries with the helper function
     for config in prop.applet_configs {
         config.clone().check_format()?;
-        create_entries_from_applet_config(config)?;
+        create_entries_from_applet_config(config, None)?;
     }
     return Ok(InitCallbackResult::Pass);
 }

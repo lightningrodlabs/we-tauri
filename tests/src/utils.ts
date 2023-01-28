@@ -7,6 +7,7 @@ import {
 import {
   Conductor,
 } from "@holochain/tryorama";
+import { AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -111,7 +112,7 @@ export const installAgent = async (
 };
 
 export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
-  let config = {
+  let config: AppletConfigInput = {
     name: "sample applet config",
     //   ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }],
     dimensions: [

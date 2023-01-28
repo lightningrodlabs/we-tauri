@@ -1,7 +1,7 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceType, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceType, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, ResourceType, Threshold } from "@neighbourhoods/sensemaker-lite-types";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
@@ -87,16 +87,12 @@ export default () =>
                 t.ok(objectiveDimensionHash);
 
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
-                // waiting for sensemaker-lite-types to be updated
-                // const resourceType: ResourceType = {
-                const resourceType: any = {
+                const resourceType: ResourceType = {
                     name: "task_item",
                     base_types: [app_entry_def],
                     dimension_ehs: [dimensionHash]
                 }
 
-                // waiting for sensemaker-lite-types to be updated
-                // const configResourceType: ConfigResourceType = {
                 const configResourceType: ConfigResourceType = {
                     name: resourceType.name,
                     base_types: resourceType.base_types,
@@ -173,6 +169,7 @@ export default () =>
                 // create a config type
                 const appletConfig: AppletConfig = {
                     name: "todo",
+                    role_name: "test_provider_dna",
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
@@ -181,18 +178,21 @@ export default () =>
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
-                const appletConfigInput: AppletConfigInput = {
-                    name: appletConfig.name,
-                    dimensions: [dimension, objectiveDimension],
-                    resource_types: [configResourceType],
-                    methods: [configMethod],
-                    cultural_contexts: [configCulturalContext],
+                const appletConfigInput: CreateAppletConfigInput = {
+                    applet_config_input: {
+                        name: appletConfig.name,
+                        dimensions: [dimension, objectiveDimension],
+                        resource_types: [configResourceType],
+                        methods: [configMethod],
+                        cultural_contexts: [configCulturalContext],
+                    },
+                    role_name: "test_provider_dna"
                 }
 
                 let maybeAppletConfig: any = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(!maybeAppletConfig);
@@ -210,7 +210,7 @@ export default () =>
                 maybeAppletConfig = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(maybeAppletConfig);
