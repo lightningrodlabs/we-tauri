@@ -1,8 +1,8 @@
 import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
-
 import { Assessment } from '@neighbourhoods/sensemaker-lite-types';
+import { encodeHashToBase64 } from '@holochain/client';
 
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
@@ -15,13 +15,24 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   render() {
     let assessmentTable = html`
     ${this.allAssessments.map((assessment) => html`
-        <tr>${JSON.stringify(assessment)}</tr>
+        <tr>
+            <td>${JSON.stringify(assessment.value)}</td>
+            <td>${encodeHashToBase64(assessment.dimension_eh)}</td>
+            <td>${encodeHashToBase64(assessment.subject_eh)}</td>
+            <td>${encodeHashToBase64(assessment.author)}</td>
+        </tr>
     `)}
     `
     return html`
       <main>
         <div class="home-page">
             <table>
+                <tr>
+                    <th>Value</th>
+                    <th>Dimension</th>
+                    <th>Resource</th>
+                    <th>Author</th>
+                </tr>
                 ${assessmentTable}
             </table>
         </div>
@@ -36,36 +47,20 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   static styles = css`
-    .home-page {
-      display: flex;
-      flex-direction: row;
-    }  
-
-    :host {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      font-size: calc(10px + 2vmin);
-      color: #1a2b42;
-      max-width: 960px;
-      margin: 0 auto;
-      text-align: center;
-      background-color: var(--lit-element-background-color);
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
     }
-
-    main {
-      flex-grow: 1;
+    
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
     }
-
-    .app-footer {
-      font-size: calc(12px + 0.5vmin);
-      align-items: center;
-    }
-
-    .app-footer a {
-      margin-left: 5px;
+    
+    tr:nth-child(even) {
+        background-color: #dddddd;
     }
   `;
 }
