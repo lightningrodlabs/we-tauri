@@ -665,12 +665,9 @@ export class MatrixStore {
     // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
 
-    console.log("ALL APPS: ", allApps);
-
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
     let allGroupClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "cloned" in cellInfo);
 
-    console.log("allGroupClones: ", allGroupClones);
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
     await Promise.all(
@@ -713,14 +710,11 @@ export class MatrixStore {
           }
         });
 
-        console.log("Creating ProfilesStore");
-
         const profilesStore = new ProfilesStore(
           new ProfilesClient(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
 
-        console.log("calling get_info");
 
         var weInfo: WeInfo | undefined = undefined;
         // create WeGroupData object
