@@ -716,18 +716,13 @@ export class MatrixStore {
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
 
 
-        var weInfo: WeInfo | undefined = undefined;
         // create WeGroupData object
-        try {
-          weInfo = await weGroupAgentWebsocket.callZome({
-            cell_id: weGroupCellId,
-            zome_name: "we_coordinator",
-            fn_name: "get_info",
-            payload: null
-          });
-        } catch(e) {
-          throw new Error(`Failed to get WeInfo: ${e}`);
-        }
+        const weInfo = await weGroupAgentWebsocket.callZome({
+          cell_id: weGroupCellId,
+          zome_name: "we_coordinator",
+          fn_name: "get_info",
+          payload: null
+        });
 
         console.log("weInfo: ", weInfo);
 
