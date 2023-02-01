@@ -6,6 +6,9 @@ import babel from "@rollup/plugin-babel";
 import html from "@web/rollup-plugin-html";
 import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
 import { terser } from "rollup-plugin-terser";
+import typescript from '@rollup/plugin-typescript';
+
+const production = !process.env.ROLLUP_WATCH;
 
 export default {
   input: "index.html",
@@ -37,6 +40,10 @@ export default {
       "process.env.ADMIN_PORT": `undefined`,
     }),
     commonjs({}),
+    typescript({
+      sourceMap: !production,
+      inlineSources: !production,
+    }),
     /** Minify JS */
     terser(),
     /** Bundle assets references via import.meta.url */

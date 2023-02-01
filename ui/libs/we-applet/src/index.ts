@@ -2,7 +2,7 @@ import { ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   AdminWebsocket,
   AppWebsocket,
-  InstalledAppInfo,
+  AppInfo,
 } from "@holochain/client";
 import { SensemakerStore } from "./sensemaker/sensemakerStore";
 
@@ -29,13 +29,12 @@ export interface WeServices {
 export { SensemakerStore } from "./sensemaker/sensemakerStore";
 export { SensemakerService } from "./sensemaker/sensemakerService";
 export { sensemakerStoreContext } from "./sensemaker/context";
-export * from "./sensemaker/sensemakerTypes";
 export interface WeApplet {
   appletRenderers: (
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
     weStore: WeServices,
-    appletInfo: InstalledAppletInfo[],
+    appletInfo: AppletInfo[],
   ) => Promise<AppletRenderers>;
 }
 
@@ -44,7 +43,7 @@ export interface WeInfo {
   logoSrc: string;
   name: string;
 }
-export interface InstalledAppletInfo {
+export interface AppletInfo {
   weInfo: WeInfo,
-  installedAppInfo: InstalledAppInfo,
+  appInfo: AppInfo,
 }

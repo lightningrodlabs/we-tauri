@@ -2,7 +2,6 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { contextProvided } from "@lit-labs/context";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Button,

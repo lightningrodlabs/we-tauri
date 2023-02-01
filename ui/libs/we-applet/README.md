@@ -1,18 +1,20 @@
-# @lightningrodlabs/we-applet
+# @neighbourhoods/nh-we-applet
 
 This package contains the interfaces and contracts that a UI module needs to implement in order to become a We Applet.
 
 You can use [@lightningrodlabs/create-we-applet](https://npmjs.com/package/@lightningrodlabs/create-we-applet) to easily scaffold the initial structure for a We Applet.
 
+Made for holochain `v0.1.0-beta-rc.2`.
+
 ## Implementing the UI for a we applet
 
-You need to import the `WeApplet` type from `@lightningrodlabs/we-applet`, and have only a default export in your file:
+You need to import the `WeApplet` type from `@neighbourhoods/nh-we-applet`, and have only a default export in your file:
 
 > index.ts.
 
 ```ts
 import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { WeApplet, WeServices } from "@lightningrodlabs/we-applet";
+import { WeApplet, WeServices } from "@neighbourhoods/nh-we-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const applet: WeApplet = {
@@ -33,6 +35,7 @@ const applet: WeApplet = {
         appletElement.appWebsocket = appWebsocket;
         appletElement.profilesStore = weServices.profilesStore;
         appletElement.cellData = appletInfo.cell_data[0];
+        appletElement.sensemakerStore = weServices.sensemakerStore;
       },
       blocks: [],
     };

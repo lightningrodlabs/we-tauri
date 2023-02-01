@@ -21,8 +21,7 @@ import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { ActionHash, DnaHash, EntryHash, InstalledAppInfo } from "@holochain/client";
-import { getStatus } from "../../utils";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {

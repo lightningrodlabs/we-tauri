@@ -1,5 +1,4 @@
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
-import { AgentPubKey, DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
+import { AgentPubKey, DnaHash, EntryHash, InstalledAppId, EntryHashB64 } from "@holochain/client";
 
 
 export enum DashboardMode {
@@ -54,6 +53,7 @@ export interface Applet {
   logoSrc: string | undefined;
 
   devhubHappReleaseHash: EntryHash;
+  devhubGuiReleaseHash: EntryHash;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   networkSeed: Record<string, string | undefined>; // Segmented by RoleId
@@ -70,12 +70,13 @@ export interface RegisterAppletInput {
   applet: Applet,
 }
 
-export interface AppletInfo {
+export interface AppletMetaData {
   title: string,
   subtitle: string | undefined,
   description: string,
   installedAppId?: InstalledAppId,
   devhubHappReleaseHash: EntryHash,
+  devhubGuiReleaseHash: EntryHash,
   icon: IconSrcOption,
 }
 

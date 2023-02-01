@@ -2,7 +2,6 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { contextProvided } from "@lit-labs/context";
-import { EntryHashB64 } from "@holochain-open-dev/core-types";
 import {
   TextField,
   Button,
@@ -15,12 +14,11 @@ import {
 import md5 from 'md5';
 
 import { sharedStyles } from "../../sharedStyles";
-import { AppletInfo } from "../../types";
+import { AppletMetaData } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash, EntryHash } from "@holochain/client";
-import { fakeEntryHash } from "@holochain-open-dev/utils";
+import { DnaHash, EntryHash, EntryHashB64 } from "@holochain/client";
 import { fakeMd5SeededEntryHash } from "../../utils";
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
@@ -103,11 +101,12 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   async createApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      const appletInfo: AppletInfo = {
+      const appletInfo: AppletMetaData = {
         title: this._installedAppIdField.value, // for the applet class name we just take the user defined name for now.
         subtitle: undefined,
         description: this._descriptionField.value,
         devhubHappReleaseHash: this._fakeDevhubHappReleaseHash!,
+        devhubGuiReleaseHash: this._fakeDevhubHappReleaseHash!, // just take the same fake hash for the GUI hash
         icon: undefined,
       };
 

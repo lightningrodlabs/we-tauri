@@ -1,4 +1,3 @@
-import { serializeHash } from "@holochain-open-dev/utils";
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
@@ -23,7 +22,7 @@ import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { ActionHash, DnaHash, InstalledAppInfo } from "@holochain/client";
+import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
@@ -82,7 +81,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   }
 
 
-  async disableApp(appInfo: InstalledAppInfo) {
+  async disableApp(appInfo: AppInfo) {
     this.matrixStore.disableApp(appInfo)
       .then(() => {
         (this.shadowRoot?.getElementById("app-disabled-snackbar") as Snackbar).show();
@@ -93,7 +92,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  async enableApp(appInfo: InstalledAppInfo) {
+  async enableApp(appInfo: AppInfo) {
     this.matrixStore.enableApp(appInfo)
       .then(() => {
         (this.shadowRoot?.getElementById("app-enabled-snackbar") as Snackbar).show();
@@ -104,7 +103,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       });
   }
 
-  async uninstallApp(appInfo: InstalledAppInfo) {
+  async uninstallApp(appInfo: AppInfo) {
     console.log("Uninstalling applet: ", appInfo);
     this.matrixStore.uninstallApp(appInfo)
       .then(async () => {
@@ -151,14 +150,14 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       return html`
         ${appletInstanceInfos
           .sort((info_a, info_b) => { // show disabled applets on top, then sort alphabetically
-            if (getStatus(info_a.installedAppInfo) !== getStatus(info_b.installedAppInfo)) {
-              return getStatus(info_a.installedAppInfo).localeCompare(getStatus(info_b.installedAppInfo));
+            if (getStatus(info_a.appInfo) !== getStatus(info_b.appInfo)) {
+              return getStatus(info_a.appInfo).localeCompare(getStatus(info_b.appInfo));
             } else {
               return info_a.applet.customName.localeCompare(info_b.applet.customName)
             }
            })
           .map((appletInfo) => {
-            const appStatus = getStatus(appletInfo.installedAppInfo);
+            const appStatus = getStatus(appletInfo.appInfo);
             return html`
               <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="margin: 5px;">
@@ -192,7 +191,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                             raised
                             label="DISABLE"
                             icon="stop"
-                            @click=${async () => await this.disableApp(appletInfo.installedAppInfo)}
+                            @click=${async () => await this.disableApp(appletInfo.appInfo)}
                           ></mwc-button>
                           `
                         : html`
@@ -201,7 +200,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                             raised
                             label="START"
                             icon="play_arrow"
-                            @click=${async () => await this.enableApp(appletInfo.installedAppInfo)}
+                            @click=${async () => await this.enableApp(appletInfo.appInfo)}
                           ></mwc-button>
                           `
                       }
@@ -211,7 +210,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                         label="UNINSTALL"
                         icon="delete"
                         @click=${() => {
-                          this._uninstallAppletDialog.installedAppInfo = appletInfo.installedAppInfo;
+                          this._uninstallAppletDialog.installedAppInfo = appletInfo.appInfo;
                           this._uninstallAppletDialog.open();
                           }
                         }
