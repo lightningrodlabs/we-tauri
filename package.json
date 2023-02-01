@@ -16,7 +16,7 @@
     "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle --app-id DevHub ./DevHub/DevHub.happ && npm run devhub:ui",
     "devhub:ui": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
     "playground": "run-singleton \"holochain-playground\"",
-    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/bFlG9VjNcjfa1D8/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
+    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/C7qTwJBONeajkP7/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",

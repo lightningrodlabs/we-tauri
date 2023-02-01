@@ -9,4 +9,4 @@ crate-type = ["cdylib", "rlib"]
 name = "membrane_invitations_coordinator"
 
 [dependencies]
-hc_zome_membrane_invitations_coordinator = { git = "https://github.com/holochain-open-dev/membrane-invitations", rev = "for-hdk-v0.1.0", package = "hc_zome_membrane_invitations_coordinator" }
+hc_zome_membrane_invitations_coordinator = { git = "https://github.com/holochain-open-dev/membrane-invitations", rev = "for-hdk-0.1.0", package = "hc_zome_membrane_invitations_coordinator" }

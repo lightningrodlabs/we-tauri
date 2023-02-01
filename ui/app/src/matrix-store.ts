@@ -32,9 +32,10 @@ import {
   encodeHashToBase64,
   decodeHashFromBase64,
   CellType,
-  Cell,
   AppSignal,
   StemCell,
+  ClonedCell,
+  ProvisionedCell,
 } from "@holochain/client";
 import {
   CloneDnaRecipe,
@@ -63,6 +64,7 @@ import {
   IconSrcOption,
   PlayingApplet,
   RegisterAppletInput,
+  SignalPayload,
 } from "./types";
 import { importModuleFromFile } from "./processes/import-module-from-file";
 import { getDevHubAppId } from "./processes/devhub/app-id";
@@ -70,7 +72,7 @@ import { fetchWebHapp } from "./processes/devhub/get-happs";
 import { decompressSync, unzipSync } from "fflate";
 import { toSrc } from "./processes/import-logsrc-from-file";
 import { GlobalAppletsService } from "./global-applets-service";
-import { ProfilesService, ProfilesStore } from "@holochain-open-dev/profiles";
+import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import { PeerStatusStore } from "@holochain-open-dev/peer-status";
 import md5 from "md5";
 import { getCellId } from "./utils";
@@ -209,11 +211,11 @@ export class MatrixStore {
     adminWebsocket: AdminWebsocket,
     weParentAppInfo: AppInfo,
   ) {
-    const appAgentWebsocket = await AppAgentWebsocket.connect(appWebsocket, "we");
+    const appAgentWebsocket = await AppAgentWebsocket.connect("", "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(
-      appAgentWebsocket,
+      (appAgentWebsocket as AppAgentClient),
       "lobby",
       "membrane_invitations_coordinator"
     );
@@ -671,19 +673,19 @@ export class MatrixStore {
     await Promise.all(
       allGroupClones.map(async (weGroupCell) => {
         // create store
-        const weGroupCellInfo = (weGroupCell as { "Cloned": Cell }).Cloned;
+        const weGroupCellInfo = (weGroupCell as { [CellType.Cloned]: ClonedCell }).cloned;
         const weGroupCellId = weGroupCellInfo.cell_id;
         const weGroupDnaHash = weGroupCellId[0];
 
         // create dedicated AppAgentWebsocket for each We group
-        const weGroupAgentWebsocket = await AppAgentWebsocket.connect(this.appWebsocket, "we");
+        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("", "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
         // add signal handler to listen for "NewApplet" events
         weGroupAgentWebsocket.on("signal", (signal: AppSignal) => {
-          const payload = signal.data.payload;
-          const cellId = signal.data.cellId;
+          const payload = (signal.payload as SignalPayload);
+          const cellId = signal.cell_id;
 
           // filter by cell id
           if (!payload.message || JSON.stringify(cellId) !== JSON.stringify(weGroupCellId)) return;
@@ -692,9 +694,9 @@ export class MatrixStore {
             case "NewApplet":
               this._newAppletInstances.update((store) => {
                 const newAppletInstanceInfo: NewAppletInstanceInfo = {
-                  appletId: payload.appletHash,
+                  appletId: payload.applet_hash,
                   applet: payload.message.content,
-                  federatedGroups: payload.federatedGroups,
+                  federatedGroups: payload.federated_groups,
                 };
 
                 let updatedList = store.get(weGroupDnaHash);
@@ -709,7 +711,7 @@ export class MatrixStore {
         });
 
         const profilesStore = new ProfilesStore(
-          new ProfilesService(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
+          new ProfilesClient(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
 
@@ -933,7 +935,7 @@ export class MatrixStore {
 
     const newWeGroupCellId = clonedCell.cell_id;
 
-    const appAgentWebsocket = await AppAgentWebsocket.connect(this.appWebsocket, weParentAppInfo.installed_app_id);
+    const appAgentWebsocket = await AppAgentWebsocket.connect("", weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
@@ -951,8 +953,8 @@ export class MatrixStore {
 
     // add signal handler to listen for "NewApplet" events
     appAgentWebsocket.on("signal", (signal) => {
-      const payload = signal.data.payload;
-      const cellId = signal.data.cellId;
+      const payload = (signal.payload as SignalPayload);
+      const cellId = signal.cell_id;
 
       // filter by cell id
       if (!payload.message || JSON.stringify(cellId) !== JSON.stringify(newWeGroupCellId)) return;
@@ -961,9 +963,9 @@ export class MatrixStore {
         case "NewApplet":
           this._newAppletInstances.update((store) => {
             const newAppletInstanceInfo: NewAppletInstanceInfo = {
-              appletId: payload.appletHash,
+              appletId: payload.applet_hash,
               applet: payload.message.content,
-              federatedGroups: payload.federatedGroups,
+              federatedGroups: payload.federated_groups,
             };
 
             let updatedList = store.get(newWeGroupCellId[0]);
@@ -981,10 +983,10 @@ export class MatrixStore {
     // the clone_id via appInfo at the moment.
     const appInfo = await this.appAgentWebsocket.appInfo();
     const cellInfo = appInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo)
-      .find((cellInfo) => JSON.stringify((cellInfo  as { "Cloned": Cell }).Cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
-    const cell = (cellInfo as { "Cloned": Cell }).Cloned!;
+      .find((cellInfo) => JSON.stringify((cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
+    const cell = (cellInfo as { [CellType.Cloned]: ClonedCell }).cloned!;
 
-    const profilesStore = new ProfilesStore(new ProfilesService(appAgentWebsocket, cell.clone_id!));
+    const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
 
     this._matrix.update((matrix) => {
@@ -1293,11 +1295,11 @@ export class MatrixStore {
         throw new Error(`Found neither a deferred nor a provisioned cell for role_name '${roleName}'`)
       }
       if (provisionedCell) {
-        dnaHashes[roleName] = (provisionedCell as { "Provisioned": Cell }).Provisioned.cell_id[0];
+        dnaHashes[roleName] = (provisionedCell as { [CellType.Provisioned]: ProvisionedCell }).provisioned.cell_id[0];
         networkSeedByRole[roleName] = networkSeed!;
       }
       if (stemCell) {
-        dnaHashes[roleName] = (provisionedCell as { "Stem": StemCell }).Stem.dna;
+        dnaHashes[roleName] = (stemCell as { [CellType.Stem]: StemCell }).stem.dna;
         networkSeedByRole[roleName] = networkSeed!;
       }
     });
@@ -1565,7 +1567,7 @@ export class MatrixStore {
     Object.entries(appInfo.cell_info).forEach(([roleName, cellInfos]) => {
       const provisionedCell = cellInfos.find((cellInfo) => "Provisioned" in cellInfo);
       if (provisionedCell) {
-        dnaHashes[roleName] = (provisionedCell as { "Provisioned": Cell }).Provisioned.cell_id[0];
+        dnaHashes[roleName] = (provisionedCell as { [CellType.Provisioned]: ProvisionedCell }).provisioned.cell_id[0];
         networkSeedByRole[roleName] = networkSeed!;
       }
     });
@@ -1872,10 +1874,10 @@ export class MatrixStore {
         throw new Error(`Found neither a deferred nor a provisioned cell for role_name '${roleName}'`)
       }
       if (provisionedCell) {
-        dnaHash = (provisionedCell as { "Provisioned": Cell }).Provisioned.cell_id[0];
+        dnaHash = (provisionedCell as { [CellType.Provisioned]: ProvisionedCell }).provisioned.cell_id[0];
       }
       if (stemCell) {
-        dnaHash = (provisionedCell as { "Stem": StemCell }).Stem.dna;
+        dnaHash = (stemCell as { [CellType.Stem]: StemCell }).stem.dna;
       }
 
       const dnaHashOfRoleId = applet.dnaHashes[roleName];
