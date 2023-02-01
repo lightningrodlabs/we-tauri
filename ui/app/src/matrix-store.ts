@@ -639,7 +639,7 @@ export class MatrixStore {
 
   private originalWeDnaHash(): DnaHash {
     const weParentAppInfo = this.weParentAppInfo;
-    return getCellId(weParentAppInfo.cell_info["we"].find((cellInfo) => "Provisioned" in cellInfo)!)![0];
+    return getCellId(weParentAppInfo.cell_info["we"].find((cellInfo) => "provisioned" in cellInfo)!)![0];
   }
 
   /**
@@ -665,9 +665,12 @@ export class MatrixStore {
     // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
 
-    // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
-    let allGroupClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo);
+    console.log("ALL APPS: ", allApps);
 
+    // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
+    let allGroupClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "cloned" in cellInfo);
+
+    console.log("allGroupClones: ", allGroupClones);
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
     await Promise.all(
@@ -710,21 +713,32 @@ export class MatrixStore {
           }
         });
 
+        console.log("Creating ProfilesStore");
+
         const profilesStore = new ProfilesStore(
           new ProfilesClient(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
 
+        console.log("calling get_info");
+
+        var weInfo: WeInfo | undefined = undefined;
         // create WeGroupData object
-        const weInfo: WeInfo = await weGroupAgentWebsocket.callZome({
-          role_name: "we",
-          zome_name: "we_coordinator",
-          fn_name: "get_info",
-          payload: null
-        });
+        try {
+          weInfo = await weGroupAgentWebsocket.callZome({
+            cell_id: weGroupCellId,
+            zome_name: "we_coordinator",
+            fn_name: "get_info",
+            payload: null
+          });
+        } catch(e) {
+          throw new Error(`Failed to get WeInfo: ${e}`);
+        }
+
+        console.log("weInfo: ", weInfo);
 
         const weGroupInfo: WeGroupInfo = {
-          info: weInfo,
+          info: weInfo!,
           cell_id: weGroupCellId,
           dna_hash: weGroupDnaHash,
           cloneName: weGroupCellInfo.name,
@@ -827,7 +841,7 @@ export class MatrixStore {
   ): Promise<void> {
     const appInfo = this.weParentAppInfo;
 
-    const weCellInfo = appInfo.cell_info["we"].find((cellInfo) => "Provisioned" in cellInfo);
+    const weCellInfo = appInfo.cell_info["we"].find((cellInfo) => "provisioned" in cellInfo);
     const weDnaHash = getCellId(weCellInfo!)![0];
 
     const records =
@@ -865,7 +879,7 @@ export class MatrixStore {
 
     const appInfo = this.weParentAppInfo;
 
-    const weCellInfo = appInfo.cell_info["we"].find((cellInfo) => "Provisioned" in cellInfo);
+    const weCellInfo = appInfo.cell_info["we"].find((cellInfo) => "provisioned" in cellInfo);
     const weDnaHash = getCellId(weCellInfo!)![0];
 
     const properties = {
@@ -982,7 +996,7 @@ export class MatrixStore {
     // Because createCloneCell currently returns InstalledCell instead of Cell, we need to manually get
     // the clone_id via appInfo at the moment.
     const appInfo = await this.appAgentWebsocket.appInfo();
-    const cellInfo = appInfo.cell_info["we"].filter((cellInfo) => "Cloned" in cellInfo)
+    const cellInfo = appInfo.cell_info["we"].filter((cellInfo) => "cloned" in cellInfo)
       .find((cellInfo) => JSON.stringify((cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
     const cell = (cellInfo as { [CellType.Cloned]: ClonedCell }).cloned!;
 
@@ -1286,8 +1300,8 @@ export class MatrixStore {
     const networkSeedByRole: Record<string, string> = {};
     // add dna hashes and network seeds of all provisioned or deferred cells to the Applet entry
     Object.entries(appInfo.cell_info).forEach(([roleName, cellInfos]) => {
-      const provisionedCell = cellInfos.find((cellInfo) => "Provisioned" in cellInfo);
-      const stemCell = cellInfos.find((cellInfo) => "Stem" in cellInfo);
+      const provisionedCell = cellInfos.find((cellInfo) => "provisioned" in cellInfo);
+      const stemCell = cellInfos.find((cellInfo) => "stem" in cellInfo);
       if (stemCell && provisionedCell) {
         throw new Error(`Found a deferred cell and a provisioned cell for the role_name '${roleName}'`)
       }
@@ -1565,7 +1579,7 @@ export class MatrixStore {
 
     // add dna hashes and network seeds of all provisioned cells to the Applet entry
     Object.entries(appInfo.cell_info).forEach(([roleName, cellInfos]) => {
-      const provisionedCell = cellInfos.find((cellInfo) => "Provisioned" in cellInfo);
+      const provisionedCell = cellInfos.find((cellInfo) => "provisioned" in cellInfo);
       if (provisionedCell) {
         dnaHashes[roleName] = (provisionedCell as { [CellType.Provisioned]: ProvisionedCell }).provisioned.cell_id[0];
         networkSeedByRole[roleName] = networkSeed!;
@@ -1864,8 +1878,8 @@ export class MatrixStore {
   isSameApp(appInfo: AppInfo, applet: Applet): boolean {
     let isSame = true;
     Object.entries(appInfo.cell_info).forEach(([roleName, cellInfos]) => {
-      const provisionedCell = cellInfos.find((cellInfo) => "Provisioned" in cellInfo);
-      const stemCell = cellInfos.find((cellInfo) => "Stem" in cellInfo);
+      const provisionedCell = cellInfos.find((cellInfo) => "provisioned" in cellInfo);
+      const stemCell = cellInfos.find((cellInfo) => "stem" in cellInfo);
       let dnaHash: Uint8Array;
       if (stemCell && provisionedCell) {
         throw new Error(`Found a deferred cell and a provisioned cell for the role_name '${roleName}'`)
