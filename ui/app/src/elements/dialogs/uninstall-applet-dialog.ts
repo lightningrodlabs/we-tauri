@@ -44,10 +44,10 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
         Are you sure you want to uninstall this applet?<br><br>
         <ul>
           <li>This will <strong>delete all data</strong> you have stored within this applet.</li>
-          <li>In case this applet has been federated with other groups, <b>it will also be removed from those groups</b>.</li>
+          <li>In case this applet has been federated with other neighbourhoods, <b>it will also be removed from those neighbourhoods</b>.</li>
         </ul>
 
-        Other members of the group (or groups this applet is federated with) will still be able to use their own instance of the applet.
+        Other members of the neighbourhood (or neighbourhoods this applet is federated with) will still be able to use their own instance of the applet.
 
         <mwc-button
           slot="secondaryAction"

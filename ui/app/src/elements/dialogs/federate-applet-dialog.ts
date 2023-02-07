@@ -121,14 +121,14 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
       <mwc-dialog id="federate-dialog" heading="Federate Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
-          <div style="margin-bottom: 20px;">Choose a group to share this applet with.</div>
+          <div style="margin-bottom: 20px;">Choose a neighbourhood to share this applet with.</div>
           <b>Note:</b>
           <ul>
             <li>Federating applets only works for applets installed from the DevHub.</li>
-            <li>Once access to this applet is granted to another group, it cannot be revoked.</li>
+            <li>Once access to this applet is granted to another neighbourhood, it cannot be revoked.</li>
           </ul>
 
-          <span style="margin-bottom: 10px;"><b>Groups:</b></span>
+          <span style="margin-bottom: 10px;"><b>Neighbourhoods:</b></span>
 
           ${this._appletInfo
             ? this._allGroups.value
@@ -138,7 +138,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
                   return html `
                     <mwc-card
                       style="margin: 5px; opacity: 30%;"
-                      title="Applet already shared with this group"
+                      title="Applet already shared with this neighbourhood"
                     >
                       <div
                         class="row"

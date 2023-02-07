@@ -57,7 +57,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <mwc-dialog id="dialog" heading="Create Group">
+      <mwc-dialog id="dialog" heading="Create Neighbouhood">
         <div class="row" style="margin-top: 16px">
           <select-avatar
             id="select-avatar"
@@ -68,7 +68,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
             @input=${(e) => (this._name = e.target.value)}
             style="margin-left: 16px"
             id="name-field"
-            label="Group name"
+            label="Neighbourhood name"
             autoValidate
             required
             outlined
