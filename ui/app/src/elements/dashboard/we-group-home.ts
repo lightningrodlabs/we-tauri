@@ -6,7 +6,7 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
@@ -39,10 +39,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     () => [this._matrixStore, this.weGroupId]
   );
 
-  _allMembers = new TaskSubscriber(
+
+  private _allMembers = new StoreSubscriber(
     this,
-    () => this._profilesStore.fetchAllProfiles(),
-    () => [this._profilesStore]
+    () => this._profilesStore.allProfiles
   );
 
 
@@ -238,6 +238,27 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     `;
   }
 
+  renderMembers() {
+    switch (this._allMembers.value.status) {
+      case "pending":
+        return html`
+          <mwc-circular-progress
+            indeterminate
+          ></mwc-circular-progress>
+        `;
+      case "error":
+        return html`Error: ${this._allMembers.value.error.data.data}`;
+      case "complete":
+        return html`<list-agents-by-status
+          .agents=${Array.from(this._allMembers.value.value.keys()).filter(
+            (agentPubKey) =>
+              JSON.stringify(agentPubKey) !==
+              JSON.stringify(this._matrixStore.myAgentPubKey)
+          )}
+        ></list-agents-by-status>`;
+    }
+  }
+
 
   render() {
     return this._info.render({
@@ -279,21 +300,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
               <div class="column members-sidebar">
                   <my-profile style="margin-bottom: 20px;"></my-profile>
-                  ${this._allMembers.render({
-                    complete: (profiles) =>
-                      html`<list-agents-by-status
-                        .agents=${profiles.keys().filter(
-                          (agentPubKey) =>
-                            JSON.stringify(agentPubKey) !==
-                            JSON.stringify(this._matrixStore.myAgentPubKey)
-                        )}
-                      ></list-agents-by-status>`,
-                    pending: () => html`
-                      <mwc-circular-progress
-                        indeterminate
-                      ></mwc-circular-progress>
-                    `,
-                  })}
+                  ${this.renderMembers()}
                 </div>
             </div>
 

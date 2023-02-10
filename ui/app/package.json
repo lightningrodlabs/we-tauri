@@ -2,19 +2,19 @@
   "name": "we",
   "version": "0.0.1",
   "scripts": {
-    "start": "tsc && concurrently \"npm run build:watch\" \"web-dev-server --config ./web-dev-server.config.mjs\"",
+    "start": "vite --clearScreen false --port $UI_PORT",
     "build": "tsc && rollup --config rollup.config.js",
     "build:watch": "rimraf dist && rollup -c rollup.config.js -w",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
     "@holochain-open-dev/core-types": "^0.6.3",
-    "@holochain-open-dev/membrane-invitations": "^0.0.9",
-    "@holochain-open-dev/peer-status": "^0.3.1",
-    "@holochain-open-dev/profiles": "^0.9.3",
+    "@holochain-open-dev/membrane-invitations": "^0.0.10",
+    "@holochain-open-dev/peer-status": "^0.4.0",
+    "@holochain-open-dev/profiles": "^0.10.1",
     "@holochain-open-dev/utils": "^0.8.0",
-    "@holochain-open-dev/elements": "^0.0.1",
-    "@holochain/client": "^0.11.9",
+    "@holochain-open-dev/elements": "^0.2.3",
+    "@holochain/client": "^0.12.0",
     "@lightningrodlabs/we-applet": "file:../libs/we-applet",
     "@lit-labs/context": "^0.1.1",
     "@lit-labs/task": "^1.1.2",
@@ -54,6 +54,8 @@
     "rollup-plugin-workbox": "^6.2.0",
     "run-singleton-cli": "^0.0.7",
     "tslib": "^2.3.1",
-    "typescript": "4.3.5"
+    "typescript": "4.3.5",
+    "vite": "^4.0.4",
+    "vite-plugin-checker": "^0.5.3"
   }
 }

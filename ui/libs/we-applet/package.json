@@ -15,8 +15,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@holochain/client": "^0.11.9",
-    "@holochain-open-dev/profiles": "^0.9.3",
+    "@holochain/client": "^0.12.0",
+    "@holochain-open-dev/profiles": "^0.10.1",
     "@neighbourhoods/sensemaker-lite-types": "0.1.0"
   },
   "devDependencies": {
