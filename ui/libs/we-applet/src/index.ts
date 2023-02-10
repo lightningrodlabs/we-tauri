@@ -4,6 +4,7 @@ import {
   AppWebsocket,
   AppInfo,
 } from "@holochain/client";
+import { SensemakerStore } from "./sensemaker/sensemakerStore";
 
 export type Renderer = (
   rootElement: HTMLElement,
@@ -22,8 +23,12 @@ export interface AppletRenderers {
 
 export interface WeServices {
   profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
+  sensemakerStore?: SensemakerStore;
 }
 
+export { SensemakerStore } from "./sensemaker/sensemakerStore";
+export { SensemakerService } from "./sensemaker/sensemakerService";
+export { sensemakerStoreContext } from "./sensemaker/context";
 export interface WeApplet {
   appletRenderers: (
     appWebsocket: AppWebsocket,

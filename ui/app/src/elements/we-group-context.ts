@@ -13,6 +13,7 @@ import { get } from "svelte/store";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { DnaHash } from "@holochain/client";
+import { sensemakerStoreContext } from "@lightningrodlabs/we-applet";
 
 
 export class WeGroupContext extends ScopedElementsMixin(LitElement) {
@@ -25,17 +26,20 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
 
   _profilesStore = new StoreSubscriber(this, () => this.matrixStore?.profilesStore(this.weGroupId));
   _peerStatusStore = new StoreSubscriber(this, () => this.matrixStore?.peerStatusStore(this.weGroupId));
+  _sensemakerStore = new StoreSubscriber(this, () => this.matrixStore?.sensemakerStore(this.weGroupId));
 
 
   _weGroupIdProvider!: ContextProvider<typeof weGroupContext>;
   _profilesProvider!: ContextProvider<typeof profilesStoreContext>;
   _peerStatusProvider!: ContextProvider<typeof peerStatusStoreContext>;
+  _sensemakerProvider!: ContextProvider<typeof sensemakerStoreContext>;
 
   connectedCallback() {
     super.connectedCallback();
 
     const profilesStore = get(this.matrixStore.profilesStore(this.weGroupId));
     const peerStatusStore = get(this.matrixStore.peerStatusStore(this.weGroupId));
+    const sensemakerStore = get(this.matrixStore.sensemakerStore(this.weGroupId));
 
     this._weGroupIdProvider = new ContextProvider(
       this,
@@ -52,6 +56,11 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
       peerStatusStoreContext,
       peerStatusStore
     );
+    this._sensemakerProvider = new ContextProvider(
+      this,
+      sensemakerStoreContext,
+      sensemakerStore
+    );
   }
 
   updated(changedValues: PropertyValues) {
@@ -61,6 +70,7 @@ export class WeGroupContext extends ScopedElementsMixin(LitElement) {
       this._profilesProvider.setValue(this._profilesStore.value!);
       this._peerStatusProvider.setValue(this._peerStatusStore.value!);
       this._weGroupIdProvider.setValue(this.weGroupId);
+      this._sensemakerProvider.setValue(this._sensemakerStore.value!);
     }
   }
 
