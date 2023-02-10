@@ -2,7 +2,6 @@
   "name": "we",
   "version": "0.0.1",
   "scripts": {
-    "start": "vite --clearScreen false --port $UI_PORT",
     "build": "tsc && rollup --config rollup.config.js",
     "build:watch": "rimraf dist && rollup -c rollup.config.js -w",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "

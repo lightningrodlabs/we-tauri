@@ -4,10 +4,10 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-we-applet && UI_PORT=8888 concurrently \"npm run build:watch -w we\" \"npm run launch:happ\"",
+    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-we-applet && concurrently \"npm run build:watch -w we\" \"npm run launch:happ\"",
     "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
-    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
+    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run download-sensemaker && npm run build:dnas && hc app pack ./workdir",
