@@ -63,7 +63,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
           @click=${() => {
             this._appletDialog.open(appletInfo);
           }}
-          >Add to group</mwc-button
+          >Add to neighbourhood</mwc-button
         >
       </mwc-card>
     `;

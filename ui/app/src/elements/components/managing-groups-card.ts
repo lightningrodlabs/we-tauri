@@ -23,14 +23,14 @@ export class ManagingGroupsCard extends ScopedElementsMixin(LitElement) {
 
         <div class="column content-pane default-font">
           <div style="font-size: 1.7em;">
-            Managing Groups
+            Managing Neighbourhoods
           </div>
           <div class="default-font" style="text-align: left; margin-top: 40px; font-size: 1.15em;">
             <ol style="line-height: 180%; margin: 0;">
-              <li>To create a <b>new group</b>, click on the "Add Group" <mwc-icon style="position: relative; top: 0.25em;">group_add</mwc-icon> button in the left sidebar.</li>
-              <li>You will be prompted to <b>create a profile</b> for this group.</li>
-              <li><b>Invite other members</b> to the group from the home screen of your new group (<mwc-icon style="position: relative; top: 0.25em;">home</mwc-icon>). You will need to ask them for their public key (copiable from the identicon in the bottom left corner of the screen).</li>
-              <li><b>Install applets</b> from the DevHub that you want to use as a group.</li>
+              <li>To create a <b>new neighbourhood</b>, click on the "Add Neighbourhood" <mwc-icon style="position: relative; top: 0.25em;">group_add</mwc-icon> button in the left sidebar.</li>
+              <li>You will be prompted to <b>create a profile</b> for this neighbourhood.</li>
+              <li><b>Invite other members</b> to the neighbourhood from the home screen of your new neighbourhood (<mwc-icon style="position: relative; top: 0.25em;">home</mwc-icon>). You will need to ask them for their public key (copiable from the identicon in the bottom left corner of the screen).</li>
+              <li><b>Install applets</b> from the DevHub that you want to use as a neighbourhood.</li>
             </ol>
           </div>
         </div>

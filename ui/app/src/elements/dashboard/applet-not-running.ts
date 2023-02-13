@@ -25,7 +25,7 @@ export class AppletNotRunning extends ScopedElementsMixin(LitElement) {
               </div>
               <div
                 style="margin-top: 70px; font-size: 1.2em; text-align: center; max-width: 700px; line-height: 1.7">
-                Go to the <strong>Group Settings</strong> (<mwc-icon style="position: relative; top: 0.25em;">settings</mwc-icon>) of the group in which this applet is installed to boot it up again.
+                Go to the <strong>Neighbourhood Settings</strong> (<mwc-icon style="position: relative; top: 0.25em;">settings</mwc-icon>) of the neighbourhood in which this applet is installed to boot it up again.
               </div>
             </div>
           </div>

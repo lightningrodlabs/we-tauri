@@ -223,7 +223,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       <mwc-dialog id="applet-dialog" heading="Add Custom Name">
 
         <div class="column">
-          <div>Upload the <b>same</b> .webhapp file as the person that installed it to the group:</div>
+          <div>Upload the <b>same</b> .webhapp file as the person that installed it to the neighbourhood:</div>
 
           <input style="margin-top: 20px;" type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes}>
           ${this._fileBytes

@@ -193,7 +193,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       <mwc-dialog id="applet-dialog" heading="Install Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
           <div style="margin-bottom: 30px;">
-            <strong>Note: </strong>It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across groups and it allows features like federation.
+            <strong>Note: </strong>It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across neighbourhoods and it allows features like federation.
           </div>
           <mwc-textfield
             id="installed-app-id"

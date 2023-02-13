@@ -202,7 +202,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                               >
                             </div>
                             <div style="margin-top: 10px;">
-                              Initiate a new Applet instance from scratch that other group members will be able to join.
+                              Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
                             </div>
                             <div class="row center-content" style="margin-top: 20px;">
                               <mwc-button raised style="width: 250px;" label="Applet Library" @click=${() => this._showLibrary = true}></mwc-button>
@@ -264,7 +264,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                   <div
                     style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
                   >
-                    How would you like to appear in this group?
+                    How would you like to appear in this neighbourhood?
                   </div>
                 </div>
               </div>

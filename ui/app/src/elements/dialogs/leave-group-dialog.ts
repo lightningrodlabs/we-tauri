@@ -45,7 +45,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
     try {
       const weGroupName = this._matrixStore.getWeGroupInfo(this.weGroupId)?.name;
       await this._matrixStore.leaveWeGroup(this.weGroupId, true);
-      console.log("group  left successfully.");
+      console.log("neighbourhood left successfully.");
       (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).close();
       (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
       console.log("snackbars handled.");
@@ -60,7 +60,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
     } catch (e) {
       (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).close();
       (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      console.log("Error while leaving group:", e);
+      console.log("Error while leaving neighbourhood:", e);
     };
   }
 
@@ -70,7 +70,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
     return html`
       <mwc-snackbar
         id="error-snackbar"
-        labelText="Leaving group failed! (See console for details)"
+        labelText="Leaving neighbourhood failed! (See console for details)"
       >
       </mwc-snackbar>
     `;
@@ -97,16 +97,16 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
-      <mwc-dialog id="leave-group-dialog" heading="Leave Group">
+      <mwc-dialog id="leave-group-dialog" heading="Leave Neighbourhood">
 
-        Are you sure you want to leave this group?<br><br>
+        Are you sure you want to leave this neighbourhood?<br><br>
         This will:
         <ul>
-          <li>delete all applets that you have installed for this group together with all the data you have stored in these applets</li>
-          <li>delete your profile for this group</li>
+          <li>delete all applets that you have installed for this neighbourhood together with all the data you have stored in these applets</li>
+          <li>delete your profile for this neighbourhood</li>
         </ul>
 
-        Other members of the group will still have access to their instances of the group's applets.
+        Other members of the neighbourhood will still have access to their instances of the neighbourhood's applets.
 
 
         <mwc-button
