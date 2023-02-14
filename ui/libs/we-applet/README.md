@@ -4,7 +4,7 @@ This package contains the interfaces and contracts that a UI module needs to imp
 
 You can use [@lightningrodlabs/create-we-applet](https://npmjs.com/package/@lightningrodlabs/create-we-applet) to easily scaffold the initial structure for a We Applet.
 
-Made for holochain `v0.1.0-beta-rc.2`.
+Made for holochain `v0.1.0`.
 
 ## Implementing the UI for a we applet
 
