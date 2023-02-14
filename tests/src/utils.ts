@@ -2,7 +2,10 @@ import {
   AppEntryDef,
   AppInfo,
   InstallAppRequest,
-  encodeHashToBase64
+  encodeHashToBase64,
+  CellInfo,
+  ProvisionedCell,
+  CellType
 } from "@holochain/client";
 import {
   Conductor,
@@ -89,12 +92,11 @@ export const installAgent = async (
         resources: {},
       }
     };
-    //@ts-ignore
     const agentHapp: AppInfo = await admin.installApp(req);
-    const ssCellInfo = agentHapp.cell_info["sensemaker_dna"][0]
-    ss_cell_id = ("Provisioned" in ssCellInfo) ? ssCellInfo.Provisioned.cell_id : ss_cell_id
+    const ssCellInfo: CellInfo = agentHapp.cell_info["sensemaker_dna"][0]
+    ss_cell_id = (CellType.Provisioned in ssCellInfo) ? (ssCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id : ss_cell_id
     const providerCellInfo = agentHapp.cell_info["test_provider_dna"][0]
-    provider_cell_id = ("Provisioned" in providerCellInfo) ? providerCellInfo.Provisioned.cell_id : provider_cell_id
+    provider_cell_id = (CellType.Provisioned in providerCellInfo) ? (providerCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id : provider_cell_id
     await admin.enableApp({ installed_app_id: agentHapp.installed_app_id });
     console.log("app installed", agentHapp);
     agentsHapps.push(agentHapp);

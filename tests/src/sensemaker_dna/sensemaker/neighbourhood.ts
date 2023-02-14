@@ -284,7 +284,7 @@ export default () => {
           true
         );
         t.deepEqual(
-          {...createAssessment, author: alice_agent_key},
+          { ...createAssessment, author: alice_agent_key },
           decode((createAssessmentReadOutput.entry as any).Present.entry) as any
         );
 
@@ -300,8 +300,8 @@ export default () => {
         );
         t.ok(assessmentsForResource.length === 2)
         console.log('assessments for resource', assessmentsForResource)
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({...createAssessment, author: alice_agent_key})))
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({...createAssessment2, author: alice_agent_key})))
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key })))
+        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key })))
 
         // define objective dimension
 
