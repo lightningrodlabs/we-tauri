@@ -1001,7 +1001,12 @@ export class MatrixStore {
     
     const sensemaker_properties = {
       ...properties,
-      community_activator: encodeHashToBase64(clonedCell.cell_id[1])
+      sensemaker_config: {
+        neighbourhood: properties.name,
+        wizard_version: "v0.1",
+        community_activator: encodeHashToBase64(clonedCell.cell_id[1])
+      },
+      applet_configs: [],
     };
     const clonedSensemakerCell = await this.appWebsocket.createCloneCell({
       app_id: weParentAppInfo.installed_app_id,
