@@ -36,13 +36,6 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     () => [this._matrixStore, this.weGroupId]
   );
 
-  _allMembers = new TaskSubscriber(
-    this,
-    () => this._profilesStore.fetchAllProfiles(),
-    () => [this._profilesStore]
-  );
-
-
   @state()
   private _showAppletDescription: boolean = false;
 

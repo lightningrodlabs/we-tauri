@@ -51,11 +51,11 @@ export async function getAllAppsWithGui(
   const cells = devhubCells(devhubHapp);
   const allAppsOutput = await appWebsocket.callZome({
     cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "Provisioned" in c )!)!,
+    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
     fn_name: "get_happs_by_tags",
     zome_name: "happ_library",
     payload: ["we-applet"],
-    provenance: getCellId(cells.happs.find((c) => "Provisioned" in c )!)![1],
+    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
   // console.log("@getAllAppsWithGui: ", allAppsOutput);
   const allApps: Array<ContentAddress<HappEntry>> = allAppsOutput.payload;
@@ -76,13 +76,13 @@ export async function getAppsReleasesWithGui(
 
   const appReleasesOutput = await appWebsocket.callZome({
     cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "Provisioned" in c )!)!,
+    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
     fn_name: "get_happ_releases",
     zome_name: "happ_library",
     payload: {
       for_happ: app.id,
     },
-    provenance: getCellId(cells.happs.find((c) => "Provisioned" in c )!)![1],
+    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
 
   // console.log("@getAppsReleases: appReleasesOutput:", appReleasesOutput);
@@ -133,7 +133,7 @@ export async function fetchWebHapp(
 
   const result = await appWebsocket.callZome({
     cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "Provisioned" in c )!)!,
+    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
     fn_name: "get_webhapp_package",
     zome_name: "happ_library",
     payload: {
@@ -141,7 +141,7 @@ export async function fetchWebHapp(
       happ_release_id: happReleaseEntryHash,
       gui_release_id: guiReleaseEntryHash,
     },
-    provenance: getCellId(cells.happs.find((c) => "Provisioned" in c )!)![1],
+    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
 
   if (result.payload.error) {

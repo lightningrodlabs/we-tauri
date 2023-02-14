@@ -10,4 +10,8 @@ name = "profiles_integrity"
 [dependencies]
 serde = "1"
 derive_more = "0"
-hc_zome_profiles_integrity = {git = "https://github.com/holochain-open-dev/profiles", rev = "for-hdk-v0.1.0-beta-rc.1", package = "hc_zome_profiles_integrity"}
+hc_zome_profiles_integrity = "0.1.0"
+
+
+
+
