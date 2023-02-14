@@ -698,7 +698,7 @@ export class MatrixStore {
         const weGroupCellId = weGroupCellInfo.cell_id;
         const weGroupDnaHash = weGroupCellId[0];
 
-        const sensemakerGroupCellInfo = (sensemakerGroupCell as { "Cloned": Cell }).Cloned;
+        const sensemakerGroupCellInfo = (sensemakerGroupCell as { [CellType.Cloned]: ClonedCell }).cloned;
         const sensemakerGroupCellId = sensemakerGroupCellInfo.cell_id;
         const sensemakerGroupDnaHash = sensemakerGroupCellId[0];
 
