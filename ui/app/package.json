@@ -1,5 +1,5 @@
 {
-  "name": "we",
+  "name": "nh-launcher",
   "version": "0.0.1",
   "scripts": {
     "build": "tsc && rollup --config rollup.config.js",

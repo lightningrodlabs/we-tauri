@@ -29,7 +29,7 @@ export interface WeServices {
 export { SensemakerStore } from "./sensemaker/sensemakerStore";
 export { SensemakerService } from "./sensemaker/sensemakerService";
 export { sensemakerStoreContext } from "./sensemaker/context";
-export interface WeApplet {
+export interface NhLauncherApplet {
   appletRenderers: (
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
