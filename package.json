@@ -4,29 +4,22 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=8888 concurrently \"npm run start -w we\" \"npm run launch:happ\"",
-    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
-    "test": "npm run build:happ && cargo test -- --nocapture",
-    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
-    "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
+    "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=8888 concurrently  \"npm run launch:happ\" \"holochain-playground\" \"launch:devhub\"",
+    "test": "npm run build:happ && cargo nextest run -j 1",
+    "launch:happ": "echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
-    "build:happ": "npm run build:dnas && hc app pack ./workdir",
-    "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",
+    "build:happ": "npm run build:dnas && hc app pack ./workdir --recursive",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle --app-id DevHub ./DevHub/DevHub.happ && npm run devhub:ui",
-    "devhub:ui": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
-    "playground": "run-singleton \"holochain-playground\"",
-    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/C7qTwJBONeajkP7/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
+    "launch:devhub": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
+    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
   },
   "devDependencies": {
-    "@holochain-playground/cli": "^0.0.11",
+    "@holochain-playground/cli": "^0.1.1",
     "concurrently": "^6.2.1",
-    "concurrently-repeat": "^0.0.1",
     "cross-env": "^7.0.3",
     "extract-zip-relative-path": "^2.0.4",
     "json-parse-better-errors": "^1.0.2",
     "new-port-cli": "^1.0.0",
-    "rimraf": "^3.0.2",
-    "run-singleton-cli": "^0.0.7"
+    "rimraf": "^3.0.2"
   }
 }

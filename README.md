@@ -26,21 +26,13 @@ The details on how to create a *we applet* can be found [here](docs/How-to-creat
 
 1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`
-3. Enter the nix shell: `nix-shell`
+3. Enter the nix shell: `nix develop`
 4. Run: `npm install`
-
-#### Building the DNA
-
-Build the DNA (assumes you are still in the nix shell for correct rust/cargo versions from the step above):
-
-```bash
-npm run build:happ
-```
 
 #### Running the DNA tests
 
 ```bash
-npm run test
+npm test
 ```
 
 #### UI
@@ -48,7 +40,7 @@ npm run test
 To test out the UI:
 
 ``` bash
-npm run start
+npm start
 ```
 
 #### Package
