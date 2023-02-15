@@ -1,26 +1,18 @@
 ---
 manifest_version: "1"
-name: we
+name: group
 integrity:
   network_seed: 00000000-0000-0000-0000-000000000000
   properties: ~
   origin_time: 2022-07-25T13:55:49.200Z
   zomes:
-  - name: we_integrity
-    bundled: ../../../target/wasm32-unknown-unknown/release/we_integrity.wasm
   - name: applets_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/applets_integrity.wasm
   - name: profiles_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
-  - name: peer_status_integrity
-    bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_integrity.wasm
 
 coordinator:
   zomes:
-    - name: we_coordinator
-      bundled: ../../../target/wasm32-unknown-unknown/release/we_coordinator.wasm
-      dependencies:
-        - name: we_integrity
     - name: applets_coordinator
       bundled: ../../../target/wasm32-unknown-unknown/release/applets_coordinator.wasm
       dependencies:
@@ -31,5 +23,3 @@ coordinator:
         - name: profiles_integrity
     - name: peer_status
       bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_coordinator.wasm
-      dependencies:
-        - name: peer_status_integrity

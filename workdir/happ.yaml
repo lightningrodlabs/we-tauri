@@ -13,12 +13,12 @@ roles:
       network_seed: ~
       version: ~
       clone_limit: 100
-  - name: we
+  - name: group
     provisioning:
       strategy: create
       deferred: true
     dna:
-      bundled: "../dnas/we/workdir/we.dna"
+      bundled: "../dnas/group/workdir/group.dna"
       properties: ~
       network_seed: ~
       version: ~
