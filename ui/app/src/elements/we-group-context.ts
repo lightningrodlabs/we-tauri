@@ -13,7 +13,7 @@ import { get } from "svelte/store";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { DnaHash } from "@holochain/client";
-import { sensemakerStoreContext } from "@lightningrodlabs/we-applet";
+import { sensemakerStoreContext } from "@neighbourhoods/nh-launcher-applet";
 
 
 export class WeGroupContext extends ScopedElementsMixin(LitElement) {

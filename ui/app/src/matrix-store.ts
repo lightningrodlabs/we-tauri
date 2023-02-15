@@ -56,7 +56,7 @@ import {
   WeInfo,
   SensemakerStore,
   SensemakerService,
-} from "@lightningrodlabs/we-applet";
+} from "@neighbourhoods/nh-launcher-applet";
 import {
   Applet,
   AppletGui,
