@@ -12,7 +12,7 @@ You need to import the `NhLauncherApplet` type from `@neighbourhoods/nh-launcher
 
 ```ts
 import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { NhLauncherApplet, WeServices } from "@neighbourhoods/nh-we-applet";
+import { NhLauncherApplet, WeServices } from "@neighbourhoods/nh-launcher-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const applet: NhLauncherApplet = {
