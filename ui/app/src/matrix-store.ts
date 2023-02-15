@@ -50,7 +50,7 @@ import {
 } from "@holochain-open-dev/utils";
 import {
   AppletRenderers,
-  WeApplet,
+  NhLauncherApplet,
   AppletInfo,
   WeServices,
   WeInfo,
@@ -168,7 +168,7 @@ export class MatrixStore {
   private _installedAppletClasses: Writable<EntryHashMap<AppletClassInfo>> =
     writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
 
-  private _appletGuis: EntryHashMap<WeApplet> = new EntryHashMap<WeApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+  private _appletGuis: EntryHashMap<NhLauncherApplet> = new EntryHashMap<NhLauncherApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
   private _appletInstanceRenderers: EntryHashMap<AppletRenderers> =
     new EntryHashMap<AppletRenderers>(); // EntryHash of Applet entries in the respective we DNA as keys
   private _appletClassRenderers: EntryHashMap<AppletRenderers> =
@@ -478,7 +478,7 @@ export class MatrixStore {
    * @param devhubHappReleaseHash
    * @returns
    */
-  async queryAppletGui(devhubHappReleaseHash): Promise<WeApplet> {
+  async queryAppletGui(devhubHappReleaseHash): Promise<NhLauncherApplet> {
 
     const appletGui = await this.appletsService.queryAppletGui(devhubHappReleaseHash);
 
