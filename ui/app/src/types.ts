@@ -46,29 +46,6 @@ export enum RenderingMode {
 }
 
 
-export interface Applet {
-  customName: string; // name of the applet instance as chosen by the person adding it to the group,
-  title: string; // title of the applet in the devhub
-  description: string;
-  logoSrc: string | undefined;
-
-  devhubHappReleaseHash: EntryHash;
-  devhubGuiReleaseHash: EntryHash;
-
-  properties: Record<string, Uint8Array>; // Segmented by RoleId
-  networkSeed: Record<string, string | undefined>; // Segmented by RoleId
-  dnaHashes: Record<string, DnaHash>; // Segmented by RoleId
-}
-
-export interface AppletGui {
-  devhubHappReleaseHash: EntryHash,
-  gui: Uint8Array,
-}
-
-export interface RegisterAppletInput {
-  appletAgentPubKey: AgentPubKey,
-  applet: Applet,
-}
 
 export interface AppletMetaData {
   title: string,

@@ -13,7 +13,7 @@ integrity:
 
 coordinator:
   zomes:
-    - name: applets_coordinator
+    - name: applets
       bundled: ../../../target/wasm32-unknown-unknown/release/applets_coordinator.wasm
       dependencies:
         - name: applets_integrity

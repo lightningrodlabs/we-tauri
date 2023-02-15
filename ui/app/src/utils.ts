@@ -1,13 +1,9 @@
-import { CellId, CellInfo, DisabledAppReason, AppInfo } from "@holochain/client";
-import { EntryHash } from "@holochain/client";
-
+import { EntryHash, CellId, CellInfo, DisabledAppReason, AppInfo } from "@holochain/client";
+import {  } from "@holochain/client";
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
   return new Uint8Array([0x84, 0x21, 0x24, ...md5Hash, ...new Uint8Array(20)]);
 }
-
-
-
 
 export function getStatus(app: AppInfo): string {
   if (isAppRunning(app)) {

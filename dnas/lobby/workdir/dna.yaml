@@ -12,11 +12,11 @@ integrity:
       bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis_integrity.wasm
 coordinator:
   zomes:
-    - name: membrane_invitations_coordinator
+    - name: membrane_invitations
       bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations_coordinator.wasm
       dependencies:
         - name: membrane_invitations_integrity
-    - name: applet_guis_coordinator
+    - name: applet_guis
       bundled: ../../../target/wasm32-unknown-unknown/release/applet_guis_coordinator.wasm
       dependencies:
         - name: applet_guis_integrity

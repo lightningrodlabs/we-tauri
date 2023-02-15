@@ -1,8 +1,10 @@
 import { ProfilesStore } from "@holochain-open-dev/profiles";
 import {
-  AdminWebsocket,
   AppWebsocket,
   AppInfo,
+  AppAgentClient,
+  ActionHash,
+  EntryHash,
 } from "@holochain/client";
 
 export type Renderer = (
@@ -10,35 +12,37 @@ export type Renderer = (
   registry: CustomElementRegistry
 ) => void;
 
-export interface AppletBlock {
-  name: string;
-  render: Renderer;
-}
+export type EntryRenderer = (hash: EntryHash | ActionHash) => Renderer;
 
 export interface AppletRenderers {
-  full: Renderer;
-  blocks: Array<AppletBlock>;
+  main: Renderer;
+  blocks: Record<string, Renderer>;
+  entries: Record<string, Record<string, EntryRenderer>>; // Segmented by RoleName and entry type id
 }
 
-export interface WeServices {
-  profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
+export interface GroupServices {
+  profilesStore: ProfilesStore; // in case of cross-we renderers the profilesStore may not be required
+}
+
+export interface GroupAppletsInfo {
+  appletsInfo: AppInfo[];
+  groupInfo: GroupInfo;
+  groupServices: GroupServices;
 }
 
 export interface WeApplet {
-  appletRenderers: (
+  agentCentric: (
     appWebsocket: AppWebsocket,
-    adminWebsocket: AdminWebsocket,
-    weStore: WeServices,
-    appletInfo: AppletInfo[],
+    appletInstances: GroupAppletsInfo[]
+  ) => Promise<Renderer>;
+  groupCentric: (
+    appAgentClient: AppAgentClient,
+    groupInfo: GroupInfo,
+    groupServices: GroupServices
   ) => Promise<AppletRenderers>;
 }
 
-
-export interface WeInfo {
-  logoSrc: string;
+export interface GroupInfo {
+  logo_src: string;
   name: string;
-}
-export interface AppletInfo {
-  weInfo: WeInfo,
-  appInfo: AppInfo,
 }
