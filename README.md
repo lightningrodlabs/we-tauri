@@ -1,24 +1,16 @@
-# We
+# NH Launcher
 
-*We* is a Holochain app that makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs. 
+The Neighbourhoods Launcher, a Holochain app, is a common entryway into creating and joining p2p networks called Neighbourhoods. Using the Launcher, you can build and join Neighbourhoods that use NH-compatible "applets" along with the social-sensemaker. 
 
-*We* is composed of two management DNA's, together with a defined pattern on how to build *applet* DNAs that are can be installed into a *We* group. Each such group as well as each *applet* used within a group is its own private peer-to-peer network.
+Using the Launcher, one can create and access personal profiles, search for and join existing neighbourhoods, and add/configure applets into a neighbourhood. The Launcher is also where members can invite each other and interact using applets. Eventually, the Launcher will support inspection of the social sensemaker dashboard. 
 
-For more about the motivation behind *We*, read [this blogpost](https://eric.harris-braun.com/blog/2022/07/26/id-390).
-
-## Design
-
-For details about the design, read the [design document](docs/Design.md).
-
-## Creating We applets
-
-The details on how to create a *we applet* can be found [here](docs/How-to-create-a-we-applet.md).
+NOTE: You may encounter slow/tedious data refresh and difficulty in multi-agent environments due to a known issue.  
 
 ## Installation
 
 ### Installation via the Holochain Launcher
 
-*We* can be installed within the Holochain launcher. For instructions on how to install the launcher, see the corresponding [github repository](https://github.com/holochain/launcher).
+NH Launcher can be installed within the Holochain launcher. For instructions on how to install the launcher, see the corresponding [github repository](https://github.com/holochain/launcher).
 
 ### Installation for Development
 
@@ -62,6 +54,9 @@ npm run package
 You'll have the `we.webhapp` file in the `/workdir` folder and it's components `we.happ` and `ui.zip` in `dna/workdir/happ` and `ui/apps/we` respectively.
 
 ## License
+
+The NH Launcher is based on a fork of Lightning Rod Labs *We*
+
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
 
   Copyright (C) 2021, Harris-Braun Enterprises, LLC
