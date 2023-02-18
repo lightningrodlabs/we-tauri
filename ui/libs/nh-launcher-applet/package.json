@@ -1,6 +1,6 @@
 {
-  "name": "@neighbourhoods/nh-we-applet",
-  "version": "0.0.9",
+  "name": "@neighbourhoods/nh-launcher-applet",
+  "version": "0.0.10",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {

@@ -2,7 +2,7 @@ import { ref } from "lit/directives/ref.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { Renderer } from "@lightningrodlabs/we-applet";
+import { Renderer } from "@neighbourhoods/nh-launcher-applet";
 
 export class RenderBlock extends ScopedElementsMixin(LitElement) {
   @property()
