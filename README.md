@@ -17,8 +17,8 @@ NH Launcher can be installed within the Holochain launcher. For instructions on 
 #### Installing the repository
 
 1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
-2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`
-3. Enter the nix shell: `nix-shell`
+2. Clone this repo (**IMPORTANT**: in `develop` branch): `git clone https://github.com/neighbour-hoods/nh-launcher && cd ./nh-launcher && git checkout develop`
+3. Enter the nix shell: `nix develop` (if you are having issues with this command, see: https://hackmd.io/BKCt3FckSiSDJ4aSJ1Ur6A, as you may have to enable nix commands with the following terminal commands: `mkdir -p ~/.config/nix && echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf`)
 4. Run: `npm install`
 
 #### Building the DNA
