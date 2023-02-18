@@ -1,20 +1,10 @@
-
-
-
-
-
-
-
-import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
-import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
+import { SlTooltip } from "@scoped-elements/shoelace";
 
 import { property, query } from "lit/decorators.js";
 
 export class SidebarButton extends ScopedElementsMixin(LitElement) {
-
   @property()
   logoSrc!: string;
 
@@ -22,7 +12,19 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
   tooltipText!: string;
 
   @property()
-  placement: "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end" = "right";
+  placement:
+    | "top"
+    | "top-start"
+    | "top-end"
+    | "right"
+    | "right-start"
+    | "right-end"
+    | "bottom"
+    | "bottom-start"
+    | "bottom-end"
+    | "left"
+    | "left-start"
+    | "left-end" = "right";
 
   @query("#tooltip")
   _tooltip!: SlTooltip;
@@ -69,4 +71,3 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     `;
   }
 }
-

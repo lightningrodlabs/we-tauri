@@ -16,7 +16,7 @@ import {
   CellType,
   EntryHash,
 } from "@holochain/client";
-import { GroupAppletsInfo } from "../../libs/we-applet/dist";
+import { GroupAppletsInfo } from "@lightningrodlabs/we-applet";
 import { AppletsStore } from "./applets/applets-store";
 import { GroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
@@ -46,6 +46,10 @@ export class WeStore {
 
   allGroups = asyncDerived([this.groupsRoleNames], ([roleNames]) =>
     roleNames.map((roleName) => this.groups.get(roleName))
+  );
+
+  allGroupsInfo = asyncDeriveStore([this.allGroups], ([groupsStores]) =>
+    join(groupsStores.map((store) => lazyLoad(() => store.groupInfo())))
   );
 
   allAppletsInstances = asyncDeriveStore([this.allGroups], ([allGroups]) =>
