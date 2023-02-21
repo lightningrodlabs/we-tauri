@@ -61,7 +61,7 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
       case "error":
         return html`<display-error
           tooltip
-          .error=${this._groupsInfo.value.error}
+          .error=${this._groupsInfo.value.error.data.data}
         ></display-error>`;
       case "complete":
         return this.renderGroups(this._groupsInfo.value.value);

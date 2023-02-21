@@ -171,7 +171,9 @@ export class WeStore {
   );
 
   agentCentricRenderers = new LazyHoloHashMap(
-    (devhubReleaseEntryHash: EntryHash) =>
+    (
+      devhubReleaseEntryHash: EntryHash // appletid
+    ) =>
       asyncDerived(this.allAppletsInstances, async (groupAppletInstances) => {
         const gui = await this.appletsStore.appletsGui.get(
           devhubReleaseEntryHash

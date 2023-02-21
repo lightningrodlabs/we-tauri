@@ -11,7 +11,7 @@ import {
   TextArea,
 } from "@scoped-elements/material-web";
 
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
@@ -33,17 +33,16 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
   @query("#leave-group-dialog")
   _leaveGroupDialog!: Dialog;
 
-
   open() {
     this._leaveGroupDialog.show();
   }
 
-
-
   async leaveGroup() {
     (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).show();
     try {
-      const weGroupName = this._matrixStore.getWeGroupInfo(this.weGroupId)?.name;
+      const weGroupName = this._matrixStore.getWeGroupInfo(
+        this.weGroupId
+      )?.name;
       await this._matrixStore.leaveWeGroup(this.weGroupId, true);
       console.log("group  left successfully.");
       (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).close();
@@ -61,10 +60,8 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
       (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).close();
       (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
       console.log("Error while leaving group:", e);
-    };
+    }
   }
-
-
 
   renderErrorSnackbar() {
     return html`
@@ -87,7 +84,11 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="leaving-progress" labelText="Leaving..." .timeoutMs=${-1}>
+      <mwc-snackbar
+        id="leaving-progress"
+        labelText="Leaving..."
+        .timeoutMs=${-1}
+      >
       </mwc-snackbar>
     `;
   }
@@ -98,16 +99,18 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderInstallingProgress()}
 
       <mwc-dialog id="leave-group-dialog" heading="Leave Group">
-
-        Are you sure you want to leave this group?<br><br>
+        Are you sure you want to leave this group?<br /><br />
         This will:
         <ul>
-          <li>delete all applets that you have installed for this group together with all the data you have stored in these applets</li>
+          <li>
+            delete all applets that you have installed for this group together
+            with all the data you have stored in these applets
+          </li>
           <li>delete your profile for this group</li>
         </ul>
 
-        Other members of the group will still have access to their instances of the group's applets.
-
+        Other members of the group will still have access to their instances of
+        the group's applets.
 
         <mwc-button
           slot="secondaryAction"
@@ -139,6 +142,6 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
   }
 
   static get styles() {
-    return sharedStyles;
+    return weStyles;
   }
 }

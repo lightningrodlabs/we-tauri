@@ -11,9 +11,9 @@ import {
   TextArea,
 } from "@scoped-elements/material-web";
 
-import md5 from 'md5';
+import md5 from "md5";
 
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
@@ -51,7 +51,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @query("#description-field")
   _descriptionField!: TextArea;
 
-
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
   @state()
@@ -68,8 +67,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   @state()
   _fakeDevhubHappReleaseHash: EntryHash | undefined = undefined;
-
-
 
   open() {
     this._appletDialog.show();
@@ -91,13 +88,19 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     this._descriptionField.value = "";
   }
 
-
   fileHashOk() {
     if (this._fakeDevhubHappReleaseHash) {
-      const devhubHappReleaseHash = this.mode == "reinstall"
-        ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash
-        : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
-     return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
+      const devhubHappReleaseHash =
+        this.mode == "reinstall"
+          ? this._matrixStore.getUninstalledAppletInstanceInfo(
+              this.appletInstanceId
+            )?.applet.devhubHappReleaseHash
+          : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)
+              ?.applet.devhubHappReleaseHash;
+      return (
+        JSON.stringify(devhubHappReleaseHash) ===
+        JSON.stringify(this._fakeDevhubHappReleaseHash)
+      );
     } else {
       return false;
     }
@@ -107,14 +110,13 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     return !this._fileBytes || !this.fileHashOk();
   }
 
-
   async joinApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
       await this._matrixStore.joinApplet(
         this.weGroupId,
         this.appletInstanceId,
-        this._fileBytes, // compressed webhapp as Uint8Array
+        this._fileBytes // compressed webhapp as Uint8Array
       );
       const appletEntryHash = this.appletInstanceId;
       (
@@ -137,7 +139,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       console.log("Installation error:", e);
     }
   }
-
 
   async reinstallApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
@@ -145,7 +146,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       await this._matrixStore.reinstallApplet(
         this.weGroupId,
         this.appletInstanceId,
-        this._fileBytes, // compressed webhapp as Uint8Array
+        this._fileBytes // compressed webhapp as Uint8Array
       );
       const appletEntryHash = this.appletInstanceId;
       (
@@ -168,7 +169,6 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       console.log("Installation error:", e);
     }
   }
-
 
   // TODO! make typing right here
   loadFileBytes(e: any) {
@@ -177,7 +177,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     const reader = new FileReader();
     reader.onload = (e) => {
       console.log(e.target?.result);
-    }
+    };
     reader.readAsArrayBuffer(files[0]);
     // TODO! make typing right here
     reader.onloadend = (_e) => {
@@ -186,7 +186,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       const md5FileHash = new Uint8Array(md5(ui8, { asBytes: true }));
       this._fakeDevhubHappReleaseHash = fakeMd5SeededEntryHash(md5FileHash);
       this._fileBytes = ui8;
-    }
+    };
   }
 
   renderErrorSnackbar() {
@@ -210,7 +210,11 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
+      <mwc-snackbar
+        id="installing-progress"
+        labelText="Installing..."
+        .timeoutMs=${-1}
+      >
       </mwc-snackbar>
     `;
   }
@@ -221,31 +225,36 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       ${this.renderInstallingProgress()}
 
       <mwc-dialog id="applet-dialog" heading="Add Custom Name">
-
         <div class="column">
-          <div>Upload the <b>same</b> .webhapp file as the person that installed it to the group:</div>
+          <div>
+            Upload the <b>same</b> .webhapp file as the person that installed it
+            to the group:
+          </div>
 
-          <input style="margin-top: 20px;" type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes}>
+          <input
+            style="margin-top: 20px;"
+            type="file"
+            id="filepicker"
+            accept=".webhapp"
+            @change=${this.loadFileBytes}
+          />
           ${this._fileBytes
-              ? html``
-              : html`<div
-                  class="default-font"
-                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
-                >
-                  No file selected.
-                </div>`
-            }
-
-          ${(this._fileBytes && !this.fileHashOk())
-              ? html`<span class="hash-error">The hash of the applet you uploaded does not match with the hash of the applet that you
-                want to join. Make sure to use the same .webhapp file as the person that installed the applet
-                to the group.
+            ? html``
+            : html`<div
+                class="default-font"
+                style="color: #b10323; font-size: 12px; margin-left: 4px;"
+              >
+                No file selected.
+              </div>`}
+          ${this._fileBytes && !this.fileHashOk()
+            ? html`<span class="hash-error"
+                >The hash of the applet you uploaded does not match with the
+                hash of the applet that you want to join. Make sure to use the
+                same .webhapp file as the person that installed the applet to
+                the group.
               </span>`
-              : html``
-          }
-
+            : html``}
         </div>
-
 
         <mwc-button
           slot="secondaryAction"
@@ -259,7 +268,10 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.mode == "reinstall" ? this.reinstallApplet() : this.joinApplet()}
+          @click=${() =>
+            this.mode == "reinstall"
+              ? this.reinstallApplet()
+              : this.joinApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;
@@ -277,18 +289,19 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   }
 
   static get styles() {
-    return [sharedStyles,
-    css`
-    .hash-error{
-      color: #e30000;
-      border: 2px solid #e30000;
-      border-radius: 10px;
-      padding: 5px 10px;
-      margin-top: 20px;
-      font-size: 0.85em;
-      background: #ffdada;
-    }
-    `
-    ]
+    return [
+      weStyles,
+      css`
+        .hash-error {
+          color: #e30000;
+          border: 2px solid #e30000;
+          border-radius: 10px;
+          padding: 5px 10px;
+          margin-top: 20px;
+          font-size: 0.85em;
+          background: #ffdada;
+        }
+      `,
+    ];
   }
 }

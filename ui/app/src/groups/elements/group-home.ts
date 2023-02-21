@@ -1,26 +1,47 @@
-import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
-import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
-import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
+import {
+  ListAgentsByStatus,
+  PeerStatusStore,
+  peerStatusStoreContext,
+} from "@holochain-open-dev/peer-status";
+import {
+  MyProfile,
+  ProfilePrompt,
+  ProfilesStore,
+  profilesStoreContext,
+} from "@holochain-open-dev/profiles";
+import {
+  decodeHashFromBase64,
+  DnaHash,
+  encodeHashToBase64,
+  EntryHash,
+} from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
+import {
+  Button,
+  Card,
+  CircularProgress,
+  Fab,
+  Icon,
+  IconButton,
+  IconButtonToggle,
+  LinearProgress,
+  Snackbar,
+} from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { InstallableApplets } from "../components/installable-applets";
 import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
 
-
-
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
-
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
@@ -39,12 +60,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     () => [this._matrixStore, this.weGroupId]
   );
 
-
   private _allMembers = new StoreSubscriber(
     this,
     () => this._profilesStore.allProfiles
   );
-
 
   @state()
   private _showLibrary: boolean = false;
@@ -60,7 +79,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
-
 
   renderJoinErrorSnackbar() {
     return html`
@@ -92,7 +110,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-
   async joinApplet(appletInstanceId: EntryHash) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._matrixStore
@@ -107,11 +124,14 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         this.requestUpdate(); // to show the newly installed applet in case user is still on same page
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: appletInstanceId, weGroupId: this.weGroupId },
+            detail: {
+              appletEntryHash: appletInstanceId,
+              weGroupId: this.weGroupId,
+            },
             composed: true,
             bubbles: true,
-        })
-      );
+          })
+        );
       })
       .catch((e) => {
         (
@@ -124,29 +144,35 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       });
   }
 
-
   renderContent() {
     if (this._showInstallScreen) {
       return html`
-          ${this._installMode == "reinstall"
-            ? html`
+        ${this._installMode == "reinstall"
+          ? html`
               <applet-not-installed
                 style="display: flex; flex: 1;"
                 .appletInstanceId=${this._installAppletId}
                 .mode=${"reinstall"}
-                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+                @cancel-reinstall=${() => {
+                  this._showInstallScreen = false;
+                  this._installAppletId = undefined;
+                }}
+              >
               </applet-not-installed>
-              `
-            : html`
+            `
+          : html`
               <applet-not-installed
                 style="display: flex; flex: 1;"
                 .appletInstanceId=${this._installAppletId}
                 .mode=${"join"}
-                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+                @cancel-reinstall=${() => {
+                  this._showInstallScreen = false;
+                  this._installAppletId = undefined;
+                }}
+              >
               </applet-not-installed>
-            `
-          }
-      `
+            `}
+      `;
     }
 
     return html`
@@ -155,26 +181,50 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <div class="flex-scrollable-y" style="display: flex; height: 100%;">
             ${this._showLibrary
               ? html`
-                <div class="column" style="flex: 1; margin: 24px; position: relative">
-                  <sl-tooltip placement="right" content="Close Settings" hoist>
-                    <mwc-icon-button class="back-home" @click=${() => this._showLibrary = false} icon="arrow_back"></mwc-icon-button>
-                  </sl-tooltip>
+                  <div
+                    class="column"
+                    style="flex: 1; margin: 24px; position: relative"
+                  >
+                    <sl-tooltip
+                      placement="right"
+                      content="Close Settings"
+                      hoist
+                    >
+                      <mwc-icon-button
+                        class="back-home"
+                        @click=${() => (this._showLibrary = false)}
+                        icon="arrow_back"
+                      ></mwc-icon-button>
+                    </sl-tooltip>
 
-                  <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
+                    <div
+                      style="display: flex; justify-content: flex-end; margin-top: 5px;"
+                    >
+                      <mwc-button
+                        raised
+                        style="width: 250px;"
+                        label="Install Applet from Filesystem"
+                        @click=${() => this._installFromFsDialog.open()}
+                      ></mwc-button>
+                    </div>
+
+                    <div class="row center-content" style="margin-top: 10px;">
+                      <h2>Applet Library</h2>
+                    </div>
+
+                    <hr style="width: 100%" />
+                    <installable-applets></installable-applets>
+
+                    <install-from-fs-dialog
+                      id="install-from-fs-dialog"
+                    ></install-from-fs-dialog>
                   </div>
-
-                  <div class="row center-content" style="margin-top: 10px;"><h2>Applet Library</h2></div>
-
-                  <hr style="width: 100%" />
-                  <installable-applets></installable-applets>
-
-                  <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
-
-                </div>
                 `
               : html`
-                  <div class="column" style="flex: 1; margin: 24px; position: relative">
+                  <div
+                    class="column"
+                    style="flex: 1; margin: 24px; position: relative"
+                  >
                     <div class="row" style="margin-top: 20px">
                       <div class="column center-content" style="width: 50%;">
                         ${this._info.value
@@ -191,8 +241,13 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         </div>
                       </div>
 
-                      <div class="column center-content" style="margin-left: 30px; width: 50%;">
-                        <invitations-block style="margin: 10px;"></invitations-block>
+                      <div
+                        class="column center-content"
+                        style="margin-left: 30px; width: 50%;"
+                      >
+                        <invitations-block
+                          style="margin: 10px;"
+                        ></invitations-block>
 
                         <mwc-card style="width: 440px; margin: 10px;">
                           <div style="margin: 20px;">
@@ -202,15 +257,22 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                               >
                             </div>
                             <div style="margin-top: 10px;">
-                              Initiate a new Applet instance from scratch that other group members will be able to join.
+                              Initiate a new Applet instance from scratch that
+                              other group members will be able to join.
                             </div>
-                            <div class="row center-content" style="margin-top: 20px;">
-                              <mwc-button raised style="width: 250px;" label="Applet Library" @click=${() => this._showLibrary = true}></mwc-button>
+                            <div
+                              class="row center-content"
+                              style="margin-top: 20px;"
+                            >
+                              <mwc-button
+                                raised
+                                style="width: 250px;"
+                                label="Applet Library"
+                                @click=${() => (this._showLibrary = true)}
+                              ></mwc-button>
                             </div>
                           </div>
                         </mwc-card>
-
-
                       </div>
                     </div>
 
@@ -219,19 +281,15 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         this._installAppletId = e.detail;
                         this._installMode = "join";
                         this._showInstallScreen = true;
-                        }
-                      }
+                      }}
                       @reinstall-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
                         this._installMode = "reinstall";
                         this._showInstallScreen = true;
-                        }
-                      }
+                      }}
                     ></we-group-settings>
-
                   </div>
-                `
-            }
+                `}
           </div>
         </div>
       </div>
@@ -242,9 +300,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     switch (this._allMembers.value.status) {
       case "pending":
         return html`
-          <mwc-circular-progress
-            indeterminate
-          ></mwc-circular-progress>
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
         `;
       case "error":
         return html`Error: ${this._allMembers.value.error.data.data}`;
@@ -259,54 +315,51 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     }
   }
 
-
   render() {
     return this._info.render({
       pending: () => html`
         <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
-        `,
+      `,
       complete: (info) => html`
-          <profile-prompt style="flex: 1; display: flex;">
-            <div slot="hero">
-              <div>
-                <div class="column center-content">
-                  <img
-                    class="we-logo"
-                    style="margin-top: 30px;"
-                    src=${info.logoSrc!}
-                  />
-                  <div
-                    style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
-                  >
-                    ${info.name}
-                  </div>
-                  <div
-                    style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
-                  >
-                    How would you like to appear in this group?
-                  </div>
+        <profile-prompt style="flex: 1; display: flex;">
+          <div slot="hero">
+            <div>
+              <div class="column center-content">
+                <img
+                  class="we-logo"
+                  style="margin-top: 30px;"
+                  src=${info.logoSrc!}
+                />
+                <div
+                  style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
+                >
+                  ${info.name}
+                </div>
+                <div
+                  style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
+                >
+                  How would you like to appear in this group?
                 </div>
               </div>
             </div>
+          </div>
 
-            ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-            ${this.renderSuccessSnackbar()}
+          ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+          ${this.renderSuccessSnackbar()}
 
-            <div class="row" style="flex: 1">
+          <div class="row" style="flex: 1">
+            ${this.renderContent()}
 
-              ${this.renderContent()}
-
-              <div class="column members-sidebar">
-                  <my-profile style="margin-bottom: 20px;"></my-profile>
-                  ${this.renderMembers()}
-                </div>
+            <div class="column members-sidebar">
+              <my-profile style="margin-bottom: 20px;"></my-profile>
+              ${this.renderMembers()}
             </div>
-
-          </profile-prompt>
-        `
-    })
+          </div>
+        </profile-prompt>
+      `,
+    });
   }
 
   static get scopedElements() {
@@ -330,7 +383,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "applet-not-installed": AppletNotInstalled,
     };
   }
-
 
   static get styles() {
     const localStyles = css`
@@ -375,7 +427,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       }
 
       .home-button {
-        --mdc-theme-secondary: #303F9F;
+        --mdc-theme-secondary: #303f9f;
         --mdc-fab-focus-outline-color: white;
         --mdc-fab-focus-outline-width: 4px;
         margin-bottom: 4px;
@@ -424,7 +476,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       }
     `;
 
-    return [sharedStyles, localStyles];
+    return [weStyles, localStyles];
   }
-
 }

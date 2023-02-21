@@ -2,22 +2,28 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  IconButtonToggle,
+  Snackbar,
+} from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
-import { AppletInstanceInfo, MatrixStore, NewAppletInstanceInfo } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import {
+  AppletInstanceInfo,
+  MatrixStore,
+  NewAppletInstanceInfo,
+} from "../../matrix-store";
+import { weStyles } from "../../sharedStyles";
 import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
 import { RenderBlock } from "../components/render-block";
 
-
-
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
-
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
-
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
@@ -34,7 +40,6 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   @query("#join-from-fs-dialog")
   joinFromFsDialog!: JoinFromFsDialog;
 
-
   private toggleAppletDescription() {
     this._showAppletDescription = !this._showAppletDescription;
   }
@@ -42,48 +47,66 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   async joinApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
 
-    await this._matrixStore.joinApplet(this.weGroupId, this.appletInstanceId)
+    await this._matrixStore
+      .joinApplet(this.weGroupId, this.appletInstanceId)
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: this.appletInstanceId, weGroupId: this.weGroupId },
+            detail: {
+              appletEntryHash: this.appletInstanceId,
+              weGroupId: this.weGroupId,
+            },
             composed: true,
             bubbles: true,
-            }
-          )
+          })
         );
-        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-        (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
-      }).catch((e) => {
-        console.log("Installation Error: ", e);
-        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (
+          this.shadowRoot?.getElementById("success-snackbar") as Snackbar
+        ).show();
       })
+      .catch((e) => {
+        console.log("Installation Error: ", e);
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      });
   }
-
 
   async reinstallApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
 
-    await this._matrixStore.reinstallApplet(this.weGroupId, this.appletInstanceId)
+    await this._matrixStore
+      .reinstallApplet(this.weGroupId, this.appletInstanceId)
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: this.appletInstanceId, weGroupId: this.weGroupId },
+            detail: {
+              appletEntryHash: this.appletInstanceId,
+              weGroupId: this.weGroupId,
+            },
             composed: true,
             bubbles: true,
-            }
-          )
+          })
         );
-        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-        (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
-      }).catch((e) => {
-        console.log("Installation Error: ", e);
-        (this.shadowRoot?.getElementById("installing-progress") as Snackbar).close();
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (
+          this.shadowRoot?.getElementById("success-snackbar") as Snackbar
+        ).show();
       })
+      .catch((e) => {
+        console.log("Installation Error: ", e);
+        (
+          this.shadowRoot?.getElementById("installing-progress") as Snackbar
+        ).close();
+        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      });
   }
-
 
   renderErrorSnackbar() {
     return html`
@@ -106,7 +129,11 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
+      <mwc-snackbar
+        id="installing-progress"
+        labelText="Installing..."
+        .timeoutMs=${-1}
+      >
       </mwc-snackbar>
     `;
   }
@@ -121,27 +148,32 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
-
-    const appletInstanceInfo: AppletInstanceInfo | NewAppletInstanceInfo | undefined = this.mode == "reinstall"
-      ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)
-      : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)
+    const appletInstanceInfo:
+      | AppletInstanceInfo
+      | NewAppletInstanceInfo
+      | undefined =
+      this.mode == "reinstall"
+        ? this._matrixStore.getUninstalledAppletInstanceInfo(
+            this.appletInstanceId
+          )
+        : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId);
     if (!appletInstanceInfo) {
-      return html `
+      return html`
         <div class="center-content" style="flex: 1;display: flex;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
-      `
+      `;
     }
 
     return html`
-
       ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
       ${this.renderInstallingProgress()}
 
       <join-from-fs-dialog
         mode=${this.mode}
         .appletInstanceId=${this.appletInstanceId}
-        id="join-from-fs-dialog">
+        id="join-from-fs-dialog"
+      >
       </join-from-fs-dialog>
 
       <div class="flex-scrollable-parent">
@@ -158,7 +190,10 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                   >
                     ${appletInstanceInfo.applet.customName[0]}
                   </div>`
-                : html`<img class="logo-large" src=${appletInstanceInfo.applet.logoSrc} />`}
+                : html`<img
+                    class="logo-large"
+                    src=${appletInstanceInfo.applet.logoSrc}
+                  />`}
               <div class="row center-content" style="margin-top: 20px;">
                 <div
                   style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
@@ -178,7 +213,6 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                     ${appletInstanceInfo.applet.description}
                   </div>`
                 : html``}
-
               ${this.mode == "reinstall"
                 ? html`
                     <div
@@ -191,20 +225,23 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                     <div
                       style="margin-top: 70px; font-size: 1.2em; text-align: center;"
                     >
-                      This applet has been added by someone else from your group.
+                      This applet has been added by someone else from your
+                      group.
                     </div>
                     <div
                       style="margin-top: 10px; font-size: 1.2em; text-align: center;"
                     >
                       You haven't installed it yet.
                     </div>
-                  `
-              }
+                  `}
 
               <mwc-button
                 style="margin-top: 65px;"
                 raised
-                @click=${async () => this.mode == "reinstall" ? await this.reinstallApplet() : await this.joinApplet()}
+                @click=${async () =>
+                  this.mode == "reinstall"
+                    ? await this.reinstallApplet()
+                    : await this.joinApplet()}
                 >Automatically Install from the DevHub</mwc-button
               >
 
@@ -226,7 +263,6 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       </div>
     `;
   }
-
 
   static get scopedElements() {
     return {
@@ -265,8 +301,6 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
       }
     `;
 
-    return [sharedStyles, localStyles];
+    return [weStyles, localStyles];
   }
-
-
 }

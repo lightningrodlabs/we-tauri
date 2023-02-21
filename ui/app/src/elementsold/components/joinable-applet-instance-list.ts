@@ -16,15 +16,16 @@ import {
 
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 
-export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) {
-
+export class JoinableAppletInstanceList extends ScopedElementsMixin(
+  LitElement
+) {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -37,8 +38,6 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
     () => [this.weGroupId, this.matrixStore]
   );
 
-
-
   joinApplet(appletInstanceId: EntryHash) {
     this.dispatchEvent(
       new CustomEvent("join-applet", {
@@ -48,8 +47,6 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
       })
     );
   }
-
-
 
   renderErrorSnackbar() {
     return html`
@@ -67,11 +64,16 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
     if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
-        <div style="margin-top: 10px;">There are no applet instances you haven't joined.</div>
+        <div style="margin-top: 10px;">
+          There are no applet instances you haven't joined.
+        </div>
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+            @click=${() => {
+              this.matrixStore.fetchMatrix();
+              this.requestUpdate();
+            }}
             icon="refresh"
             >Refresh</mwc-button
           >
@@ -80,7 +82,9 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
     } else {
       return html`
         ${appletInstanceInfos
-          .sort((info_a, info_b) => info_a.applet.customName.localeCompare(info_b.applet.customName)) // sort alphabetically
+          .sort((info_a, info_b) =>
+            info_a.applet.customName.localeCompare(info_b.applet.customName)
+          ) // sort alphabetically
           .map((appletInfo) => {
             return html`
               <div class="column" style="align-items: right; width: 100%;">
@@ -90,13 +94,15 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
                     style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
                   >
                     <img
-                        style="margin-right: 10px;"
-                        class="applet-image"
-                        src=${appletInfo.applet.logoSrc!}
-                      />
+                      style="margin-right: 10px;"
+                      class="applet-image"
+                      src=${appletInfo.applet.logoSrc!}
+                    />
                     <strong>${appletInfo.applet.customName}</strong>
-                    <div class="row" style="margin-left: auto; align-items: center;">
-
+                    <div
+                      class="row"
+                      style="margin-left: auto; align-items: center;"
+                    >
                       <mwc-button
                         class="join-button"
                         raised
@@ -109,12 +115,14 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
                 </mwc-card>
               </div>
             `;
-          })
-        }
+          })}
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+            @click=${() => {
+              this.matrixStore.fetchMatrix();
+              this.requestUpdate();
+            }}
             icon="refresh"
             >Refresh</mwc-button
           >
@@ -122,7 +130,6 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
       `;
     }
   }
-
 
   render() {
     return html`
@@ -141,10 +148,7 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
         timeoutMs="4000"
         labelText="Applet uninstalled."
       ></mwc-snackbar>
-      ${this.renderErrorSnackbar()}
-
-
-      ${this.renderAppStates()}
+      ${this.renderErrorSnackbar()} ${this.renderAppStates()}
     `;
   }
 
@@ -187,7 +191,7 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
       }
 
       .disable-button {
-        --mdc-theme-primary: #f9a70a;;
+        --mdc-theme-primary: #f9a70a;
       }
 
       .reinstall-button {
@@ -202,6 +206,6 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
       }
     `;
 
-    return [sharedStyles, localStyles];
+    return [weStyles, localStyles];
   }
 }

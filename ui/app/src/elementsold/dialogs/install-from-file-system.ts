@@ -11,9 +11,9 @@ import {
   TextArea,
 } from "@scoped-elements/material-web";
 
-import md5 from 'md5';
+import md5 from "md5";
 
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { AppletMetaData } from "../../types";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { MatrixStore } from "../../matrix-store";
@@ -43,7 +43,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @query("#description-field")
   _descriptionField!: TextArea;
 
-
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
   @state()
@@ -57,7 +56,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   @state()
   _duplicateName: boolean = false;
-
 
   @state()
   _fileBytes: Uint8Array | undefined = undefined;
@@ -76,7 +74,9 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   }
 
   get publishDisabled() {
-    return !this._installedAppIdField || this._duplicateName || !this._fileBytes;
+    return (
+      !this._installedAppIdField || this._duplicateName || !this._fileBytes
+    );
   }
 
   checkValidity(_newValue, _nativeValidity) {
@@ -114,7 +114,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         this.weGroupId,
         appletInfo,
         this._installedAppIdField.value,
-        this._fileBytes, // compressed webhapp as Uint8Array
+        this._fileBytes // compressed webhapp as Uint8Array
       );
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
@@ -144,7 +144,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     const reader = new FileReader();
     reader.onload = (e) => {
       console.log(e.target?.result);
-    }
+    };
     reader.readAsArrayBuffer(files[0]);
     // TODO! make typing right here
     reader.onloadend = (_e) => {
@@ -155,8 +155,11 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       const md5FileHash = new Uint8Array(md5(ui8, { asBytes: true }));
       this._fakeDevhubHappReleaseHash = fakeMd5SeededEntryHash(md5FileHash);
       this._fileBytes = ui8;
-      console.log("fake devhub happ release hash: ", this._fakeDevhubHappReleaseHash);
-    }
+      console.log(
+        "fake devhub happ release hash: ",
+        this._fakeDevhubHappReleaseHash
+      );
+    };
   }
 
   renderErrorSnackbar() {
@@ -180,7 +183,11 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   renderInstallingProgress() {
     return html`
-      <mwc-snackbar id="installing-progress" labelText="Installing..." .timeoutMs=${-1}>
+      <mwc-snackbar
+        id="installing-progress"
+        labelText="Installing..."
+        .timeoutMs=${-1}
+      >
       </mwc-snackbar>
     `;
   }
@@ -193,7 +200,10 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       <mwc-dialog id="applet-dialog" heading="Install Applet">
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
           <div style="margin-bottom: 30px;">
-            <strong>Note: </strong>It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across groups and it allows features like federation.
+            <strong>Note: </strong>It is recommended to download and install
+            Applets from the Applets Library if available. This guarantees
+            compatibility between Applets of the same type and version across
+            groups and it allows features like federation.
           </div>
           <mwc-textfield
             id="installed-app-id"
@@ -216,32 +226,30 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
               </div>`
             : html``}
 
-        <mwc-textarea
-          style="margin-top: 7px;"
-          id="description-field"
-          label="description"
-          outlined
-        >
-        </mwc-textarea>
+          <mwc-textarea
+            style="margin-top: 7px;"
+            id="description-field"
+            label="description"
+            outlined
+          >
+          </mwc-textarea>
 
-        <span style="margin-top: 7px;">Select file:</span>
-        <input
-          style="margin-top: 7px;"
-          type="file"
-          id="filepicker"
-          accept=".webhapp"
-          @change=${this.loadFileBytes}
-        >
-        ${this._fileBytes
+          <span style="margin-top: 7px;">Select file:</span>
+          <input
+            style="margin-top: 7px;"
+            type="file"
+            id="filepicker"
+            accept=".webhapp"
+            @change=${this.loadFileBytes}
+          />
+          ${this._fileBytes
             ? html``
             : html`<div
                 class="default-font"
                 style="color: #b10323; font-size: 12px; margin-left: 4px;"
               >
                 No file selected.
-              </div>`
-          }
-
+              </div>`}
         </div>
 
         <mwc-button
@@ -273,6 +281,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   }
 
   static get styles() {
-    return sharedStyles;
+    return weStyles;
   }
 }

@@ -6,16 +6,12 @@ import { TaskSubscriber } from "lit-svelte-stores";
 import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { get } from "svelte/store";
 import { mergeEyeViewSadIcon } from "../../icons/merge-eye-view-sad";
 import { Icon } from "@scoped-elements/material-web";
 
-
-
-
 export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
-
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
@@ -23,23 +19,32 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
   appletClassId!: EntryHash; // devHub hApp release hash
 
   render() {
-
-    const appletClassInfo = get(this._matrixStore.getAppletClassInfo(this.appletClassId))
+    const appletClassInfo = get(
+      this._matrixStore.getAppletClassInfo(this.appletClassId)
+    );
 
     return html`
-    <div class="column" style="flex: 1; align-items: center; position: relative;">
-
-      <img src=${mergeEyeViewSadIcon} />
-      <div class="title default-font">The <b>${appletClassInfo!.title}</b> Applet does not support Merge Eye View (...yet?).</div>
-
-        <div class="row create-applet-link center-content">
-          <a href="https://www.npmjs.com/package/@lightningrodlabs/create-we-applet">create your own we-applet</a>
-          <mwc-icon style="margin-left: 6px; --mdc-icon-size: 17px;">open_in_new</mwc-icon>
+      <div
+        class="column"
+        style="flex: 1; align-items: center; position: relative;"
+      >
+        <img src=${mergeEyeViewSadIcon} />
+        <div class="title default-font">
+          The <b>${appletClassInfo!.title}</b> Applet does not support Merge Eye
+          View (...yet?).
         </div>
 
-
-    </div>
-    `
+        <div class="row create-applet-link center-content">
+          <a
+            href="https://www.npmjs.com/package/@lightningrodlabs/create-we-applet"
+            >create your own we-applet</a
+          >
+          <mwc-icon style="margin-left: 6px; --mdc-icon-size: 17px;"
+            >open_in_new</mwc-icon
+          >
+        </div>
+      </div>
+    `;
   }
 
   static get scopedElements() {
@@ -48,9 +53,8 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
     };
   }
 
-
   static styles = [
-    sharedStyles,
+    weStyles,
     css`
       :host {
         display: flex;
@@ -123,5 +127,4 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
       }
     `,
   ];
-
 }

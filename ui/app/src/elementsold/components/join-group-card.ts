@@ -16,7 +16,7 @@ import {
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
@@ -31,7 +31,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   _myInvitations = new TaskSubscriber(
     this,
     () => this.matrixStore.membraneInvitationsStore.fetchMyInvitations(),
-    () => [this.matrixStore],
+    () => [this.matrixStore]
   );
 
   @query("#copied-snackbar")
@@ -47,7 +47,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         invitationActionHash,
         properties.name,
         properties.logoSrc,
-        properties.networkSeed,
+        properties.networkSeed
       )
       .then((weGroupId) => {
         this.dispatchEvent(
@@ -141,10 +141,19 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html`
-        ${invitations.entries()
+        ${invitations
+          .entries()
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
           .filter((obj, idx, arr) => {
-            return arr.map(mapObj => JSON.stringify(mapObj[1].cloneDnaRecipe.resultingDnaHash)).indexOf(JSON.stringify(obj[1].cloneDnaRecipe.resultingDnaHash)) === idx
+            return (
+              arr
+                .map((mapObj) =>
+                  JSON.stringify(mapObj[1].cloneDnaRecipe.resultingDnaHash)
+                )
+                .indexOf(
+                  JSON.stringify(obj[1].cloneDnaRecipe.resultingDnaHash)
+                ) === idx
+            );
           })
           .map(([actionHash, invitation]) => {
             return html`
@@ -230,44 +239,48 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       ></mwc-snackbar>
 
       <mwc-card>
-
         <div class="column content-pane">
-
-          <div style="font-size: 1.7em;">
-            Joining A Group
-          </div>
+          <div style="font-size: 1.7em;">Joining A Group</div>
           <div class="center-content">
-            <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
-              To join a group, send your public key to a member of the group you would like to join and ask them to invite you.
+            <div
+              style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;"
+            >
+              To join a group, send your public key to a member of the group you
+              would like to join and ask them to invite you.
             </div>
 
             <div class="column center-content">
-              <div class="row title center-content" style="margin-top: 50px;"><mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span></div>
+              <div class="row title center-content" style="margin-top: 50px;">
+                <mwc-icon>key</mwc-icon
+                ><span style="margin-left: 10px;">your public key</span>
+              </div>
               <div style="margin-top: 15px;">
                 <sl-tooltip placement="right" .content=${"copy"}>
-                  <div class="pubkey-field default-font"
+                  <div
+                    class="pubkey-field default-font"
                     @click=${() => {
                       navigator.clipboard.writeText(
                         encodeHashToBase64(this.matrixStore.myAgentPubKey)
                       );
-                      this._copiedSnackbar.show()
-                    }}>
+                      this._copiedSnackbar.show();
+                    }}
+                  >
                     ${encodeHashToBase64(this.matrixStore.myAgentPubKey)}
                   </div>
                 </sl-tooltip>
-                <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
-                send your public key to your friends if they want to invite you to their group
+                <div
+                  style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center"
+                >
+                  send your public key to your friends if they want to invite
+                  you to their group
                 </div>
               </div>
             </div>
 
             ${this._myInvitations.render({
               complete: (i) => this.renderInvitationsBlock(i),
-            })
-            }
-
+            })}
           </div>
-
         </div>
       </mwc-card>
     `;
@@ -332,6 +345,6 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       }
     `;
 
-    return [sharedStyles, localStyles];
+    return [weStyles, localStyles];
   }
 }

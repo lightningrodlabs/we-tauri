@@ -11,10 +11,14 @@ import {
 import { contextProvided } from "@lit-labs/context";
 import { property, query, state } from "lit/decorators.js";
 
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
-import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
+import {
+  DnaHash,
+  AgentPubKeyB64,
+  decodeHashFromBase64,
+} from "@holochain/client";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -37,7 +41,6 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   _pubkeyField!: TextField;
 
   async inviteToJoin(agentPubKey: AgentPubKeyB64) {
-
     this._matrixStore
       .inviteToJoinGroup(this.weGroupId, decodeHashFromBase64(agentPubKey))
       .then((r) => {
@@ -67,9 +70,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
       <mwc-card style="width: 440px;">
         <div style="margin: 20px;">
           <div class="row">
-            <span class="title"
-              >Invite New Member</span
-            >
+            <span class="title">Invite New Member</span>
           </div>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
@@ -126,6 +127,6 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
       }
     `;
 
-    return [sharedStyles, localStyles];
+    return [weStyles, localStyles];
   }
 }

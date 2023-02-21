@@ -66,7 +66,9 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return el.goldenLayout;
   }
 
-  openTab() {
+  openBlock() {}
+
+  openTab(hrl: Hrl) {
     this.goldenLayout.addItemAtLocation(
       {
         type: "component",
@@ -87,6 +89,11 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         <template>
           <span>dddasdf</span>
           <welcome-screen></welcome-screen>
+        </template>
+      </golden-layout-register>
+      <golden-layout-register component-type="group-settings">
+        <template>
+          <group-settings></group-settings>
         </template>
       </golden-layout-register>
       <golden-layout-register

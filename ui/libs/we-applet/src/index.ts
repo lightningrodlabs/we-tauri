@@ -18,15 +18,19 @@ export type View = (
 
 export type EntryTypeView = (hash: EntryHash | ActionHash) => Promise<{
   name: string;
-  summary: View;
-  detail: View;
+  view: View;
 }>;
 
-export type AppletViews = {
+export interface CrossGroupPerspectiveViews {
   main: View;
   blocks: Record<string, View>;
+}
+
+export interface GroupPerspectiveViews {
+  main: View;
+  blocks: Record<string, View>; // all events -> schedule
   entries: Record<string, Record<string, EntryTypeView>>; // Segmented by RoleName and entry type id
-};
+}
 
 export interface GroupServices {
   profilesStore: ProfilesStore;
@@ -34,26 +38,34 @@ export interface GroupServices {
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 
-export interface GroupCentricApplet {
-  views: AppletViews;
+// Perspective of an applet instance in a group
+export interface GroupPerspective {
+  views: GroupPerspectiveViews;
   search: (searchFilter: string) => Promise<Array<Hrl>>;
+  attachablesTypes: Array<{
+    name: string;
+    // We are attaching a comment to a calendar event
+    create: (attachToHash: Hrl) => Promise<Hrl>;
+  }>;
 }
 
-export interface AgentCentricApplet {
-  view: View;
+export interface CrossGroupPerspective {
+  views: CrossGroupPerspectiveViews;
 }
 
-export interface GroupApplets {
+export interface GroupWithApplets {
   groupInfo: GroupInfo;
   groupServices: GroupServices;
-  appletsClients: AppAgentClient[];
+  appletsClients: AppAgentClient[]; // These will be the same kind of applet
 }
 
 export interface WeApplet {
-  groupCentric: (
-    appletAgentClient: AppAgentClient,
+  groupPerspective: (
+    appletInstanceClient: AppAgentClient,
     groupInfo: GroupInfo,
     groupServices: GroupServices
-  ) => Promise<GroupCentricApplet>;
-  agentCentric: (applets: GroupApplets[]) => Promise<AgentCentricApplet>;
+  ) => Promise<GroupPerspective>;
+  crossGroupPerspective: (
+    applets: GroupWithApplets[]
+  ) => Promise<CrossGroupPerspective>;
 }
