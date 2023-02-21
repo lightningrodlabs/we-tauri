@@ -1,22 +1,29 @@
 import { html, css, LitElement, PropertyValueMap } from "lit";
 import { state, query, property } from "lit/decorators.js";
 
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { Dialog, TextField, Button } from "@scoped-elements/material-web";
+import {
+  MdDialog,
+  MdOutlinedTextField,
+  MdFilledButton,
+  MdOutlinedButton,
+} from "@scoped-elements/material-web";
 import { SelectAvatar } from "@holochain-open-dev/elements";
+import { localized, msg } from "@lit/localize";
 
-import { matrixContext } from "../../context";
-import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+import { weStyles } from "../shared-styles";
+import { weStoreContext } from "../context";
+import { WeStore } from "../we-store";
 
 /**
- * @element we-applet
+ * @element create-group-dialog
  */
-export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
+@localized()
+export class CreateGroupDialog extends ScopedElementsMixin(LitElement) {
   /** Dependencies */
-  @contextProvided({ context: matrixContext, subscribe: true })
-  _matrixStore!: MatrixStore;
+  @consume({ context: weStoreContext, subscribe: true })
+  _weStore!: WeStore;
 
   async open() {
     this._name = "";
@@ -26,11 +33,12 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
 
   /** Private properties */
   @query("#dialog")
-  _dialog!: Dialog;
+  _dialog!: MdDialog;
   @query("#name-field")
   _nameField!: HTMLInputElement;
   @query("#select-avatar")
   _avatarField!: SelectAvatar;
+
   @state()
   _name: string | undefined;
   @state()
@@ -41,11 +49,14 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
     if (this._name && this._logoSrc) {
       this._dialog.close();
       this.dispatchEvent(new CustomEvent("creating-we", {})); // required to display loading screen in the dashboard
-      const weId = await this._matrixStore.createWeGroup(this._name!, this._logoSrc!);
+      const groupDnaHash = await this._weStore.createGroup(
+        this._name!,
+        this._logoSrc!
+      );
 
       this.dispatchEvent(
         new CustomEvent("we-added", {
-          detail: weId,
+          detail: { groupDnaHash },
           bubbles: true,
           composed: true,
         })
@@ -57,49 +68,51 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <mwc-dialog id="dialog" heading="Create Group">
+      <md-dialog id="dialog" heading="Create Group">
         <div class="row" style="margin-top: 16px">
           <select-avatar
             id="select-avatar"
             @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
           ></select-avatar>
 
-          <mwc-textfield
+          <md-outlined-text-field
             @input=${(e) => (this._name = e.target.value)}
             style="margin-left: 16px"
             id="name-field"
-            label="Group name"
-            autoValidate
+            .label=${msg("Group name")}
             required
-            outlined
-          ></mwc-textfield>
+          ></md-outlined-text-field>
         </div>
 
-        <mwc-button slot="secondaryAction" dialogAction="cancel">
-          cancel
-        </mwc-button>
-        <mwc-button
+        <md-outlined-button
+          slot="footer"
+          dialogAction="cancel"
+          .label=${msg("Cancel")}
+        >
+        </md-outlined-button>
+        <md-filled-button
           id="primary-action-button"
-          slot="primaryAction"
+          slot="footer"
           .disabled=${!this._name || !this._logoSrc}
           @click=${this.handleOk}
+          .label=${msg("Create Group")}
         >
-          ok
-        </mwc-button>
-      </mwc-dialog>
+        </md-filled-button>
+      </md-dialog>
     `;
   }
   static get scopedElements() {
     return {
       "select-avatar": SelectAvatar,
-      "mwc-button": Button,
-      "mwc-dialog": Dialog,
-      "mwc-textfield": TextField,
+      "md-filled-button": MdFilledButton,
+      "md-outlined-button": MdOutlinedButton,
+      "md-dialog": MdDialog,
+      "md-outlined-text-field": MdOutlinedTextField,
     };
   }
   static get styles() {
     return [
-      sharedStyles,
+      weStyles,
       css`
         mwc-textfield {
           margin-top: 10px;

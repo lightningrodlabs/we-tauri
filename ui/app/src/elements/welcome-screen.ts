@@ -1,43 +1,35 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
-import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
 import {
-  Button,
-  List,
-  ListItem,
+  MdList,
+  MdListItem,
   Card,
   Snackbar,
-  Icon,
-  Dialog,
+  MdIcon,
+  MdDialog,
 } from "@scoped-elements/material-web";
 
+import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
 
-export class HomeScreen extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext, subscribe: true })
-  matrixStore!: MatrixStore;
-
-
+export class WelcomeScreen extends ScopedElementsMixin(LitElement) {
   @query("#we-dialog")
   _weGroupDialog!: CreateWeGroupDialog;
 
   @query("#join-group-dialog")
-  _joinGroupDialog!: Dialog;
+  _joinGroupDialog!: MdDialog;
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
-
 
   weName(invitation: JoinMembraneInvitation) {
     return (decode(invitation.cloneDnaRecipe.properties) as any).name;
@@ -46,8 +38,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   weImg(invitation: JoinMembraneInvitation) {
     return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
   }
-
-
 
   renderErrorSnackbar() {
     return html`
@@ -60,15 +50,50 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-
+  renderManagingGroupsCard() {
+    return html`
+      <mwc-card style="width: 40%; margin-right: 30px">
+        <div class="column content-pane">
+          <div style="font-size: 1.7em;">Managing Groups</div>
+          <div
+            class="default-font"
+            style="text-align: left; margin-top: 40px; font-size: 1.15em;"
+          >
+            <ol style="line-height: 180%; margin: 0;">
+              <li>
+                To create a <b>new group</b>, click on the "Add Group"
+                <mwc-icon style="position: relative; top: 0.25em;"
+                  >group_add</mwc-icon
+                >
+                button in the left sidebar.
+              </li>
+              <li>
+                You will be prompted to <b>create a profile</b> for this group.
+              </li>
+              <li>
+                <b>Invite other members</b> to the group from the home screen of
+                your new group (<md-icon
+                  style="position: relative; top: 0.25em;"
+                  >home</md-icon
+                >). You will need to ask them for their public key (copiable
+                from the identicon in the bottom left corner of the screen).
+              </li>
+              <li>
+                <b>Install applets</b> from the DevHub that you want to use as a
+                group.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </mwc-card>
+    `;
+  }
   render() {
     return html`
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y">
-            <create-we-group-dialog
-              id="we-dialog"
-            ></create-we-group-dialog>
+            <create-we-group-dialog id="we-dialog"></create-we-group-dialog>
             <mwc-snackbar
               id="copied-snackbar"
               timeoutMs="4000"
@@ -85,9 +110,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
               </div>
 
               <div class="row" style="margin-top: 70px;">
-                <managing-groups-card
-                  style="width: 40%; margin-right: 30px;"
-                ></managing-groups-card>
+                ${this.renderManagingGroupsCard()}
                 <join-group-card style="width: 60%;"></join-group-card>
               </div>
             </div>
@@ -110,7 +133,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "join-group-card": JoinGroupCard,
-      "managing-groups-card": ManagingGroupsCard,
     };
   }
 
@@ -123,8 +145,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
       .default-font {
         font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
       }
-
-
     `;
 
     return [sharedStyles, localStyles];

@@ -46,7 +46,7 @@ export interface AgentCentricApplet {
 export interface GroupApplets {
   groupInfo: GroupInfo;
   groupServices: GroupServices;
-  appletAgentClient: AppAgentClient[];
+  appletsClients: AppAgentClient[];
 }
 
 export interface WeApplet {

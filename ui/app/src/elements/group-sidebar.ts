@@ -1,6 +1,6 @@
 import { DisplayError } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { provide } from "@lit-labs/context";
+import { consume, provide } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { html, LitElement } from "lit";
@@ -10,17 +10,19 @@ import { localized, msg } from "@lit/localize";
 
 import { weStoreContext } from "../context";
 import { WeStore } from "../we-store";
-import { SidebarButton } from "./utils/sidebar-button";
+import { SidebarButton } from "./sidebar-button.js";
+import { CreateGroupDialog } from "./create-group-dialog";
 
 @localized()
 export class GroupSidebar extends ScopedElementsMixin(LitElement) {
-  @provide({ context: weStoreContext })
+  @consume({ context: weStoreContext })
   _weStore!: WeStore;
 
   _groupsInfo = new StoreSubscriber(this, () => this._weStore.allGroupsInfo);
 
   renderGroups(groups: GroupInfo[]) {
     return html`
+      <create-group-dialog id="create-group-dialog"></create-group-dialog>
       ${groups
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(
@@ -31,8 +33,7 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
                 .logoSrc=${groupInfo.logo_src}
                 .tooltipText=${groupInfo.name}
                 @click=${() => {
-                  this.handleWeGroupIconPrimaryClick(groupInfo.dna_hash);
-                  this.requestUpdate();
+                  // this.handleWeGroupIconPrimaryClick(groupInfo.dna_hash);
                 }}
               ></sidebar-button>
             `
@@ -41,8 +42,13 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
       <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
         <md-fab
           icon="group_add"
-          @click=${() => this._createWeGroupDialog.open()}
-          style="margin-top: 4px; --mdc-theme-secondary: #9ca5e3;"
+          @click=${() =>
+            (
+              this.shadowRoot?.getElementById(
+                "create-group-dialog"
+              ) as CreateGroupDialog
+            ).open()}
+          style="margin-top: 4px; --md-theme-secondary: #9ca5e3;"
         ></md-fab>
       </sl-tooltip>
     `;
@@ -55,7 +61,7 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
       case "error":
         return html`<display-error
           tooltip
-          .error=${this._groupsInfo.value.error.data.data}
+          .error=${this._groupsInfo.value.error}
         ></display-error>`;
       case "complete":
         return this.renderGroups(this._groupsInfo.value.value);
@@ -68,6 +74,7 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
       "display-error": DisplayError,
       "sidebar-button": SidebarButton,
       "md-fab": MdFab,
+      "create-group-dialog": CreateGroupDialog,
       "sl-tooltip": SlTooltip,
     };
   }
