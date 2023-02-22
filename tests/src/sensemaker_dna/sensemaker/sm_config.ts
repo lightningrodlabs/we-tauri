@@ -72,7 +72,7 @@ export default () =>
         console.log(maybe_applet_config);
 
         let dimension_ehs: EntryHash[] = Object.values(maybe_applet_config.dimensions);
-        let resource_ehs: EntryHash[] = Object.values(maybe_applet_config.resource_types);
+        let resource_ehs: EntryHash[] = Object.values(maybe_applet_config.resource_defs);
         let method_ehs: EntryHash[] = Object.values(maybe_applet_config.methods);
         let context_ehs: EntryHash[] = Object.values(maybe_applet_config.cultural_contexts);
         t.equal(dimension_ehs.length, 2);
@@ -94,7 +94,7 @@ export default () =>
           resource_ehs.map(async (eh) => {
             return await callZomeAlice(
               "sensemaker",
-              "get_resource_type",
+              "get_resource_def",
               eh,
               true
             );

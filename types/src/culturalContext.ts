@@ -6,13 +6,13 @@ interface CoreCulturalContext {
     name: string,
 }
 export type CulturalContext = CoreCulturalContext & {
-    resource_type_eh: EntryHash,
+    resource_def_eh: EntryHash,
     order_by: Array<[EntryHash, OrderingKind]>,
     thresholds: Array<Threshold>,
 }
 
 export type ConfigCulturalContext = CoreCulturalContext & {
-    resource_type: ConfigResourceDef,
+    resource_def: ConfigResourceDef,
     order_by: Array<[Dimension, OrderingKind]>,
     thresholds: Array<ConfigThreshold>,
 }

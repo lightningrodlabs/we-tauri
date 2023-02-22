@@ -128,7 +128,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
         computed: true,
       },
     ],
-    resource_types: [
+    resource_defs: [
       {
         name: "angryPost",
         base_types: [resource_base_def],
@@ -144,7 +144,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
     methods: [
       {
         name: "total_likeness_method",
-        target_resource_type: {
+        target_resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
@@ -183,7 +183,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
     cultural_contexts: [
       {
         name: "more than 5 total likeness, biggest to smallest",
-        resource_type: {
+        resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
@@ -226,7 +226,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
       },
       {
         name: "more than 5 total likeness, smallest to biggest",
-        resource_type: {
+        resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [

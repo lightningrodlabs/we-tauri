@@ -105,7 +105,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         // Alice creates a resource type
         const createResourceDefEntryHash: EntryHash = await callZomeAlice(
             "sensemaker",
-            "create_resource_type",
+            "create_resource_def",
             createResourceDef,
             true
         );
@@ -117,7 +117,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         try {
             await callZomeBob(
                 "sensemaker",
-                "create_resource_type",
+                "create_resource_def",
                 createResourceDef,
                 true
             );
@@ -137,7 +137,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         // Alice creates a method
         const totalLikenessMethod = {
             "name": "total_likeness_method",
-            "target_resource_type_eh": createResourceDefEntryHash,
+            "target_resource_def_eh": createResourceDefEntryHash,
             "input_dimension_ehs": [createDimensionEntryHash],
             "output_dimension_eh": createDimensionEntryHash,
             "program": { "Sum": null },
@@ -176,7 +176,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             }
             const culturalContext = {
                 "name": "testcontext",
-                "resource_type_eh": createResourceDefEntryHash,
+                "resource_def_eh": createResourceDefEntryHash,
                 "thresholds": [threshold],
                 "order_by": [[createDimensionEntryHash, { "Biggest": null }]], // DimensionEh
             }

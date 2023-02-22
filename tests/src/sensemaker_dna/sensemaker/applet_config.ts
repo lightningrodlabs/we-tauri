@@ -105,7 +105,7 @@ export default () =>
 
                 const resourceDefEh: EntryHash = await callZomeAlice(
                     "sensemaker",
-                    "create_resource_type",
+                    "create_resource_def",
                     resourceDef,
                     true
                 );
@@ -114,7 +114,7 @@ export default () =>
                 const methodName = "total_importance_method"
                 const totalImportanceMethod: Method = {
                     name: methodName,
-                    target_resource_type_eh: resourceDefEh,
+                    target_resource_def_eh: resourceDefEh,
                     input_dimension_ehs: [dimensionHash],
                     output_dimension_eh: objectiveDimensionHash,
                     program: { Sum: null },
@@ -123,7 +123,7 @@ export default () =>
                 };
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
-                    target_resource_type: configResourceDef,
+                    target_resource_def: configResourceDef,
                     input_dimensions: [dimension], // check if it's subjective (for now)
                     output_dimension: objectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
@@ -151,13 +151,13 @@ export default () =>
 
                 const culturalContext: CulturalContext = {
                     name: "most_important_tasks",
-                    resource_type_eh: resourceDefEh,
+                    resource_def_eh: resourceDefEh,
                     thresholds: [threshold],
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
                 const configCulturalContext: ConfigCulturalContext = {
                     name: culturalContext.name,
-                    resource_type: configResourceDef,
+                    resource_def: configResourceDef,
                     thresholds: [configThreshold],
                     order_by: [[objectiveDimension, { Biggest: null }]], // DimensionEh
                 }
@@ -177,14 +177,14 @@ export default () =>
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resource_types: { task_item: resourceDefEh },
+                    resource_defs: { task_item: resourceDefEh },
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
                 const appletConfigInput: AppletConfigInput = {
                     name: appletConfig.name,
                     dimensions: [dimension, objectiveDimension],
-                    resource_types: [configResourceDef],
+                    resource_defs: [configResourceDef],
                     methods: [configMethod],
                     cultural_contexts: [configCulturalContext],
                 }

@@ -9,7 +9,7 @@ export interface AppletConfig {
     dimensions: {
         [dimensionName: string]: EntryHash,
     },
-    resource_types: {
+    resource_defs: {
         [resourceDefName: string]: EntryHash,
     },
     methods: {
@@ -23,7 +23,7 @@ export interface AppletConfig {
 export interface AppletConfigInput {
     name: string,
     dimensions: Array<Dimension>,
-    resource_types: Array<ConfigResourceDef>,
+    resource_defs: Array<ConfigResourceDef>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,
 }

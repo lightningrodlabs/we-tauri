@@ -9,13 +9,13 @@ interface CoreMethod {
     must_publish_dataset: boolean,
 }
 export type Method = CoreMethod & {
-    target_resource_type_eh: EntryHash,
+    target_resource_def_eh: EntryHash,
     input_dimension_ehs: Array<EntryHash>,
     output_dimension_eh: EntryHash,
 }
 
 export type ConfigMethod = CoreMethod & {
-    target_resource_type: ConfigResourceDef,
+    target_resource_def: ConfigResourceDef,
     input_dimensions: Array<Dimension>,
     output_dimension: Dimension,
 }

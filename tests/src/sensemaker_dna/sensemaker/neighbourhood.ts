@@ -215,7 +215,7 @@ export default () => {
         // Alice creates a resource type
         const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
-          "create_resource_type",
+          "create_resource_def",
           createResourceDef,
           true
         );
@@ -227,7 +227,7 @@ export default () => {
         // Bob gets the created resource type
         const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
-          "get_resource_type",
+          "get_resource_def",
           createResourceDefEntryHash,
           true
         );
@@ -331,7 +331,7 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceDefEntryHash,
+          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -562,7 +562,7 @@ export default () => {
         // Alice creates a resource type
         const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
-          "create_resource_type",
+          "create_resource_def",
           createResourceDef,
           true
         );
@@ -574,7 +574,7 @@ export default () => {
         // Bob gets the created resource type
         const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
-          "get_resource_type",
+          "get_resource_def",
           createResourceDefEntryHash,
           true
         );
@@ -716,7 +716,7 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceDefEntryHash,
+          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -876,7 +876,7 @@ export default () => {
         };
         const culturalContext = {
           name: "more than 5 total likeness, biggest to smallest",
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Biggest: null }]], // DimensionEh
         };
@@ -891,7 +891,7 @@ export default () => {
 
         const culturalContext2 = {
           name: "more than 5 total likeness, smallest to biggest",
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
@@ -906,7 +906,7 @@ export default () => {
 
         const culturalContext3 = {
           name: "float threshold",
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold2],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
