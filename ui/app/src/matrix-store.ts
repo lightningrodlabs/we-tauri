@@ -915,6 +915,7 @@ export class MatrixStore {
     // hash network seed to not expose it in the app id but still
     // be able to detect the cell based on the network seed
     const hashedNetworkSeed = md5(networkSeed, { asString: true });
+    console.log("@installWeGroup: hashedNetworkSeed: ", hashedNetworkSeed);
 
     const cloneName = `group@we-${name}-${hashedNetworkSeed}`;
 
