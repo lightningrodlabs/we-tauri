@@ -10,7 +10,7 @@ use crate::{
 #[derive(Clone)]
 pub struct CulturalContext {
     pub name: String,
-    pub resource_type_eh: EntryHash,
+    pub resource_def_eh: EntryHash,
     pub thresholds: Vec<Threshold>,
     pub order_by: Vec<(EntryHash, OrderingKind)>, // DimensionEh
 }
@@ -18,7 +18,7 @@ pub struct CulturalContext {
 impl TryFrom<ConfigCulturalContext> for CulturalContext {
     type Error = WasmError;
     fn try_from(value: ConfigCulturalContext) -> Result<Self, Self::Error> {
-        let resource_type: ResourceDef = value.resource_type.try_into()?;
+        let resource_def: ResourceDef = value.resource_def.try_into()?;
         let thresholds: Vec<Threshold> = value
             .thresholds
             .into_iter()
@@ -37,7 +37,7 @@ impl TryFrom<ConfigCulturalContext> for CulturalContext {
 
         let cc = CulturalContext {
             name: value.name,
-            resource_type_eh: hash_entry(resource_type)?,
+            resource_def_eh: hash_entry(resource_def)?,
             thresholds,
             order_by,
         };

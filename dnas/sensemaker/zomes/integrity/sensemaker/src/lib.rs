@@ -5,7 +5,7 @@ mod cultural_context;
 mod dimension;
 mod method;
 mod properties;
-mod resource_type;
+mod resource_def;
 
 pub use applet::{AppletConfig, AppletConfigInput};
 pub use assessment::Assessment;
@@ -15,7 +15,7 @@ pub use cultural_context::{
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
 pub use properties::{Properties, SensemakerConfig};
-pub use resource_type::ResourceDef;
+pub use resource_def::ResourceDef;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]

@@ -6,7 +6,7 @@ use sensemaker_integrity::{
 };
 
 use crate::{
-    create_cultural_context, create_dimension, create_method, create_resource_type,
+    create_cultural_context, create_dimension, create_method, create_resource_def,
     utils::entry_from_record,
 };
 
@@ -63,11 +63,11 @@ pub fn create_entries_from_applet_config(
     for dimension in config.dimensions {
         dimensions.insert(dimension.name.clone(), create_dimension(dimension)?);
     }
-    let mut resource_types: BTreeMap<String, EntryHash> = BTreeMap::new();
-    for config_resource_type in config.resource_types {
-        resource_types.insert(
-            config_resource_type.name.clone(),
-            create_resource_type(ResourceDef::try_from(config_resource_type)?)?,
+    let mut resource_defs: BTreeMap<String, EntryHash> = BTreeMap::new();
+    for config_resource_def in config.resource_defs {
+        resource_defs.insert(
+            config_resource_def.name.clone(),
+            create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
         );
     }
     let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();
@@ -88,7 +88,7 @@ pub fn create_entries_from_applet_config(
     let applet_config = AppletConfig {
         name: config.name,
         dimensions,
-        resource_types,
+        resource_defs,
         methods,
         cultural_contexts,
     };

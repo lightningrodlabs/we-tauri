@@ -14,7 +14,7 @@ pub struct AppletConfig {
     // pub ranges: Vec<EntryHash>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: BTreeMap<String, EntryHash>,
     // the base_type field in ResourceDef needs to be bridged call
-    pub resource_types: BTreeMap<String, EntryHash>,
+    pub resource_defs: BTreeMap<String, EntryHash>,
     pub methods: BTreeMap<String, EntryHash>,
     pub cultural_contexts: BTreeMap<String, EntryHash>,
 }
@@ -25,7 +25,7 @@ pub struct AppletConfigInput {
     // pub ranges: Vec<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: Vec<Dimension>,
     // the base_type field in ResourceDef needs to be bridged call
-    pub resource_types: Vec<ConfigResourceDef>,
+    pub resource_defs: Vec<ConfigResourceDef>,
     pub methods: Vec<ConfigMethod>,
     pub cultural_contexts: Vec<ConfigCulturalContext>,
 }
@@ -41,7 +41,7 @@ impl AppletConfigInput {
 
         // Using a map to detect the errors. There may be better ways to handle this other than map
         let _check_result_resources: Vec<bool> = self
-            .resource_types
+            .resource_defs
             .into_iter()
             .map(|resource| resource.check_format(dimension_ehs.clone()))
             .collect::<ExternResult<Vec<bool>>>()?;
@@ -91,7 +91,7 @@ impl ConfigResourceDef {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigMethod {
     pub name: String,
-    pub target_resource_type: ConfigResourceDef,
+    pub target_resource_def: ConfigResourceDef,
     pub input_dimensions: Vec<Dimension>, // check if it's subjective (for now)
     pub output_dimension: Dimension,      // check if it's objective
     pub program: Program,                 // making enum for now, in design doc it is `AST`
@@ -149,7 +149,7 @@ impl ConfigMethod {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigCulturalContext {
     pub name: String,
-    pub resource_type: ConfigResourceDef,
+    pub resource_def: ConfigResourceDef,
     pub thresholds: Vec<ConfigThreshold>,
     pub order_by: Vec<(Dimension, OrderingKind)>, // DimensionEh
 }
@@ -159,7 +159,7 @@ impl ConfigCulturalContext {
         let converted_cc: CulturalContext = CulturalContext::try_from(self.to_owned())?;
 
         // let dimension_ehs_in_resource = self
-        //     .resource_type
+        //     .resource_def
         //     .dimensions
         //     .into_iter()
         //     .map(|dimension| hash_entry(dimension))

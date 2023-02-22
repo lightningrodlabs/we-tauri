@@ -18,11 +18,11 @@ impl TryFrom<ConfigResourceDef> for ResourceDef {
             .into_iter()
             .map(|dimension| hash_entry(dimension))
             .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let resource_type = ResourceDef {
+        let resource_def = ResourceDef {
             name: value.name,
             base_types: value.base_types,
             dimension_ehs,
         };
-        Ok(resource_type)
+        Ok(resource_def)
     }
 }
