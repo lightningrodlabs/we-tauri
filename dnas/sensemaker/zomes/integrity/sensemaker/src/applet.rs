@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use hdi::prelude::*;
 
 use crate::{
-    CulturalContext, Dimension, Method, OrderingKind, Program, RangeValue, ResourceType,
+    CulturalContext, Dimension, Method, OrderingKind, Program, RangeValue, ResourceDef,
     ThresholdKind,
 };
 
@@ -13,7 +13,7 @@ pub struct AppletConfig {
     pub name: String,
     // pub ranges: Vec<EntryHash>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: BTreeMap<String, EntryHash>,
-    // the base_type field in ResourceType needs to be bridged call
+    // the base_type field in ResourceDef needs to be bridged call
     pub resource_types: BTreeMap<String, EntryHash>,
     pub methods: BTreeMap<String, EntryHash>,
     pub cultural_contexts: BTreeMap<String, EntryHash>,
@@ -24,8 +24,8 @@ pub struct AppletConfigInput {
     pub name: String,
     // pub ranges: Vec<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
     pub dimensions: Vec<Dimension>,
-    // the base_type field in ResourceType needs to be bridged call
-    pub resource_types: Vec<ConfigResourceType>,
+    // the base_type field in ResourceDef needs to be bridged call
+    pub resource_types: Vec<ConfigResourceDef>,
     pub methods: Vec<ConfigMethod>,
     pub cultural_contexts: Vec<ConfigCulturalContext>,
 }
@@ -61,15 +61,15 @@ impl AppletConfigInput {
 }
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
-pub struct ConfigResourceType {
+pub struct ConfigResourceDef {
     pub name: String,
     pub base_types: Vec<AppEntryDef>,
     pub dimensions: Vec<Dimension>,
 }
 
-impl ConfigResourceType {
+impl ConfigResourceDef {
     pub fn check_format(self, root_dimension_ehs: Vec<EntryHash>) -> ExternResult<bool> {
-        let converted_resource: ResourceType = ResourceType::try_from(self.clone())?;
+        let converted_resource: ResourceDef = ResourceDef::try_from(self.clone())?;
         let resources_dimension_ehs = converted_resource.dimension_ehs;
 
         // check if all dimensions in resource type exist in the root dimensions
@@ -91,7 +91,7 @@ impl ConfigResourceType {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigMethod {
     pub name: String,
-    pub target_resource_type: ConfigResourceType,
+    pub target_resource_type: ConfigResourceDef,
     pub input_dimensions: Vec<Dimension>, // check if it's subjective (for now)
     pub output_dimension: Dimension,      // check if it's objective
     pub program: Program,                 // making enum for now, in design doc it is `AST`
@@ -149,7 +149,7 @@ impl ConfigMethod {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigCulturalContext {
     pub name: String,
-    pub resource_type: ConfigResourceType,
+    pub resource_type: ConfigResourceDef,
     pub thresholds: Vec<ConfigThreshold>,
     pub order_by: Vec<(Dimension, OrderingKind)>, // DimensionEh
 }

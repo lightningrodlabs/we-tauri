@@ -3,7 +3,7 @@ use hdi::prelude::*;
 use crate::{
     applet::{ConfigCulturalContext, ConfigThreshold},
     dimension::RangeValue,
-    ResourceType,
+    ResourceDef,
 };
 
 #[hdk_entry_helper]
@@ -18,7 +18,7 @@ pub struct CulturalContext {
 impl TryFrom<ConfigCulturalContext> for CulturalContext {
     type Error = WasmError;
     fn try_from(value: ConfigCulturalContext) -> Result<Self, Self::Error> {
-        let resource_type: ResourceType = value.resource_type.try_into()?;
+        let resource_type: ResourceDef = value.resource_type.try_into()?;
         let thresholds: Vec<Threshold> = value
             .thresholds
             .into_iter()

@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use hdk::prelude::*;
 use sensemaker_integrity::{
-    AppletConfig, AppletConfigInput, CulturalContext, EntryTypes, LinkTypes, Method, ResourceType,
+    AppletConfig, AppletConfigInput, CulturalContext, EntryTypes, LinkTypes, Method, ResourceDef,
 };
 
 use crate::{
@@ -67,7 +67,7 @@ pub fn create_entries_from_applet_config(
     for config_resource_type in config.resource_types {
         resource_types.insert(
             config_resource_type.name.clone(),
-            create_resource_type(ResourceType::try_from(config_resource_type)?)?,
+            create_resource_type(ResourceDef::try_from(config_resource_type)?)?,
         );
     }
     let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();

@@ -15,7 +15,7 @@ pub use cultural_context::{
 pub use dimension::{Dimension, Range, RangeValue};
 pub use method::{DataSet, Method, Program};
 pub use properties::{Properties, SensemakerConfig};
-pub use resource_type::ResourceType;
+pub use resource_type::ResourceDef;
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
@@ -28,7 +28,7 @@ pub enum EntryTypes {
     Dimension(Dimension),
     Method(Method),
     DataSet(DataSet),
-    ResourceType(ResourceType),
+    ResourceDef(ResourceDef),
     Range(Range),
     SensemakerConfig(SensemakerConfig),
     AppletConfig(AppletConfig),
