@@ -1,7 +1,7 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceType, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
@@ -88,33 +88,33 @@ export default () =>
 
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
                 // waiting for sensemaker-lite-types to be updated
-                // const resourceType: ResourceType = {
-                const resourceType: any = {
+                // const resourceDef: ResourceDef = {
+                const resourceDef: any = {
                     name: "task_item",
                     base_types: [app_entry_def],
                     dimension_ehs: [dimensionHash]
                 }
 
                 // waiting for sensemaker-lite-types to be updated
-                // const configResourceType: ConfigResourceType = {
-                const configResourceType: ConfigResourceType = {
-                    name: resourceType.name,
-                    base_types: resourceType.base_types,
+                // const configResourceDef: ConfigResourceDef = {
+                const configResourceDef: ConfigResourceDef = {
+                    name: resourceDef.name,
+                    base_types: resourceDef.base_types,
                     dimensions: [dimension]
                 }
 
-                const resourceTypeEh: EntryHash = await callZomeAlice(
+                const resourceDefEh: EntryHash = await callZomeAlice(
                     "sensemaker",
                     "create_resource_type",
-                    resourceType,
+                    resourceDef,
                     true
                 );
-                t.ok(resourceTypeEh);
+                t.ok(resourceDefEh);
 
                 const methodName = "total_importance_method"
                 const totalImportanceMethod: Method = {
                     name: methodName,
-                    target_resource_type_eh: resourceTypeEh,
+                    target_resource_type_eh: resourceDefEh,
                     input_dimension_ehs: [dimensionHash],
                     output_dimension_eh: objectiveDimensionHash,
                     program: { Sum: null },
@@ -123,7 +123,7 @@ export default () =>
                 };
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
-                    target_resource_type: configResourceType,
+                    target_resource_type: configResourceDef,
                     input_dimensions: [dimension], // check if it's subjective (for now)
                     output_dimension: objectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
@@ -151,13 +151,13 @@ export default () =>
 
                 const culturalContext: CulturalContext = {
                     name: "most_important_tasks",
-                    resource_type_eh: resourceTypeEh,
+                    resource_type_eh: resourceDefEh,
                     thresholds: [threshold],
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
                 const configCulturalContext: ConfigCulturalContext = {
                     name: culturalContext.name,
-                    resource_type: configResourceType,
+                    resource_type: configResourceDef,
                     thresholds: [configThreshold],
                     order_by: [[objectiveDimension, { Biggest: null }]], // DimensionEh
                 }
@@ -177,14 +177,14 @@ export default () =>
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resource_types: { task_item: resourceTypeEh },
+                    resource_types: { task_item: resourceDefEh },
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
                 const appletConfigInput: AppletConfigInput = {
                     name: appletConfig.name,
                     dimensions: [dimension, objectiveDimension],
-                    resource_types: [configResourceType],
+                    resource_types: [configResourceDef],
                     methods: [configMethod],
                     cultural_contexts: [configCulturalContext],
                 }

@@ -1,5 +1,5 @@
 export * from "./dimension"
-export * from "./resourceType"
+export * from "./resourceDef"
 export * from "./assessment"
 export * from "./method"
 export * from "./culturalContext"

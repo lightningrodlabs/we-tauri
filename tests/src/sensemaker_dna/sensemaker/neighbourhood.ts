@@ -202,7 +202,7 @@ export default () => {
           readPostOutput.signed_action.hashed.content.entry_type.App
         );
 
-        const createResourceType = {
+        const createResourceDef = {
           name: "angryPost",
           //@ts-ignore
           base_types: [
@@ -213,28 +213,28 @@ export default () => {
         };
 
         // Alice creates a resource type
-        const createResourceTypeEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
           "create_resource_type",
-          createResourceType,
+          createResourceDef,
           true
         );
-        t.ok(createResourceTypeEntryHash);
+        t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
         // Bob gets the created resource type
-        const createResourceTypeReadOutput: Record = await callZomeBob(
+        const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
           "get_resource_type",
-          createResourceTypeEntryHash,
+          createResourceDefEntryHash,
           true
         );
         t.deepEqual(
-          createResourceType,
+          createResourceDef,
           decode(
-            (createResourceTypeReadOutput.entry as any).Present.entry
+            (createResourceDefReadOutput.entry as any).Present.entry
           ) as any
         );
 
@@ -331,7 +331,7 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceTypeEntryHash,
+          target_resource_type_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -549,7 +549,7 @@ export default () => {
           decode((createReadOutput.entry as any).Present.entry) as any
         );
 
-        const createResourceType = {
+        const createResourceDef = {
           name: "angryPost",
           //@ts-ignore
           base_types: [
@@ -560,28 +560,28 @@ export default () => {
         };
 
         // Alice creates a resource type
-        const createResourceTypeEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
           "create_resource_type",
-          createResourceType,
+          createResourceDef,
           true
         );
-        t.ok(createResourceTypeEntryHash);
+        t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
         // Bob gets the created resource type
-        const createResourceTypeReadOutput: Record = await callZomeBob(
+        const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
           "get_resource_type",
-          createResourceTypeEntryHash,
+          createResourceDefEntryHash,
           true
         );
         t.deepEqual(
-          createResourceType,
+          createResourceDef,
           decode(
-            (createResourceTypeReadOutput.entry as any).Present.entry
+            (createResourceDefReadOutput.entry as any).Present.entry
           ) as any
         );
 
@@ -716,7 +716,7 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceTypeEntryHash,
+          target_resource_type_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -876,7 +876,7 @@ export default () => {
         };
         const culturalContext = {
           name: "more than 5 total likeness, biggest to smallest",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_type_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Biggest: null }]], // DimensionEh
         };
@@ -891,7 +891,7 @@ export default () => {
 
         const culturalContext2 = {
           name: "more than 5 total likeness, smallest to biggest",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_type_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
@@ -906,7 +906,7 @@ export default () => {
 
         const culturalContext3 = {
           name: "float threshold",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_type_eh: createResourceDefEntryHash,
           thresholds: [threshold2],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };

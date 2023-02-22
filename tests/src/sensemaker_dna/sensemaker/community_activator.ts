@@ -76,7 +76,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             createDimension,
             true
         )
-        
+
         // Bob creates a dimension but fails
         try {
             await callZomeBob(
@@ -95,7 +95,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             });
         }
 
-        const createResourceType = {
+        const createResourceDef = {
             "name": "angryPost",
             //@ts-ignore
             "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
@@ -103,10 +103,10 @@ export default () => test("test CA progenitor pattern", async (t) => {
         }
 
         // Alice creates a resource type
-        const createResourceTypeEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
             "sensemaker",
             "create_resource_type",
-            createResourceType,
+            createResourceDef,
             true
         );
 
@@ -118,7 +118,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             await callZomeBob(
                 "sensemaker",
                 "create_resource_type",
-                createResourceType,
+                createResourceDef,
                 true
             );
         } catch (e) {
@@ -137,7 +137,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
         // Alice creates a method
         const totalLikenessMethod = {
             "name": "total_likeness_method",
-            "target_resource_type_eh": createResourceTypeEntryHash,
+            "target_resource_type_eh": createResourceDefEntryHash,
             "input_dimension_ehs": [createDimensionEntryHash],
             "output_dimension_eh": createDimensionEntryHash,
             "program": { "Sum": null },
@@ -176,7 +176,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             }
             const culturalContext = {
                 "name": "testcontext",
-                "resource_type_eh": createResourceTypeEntryHash,
+                "resource_type_eh": createResourceDefEntryHash,
                 "thresholds": [threshold],
                 "order_by": [[createDimensionEntryHash, { "Biggest": null }]], // DimensionEh
             }

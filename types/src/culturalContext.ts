@@ -1,6 +1,6 @@
 import { EntryHash } from "@holochain/client"
 import { Dimension, RangeValue } from "./dimension"
-import { ConfigResourceType } from "./resourceType"
+import { ConfigResourceDef } from "./resourceDef"
 
 interface CoreCulturalContext {
     name: string,
@@ -12,7 +12,7 @@ export type CulturalContext = CoreCulturalContext & {
 }
 
 export type ConfigCulturalContext = CoreCulturalContext & {
-    resource_type: ConfigResourceType,
+    resource_type: ConfigResourceDef,
     order_by: Array<[Dimension, OrderingKind]>,
     thresholds: Array<ConfigThreshold>,
 }

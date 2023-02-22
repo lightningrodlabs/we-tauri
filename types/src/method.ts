@@ -1,6 +1,6 @@
 import { EntryHash } from "@holochain/client"
 import { Dimension } from "./dimension"
-import { ConfigResourceType } from "./resourceType"
+import { ConfigResourceDef } from "./resourceDef"
 
 interface CoreMethod {
     name: string,
@@ -15,8 +15,8 @@ export type Method = CoreMethod & {
 }
 
 export type ConfigMethod = CoreMethod & {
-    target_resource_type: ConfigResourceType,
-    input_dimensions: Array<Dimension>, 
+    target_resource_type: ConfigResourceDef,
+    input_dimensions: Array<Dimension>,
     output_dimension: Dimension,
 }
 
