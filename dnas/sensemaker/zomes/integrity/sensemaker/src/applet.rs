@@ -78,7 +78,7 @@ pub struct ConfigDimension {
 impl ConfigDimension {
     pub fn check_format(self, range_ehs: Vec<EntryHash>) -> ExternResult<EntryHash> {
         let converted_dimension: Dimension = Dimension::try_from(self.clone())?;
-        let dimension_range_eh = converted_dimension.clone().range;
+        let dimension_range_eh = converted_dimension.clone().range_eh;
 
         // check if range in dimension exists in the root ranges
         if let false = range_ehs.contains(&dimension_range_eh) {
