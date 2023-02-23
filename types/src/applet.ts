@@ -1,11 +1,14 @@
 import { EntryHash } from "@holochain/client";
 import { ConfigCulturalContext } from "./culturalContext";
-import { Dimension } from "./dimension";
+import { ConfigDimension, Dimension } from "./dimension";
 import { ConfigMethod } from "./method";
 import { ConfigResourceDef } from "./resourceDef";
 
 export interface AppletConfig {
     name: string,
+    ranges: {
+        [rangeName: string]: EntryHash,
+    },
     dimensions: {
         [dimensionName: string]: EntryHash,
     },
@@ -22,7 +25,8 @@ export interface AppletConfig {
 
 export interface AppletConfigInput {
     name: string,
-    dimensions: Array<Dimension>,
+    ranges: Array<Range>,
+    dimensions: Array<ConfigDimension>,
     resource_defs: Array<ConfigResourceDef>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,

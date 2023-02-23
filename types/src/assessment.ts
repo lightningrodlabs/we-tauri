@@ -1,5 +1,5 @@
 import { AgentPubKey, EntryHash } from "@holochain/client"
-import { RangeValue } from "./dimension"
+import { RangeValue } from "./range"
 import { DataSet } from "./method"
 import { Option } from "./utils"
 

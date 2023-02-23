@@ -1,5 +1,5 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
-import { Dimension } from "./dimension";
+import { ConfigDimension, Dimension } from "./dimension";
 
 interface CoreResourceDef {
     name: string,
@@ -10,5 +10,5 @@ export type ResourceDef = CoreResourceDef & {
 }
 
 export type ConfigResourceDef = CoreResourceDef & {
-    dimensions: Array<Dimension>,
+    dimensions: Array<ConfigDimension>,
 }

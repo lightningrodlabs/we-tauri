@@ -1,4 +1,5 @@
 export * from "./dimension"
+export * from "./range"
 export * from "./resourceDef"
 export * from "./assessment"
 export * from "./method"
