@@ -183,7 +183,7 @@
                 "Sum": null
             },
             "can_compute_live": false, // will do live method computation each time a new assessment comes in
-            "must_publish_dataset": false // publish the dataset used for each computation
+            "requires_validation": false // publish the dataset used for each computation
         }
     ],
     "contexts": [

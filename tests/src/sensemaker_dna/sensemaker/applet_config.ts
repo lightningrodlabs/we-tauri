@@ -119,7 +119,7 @@ export default () =>
                     output_dimension_eh: objectiveDimensionHash,
                     program: { Sum: null },
                     can_compute_live: false,
-                    must_publish_dataset: false,
+                    requires_validation: false,
                 };
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
@@ -128,7 +128,7 @@ export default () =>
                     output_dimension: objectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
                     can_compute_live: totalImportanceMethod.can_compute_live,
-                    must_publish_dataset: totalImportanceMethod.must_publish_dataset,
+                    requires_validation: totalImportanceMethod.requires_validation,
                 }
 
                 const methodEh: EntryHash = await callZomeAlice(

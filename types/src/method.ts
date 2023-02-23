@@ -6,7 +6,7 @@ interface CoreMethod {
     name: string,
     program: Program,
     can_compute_live: boolean,
-    must_publish_dataset: boolean,
+    requires_validation: boolean,
 }
 export type Method = CoreMethod & {
     target_resource_def_eh: EntryHash,

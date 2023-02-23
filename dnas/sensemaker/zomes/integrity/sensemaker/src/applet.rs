@@ -96,7 +96,7 @@ pub struct ConfigMethod {
     pub output_dimension: Dimension,      // check if it's objective
     pub program: Program,                 // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
-    pub must_publish_dataset: bool,
+    pub requires_validation: bool,
 }
 
 impl ConfigMethod {

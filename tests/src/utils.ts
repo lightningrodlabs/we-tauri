@@ -177,7 +177,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
         },
         program: { Sum: null },
         can_compute_live: false,
-        must_publish_dataset: false,
+        requires_validation: false,
       },
     ],
     cultural_contexts: [

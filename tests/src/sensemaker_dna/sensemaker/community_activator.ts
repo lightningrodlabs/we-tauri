@@ -142,7 +142,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             "output_dimension_eh": createDimensionEntryHash,
             "program": { "Sum": null },
             "can_compute_live": false,
-            "must_publish_dataset": false,
+            "requires_validation": false,
         }
 
         const createMethodEntryHash: EntryHash = await callZomeAlice(

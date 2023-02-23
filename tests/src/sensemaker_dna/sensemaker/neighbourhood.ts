@@ -336,7 +336,7 @@ export default () => {
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
           can_compute_live: false,
-          must_publish_dataset: false,
+          requires_validation: false,
         };
 
         const createMethodEntryHash: EntryHash = await callZomeAlice(
@@ -721,7 +721,7 @@ export default () => {
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
           can_compute_live: false,
-          must_publish_dataset: false,
+          requires_validation: false,
         };
 
         const createMethodEntryHash: EntryHash = await callZomeAlice(

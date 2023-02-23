@@ -13,7 +13,7 @@ pub struct Method {
     pub output_dimension_eh: EntryHash,      // Validation: make sure it is objective
     pub program: Program,                    // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
-    pub must_publish_dataset: bool,
+    pub requires_validation: bool, // if true, DataSet must be committed to be retrievable in the validation The Objective Assesment must have the DataSet.
 }
 
 impl TryFrom<ConfigMethod> for Method {
@@ -33,7 +33,7 @@ impl TryFrom<ConfigMethod> for Method {
             output_dimension_eh,
             program: value.program,
             can_compute_live: value.can_compute_live,
-            must_publish_dataset: value.must_publish_dataset,
+            requires_validation: value.requires_validation,
         };
         Ok(method)
     }
