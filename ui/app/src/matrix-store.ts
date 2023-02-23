@@ -14,13 +14,9 @@ import { v4 as uuidv4 } from "uuid";
 import {
   AdminWebsocket,
   AppInfo,
-  AppStatusFilter,
-  MembraneProof,
-  InstalledAppInfoStatus,
   DnaHash,
   EntryHash,
   AgentPubKey,
-  InstalledCell,
   AppBundle,
   AppWebsocket,
   InstallAppRequest,
@@ -30,7 +26,6 @@ import {
   AppAgentClient,
   AppAgentWebsocket,
   encodeHashToBase64,
-  decodeHashFromBase64,
   CellType,
   AppSignal,
   StemCell,
@@ -914,10 +909,10 @@ export class MatrixStore {
 
     // hash network seed to not expose it in the app id but still
     // be able to detect the cell based on the network seed
-    const hashedNetworkSeed = md5(networkSeed, { asString: true });
-    console.log("@installWeGroup: hashedNetworkSeed: ", hashedNetworkSeed);
+    // const hashedNetworkSeed = md5(networkSeed, { asString: true });
+    // console.log("@installWeGroup: hashedNetworkSeed: ", hashedNetworkSeed);
 
-    const cloneName = `group@we-${name}-${hashedNetworkSeed}`;
+    const cloneName = `group@we-${name}-${Date.now()}`;
 
     // Create the We cell
     const clonedCell = await this.appWebsocket.createCloneCell({
@@ -926,7 +921,6 @@ export class MatrixStore {
       modifiers: {
         network_seed: networkSeed,
         properties,
-        origin_time: Date.now(),
       },
       name: cloneName,
     });
@@ -1126,8 +1120,8 @@ export class MatrixStore {
 
       // hash network seed to not expose it in the app id but still
       // be able to detect the cell based on the network seed
-      const hashedNetworkSeed = md5(networkSeed!, { asString: true });
-      const installedAppId: InstalledAppId = `applet@we-${hashedNetworkSeed}-${newAppletInfo.applet.customName}`;
+      // const hashedNetworkSeed = md5(networkSeed!, { asString: true });
+      const installedAppId: InstalledAppId = `applet@we-${newAppletInfo.applet.customName}`;
 
       // install app bundle
       const request: InstallAppRequest = {
@@ -1250,8 +1244,8 @@ export class MatrixStore {
 
     // hash network seed to not expose it in the app id but still
     // be able to detect the cell based on the network seed
-    const hashedNetworkSeed = md5(networkSeed, { asString: true });
-    const installedAppId: InstalledAppId = `applet@we-${hashedNetworkSeed}-${customName}`;
+    // const hashedNetworkSeed = md5(networkSeed, { asString: true });
+    const installedAppId: InstalledAppId = `applet@we-${customName}`;
 
     const request: InstallAppRequest = {
       agent_key: weGroupCellId[1],
@@ -1419,7 +1413,7 @@ export class MatrixStore {
       const network_seed = Object.values(
         uninstalledAppletInfo.applet.networkSeed
       )[0];
-      const installedAppId = `applet@we-${network_seed}-${uninstalledAppletInfo.applet.customName}`;
+      const installedAppId = `applet@we-${uninstalledAppletInfo.applet.customName}`;
 
       // install app bundle
       const request: InstallAppRequest = {
