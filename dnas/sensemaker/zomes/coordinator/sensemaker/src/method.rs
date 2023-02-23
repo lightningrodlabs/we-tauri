@@ -74,7 +74,7 @@ fn compute_objective_assessment(
                 value: RangeValue::Integer(sum),
                 dimension_eh: method.output_dimension_eh,
                 resource_eh,
-                resource_type_eh: method.target_resource_type_eh,
+                resource_type_eh: method.target_resource_def_eh,
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))

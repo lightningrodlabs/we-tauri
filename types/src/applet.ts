@@ -3,6 +3,7 @@ import { ConfigCulturalContext } from "./culturalContext";
 import { ConfigDimension, Dimension } from "./dimension";
 import { ConfigMethod } from "./method";
 import { ConfigResourceDef } from "./resourceDef";
+import { Range } from "./range";
 
 export interface AppletConfig {
     name: string,

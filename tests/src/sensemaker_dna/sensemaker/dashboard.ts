@@ -15,8 +15,8 @@ import { installAgent, sampleAppletConfig } from "../../utils";
 const { test } = pkg;
 
 interface TestPost {
-    title: string;
-    content: string;
+  title: string;
+  content: string;
 }
 
 export const setUpAliceandBob = async (
@@ -164,8 +164,8 @@ export default () => {
         let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
         const appletConfigInput = sampleAppletConfig(app_entry_def)
         const createAppletConfigInput: CreateAppletConfigInput = {
-            applet_config_input: appletConfigInput,
-            role_name: "test_provider_dna",
+          applet_config_input: appletConfigInput,
+          role_name: "test_provider_dna",
         }
         const appletConfig: AppletConfig = await callZomeAlice(
           "sensemaker",
@@ -182,7 +182,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -202,7 +202,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -218,7 +218,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -235,7 +235,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -255,7 +255,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -271,7 +271,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_type_eh: appletConfig.resource_types["angryPost"],
+          resource_type_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 

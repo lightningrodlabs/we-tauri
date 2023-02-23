@@ -8,7 +8,6 @@ import dashboard from './sensemaker_dna/sensemaker/dashboard';
 range();
 neighbourhood();
 applet_config();
-neighbourhood();
 sensemaker_config();
 sensemaker_community_activator();
 dashboard();

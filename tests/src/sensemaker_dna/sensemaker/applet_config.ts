@@ -1,7 +1,7 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
@@ -61,9 +61,7 @@ export default () =>
                 t.ok(rangeHash);
 
                 const dimensionName = "importance"
-                // TODO: bring the type back once sensemaker-lite-types is updated
-                // const dimension: Dimension = {
-                const dimension: any = {
+                const dimension: Dimension = {
                     name: dimensionName,
                     range_eh: rangeHash,
                     computed: false,
@@ -99,9 +97,7 @@ export default () =>
                 );
                 t.ok(rangeHash2);
 
-                // TODO: bring the type back once sensemaker-lite-types is updated
-                // const objectiveDimension: Dimension = {
-                const objectiveDimension: any = {
+                const objectiveDimension: Dimension = {
                     name: "total_importance",
                     range_eh: rangeHash2,
                     computed: true,
@@ -157,9 +153,7 @@ export default () =>
                     requires_validation: false,
                 };
 
-                // TODO: bring the type back once sensemaker-lite-types is updated
-                // const configMethod: ConfigMethod = {
-                const configMethod: any = {
+                const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
                     target_resource_def: configResourceDef,
                     input_dimensions: [configDimension], // check if it's subjective (for now)
@@ -182,9 +176,7 @@ export default () =>
                     value: { Integer: 0 },
                 };
 
-                // TODO: bring the type back once sensemaker-lite-types is updated
-                // const configThreshold: ConfigThreshold = {
-                const configThreshold: any = {
+                const configThreshold: ConfigThreshold = {
                     dimension: configObjectiveDimension,
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
@@ -197,9 +189,7 @@ export default () =>
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
 
-                // TODO: bring the type back once sensemaker-lite-types is updated
-                // const configCulturalContext: ConfigCulturalContext = {
-                const configCulturalContext: any = {
+                const configCulturalContext: ConfigCulturalContext = {
                     name: culturalContext.name,
                     resource_def: configResourceDef,
                     thresholds: [configThreshold],
@@ -233,9 +223,7 @@ export default () =>
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
 
-                // TODO: bring the type back once sensemaker-types are updated
-                // const appletConfigInput: AppletConfigInput = {
-                const appletConfigInput: any = {
+                const appletConfigInput: CreateAppletConfigInput = {
                     applet_config_input: {
                         name: appletConfig.name,
                         ranges: [integerRange, integerRange2],

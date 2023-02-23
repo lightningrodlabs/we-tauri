@@ -116,9 +116,10 @@ pub fn create_entries_from_applet_config(
 
     let applet_config = AppletConfig {
         name: config.name,
+        role_name,
         ranges,
         dimensions,
-        resource_defs,
+        resource_defs: resource_defs.clone(),
         methods,
         cultural_contexts,
     };
@@ -134,13 +135,13 @@ pub fn create_entries_from_applet_config(
         (),
     )?;
     // for each resource type entry hash, create a link
-    resource_types
+    resource_defs
         .into_iter()
         .map(|(_, resource_type_eh)| {
             create_link(
                 EntryHash::from(resource_type_eh),
                 applet_config_eh.clone(),
-                LinkTypes::ResourceTypeEhToAppletConfig,
+                LinkTypes::ResourceDefEhToAppletConfig,
                 (),
             )
         })
