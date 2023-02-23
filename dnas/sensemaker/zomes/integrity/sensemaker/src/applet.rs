@@ -36,7 +36,7 @@ impl AppletConfigInput {
         let range_ehs = self
             .ranges
             .into_iter()
-            .map(|dimension| hash_entry(dimension))
+            .map(|range| hash_entry(range))
             .collect::<ExternResult<Vec<EntryHash>>>()?;
 
         // check if all dimensions are valid and convert to EntryHashes

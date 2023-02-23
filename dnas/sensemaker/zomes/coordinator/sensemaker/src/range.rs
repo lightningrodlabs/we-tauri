@@ -5,9 +5,7 @@ use sensemaker_integrity::{EntryTypes, LinkTypes, Range};
 pub fn create_range(range: Range) -> ExternResult<EntryHash> {
     create_entry(&EntryTypes::Range(range.clone()))?;
     let range_eh = hash_entry(&EntryTypes::Range(range.clone()))?;
-    let range_eh_2 = hash_entry(range.clone())?;
-    debug!("range_eh: {:?}", range_eh);
-    debug!("range_eh_2: {:?}", range_eh_2);
+
     create_link(
         ranges_typed_path()?.path_entry_hash()?,
         range_eh.clone(),
