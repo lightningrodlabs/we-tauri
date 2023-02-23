@@ -63,9 +63,17 @@ export default () => test("test CA progenitor pattern", async (t) => {
             },
         };
 
+        const rangeHash = await callZomeAlice(
+            "sensemaker",
+            "create_range",
+            integerRange,
+            true
+        );
+        t.ok(rangeHash);
+
         const createDimension = {
             "name": "likeness",
-            "range": integerRange,
+            "range": rangeHash,
             "computed": false
         }
 

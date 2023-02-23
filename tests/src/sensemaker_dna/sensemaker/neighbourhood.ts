@@ -144,15 +144,23 @@ export default () => {
           },
         };
 
+        const rangeHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
         const createDimension = {
           name: "likeness",
-          range: integerRange,
+          range: rangeHash,
           computed: false,
         };
 
         const createDimension2 = {
           name: "quality",
-          range: integerRange,
+          range: rangeHash,
           computed: false,
         };
 
@@ -312,9 +320,17 @@ export default () => {
           },
         };
 
+        const rangeHash2 = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange2,
+          true
+        );
+        t.ok(rangeHash2);
+
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: integerRange2,
+          range: rangeHash2,
           computed: true,
         };
 
@@ -519,9 +535,17 @@ export default () => {
           },
         };
 
+        const rangeHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
         const createDimension = {
           name: "likeness",
-          range: integerRange,
+          range: rangeHash,
           computed: false,
         };
 
@@ -697,9 +721,17 @@ export default () => {
           },
         };
 
+        const rangeHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange2,
+          true
+        );
+        t.ok(rangeHash2);
+
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: integerRange2,
+          range: rangeHash2,
           computed: true,
         };
 
@@ -1000,7 +1032,7 @@ export default () => {
             type: "error",
             data: {
               type: "ribosome_error",
-              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/dimension.rs", line: 58, error: Guest("incompatible range types for threshold comparison") }',
+              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/range.rs", line: 46, error: Guest("incompatible range types for threshold comparison") }',
             },
           };
           t.deepEqual(expectedError, e);

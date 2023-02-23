@@ -115,7 +115,7 @@ export const installAgent = async (
 export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
   let config = {
     name: "sample applet config",
-    //   ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }],
+    ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }, { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } }],
     dimensions: [
       {
         name: "likeness",

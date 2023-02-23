@@ -7,7 +7,7 @@ import pkg from "tape-promise/tape";
 import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
-let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
+const app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () =>
     test("test Sensemaker Configuration", async (t) => {
         await runScenario(async (scenario) => {
@@ -51,12 +51,30 @@ export default () =>
                     },
                 };
 
+                const rangeHash: EntryHash = await callZomeAlice(
+                    "sensemaker",
+                    "create_range",
+                    integerRange,
+                    true
+                );
+
+                t.ok(rangeHash);
+
                 const dimensionName = "importance"
-                const dimension: Dimension = {
+                // TODO: bring the type back once sensemaker-lite-types is updated
+                // const dimension: Dimension = {
+                const dimension: any = {
+                    name: dimensionName,
+                    range: rangeHash,
+                    computed: false,
+                }
+
+                const configDimension = {
                     name: dimensionName,
                     range: integerRange,
                     computed: false,
                 }
+
                 const dimensionHash: EntryHash = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
@@ -73,11 +91,28 @@ export default () =>
                     },
                 };
 
-                const objectiveDimension: Dimension = {
+                const rangeHash2: EntryHash = await callZomeAlice(
+                    "sensemaker",
+                    "create_range",
+                    integerRange2,
+                    true
+                );
+                t.ok(rangeHash2);
+
+                // TODO: bring the type back once sensemaker-lite-types is updated
+                // const objectiveDimension: Dimension = {
+                const objectiveDimension: any = {
+                    name: "total_importance",
+                    range: rangeHash2,
+                    computed: true,
+                };
+
+                const configObjectiveDimension = {
                     name: "total_importance",
                     range: integerRange2,
                     computed: true,
-                };
+                }
+
                 const objectiveDimensionHash: EntryHash = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
@@ -97,10 +132,10 @@ export default () =>
 
                 // waiting for sensemaker-lite-types to be updated
                 // const configResourceDef: ConfigResourceDef = {
-                const configResourceDef: ConfigResourceDef = {
+                const configResourceDef: any = {
                     name: resourceDef.name,
                     base_types: resourceDef.base_types,
-                    dimensions: [dimension]
+                    dimensions: [configDimension]
                 }
 
                 const resourceDefEh: EntryHash = await callZomeAlice(
@@ -121,11 +156,14 @@ export default () =>
                     can_compute_live: false,
                     requires_validation: false,
                 };
-                const configMethod: ConfigMethod = {
+
+                // TODO: bring the type back once sensemaker-lite-types is updated
+                // const configMethod: ConfigMethod = {
+                const configMethod: any = {
                     name: totalImportanceMethod.name,
                     target_resource_def: configResourceDef,
-                    input_dimensions: [dimension], // check if it's subjective (for now)
-                    output_dimension: objectiveDimension,      // check if it's objective
+                    input_dimensions: [configDimension], // check if it's subjective (for now)
+                    output_dimension: configObjectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
                     can_compute_live: totalImportanceMethod.can_compute_live,
                     requires_validation: totalImportanceMethod.requires_validation,
@@ -143,8 +181,11 @@ export default () =>
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
                 };
-                const configThreshold: ConfigThreshold = {
-                    dimension: objectiveDimension,
+
+                // TODO: bring the type back once sensemaker-lite-types is updated
+                // const configThreshold: ConfigThreshold = {
+                const configThreshold: any = {
+                    dimension: configObjectiveDimension,
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
                 };
@@ -155,11 +196,14 @@ export default () =>
                     thresholds: [threshold],
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
-                const configCulturalContext: ConfigCulturalContext = {
+
+                // TODO: bring the type back once sensemaker-lite-types is updated
+                // const configCulturalContext: ConfigCulturalContext = {
+                const configCulturalContext: any = {
                     name: culturalContext.name,
                     resource_def: configResourceDef,
                     thresholds: [configThreshold],
-                    order_by: [[objectiveDimension, { Biggest: null }]], // DimensionEh
+                    order_by: [[configObjectiveDimension, { Biggest: null }]], // DimensionEh
                 }
 
                 const contextEh: EntryHash = await callZomeAlice(
@@ -171,8 +215,14 @@ export default () =>
                 t.ok(contextEh);
 
                 // create a config type
-                const appletConfig: AppletConfig = {
+                // const appletConfig: AppletConfig = {
+                const appletConfig: any = {
                     name: "todo",
+                    ranges: {
+                        "1-scale": rangeHash,
+                        "1-scale-total": rangeHash2
+
+                    },
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
@@ -181,9 +231,13 @@ export default () =>
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
-                const appletConfigInput: AppletConfigInput = {
+
+                // TODO: bring the type back once sensemaker-types are updated
+                // const appletConfigInput: AppletConfigInput = {
+                const appletConfigInput: any = {
                     name: appletConfig.name,
-                    dimensions: [dimension, objectiveDimension],
+                    ranges: [integerRange, integerRange2],
+                    dimensions: [configDimension, configObjectiveDimension],
                     resource_defs: [configResourceDef],
                     methods: [configMethod],
                     cultural_contexts: [configCulturalContext],
