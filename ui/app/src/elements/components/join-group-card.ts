@@ -23,7 +23,7 @@ import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, encodeHashToBase64 } from "@holochain/client";
-
+import { writeText } from '@tauri-apps/api/clipboard';
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -247,7 +247,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                 <sl-tooltip placement="right" .content=${"copy"}>
                   <div class="pubkey-field default-font"
                     @click=${() => {
-                      navigator.clipboard.writeText(
+                      writeText(
                         encodeHashToBase64(this.matrixStore.myAgentPubKey)
                       );
                       this._copiedSnackbar.show()

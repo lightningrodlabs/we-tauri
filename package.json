@@ -5,7 +5,7 @@
   "scripts": {
     "start": "AGENTS=2 npm run network",
     "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=8888 concurrently \"npm run start -w we\" \"npm run launch:happ\"",
-    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
+    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
     "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",

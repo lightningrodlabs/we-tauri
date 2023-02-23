@@ -565,12 +565,17 @@ export class MatrixStore {
   but aren't installed locally yet by the agent
   */
   public async fetchNewAppletInstancesForGroup(
-    weGroupId: EntryHash
+    weGroupId: DnaHash
   ): Promise<Readable<NewAppletInstanceInfo[]>> {
     // fetch all applets for that group
     const allApplets: [EntryHash, Applet, DnaHash[]][] = get(
       await this.fetchAllApplets(weGroupId)
     );
+
+    console.log("@matrix-store: @fetchNewAppletInstancesForGroup: weGroupId: ", encodeHashToBase64(weGroupId));
+
+    console.log("@matrix-store: @fetchNewAppletInstancesForGroup: allApplets: ", allApplets);
+
 
     const weGroupCellId = get(this._matrix).get(weGroupId)[0].info.cell_id;
 
@@ -615,6 +620,7 @@ export class MatrixStore {
   public async fetchNewAppletInstances(): Promise<
     Readable<DnaHashMap<NewAppletInstanceInfo[]>>
   > {
+    console.log("@matrix-store: @fetchNewAppletInstances: FETCHING NEW APPLET INSTANCES!");
     const weGroups = get(this._matrix).keys();
     const hashMap: DnaHashMap<NewAppletInstanceInfo[]> = new DnaHashMap<
       NewAppletInstanceInfo[]
@@ -628,6 +634,8 @@ export class MatrixStore {
         );
       })
     );
+
+    console.log("@matrix-store: @fetchNewAppletInstances: populated hashmap: ", hashMap);
     // updating _newAppletInstances is already handled by fetchNewAppletInstancesForGroup
     return readable(hashMap);
   }
@@ -662,6 +670,13 @@ export class MatrixStore {
 
     // 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
     let allGroupClones = weParentAppInfo.cell_info["we"].filter((cellInfo) => "cloned" in cellInfo);
+
+    console.log("@fetchMatrix: allGroupClones: ", allGroupClones);
+
+    allGroupClones.forEach((cellInfo) => {
+      const dnaHash = encodeHashToBase64((cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.cell_id[0]);
+      console.log("@fetchMatrix: Got cell width dna hash: ", dnaHash);
+    })
 
     // for each we group, create the WeGroupStore and fetch all the applets of that group
     // that the agent has installed locally
@@ -861,6 +876,8 @@ export class MatrixStore {
 
     const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed); // this line also updates the matrix store
 
+    console.log("### Created we group with dna hash: ", encodeHashToBase64(newWeGroupDnaHash));
+
     const appInfo = this.weParentAppInfo;
 
     const weCellInfo = appInfo.cell_info["we"].find((cellInfo) => "provisioned" in cellInfo);
@@ -890,6 +907,7 @@ export class MatrixStore {
     networkSeed: string,
   ): Promise<DnaHash> {
     const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed);
+    console.log("### Joined we group with dna hash: ", encodeHashToBase64(newWeGroupDnaHash));
     await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
     return newWeGroupDnaHash;
   }
@@ -907,15 +925,19 @@ export class MatrixStore {
       networkSeed,
     };
 
+    console.log("### Installing We group with properties hash: ", md5(JSON.stringify(properties)));
+
     // hash network seed to not expose it in the app id but still
-    // be able to detect the cell based on the network seed
-    // const hashedNetworkSeed = md5(networkSeed, { asString: true });
-    // console.log("@installWeGroup: hashedNetworkSeed: ", hashedNetworkSeed);
+    // be able to detect the cell based on the network seed and to have consistent clone names
+    const hashedNetworkSeed = md5(networkSeed, { asString: true });
+    console.log("@installWeGroup: hashedNetworkSeed: ", hashedNetworkSeed);
 
-    const cloneName = `group@we-${name}-${Date.now()}`;
+    // const cloneName = `group@we-${name}-${Date.now()}`; // this doesn't work because it leads to different dna hashes apparently
+    // const cloneName = `group@we-${name}`;
+    const cloneName = `group@we-${name}-${hashedNetworkSeed}`;
 
-    // Create the We cell
-    const clonedCell = await this.appWebsocket.createCloneCell({
+
+    const cloneCellRequest = {
       app_id: weParentAppInfo.installed_app_id,
       role_name: "we",
       modifiers: {
@@ -923,7 +945,14 @@ export class MatrixStore {
         properties,
       },
       name: cloneName,
-    });
+    };
+
+    console.log("### Installing We group with cloneCellRequest: ", cloneCellRequest);
+    console.log("### Installing We group with cloneCellRequest hash: ", md5(JSON.stringify(cloneCellRequest)));
+
+
+    // Create the We cell
+    const clonedCell = await this.appWebsocket.createCloneCell(cloneCellRequest);
 
     // console.log("CREATED GROUP CELL CLONE: ", clonedCell);
     // console.log("...with DNA hash: ", encodeHashToBase64(clonedCell.cell_id[0]));
