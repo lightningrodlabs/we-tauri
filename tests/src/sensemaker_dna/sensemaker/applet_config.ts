@@ -65,7 +65,7 @@ export default () =>
                 // const dimension: Dimension = {
                 const dimension: any = {
                     name: dimensionName,
-                    range: rangeHash,
+                    range_eh: rangeHash,
                     computed: false,
                 }
 
@@ -103,7 +103,7 @@ export default () =>
                 // const objectiveDimension: Dimension = {
                 const objectiveDimension: any = {
                     name: "total_importance",
-                    range: rangeHash2,
+                    range_eh: rangeHash2,
                     computed: true,
                 };
 

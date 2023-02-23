@@ -154,13 +154,13 @@ export default () => {
 
         const createDimension = {
           name: "likeness",
-          range: rangeHash,
+          range_eh: rangeHash,
           computed: false,
         };
 
         const createDimension2 = {
           name: "quality",
-          range: rangeHash,
+          range_eh: rangeHash,
           computed: false,
         };
 
@@ -330,7 +330,7 @@ export default () => {
 
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: rangeHash2,
+          range_eh: rangeHash2,
           computed: true,
         };
 
@@ -545,7 +545,7 @@ export default () => {
 
         const createDimension = {
           name: "likeness",
-          range: rangeHash,
+          range_eh: rangeHash,
           computed: false,
         };
 
@@ -731,7 +731,7 @@ export default () => {
 
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: rangeHash2,
+          range_eh: rangeHash2,
           computed: true,
         };
 

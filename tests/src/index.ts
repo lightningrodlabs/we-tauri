@@ -6,7 +6,7 @@ import applet_config from './sensemaker_dna/sensemaker/applet_config';
 import range from './sensemaker_dna/sensemaker/range';
 range();
 sensemaker_dimension();
-sensemaker_config();
 applet_config();
+sensemaker_config();
 sensemaker_community_activator();
 

@@ -73,7 +73,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
 
         const createDimension = {
             "name": "likeness",
-            "range": rangeHash,
+            "range_eh": rangeHash,
             "computed": false
         }
 
