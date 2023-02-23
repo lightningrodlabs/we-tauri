@@ -1,5 +1,5 @@
-use crate::dimension::RangeValue;
 use crate::method::DataSet;
+use crate::range::RangeValue;
 use hdi::prelude::*;
 
 #[hdk_entry_helper]

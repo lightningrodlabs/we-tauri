@@ -2,11 +2,12 @@ use std::collections::BTreeMap;
 
 use hdk::prelude::*;
 use sensemaker_integrity::{
-    AppletConfig, AppletConfigInput, CulturalContext, EntryTypes, LinkTypes, Method, ResourceDef,
+    AppletConfig, AppletConfigInput, CulturalContext, Dimension, EntryTypes, LinkTypes, Method,
+    ResourceDef,
 };
 
 use crate::{
-    create_cultural_context, create_dimension, create_method, create_resource_def,
+    create_cultural_context, create_dimension, create_method, create_range, create_resource_def,
     utils::entry_from_record,
 };
 
@@ -58,11 +59,22 @@ fn applet_config_typed_path(applet_name: String) -> ExternResult<TypedPath> {
 pub fn create_entries_from_applet_config(
     config: AppletConfigInput,
 ) -> ExternResult<(AppletConfig, EntryHash)> {
+    // ranges
+    let mut ranges: BTreeMap<String, EntryHash> = BTreeMap::new();
+    for range in config.ranges {
+        ranges.insert(range.name.clone(), create_range(range)?);
+    }
+
     // dimensions
     let mut dimensions: BTreeMap<String, EntryHash> = BTreeMap::new();
-    for dimension in config.dimensions {
-        dimensions.insert(dimension.name.clone(), create_dimension(dimension)?);
+    for config_dimension in config.dimensions {
+        dimensions.insert(
+            config_dimension.name.clone(),
+            create_dimension(Dimension::try_from(config_dimension)?)?,
+        );
     }
+
+    // resource defs
     let mut resource_defs: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_resource_def in config.resource_defs {
         resource_defs.insert(
@@ -70,6 +82,8 @@ pub fn create_entries_from_applet_config(
             create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
         );
     }
+
+    // methods
     let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_method in config.methods {
         methods.insert(
@@ -77,6 +91,8 @@ pub fn create_entries_from_applet_config(
             create_method(Method::try_from(config_method)?)?,
         );
     }
+
+    // CCs
     let mut cultural_contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_context in config.cultural_contexts {
         cultural_contexts.insert(
@@ -87,6 +103,7 @@ pub fn create_entries_from_applet_config(
 
     let applet_config = AppletConfig {
         name: config.name,
+        ranges,
         dimensions,
         resource_defs,
         methods,

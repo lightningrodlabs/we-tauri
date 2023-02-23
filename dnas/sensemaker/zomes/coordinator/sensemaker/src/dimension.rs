@@ -1,7 +1,5 @@
 use hdk::prelude::*;
-use sensemaker_integrity::Dimension;
-use sensemaker_integrity::EntryTypes;
-use sensemaker_integrity::LinkTypes;
+use sensemaker_integrity::{Dimension, EntryTypes, LinkTypes};
 
 #[hdk_extern]
 pub fn create_dimension(dimension: Dimension) -> ExternResult<EntryHash> {

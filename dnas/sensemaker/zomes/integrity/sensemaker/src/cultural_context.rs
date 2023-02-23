@@ -2,7 +2,7 @@ use hdi::prelude::*;
 
 use crate::{
     applet::{ConfigCulturalContext, ConfigThreshold},
-    dimension::RangeValue,
+    range::RangeValue,
     ResourceDef,
 };
 

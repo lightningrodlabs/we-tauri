@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use hdi::prelude::*;
 
 use crate::{
-    CulturalContext, Dimension, Method, OrderingKind, Program, RangeValue, ResourceDef,
+    CulturalContext, Dimension, Method, OrderingKind, Program, Range, RangeValue, ResourceDef,
     ThresholdKind,
 };
 
@@ -11,7 +11,7 @@ use crate::{
 #[derive(Clone)]
 pub struct AppletConfig {
     pub name: String,
-    // pub ranges: Vec<EntryHash>, // leaving out ranges since this is not an entry and is just part of the dimension
+    pub ranges: BTreeMap<String, EntryHash>,
     pub dimensions: BTreeMap<String, EntryHash>,
     // the base_type field in ResourceDef needs to be bridged call
     pub resource_defs: BTreeMap<String, EntryHash>,
@@ -22,8 +22,8 @@ pub struct AppletConfig {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct AppletConfigInput {
     pub name: String,
-    // pub ranges: Vec<Range>, // leaving out ranges since this is not an entry and is just part of the dimension
-    pub dimensions: Vec<Dimension>,
+    pub ranges: Vec<Range>,
+    pub dimensions: Vec<ConfigDimension>,
     // the base_type field in ResourceDef needs to be bridged call
     pub resource_defs: Vec<ConfigResourceDef>,
     pub methods: Vec<ConfigMethod>,
@@ -32,14 +32,22 @@ pub struct AppletConfigInput {
 
 impl AppletConfigInput {
     pub fn check_format(self) -> ExternResult<()> {
-        // convert all dimensions in config to EntryHashes
-        let dimension_ehs = self
-            .dimensions
+        // convert all ranges in config to EntryHashes
+        let range_ehs = self
+            .ranges
             .into_iter()
             .map(|dimension| hash_entry(dimension))
             .collect::<ExternResult<Vec<EntryHash>>>()?;
 
-        // Using a map to detect the errors. There may be better ways to handle this other than map
+        // check if all dimensions are valid and convert to EntryHashes
+        let dimension_ehs = self
+            .dimensions
+            .clone()
+            .into_iter()
+            .map(|dimension| dimension.check_format(range_ehs.clone()))
+            .collect::<ExternResult<Vec<EntryHash>>>()?;
+
+        // Mapping to detect errors. There may be better ways to handle this other than map
         let _check_result_resources: Vec<bool> = self
             .resource_defs
             .into_iter()
@@ -57,6 +65,30 @@ impl AppletConfigInput {
             .collect::<ExternResult<Vec<bool>>>()?;
 
         Ok(())
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, SerializedBytes)]
+pub struct ConfigDimension {
+    pub name: String,
+    pub range: Range,
+    pub computed: bool,
+}
+
+impl ConfigDimension {
+    pub fn check_format(self, range_ehs: Vec<EntryHash>) -> ExternResult<EntryHash> {
+        let converted_dimension: Dimension = Dimension::try_from(self.clone())?;
+        let dimension_range_eh = converted_dimension.clone().range;
+
+        // check if range in dimension exists in the root ranges
+        if let false = range_ehs.contains(&dimension_range_eh) {
+            let error = format!(
+                "dimension name {} has range not found in root ranges",
+                self.name
+            );
+            return Err(wasm_error!(WasmErrorInner::Guest(error)));
+        }
+        Ok(hash_entry(converted_dimension)?)
     }
 }
 
