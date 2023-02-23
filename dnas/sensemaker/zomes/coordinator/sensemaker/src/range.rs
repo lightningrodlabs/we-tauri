@@ -24,7 +24,7 @@ pub fn get_range(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 pub fn get_ranges(_: ()) -> ExternResult<Vec<Option<Record>>> {
     get_links(
         ranges_typed_path()?.path_entry_hash()?,
-        LinkTypes::Dimensions,
+        LinkTypes::Ranges,
         None,
     )?
     .into_iter()
