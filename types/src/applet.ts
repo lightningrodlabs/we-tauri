@@ -6,6 +6,7 @@ import { ConfigResourceDef } from "./resourceDef";
 
 export interface AppletConfig {
     name: string,
+    role_name: string,
     ranges: {
         [rangeName: string]: EntryHash,
     },
@@ -30,4 +31,9 @@ export interface AppletConfigInput {
     resource_defs: Array<ConfigResourceDef>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,
+}
+
+export interface CreateAppletConfigInput {
+    applet_config_input: AppletConfigInput,
+    role_name: string,
 }

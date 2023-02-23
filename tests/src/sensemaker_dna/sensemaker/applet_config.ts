@@ -223,6 +223,7 @@ export default () =>
                         "1-scale-total": rangeHash2
 
                     },
+                    role_name: "test_provider_dna",
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
@@ -235,18 +236,21 @@ export default () =>
                 // TODO: bring the type back once sensemaker-types are updated
                 // const appletConfigInput: AppletConfigInput = {
                 const appletConfigInput: any = {
-                    name: appletConfig.name,
-                    ranges: [integerRange, integerRange2],
-                    dimensions: [configDimension, configObjectiveDimension],
-                    resource_defs: [configResourceDef],
-                    methods: [configMethod],
-                    cultural_contexts: [configCulturalContext],
+                    applet_config_input: {
+                        name: appletConfig.name,
+                        ranges: [integerRange, integerRange2],
+                        dimensions: [configDimension, configObjectiveDimension],
+                        resource_defs: [configResourceDef],
+                        methods: [configMethod],
+                        cultural_contexts: [configCulturalContext],
+                    },
+                    role_name: "test_provider_dna"
                 }
 
                 let maybeAppletConfig: any = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(!maybeAppletConfig);
@@ -264,7 +268,7 @@ export default () =>
                 maybeAppletConfig = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(maybeAppletConfig);

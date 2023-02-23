@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
-use sensemaker_integrity::{Assessment, LinkTypes};
+use sensemaker_integrity::{Assessment, LinkTypes, AppletConfig};
 
 use crate::{assessment_typed_path, get_assessment};
 
@@ -53,4 +53,48 @@ pub fn flatten_btree_map<K, V: Clone>(btree_map: BTreeMap<K, Vec<V>>) -> Vec<V> 
         .into_iter()
         .flatten()
         .collect::<Vec<V>>()
+}
+
+pub fn fetch_provider_resource(resource_eh: EntryHash, resource_type_eh: EntryHash) -> ExternResult<Option<Record>> {
+    // make a bridge call to the provider zome
+    let links = get_links(resource_type_eh.clone(), LinkTypes::ResourceTypeEhToAppletConfig, None)?;
+    let maybe_link = links.last();
+    if let Some(link) = maybe_link {
+        let maybe_record = get(EntryHash::from(link.target.clone()), GetOptions::default())?;
+        if let Some(record) = maybe_record {
+            let applet_config = entry_from_record::<AppletConfig>(record)?;
+            if let Some(role_name) = applet_config.role_name {
+                let response = call(
+                    CallTargetCell::OtherRole(role_name),
+                    ZomeName::from("test_provider"),
+                    "get_resource".into(),
+                    None,
+                    resource_eh,
+                )?;
+                match response {
+                    ZomeCallResponse::Ok(result) => {
+                        let maybe_record: Option<Record> = result.decode().map_err(|err| wasm_error!(WasmErrorInner::from(err)))?;
+            
+                        Ok(maybe_record)
+                    }
+                    _ => Err(wasm_error!(WasmErrorInner::Guest(
+                        "Error making the bridge call to provider dna".into()
+                    ))),
+                }
+            }
+            else {
+                // resource type is not associated with a provider dna
+                // this only occurs when applet config is created during the init() callback
+                Ok(None)
+            }
+        }
+        else {
+            // could not get the applet config
+            Ok(None)
+        }
+    }
+    else {
+        // there is no link to applet config from the resource type eh
+        Ok(None)
+    }
 }

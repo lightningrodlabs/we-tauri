@@ -44,6 +44,7 @@ pub enum LinkTypes {
     CAToSensemakerConfig,
     AppletName,
     AppletConfig,
+    ResourceTypeEhToAppletConfig,
 }
 
 #[hdk_extern]
