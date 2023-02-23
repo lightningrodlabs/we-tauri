@@ -3,7 +3,7 @@ use hdi::prelude::*;
 use crate::{
     applet::{ConfigCulturalContext, ConfigThreshold},
     range::RangeValue,
-    ResourceDef,
+    Dimension, ResourceDef,
 };
 
 #[hdk_entry_helper]
@@ -26,11 +26,17 @@ impl TryFrom<ConfigCulturalContext> for CulturalContext {
             .collect::<ExternResult<Vec<Threshold>>>()?;
         let mut order_by = vec![];
         value.order_by.into_iter().for_each(|item| {
-            if let Ok(dimension_eh) = hash_entry(item.0) {
-                order_by.push((dimension_eh, item.1));
+            if let Ok(converted_dimension) = Dimension::try_from(item.0) {
+                if let Ok(dimension_eh) = hash_entry(converted_dimension) {
+                    order_by.push((dimension_eh, item.1));
+                } else {
+                    return error!(
+                        "failed to convert dimension found in cultural context to entry hash"
+                    );
+                }
             } else {
                 return error!(
-                    "failed to convert dimension found in cultural context to entry hash"
+                    "failed to convert config dimension found in cultural context to dimension"
                 );
             }
         });
@@ -65,7 +71,7 @@ impl TryFrom<ConfigThreshold> for Threshold {
     type Error = WasmError;
     fn try_from(value: ConfigThreshold) -> Result<Threshold, Self::Error> {
         let th = Threshold {
-            dimension_eh: hash_entry(value.dimension)?,
+            dimension_eh: hash_entry(Dimension::try_from(value.dimension)?)?,
             kind: value.kind,
             value: value.value,
         };

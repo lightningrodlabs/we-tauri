@@ -96,7 +96,7 @@ impl ConfigDimension {
 pub struct ConfigResourceDef {
     pub name: String,
     pub base_types: Vec<AppEntryDef>,
-    pub dimensions: Vec<Dimension>,
+    pub dimensions: Vec<ConfigDimension>,
 }
 
 impl ConfigResourceDef {
@@ -124,9 +124,9 @@ impl ConfigResourceDef {
 pub struct ConfigMethod {
     pub name: String,
     pub target_resource_def: ConfigResourceDef,
-    pub input_dimensions: Vec<Dimension>, // check if it's subjective (for now)
-    pub output_dimension: Dimension,      // check if it's objective
-    pub program: Program,                 // making enum for now, in design doc it is `AST`
+    pub input_dimensions: Vec<ConfigDimension>, // check if it's subjective (for now)
+    pub output_dimension: ConfigDimension,      // check if it's objective
+    pub program: Program,                       // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
     pub requires_validation: bool,
 }
@@ -183,7 +183,7 @@ pub struct ConfigCulturalContext {
     pub name: String,
     pub resource_def: ConfigResourceDef,
     pub thresholds: Vec<ConfigThreshold>,
-    pub order_by: Vec<(Dimension, OrderingKind)>, // DimensionEh
+    pub order_by: Vec<(ConfigDimension, OrderingKind)>, // DimensionEh
 }
 
 impl ConfigCulturalContext {
@@ -241,7 +241,7 @@ impl ConfigCulturalContext {
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigThreshold {
-    pub dimension: Dimension,
+    pub dimension: ConfigDimension,
     pub kind: ThresholdKind,
     pub value: RangeValue,
 }

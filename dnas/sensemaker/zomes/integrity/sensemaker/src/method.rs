@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use hdi::prelude::*;
 
-use crate::{applet::ConfigMethod, ResourceDef};
+use crate::{applet::ConfigMethod, Dimension, ResourceDef};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
@@ -22,9 +22,15 @@ impl TryFrom<ConfigMethod> for Method {
         let input_dimension_ehs = value
             .input_dimensions
             .into_iter()
-            .map(|dimension| hash_entry(dimension))
+            .map(|config_dimension| {
+                let converted_dimension: Dimension = Dimension::try_from(config_dimension)?;
+                hash_entry(converted_dimension)
+            })
             .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let output_dimension_eh = hash_entry(value.output_dimension)?;
+
+        let converted_output_dimension: Dimension = Dimension::try_from(value.output_dimension)?;
+        let output_dimension_eh = hash_entry(converted_output_dimension)?;
+
         let resource: ResourceDef = value.target_resource_def.try_into()?;
         let method = Method {
             name: value.name,

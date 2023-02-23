@@ -1,6 +1,6 @@
 use hdi::prelude::*;
 
-use crate::applet::ConfigResourceDef;
+use crate::{applet::ConfigResourceDef, Dimension};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
@@ -16,7 +16,10 @@ impl TryFrom<ConfigResourceDef> for ResourceDef {
         let dimension_ehs = value
             .dimensions
             .into_iter()
-            .map(|dimension| hash_entry(dimension))
+            .map(|config_dimension| {
+                let converted_dimension: Dimension = Dimension::try_from(config_dimension)?;
+                hash_entry(converted_dimension)
+            })
             .collect::<ExternResult<Vec<EntryHash>>>()?;
         let resource_def = ResourceDef {
             name: value.name,
