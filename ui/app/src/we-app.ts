@@ -21,12 +21,33 @@ import {
 import { LayoutConfig, GoldenLayout, LayoutManager } from "golden-layout";
 import { CircularProgress } from "@scoped-elements/material-web";
 
-import { weStyles } from "./shared-styles";
-import { weStoreContext } from "./context";
-import { WeStore } from "./we-store";
+import { weStyles } from "./shared-styles.js";
+import { weStoreContext } from "./context.js";
+import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar";
-import { WelcomeScreen } from "./elements/welcome-screen";
+import { WelcomeView } from "./views/welcome-view.js";
 import { Hrl } from "../../libs/we-applet/dist";
+import { GroupPeersStatus } from "./views/group-peers-status.js";
+
+export type OpenViewParameters =
+  | {
+      view: "group-peers-status";
+      groupDnaHash: DnaHash;
+    }
+  | {
+      view: "group-applet-main";
+      groupDnaHash: DnaHash;
+    }
+  | {
+      view: "group-applet-block";
+      groupDnaHash: DnaHash;
+      appletInstanceHash: EntryHash;
+    }
+  | {
+      view: "entry";
+      hrl: Hrl;
+      context: any;
+    };
 
 @customElement("we-app")
 export class WeApp extends ScopedElementsMixin(LitElement) {
@@ -67,16 +88,27 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return el.goldenLayout;
   }
 
-  openBlock() {}
+  openGroupHomeTab(groupDnaHash: DnaHash) {
+    this.openTab({
+      view: "group-peers-status",
+      groupDnaHash,
+    });
+  }
 
-  openTab(hrl: Hrl) {
+  openBlock(openView: OpenViewParameters) {}
+
+  openTab(openView: OpenViewParameters) {
     this.goldenLayout.addItemAtLocation(
       {
         type: "component",
-        componentType: "welcome",
-        componentState: {},
+        componentType: openView.view,
+        componentState: openView,
       },
-      [{ typeId: LayoutManager.LocationSelector.TypeId.FirstStack }]
+      [
+        {
+          typeId: 2, // FirstStack
+        },
+      ]
     );
   }
 
@@ -85,13 +117,14 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
       .scopedElements=${{
-        "welcome-screen": WelcomeScreen,
+        "welcome-view": WelcomeView,
+        "group-peers-status": GroupPeersStatus,
       }}
       style="flex: 1; display: flex;"
     >
       <golden-layout-register component-type="welcome">
         <template>
-          <welcome-screen></welcome-screen>
+          <welcome-view></welcome-view>
         </template>
       </golden-layout-register>
       <golden-layout-register
@@ -102,41 +135,62 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-main"
-        .template=${({ appletHash }) => html` <cross-group-main-view
-          .appletHash=${appletHash}
-        ></cross-group-main-view>`}
+        component-type="group-peers-status"
+        .template=${({ groupDnaHash }) => html`
+          <group-peers-status
+            .groupDnaHash=${groupDnaHash}
+          ></group-peers-status>
+        `}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-block"
-        .template=${({ appletHash, blockName }) => html` <cross-group-block-view
+        component-type="cross-group-applet-main"
+        .template=${({ appletHash }) => html` <cross-group-applet-main
+          .appletHash=${appletHash}
+        ></cross-group-applet-main>`}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="cross-group-applet-block"
+        .template=${({
+          appletHash,
+          blockName,
+        }) => html` <cross-group-applet-block
           .appletHash=${appletHash}
           .blockName=${blockName}
-        ></cross-group-block-view>`}
+        ></cross-group-applet-block>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-entry"
-        .template=${({ groupDnaHash, hrl }) => html` <group-entry-view
-          .groupDnaHash=${groupDnaHash}
+        component-type="entry-view"
+        .template=${({ hrl, context }) => html` <entry-view
           .hrl=${hrl}
-        ></group-entry-view>`}
+          .context=${context}
+        ></entry-view>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-main"
-        .template=${({ groupDnaHash }) => html` <group-main-view
+        component-type="group-applet-main"
+        .template=${({
+          groupDnaHash,
+          appletInstanceHash,
+        }) => html` <group-applet-main
           .groupDnaHash=${groupDnaHash}
-        ></group-main-view>`}
+          .appletInstanceHash=${appletInstanceHash}
+        ></group-applet-main>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-block"
-        .template=${({ blockName, groupDnaHash }) => html` <group-block-view
+        component-type="group-applet-block"
+        .template=${({
+          groupDnaHash,
+          appletInstanceHash,
+          blockName,
+        }) => html` <group-applet-block
           .groupDnaHash=${groupDnaHash}
+          .appletInstanceHash=${appletInstanceHash}
           .blockName=${blockName}
-        ></group-block-view>`}
+        ></group-applet-block>`}
       >
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>
@@ -151,7 +205,13 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
     return html`
       <div style="flex: 1;" class="row">
-        <navigation-sidebar style="flex: 0"></navigation-sidebar>
+        <navigation-sidebar
+          style="flex: 0"
+          @group-selected=${(e: CustomEvent) =>
+            this.openGroupHomeTab(e.detail.groupDnaHash)}
+          @group-created=${(e: CustomEvent) =>
+            this.openGroupHomeTab(e.detail.groupDnaHash)}
+        ></navigation-sidebar>
         ${this.renderContent()}
       </div>
     `;

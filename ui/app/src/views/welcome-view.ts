@@ -11,10 +11,10 @@ import { localized, msg } from "@lit/localize";
 import { HoloIdenticon, sharedStyles } from "@holochain-open-dev/elements";
 
 import { weStyles } from "../shared-styles.js";
-import { JoinGroupCard } from "./join-group-card.js";
+import { JoinGroupCard } from "../elements/join-group-card.js";
 
 @localized()
-export class WelcomeScreen extends ScopedElementsMixin(LitElement) {
+export class WelcomeView extends ScopedElementsMixin(LitElement) {
   renderManagingGroupsCard() {
     return html`
       <mwc-card style="width: 40%; margin-right: 30px">

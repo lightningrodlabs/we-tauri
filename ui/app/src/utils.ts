@@ -1,5 +1,10 @@
-import { EntryHash, CellId, CellInfo, DisabledAppReason, AppInfo } from "@holochain/client";
-import {  } from "@holochain/client";
+import {
+  EntryHash,
+  CellId,
+  CellInfo,
+  DisabledAppReason,
+  AppInfo,
+} from "@holochain/client";
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
   return new Uint8Array([0x84, 0x21, 0x24, ...md5Hash, ...new Uint8Array(20)]);
@@ -7,13 +12,13 @@ export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
 
 export function getStatus(app: AppInfo): string {
   if (isAppRunning(app)) {
-    return "RUNNING"
+    return "RUNNING";
   } else if (isAppDisabled(app)) {
-    return "DISABLED"
+    return "DISABLED";
   } else if (isAppPaused(app)) {
-    return "PAUSED"
+    return "PAUSED";
   } else {
-    return "UNKNOWN"
+    return "UNKNOWN";
   }
 }
 
@@ -59,7 +64,6 @@ export function getReason(app: AppInfo): string | undefined {
   }
 }
 
-
 export function getCellId(cellInfo: CellInfo): CellId | undefined {
   if ("provisioned" in cellInfo) {
     return cellInfo.provisioned.cell_id;
@@ -82,9 +86,12 @@ export function getCellName(cellInfo: CellInfo): string | undefined {
   }
 }
 
-
-export function flattenCells(cell_info: Record<string, CellInfo[]>): [string, CellInfo][] {
-  return Object.entries(cell_info).map(([roleName, cellInfos]) => {
-    return cellInfos.map((CellInfo) => [roleName, CellInfo])
-  }).flat() as any
+export function flattenCells(
+  cell_info: Record<string, CellInfo[]>
+): [string, CellInfo][] {
+  return Object.entries(cell_info)
+    .map(([roleName, cellInfos]) => {
+      return cellInfos.map((CellInfo) => [roleName, CellInfo]);
+    })
+    .flat() as any;
 }

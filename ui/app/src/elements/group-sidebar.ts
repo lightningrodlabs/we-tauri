@@ -13,6 +13,7 @@ import { WeStore } from "../we-store";
 import { SidebarButton } from "./sidebar-button.js";
 import { CreateGroupDialog } from "./create-group-dialog";
 import { weStyles } from "../shared-styles";
+import { DnaHash } from "@holochain/client";
 
 @localized()
 export class GroupSidebar extends ScopedElementsMixin(LitElement) {
@@ -21,19 +22,28 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
 
   _groupsInfo = new StoreSubscriber(this, () => this._weStore.allGroupsInfo);
 
-  renderGroups(groups: GroupInfo[]) {
+  renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo>) {
     return html`
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
-      ${groups
-        .sort((a, b) => a.name.localeCompare(b.name))
+      ${Array.from(groups.entries())
+        .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
         .map(
-          (groupInfo) =>
+          ([groupDnaHash, groupInfo]) =>
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
                 .logoSrc=${groupInfo.logo_src}
                 .tooltipText=${groupInfo.name}
                 @click=${() => {
+                  this.dispatchEvent(
+                    new CustomEvent("group-selected", {
+                      detail: {
+                        groupDnaHash,
+                      },
+                      bubbles: true,
+                      composed: true,
+                    })
+                  );
                   // this.handleWeGroupIconPrimaryClick(groupInfo.dna_hash);
                 }}
               ></sidebar-button>

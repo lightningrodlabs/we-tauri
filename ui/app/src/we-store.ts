@@ -5,7 +5,9 @@ import {
 import {
   asyncDerived,
   asyncDeriveStore,
+  AsyncReadable,
   join,
+  joinAsyncMap,
   lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
@@ -13,12 +15,11 @@ import {
   EntryHashMap,
   HoloHashMap,
   LazyHoloHashMap,
-  LazyMap,
+  mapValues,
 } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   AppAgentWebsocket,
-  CellInfo,
   CellType,
   DnaHash,
   EntryHash,
@@ -26,7 +27,7 @@ import {
 } from "@holochain/client";
 import { GroupInfo, GroupWithApplets } from "@lightningrodlabs/we-applet";
 import { encode } from "@msgpack/msgpack";
-import md5 from "md5";
+import Emittery, { UnsubscribeFunction } from "emittery";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
@@ -34,15 +35,28 @@ import { GroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
 import { getCellId } from "./utils";
 
+export interface WeEvents {
+  GroupCreated: DnaHash;
+}
+
 export class WeStore {
   public appletsStore: AppletsStore;
   public membraneInvitationsStore: MembraneInvitationsStore;
+
+  emitter = new Emittery<WeEvents>();
 
   constructor(public appAgentWebsocket: AppAgentWebsocket) {
     this.appletsStore = new AppletsStore(appAgentWebsocket, "lobby");
     this.membraneInvitationsStore = new MembraneInvitationsStore(
       new MembraneInvitationsClient(appAgentWebsocket, "lobby")
     );
+  }
+
+  on<Name extends keyof WeEvents>(
+    eventName: Name | readonly Name[],
+    listener: (eventData: WeEvents[Name]) => void | Promise<void>
+  ): UnsubscribeFunction {
+    return this.emitter.on(eventName, listener);
   }
 
   /**
@@ -74,6 +88,8 @@ export class WeStore {
       properties: encode(properties),
       resulting_dna_hash: newGroupDnaHash,
     });
+
+    this.emitter.emit("GroupCreated", groupDnaHash);
 
     return newGroupDnaHash;
   }
@@ -142,79 +158,73 @@ export class WeStore {
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (roleByDnaHash) =>
-    join(
-      Array.from(roleByDnaHash.keys()).map((dnaHash) =>
-        this.groups.get(dnaHash)
-      )
+    joinAsyncMap(
+      mapValues(roleByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
     )
   );
 
-  allGroupsInfo = asyncDerived(this.allGroups, (groupsStores) =>
-    Promise.all(groupsStores.map((store) => store.groupInfo()))
+  allGroupsInfo = asyncDeriveStore(this.allGroups, (groupsStores) =>
+    joinAsyncMap(
+      mapValues(groupsStores, (store) => lazyLoad(() => store.groupInfo()))
+    )
   );
 
   allAppletsInstances = asyncDeriveStore(this.allGroups, (allGroups) =>
-    join(
-      allGroups.map((groupStore) =>
-        asyncDerived(
-          groupStore.appletsInstances,
-          (instances) =>
-            [groupStore, instances] as [
-              GroupStore,
-              EntryHashMap<AppletInstance>
-            ]
-        )
-      )
-    )
+    joinAsyncMap(mapValues(allGroups, (store) => store.appletsInstances))
   );
 
   agentCentricRenderers = new LazyHoloHashMap(
     (
       devhubReleaseEntryHash: EntryHash // appletid
     ) =>
-      asyncDerived(this.allAppletsInstances, async (groupAppletInstances) => {
-        const gui = await this.appletsStore.appletsGui.get(
-          devhubReleaseEntryHash
-        );
+      asyncDerived(
+        join([this.allGroups, this.allGroupsInfo, this.allAppletsInstances] as [
+          AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
+          AsyncReadable<HoloHashMap<DnaHash, GroupInfo>>,
+          AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>
+        ]),
+        async ([groupsStores, groupInfos, groupAppletInstances]) => {
+          const gui = await this.appletsStore.appletsGui.get(
+            devhubReleaseEntryHash
+          );
 
-        const groupInfos = await Promise.all(
-          groupAppletInstances.map(([groupStore]) => groupStore.groupInfo())
-        );
+          // TODO: install dialog if it hasn't been installed yet
 
-        // TODO: install dialog if it hasn't been installed yet
+          const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
+            Array.from(groupAppletInstances.entries()).map(
+              async ([groupDnaHash, instances], index) => {
+                const appletsClients = await Promise.all(
+                  Array.from(instances.entries())
+                    .filter(
+                      ([appletInstanceHash, instance]) =>
+                        instance.devhub_happ_release_hash.toString() ===
+                        devhubReleaseEntryHash.toString()
+                    )
+                    .map(async ([appletInstanceHash, instance]) => {
+                      const appletId = await groupsStores
+                        .get(groupDnaHash)
+                        .appletAppId(appletInstanceHash);
+                      const appletClient = await AppAgentWebsocket.connect(
+                        this.appAgentWebsocket.appWebsocket.client.socket.url,
+                        appletId
+                      );
+                      appletClient.installedAppId = appletId;
+                      return appletClient;
+                    })
+                );
+                return {
+                  appletsClients,
+                  groupServices: {
+                    profilesStore: groupsStores.get(groupDnaHash).profilesStore,
+                  },
+                  groupInfo: groupInfos[index],
+                } as GroupWithApplets;
+              }
+            )
+          );
 
-        const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
-          groupAppletInstances.map(async ([groupStore, instances], index) => {
-            const appletsClients = await Promise.all(
-              Array.from(instances.entries())
-                .filter(
-                  ([appletInstanceHash, instance]) =>
-                    instance.devhub_happ_release_hash.toString() ===
-                    devhubReleaseEntryHash.toString()
-                )
-                .map(async ([appletInstanceHash, instance]) => {
-                  const appletId = await groupStore.appletAppId(
-                    appletInstanceHash
-                  );
-                  const appletClient = await AppAgentWebsocket.connect(
-                    this.appAgentWebsocket.appWebsocket.client.socket.url,
-                    appletId
-                  );
-                  appletClient.installedAppId = appletId;
-                  return appletClient;
-                })
-            );
-            return {
-              appletsClients,
-              groupServices: {
-                profilesStore: groupStore.profilesStore,
-              },
-              groupInfo: groupInfos[index],
-            } as GroupWithApplets;
-          })
-        );
-
-        return gui.crossGroupPerspective(groupAppletsInfos);
-      })
+          return gui.crossGroupPerspective(groupAppletsInfos);
+        }
+      )
   );
 }

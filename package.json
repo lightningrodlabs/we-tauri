@@ -10,16 +10,11 @@
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "launch:devhub": "echo \"pass\" | hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui --piped --reuse-conductors",
-    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp"
+    "launch:devhub": "echo \"pass\" | hc launch ./DevHub.webhapp --piped --reuse-conductors",
+    "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
-    "concurrently": "^6.2.1",
-    "cross-env": "^7.0.3",
-    "extract-zip-relative-path": "^2.0.4",
-    "json-parse-better-errors": "^1.0.2",
-    "new-port-cli": "^1.0.0",
-    "rimraf": "^3.0.2"
+    "concurrently": "^6.2.1"
   }
 }
