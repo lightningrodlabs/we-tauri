@@ -36,7 +36,6 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
     this,
     async ([s]) => {
       const devhubHapp = await this._matrixStore.getDevhubHapp();
-
       return getAllAppsWithGui(this._matrixStore.appWebsocket, devhubHapp);
     },
     () => [this._matrixStore, this.weGroupId]

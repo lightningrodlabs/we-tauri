@@ -59,6 +59,7 @@ export async function getAllAppsWithGui(
   });
   // console.log("@getAllAppsWithGui: ", allAppsOutput);
   const allApps: Array<ContentAddress<HappEntry>> = allAppsOutput.payload;
+
   const promises = allApps.map((app) =>
     getAppsReleasesWithGui(appWebsocket, devhubHapp, app)
   );
