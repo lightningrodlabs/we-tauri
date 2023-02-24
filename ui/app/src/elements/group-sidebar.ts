@@ -1,6 +1,6 @@
-import { DisplayError } from "@holochain-open-dev/elements";
+import { DisplayError, sharedStyles } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { consume, provide } from "@lit-labs/context";
+import { consume } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { html, LitElement } from "lit";
@@ -12,6 +12,7 @@ import { weStoreContext } from "../context";
 import { WeStore } from "../we-store";
 import { SidebarButton } from "./sidebar-button.js";
 import { CreateGroupDialog } from "./create-group-dialog";
+import { weStyles } from "../shared-styles";
 
 @localized()
 export class GroupSidebar extends ScopedElementsMixin(LitElement) {
@@ -78,4 +79,6 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
       "sl-tooltip": SlTooltip,
     };
   }
+
+  static styles = [weStyles, sharedStyles];
 }

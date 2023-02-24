@@ -26,6 +26,7 @@ import { weStoreContext } from "./context";
 import { WeStore } from "./we-store";
 import { NavigationSidebar } from "./elements/navigation-sidebar";
 import { WelcomeScreen } from "./elements/welcome-screen";
+import { Hrl } from "../../libs/we-applet/dist";
 
 @customElement("we-app")
 export class WeApp extends ScopedElementsMixin(LitElement) {
@@ -83,64 +84,62 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return html` <golden-layout
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
-      .scopedElements=${{}}
+      .scopedElements=${{
+        "welcome-screen": WelcomeScreen,
+      }}
+      style="flex: 1; display: flex;"
     >
       <golden-layout-register component-type="welcome">
         <template>
-          <span>dddasdf</span>
           <welcome-screen></welcome-screen>
         </template>
       </golden-layout-register>
-      <golden-layout-register component-type="group-settings">
-        <template>
-          <group-settings></group-settings>
-        </template>
-      </golden-layout-register>
       <golden-layout-register
-        component-type="agent-centric-main"
-        .template=${({ appletHash }) => html` <agent-centric-main-view
-          .appletHash=${appletHash}
-        ></agent-centric-main-view>`}
+        component-type="group-settings"
+        .template=${({ groupDnaHash }) => html`
+          <group-settings .groupDnaHash=${groupDnaHash}></group-settings>
+        `}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="agent-centric-block"
-        .template=${({
-          appletHash,
-          blockName,
-        }) => html` <agent-centric-block-view
+        component-type="cross-group-main"
+        .template=${({ appletHash }) => html` <cross-group-main-view
+          .appletHash=${appletHash}
+        ></cross-group-main-view>`}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="cross-group-block"
+        .template=${({ appletHash, blockName }) => html` <cross-group-block-view
           .appletHash=${appletHash}
           .blockName=${blockName}
-        ></agent-centric-block-view>`}
+        ></cross-group-block-view>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-centric-entry"
-        .template=${({ groupDnaHash, hrl }) => html` <group-centric-entry-view
+        component-type="group-entry"
+        .template=${({ groupDnaHash, hrl }) => html` <group-entry-view
           .groupDnaHash=${groupDnaHash}
           .hrl=${hrl}
-        ></group-centric-entry-view>`}
+        ></group-entry-view>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-centric-main"
-        .template=${({ groupDnaHash }) => html` <group-centric-main-view
+        component-type="group-main"
+        .template=${({ groupDnaHash }) => html` <group-main-view
           .groupDnaHash=${groupDnaHash}
-        ></group-centric-main-view>`}
+        ></group-main-view>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-centric-block"
-        .template=${({
-          blockName,
-          groupDnaHash,
-        }) => html` <group-centric-block-view
+        component-type="group-block"
+        .template=${({ blockName, groupDnaHash }) => html` <group-block-view
           .groupDnaHash=${groupDnaHash}
           .blockName=${blockName}
-        ></group-centric-block-view>`}
+        ></group-block-view>`}
       >
       </golden-layout-register>
-      <golden-layout-root> </golden-layout-root>
+      <golden-layout-root style="flex: 1"> </golden-layout-root>
     </golden-layout>`;
   }
 
@@ -152,7 +151,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
     return html`
       <div style="flex: 1;" class="row">
-        <navigation-sidebar></navigation-sidebar>
+        <navigation-sidebar style="flex: 0"></navigation-sidebar>
         ${this.renderContent()}
       </div>
     `;
@@ -174,8 +173,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       sharedStyles,
       css`
         :host {
-          margin: 0px;
-          height: 100vh;
+          flex: 1;
           display: flex;
         }
       `,

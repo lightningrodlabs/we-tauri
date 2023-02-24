@@ -7,7 +7,7 @@ import { weStoreContext } from "../context";
 import { Hrl } from "../hrl";
 import { WeStore } from "../we-store";
 
-export class EntryView extends ScopedElementsMixin(LitElement) {
+export class GroupEntryView extends ScopedElementsMixin(LitElement) {
   @provide({ context: weStoreContext })
   _weStore!: WeStore;
 

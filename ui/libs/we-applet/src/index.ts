@@ -16,7 +16,10 @@ export type View = (
   registry: CustomElementRegistry
 ) => void;
 
-export type EntryTypeView = (hash: EntryHash | ActionHash) => Promise<{
+export type EntryTypeView = (
+  hash: EntryHash | ActionHash,
+  context: any
+) => Promise<{
   name: string;
   view: View;
 }>;
@@ -38,15 +41,16 @@ export interface GroupServices {
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 
+export interface AttachableType {
+  name: string;
+  create: (attachToHash: Hrl) => Promise<{ attachableHrl: Hrl; context: any }>;
+}
+
 // Perspective of an applet instance in a group
 export interface GroupPerspective {
   views: GroupPerspectiveViews;
   search: (searchFilter: string) => Promise<Array<Hrl>>;
-  attachablesTypes: Array<{
-    name: string;
-    // We are attaching a comment to a calendar event
-    create: (attachToHash: Hrl) => Promise<Hrl>;
-  }>;
+  attachablesTypes: Array<AttachableType>;
 }
 
 export interface CrossGroupPerspective {
@@ -64,8 +68,6 @@ export interface WeApplet {
     appletInstanceClient: AppAgentClient,
     groupInfo: GroupInfo,
     groupServices: GroupServices
-  ) => Promise<GroupPerspective>;
-  crossGroupPerspective: (
-    applets: GroupWithApplets[]
-  ) => Promise<CrossGroupPerspective>;
+  ) => GroupPerspective;
+  crossGroupPerspective: (applets: GroupWithApplets[]) => CrossGroupPerspective;
 }

@@ -12,6 +12,7 @@ import {
   encodeHashToBase64,
   EntryHash,
 } from "@holochain/client";
+import { decode } from "@msgpack/msgpack";
 import { AppletsStore } from "../applets/applets-store";
 import { AppletsClient } from "./applets-client";
 import { GroupInfo } from "./types";
@@ -39,7 +40,9 @@ export class GroupStore {
   async groupDnaModifiers(): Promise<DnaModifiers> {
     const appInfo = await this.appAgentWebsocket.appInfo();
     const cellInfo = appInfo.cell_info["group"].find(
-      (cellInfo) => cellInfo[CellType.Cloned].cloneId === this.roleName
+      (cellInfo) =>
+        CellType.Cloned in cellInfo &&
+        cellInfo[CellType.Cloned].clone_id === this.roleName
     );
 
     if (!cellInfo) throw new Error("Could not find cell for this group");
@@ -49,7 +52,7 @@ export class GroupStore {
 
   async groupInfo(): Promise<GroupInfo> {
     const modifiers = await this.groupDnaModifiers();
-    return modifiers.properties;
+    return decode(modifiers.properties) as GroupInfo;
   }
 
   async appletAppId(appletInstanceHash: EntryHash): Promise<string> {
@@ -95,7 +98,7 @@ export class GroupStore {
       );
       appletClient.installedAppId = appletId;
 
-      return gui.groupCentric(appletClient, await this.groupInfo(), {
+      return gui.groupPerspective(appletClient, await this.groupInfo(), {
         profilesStore: this.profilesStore,
       });
     }

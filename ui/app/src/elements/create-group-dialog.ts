@@ -9,7 +9,7 @@ import {
   MdFilledButton,
   MdOutlinedButton,
 } from "@scoped-elements/material-web";
-import { SelectAvatar } from "@holochain-open-dev/elements";
+import { SelectAvatar, sharedStyles } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 
 import { weStyles } from "../shared-styles";
@@ -47,20 +47,19 @@ export class CreateGroupDialog extends ScopedElementsMixin(LitElement) {
   private async handleOk(e: any) {
     // if statement is required to prevent ENTER key to close the dialog while the button is disabled
     if (this._name && this._logoSrc) {
-      this._dialog.close();
-      this.dispatchEvent(new CustomEvent("creating-we", {})); // required to display loading screen in the dashboard
       const groupDnaHash = await this._weStore.createGroup(
         this._name!,
         this._logoSrc!
       );
 
       this.dispatchEvent(
-        new CustomEvent("we-added", {
+        new CustomEvent("group-created", {
           detail: { groupDnaHash },
           bubbles: true,
           composed: true,
         })
       );
+      this._dialog.close();
       this._nameField.value = "";
       this._avatarField.clear();
     }
@@ -68,7 +67,8 @@ export class CreateGroupDialog extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <md-dialog id="dialog" heading="Create Group">
+      <md-dialog id="dialog">
+        <span slot="headline"> ${msg("Create Group")}</span>
         <div class="row" style="margin-top: 16px">
           <select-avatar
             id="select-avatar"

@@ -4,7 +4,7 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=8888 concurrently \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\" \"npm run launch:happ\" \"holochain-playground\" \"sleep 65 && npm run launch:devhub\"",
+    "network": "hc s clean && npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=8888 concurrently \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\" \"npm run launch:happ\" \"holochain-playground\" \"npm run launch:devhub\"",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "launch:happ": "echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",

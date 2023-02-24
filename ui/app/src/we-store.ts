@@ -24,7 +24,7 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import { GroupApplets } from "@lightningrodlabs/we-applet";
+import { GroupInfo, GroupWithApplets } from "@lightningrodlabs/we-applet";
 import { encode } from "@msgpack/msgpack";
 import md5 from "md5";
 import { v4 as uuidv4 } from "uuid";
@@ -59,12 +59,12 @@ export class WeStore {
     const appInfo = await this.appAgentWebsocket.appInfo();
 
     const groupCellInfo = appInfo.cell_info["group"].find(
-      (cellInfo) => "provisioned" in cellInfo
+      (cellInfo) => CellType.Provisioned in cellInfo
     );
     const groupDnaHash = getCellId(groupCellInfo!)![0];
 
-    const properties = {
-      logoSrc: logo,
+    const properties: GroupInfo = {
+      logo_src: logo,
       name: name,
     };
 
@@ -96,10 +96,8 @@ export class WeStore {
     logo: string,
     networkSeed: string
   ): Promise<DnaHash> {
-    const appInfo = await this.appAgentWebsocket.appInfo();
-
-    const properties = {
-      logoSrc: logo,
+    const properties: GroupInfo = {
+      logo_src: logo,
       name: name,
     };
 
@@ -109,7 +107,7 @@ export class WeStore {
       modifiers: {
         network_seed: networkSeed,
         properties,
-        origin_time: Date.now() * 1000,
+        // origin_time: Date.now() * 1000,
       },
     });
 
@@ -185,7 +183,7 @@ export class WeStore {
 
         // TODO: install dialog if it hasn't been installed yet
 
-        const groupAppletsInfos: GroupApplets[] = await Promise.all(
+        const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
           groupAppletInstances.map(async ([groupStore, instances], index) => {
             const appletsClients = await Promise.all(
               Array.from(instances.entries())
@@ -212,11 +210,11 @@ export class WeStore {
                 profilesStore: groupStore.profilesStore,
               },
               groupInfo: groupInfos[index],
-            } as GroupApplets;
+            } as GroupWithApplets;
           })
         );
 
-        return gui.agentCentric(groupAppletsInfos);
+        return gui.crossGroupPerspective(groupAppletsInfos);
       })
   );
 }
