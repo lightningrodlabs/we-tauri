@@ -967,7 +967,6 @@ export class MatrixStore {
       modifiers: {
         network_seed: networkSeed,
         properties,
-        origin_time: Date.now(),
       },
       name: cloneName,
     });
@@ -1014,7 +1013,6 @@ export class MatrixStore {
       modifiers: {
         network_seed: networkSeed,
         properties: sensemaker_properties,
-        origin_time: Date.now(),
       },
       name: sensemakerCloneName,
     });
