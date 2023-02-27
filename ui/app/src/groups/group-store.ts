@@ -3,9 +3,10 @@ import {
   PeerStatusStore,
 } from "@holochain-open-dev/peer-status";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
-import { lazyLoadAndPoll } from "@holochain-open-dev/stores";
+import { AsyncReadable, lazyLoadAndPoll } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
+  AgentPubKey,
   AppAgentWebsocket,
   CellType,
   DnaModifiers,
@@ -17,10 +18,13 @@ import { AppletsStore } from "../applets/applets-store";
 import { AppletsClient } from "./applets-client";
 import { GroupInfo } from "./types";
 
+// Given a group, all the functionality related to that group
 export class GroupStore {
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
   appletsClient: AppletsClient;
+
+  members: AsyncReadable<Array<AgentPubKey>>;
 
   constructor(
     public appAgentWebsocket: AppAgentWebsocket,
@@ -35,6 +39,7 @@ export class GroupStore {
     this.profilesStore = new ProfilesStore(
       new ProfilesClient(appAgentWebsocket, roleName)
     );
+    this.members = this.profilesStore.agentsWithProfile;
   }
 
   async groupDnaModifiers(): Promise<DnaModifiers> {

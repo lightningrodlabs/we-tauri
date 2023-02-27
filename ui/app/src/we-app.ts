@@ -1,14 +1,12 @@
-import "@webcomponents/scoped-custom-element-registry";
-import { ContextProvider, provide } from "@lit-labs/context";
+// import "@webcomponents/scoped-custom-element-registry";
+import { provide } from "@lit-labs/context";
 import { state, query, customElement } from "lit/decorators.js";
 import {
-  AppWebsocket,
-  AdminWebsocket,
-  InstalledCell,
   AppAgentWebsocket,
   DnaHash,
-  ActionHash,
   EntryHash,
+  encodeHashToBase64,
+  decodeHashFromBase64,
 } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css, render } from "lit";
@@ -18,15 +16,15 @@ import {
   GoldenLayoutRegister,
   GoldenLayoutRoot,
 } from "@scoped-elements/golden-layout";
-import { LayoutConfig, GoldenLayout, LayoutManager } from "golden-layout";
+import { LayoutConfig, GoldenLayout } from "golden-layout";
 import { CircularProgress } from "@scoped-elements/material-web";
+import { Hrl } from "@lightningrodlabs/we-applet";
 
 import { weStyles } from "./shared-styles.js";
 import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
-import { NavigationSidebar } from "./elements/navigation-sidebar";
+import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { WelcomeView } from "./views/welcome-view.js";
-import { Hrl } from "../../libs/we-applet/dist";
 import { GroupPeersStatus } from "./views/group-peers-status.js";
 
 export type OpenViewParameters =
@@ -42,6 +40,7 @@ export type OpenViewParameters =
       view: "group-applet-block";
       groupDnaHash: DnaHash;
       appletInstanceHash: EntryHash;
+      blockName: string;
     }
   | {
       view: "entry";
@@ -98,18 +97,27 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   openBlock(openView: OpenViewParameters) {}
 
   openTab(openView: OpenViewParameters) {
-    this.goldenLayout.addItemAtLocation(
-      {
-        type: "component",
-        componentType: openView.view,
-        componentState: openView,
-      },
-      [
-        {
-          typeId: 2, // FirstStack
-        },
-      ]
-    );
+    this.openAtLocation(openView, {
+      typeId: 2, // FirstStack
+    });
+  }
+
+  openAtLocation(openView: OpenViewParameters, locationSelector: any) {
+    switch (openView.view) {
+      case "group-peers-status":
+        this.goldenLayout.addItemAtLocation(
+          {
+            type: "component",
+            componentType: "group-peers-status",
+            componentState: {
+              groupDnaHash: encodeHashToBase64(openView.groupDnaHash),
+            },
+          },
+          [locationSelector]
+        );
+      default:
+        break;
+    }
   }
 
   renderContent() {
@@ -138,7 +146,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
         component-type="group-peers-status"
         .template=${({ groupDnaHash }) => html`
           <group-peers-status
-            .groupDnaHash=${groupDnaHash}
+            .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}
           ></group-peers-status>
         `}
       >

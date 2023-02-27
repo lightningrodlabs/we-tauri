@@ -31,12 +31,6 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
 
   private handleClick(e: any) {
     this._tooltip.hide();
-    this.dispatchEvent(
-      new Event("click", {
-        composed: true,
-        bubbles: true,
-      })
-    );
   }
 
   render() {

@@ -1,10 +1,17 @@
-import { hashProperty } from "@holochain-open-dev/elements";
+import { DisplayError, hashProperty } from "@holochain-open-dev/elements";
 import {
   ListAgentsByStatus,
   PeerStatusContext,
 } from "@holochain-open-dev/peer-status";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { DnaHash } from "@holochain/client";
+import { ProfilesContext } from "@holochain-open-dev/profiles";
+import {
+  asyncDerived,
+  asyncDeriveStore,
+  AsyncReadable,
+  join,
+  StoreSubscriber,
+} from "@holochain-open-dev/stores";
+import { AgentPubKey, DnaHash, encodeHashToBase64 } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -24,14 +31,25 @@ export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;
 
-  _group = new StoreSubscriber(this, () =>
-    this._weStore.groups.get(this.groupDnaHash)
+  _group = new StoreSubscriber(
+    this,
+    () =>
+      join([
+        this._weStore.groups.get(this.groupDnaHash),
+        asyncDeriveStore(
+          this._weStore.groups.get(this.groupDnaHash),
+          (groupStore) => groupStore.members
+        ),
+      ]) as AsyncReadable<[GroupStore, Array<AgentPubKey>]>
   );
 
-  renderPeersStatus(groupStore: GroupStore) {
-    return html` <peer-status-context .store=${groupStore.peerStatusStore}>
-      <list-agents-by-status></list-agents-by-status
-    ></peer-status-context>`;
+  renderPeersStatus([groupStore, members]: [GroupStore, AgentPubKey[]]) {
+    return html` <profiles-context .store=${groupStore.profilesStore}>
+      <peer-status-context .store=${groupStore.peerStatusStore}>
+        <list-agents-by-status
+          .agents=${members}
+        ></list-agents-by-status> </peer-status-context
+    ></profiles-context>`;
   }
 
   render() {
@@ -52,6 +70,8 @@ export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
+      "display-error": DisplayError,
+      "profiles-context": ProfilesContext,
       "list-agents-by-status": ListAgentsByStatus,
       "peer-status-context": PeerStatusContext,
     };

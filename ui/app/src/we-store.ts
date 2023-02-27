@@ -22,6 +22,7 @@ import {
   AppAgentWebsocket,
   CellType,
   DnaHash,
+  encodeHashToBase64,
   EntryHash,
   RoleName,
 } from "@holochain/client";
@@ -146,15 +147,13 @@ export class WeStore {
   }, 1000);
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
-    asyncDerived(
-      this.groupsRolesByDnaHash,
-      (rolesByDnaHash) =>
-        new GroupStore(
-          this.appAgentWebsocket,
-          rolesByDnaHash.get(groupDnaHash),
-          this.appletsStore
-        )
-    )
+    asyncDerived(this.groupsRolesByDnaHash, (rolesByDnaHash) => {
+      return new GroupStore(
+        this.appAgentWebsocket,
+        rolesByDnaHash.get(groupDnaHash),
+        this.appletsStore
+      );
+    })
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (roleByDnaHash) =>

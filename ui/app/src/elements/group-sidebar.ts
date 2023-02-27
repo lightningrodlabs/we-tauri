@@ -13,7 +13,7 @@ import { WeStore } from "../we-store";
 import { SidebarButton } from "./sidebar-button.js";
 import { CreateGroupDialog } from "./create-group-dialog";
 import { weStyles } from "../shared-styles";
-import { DnaHash } from "@holochain/client";
+import { DnaHash, encodeHashToBase64 } from "@holochain/client";
 
 @localized()
 export class GroupSidebar extends ScopedElementsMixin(LitElement) {
@@ -35,6 +35,7 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
                 .logoSrc=${groupInfo.logo_src}
                 .tooltipText=${groupInfo.name}
                 @click=${() => {
+                  console.log(encodeHashToBase64(groupDnaHash));
                   this.dispatchEvent(
                     new CustomEvent("group-selected", {
                       detail: {

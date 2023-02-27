@@ -11,10 +11,15 @@ export interface GroupInfo {
   name: string;
 }
 
-export type View = (
-  rootElement: HTMLElement,
-  registry: CustomElementRegistry
-) => void;
+export type ViewLocation = "NewTab" | "NewBlock";
+
+export interface OpenViews {
+  openMain(viewLocation: ViewLocation): void;
+  openBlock(blockName: string, viewLocation: ViewLocation): void;
+  openHrl(hrl: Hrl, context: any, viewLocation: ViewLocation): void;
+}
+
+export type View = (rootElement: HTMLElement) => void;
 
 export type EntryTypeView = (
   hash: EntryHash | ActionHash,
@@ -24,15 +29,15 @@ export type EntryTypeView = (
   view: View;
 }>;
 
-export interface CrossGroupPerspectiveViews {
+export interface CrossGroupViews {
   main: View;
   blocks: Record<string, View>;
 }
 
-export interface GroupPerspectiveViews {
+export interface GroupViews {
   main: View;
   blocks: Record<string, View>; // all events -> schedule
-  entries: Record<string, Record<string, EntryTypeView>>; // Segmented by RoleName and entry type id
+  entries: Record<string, Record<string, Record<string, EntryTypeView>>>; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
 export interface GroupServices {
@@ -41,20 +46,20 @@ export interface GroupServices {
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 
+// Contextual reference to a Hrl
+// Useful use case: image we want to point to a specific section of a document
+// The document action hash would be the Hrl, and the context could be { secion: "Second Paragraph" }
+export interface HrlWithContext {
+  hrl: Hrl;
+  context: any;
+}
+
 export interface AttachableType {
   name: string;
-  create: (attachToHash: Hrl) => Promise<{ attachableHrl: Hrl; context: any }>;
-}
-
-// Perspective of an applet instance in a group
-export interface GroupPerspective {
-  views: GroupPerspectiveViews;
-  search: (searchFilter: string) => Promise<Array<Hrl>>;
-  attachablesTypes: Array<AttachableType>;
-}
-
-export interface CrossGroupPerspective {
-  views: CrossGroupPerspectiveViews;
+  create: (
+    appletClient: AppAgentClient,
+    attachToHrl: Hrl
+  ) => Promise<HrlWithContext>;
 }
 
 export interface GroupWithApplets {
@@ -64,10 +69,21 @@ export interface GroupWithApplets {
 }
 
 export interface WeApplet {
-  groupPerspective: (
-    appletInstanceClient: AppAgentClient,
+  groupViews: (
+    appletClient: AppAgentClient,
     groupInfo: GroupInfo,
-    groupServices: GroupServices
-  ) => GroupPerspective;
-  crossGroupPerspective: (applets: GroupWithApplets[]) => CrossGroupPerspective;
+    groupServices: GroupServices,
+    openViews: OpenViews
+  ) => GroupViews;
+
+  attachableTypes: Array<AttachableType>;
+  search: (
+    appletClient: AppAgentClient,
+    searchFilter: string
+  ) => Promise<Array<HrlWithContext>>;
+
+  crossGroupViews: (
+    applets: GroupWithApplets[],
+    openViews: OpenViews
+  ) => CrossGroupViews;
 }
