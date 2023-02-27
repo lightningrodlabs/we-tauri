@@ -51,17 +51,17 @@ pub struct CreateAssessmentInput {
     pub value: RangeValue,
     pub dimension_eh: EntryHash,
     pub resource_eh: EntryHash,
-    pub resource_type_eh: EntryHash,
+    pub resource_def_eh: EntryHash,
     pub maybe_input_dataset: Option<DataSet>,
 }
 
 #[hdk_extern]
-pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_eh, resource_type_eh, maybe_input_dataset }: CreateAssessmentInput) -> ExternResult<EntryHash> {
+pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_eh, resource_def_eh, maybe_input_dataset }: CreateAssessmentInput) -> ExternResult<EntryHash> {
     let assessment = Assessment {
         value,
         dimension_eh,
         resource_eh,
-        resource_type_eh,
+        resource_def_eh,
         maybe_input_dataset,
         author: agent_info()?.agent_latest_pubkey,
     };
@@ -100,7 +100,7 @@ pub fn get_all_assessments(_:()) -> ExternResult<Vec<AssessmentWithDimensionAndR
                         None => None
                     };
                     // attempt a bridge call to the provider zome to get the resource
-                    let resource = fetch_provider_resource(assessment.resource_eh.clone(), assessment.resource_type_eh.clone())?;
+                    let resource = fetch_provider_resource(assessment.resource_eh.clone(), assessment.resource_def_eh.clone())?;
                     Ok(Some(AssessmentWithDimensionAndResource {
                         assessment,
                         dimension,

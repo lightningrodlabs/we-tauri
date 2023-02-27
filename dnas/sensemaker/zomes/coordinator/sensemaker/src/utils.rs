@@ -57,11 +57,11 @@ pub fn flatten_btree_map<K, V: Clone>(btree_map: BTreeMap<K, Vec<V>>) -> Vec<V> 
 
 pub fn fetch_provider_resource(
     resource_eh: EntryHash,
-    resource_type_eh: EntryHash,
+    resource_def_eh: EntryHash,
 ) -> ExternResult<Option<Record>> {
     // make a bridge call to the provider zome
     let links = get_links(
-        resource_type_eh.clone(),
+        resource_def_eh.clone(),
         LinkTypes::ResourceDefEhToAppletConfig,
         None,
     )?;

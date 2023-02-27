@@ -8,7 +8,7 @@ export interface CreateAssessmentInput {
     value: RangeValue,
     dimension_eh: EntryHash,
     resource_eh: EntryHash,
-    resource_type_eh: EntryHash,
+    resource_def_eh: EntryHash,
     maybe_input_dataset: Option<DataSet>, // For objective Dimensions only
 }
 

@@ -137,9 +137,9 @@ pub fn create_entries_from_applet_config(
     // for each resource type entry hash, create a link
     resource_defs
         .into_iter()
-        .map(|(_, resource_type_eh)| {
+        .map(|(_, resource_def_eh)| {
             create_link(
-                EntryHash::from(resource_type_eh),
+                EntryHash::from(resource_def_eh),
                 applet_config_eh.clone(),
                 LinkTypes::ResourceDefEhToAppletConfig,
                 (),

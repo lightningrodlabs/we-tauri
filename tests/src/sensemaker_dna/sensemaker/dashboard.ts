@@ -182,7 +182,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -202,7 +202,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -218,7 +218,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -235,7 +235,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -255,7 +255,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -271,7 +271,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_type_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["angryPost"],
           maybe_input_dataset: null,
         };
 

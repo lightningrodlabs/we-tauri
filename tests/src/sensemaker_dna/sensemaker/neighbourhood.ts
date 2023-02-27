@@ -252,7 +252,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -272,7 +272,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -410,7 +410,7 @@ export default () => {
           },
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -618,7 +618,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -638,7 +638,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -654,7 +654,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash2,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -671,7 +671,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash2,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -691,7 +691,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash3,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -707,7 +707,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
           resource_eh: createPostEntryHash3,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -845,7 +845,7 @@ export default () => {
           },
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -871,7 +871,7 @@ export default () => {
           },
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash2,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -897,7 +897,7 @@ export default () => {
           },
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash3,
-          resource_type_eh: createResourceDefEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
