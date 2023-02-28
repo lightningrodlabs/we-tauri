@@ -149,6 +149,7 @@ export class WeStore {
     asyncDerived(this.groupsRolesByDnaHash, (rolesByDnaHash) => {
       return new GroupStore(
         this.appAgentWebsocket,
+        groupDnaHash,
         rolesByDnaHash.get(groupDnaHash),
         this.appletsStore
       );

@@ -1,14 +1,5 @@
-import { AgentPubKey, DnaHash, EntryHash, InstalledAppId, EntryHashB64 } from "@holochain/client";
-
-
-export enum DashboardMode {
-  MainHome,
-  WeGroupHome,
-  AppletGroupInstanceRendering,
-  AppletClassHome,
-  AppletClassRendering,
-  Loading,
-}
+import { DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
+import { IconSrcOption } from "./applets/types";
 
 /**
  * appletCentricNavigation lets you choose the applet *class* on the main panel and will only display the groups
@@ -29,7 +20,6 @@ export enum NavigationMode {
   Agnostic,
 }
 
-
 //
 /**
  *
@@ -45,53 +35,12 @@ export enum RenderingMode {
   Agnostic,
 }
 
-
-
-export interface AppletMetaData {
-  title: string,
-  subtitle: string | undefined,
-  description: string,
-  installedAppId?: InstalledAppId,
-  devhubHappReleaseHash: EntryHash,
-  devhubGuiReleaseHash: EntryHash,
-  icon: IconSrcOption,
+export interface AppletMetadata {
+  title: string;
+  subtitle: string | undefined;
+  description: string;
+  installedAppId?: InstalledAppId;
+  devhubHappReleaseHash: EntryHash;
+  devhubGuiReleaseHash: EntryHash;
+  icon: IconSrcOption;
 }
-
-
-export interface PlayingApplet {
-  applet: Applet;
-  agentPubKey: AgentPubKey;
-}
-
-export type Signal = {
-  appletHash: EntryHashB64;
-  message: { type: "NewApplet"; content: Applet };
-};
-
-
-export type GuiFile = Uint8Array;
-
-export type IconFileOption = Uint8Array | undefined;
-
-export type IconSrcOption = string | undefined;
-
-
-
-export type SignalPayload =
- | {
-  applet_hash: EntryHash,
-  message: Message,
-  federated_groups: Array<DnaHash>
- };
-
-
-export type Message =
-  | {
-    type: "NewApplet",
-    content: Applet,
-  };
-
-
-
-
-

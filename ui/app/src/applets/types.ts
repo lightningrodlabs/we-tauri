@@ -1,6 +1,5 @@
-import { EntryHash } from "@holochain/client";
+export type GuiFile = Uint8Array;
 
-export interface AppletGui {
-  devhub_happ_release_hash: EntryHash;
-  gui: Uint8Array;
-}
+export type IconFileOption = Uint8Array | undefined;
+
+export type IconSrcOption = string | undefined;

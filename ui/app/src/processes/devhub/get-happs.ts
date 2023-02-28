@@ -1,7 +1,10 @@
-import { AppWebsocket, EntryHash, ActionHash, AppInfo } from "@holochain/client";
-import { getCellId } from "../../utils";
-import { HappEntry, HappReleaseEntry } from "./types";
-
+import {
+  EntryHash,
+  ActionHash,
+  AppInfo,
+  AppAgentClient,
+} from "@holochain/client";
+import { HappEntry, HappReleaseEntry } from "./types.js";
 
 // corresponds to https://docs.rs/hc_crud_ceps/0.55.0/hc_crud/struct.Entity.html
 export interface Entity<T> {
@@ -42,52 +45,42 @@ export function filterByHdkVersion(
   return filteredReleases.filter((app) => app.releases.length > 0);
 }
 
-
 // filtered by the supported hdk versions of that Launcher version
 export async function getAllAppsWithGui(
-  appWebsocket: AppWebsocket,
-  devhubHapp: AppInfo
+  devhubClient: AppAgentClient
 ): Promise<Array<AppWithReleases>> {
-  const cells = devhubCells(devhubHapp);
-  const allAppsOutput = await appWebsocket.callZome({
-    cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
+  const allAppsOutput = await devhubClient.callZome({
+    role_name: "happs",
     fn_name: "get_happs_by_tags",
     zome_name: "happ_library",
     payload: ["we-applet"],
-    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
   // console.log("@getAllAppsWithGui: ", allAppsOutput);
   const allApps: Array<ContentAddress<HappEntry>> = allAppsOutput.payload;
   const promises = allApps.map((app) =>
-    getAppsReleasesWithGui(appWebsocket, devhubHapp, app)
+    getAppsReleasesWithGui(devhubClient, app)
   );
 
   return Promise.all(promises);
 }
 
-
 export async function getAppsReleasesWithGui(
-  appWebsocket: AppWebsocket,
-  devhubHapp: AppInfo,
+  devhubClient: AppAgentClient,
   app: ContentAddress<HappEntry>
 ): Promise<AppWithReleases> {
-  const cells = devhubCells(devhubHapp);
-
-  const appReleasesOutput = await appWebsocket.callZome({
-    cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
+  const appReleasesOutput = await devhubClient.callZome({
+    role_name: "happs",
     fn_name: "get_happ_releases",
     zome_name: "happ_library",
     payload: {
       for_happ: app.id,
     },
-    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
 
   // console.log("@getAppsReleases: appReleasesOutput:", appReleasesOutput);
 
-  const allReleases: Array<Entity<HappReleaseEntry>> = appReleasesOutput.payload;
+  const allReleases: Array<Entity<HappReleaseEntry>> =
+    appReleasesOutput.payload;
 
   const releases: Array<ContentAddress<HappReleaseEntry>> = allReleases.map(
     (entity) => {
@@ -110,7 +103,6 @@ export async function getAppsReleasesWithGui(
   };
 }
 
-
 export function getLatestRelease(
   apps: AppWithReleases
 ): ContentAddress<HappReleaseEntry> {
@@ -122,18 +114,14 @@ export function getLatestRelease(
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 
 export async function fetchWebHapp(
-  appWebsocket: AppWebsocket,
-  devhubHapp: AppInfo,
+  devhubClient: AppAgentClient,
   name: string,
   happReleaseEntryHash: EntryHash,
   guiReleaseEntryHash: EntryHash,
   retryCount = 3
 ): Promise<Uint8Array> {
-  const cells = devhubCells(devhubHapp);
-
-  const result = await appWebsocket.callZome({
-    cap_secret: null,
-    cell_id: getCellId(cells.happs.find((c) => "provisioned" in c )!)!,
+  const result = await devhubClient.callZome({
+    role_name: "happs",
     fn_name: "get_webhapp_package",
     zome_name: "happ_library",
     payload: {
@@ -141,7 +129,6 @@ export async function fetchWebHapp(
       happ_release_id: happReleaseEntryHash,
       gui_release_id: guiReleaseEntryHash,
     },
-    provenance: getCellId(cells.happs.find((c) => "provisioned" in c )!)![1],
   });
 
   if (result.payload.error) {
@@ -150,8 +137,7 @@ export async function fetchWebHapp(
     } else {
       await sleep(1000);
       return fetchWebHapp(
-        appWebsocket,
-        devhubHapp,
+        devhubClient,
         name,
         happReleaseEntryHash,
         guiReleaseEntryHash,

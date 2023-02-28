@@ -3,7 +3,7 @@ import {
   AppAgentClient,
   EntryHash,
 } from "@holochain/client";
-import { AppletGui } from "./types";
+import { GuiFile } from "./types";
 
 export class AppletsGuiClient {
   constructor(
@@ -18,11 +18,17 @@ export class AppletsGuiClient {
    * @param appletGui
    * @returns
    */
-  async commitGuiFile(appletGui: AppletGui): Promise<void> {
-    return this.callZome("commit_gui_file", appletGui);
+  async commitGuiFile(
+    appletReleaseHash: EntryHash,
+    guiFile: GuiFile
+  ): Promise<void> {
+    return this.callZome("commit_gui_file", {
+      devhub_happ_release_hash: appletReleaseHash,
+      gui: guiFile,
+    });
   }
 
-  async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<AppletGui> {
+  async queryAppletGui(devhubHappReleaseHash: EntryHash): Promise<GuiFile> {
     return this.callZome("query_applet_gui", devhubHappReleaseHash);
   }
   private callZome(fn_name: string, payload: any) {

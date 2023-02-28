@@ -1,4 +1,8 @@
-import { EntryRecord, RecordBag } from "@holochain-open-dev/utils";
+import {
+  EntryHashMap,
+  EntryRecord,
+  RecordBag,
+} from "@holochain-open-dev/utils";
 import {
   ActionHash,
   DnaHash,
@@ -15,14 +19,19 @@ export class AppletsClient {
     public zomeName: string = "applets"
   ) {}
 
-  async getAppletsInstances(): Promise<RecordBag<AppletInstance>> {
-    return this.callZome("get_applets_instances", null);
+  async getAppletsInstances(): Promise<EntryHashMap<AppletInstance>> {
+    const records = await this.callZome("get_applets_instances", null);
+    return new RecordBag<AppletInstance>(records).entryMap;
   }
 
   async getAppletInstance(
     appletInstanceHash: EntryHash
   ): Promise<EntryRecord<AppletInstance> | undefined> {
-    return this.callZome("get_applet_instance", appletInstanceHash);
+    const record = await this.callZome(
+      "get_applet_instance",
+      appletInstanceHash
+    );
+    return new EntryRecord(record);
   }
 
   async registerAppletInstance(applet: AppletInstance): Promise<EntryHash> {

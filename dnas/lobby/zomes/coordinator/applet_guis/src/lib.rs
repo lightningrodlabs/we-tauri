@@ -2,7 +2,7 @@ use applet_guis_integrity::*;
 use hdk::prelude::*;
 
 #[hdk_extern]
-pub fn query_applet_gui(devhub_happ_release_hash: EntryHash) -> ExternResult<AppletGui> {
+pub fn query_applet_gui(devhub_happ_release_hash: EntryHash) -> ExternResult<SerializedBytes> {
     let applet_gui_entry_type: EntryType = UnitEntryTypes::AppletGui.try_into()?;
     // query source chain
     let filter = ChainQueryFilter::new()
@@ -29,7 +29,7 @@ pub fn query_applet_gui(devhub_happ_release_hash: EntryHash) -> ExternResult<App
     }
 
     match filtered_guis.first() {
-        Some(gui) => Ok(gui.clone()),
+        Some(gui) => Ok(gui.gui.clone()),
         None => Err(wasm_error!(WasmErrorInner::Guest(String::from(
             "No Applet GUI found for the given DevHub hApp release hash."
         )))),
