@@ -22,7 +22,6 @@ import {
   AppAgentWebsocket,
   CellType,
   DnaHash,
-  encodeHashToBase64,
   EntryHash,
   RoleName,
 } from "@holochain/client";
@@ -172,7 +171,7 @@ export class WeStore {
     joinAsyncMap(mapValues(allGroups, (store) => store.appletsInstances))
   );
 
-  agentCentricRenderers = new LazyHoloHashMap(
+  groupAppletInfos = new LazyHoloHashMap(
     (
       devhubReleaseEntryHash: EntryHash // appletid
     ) =>
@@ -222,7 +221,7 @@ export class WeStore {
             )
           );
 
-          return gui.crossGroupPerspective(groupAppletsInfos);
+          return groupAppletsInfos;
         }
       )
   );

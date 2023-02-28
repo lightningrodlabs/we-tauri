@@ -4,56 +4,35 @@ import {
   PeerStatusContext,
 } from "@holochain-open-dev/peer-status";
 import { ProfilesContext } from "@holochain-open-dev/profiles";
-import {
-  asyncDerived,
-  asyncDeriveStore,
-  AsyncReadable,
-  join,
-  StoreSubscriber,
-} from "@holochain-open-dev/stores";
-import { AgentPubKey, DnaHash, encodeHashToBase64 } from "@holochain/client";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { AgentPubKey, DnaHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-
-import { weStoreContext } from "../context.js";
-import { GroupStore } from "../groups/group-store.js";
-import { weStyles } from "../shared-styles.js";
-import { WeStore } from "../we-store.js";
+import { groupStoreContext } from "../../context.js";
+import { weStyles } from "../../shared-styles.js";
+import { GroupStore } from "../group-store.js";
 
 @localized()
 export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
-  @consume({ context: weStoreContext, subscribe: true })
-  _weStore!: WeStore;
+  @consume({ context: groupStoreContext, subscribe: true })
+  _groupStore!: GroupStore;
 
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;
 
-  _group = new StoreSubscriber(
-    this,
-    () =>
-      join([
-        this._weStore.groups.get(this.groupDnaHash),
-        asyncDeriveStore(
-          this._weStore.groups.get(this.groupDnaHash),
-          (groupStore) => groupStore.members
-        ),
-      ]) as AsyncReadable<[GroupStore, Array<AgentPubKey>]>
-  );
+  _group = new StoreSubscriber(this, () => this._groupStore?.members);
 
-  renderPeersStatus([groupStore, members]: [GroupStore, AgentPubKey[]]) {
-    return html` <profiles-context .store=${groupStore.profilesStore}>
-      <peer-status-context .store=${groupStore.peerStatusStore}>
-        <list-agents-by-status
-          .agents=${members}
-        ></list-agents-by-status> </peer-status-context
-    ></profiles-context>`;
+  renderPeersStatus(members: AgentPubKey[]) {
+    return html`
+      <list-agents-by-status .agents=${members}></list-agents-by-status>
+    `;
   }
 
   render() {
-    switch (this._group.value.status) {
+    switch (this._group.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>

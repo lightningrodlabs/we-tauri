@@ -25,7 +25,8 @@ import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { WelcomeView } from "./views/welcome-view.js";
-import { GroupPeersStatus } from "./views/group-peers-status.js";
+import { GroupPeersStatus } from "./groups/elements/group-peers-status.js";
+import { GroupContext } from "./groups/elements/group-context.js";
 
 export type OpenViewParameters =
   | {
@@ -127,6 +128,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       .scopedElements=${{
         "welcome-view": WelcomeView,
         "group-peers-status": GroupPeersStatus,
+        "group-context": GroupContext,
       }}
       style="flex: 1; display: flex;"
     >
@@ -145,9 +147,9 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       <golden-layout-register
         component-type="group-peers-status"
         .template=${({ groupDnaHash }) => html`
-          <group-peers-status
-            .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}
-          ></group-peers-status>
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-peers-status></group-peers-status
+          ></group-context>
         `}
       >
       </golden-layout-register>
@@ -170,7 +172,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="entry-view"
+        component-type="entry"
         .template=${({ hrl, context }) => html` <entry-view
           .hrl=${hrl}
           .context=${context}

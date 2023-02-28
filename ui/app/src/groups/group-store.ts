@@ -81,31 +81,26 @@ export class GroupStore {
     )
   );
 
-  appletInstanceRenderers = new LazyHoloHashMap(
-    async (appletInstanceHash: EntryHash) => {
-      const appletInstance = await this.appletsClient.getAppletInstance(
-        appletInstanceHash
-      );
+  appletClient = new LazyHoloHashMap(async (appletInstanceHash: EntryHash) => {
+    const appletInstance = await this.appletsClient.getAppletInstance(
+      appletInstanceHash
+    );
 
-      const devhubHappEntryHash =
-        appletInstance?.entry.devhub_happ_release_hash;
+    const devhubHappEntryHash = appletInstance?.entry.devhub_happ_release_hash;
 
-      if (!devhubHappEntryHash) throw new Error("Applet instance not found");
+    if (!devhubHappEntryHash) throw new Error("Applet instance not found");
 
-      // TODO: if this applet is not installed yet, display dialog to install it
+    // TODO: if this applet is not installed yet, display dialog to install it
 
-      const gui = await this.appletsStore.appletsGui.get(devhubHappEntryHash);
+    const gui = await this.appletsStore.appletsGui.get(devhubHappEntryHash);
 
-      const appletId = await this.appletAppId(appletInstanceHash);
-      const appletClient = await AppAgentWebsocket.connect(
-        this.appAgentWebsocket.appWebsocket.client.socket.url,
-        appletId
-      );
-      appletClient.installedAppId = appletId;
+    const appletId = await this.appletAppId(appletInstanceHash);
+    const appletClient = await AppAgentWebsocket.connect(
+      this.appAgentWebsocket.appWebsocket.client.socket.url,
+      appletId
+    );
+    appletClient.installedAppId = appletId;
 
-      return gui.groupPerspective(appletClient, await this.groupInfo(), {
-        profilesStore: this.profilesStore,
-      });
-    }
-  );
+    return appletClient;
+  });
 }

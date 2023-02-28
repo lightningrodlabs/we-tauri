@@ -7,13 +7,13 @@ import { html, LitElement } from "lit";
 import { GroupInfo } from "@lightningrodlabs/we-applet";
 import { MdFab } from "@scoped-elements/material-web";
 import { localized, msg } from "@lit/localize";
+import { DnaHash } from "@holochain/client";
 
 import { weStoreContext } from "../context";
 import { WeStore } from "../we-store";
 import { SidebarButton } from "./sidebar-button.js";
 import { CreateGroupDialog } from "./create-group-dialog";
 import { weStyles } from "../shared-styles";
-import { DnaHash, encodeHashToBase64 } from "@holochain/client";
 
 @localized()
 export class GroupSidebar extends ScopedElementsMixin(LitElement) {
@@ -35,7 +35,6 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
                 .logoSrc=${groupInfo.logo_src}
                 .tooltipText=${groupInfo.name}
                 @click=${() => {
-                  console.log(encodeHashToBase64(groupDnaHash));
                   this.dispatchEvent(
                     new CustomEvent("group-selected", {
                       detail: {
@@ -45,7 +44,6 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
                       composed: true,
                     })
                   );
-                  // this.handleWeGroupIconPrimaryClick(groupInfo.dna_hash);
                 }}
               ></sidebar-button>
             `
