@@ -17,7 +17,7 @@ import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
-import { initAppClient, initDevhubClient } from "./utils.js";
+import { initDevhubClient } from "./processes/devhub/app-id.js";
 
 @customElement("we-app")
 export class WeApp extends ScopedElementsMixin(LitElement) {
@@ -32,10 +32,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const adminWebsocket = await AdminWebsocket.connect("");
     const appAgentWebsocket = await AppAgentWebsocket.connect("", "we");
 
-    const devhubClient = await initDevhubClient(
-      adminWebsocket,
-      appAgentWebsocket.myPubKey
-    );
+    const devhubClient = await initDevhubClient(adminWebsocket);
 
     this._weStore = new WeStore(
       adminWebsocket,
