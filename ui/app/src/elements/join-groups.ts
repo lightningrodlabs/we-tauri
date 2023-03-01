@@ -28,7 +28,7 @@ import { WeStore } from "../we-store.js";
 import { ProfileListItemSkeleton } from "@holochain-open-dev/profiles";
 
 @localized()
-export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
+export class JoinGroups extends ScopedElementsMixin(LitElement) {
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 

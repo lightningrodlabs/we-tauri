@@ -7,9 +7,8 @@ import {
   CircularProgress,
   Card,
 } from "@scoped-elements/material-web";
-import { consume, contextProvided } from "@lit-labs/context";
-import { property, query, state } from "lit/decorators.js";
-import { Task } from "@lit-labs/task";
+import { consume } from "@lit-labs/context";
+import { query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 
 import { AppletMetadata } from "../../types";
@@ -99,6 +98,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
+    console.log(this._installableApplets.value);
     switch (this._installableApplets.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">

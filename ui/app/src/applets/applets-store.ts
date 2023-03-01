@@ -49,7 +49,7 @@ export class AppletsStore {
     // If it doesn't exist yet, download it and commit it
 
     const file = new File(
-      [new Blob([new Uint8Array(appletGuiFile.gui)])],
+      [new Blob([new Uint8Array(appletGuiFile)])],
       "filename"
     );
 

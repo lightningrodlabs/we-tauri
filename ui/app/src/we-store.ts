@@ -19,6 +19,8 @@ import {
 } from "@holochain-open-dev/utils";
 import {
   ActionHash,
+  AdminWebsocket,
+  AppAgentClient,
   AppAgentWebsocket,
   CellType,
   DnaHash,
@@ -45,8 +47,16 @@ export class WeStore {
 
   emitter = new Emittery<WeEvents>();
 
-  constructor(public appAgentWebsocket: AppAgentWebsocket) {
-    this.appletsStore = new AppletsStore(appAgentWebsocket, "lobby");
+  constructor(
+    public adminWebsocket: AdminWebsocket,
+    public appAgentWebsocket: AppAgentWebsocket,
+    public devhubClient: AppAgentClient
+  ) {
+    this.appletsStore = new AppletsStore(
+      appAgentWebsocket,
+      "lobby",
+      devhubClient
+    );
     this.membraneInvitationsStore = new MembraneInvitationsStore(
       new MembraneInvitationsClient(appAgentWebsocket, "lobby")
     );
@@ -148,6 +158,7 @@ export class WeStore {
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
     asyncDerived(this.groupsRolesByDnaHash, (rolesByDnaHash) => {
       return new GroupStore(
+        this.adminWebsocket,
         this.appAgentWebsocket,
         groupDnaHash,
         rolesByDnaHash.get(groupDnaHash),
@@ -169,7 +180,7 @@ export class WeStore {
   );
 
   allAppletsInstances = asyncDeriveStore(this.allGroups, (allGroups) =>
-    joinAsyncMap(mapValues(allGroups, (store) => store.appletsInstances))
+    joinAsyncMap(mapValues(allGroups, (store) => store.installedApplets))
   );
 
   groupAppletInfos = new LazyHoloHashMap(

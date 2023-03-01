@@ -10,8 +10,7 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { localized, msg } from "@lit/localize";
 import { HoloIdenticon, sharedStyles } from "@holochain-open-dev/elements";
 
-import { weStyles } from "../shared-styles.js";
-import { JoinGroupCard } from "../elements/join-group-card.js";
+import { weStyles } from "../../shared-styles";
 
 @localized()
 export class WelcomeView extends ScopedElementsMixin(LitElement) {
@@ -73,7 +72,6 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
 
               <div class="row" style="margin-top: 70px;">
                 ${this.renderManagingGroupsCard()}
-                <join-group-card style="width: 60%;"></join-group-card>
               </div>
             </div>
           </div>
@@ -90,7 +88,6 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
       "holo-identicon": HoloIdenticon,
       "sl-tooltip": SlTooltip,
       "md-dialog": MdDialog,
-      "join-group-card": JoinGroupCard,
     };
   }
 

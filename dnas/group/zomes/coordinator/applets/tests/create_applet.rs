@@ -1,11 +1,11 @@
 use ::fixt::prelude::fixt;
 use std::collections::BTreeMap;
 
+use applets_integrity::AppletInstance;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
 use holochain::{conductor::config::ConductorConfig, sweettest::*};
-use applets_integrity::{RegisterAppletInput, Applet};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn create_applet() {
@@ -25,31 +25,27 @@ async fn create_applet() {
     let alice_zome = alice.zome("applets_coordinator");
     let bob_zome = bobbo.zome("applets_coordinator");
 
-    let applet = Applet {
+    let applet = AppletInstance {
         custom_name: String::from("custom name"),
-        title: String::from("Some applet title"),
         description: String::from("description"),
         logo_src: None,
         devhub_happ_release_hash: fixt!(EntryHash),
         devhub_gui_release_hash: fixt!(EntryHash),
 
+        network_seed: None,
         properties: BTreeMap::new(), // Segmented by RoleId
-        network_seed: BTreeMap::new(),        // Segmented by RoleId
         dna_hashes: BTreeMap::new(), // Segmented by RoleId
-    };
-    let input = RegisterAppletInput {
-        applet_agent_pub_key: alice.agent_pubkey().clone().into(),
-        applet,
     };
 
     let _entry_hash: EntryHash = conductors[0]
-        .call(&alice_zome, "create_applet", input)
+        .call(&alice_zome, "register_applet_instance", applet)
         .await;
 
     consistency_10s([&alice, &bobbo]).await;
 
-    let all_applets: Vec<(EntryHash, Applet)> =
-        conductors[1].call(&bob_zome, "get_all_applets", ()).await;
+    let all_applets: Vec<Record> = conductors[1]
+        .call(&bob_zome, "get_applets_instances", ())
+        .await;
 
     assert_eq!(all_applets.len(), 1);
 }
