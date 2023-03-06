@@ -14,8 +14,9 @@ import {
 import { DnaHash } from "@holochain/client";
 
 import { WeStore } from "../../we-store.js";
-import { groupStoreContext, weStoreContext } from "../../context.js";
-import { GroupStore } from "../group-store.js";
+import { weStoreContext } from "../../context.js";
+import { groupStoreContext } from "../context.js";
+import { GenericGroupStore } from "../group-store.js";
 
 export class GroupContext extends ScopedElementsMixin(LitElement) {
   @consume({ context: weStoreContext, subscribe: true })
@@ -26,7 +27,7 @@ export class GroupContext extends ScopedElementsMixin(LitElement) {
   groupDnaHash!: DnaHash;
 
   @provide({ context: groupStoreContext })
-  groupStore!: GroupStore;
+  groupStore!: GenericGroupStore<any>;
 
   @provide({ context: profilesStoreContext })
   profilesStore!: ProfilesStore;

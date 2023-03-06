@@ -3,30 +3,29 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { ListProfiles } from "@holochain-open-dev/profiles";
 import {
   MdOutlinedButton,
-  MdOutlinedTextField,
   CircularProgress,
   Card,
 } from "@scoped-elements/material-web";
 import { consume } from "@lit-labs/context";
 import { query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { DisplayError } from "@holochain-open-dev/elements";
 
 import { AppletMetadata } from "../../types";
 import { InstallAppletDialog } from "./install-applet-dialog";
-import { GroupStore } from "../group-store";
-import { groupStoreContext } from "../../context";
+import { GenericGroupStore } from "../group-store";
+import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles";
 import {
   AppWithReleases,
   getLatestRelease,
 } from "../../processes/devhub/get-happs";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { DisplayError } from "@holochain-open-dev/elements";
 
 @localized()
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GroupStore;
+  groupStore!: GenericGroupStore<any>;
 
   _installableApplets = new StoreSubscriber(
     this,
@@ -98,7 +97,6 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
-    console.log(this._installableApplets.value);
     switch (this._installableApplets.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">

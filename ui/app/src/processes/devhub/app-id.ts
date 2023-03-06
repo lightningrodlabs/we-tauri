@@ -22,7 +22,7 @@ const DEVHUB_APP_ID = "DevHub";
 export async function initDevhubClient(
   adminWebsocket: AdminWebsocket
 ): Promise<AppAgentClient> {
-  const client = await initAppClient(DEVHUB_APP_ID);
+  const client = await initAppClient(DEVHUB_APP_ID, 300000);
 
   const devhubClient = new WrappedAppAgentClient(client);
   try {

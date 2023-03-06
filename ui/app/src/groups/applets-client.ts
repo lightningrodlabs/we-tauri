@@ -35,7 +35,7 @@ export class AppletsClient {
   }
 
   async registerAppletInstance(applet: AppletInstance): Promise<EntryHash> {
-    return this.callZome("register_applet_instances", applet);
+    return this.callZome("register_applet_instance", applet);
   }
 
   async federateApplet(

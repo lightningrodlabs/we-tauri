@@ -14,15 +14,15 @@ import { localized, msg } from "@lit/localize";
 
 import { AppletMetadata } from "../../types.js";
 import { consume } from "@lit-labs/context";
-import { groupStoreContext } from "../../context.js";
-import { GroupStore } from "../group-store.js";
+import { groupStoreContext } from "../context.js";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { weStyles } from "../../shared-styles.js";
+import { GenericGroupStore } from "../group-store.js";
 
 @localized()
 export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GroupStore;
+  groupStore!: GenericGroupStore<any>;
 
   _installedApplets = new StoreSubscriber(
     this,
@@ -46,7 +46,7 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   @state()
   _duplicateName: boolean = false;
 
-  @property()
+  @state()
   _appletInfo: AppletMetadata = {
     title: "",
     subtitle: "",
@@ -57,12 +57,17 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   };
 
   open(appletInfo: AppletMetadata) {
-    this._appletDialog.show();
     this._appletInfo = appletInfo;
+    this._customNameField.value = this._appletInfo.title;
+    this._appletDialog.show();
   }
 
   get publishDisabled() {
-    return this._customNameField.value === "" || this._duplicateName;
+    return (
+      !this._customNameField ||
+      this._customNameField.value === "" ||
+      this._duplicateName
+    );
   }
 
   // TODO: is this what we want to do?
@@ -88,7 +93,7 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   async installApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      const appletEntryHash = await this.groupStore.installAndRegisterApplet(
+      const appletEntryHash = await this.groupStore.installAppletOnGroup(
         this._appletInfo,
         this._customNameField.value
       );
@@ -151,13 +156,13 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
       <md-dialog id="applet-dialog">
         <div slot="headline">${msg("Add Custom Name")}</div>
         <div class="column" style="padding: 16px; margin-bottom: 24px;">
-          <md-outlined-textfield
+          <md-outlined-text-field
             id="custom-name-field"
             .label=${msg("Custom Name")}
             required
             .value=${this._appletInfo.title}
             @input=${() => this.requestUpdate()}
-          ></md-outlined-textfield>
+          ></md-outlined-text-field>
           ${
             this._duplicateName
               ? html`<div

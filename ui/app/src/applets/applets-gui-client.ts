@@ -9,7 +9,7 @@ export class AppletsGuiClient {
   constructor(
     public appAgentClient: AppAgentClient,
     public roleName: string,
-    public zomeName: string = "applets_gui"
+    public zomeName: string = "applet_guis"
   ) {}
 
   /**

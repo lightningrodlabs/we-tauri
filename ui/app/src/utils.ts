@@ -7,11 +7,15 @@ import {
   AppAgentWebsocket,
 } from "@holochain/client";
 
-export async function initAppClient(appId: string): Promise<AppAgentWebsocket> {
-  const client = await AppAgentWebsocket.connect("", appId);
+export async function initAppClient(
+  appId: string,
+  defaultTimeout?: number
+): Promise<AppAgentWebsocket> {
+  const client = await AppAgentWebsocket.connect("", appId, defaultTimeout);
   client.installedAppId = appId;
   client.cachedAppInfo = undefined;
   client.appWebsocket.overrideInstalledAppId = appId;
+  await client.appInfo();
   return client;
 }
 

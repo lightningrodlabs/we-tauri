@@ -11,14 +11,14 @@ import { localized, msg } from "@lit/localize";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { groupStoreContext } from "../../context.js";
+import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
-import { GroupStore } from "../group-store.js";
+import { GenericGroupStore } from "../group-store.js";
 
 @localized()
 export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
   @consume({ context: groupStoreContext, subscribe: true })
-  _groupStore!: GroupStore;
+  _groupStore!: GenericGroupStore<any>;
 
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;

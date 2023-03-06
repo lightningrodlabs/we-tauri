@@ -27,22 +27,28 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import { GroupInfo, GroupWithApplets } from "@lightningrodlabs/we-applet";
+import {
+  GroupInfo,
+  GroupWithApplets,
+  WeApplet,
+} from "@lightningrodlabs/we-applet";
 import { encode } from "@msgpack/msgpack";
 import Emittery, { UnsubscribeFunction } from "emittery";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
-import { GroupStore } from "./groups/group-store";
+import { GenericGroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
-import { getCellId } from "./utils";
+import { getCellId, initAppClient } from "./utils";
+
+export class GroupStore extends GenericGroupStore<WeApplet> {}
 
 export interface WeEvents {
   GroupCreated: DnaHash;
 }
 
 export class WeStore {
-  public appletsStore: AppletsStore;
+  public appletsStore: AppletsStore<WeApplet>;
   public membraneInvitationsStore: MembraneInvitationsStore;
 
   emitter = new Emittery<WeEvents>();
@@ -174,9 +180,7 @@ export class WeStore {
   );
 
   allGroupsInfo = asyncDeriveStore(this.allGroups, (groupsStores) =>
-    joinAsyncMap(
-      mapValues(groupsStores, (store) => lazyLoad(() => store.groupInfo()))
-    )
+    joinAsyncMap(mapValues(groupsStores, (store) => store.groupInfo))
   );
 
   allAppletsInstances = asyncDeriveStore(this.allGroups, (allGroups) =>
@@ -194,32 +198,23 @@ export class WeStore {
           AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>
         ]),
         async ([groupsStores, groupInfos, groupAppletInstances]) => {
-          const gui = await this.appletsStore.appletsGui.get(
-            devhubReleaseEntryHash
-          );
-
           // TODO: install dialog if it hasn't been installed yet
 
           const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
             Array.from(groupAppletInstances.entries()).map(
               async ([groupDnaHash, instances], index) => {
                 const appletsClients = await Promise.all(
-                  Array.from(instances.entries())
+                  Array.from(instances.values())
                     .filter(
-                      ([appletInstanceHash, instance]) =>
+                      (instance) =>
                         instance.devhub_happ_release_hash.toString() ===
                         devhubReleaseEntryHash.toString()
                     )
-                    .map(async ([appletInstanceHash, instance]) => {
-                      const appletId = await groupsStores
+                    .map(async (appletInstance) => {
+                      const appletId = groupsStores
                         .get(groupDnaHash)
-                        .appletAppId(appletInstanceHash);
-                      const appletClient = await AppAgentWebsocket.connect(
-                        this.appAgentWebsocket.appWebsocket.client.socket.url,
-                        appletId
-                      );
-                      appletClient.installedAppId = appletId;
-                      return appletClient;
+                        .appletAppIdFromAppletInstance(appletInstance);
+                      return initAppClient(appletId);
                     })
                 );
                 return {
