@@ -79,7 +79,9 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     return html`
       <view-frame
         .appletJs=${guiFile}
-        .initFrameJs=${`const div = document.createElement('div'); applet.groupViews(window.appletClient, window.groupInfo, window.groupServices).${this.viewToRender}; document.body.appendChild(div);`}
+        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices).${this.viewToRender(
+          "el"
+        )}; }`}
         .globalVars=${globalVars}
         style="flex: 1"
       ></view-frame>

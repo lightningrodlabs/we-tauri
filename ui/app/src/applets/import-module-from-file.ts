@@ -4,11 +4,10 @@ export function esm(templateStrings: any, ...substitutions: any) {
     js += substitutions[i] + templateStrings.raw[i + 1];
   }
   return (
-    'data:text/javascript;base64,' + btoa(unescape(encodeURIComponent(js)))
+    "data:text/javascript;base64," + btoa(unescape(encodeURIComponent(js)))
   );
 }
-export async function importModuleFromFile(file: File) {
-  const text = await file.text();
+export async function importModuleFromText(text: string) {
   // prettier-ignore
   const module = await import(esm`${text}`);
 

@@ -6,6 +6,7 @@ import { html, LitElement } from "lit";
 import { state } from "lit/decorators.js";
 import { GroupContext } from "../groups/elements/group-context.js";
 import { GroupInstalledApplets } from "../groups/elements/group-installed-applets.js";
+import { weStyles } from "../shared-styles.js";
 import { GroupSidebar } from "./group-sidebar.js";
 
 @localized()
@@ -42,4 +43,6 @@ export class NavigationSidebar extends ScopedElementsMixin(LitElement) {
       "group-sidebar": GroupSidebar,
     };
   }
+
+  static styles = weStyles;
 }

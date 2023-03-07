@@ -50,7 +50,7 @@ export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "display-error": DisplayError,
-      "profiles-context": ProfilesContext,
+      // "profiles-context": ProfilesContext,
       "list-agents-by-status": ListAgentsByStatus,
       "peer-status-context": PeerStatusContext,
     };

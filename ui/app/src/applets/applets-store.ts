@@ -50,10 +50,7 @@ export class AppletsStore {
         [new Blob([new Uint8Array(appletGuiFile)])],
         "filename"
       ).text();
-      return t
-        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-        .replace(/\`/g, "\\`")
-        .replace(/\$\{/g, "\\${");
+      return t;
     })
   );
 }

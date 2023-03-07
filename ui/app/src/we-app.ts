@@ -6,6 +6,7 @@ import {
   AdminWebsocket,
   CellType,
   GrantedFunctionsType,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
@@ -61,6 +62,18 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
             this.dynamicLayout.openGroupHomeTab(e.detail.groupDnaHash)}
           @group-created=${(e: CustomEvent) =>
             this.dynamicLayout.openGroupHomeTab(e.detail.groupDnaHash)}
+          @applet-instance-selected=${(e: CustomEvent) => {
+            this.dynamicLayout.openTab("Applet", {
+              type: "component",
+              componentType: "group-applet-main",
+              componentState: {
+                groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
+                appletInstanceHash: encodeHashToBase64(
+                  e.detail.appletInstanceHash
+                ),
+              },
+            });
+          }}
         ></navigation-sidebar>
         <dynamic-layout id="dynamic-layout" style="flex: 1"></dynamic-layout>
       </div>

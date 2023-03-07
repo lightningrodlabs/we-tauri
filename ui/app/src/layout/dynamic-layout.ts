@@ -108,16 +108,6 @@ export class DynamicLayout extends ScopedElementsMixin(LitElement) {
         "tab-layout": TabLayout,
       }}
       style="flex: 1; display: flex;"
-      @applet-instance-selected=${(e: CustomEvent) => {
-        this.openTab("Applet", {
-          type: "component",
-          componentType: "group-applet-main",
-          componentState: {
-            groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
-            appletInstanceHash: encodeHashToBase64(e.detail.appletInstanceHash),
-          },
-        });
-      }}
     >
       <golden-layout-register
         component-type="tab-layout"
