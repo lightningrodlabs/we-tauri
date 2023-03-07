@@ -24,10 +24,10 @@ export type View = (rootElement: HTMLElement) => void;
 export type EntryTypeView = (
   hash: EntryHash | ActionHash,
   context: any
-) => Promise<{
-  name: string;
+) => {
+  name: () => Promise<string>;
   view: View;
-}>;
+};
 
 export interface CrossGroupViews {
   main: View;

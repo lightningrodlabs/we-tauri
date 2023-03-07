@@ -57,6 +57,7 @@ export class GroupInstalledApplets extends ScopedElementsMixin(LitElement) {
       case "error":
         return html`<display-error
           tooltip
+          .headline=${msg("Error fetching the applets installed in this group")}
           .error=${this._installedApplets.value.error.data.data}
         ></display-error>`;
       case "complete":

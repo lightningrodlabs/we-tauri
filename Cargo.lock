@@ -2495,6 +2495,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "hrl_locator"
+version = "0.0.1"
+dependencies = [
+ "hdk",
+ "serde",
+]
+
+[[package]]
 name = "http"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"

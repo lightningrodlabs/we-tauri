@@ -1,5 +1,5 @@
 [workspace]
-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "crates/*"]
 resolver = "2"
 
 [profile.dev]

@@ -16,5 +16,6 @@
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
     "concurrently": "^6.2.1"
-  }
+  },
+  "type": "module"
 }

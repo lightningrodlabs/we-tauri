@@ -12,7 +12,6 @@ import { property } from "lit/decorators.js";
 import { JoinGroups } from "../elements/join-groups.js";
 
 import { GroupContext } from "../groups/elements/group-context.js";
-import { GroupInstalledApplets } from "../groups/elements/group-installed-applets.js";
 import { GroupPeersStatus } from "../groups/elements/group-peers-status.js";
 import { InstallableApplets } from "../groups/elements/installable-applets.js";
 import { weStyles } from "../shared-styles.js";
@@ -59,7 +58,6 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
         "welcome-view": WelcomeView,
         "join-groups": JoinGroups,
         "group-peers-status": GroupPeersStatus,
-        "group-installed-applets": GroupInstalledApplets,
         "group-context": GroupContext,
         "group-applet-main": GroupAppletMain,
         "installable-applets": InstallableApplets,
@@ -80,15 +78,6 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
         component-type="group-settings"
         .template=${({ groupDnaHash }) => html`
           <group-settings .groupDnaHash=${groupDnaHash}></group-settings>
-        `}
-      >
-      </golden-layout-register>
-      <golden-layout-register
-        component-type="group-installed-applets"
-        .template=${({ groupDnaHash }) => html`
-          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-            <group-installed-applets></group-installed-applets
-          ></group-context>
         `}
       >
       </golden-layout-register>

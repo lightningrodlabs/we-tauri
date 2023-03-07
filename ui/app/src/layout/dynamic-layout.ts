@@ -50,13 +50,6 @@ export class DynamicLayout extends ScopedElementsMixin(LitElement) {
       content: [
         {
           type: "component",
-          componentType: "group-installed-applets",
-          componentState: {
-            groupDnaHash: encodeHashToBase64(groupDnaHash),
-          },
-        },
-        {
-          type: "component",
           componentType: "group-installable-applets",
           componentState: {
             groupDnaHash: encodeHashToBase64(groupDnaHash),

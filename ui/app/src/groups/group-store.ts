@@ -10,7 +10,7 @@ import {
   lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
-import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   AdminWebsocket,
   AgentPubKey,
@@ -23,7 +23,6 @@ import {
   encodeHashToBase64,
   EntryHash,
   InstallAppRequest,
-  InstalledAppId,
   ProvisionedCell,
   StemCell,
 } from "@holochain/client";
@@ -32,10 +31,9 @@ import { decode, encode } from "@msgpack/msgpack";
 import { AppletsStore } from "../applets/applets-store";
 import { AppletsClient } from "./applets-client";
 import { AppletInstance, GroupInfo } from "./types";
-import md5 from "md5";
 import { AppletMetadata } from "../types";
 import { initAppClient } from "../utils";
-import { fromUint8Array, toBase64 } from "js-base64";
+import { fromUint8Array } from "js-base64";
 
 // Given a group, all the functionality related to that group
 export class GenericGroupStore<APPLET> {

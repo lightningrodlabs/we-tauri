@@ -8,7 +8,6 @@ import {
   AsyncReadable,
   join,
   joinAsyncMap,
-  lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
 import {
@@ -33,25 +32,28 @@ import {
   WeApplet,
 } from "@lightningrodlabs/we-applet";
 import { encode } from "@msgpack/msgpack";
-import Emittery, { UnsubscribeFunction } from "emittery";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
 import { GenericGroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
-import { getCellId, initAppClient } from "./utils";
+import {
+  DnaLocation,
+  getRecord,
+  locateHrlInDna,
+} from "./processes/hrl/locate-hrl";
+import {
+  findAppForDnaHash,
+  findAppletInstanceForAppInfo,
+  getCellId,
+  initAppClient,
+} from "./utils";
 
 export class GroupStore extends GenericGroupStore<WeApplet> {}
 
-export interface WeEvents {
-  GroupCreated: DnaHash;
-}
-
 export class WeStore {
-  public appletsStore: AppletsStore<WeApplet>;
+  public appletsStore: AppletsStore;
   public membraneInvitationsStore: MembraneInvitationsStore;
-
-  emitter = new Emittery<WeEvents>();
 
   constructor(
     public adminWebsocket: AdminWebsocket,
@@ -66,13 +68,6 @@ export class WeStore {
     this.membraneInvitationsStore = new MembraneInvitationsStore(
       new MembraneInvitationsClient(appAgentWebsocket, "lobby")
     );
-  }
-
-  on<Name extends keyof WeEvents>(
-    eventName: Name | readonly Name[],
-    listener: (eventData: WeEvents[Name]) => void | Promise<void>
-  ): UnsubscribeFunction {
-    return this.emitter.on(eventName, listener);
   }
 
   /**
@@ -104,8 +99,6 @@ export class WeStore {
       properties: encode(properties),
       resulting_dna_hash: newGroupDnaHash,
     });
-
-    this.emitter.emit("GroupCreated", groupDnaHash);
 
     return newGroupDnaHash;
   }
@@ -183,8 +176,38 @@ export class WeStore {
     joinAsyncMap(mapValues(groupsStores, (store) => store.groupInfo))
   );
 
-  allAppletsInstances = asyncDeriveStore(this.allGroups, (allGroups) =>
+  appletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
     joinAsyncMap(mapValues(allGroups, (store) => store.installedApplets))
+  );
+
+  dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
+    asyncDerived(
+      this.appletsInstancesByGroup,
+      async (appletsInstancesByGroup) => {
+        const apps = await this.adminWebsocket.listApps({});
+        const app = findAppForDnaHash(apps, dnaHash);
+
+        if (!app) throw new Error("The given dna is not installed");
+
+        const { groupDnaHash, appletInstanceHash } =
+          findAppletInstanceForAppInfo(appletsInstancesByGroup, app.appInfo);
+        return {
+          groupDnaHash,
+          appletInstanceHash,
+          appInfo: app.appInfo,
+          roleName: app.roleName,
+        } as DnaLocation;
+      }
+    )
+  );
+
+  hrlLocations = new LazyHoloHashMap(
+    (dnaHash: DnaHash) =>
+      new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
+        asyncDerived(this.dnaLocations.get(dnaHash), (location) =>
+          getRecord(this.adminWebsocket, location, [dnaHash, hash])
+        )
+      )
   );
 
   groupAppletInfos = new LazyHoloHashMap(
@@ -192,7 +215,11 @@ export class WeStore {
       devhubReleaseEntryHash: EntryHash // appletid
     ) =>
       asyncDerived(
-        join([this.allGroups, this.allGroupsInfo, this.allAppletsInstances] as [
+        join([
+          this.allGroups,
+          this.allGroupsInfo,
+          this.appletsInstancesByGroup,
+        ] as [
           AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
           AsyncReadable<HoloHashMap<DnaHash, GroupInfo>>,
           AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>

@@ -1,3 +1,4 @@
+import { EntryHashMap } from "@holochain-open-dev/utils";
 import {
   EntryHash,
   CellId,
@@ -5,7 +6,12 @@ import {
   DisabledAppReason,
   AppInfo,
   AppAgentWebsocket,
+  ListAppsResponse,
+  InstalledAppId,
+  DnaHash,
+  CellType,
 } from "@holochain/client";
+import { AppletInstance } from "./groups/types";
 
 export async function initAppClient(
   appId: string,
@@ -17,6 +23,69 @@ export async function initAppClient(
   client.appWebsocket.overrideInstalledAppId = appId;
   await client.appInfo();
   return client;
+}
+
+export function findAppForDnaHash(
+  apps: ListAppsResponse,
+  dnaHash: DnaHash
+): { appInfo: AppInfo; roleName: string } | undefined {
+  for (const app of apps) {
+    for (const [roleName, cells] of Object.entries(app.cell_info)) {
+      for (const cell of cells) {
+        if (CellType.Cloned in cell) {
+          if (
+            cell[CellType.Cloned].cell_id[0].toString() === dnaHash.toString()
+          ) {
+            return { appInfo: app, roleName };
+          }
+        } else if (CellType.Provisioned in cell) {
+          if (
+            cell[CellType.Provisioned].cell_id[0].toString() ===
+            dnaHash.toString()
+          ) {
+            return { appInfo: app, roleName };
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+export function findAppletInstanceForAppInfo(
+  appletsInstancesByGroup: ReadonlyMap<DnaHash, EntryHashMap<AppletInstance>>,
+  appInfo: AppInfo
+): { groupDnaHash: DnaHash; appletInstanceHash: EntryHash } {
+  for (const [
+    groupDnaHash,
+    appletsInstances,
+  ] of appletsInstancesByGroup.entries()) {
+    for (const [
+      appletInstanceHash,
+      appletInstance,
+    ] of appletsInstances.entries()) {
+      for (const [appletRole, dnaHash] of Object.entries(
+        appletInstance.dna_hashes
+      )) {
+        for (const [role, cells] of Object.entries(appInfo.cell_info)) {
+          if (role === appletRole) {
+            for (const cell of cells) {
+              if (CellType.Provisioned in cell) {
+                if (
+                  cell[CellType.Provisioned].cell_id[0].toString() ===
+                  dnaHash.toString()
+                ) {
+                  return { groupDnaHash, appletInstanceHash };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error("Can't find applet for the given app info");
 }
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
