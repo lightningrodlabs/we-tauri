@@ -19,7 +19,7 @@ async function importModuleFromText(text) {
   return module;
 }`;
 // TODO: use the ViewFrameInIframe component instead of the ViewFrame when moved to tauri
-export class ViewFrameInIframe extends ScopedElementsMixin(LitElement) {
+export class ViewFrame extends ScopedElementsMixin(LitElement) {
   @property()
   globalVars: any;
 
@@ -45,7 +45,10 @@ export class ViewFrameInIframe extends ScopedElementsMixin(LitElement) {
         this.iframe.contentWindow![key] = value;
       }
     }
-    const js = this.appletJs;
+    const js = this.appletJs
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\`/g, "\\`")
+      .replace(/\$\{/g, "\\${");
     const scriptChild = iframe.contentDocument!.createElement("script");
     scriptChild.innerHTML =
       importfunction +
@@ -77,7 +80,7 @@ export class ViewFrameInIframe extends ScopedElementsMixin(LitElement) {
   ];
 }
 
-export class ViewFrame extends ScopedElementsMixin(LitElement) {
+export class IViewFrame extends ScopedElementsMixin(LitElement) {
   @property()
   globalVars: any;
 
