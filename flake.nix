@@ -24,8 +24,25 @@
           , ...
           }: {
             devShells.default = pkgs.mkShell {
+              nativeBuildInputs = with pkgs; [
+                wrapGAppsHook
+                perl
+                pkg-config
+              ];
+              buildInputs = with pkgs; [
+                openssl
+                glib
+                gtk3
+                gdk-pixbuf
+                webkitgtk.dev
+              ];
               inputsFrom = [ inputs.holochain.devShells.${system}.holonix ];
               packages = [ pkgs.nodejs-18_x pkgs.cargo-nextest ];
+
+              shellHook = ''
+                unset CARGO_TARGET_DIR
+                unset CARGO_HOME
+              '';
             };
           };
       };
