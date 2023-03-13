@@ -2,14 +2,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod default_apps;
 mod filesystem;
+mod launch;
 mod state;
 use commands::{
+    conductor_info::{get_conductor_info, is_launched},
     install_applet::install_applet,
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
-use state::{get_ports_info, is_launched};
 
 fn main() {
     tauri::Builder::default()
@@ -20,7 +22,7 @@ fn main() {
             enter_password,
             is_keystore_initialized,
             is_launched,
-            get_ports_info
+            get_conductor_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,0 +1,78 @@
+use std::collections::HashMap;
+
+use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
+use holochain_web_app_manager::WebAppManager;
+
+use crate::state::{WeError, WeResult};
+
+pub fn we_app_id() -> String {
+    format!("we-{}", env!("CARGO_PKG_VERSION"))
+}
+
+pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> WeResult<()> {
+    let apps = manager
+        .list_apps()
+        .await
+        .map_err(|err| WeError::WebAppManagerError(err))?;
+
+    // let version: String = manager.holochain_manager.version.manager().hdi_version().into();
+    let holochain_version: String = manager.holochain_manager.version.into();
+
+    let network_seed = if cfg!(debug_assertions) {
+        Some(String::from("we-dev"))
+    } else {
+        None
+    };
+
+    let devhub_app_id = format!("DevHub-{}", holochain_version);
+
+    if apps
+        .iter()
+        .map(|info| info.installed_app_info.installed_app_id.clone())
+        .collect::<Vec<String>>()
+        .contains(&devhub_app_id)
+        == false
+    {
+        let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../DevHub.webhapp"))
+            .map_err(|err| WeError::MrBundleError(format!("{:?}", err)))?;
+
+        manager
+            .install_web_app(
+                devhub_app_id,
+                dev_hub_bundle,
+                network_seed.clone(),
+                HashMap::new(),
+                None,
+                None,
+                None,
+            )
+            .await
+            .map_err(|err| WeError::WebAppManagerError(err))?;
+    }
+
+    let we_app_id = we_app_id();
+    if apps
+        .iter()
+        .map(|info| info.installed_app_info.installed_app_id.clone())
+        .collect::<Vec<String>>()
+        .contains(&we_app_id)
+        == false
+    {
+        let we_bundle = AppBundle::decode(include_bytes!("../../workdir/we.happ"))
+            .map_err(|err| WeError::MrBundleError(format!("{:?}", err)))?;
+
+        manager
+            .install_app(
+                we_app_id,
+                we_bundle,
+                network_seed,
+                HashMap::new(),
+                None,
+                None,
+            )
+            .await
+            .map_err(|err| WeError::WebAppManagerError(err))?;
+    }
+
+    Ok(())
+}

@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 
 use futures::lock::Mutex;
 use holochain_manager::config::LaunchHolochainConfig;
@@ -8,6 +8,7 @@ use tauri::{api::process::Command, Manager};
 
 use crate::{
     filesystem::{conductor_path, keystore_path},
+    launch::launch,
     state::{holochain_version, log_level, LaunchedState, WeError, WeResult},
 };
 
@@ -42,7 +43,7 @@ pub async fn create_password(app_handle: tauri::AppHandle, password: String) -> 
 
     let state = launch(&app_data_dir, &app_config_dir, password).await?;
 
-    app_handle.manage(Arc::new(Mutex::new(state)));
+    app_handle.manage(Mutex::new(state));
 
     Ok(())
 }
@@ -67,46 +68,7 @@ pub async fn enter_password(app_handle: tauri::AppHandle, password: String) -> W
 
     let state = launch(&app_data_dir, &app_config_dir, password).await?;
 
-    app_handle.manage(Arc::new(Mutex::new(state)));
+    app_handle.manage(Mutex::new(state));
 
     Ok(())
-}
-
-async fn launch(
-    app_data_dir: &PathBuf,
-    app_config_dir: &PathBuf,
-    password: String,
-) -> WeResult<LaunchedState> {
-    let lair_keystore_manager = LairKeystoreManagerV0_2::launch(
-        log_level(),
-        keystore_path(&app_data_dir),
-        password.clone(),
-    )
-    .await
-    .map_err(|err| WeError::LairKeystoreError(err))?;
-
-    let version = holochain_version();
-    let version_str = version.to_string();
-
-    let admin_port = portpicker::pick_unused_port().expect("No ports free");
-
-    let web_app_manager = WebAppManager::launch(
-        version,
-        LaunchHolochainConfig {
-            log_level: log_level(),
-            admin_port,
-            command: Command::new_sidecar(format!("holochain-v{}", version_str))
-                .map_err(|err| WeError::TauriError(format!("{:?}", err)))?,
-            conductor_config_dir: conductor_path(&app_config_dir, &version),
-            environment_path: conductor_path(&app_data_dir, &version),
-            keystore_connection_url: lair_keystore_manager.connection_url(),
-        },
-        password.clone(),
-    )
-    .await?;
-
-    Ok(LaunchedState {
-        lair_keystore_manager,
-        web_app_manager,
-    })
 }

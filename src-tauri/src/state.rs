@@ -1,43 +1,16 @@
 use futures::lock::Mutex;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use tauri::{api::process::Command, AppHandle, Manager};
+use tauri::{AppHandle, Manager};
 
-use holochain_manager::{config::LaunchHolochainConfig, versions::HolochainVersion};
+use holochain_manager::versions::{mr_bundle_latest::error::MrBundleError, HolochainVersion};
 use holochain_web_app_manager::{error::LaunchWebAppManagerError, WebAppManager};
-use lair_keystore_manager::{
-    error::LairKeystoreError, versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager,
-};
+use lair_keystore_manager::{error::LairKeystoreError, versions::v0_2::LairKeystoreManagerV0_2};
 use log::Level;
-
-use crate::filesystem::{conductor_path, keystore_path};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SetupState {
     CreatePassword,
     EnterPassword,
-}
-
-#[tauri::command]
-pub fn is_launched(app_handle: AppHandle) -> WeResult<bool> {
-    let connected_state: Option<tauri::State<'_, LaunchedState>> = app_handle.try_state();
-    Ok(connected_state.is_some())
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PortsInfo {
-    app_port: u16,
-    admin_port: u16,
-}
-
-#[tauri::command]
-pub async fn get_ports_info(state: tauri::State<'_, Mutex<LaunchedState>>) -> WeResult<PortsInfo> {
-    let mut m = state.lock().await;
-
-    Ok(PortsInfo {
-        app_port: m.web_app_manager.app_interface_port(),
-        admin_port: m.web_app_manager.admin_interface_port(),
-    })
 }
 
 pub struct LaunchedState {
@@ -71,6 +44,9 @@ pub enum WeError {
 
     #[error(transparent)]
     LairKeystoreError(#[from] LairKeystoreError),
+
+    #[error("MrBundle error: `{0}`")]
+    MrBundleError(String),
 
     #[error("Tauri error: `{0}`")]
     TauriError(String),

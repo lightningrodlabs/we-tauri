@@ -19,7 +19,11 @@ import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
 import { initDevhubClient } from "./processes/devhub/app-id.js";
-import { getPortsInfo, isKeystoreInitialized, isLaunched } from "./tauri.js";
+import {
+  getConductorInfo,
+  isKeystoreInitialized,
+  isLaunched,
+} from "./tauri.js";
 import { EnterPassword } from "./password/enter-password.js";
 import { CreatePassword } from "./password/create-password.js";
 
@@ -50,14 +54,14 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
   async connect() {
     this.view = { view: "loading" };
-    const ports = await getPortsInfo();
+    const info = await getConductorInfo();
 
     const adminWebsocket = await AdminWebsocket.connect(
-      `ws://localhost:${ports.admin_port}`
+      `ws://localhost:${info.admin_port}`
     );
     const appAgentWebsocket = await AppAgentWebsocket.connect(
-      `ws://localhost:${ports.app_port}`,
-      "we"
+      `ws://localhost:${info.app_port}`,
+      info.we_app_id
     );
 
     const devhubClient = await initDevhubClient(adminWebsocket);

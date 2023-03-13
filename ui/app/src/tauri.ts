@@ -8,13 +8,14 @@ export async function isLaunched(): Promise<boolean> {
   return invoke("is_launched");
 }
 
-export interface PortsInfo {
+export interface ConductorInfo {
   app_port: number;
   admin_port: number;
+  we_app_id: string;
 }
 
-export async function getPortsInfo(): Promise<PortsInfo> {
-  return invoke("get_ports_info");
+export async function getConductorInfo(): Promise<ConductorInfo> {
+  return invoke("get_conductor_info");
 }
 
 export async function enterPassword(password: string): Promise<void> {
