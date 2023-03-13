@@ -1,6 +1,7 @@
+use futures::lock::Mutex;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tauri::api::process::Command;
+use tauri::{api::process::Command, AppHandle, Manager};
 
 use holochain_manager::{config::LaunchHolochainConfig, versions::HolochainVersion};
 use holochain_web_app_manager::{error::LaunchWebAppManagerError, WebAppManager};
@@ -17,15 +18,31 @@ pub enum SetupState {
     EnterPassword,
 }
 
-pub struct RunningState {
-    pub lair_keystore_manager: LairKeystoreManagerV0_2,
-    pub web_app_manager: WebAppManager,
+#[tauri::command]
+pub fn is_launched(app_handle: AppHandle) -> WeResult<bool> {
+    let connected_state: Option<tauri::State<'_, LaunchedState>> = app_handle.try_state();
+    Ok(connected_state.is_some())
 }
 
-pub enum WeState {
-    Setup(SetupState),
-    Running(RunningState),
-    Error(WeError),
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PortsInfo {
+    app_port: u16,
+    admin_port: u16,
+}
+
+#[tauri::command]
+pub async fn get_ports_info(state: tauri::State<'_, Mutex<LaunchedState>>) -> WeResult<PortsInfo> {
+    let mut m = state.lock().await;
+
+    Ok(PortsInfo {
+        app_port: m.web_app_manager.app_interface_port(),
+        admin_port: m.web_app_manager.admin_interface_port(),
+    })
+}
+
+pub struct LaunchedState {
+    pub lair_keystore_manager: LairKeystoreManagerV0_2,
+    pub web_app_manager: WebAppManager,
 }
 
 // If not initialized: Not Running -->|run| Setup -->|init && launch(password)| Running
@@ -60,42 +77,3 @@ pub enum WeError {
 }
 
 pub type WeResult<T> = Result<T, WeError>;
-
-pub async fn launch(
-    app_data_dir: &PathBuf,
-    app_config_dir: &PathBuf,
-    password: String,
-) -> WeResult<RunningState> {
-    let lair_keystore_manager = LairKeystoreManagerV0_2::launch(
-        log_level(),
-        keystore_path(&app_data_dir),
-        password.clone(),
-    )
-    .await
-    .map_err(|err| WeError::LairKeystoreError(err))?;
-
-    let version = holochain_version();
-    let version_str = version.to_string();
-
-    let admin_port = portpicker::pick_unused_port().expect("No ports free");
-
-    let web_app_manager = WebAppManager::launch(
-        version,
-        LaunchHolochainConfig {
-            log_level: log_level(),
-            admin_port,
-            command: Command::new_sidecar(format!("holochain-v{}", version_str))
-                .map_err(|err| WeError::TauriError(format!("{:?}", err)))?,
-            conductor_config_dir: conductor_path(&app_config_dir, &version),
-            environment_path: conductor_path(&app_data_dir, &version),
-            keystore_connection_url: lair_keystore_manager.connection_url(),
-        },
-        password.clone(),
-    )
-    .await?;
-
-    Ok(RunningState {
-        lair_keystore_manager,
-        web_app_manager,
-    })
-}

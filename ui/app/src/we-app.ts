@@ -19,19 +19,46 @@ import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
 import { initDevhubClient } from "./processes/devhub/app-id.js";
+import { getPortsInfo, isKeystoreInitialized, isLaunched } from "./tauri.js";
+import { EnterPassword } from "./password/enter-password.js";
+import { CreatePassword } from "./password/create-password.js";
+
+type View =
+  | { view: "loading" }
+  | { view: "password"; initialized: boolean }
+  | { view: "main" };
 
 @customElement("we-app")
 export class WeApp extends ScopedElementsMixin(LitElement) {
+  @state()
+  view: View = { view: "loading" };
+
   @provide({ context: weStoreContext })
   @state()
   _weStore!: WeStore;
 
-  @state()
-  loading = true;
-
   async firstUpdated() {
-    const adminWebsocket = await AdminWebsocket.connect("");
-    const appAgentWebsocket = await AppAgentWebsocket.connect("", "we");
+    const launched = await isLaunched();
+
+    if (launched) {
+      await this.connect();
+    } else {
+      const initialized = await isKeystoreInitialized();
+      this.view = { view: "password", initialized };
+    }
+  }
+
+  async connect() {
+    this.view = { view: "loading" };
+    const ports = await getPortsInfo();
+
+    const adminWebsocket = await AdminWebsocket.connect(
+      `ws://localhost:${ports.admin_port}`
+    );
+    const appAgentWebsocket = await AppAgentWebsocket.connect(
+      `ws://localhost:${ports.app_port}`,
+      "we"
+    );
 
     const devhubClient = await initDevhubClient(adminWebsocket);
 
@@ -40,20 +67,14 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       appAgentWebsocket,
       devhubClient
     );
-
-    this.loading = false;
+    this.view = { view: "main" };
   }
 
   get dynamicLayout() {
     return this.shadowRoot?.getElementById("dynamic-layout") as DynamicLayout;
   }
 
-  render() {
-    if (this.loading)
-      return html`<div class="row center-content" style="flex: 1;">
-        <mwc-circular-progress indeterminate></mwc-circular-progress>
-      </div>`;
-
+  renderContent() {
     return html`
       <div style="flex: 1;" class="row">
         <navigation-sidebar
@@ -80,11 +101,38 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     `;
   }
 
+  render() {
+    switch (this.view.view) {
+      case "loading":
+        return html`<div class="row center-content" style="flex: 1;">
+          <mwc-circular-progress indeterminate></mwc-circular-progress>
+        </div>`;
+      case "password":
+        if (this.view.initialized) {
+          return html`
+            <enter-password
+              @password-entered=${() => this.connect()}
+            ></enter-password>
+          `;
+        } else {
+          return html`
+            <create-password
+              @password-created=${() => this.connect()}
+            ></create-password>
+          `;
+        }
+      case "main":
+        return this.renderContent();
+    }
+  }
+
   static get scopedElements() {
     return {
       "mwc-circular-progress": CircularProgress,
       "navigation-sidebar": NavigationSidebar,
       "dynamic-layout": DynamicLayout,
+      "enter-password": EnterPassword,
+      "create-password": CreatePassword,
     };
   }
 

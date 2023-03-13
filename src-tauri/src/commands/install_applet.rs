@@ -4,11 +4,11 @@ use futures::lock::Mutex;
 use hdk::prelude::{MembraneProof, SerializedBytes, UnsafeBytes};
 use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
 
-use crate::state::{RunningState, WeError, WeResult, WeState};
+use crate::state::{LaunchedState, WeError, WeResult};
 
 #[tauri::command]
 pub async fn install_applet(
-    state: tauri::State<'_, Mutex<WeState>>,
+    state: tauri::State<'_, Mutex<LaunchedState>>,
     app_id: String,
     app_bundle_path: String,
     network_seed: Option<String>,
@@ -27,9 +27,6 @@ pub async fn install_applet(
     }
 
     let mut m = state.lock().await;
-    let WeState::Running(RunningState {web_app_manager,..}) = &mut (*m) else {
-        return Err(WeError::NotRunning)
-    };
 
     let bytes = fs::read(&app_bundle_path).or(Err(WeError::FileSystemError(String::from(
         "Failed to read Web hApp bundle file",
@@ -37,7 +34,7 @@ pub async fn install_applet(
 
     match WebAppBundle::decode(&bytes) {
         Ok(web_app_bundle) => {
-            web_app_manager
+            m.web_app_manager
                 .install_web_app(
                     app_id.clone(),
                     web_app_bundle,
@@ -54,7 +51,7 @@ pub async fn install_applet(
             let app_bundle = AppBundle::decode(&bytes).or(Err(WeError::FileSystemError(
                 String::from("Failed to read Web hApp bundle file"),
             )))?;
-            web_app_manager
+            m.web_app_manager
                 .install_app(
                     app_id.clone(),
                     app_bundle,
