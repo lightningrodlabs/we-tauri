@@ -55,7 +55,6 @@ export async function getAllAppsWithGui(
     zome_name: "happ_library",
     payload: ["we-applet"],
   });
-  // console.log("@getAllAppsWithGui: ", allAppsOutput);
   const allApps: Array<ContentAddress<HappEntry>> = allAppsOutput.payload;
   const promises = allApps.map((app) =>
     getAppsReleasesWithGui(devhubClient, app)
@@ -91,8 +90,6 @@ export async function getAppsReleasesWithGui(
       };
     }
   );
-
-  // console.log("@getAppsReleases: releases: ", releases);
 
   const filteredReleases = releases.filter((r) => !!r.content.official_gui);
 

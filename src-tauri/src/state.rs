@@ -1,8 +1,6 @@
-use futures::lock::Mutex;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
 
-use holochain_manager::versions::{mr_bundle_latest::error::MrBundleError, HolochainVersion};
+use holochain_manager::versions::HolochainVersion;
 use holochain_web_app_manager::{error::LaunchWebAppManagerError, WebAppManager};
 use lair_keystore_manager::{error::LairKeystoreError, versions::v0_2::LairKeystoreManagerV0_2};
 use log::Level;
@@ -45,11 +43,17 @@ pub enum WeError {
     #[error(transparent)]
     LairKeystoreError(#[from] LairKeystoreError),
 
+    #[error("IO error: `{0}`")]
+    IoError(String),
+
     #[error("MrBundle error: `{0}`")]
     MrBundleError(String),
 
     #[error("Tauri error: `{0}`")]
     TauriError(String),
+
+    #[error("Admin Websocket Error: `{0}`")]
+    AdminWebsocketError(String),
 }
 
 pub type WeResult<T> = Result<T, WeError>;

@@ -14,13 +14,17 @@ tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
 tauri = { version = "1.2", features = ["shell-open"] }
+
+anyhow = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 futures = "0.3"
 log = "0.4.14"
 portpicker = "0.1"
+tempdir = "0.3.7"
 thiserror = "1"
 
+holochain_client = "0.3.1"
 holochain_manager = { git = "https://github.com/holochain/launcher", branch = "we" }
 holochain_web_app_manager = { git = "https://github.com/holochain/launcher", branch = "we" }
 lair_keystore_manager = { git = "https://github.com/holochain/launcher", branch = "we" }

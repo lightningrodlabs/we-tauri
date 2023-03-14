@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use holochain_manager::config::LaunchHolochainConfig;
 use holochain_web_app_manager::WebAppManager;
 use lair_keystore_manager::{versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager};
@@ -7,27 +5,23 @@ use tauri::api::process::Command;
 
 use crate::{
     default_apps::install_default_apps_if_necessary,
-    filesystem::{conductor_path, keystore_path},
+    filesystem::WeFileSystem,
     state::{holochain_version, log_level, LaunchedState, WeError, WeResult},
 };
 
-pub async fn launch(
-    app_data_dir: &PathBuf,
-    app_config_dir: &PathBuf,
-    password: String,
-) -> WeResult<LaunchedState> {
-    let lair_keystore_manager = LairKeystoreManagerV0_2::launch(
-        log_level(),
-        keystore_path(&app_data_dir),
-        password.clone(),
-    )
-    .await
-    .map_err(|err| WeError::LairKeystoreError(err))?;
+pub async fn launch(fs: &WeFileSystem, password: String) -> WeResult<LaunchedState> {
+    let lair_keystore_manager =
+        LairKeystoreManagerV0_2::launch(log_level(), fs.keystore_path(), password.clone())
+            .await
+            .map_err(|err| WeError::LairKeystoreError(err))?;
 
     let version = holochain_version();
     let version_str = version.to_string();
 
-    let admin_port = portpicker::pick_unused_port().expect("No ports free");
+    let admin_port: u16 = match option_env!("ADMIN_PORT") {
+        Some(port) => port.parse().unwrap(),
+        None => portpicker::pick_unused_port().expect("No ports free"),
+    };
     let mut web_app_manager = WebAppManager::launch(
         version,
         LaunchHolochainConfig {
@@ -35,8 +29,8 @@ pub async fn launch(
             admin_port,
             command: Command::new_sidecar(format!("holochain-v{}", version_str))
                 .map_err(|err| WeError::TauriError(format!("{:?}", err)))?,
-            conductor_config_dir: conductor_path(&app_config_dir, &version),
-            environment_path: conductor_path(&app_data_dir, &version),
+            conductor_config_dir: fs.conductor_path(&version),
+            environment_path: fs.conductor_path(&version),
             keystore_connection_url: lair_keystore_manager.connection_url(),
         },
         password.clone(),

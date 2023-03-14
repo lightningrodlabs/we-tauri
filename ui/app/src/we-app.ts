@@ -16,7 +16,6 @@ import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
 import { NavigationSidebar } from "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
-import { initDevhubClient } from "./processes/devhub/app-id.js";
 import {
   getConductorInfo,
   isKeystoreInitialized,
@@ -24,6 +23,8 @@ import {
 } from "./tauri.js";
 import { EnterPassword } from "./password/enter-password.js";
 import { CreatePassword } from "./password/create-password.js";
+import { initAppClient } from "./utils.js";
+import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 
 type View =
   | { view: "loading" }
@@ -68,7 +69,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       info.we_app_id
     );
 
-    const devhubClient = await initDevhubClient(adminWebsocket);
+    const devhubClient = await initAppClient(DEVHUB_APP_ID, 30000);
 
     this._weStore = new WeStore(
       adminWebsocket,

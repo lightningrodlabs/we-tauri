@@ -6118,6 +6118,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
 name = "rend"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7370,8 +7379,10 @@ dependencies = [
 name = "tauri-app"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "futures",
  "hdk",
+ "holochain_client",
  "holochain_launcher_utils 0.0.5",
  "holochain_manager",
  "holochain_types",
@@ -7383,6 +7394,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tempdir",
  "thiserror",
 ]
 
@@ -7508,6 +7520,16 @@ dependencies = [
  "url 2.3.1",
  "walkdir",
  "windows 0.39.0",
+]
+
+[[package]]
+name = "tempdir"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15f2b5fb00ccdf689e0149d1b1b3c03fead81c2b37735d812fa8bddbbf41b6d8"
+dependencies = [
+ "rand 0.4.6",
+ "remove_dir_all",
 ]
 
 [[package]]

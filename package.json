@@ -4,7 +4,8 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=1 npm run network",
-    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && UI_PORT=1420 concurrently \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\" \"WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri dev\" \"holochain-playground\"",
+    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && ADMIN_PORT=10001 UI_PORT=1420 npm run start:agent",
+    "start:agent": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\" \"tauri dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"node scripts/publish-applets.js\"",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
