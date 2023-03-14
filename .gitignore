@@ -9,6 +9,7 @@ dist/
 web_assets.zip
 DevHub/web-app
 testing-applets/
+.running
 
 # custom holochain binaries
 holochain-v0.0.155-x86_64-unknown-linux-gnu

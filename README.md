@@ -43,6 +43,22 @@ To test out the UI:
 npm start
 ```
 
+Or with more than one agent:
+
+``` bash
+AGENTS=2 npm run network
+```
+
+#### Testing with applets
+
+If you already have applets web-happs to test with, add them in the `testing-applets` folder and run `npm start`.
+
+The `scripts/publish-applets.js` is going to be executed, which will publish the applets `.webhapp` files that it finds in the `testing-applets` folder.
+
+Note that you need to enter the password in the tauri window before the publishing can begin.
+
+To check whether this has finished, look in the terminal for the log: `Published applet: gather`
+
 #### Package
 
 To package the web happ:

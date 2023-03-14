@@ -4,9 +4,11 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=1 npm run network",
-    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && ADMIN_PORT=10001 UI_PORT=1420 npm run start:agent",
-    "start:agent": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\" \"tauri dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"node scripts/publish-applets.js\"",
+    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"concurrently-repeat \\\"ADMIN_PORT=$(port) npm run start:agent\\\" $AGENTS\"",
+    "start:ui": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we\"",
+    "start:agent": "concurrently  \"tauri dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"npm run publish:applets\"",
     "test": "npm run build:happ && cargo nextest run -j 1",
+    "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown --workspace --exclude tauri-app",
@@ -16,7 +18,11 @@
     "@holochain-playground/cli": "^0.1.1",
     "@tauri-apps/cli": "^1.2.2",
     "concurrently": "^6.2.1",
-    "rimraf": "^4.4.0"
+    "concurrently-repeat": "^0.0.1",
+    "js-yaml": "^4.1.0",
+    "new-port-cli": "^1.0.0",
+    "rimraf": "^4.4.0",
+    "run-singleton-cli": "^0.0.7"
   },
   "type": "module"
 }
