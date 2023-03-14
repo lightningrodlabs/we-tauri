@@ -26,7 +26,6 @@ pub async fn get_conductor_info(
 ) -> WeResult<ConductorInfo> {
     let mut m = state.lock().await;
 
-    println!("adsf{}", m.web_app_manager.admin_interface_port());
     Ok(ConductorInfo {
         app_port: m.web_app_manager.app_interface_port(),
         admin_port: m.web_app_manager.admin_interface_port(),

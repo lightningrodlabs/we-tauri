@@ -7,7 +7,7 @@ dist/
 *.happ
 *.webhapp
 web_assets.zip
-DevHub/
+DevHub/web-app
 .running
 
 # custom holochain binaries
