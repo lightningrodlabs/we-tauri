@@ -28,7 +28,6 @@ pub async fn launch(
     let version_str = version.to_string();
 
     let admin_port = portpicker::pick_unused_port().expect("No ports free");
-
     let mut web_app_manager = WebAppManager::launch(
         version,
         LaunchHolochainConfig {

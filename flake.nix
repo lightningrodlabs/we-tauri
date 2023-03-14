@@ -40,6 +40,8 @@
               packages = [ pkgs.nodejs-18_x pkgs.cargo-nextest ];
 
               shellHook = ''
+                export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
+                export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME
               '';

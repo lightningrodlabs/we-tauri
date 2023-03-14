@@ -12,12 +12,8 @@ import {
 } from "@scoped-elements/material-web";
 import { query } from "lit/decorators.js";
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import {
-  DisplayError,
-  HoloIdenticon,
-  sharedStyles,
-} from "@holochain-open-dev/elements";
-import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
+import { DisplayError, HoloIdenticon } from "@holochain-open-dev/elements";
+import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, encodeHashToBase64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { StoreSubscriber } from "@holochain-open-dev/stores";

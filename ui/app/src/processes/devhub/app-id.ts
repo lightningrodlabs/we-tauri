@@ -17,7 +17,7 @@ import { UnsubscribeFunction } from "emittery";
 import { initAppClient } from "../../utils";
 import { getAllAppsWithGui } from "./get-happs";
 
-const DEVHUB_APP_ID = "DevHub";
+const DEVHUB_APP_ID = "DevHub-0.1.3";
 
 export async function initDevhubClient(
   adminWebsocket: AdminWebsocket
