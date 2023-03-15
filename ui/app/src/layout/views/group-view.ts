@@ -51,22 +51,17 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  _appletGui = new StoreSubscriber(
+  _appletClient = new StoreSubscriber(
     this,
     () =>
       join([
         this.groupStore.groupInfo,
-        this.groupStore.appletsGuis.get(this.appletInstanceHash),
         this.groupStore.appletClient.get(this.appletInstanceHash),
-      ]) as AsyncReadable<[GroupInfo, string, AppAgentClient]>,
+      ]) as AsyncReadable<[GroupInfo, AppAgentClient]>,
     () => [this.groupStore, this.appletInstanceHash]
   );
 
-  renderAppletFrame([groupInfo, guiFile, client]: [
-    GroupInfo,
-    string,
-    AppAgentClient
-  ]) {
+  renderAppletFrame([groupInfo, client]: [GroupInfo, AppAgentClient]) {
     const globalVars = {
       appletClient: client,
       groupInfo,
@@ -78,7 +73,6 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     }
     return html`
       <view-frame
-        .appletJs=${guiFile}
         .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices).${this.viewToRender(
           "el"
         )}; }`}
@@ -88,7 +82,7 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     `;
   }
   render() {
-    switch (this._appletGui.value?.status) {
+    switch (this._appletClient.value?.status) {
       case "pending":
         return html`<div class="row center-content">
           <mwc-circular-progress></mwc-circular-progress>
@@ -96,10 +90,10 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
       case "error":
         return html`<display-error
           tooltip
-          .error=${this._appletGui.value.error.data.data}
+          .error=${this._appletClient.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderAppletFrame(this._appletGui.value.value);
+        return this.renderAppletFrame(this._appletClient.value.value);
     }
   }
 

@@ -26,6 +26,7 @@ import { CreatePassword } from "./password/create-password.js";
 import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 
+fetch("/index.html");
 type View =
   | { view: "loading" }
   | { view: "password"; initialized: boolean }
@@ -69,7 +70,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(DEVHUB_APP_ID, 30000);
+    const devhubClient = await initAppClient(DEVHUB_APP_ID, 60000);
 
     this._weStore = new WeStore(
       adminWebsocket,

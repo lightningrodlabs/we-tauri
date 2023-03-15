@@ -37,16 +37,16 @@ npm test
 
 #### UI
 
-To test out the UI:
+To start only one agent:
 
 ``` bash
 npm start
 ```
 
-Or with more than one agent:
+To start two agents:
 
 ``` bash
-AGENTS=2 npm run network
+npm run network
 ```
 
 #### Testing with applets

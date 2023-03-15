@@ -9,7 +9,7 @@ import {
   MdDialog,
   CircularProgress,
 } from "@scoped-elements/material-web";
-import { DnaHash, EntryHashB64 } from "@holochain/client";
+import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 
 import { AppletMetadata } from "../../types.js";
@@ -93,10 +93,11 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   async installApplet() {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     try {
-      const appletEntryHash = await this.groupStore.installAppletOnGroup(
-        this._appletInfo,
-        this._customNameField.value
-      );
+      const appletEntryHash =
+        await this.groupStore.installAndRegisterAppletOnGroup(
+          this._appletInfo,
+          this._customNameField.value
+        );
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
       ).close();

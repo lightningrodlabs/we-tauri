@@ -100,30 +100,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
 
 [[package]]
-name = "applet_guis_coordinator"
-version = "0.0.1-alpha1"
-dependencies = [
- "applet_guis_integrity",
- "fixt",
- "futures",
- "hdk",
- "holochain",
- "nanoid 0.3.0",
- "observability",
- "serde",
- "stream-cancel",
- "tokio",
-]
-
-[[package]]
-name = "applet_guis_integrity"
-version = "0.0.1-alpha1"
-dependencies = [
- "hdi",
- "serde",
-]
-
-[[package]]
 name = "applets_coordinator"
 version = "0.0.1-alpha1"
 dependencies = [
@@ -2880,7 +2856,7 @@ dependencies = [
 [[package]]
 name = "holochain_launcher_utils"
 version = "0.0.5"
-source = "git+https://github.com/holochain/launcher?branch=we#4d5221342b4a34e25ea7f810cad3792b6d916958"
+source = "git+https://github.com/holochain/launcher?branch=we#4276a52c05fd55a136b7dfe7012b272edaac1eab"
 dependencies = [
  "holochain_client",
  "holochain_conductor_api",
@@ -2897,11 +2873,12 @@ dependencies = [
 [[package]]
 name = "holochain_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#4d5221342b4a34e25ea7f810cad3792b6d916958"
+source = "git+https://github.com/holochain/launcher?branch=we#4276a52c05fd55a136b7dfe7012b272edaac1eab"
 dependencies = [
  "ascii",
  "async-trait",
  "enum_dispatch",
+ "holochain",
  "holochain_client",
  "holochain_conductor_api",
  "holochain_p2p",
@@ -3238,7 +3215,7 @@ dependencies = [
 [[package]]
 name = "holochain_web_app_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#4d5221342b4a34e25ea7f810cad3792b6d916958"
+source = "git+https://github.com/holochain/launcher?branch=we#4276a52c05fd55a136b7dfe7012b272edaac1eab"
 dependencies = [
  "async-trait",
  "fs_extra",
@@ -4061,7 +4038,7 @@ dependencies = [
 [[package]]
 name = "lair_keystore_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#4d5221342b4a34e25ea7f810cad3792b6d916958"
+source = "git+https://github.com/holochain/launcher?branch=we#4276a52c05fd55a136b7dfe7012b272edaac1eab"
 dependencies = [
  "ascii",
  "async-trait",

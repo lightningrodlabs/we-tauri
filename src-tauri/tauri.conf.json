@@ -1,6 +1,6 @@
 {
   "build": {
-    "devPath": "http://localhost:1420",
+    "devPath": "../ui/app/dist",
     "distDir": "../ui/app/dist",
     "withGlobalTauri": false
   },
@@ -14,6 +14,10 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "all": true,
+        "scope": ["$APPDATA/webhapps/*"]
       }
     },
     "bundle": {
@@ -30,19 +34,12 @@
       "targets": "all"
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousDisableAssetCspModification": true
     },
     "updater": {
       "active": false
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "tauri-app",
-        "width": 800,
-        "height": 600
-      }
-    ]
+    "windows": []
   }
 }

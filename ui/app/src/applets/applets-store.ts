@@ -1,56 +1,57 @@
-import { lazyLoad, lazyLoadAndPoll } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
-import { AppAgentClient, AppBundle, EntryHash } from "@holochain/client";
+import { lazyLoadAndPoll } from "@holochain-open-dev/stores";
+import {
+  AdminWebsocket,
+  AppAgentClient,
+  AppInfo,
+  encodeHashToBase64,
+  EntryHash,
+  InstalledAppId,
+} from "@holochain/client";
 import {
   fetchWebHapp,
   getAllAppsWithGui,
 } from "../processes/devhub/get-happs.js";
-import { AppletsGuiClient } from "./applets-gui-client.js";
-import { decompressWebHapp } from "./decompress-web-happ.js";
-import { GuiFile, IconSrcOption } from "./types.js";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { invoke } from "@tauri-apps/api";
 
 export class AppletsStore {
-  public appletsGuiClient: AppletsGuiClient;
-
   constructor(
-    public appAgentClient: AppAgentClient,
-    public roleName: string,
-    public devhubClient: AppAgentClient
-  ) {
-    this.appletsGuiClient = new AppletsGuiClient(appAgentClient, roleName);
-  }
-
-  async fetchWebHapp(
-    happEntryHash: EntryHash,
-    guiEntryHash: EntryHash
-  ): Promise<[AppBundle, GuiFile, IconSrcOption]> {
-    const compressedWebHapp = await fetchWebHapp(
-      this.devhubClient,
-      "hApp", // This is chosen arbitrarily at the moment
-      happEntryHash,
-      guiEntryHash
-    );
-
-    return decompressWebHapp(compressedWebHapp);
-  }
+    public devhubClient: AppAgentClient,
+    public adminWebsocket: AdminWebsocket
+  ) {}
 
   installableApplets = lazyLoadAndPoll(
     async () => getAllAppsWithGui(this.devhubClient),
     5000
   );
 
-  appletsGui = new LazyHoloHashMap((devhubHappEntryHash: EntryHash) =>
-    lazyLoad(async () => {
-      const appletGuiFile = await this.appletsGuiClient.queryAppletGui(
-        devhubHappEntryHash
-      );
-      // If it doesn't exist yet, download it and commit it
+  async installApplet(
+    devhubHappReleaseHash: EntryHash,
+    devhubGuiReleaseHash: EntryHash,
+    appId: InstalledAppId,
+    networkSeed: string | undefined
+  ): Promise<AppInfo> {
+    const compressedWebHapp = await fetchWebHapp(
+      this.devhubClient,
+      "hApp", // This is chosen arbitrarily at the moment
+      devhubHappReleaseHash,
+      devhubGuiReleaseHash
+    );
 
-      const t = await new File(
-        [new Blob([new Uint8Array(appletGuiFile)])],
-        "filename"
-      ).text();
-      return t;
-    })
-  );
+    // Write a binary file to the `$APPDATA/avatar.png` path
+    await writeBinaryFile(
+      { path: `webhapps/${appId}.webhapp`, contents: compressedWebHapp },
+      { dir: BaseDirectory.AppData }
+    );
+
+    const appInfo: AppInfo = await invoke("install_applet", {
+      appId,
+      networkSeed,
+      membraneProofs: {},
+      happReleaseHash: encodeHashToBase64(devhubHappReleaseHash),
+      guiReleaseHash: encodeHashToBase64(devhubGuiReleaseHash),
+    });
+
+    return appInfo;
+  }
 }

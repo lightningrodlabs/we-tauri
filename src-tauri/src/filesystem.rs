@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 
 use holochain_manager::versions::HolochainVersion;
@@ -12,37 +13,23 @@ pub struct WeFileSystem {
 
 impl WeFileSystem {
     pub fn new(app_handle: &AppHandle) -> WeResult<WeFileSystem> {
-        let mut app_data_dir =
+        let app_data_dir =
             app_handle
                 .path_resolver()
                 .app_data_dir()
                 .ok_or(WeError::FileSystemError(String::from(
                     "Could not resolve the data dir for this app",
                 )))?;
-        let mut app_config_dir =
+        let app_config_dir =
             app_handle
                 .path_resolver()
                 .app_config_dir()
                 .ok_or(WeError::FileSystemError(String::from(
                     "Could not resolve the data dir for this app",
                 )))?;
-        if cfg!(debug_assertions) {
-            app_data_dir.pop();
 
-            let admin_port: String = match option_env!("ADMIN_PORT") {
-                Some(port) => port.parse().unwrap(),
-                None => "".to_string(),
-            };
-            app_data_dir.push(format!("we-dev-{}", admin_port));
-
-            app_config_dir.pop();
-
-            let admin_port: String = match option_env!("ADMIN_PORT") {
-                Some(port) => port.parse().unwrap(),
-                None => "".to_string(),
-            };
-            app_config_dir.push(format!("we-dev-{}", admin_port));
-        }
+        fs::create_dir_all(app_data_dir.join("webhapps"))
+            .map_err(|err| WeError::IoError(format!("{:?}", err)))?;
 
         Ok(WeFileSystem {
             app_data_dir,

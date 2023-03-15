@@ -12,15 +12,15 @@ import { localized, msg } from "@lit/localize";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { DisplayError } from "@holochain-open-dev/elements";
 
-import { AppletMetadata } from "../../types";
-import { InstallAppletDialog } from "./install-applet-dialog";
-import { GenericGroupStore } from "../group-store";
+import { AppletMetadata } from "../../types.js";
+import { InstallAppletDialog } from "./install-applet-dialog.js";
+import { GenericGroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
-import { weStyles } from "../../shared-styles";
+import { weStyles } from "../../shared-styles.js";
 import {
   AppWithReleases,
   getLatestRelease,
-} from "../../processes/devhub/get-happs";
+} from "../../processes/devhub/get-happs.js";
 
 @localized()
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
@@ -109,7 +109,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
           .headline=${msg(
             "Error fetching the applets available for installation"
           )}
-          .error=${this._installableApplets.value.error.data.data}
+          .error=${this._installableApplets.value.error}
         ></display-error>`;
     }
   }

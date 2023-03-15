@@ -37,17 +37,13 @@ import { v4 as uuidv4 } from "uuid";
 import { AppletsStore } from "./applets/applets-store";
 import { GenericGroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
-import {
-  DnaLocation,
-  getRecord,
-  locateHrlInDna,
-} from "./processes/hrl/locate-hrl";
+import { DnaLocation, getRecord } from "./processes/hrl/locate-hrl.js";
 import {
   findAppForDnaHash,
   findAppletInstanceForAppInfo,
   getCellId,
   initAppClient,
-} from "./utils";
+} from "./utils.js";
 
 export class GroupStore extends GenericGroupStore<WeApplet> {}
 
@@ -60,11 +56,7 @@ export class WeStore {
     public appAgentWebsocket: AppAgentWebsocket,
     public devhubClient: AppAgentClient
   ) {
-    this.appletsStore = new AppletsStore(
-      appAgentWebsocket,
-      "lobby",
-      devhubClient
-    );
+    this.appletsStore = new AppletsStore(devhubClient, adminWebsocket);
     this.membraneInvitationsStore = new MembraneInvitationsStore(
       new MembraneInvitationsClient(appAgentWebsocket, "lobby")
     );

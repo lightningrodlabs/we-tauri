@@ -12,6 +12,7 @@ use commands::{
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
+use tauri::{WindowBuilder, WindowUrl};
 
 fn main() {
     tauri::Builder::default()
@@ -24,6 +25,15 @@ fn main() {
             is_launched,
             get_conductor_info
         ])
+        .setup(|app| {
+            WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
+                .on_web_resource_request(|request, response| {
+                    println!("hi,{:?}", request);
+                })
+                .title("We")
+                .build()?;
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

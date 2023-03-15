@@ -80,11 +80,11 @@ export class GenericGroupStore<APPLET> {
   });
 
   appletAppId(
-    devhubReleaseHash: EntryHash,
+    devhubHappReleaseHash: EntryHash,
     networkSeed: string | undefined,
     properties: any
   ): string {
-    return `applet@${encodeHashToBase64(devhubReleaseHash)}-${
+    return `applet@${encodeHashToBase64(devhubHappReleaseHash)}-${
       networkSeed || ""
     }-${fromUint8Array(encode(properties))}`;
   }
@@ -98,7 +98,7 @@ export class GenericGroupStore<APPLET> {
   }
 
   // Installs an applet instance that already exists in this group into this conductor
-  async installAppletInstanceOnConductor(appletInstanceHash: EntryHash) {
+  async installAppletInstance(appletInstanceHash: EntryHash) {
     const appletInstance = await this.appletsClient.getAppletInstance(
       appletInstanceHash
     );
@@ -106,45 +106,26 @@ export class GenericGroupStore<APPLET> {
     if (!appletInstance)
       throw new Error("Given applet instance hash was not found");
 
-    const [appBundle, guiFile, _iconSrcOption] =
-      await this.appletsStore.fetchWebHapp(
-        appletInstance.entry.devhub_happ_release_hash,
-        appletInstance.entry.devhub_gui_release_hash
-      );
-
-    await this.installAppletOnConductorFromBundle(
-      this.appletAppIdFromAppletInstance(appletInstance.entry),
-      appBundle,
-      appletInstance.entry.network_seed
-    );
-
-    await this.appletsStore.appletsGuiClient.commitGuiFile(
+    return this.appletsStore.installApplet(
       appletInstance.entry.devhub_happ_release_hash,
-      guiFile
+      appletInstance.entry.devhub_gui_release_hash,
+      this.appletAppIdFromAppletInstance(appletInstance.entry),
+      appletInstance.entry.network_seed
     );
   }
 
   // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA
-  async installAppletOnGroup(
+  async installAndRegisterAppletOnGroup(
     appletMetadata: AppletMetadata,
     customName: string
   ): Promise<EntryHash> {
-    const [appBundle, guiFile, iconSrcOption] =
-      await this.appletsStore.fetchWebHapp(
-        appletMetadata.devhubHappReleaseHash,
-        appletMetadata.devhubGuiReleaseHash
-      );
     const networkSeed = uuidv4(); // generate random network seed if not provided
 
-    const appletInfo: AppInfo = await this.installAppletOnConductorFromBundle(
-      this.appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
-      appBundle,
-      networkSeed
-    );
-
-    await this.appletsStore.appletsGuiClient.commitGuiFile(
+    const appletInfo: AppInfo = await this.appletsStore.installApplet(
       appletMetadata.devhubHappReleaseHash,
-      guiFile
+      appletMetadata.devhubGuiReleaseHash,
+      this.appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
+      networkSeed
     );
 
     // --- Register hApp in the We DNA ---
@@ -183,36 +164,13 @@ export class GenericGroupStore<APPLET> {
       description: appletMetadata.description,
       devhub_gui_release_hash: appletMetadata.devhubGuiReleaseHash,
       devhub_happ_release_hash: appletMetadata.devhubHappReleaseHash,
-      logo_src: iconSrcOption,
+      logo_src: undefined, // TODO: change
       network_seed: networkSeed,
       properties: {},
       dna_hashes: dnaHashes,
     };
 
     return this.appletsClient.registerAppletInstance(applet);
-  }
-
-  // Installs the given applet to the conductor
-  private async installAppletOnConductorFromBundle(
-    appletId: string,
-    bundle: AppBundle,
-    networkSeed: string | undefined
-  ): Promise<AppInfo> {
-    // install app bundle
-    const request: InstallAppRequest = {
-      agent_key: this.appAgentWebsocket.myPubKey,
-      installed_app_id: appletId,
-      membrane_proofs: {},
-      bundle,
-      network_seed: networkSeed,
-    };
-    const appInfo = await this.adminWebsocket.installApp(request);
-
-    await this.adminWebsocket.enableApp({
-      installed_app_id: appletId,
-    });
-
-    return appInfo;
   }
 
   installedApplets = lazyLoadAndPoll(
@@ -231,17 +189,6 @@ export class GenericGroupStore<APPLET> {
     lazyLoad(async () =>
       this.appletsClient.getAppletInstance(appletInstanceHash)
     )
-  );
-
-  appletsGuis = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
-    asyncDeriveStore(this.applets.get(appletInstanceHash), (appletInstance) => {
-      const devhubHappEntryHash =
-        appletInstance?.entry.devhub_happ_release_hash;
-
-      if (!devhubHappEntryHash) throw new Error("Applet instance not found");
-
-      return this.appletsStore.appletsGui.get(devhubHappEntryHash);
-    })
   );
 
   appletClient = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
