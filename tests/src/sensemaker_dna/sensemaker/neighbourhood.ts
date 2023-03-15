@@ -8,6 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -144,15 +145,23 @@ export default () => {
           },
         };
 
+        const rangeHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
         const createDimension = {
           name: "likeness",
-          range: integerRange,
+          range_eh: rangeHash,
           computed: false,
         };
 
         const createDimension2 = {
           name: "quality",
-          range: integerRange,
+          range_eh: rangeHash,
           computed: false,
         };
 
@@ -202,7 +211,7 @@ export default () => {
           readPostOutput.signed_action.hashed.content.entry_type.App
         );
 
-        const createResourceType = {
+        const createResourceDef = {
           name: "angryPost",
           //@ts-ignore
           base_types: [
@@ -213,36 +222,37 @@ export default () => {
         };
 
         // Alice creates a resource type
-        const createResourceTypeEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
-          "create_resource_type",
-          createResourceType,
+          "create_resource_def",
+          createResourceDef,
           true
         );
-        t.ok(createResourceTypeEntryHash);
+        t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
         // Bob gets the created resource type
-        const createResourceTypeReadOutput: Record = await callZomeBob(
+        const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
-          "get_resource_type",
-          createResourceTypeEntryHash,
+          "get_resource_def",
+          createResourceDefEntryHash,
           true
         );
         t.deepEqual(
-          createResourceType,
+          createResourceDef,
           decode(
-            (createResourceTypeReadOutput.entry as any).Present.entry
+            (createResourceDefReadOutput.entry as any).Present.entry
           ) as any
         );
 
         // create an assessment on the Post
-        const createAssessment = {
+        const createAssessment: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -258,10 +268,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createAssessment2 = {
+        const createAssessment2: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -312,9 +323,17 @@ export default () => {
           },
         };
 
+        const rangeHash2 = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange2,
+          true
+        );
+        t.ok(rangeHash2);
+
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: integerRange2,
+          range_eh: rangeHash2,
           computed: true,
         };
 
@@ -331,12 +350,12 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceTypeEntryHash,
+          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
           can_compute_live: false,
-          must_publish_dataset: false,
+          requires_validation: false,
         };
 
         const createMethodEntryHash: EntryHash = await callZomeAlice(
@@ -384,13 +403,14 @@ export default () => {
           true
         );
 
-        const objectiveAssessment = {
+        const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              createAssessment.value.Integer + createAssessment2.value.Integer,
+              (createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -519,9 +539,17 @@ export default () => {
           },
         };
 
+        const rangeHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
         const createDimension = {
           name: "likeness",
-          range: integerRange,
+          range_eh: rangeHash,
           computed: false,
         };
 
@@ -549,7 +577,7 @@ export default () => {
           decode((createReadOutput.entry as any).Present.entry) as any
         );
 
-        const createResourceType = {
+        const createResourceDef = {
           name: "angryPost",
           //@ts-ignore
           base_types: [
@@ -560,36 +588,37 @@ export default () => {
         };
 
         // Alice creates a resource type
-        const createResourceTypeEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
           "sensemaker",
-          "create_resource_type",
-          createResourceType,
+          "create_resource_def",
+          createResourceDef,
           true
         );
-        t.ok(createResourceTypeEntryHash);
+        t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
         // Bob gets the created resource type
-        const createResourceTypeReadOutput: Record = await callZomeBob(
+        const createResourceDefReadOutput: Record = await callZomeBob(
           "sensemaker",
-          "get_resource_type",
-          createResourceTypeEntryHash,
+          "get_resource_def",
+          createResourceDefEntryHash,
           true
         );
         t.deepEqual(
-          createResourceType,
+          createResourceDef,
           decode(
-            (createResourceTypeReadOutput.entry as any).Present.entry
+            (createResourceDefReadOutput.entry as any).Present.entry
           ) as any
         );
 
         // create an assessment on the Post
-        const createP1Assessment = {
+        const createP1Assessment: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -605,10 +634,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createP1Assessment2 = {
+        const createP1Assessment2: CreateAssessmentInput = {
           value: { Integer: 4 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -620,10 +650,11 @@ export default () => {
         );
         t.ok(createP1AssessmentEntryHash2);
 
-        const createP2Assessment = {
+        const createP2Assessment: CreateAssessmentInput = {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -636,10 +667,11 @@ export default () => {
         t.ok(createP2AssessmentEntryHash);
 
         // create an assessment on the Post
-        const createP2Assessment2 = {
+        const createP2Assessment2: CreateAssessmentInput = {
           value: { Integer: 3 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -655,10 +687,11 @@ export default () => {
         await pause(pauseDuration);
 
         // create a second assessment on the Post
-        const createP3Assessment = {
+        const createP3Assessment: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -670,10 +703,11 @@ export default () => {
         );
         t.ok(createP3AssessmentEntryHash);
 
-        const createP3Assessment2 = {
+        const createP3Assessment2: CreateAssessmentInput = {
           value: { Integer: 2 },
           dimension_eh: createDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
         };
 
@@ -697,9 +731,17 @@ export default () => {
           },
         };
 
+        const rangeHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange2,
+          true
+        );
+        t.ok(rangeHash2);
+
         const createObjectiveDimension = {
           name: "total_likeness",
-          range: integerRange2,
+          range_eh: rangeHash2,
           computed: true,
         };
 
@@ -714,14 +756,14 @@ export default () => {
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
-        const totalLikenessMethod = {
+        const totalLikenessMethod: Method = {
           name: "total_likeness_method",
-          target_resource_type_eh: createResourceTypeEntryHash,
+          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
           can_compute_live: false,
-          must_publish_dataset: false,
+          requires_validation: false,
         };
 
         const createMethodEntryHash: EntryHash = await callZomeAlice(
@@ -795,14 +837,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment = {
+        const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              createP1Assessment.value.Integer +
-              createP1Assessment2.value.Integer,
+              (createP1Assessment.value as RangeValueInteger).Integer +
+              (createP1Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -820,14 +863,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment2 = {
+        const objectiveAssessment2: Assessment = {
           value: {
             Integer:
-              createP2Assessment.value.Integer +
-              createP2Assessment2.value.Integer,
+              (createP2Assessment.value as RangeValueInteger).Integer +
+              (createP2Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash2,
+          resource_eh: createPostEntryHash2,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -845,14 +889,15 @@ export default () => {
           true
         );
 
-        const objectiveAssessment3 = {
+        const objectiveAssessment3: Assessment = {
           value: {
             Integer:
-              createP3Assessment.value.Integer +
-              createP3Assessment2.value.Integer,
+              (createP3Assessment.value as RangeValueInteger).Integer +
+              (createP3Assessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
-          subject_eh: createPostEntryHash3,
+          resource_eh: createPostEntryHash3,
+          resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
         };
@@ -876,7 +921,7 @@ export default () => {
         };
         const culturalContext = {
           name: "more than 5 total likeness, biggest to smallest",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Biggest: null }]], // DimensionEh
         };
@@ -891,7 +936,7 @@ export default () => {
 
         const culturalContext2 = {
           name: "more than 5 total likeness, smallest to biggest",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
@@ -906,7 +951,7 @@ export default () => {
 
         const culturalContext3 = {
           name: "float threshold",
-          resource_type_eh: createResourceTypeEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           thresholds: [threshold2],
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
@@ -1000,11 +1045,22 @@ export default () => {
             type: "error",
             data: {
               type: "ribosome_error",
-              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/dimension.rs", line: 58, error: Guest("incompatible range types for threshold comparison") }',
+              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker/src/range.rs", line: 46, error: Guest("incompatible range types for threshold comparison") }',
             },
           };
           t.deepEqual(expectedError, e);
         }
+
+        // fetch all assessments
+        const allAssessments: Array<AssessmentWithDimensionAndResource> = await callZomeAlice(
+          "sensemaker",
+          "get_all_assessments",
+          null,
+          true
+        );
+        console.log('all assessments', allAssessments)
+        t.deepEqual(allAssessments.length, 9);
+
       } catch (e) {
         console.log(e);
         t.ok(null);

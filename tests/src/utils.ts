@@ -10,6 +10,7 @@ import {
 import {
   Conductor,
 } from "@holochain/tryorama";
+import { AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -113,9 +114,9 @@ export const installAgent = async (
 };
 
 export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
-  let config = {
+  let config: AppletConfigInput = {
     name: "sample applet config",
-    //   ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }],
+    ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }, { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } }],
     dimensions: [
       {
         name: "likeness",
@@ -128,7 +129,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
         computed: true,
       },
     ],
-    resource_types: [
+    resource_defs: [
       {
         name: "angryPost",
         base_types: [resource_base_def],
@@ -144,7 +145,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
     methods: [
       {
         name: "total_likeness_method",
-        target_resource_type: {
+        target_resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
@@ -177,13 +178,13 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
         },
         program: { Sum: null },
         can_compute_live: false,
-        must_publish_dataset: false,
+        requires_validation: false,
       },
     ],
     cultural_contexts: [
       {
         name: "more than 5 total likeness, biggest to smallest",
-        resource_type: {
+        resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
@@ -226,7 +227,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
       },
       {
         name: "more than 5 total likeness, smallest to biggest",
-        resource_type: {
+        resource_def: {
           name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [

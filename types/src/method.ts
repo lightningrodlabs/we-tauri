@@ -1,23 +1,23 @@
 import { EntryHash } from "@holochain/client"
-import { Dimension } from "./dimension"
-import { ConfigResourceType } from "./resourceType"
+import { ConfigDimension, Dimension } from "./dimension"
+import { ConfigResourceDef } from "./resourceDef"
 
 interface CoreMethod {
     name: string,
     program: Program,
     can_compute_live: boolean,
-    must_publish_dataset: boolean,
+    requires_validation: boolean,
 }
 export type Method = CoreMethod & {
-    target_resource_type_eh: EntryHash,
+    target_resource_def_eh: EntryHash,
     input_dimension_ehs: Array<EntryHash>,
     output_dimension_eh: EntryHash,
 }
 
 export type ConfigMethod = CoreMethod & {
-    target_resource_type: ConfigResourceType,
-    input_dimensions: Array<Dimension>, 
-    output_dimension: Dimension,
+    target_resource_def: ConfigResourceDef,
+    input_dimensions: Array<ConfigDimension>,
+    output_dimension: ConfigDimension,
 }
 
 export interface RunMethodInput {

@@ -56,7 +56,7 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
 fn compute_objective_assessment(
     method: Method,
     assessments: BTreeMap<EntryHash, Vec<Assessment>>,
-    subject_eh: EntryHash,
+    resource_eh: EntryHash,
 ) -> ExternResult<Option<CreateAssessmentInput>> {
     //
     match method.program {
@@ -73,7 +73,8 @@ fn compute_objective_assessment(
             let assessment = CreateAssessmentInput {
                 value: RangeValue::Integer(sum),
                 dimension_eh: method.output_dimension_eh,
-                subject_eh,
+                resource_eh,
+                resource_def_eh: method.target_resource_def_eh,
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))

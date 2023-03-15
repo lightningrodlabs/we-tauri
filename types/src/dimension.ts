@@ -1,37 +1,14 @@
-export interface Dimension {
+import { EntryHash } from "@holochain/client"
+import { Range } from "./range"
+interface CoreDimension {
     name: string,
-    range: Range,
     computed: boolean,
 }
 
-export interface Range {
-    name: string,
-    kind: RangeKind,
+export type Dimension = CoreDimension & {
+    range_eh: EntryHash,
 }
 
-export type RangeKind = RangeKindInteger | RangeKindFloat
-
-
-export interface RangeKindInteger {
-    Integer: {
-        min: number,
-        max: number,
-    }
-}
-
-export interface RangeKindFloat {
-    Float: {
-        min: number,
-        max: number,
-    }
-}
-
-export type RangeValue = RangeValueInteger | RangeValueFloat
-
-export interface RangeValueInteger {
-    Integer: number,
-}
-
-export interface RangeValueFloat {
-    Float: number,
+export type ConfigDimension = CoreDimension & {
+    range: Range
 }

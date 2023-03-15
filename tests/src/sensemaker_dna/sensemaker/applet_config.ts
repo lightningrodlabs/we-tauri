@@ -1,13 +1,13 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceType, ConfigThreshold, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
-let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
+const app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () =>
     test("test Sensemaker Configuration", async (t) => {
         await runScenario(async (scenario) => {
@@ -51,12 +51,28 @@ export default () =>
                     },
                 };
 
+                const rangeHash: EntryHash = await callZomeAlice(
+                    "sensemaker",
+                    "create_range",
+                    integerRange,
+                    true
+                );
+
+                t.ok(rangeHash);
+
                 const dimensionName = "importance"
                 const dimension: Dimension = {
+                    name: dimensionName,
+                    range_eh: rangeHash,
+                    computed: false,
+                }
+
+                const configDimension = {
                     name: dimensionName,
                     range: integerRange,
                     computed: false,
                 }
+
                 const dimensionHash: EntryHash = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
@@ -73,11 +89,26 @@ export default () =>
                     },
                 };
 
+                const rangeHash2: EntryHash = await callZomeAlice(
+                    "sensemaker",
+                    "create_range",
+                    integerRange2,
+                    true
+                );
+                t.ok(rangeHash2);
+
                 const objectiveDimension: Dimension = {
+                    name: "total_importance",
+                    range_eh: rangeHash2,
+                    computed: true,
+                };
+
+                const configObjectiveDimension = {
                     name: "total_importance",
                     range: integerRange2,
                     computed: true,
-                };
+                }
+
                 const objectiveDimensionHash: EntryHash = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
@@ -88,47 +119,48 @@ export default () =>
 
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
                 // waiting for sensemaker-lite-types to be updated
-                // const resourceType: ResourceType = {
-                const resourceType: any = {
+                // const resourceDef: ResourceDef = {
+                const resourceDef: any = {
                     name: "task_item",
                     base_types: [app_entry_def],
                     dimension_ehs: [dimensionHash]
                 }
 
                 // waiting for sensemaker-lite-types to be updated
-                // const configResourceType: ConfigResourceType = {
-                const configResourceType: ConfigResourceType = {
-                    name: resourceType.name,
-                    base_types: resourceType.base_types,
-                    dimensions: [dimension]
+                // const configResourceDef: ConfigResourceDef = {
+                const configResourceDef: any = {
+                    name: resourceDef.name,
+                    base_types: resourceDef.base_types,
+                    dimensions: [configDimension]
                 }
 
-                const resourceTypeEh: EntryHash = await callZomeAlice(
+                const resourceDefEh: EntryHash = await callZomeAlice(
                     "sensemaker",
-                    "create_resource_type",
-                    resourceType,
+                    "create_resource_def",
+                    resourceDef,
                     true
                 );
-                t.ok(resourceTypeEh);
+                t.ok(resourceDefEh);
 
                 const methodName = "total_importance_method"
                 const totalImportanceMethod: Method = {
                     name: methodName,
-                    target_resource_type_eh: resourceTypeEh,
+                    target_resource_def_eh: resourceDefEh,
                     input_dimension_ehs: [dimensionHash],
                     output_dimension_eh: objectiveDimensionHash,
                     program: { Sum: null },
                     can_compute_live: false,
-                    must_publish_dataset: false,
+                    requires_validation: false,
                 };
+
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
-                    target_resource_type: configResourceType,
-                    input_dimensions: [dimension], // check if it's subjective (for now)
-                    output_dimension: objectiveDimension,      // check if it's objective
+                    target_resource_def: configResourceDef,
+                    input_dimensions: [configDimension], // check if it's subjective (for now)
+                    output_dimension: configObjectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
                     can_compute_live: totalImportanceMethod.can_compute_live,
-                    must_publish_dataset: totalImportanceMethod.must_publish_dataset,
+                    requires_validation: totalImportanceMethod.requires_validation,
                 }
 
                 const methodEh: EntryHash = await callZomeAlice(
@@ -143,23 +175,25 @@ export default () =>
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
                 };
+
                 const configThreshold: ConfigThreshold = {
-                    dimension: objectiveDimension,
+                    dimension: configObjectiveDimension,
                     kind: { GreaterThan: null },
                     value: { Integer: 0 },
                 };
 
                 const culturalContext: CulturalContext = {
                     name: "most_important_tasks",
-                    resource_type_eh: resourceTypeEh,
+                    resource_def_eh: resourceDefEh,
                     thresholds: [threshold],
                     order_by: [[objectiveDimensionHash, { Biggest: null }]], // DimensionEh
                 };
+
                 const configCulturalContext: ConfigCulturalContext = {
                     name: culturalContext.name,
-                    resource_type: configResourceType,
+                    resource_def: configResourceDef,
                     thresholds: [configThreshold],
-                    order_by: [[objectiveDimension, { Biggest: null }]], // DimensionEh
+                    order_by: [[configObjectiveDimension, { Biggest: null }]], // DimensionEh
                 }
 
                 const contextEh: EntryHash = await callZomeAlice(
@@ -171,28 +205,40 @@ export default () =>
                 t.ok(contextEh);
 
                 // create a config type
-                const appletConfig: AppletConfig = {
+                // const appletConfig: AppletConfig = {
+                const appletConfig: any = {
                     name: "todo",
+                    ranges: {
+                        "1-scale": rangeHash,
+                        "1-scale-total": rangeHash2
+
+                    },
+                    role_name: "test_provider_dna",
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resource_types: { task_item: resourceTypeEh },
+                    resource_defs: { task_item: resourceDefEh },
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
-                const appletConfigInput: AppletConfigInput = {
-                    name: appletConfig.name,
-                    dimensions: [dimension, objectiveDimension],
-                    resource_types: [configResourceType],
-                    methods: [configMethod],
-                    cultural_contexts: [configCulturalContext],
+
+                const appletConfigInput: CreateAppletConfigInput = {
+                    applet_config_input: {
+                        name: appletConfig.name,
+                        ranges: [integerRange, integerRange2],
+                        dimensions: [configDimension, configObjectiveDimension],
+                        resource_defs: [configResourceDef],
+                        methods: [configMethod],
+                        cultural_contexts: [configCulturalContext],
+                    },
+                    role_name: "test_provider_dna"
                 }
 
                 let maybeAppletConfig: any = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(!maybeAppletConfig);
@@ -210,7 +256,7 @@ export default () =>
                 maybeAppletConfig = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.name,
+                    appletConfigInput.applet_config_input.name,
                     true
                 );
                 t.ok(maybeAppletConfig);

@@ -2,18 +2,18 @@ use std::collections::BTreeMap;
 
 use hdi::prelude::*;
 
-use crate::{applet::ConfigMethod, ResourceType};
+use crate::{applet::ConfigMethod, Dimension, ResourceDef};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
 pub struct Method {
     pub name: String,
-    pub target_resource_type_eh: EntryHash,
+    pub target_resource_def_eh: EntryHash,
     pub input_dimension_ehs: Vec<EntryHash>, // Validation: make sure it is subjective
     pub output_dimension_eh: EntryHash,      // Validation: make sure it is objective
     pub program: Program,                    // making enum for now, in design doc it is `AST`
     pub can_compute_live: bool,
-    pub must_publish_dataset: bool,
+    pub requires_validation: bool, // if true, DataSet must be committed to be retrievable in the validation The Objective Assesment must have the DataSet.
 }
 
 impl TryFrom<ConfigMethod> for Method {
@@ -22,18 +22,24 @@ impl TryFrom<ConfigMethod> for Method {
         let input_dimension_ehs = value
             .input_dimensions
             .into_iter()
-            .map(|dimension| hash_entry(dimension))
+            .map(|config_dimension| {
+                let converted_dimension: Dimension = Dimension::try_from(config_dimension)?;
+                hash_entry(converted_dimension)
+            })
             .collect::<ExternResult<Vec<EntryHash>>>()?;
-        let output_dimension_eh = hash_entry(value.output_dimension)?;
-        let resource: ResourceType = value.target_resource_type.try_into()?;
+
+        let converted_output_dimension: Dimension = Dimension::try_from(value.output_dimension)?;
+        let output_dimension_eh = hash_entry(converted_output_dimension)?;
+
+        let resource: ResourceDef = value.target_resource_def.try_into()?;
         let method = Method {
             name: value.name,
-            target_resource_type_eh: hash_entry(resource)?,
+            target_resource_def_eh: hash_entry(resource)?,
             input_dimension_ehs,
             output_dimension_eh,
             program: value.program,
             can_compute_live: value.can_compute_live,
-            must_publish_dataset: value.must_publish_dataset,
+            requires_validation: value.requires_validation,
         };
         Ok(method)
     }

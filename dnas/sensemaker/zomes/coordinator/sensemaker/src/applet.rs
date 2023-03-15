@@ -2,16 +2,28 @@ use std::collections::BTreeMap;
 
 use hdk::prelude::*;
 use sensemaker_integrity::{
-    AppletConfig, AppletConfigInput, CulturalContext, EntryTypes, LinkTypes, Method, ResourceType,
+    AppletConfig, AppletConfigInput, CulturalContext, Dimension, EntryTypes, LinkTypes, Method,
+    ResourceDef,
 };
 
 use crate::{
-    create_cultural_context, create_dimension, create_method, create_resource_type,
+    create_cultural_context, create_dimension, create_method, create_range, create_resource_def,
     utils::entry_from_record,
 };
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct CreateAppletConfigInput {
+    pub applet_config_input: AppletConfigInput,
+    pub role_name: String,
+}
+
 #[hdk_extern]
-pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<AppletConfig> {
+pub fn register_applet(
+    CreateAppletConfigInput {
+        applet_config_input,
+        role_name,
+    }: CreateAppletConfigInput,
+) -> ExternResult<AppletConfig> {
     // check the format of the applet config
     applet_config_input.clone().check_format()?;
     // check that it doesn't already exist
@@ -21,7 +33,8 @@ pub fn register_applet(applet_config_input: AppletConfigInput) -> ExternResult<A
         Ok(applet_config)
     } else {
         // applet config doesn't exist, create it
-        let (applet_config, _) = create_entries_from_applet_config(applet_config_input.clone())?;
+        let (applet_config, _) =
+            create_entries_from_applet_config(applet_config_input.clone(), Some(role_name))?;
         Ok(applet_config)
     }
 }
@@ -57,19 +70,33 @@ fn applet_config_typed_path(applet_name: String) -> ExternResult<TypedPath> {
 // create all entries specified in the config
 pub fn create_entries_from_applet_config(
     config: AppletConfigInput,
+    role_name: Option<String>,
 ) -> ExternResult<(AppletConfig, EntryHash)> {
+    // ranges
+    let mut ranges: BTreeMap<String, EntryHash> = BTreeMap::new();
+    for range in config.ranges {
+        ranges.insert(range.name.clone(), create_range(range)?);
+    }
+
     // dimensions
     let mut dimensions: BTreeMap<String, EntryHash> = BTreeMap::new();
-    for dimension in config.dimensions {
-        dimensions.insert(dimension.name.clone(), create_dimension(dimension)?);
-    }
-    let mut resource_types: BTreeMap<String, EntryHash> = BTreeMap::new();
-    for config_resource_type in config.resource_types {
-        resource_types.insert(
-            config_resource_type.name.clone(),
-            create_resource_type(ResourceType::try_from(config_resource_type)?)?,
+    for config_dimension in config.dimensions {
+        dimensions.insert(
+            config_dimension.name.clone(),
+            create_dimension(Dimension::try_from(config_dimension)?)?,
         );
     }
+
+    // resource defs
+    let mut resource_defs: BTreeMap<String, EntryHash> = BTreeMap::new();
+    for config_resource_def in config.resource_defs {
+        resource_defs.insert(
+            config_resource_def.name.clone(),
+            create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
+        );
+    }
+
+    // methods
     let mut methods: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_method in config.methods {
         methods.insert(
@@ -77,6 +104,8 @@ pub fn create_entries_from_applet_config(
             create_method(Method::try_from(config_method)?)?,
         );
     }
+
+    // CCs
     let mut cultural_contexts: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_context in config.cultural_contexts {
         cultural_contexts.insert(
@@ -87,18 +116,35 @@ pub fn create_entries_from_applet_config(
 
     let applet_config = AppletConfig {
         name: config.name,
+        role_name,
+        ranges,
         dimensions,
-        resource_types,
+        resource_defs: resource_defs.clone(),
         methods,
         cultural_contexts,
     };
     create_entry(&EntryTypes::AppletConfig(applet_config.clone()))?;
     let applet_config_eh = hash_entry(&EntryTypes::AppletConfig(applet_config.clone()))?;
+    let applet_config_path = applet_config_typed_path(applet_config.name.clone())?;
+    // ensure path exists so we can fetch children of the "all_applets" root path component
+    applet_config_path.ensure()?;
     create_link(
-        applet_config_typed_path(applet_config.name.clone())?.path_entry_hash()?,
+        applet_config_path.path_entry_hash()?,
         applet_config_eh.clone(),
         LinkTypes::AppletConfig,
         (),
     )?;
+    // for each resource type entry hash, create a link
+    resource_defs
+        .into_iter()
+        .map(|(_, resource_def_eh)| {
+            create_link(
+                EntryHash::from(resource_def_eh),
+                applet_config_eh.clone(),
+                LinkTypes::ResourceDefEhToAppletConfig,
+                (),
+            )
+        })
+        .collect::<ExternResult<Vec<ActionHash>>>()?;
     Ok((applet_config, applet_config_eh))
 }
