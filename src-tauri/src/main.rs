@@ -18,14 +18,22 @@ use commands::{
 };
 use state::LaunchedState;
 
-pub fn iframe() -> String {
-    r#"
-        <html><head></head><body><script type="module">
-        import applet from '/index.js';
-        console.log(applet);
-        </script></body></html>
+pub fn iframe(applet_id: &String) -> String {
+    format!(
+        r#"
+        <html>
+          <head>
+          </head>
+          <body>
+            <script type="module">
+              import('/applet/{applet_id}/index.js').then(applet => {{
+            console.log(applet)
+        }})
+            </script>
+          </body>
+        </html>
     "#
-    .to_string()
+    )
 }
 
 fn main() {
@@ -44,28 +52,33 @@ fn main() {
             WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .on_web_resource_request(move |request, response| {
                     let uri = request.uri();
-                    let mut uri_components = uri.split("/");
-                    println!("{:?}", uri_components.nth(5));
-                    if let Some("applet") = uri_components.nth(3) {
+                    println!("{:?}", uri);
+                    let uri_components: Vec<String> =
+                        uri.split("/").map(|s| s.to_string()).collect();
+                    if let Some("applet") = uri_components.get(3).map(|s| s.as_str()) {
                         println!("hey0");
                         if let Some(mutex) = handle.try_state::<Mutex<LaunchedState>>() {
-                            println!("hey1");
-                            match uri_components.nth(5) {
-                                None | Some("index.html") => {
-                                    let mutable_response = response.body_mut();
-                                    *mutable_response = iframe().as_bytes().to_vec();
-                                }
-                                _ => tauri::async_runtime::block_on(async {
-                                    let m = mutex.lock().await;
-                                    if let Some(applet_id) = uri_components.nth(4) {
+                            if let Some(applet_id) = uri_components.get(4) {
+                                println!("hey1");
+                                match uri_components.get(5).map(|s| s.as_str()) {
+                                    None | Some("index.html") => {
+                                        let mutable_response = response.body_mut();
+                                        *mutable_response = iframe(&applet_id).as_bytes().to_vec();
+                                    }
+                                    _ => tauri::async_runtime::block_on(async {
+                                        let m = mutex.lock().await;
                                         println!("hey4");
                                         let assets_path = m.web_app_manager.get_app_assets_dir(
-                                            &applet_id.to_string(),
+                                            &applet_id,
                                             &String::from("default"),
                                         );
-                                        read_resource_from_path(assets_path, response, true, None);
-                                    }
-                                }),
+                                        let mut path = assets_path;
+                                        for i in 5..uri_components.len() {
+                                            path = path.join(uri_components[i].clone());
+                                        }
+                                        read_resource_from_path(path, response, true, None);
+                                    }),
+                                }
                             }
                         }
                     }
