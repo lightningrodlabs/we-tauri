@@ -135,7 +135,7 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
     } else {
       return html`
         ${Array.from(invitations.entries())
-          .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
+          .sort(([_hash_a, a], [_hash_b, b]) => b.timestamp - a.timestamp)
           .filter((obj, idx, arr) => {
             return (
               arr

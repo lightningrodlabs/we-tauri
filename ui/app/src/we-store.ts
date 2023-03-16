@@ -1,4 +1,5 @@
 import {
+  CloneDnaRecipe,
   MembraneInvitationsClient,
   MembraneInvitationsStore,
 } from "@holochain-open-dev/membrane-invitations";
@@ -12,6 +13,7 @@ import {
 } from "@holochain-open-dev/stores";
 import {
   EntryHashMap,
+  EntryRecord,
   HoloHashMap,
   LazyHoloHashMap,
   mapValues,
@@ -19,6 +21,7 @@ import {
 import {
   ActionHash,
   AdminWebsocket,
+  AgentPubKey,
   AppAgentClient,
   AppAgentWebsocket,
   CellType,
@@ -130,6 +133,46 @@ export class WeStore {
 
     return clonedCell.cell_id[0];
   }
+
+  /**
+   * Invite another agent to join the specified We group.
+   *
+   * @param weGroupId : DnaHash
+   * @param agentPubKey : AgentPubKey
+   */
+  public async inviteToJoinGroup(
+    weGroupId: DnaHash,
+    agentPubKey: AgentPubKey
+  ): Promise<void> {
+
+    const appInfo = await this.appAgentWebsocket.appInfo();
+    const weCellInfo = appInfo.cell_info["group"].find((cellInfo) => "provisioned" in cellInfo);
+    const weDnaHash = getCellId(weCellInfo!)![0];
+
+    const records =
+      await this.membraneInvitationsStore.client.getCloneRecipesForDna(
+        weDnaHash
+      );
+
+    const clones: Array<EntryRecord<CloneDnaRecipe>> = records.map(
+      (r) => new EntryRecord(r)
+    );
+
+    const recipe = clones.find(
+      (c) => c.entry.resulting_dna_hash.toString() === weGroupId.toString()
+    )!;
+
+    console.log("Inviting with recipe: ", recipe.entry);
+
+    // membrane invitations API will need to change uid --> network_seed
+    await this.membraneInvitationsStore.client.inviteToJoinMembrane(
+      recipe.entry,
+      agentPubKey,
+      undefined
+    );
+  }
+
+
 
   groupsRolesByDnaHash = lazyLoadAndPoll(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();

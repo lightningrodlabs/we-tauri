@@ -1,4 +1,4 @@
-import { DnaHash } from '@holochain/client';
+import { DnaHash, EntryHash } from '@holochain/client';
 import { Hrl } from '@lightningrodlabs/we-applet';
 
 export type OpenViewParameters =
@@ -10,6 +10,10 @@ export type OpenViewParameters =
       view: "group-installable-applets";
       groupDnaHash: DnaHash;
     }
+  | {
+        view: "group-invite-member";
+        groupDnaHash: DnaHash;
+      }
   | {
       view: "group-applet-main";
       groupDnaHash: DnaHash;

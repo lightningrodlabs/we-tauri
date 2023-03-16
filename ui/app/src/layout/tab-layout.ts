@@ -14,6 +14,7 @@ import { JoinGroups } from "../elements/join-groups.js";
 import { GroupContext } from "../groups/elements/group-context.js";
 import { GroupPeersStatus } from "../groups/elements/group-peers-status.js";
 import { InstallableApplets } from "../groups/elements/installable-applets.js";
+import { GroupInviteMember } from "../groups/elements/group-invite-member.js";
 import { weStyles } from "../shared-styles.js";
 import { WelcomeView } from "./views/welcome-view.js";
 import { GroupAppletMain } from "./views/group-applet-main.js";
@@ -58,6 +59,7 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
         "welcome-view": WelcomeView,
         "join-groups": JoinGroups,
         "group-peers-status": GroupPeersStatus,
+        "group-invite-member": GroupInviteMember,
         "group-context": GroupContext,
         "group-applet-main": GroupAppletMain,
         "installable-applets": InstallableApplets,
@@ -96,6 +98,15 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
           <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
             <installable-applets></installable-applets>
           </group-context>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-invite-member"
+        .template=${({ groupDnaHash }) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-invite-member></group-invite-member
+          ></group-context>
         `}
       >
       </golden-layout-register>
