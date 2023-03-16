@@ -1,3 +1,4 @@
+import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { property, query } from "lit/decorators.js";
@@ -7,6 +8,9 @@ import { weStyles } from "../../shared-styles.js";
 export class ViewFrame extends ScopedElementsMixin(LitElement) {
   @property()
   globalVars: any;
+
+  @property()
+  appletId!: string;
 
   @property()
   initFrameJs!: string;
@@ -28,7 +32,6 @@ export class ViewFrame extends ScopedElementsMixin(LitElement) {
       }
     }
     const scriptChild = iframe.contentDocument!.createElement("script");
-    scriptChild.src = "index.js";
     scriptChild.type = "module";
     // scriptChild.innerHTML =
     //   importfunction +
@@ -45,6 +48,7 @@ export class ViewFrame extends ScopedElementsMixin(LitElement) {
   render() {
     return html`<iframe
       id="view-frame"
+      src="tauri://localhost/applet/${this.appletId}"
       @load=${() => this.onLoad()}
       style="flex: 1"
     ></iframe>`;

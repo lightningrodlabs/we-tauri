@@ -12,11 +12,13 @@ import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { GroupInfo, Hrl } from "@lightningrodlabs/we-applet";
+import { EntryRecord } from "@holochain-open-dev/utils";
 
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../../we-store.js";
 import { ViewFrame } from "./view-frame.js";
+import { AppletInstance } from "../../groups/types.js";
 
 @localized()
 export class GroupView extends ScopedElementsMixin(LitElement) {
@@ -57,11 +59,18 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
       join([
         this.groupStore.groupInfo,
         this.groupStore.appletClient.get(this.appletInstanceHash),
-      ]) as AsyncReadable<[GroupInfo, AppAgentClient]>,
+        this.groupStore.applets.get(this.appletInstanceHash),
+      ]) as AsyncReadable<
+        [GroupInfo, AppAgentClient, EntryRecord<AppletInstance>]
+      >,
     () => [this.groupStore, this.appletInstanceHash]
   );
 
-  renderAppletFrame([groupInfo, client]: [GroupInfo, AppAgentClient]) {
+  renderAppletFrame([groupInfo, client, appletInstance]: [
+    GroupInfo,
+    AppAgentClient,
+    EntryRecord<AppletInstance>
+  ]) {
     const globalVars = {
       appletClient: client,
       groupInfo,
@@ -76,6 +85,9 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
         .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices).${this.viewToRender(
           "el"
         )}; }`}
+        .appletId=${this.groupStore.appletAppIdFromAppletInstance(
+          appletInstance.entry
+        )}
         .globalVars=${globalVars}
         style="flex: 1"
       ></view-frame>

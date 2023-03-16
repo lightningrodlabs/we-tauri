@@ -26,7 +26,6 @@ import { CreatePassword } from "./password/create-password.js";
 import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 
-fetch("/index.html");
 type View =
   | { view: "loading" }
   | { view: "password"; initialized: boolean }

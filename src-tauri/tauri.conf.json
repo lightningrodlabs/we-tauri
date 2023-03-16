@@ -18,6 +18,9 @@
       "fs": {
         "all": true,
         "scope": ["$APPDATA/webhapps/*"]
+      },
+      "http": {
+        "all": true
       }
     },
     "bundle": {
@@ -29,7 +32,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "externalBin": ["bins/holochain-v0.1.3", "bins/lair-keystore-v0.2.3"],
+      "externalBin": ["bins/lair-keystore-v0.2.3"],
       "identifier": "we",
       "targets": "all"
     },
