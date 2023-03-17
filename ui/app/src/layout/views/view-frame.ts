@@ -33,13 +33,9 @@ export class ViewFrame extends ScopedElementsMixin(LitElement) {
     }
     const scriptChild = iframe.contentDocument!.createElement("script");
     scriptChild.type = "module";
-    // scriptChild.innerHTML =
-    //   importfunction +
-    //   " const js = `" +
-    //   js +
-    //   "`;importModuleFromText(js).then(m => { const applet = m.default;  (" +
-    //   this.initFrameJs +
-    //   ")(applet, document.body, window) });";
+    scriptChild.innerHTML = `
+      import('/applet/${this.appletId}/index.js').then(m => { const applet = m.default;  
+      (${this.initFrameJs})(applet, document.body, window) });`;
     // setTimeout(() => {
     iframe.contentDocument!.body.appendChild(scriptChild);
     // });

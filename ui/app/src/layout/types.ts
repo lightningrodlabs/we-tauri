@@ -1,5 +1,15 @@
-import { DnaHash } from '@holochain/client';
-import { Hrl } from '@lightningrodlabs/we-applet';
+import { DnaHash, EntryHash } from "@holochain/client";
+import { Hrl } from "@lightningrodlabs/we-applet";
+
+export interface AppOpenViews {
+  openGroupBlock(
+    groupDnaHash: DnaHash,
+    appletInstanceHash: EntryHash,
+    block: string
+  ): void;
+  openCrossGroupBlock(devhubAppReleaseHash: EntryHash, block: string): void;
+  openHrl(hrl: Hrl, context: any): void;
+}
 
 export type OpenViewParameters =
   | {

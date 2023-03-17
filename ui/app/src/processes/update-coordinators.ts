@@ -1,9 +1,19 @@
 import {
   AdminWebsocket,
   DnaHash,
+  Location,
   ResourceMap,
-  ZomeManifest,
+  ZomeName,
 } from "@holochain/client";
+
+export interface ZomeDependency {
+  name: ZomeName;
+}
+
+export type ZomeManifest = {
+  name: string;
+  dependencies: ZomeDependency[] | undefined;
+} & Location;
 
 export interface CoordinatorManifest {
   zomes: Array<ZomeManifest>;

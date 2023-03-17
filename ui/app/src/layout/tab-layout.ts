@@ -1,4 +1,4 @@
-import { decodeHashFromBase64 } from "@holochain/client";
+import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
@@ -9,19 +9,48 @@ import {
 import { GoldenLayout, LayoutConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { JoinGroups } from "../elements/join-groups.js";
+import { provide } from "@lit-labs/context";
 
+import { JoinGroups } from "../elements/join-groups.js";
 import { GroupContext } from "../groups/elements/group-context.js";
 import { GroupPeersStatus } from "../groups/elements/group-peers-status.js";
 import { InstallableApplets } from "../groups/elements/installable-applets.js";
 import { weStyles } from "../shared-styles.js";
 import { WelcomeView } from "./views/welcome-view.js";
-import { GroupAppletMain } from "./views/group-applet-main.js";
+import { openViewsContext } from "./context.js";
+import { AppOpenViews } from "./types.js";
+import { GroupAppletBlock } from "./views/group-applet-block.js";
+import { Hrl } from "../../../libs/we-applet/dist/index.js";
+import { EntryView } from "./views/entry-view.js";
 
 @localized()
 export class TabLayout extends ScopedElementsMixin(LitElement) {
   @property()
   layoutConfig!: LayoutConfig;
+
+  @provide({ context: openViewsContext })
+  openViews: AppOpenViews = {
+    openGroupBlock: () => {},
+    openCrossGroupBlock: () => {},
+    openHrl: (hrl: Hrl, context: any) => {
+      this.goldenLayout.addItemAtLocation(
+        {
+          title: "Entry Views",
+          type: "component",
+          componentType: "entry",
+          componentState: {
+            hrl: [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])],
+            context,
+          },
+        },
+        [
+          {
+            typeId: 3,
+          },
+        ]
+      );
+    },
+  };
 
   get goldenLayout(): GoldenLayout {
     const el = this.shadowRoot?.getElementById(
@@ -59,8 +88,9 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
         "join-groups": JoinGroups,
         "group-peers-status": GroupPeersStatus,
         "group-context": GroupContext,
-        "group-applet-main": GroupAppletMain,
+        "group-applet-block": GroupAppletBlock,
         "installable-applets": InstallableApplets,
+        "entry-view": EntryView,
       }}
       style="flex: 1; display: flex;"
     >
@@ -100,13 +130,6 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-applet-main"
-        .template=${({ appletHash }) => html` <cross-group-applet-main
-          .appletHash=${appletHash}
-        ></cross-group-applet-main>`}
-      >
-      </golden-layout-register>
-      <golden-layout-register
         component-type="cross-group-applet-block"
         .template=${({
           appletHash,
@@ -120,37 +143,21 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
       <golden-layout-register
         component-type="entry"
         .template=${({ hrl, context }) => html` <entry-view
-          .hrl=${hrl}
+          .hrl=${[decodeHashFromBase64(hrl[0]), decodeHashFromBase64(hrl[1])]}
           .context=${context}
         ></entry-view>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-applet-main"
-        .template=${({
-          groupDnaHash,
-          appletInstanceHash,
-        }) => html` <group-context
-          .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}
-        >
-          <group-applet-main
-            .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
-            style="flex: 1"
-          ></group-applet-main
-        ></group-context>`}
-      >
-      </golden-layout-register>
-      <golden-layout-register
         component-type="group-applet-block"
-        .template=${({
-          groupDnaHash,
-          appletInstanceHash,
-          blockName,
-        }) => html` <group-applet-block
-          .groupDnaHash=${groupDnaHash}
-          .appletInstanceHash=${appletInstanceHash}
-          .blockName=${blockName}
-        ></group-applet-block>`}
+        .template=${({ groupDnaHash, appletInstanceHash, block }) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-applet-block
+              .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
+              .block=${block}
+            ></group-applet-block>
+          </group-context>
+        `}
       >
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>

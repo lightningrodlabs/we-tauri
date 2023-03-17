@@ -37,7 +37,7 @@ import { v4 as uuidv4 } from "uuid";
 import { AppletsStore } from "./applets/applets-store";
 import { GenericGroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
-import { DnaLocation, getRecord } from "./processes/hrl/locate-hrl.js";
+import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import {
   findAppForDnaHash,
   findAppletInstanceForAppInfo,
@@ -197,7 +197,7 @@ export class WeStore {
     (dnaHash: DnaHash) =>
       new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
         asyncDerived(this.dnaLocations.get(dnaHash), (location) =>
-          getRecord(this.adminWebsocket, location, [dnaHash, hash])
+          locateHrl(this.adminWebsocket, location, [dnaHash, hash])
         )
       )
   );

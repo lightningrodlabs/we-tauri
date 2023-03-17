@@ -50,6 +50,7 @@ export class AppletsStore {
       membraneProofs: {},
       happReleaseHash: encodeHashToBase64(devhubHappReleaseHash),
       guiReleaseHash: encodeHashToBase64(devhubGuiReleaseHash),
+      agentPubKey: encodeHashToBase64(this.devhubClient.myPubKey),
     });
 
     return appInfo;

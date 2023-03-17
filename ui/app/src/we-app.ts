@@ -94,14 +94,20 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
             this.dynamicLayout.openGroupHomeTab(e.detail.groupDnaHash)}
           @applet-instance-selected=${(e: CustomEvent) => {
             this.dynamicLayout.openTab("Applet", {
-              type: "component",
-              componentType: "group-applet-main",
-              componentState: {
-                groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
-                appletInstanceHash: encodeHashToBase64(
-                  e.detail.appletInstanceHash
-                ),
-              },
+              type: "row",
+              content: [
+                {
+                  type: "component",
+                  componentType: "group-applet-block",
+                  componentState: {
+                    groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
+                    appletInstanceHash: encodeHashToBase64(
+                      e.detail.appletInstanceHash
+                    ),
+                    block: "main",
+                  },
+                },
+              ],
             });
           }}
         ></navigation-sidebar>

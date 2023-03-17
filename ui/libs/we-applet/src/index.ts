@@ -11,12 +11,10 @@ export interface GroupInfo {
   name: string;
 }
 
-export type ViewLocation = "NewTab" | "NewBlock";
-
 export interface OpenViews {
-  openMain(viewLocation: ViewLocation): void;
-  openBlock(blockName: string, viewLocation: ViewLocation): void;
-  openHrl(hrl: Hrl, context: any, viewLocation: ViewLocation): void;
+  openGroupBlock(block: string): void;
+  openCrossGroupBlock(block: string): void;
+  openHrl(hrl: Hrl, context: any): void;
 }
 
 export type View = (rootElement: HTMLElement) => void;
@@ -30,13 +28,11 @@ export type EntryTypeView = (
 };
 
 export interface CrossGroupViews {
-  main: View;
-  blocks: Record<string, View>;
+  blocks: { main: View } & Record<string, View>;
 }
 
 export interface GroupViews {
-  main: View;
-  blocks: Record<string, View>; // all events -> schedule
+  blocks: { main: View } & Record<string, View>; // all events -> schedule
   entries: Record<string, Record<string, Record<string, EntryTypeView>>>; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 

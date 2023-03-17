@@ -14,6 +14,7 @@ export async function hrlLocatorZome(): Promise<CoordinatorSource> {
           {
             bundled: "hrl_locator",
             name: HRL_LOCATOR_COORDINATOR_ZOME,
+            dependencies: [],
           },
         ],
       },

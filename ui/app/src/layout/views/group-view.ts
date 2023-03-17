@@ -11,7 +11,7 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
-import { GroupInfo, Hrl } from "@lightningrodlabs/we-applet";
+import { GroupInfo, Hrl, OpenViews } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 import { groupStoreContext } from "../../groups/context.js";
@@ -19,6 +19,8 @@ import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../../we-store.js";
 import { ViewFrame } from "./view-frame.js";
 import { AppletInstance } from "../../groups/types.js";
+import { AppOpenViews } from "../types.js";
+import { openViewsContext } from "../context.js";
 
 @localized()
 export class GroupView extends ScopedElementsMixin(LitElement) {
@@ -29,9 +31,11 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
   @property(hashProperty("applet-instance-hash"))
   appletInstanceHash!: EntryHash;
 
+  @consume({ context: openViewsContext, subscribe: true })
+  openViews!: AppOpenViews;
+
   @property()
   view!:
-    | { type: "main" }
     | { type: "block"; block: string }
     | {
         type: "entry";
@@ -44,12 +48,10 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
 
   viewToRender(elementVar: string) {
     switch (this.view.type) {
-      case "main":
-        return `main(${elementVar})`;
       case "block":
-        return `blocks[${this.view.block}](${elementVar})`;
+        return `blocks["${this.view.block}"](${elementVar})`;
       case "entry":
-        return `entries[${this.view.role}][${this.view.zome}][${this.view.entryType}](${elementVar}, window.hrl[1], window.context)`;
+        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"](window.hrl[1], window.context).view(${elementVar})`;
     }
   }
 
@@ -75,6 +77,22 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
       appletClient: client,
       groupInfo,
       groupServices: { profilesStore: this.groupStore.profilesStore },
+      openViews: {
+        openHrl: (hrl: Hrl, context: any) => {
+          this.openViews.openHrl(hrl, context);
+        },
+        openGroupBlock: (block: string) =>
+          this.openViews.openGroupBlock(
+            this.groupStore.groupDnaHash,
+            this.appletInstanceHash,
+            block
+          ),
+        openCrossGroupBlock: (block: string) =>
+          this.openViews.openCrossGroupBlock(
+            appletInstance.entry.devhub_happ_release_hash,
+            block
+          ),
+      } as OpenViews,
     };
     if (this.view.type === "entry") {
       globalVars["context"] = this.view.context;
@@ -82,7 +100,7 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     }
     return html`
       <view-frame
-        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices).${this.viewToRender(
+        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices, vars.openViews).${this.viewToRender(
           "el"
         )}; }`}
         .appletId=${this.groupStore.appletAppIdFromAppletInstance(

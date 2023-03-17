@@ -1,12 +1,12 @@
 import { DisplayError } from "@holochain-open-dev/elements";
 import {
-  asyncDeriveStore,
   AsyncReadable,
   join,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 import { DnaHash, EntryHash, Record } from "@holochain/client";
-import { provide } from "@lit-labs/context";
+import { consume, provide } from "@lit-labs/context";
+import { msg } from "@lit/localize";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
@@ -14,14 +14,13 @@ import { property } from "lit/decorators.js";
 
 import { Hrl } from "../../../../libs/we-applet/dist";
 import { weStoreContext } from "../../context";
-import { DnaLocation, EntryTypeLocation } from "../../processes/hrl/locate-hrl";
+import { DnaLocation, EntryDefLocation } from "../../processes/hrl/locate-hrl";
 import { weStyles } from "../../shared-styles";
 import { WeStore } from "../../we-store";
 import { GroupView } from "./group-view";
-import { ViewFrame } from "./view-frame";
 
 export class EntryView extends ScopedElementsMixin(LitElement) {
-  @provide({ context: weStoreContext })
+  @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
   /**
@@ -48,15 +47,16 @@ export class EntryView extends ScopedElementsMixin(LitElement) {
 
   renderGroupView(
     dnaLocation: DnaLocation,
-    entryTypeLocation: EntryTypeLocation
+    entryTypeLocation: EntryDefLocation
   ) {
     return html` <group-context .groupDnaHash=${dnaLocation.groupDnaHash}>
       <group-view
+        .appletInstanceHash=${dnaLocation.appletInstanceHash}
         .view=${{
           type: "entry",
           role: dnaLocation.roleName,
-          zome: entryTypeLocation.integrity_zome_name,
-          entryType: entryTypeLocation.entry_type,
+          zome: entryTypeLocation.integrity_zome,
+          entryType: entryTypeLocation.entry_def,
           hrl: this.hrl,
           context: this.context,
         }}
@@ -72,8 +72,8 @@ export class EntryView extends ScopedElementsMixin(LitElement) {
         </div>`;
       case "error":
         return html`<display-error
-          tooltip
-          .error=${this.location.value.error.data.data}
+          .headline=${msg("Error fetching the entry")}
+          .error=${this.location.value.error}
         ></display-error>`;
       case "complete":
         return this.renderGroupView(
@@ -95,6 +95,7 @@ export class EntryView extends ScopedElementsMixin(LitElement) {
     css`
       :host {
         display: flex;
+        flex: 1;
       }
     `,
     weStyles,

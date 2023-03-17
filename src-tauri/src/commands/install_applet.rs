@@ -2,8 +2,11 @@ use std::{collections::HashMap, fs, sync::Arc};
 
 use futures::lock::Mutex;
 use hdk::prelude::{MembraneProof, SerializedBytes, UnsafeBytes};
-use holochain_client::AppInfo;
-use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
+use holochain_client::{AgentPubKey, AppInfo};
+use holochain_types::{
+    prelude::{AgentPubKeyB64, AppBundle},
+    web_app::WebAppBundle,
+};
 use tauri::AppHandle;
 
 use crate::{
@@ -18,6 +21,7 @@ pub async fn install_applet(
     app_id: String,
     network_seed: Option<String>,
     membrane_proofs: HashMap<String, Vec<u8>>,
+    agent_pub_key: String, // TODO: remove when every applet has a different key
     happ_release_hash: Option<String>,
     gui_release_hash: Option<String>,
 ) -> WeResult<AppInfo> {
@@ -50,7 +54,9 @@ pub async fn install_applet(
                 web_app_bundle,
                 network_seed,
                 converted_membrane_proofs,
-                None,
+                Some(AgentPubKey::from(
+                    AgentPubKeyB64::from_b64_str(agent_pub_key.as_str()).unwrap(),
+                )),
                 happ_release_hash,
                 gui_release_hash,
             )
@@ -66,7 +72,9 @@ pub async fn install_applet(
                     app_bundle,
                     network_seed,
                     converted_membrane_proofs,
-                    None,
+                    Some(AgentPubKey::from(
+                        AgentPubKeyB64::from_b64_str(agent_pub_key.as_str()).unwrap(),
+                    )),
                     happ_release_hash,
                 )
                 .await

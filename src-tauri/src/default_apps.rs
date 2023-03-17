@@ -20,9 +20,11 @@ pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> W
     let holochain_version: String = manager.holochain_manager.version.into();
 
     let network_seed = if cfg!(debug_assertions) {
-        Some(format!("we-dev"))
+        let agent_id = option_env!("ADMIN_PORT").unwrap_or("");
+        Some(format!("we-dev-{}2", agent_id))
     } else {
-        None
+        let agent_id = option_env!("ADMIN_PORT").unwrap_or("");
+        Some(format!("we{}", agent_id))
     };
 
     let devhub_app_id = format!("DevHub-{}", holochain_version);

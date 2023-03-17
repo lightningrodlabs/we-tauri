@@ -18,18 +18,13 @@ use commands::{
 };
 use state::LaunchedState;
 
-pub fn iframe(applet_id: &String) -> String {
+pub fn iframe() -> String {
     format!(
         r#"
         <html>
           <head>
           </head>
           <body>
-            <script type="module">
-              import('/applet/{applet_id}/index.js').then(applet => {{
-            console.log(applet)
-        }})
-            </script>
           </body>
         </html>
     "#
@@ -52,22 +47,20 @@ fn main() {
             WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .on_web_resource_request(move |request, response| {
                     let uri = request.uri();
-                    println!("{:?}", uri);
                     let uri_components: Vec<String> =
                         uri.split("/").map(|s| s.to_string()).collect();
+
                     if let Some("applet") = uri_components.get(3).map(|s| s.as_str()) {
-                        println!("hey0");
                         if let Some(mutex) = handle.try_state::<Mutex<LaunchedState>>() {
                             if let Some(applet_id) = uri_components.get(4) {
-                                println!("hey1");
                                 match uri_components.get(5).map(|s| s.as_str()) {
                                     None | Some("index.html") => {
                                         let mutable_response = response.body_mut();
-                                        *mutable_response = iframe(&applet_id).as_bytes().to_vec();
+                                        *mutable_response = iframe().as_bytes().to_vec();
                                     }
                                     _ => tauri::async_runtime::block_on(async {
                                         let m = mutex.lock().await;
-                                        println!("hey4");
+
                                         let assets_path = m.web_app_manager.get_app_assets_dir(
                                             &applet_id,
                                             &String::from("default"),
