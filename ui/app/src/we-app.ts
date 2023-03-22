@@ -14,6 +14,7 @@ import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
 import "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
+import "./layout/dynamic-layout.js";
 import {
   getConductorInfo,
   isKeystoreInitialized,
@@ -124,7 +125,7 @@ export class WeApp extends LitElement {
     switch (this.view.view) {
       case "loading":
         return html`<div class="row center-content" style="flex: 1;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress>
+          <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "password":
         if (this.view.initialized) {

@@ -1,6 +1,6 @@
 import { DnaHash, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { customElement } from "lit/decorators";
+import { customElement } from "lit/decorators.js";
 import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
 import { GoldenLayout, RootItemConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
