@@ -53,7 +53,7 @@ export class GroupView extends LitElement {
       case "block":
         return `blocks["${this.view.block}"](${elementVar})`;
       case "entry":
-        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"](window.hrl[1], window.context).view(${elementVar})`;
+        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"].view(window.hrl[1], window.context)(${elementVar})`;
     }
   }
 

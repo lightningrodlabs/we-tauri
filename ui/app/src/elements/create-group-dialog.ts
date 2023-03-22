@@ -1,8 +1,7 @@
 import { html, css, LitElement, PropertyValueMap } from "lit";
-import { state, query, property } from "lit/decorators.js";
+import { state, query, property, customElement } from "lit/decorators.js";
 
 import { consume } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { localized, msg } from "@lit/localize";
 
 import "@holochain-open-dev/elements/elements/select-avatar.js";
@@ -21,7 +20,8 @@ import { onSubmit } from "@holochain-open-dev/elements";
  * @element create-group-dialog
  */
 @localized()
-export class CreateGroupDialog extends ScopedElementsMixin(LitElement) {
+@customElement("create-group-dialog")
+export class CreateGroupDialog extends LitElement {
   /** Dependencies */
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;

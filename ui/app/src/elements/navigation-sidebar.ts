@@ -1,16 +1,17 @@
 import { hashState } from "@holochain-open-dev/elements";
 import { DnaHash } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
-import { state } from "lit/decorators.js";
-import { GroupContext } from "../groups/elements/group-context.js";
-import { GroupInstalledApplets } from "../groups/elements/group-installed-applets.js";
+import { customElement, state } from "lit/decorators.js";
+
+import "../groups/elements/group-context.js";
+import "../groups/elements/group-installed-applets.js";
+import "./group-sidebar.js";
 import { weStyles } from "../shared-styles.js";
-import { GroupSidebar } from "./group-sidebar.js";
 
 @localized()
-export class NavigationSidebar extends ScopedElementsMixin(LitElement) {
+@customElement("navigation-sidebar")
+export class NavigationSidebar extends LitElement {
   @state(hashState())
   selectedGroupDnaHash: DnaHash | undefined;
 
@@ -34,14 +35,6 @@ export class NavigationSidebar extends ScopedElementsMixin(LitElement) {
           : html``}
       </div>
     `;
-  }
-
-  static get scopedElements() {
-    return {
-      "group-context": GroupContext,
-      "group-installed-applets": GroupInstalledApplets,
-      "group-sidebar": GroupSidebar,
-    };
   }
 
   static styles = weStyles;

@@ -1,31 +1,33 @@
 import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import {
   GoldenLayoutRegister,
   GoldenLayoutRoot,
   GoldenLayout as GoldenLayoutEl,
 } from "@scoped-elements/golden-layout";
+customElements.define("golden-layout-register", GoldenLayoutRegister);
+customElements.define("golden-layout-root", GoldenLayoutRoot);
 import { GoldenLayout, LayoutConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { provide } from "@lit-labs/context";
 
-import { JoinGroups } from "../elements/join-groups.js";
-import { GroupContext } from "../groups/elements/group-context.js";
-import { GroupPeersStatus } from "../groups/elements/group-peers-status.js";
-import { InstallableApplets } from "../groups/elements/installable-applets.js";
-import { GroupInviteMember } from "../groups/elements/group-invite-member.js";
-import { weStyles } from "../shared-styles.js";
-import { WelcomeView } from "./views/welcome-view.js";
+import "../elements/join-groups.js";
+import "../groups/elements/group-context.js";
+import "../groups/elements/group-peers-status.js";
+import "../groups/elements/installable-applets.js";
+import "../groups/elements/group-invite-member.js";
+import "./views/welcome-view.js";
+import "./views/group-applet-block.js";
+import "./views/entry-view.js";
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
-import { GroupAppletBlock } from "./views/group-applet-block.js";
+import { weStyles } from "../shared-styles.js";
 import { Hrl } from "../../../libs/we-applet/dist/index.js";
-import { EntryView } from "./views/entry-view.js";
 
 @localized()
-export class TabLayout extends ScopedElementsMixin(LitElement) {
+@customElement("tab-layout")
+export class TabLayout extends LitElement {
   @property()
   layoutConfig!: LayoutConfig;
 
@@ -84,16 +86,6 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
     return html` <golden-layout
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
-      .scopedElements=${{
-        "welcome-view": WelcomeView,
-        "join-groups": JoinGroups,
-        "group-peers-status": GroupPeersStatus,
-        "group-invite-member": GroupInviteMember,
-        "group-context": GroupContext,
-        "group-applet-block": GroupAppletBlock,
-        "installable-applets": InstallableApplets,
-        "entry-view": EntryView,
-      }}
       style="flex: 1; display: flex;"
     >
       <golden-layout-register component-type="welcome">
@@ -173,14 +165,6 @@ export class TabLayout extends ScopedElementsMixin(LitElement) {
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>
     </golden-layout>`;
-  }
-
-  static get scopedElements() {
-    return {
-      "golden-layout": GoldenLayoutEl,
-      "golden-layout-root": GoldenLayoutRoot,
-      "golden-layout-register": GoldenLayoutRegister,
-    };
   }
 
   static styles = [

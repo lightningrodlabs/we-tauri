@@ -1,14 +1,14 @@
 import { hashProperty } from "@holochain-open-dev/elements";
 import { EntryHash } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { weStyles } from "../../shared-styles.js";
-import { GroupView } from "./group-view.js";
+import "./group-view.js";
 
 @localized()
-export class GroupAppletBlock extends ScopedElementsMixin(LitElement) {
+@customElement("group-applet-block")
+export class GroupAppletBlock extends LitElement {
   @property(hashProperty("applet-instance-hash"))
   appletInstanceHash!: EntryHash;
 
@@ -21,12 +21,6 @@ export class GroupAppletBlock extends ScopedElementsMixin(LitElement) {
       .appletInstanceHash=${this.appletInstanceHash}
       style="flex: 1"
     ></group-view>`;
-  }
-
-  static get scopedElements() {
-    return {
-      "group-view": GroupView,
-    };
   }
 
   static styles = [

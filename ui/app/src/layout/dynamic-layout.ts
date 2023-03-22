@@ -1,20 +1,17 @@
 import { DnaHash, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import {
-  GoldenLayoutRegister,
-  GoldenLayoutRoot,
-  GoldenLayout as GoldenLayoutEl,
-} from "@scoped-elements/golden-layout";
+import { customElement } from "lit/decorators";
+import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
 import { GoldenLayout, RootItemConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
 import { LayoutConfig } from "golden-layout";
 
 import { weStyles } from "../shared-styles.js";
-import { TabLayout } from "./tab-layout.js";
+import "./tab-layout.js";
 
 @localized()
-export class DynamicLayout extends ScopedElementsMixin(LitElement) {
+@customElement("dynamic-layout")
+export class DynamicLayout extends LitElement {
   layoutConfig: LayoutConfig = {
     root: {
       type: "stack",
@@ -111,9 +108,6 @@ export class DynamicLayout extends ScopedElementsMixin(LitElement) {
     return html` <golden-layout
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
-      .scopedElements=${{
-        "tab-layout": TabLayout,
-      }}
       style="flex: 1; display: flex;"
     >
       <golden-layout-register
@@ -128,14 +122,6 @@ export class DynamicLayout extends ScopedElementsMixin(LitElement) {
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>
     </golden-layout>`;
-  }
-
-  static get scopedElements() {
-    return {
-      "golden-layout": GoldenLayoutEl,
-      "golden-layout-root": GoldenLayoutRoot,
-      "golden-layout-register": GoldenLayoutRegister,
-    };
   }
 
   static styles = [

@@ -129,15 +129,19 @@ export class WeApp extends LitElement {
       case "password":
         if (this.view.initialized) {
           return html`
-            <enter-password
-              @password-entered=${() => this.connect()}
-            ></enter-password>
+            <div class="column center-content" style="flex: 1">
+              <enter-password
+                @password-entered=${() => this.connect()}
+              ></enter-password>
+            </div>
           `;
         } else {
           return html`
-            <create-password
-              @password-created=${() => this.connect()}
-            ></create-password>
+            <div class="column center-content" style="flex: 1">
+              <create-password
+                @password-created=${() => this.connect()}
+              ></create-password>
+            </div>
           `;
         }
       case "main":

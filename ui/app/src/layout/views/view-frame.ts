@@ -1,11 +1,9 @@
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
-import { property, query } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import { weStyles } from "../../shared-styles.js";
 
-// TODO: use the ViewFrameInIframe component instead of the ViewFrame when moved to tauri
-export class ViewFrame extends ScopedElementsMixin(LitElement) {
+@customElement("view-frame")
+export class ViewFrame extends LitElement {
   @property()
   globalVars: any;
 
