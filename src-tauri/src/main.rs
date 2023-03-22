@@ -1,8 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use filesystem::WeFileSystem;
 use futures::lock::Mutex;
 use holochain_launcher_utils::window_builder::read_resource_from_path;
+use serde_json::Value;
 use tauri::{Manager, WindowBuilder, WindowUrl};
 
 mod commands;
@@ -44,6 +46,30 @@ fn main() {
         ])
         .setup(|app| {
             let handle = app.handle();
+
+            // reading profile from cli
+            let cli_matches = app.get_cli_matches()?;
+            let profile: String = match cli_matches.args.get("profile") {
+                Some(data) => match data.value.clone() {
+                    Value::String(profile) => {
+                        if profile == "default" {
+                            eprintln!("Error: The name 'default' is not allowed for a profile.");
+                            panic!("Error: The name 'default' is not allowed for a profile.");
+                        }
+                        profile
+                    }
+                    _ => {
+                        // println!("ERROR: Value passed to --profile option could not be interpreted as string.");
+                        String::from("default")
+                        // panic!("Value passed to --profile option could not be interpreted as string.")
+                    }
+                },
+                None => String::from("default"),
+            };
+
+            let fs = WeFileSystem::new(&handle, &profile)?;
+            app.manage(fs);
+
             WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .on_web_resource_request(move |request, response| {
                     let uri = request.uri();

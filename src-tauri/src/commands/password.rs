@@ -1,21 +1,21 @@
 use futures::lock::Mutex;
 use lair_keystore_manager::{versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager};
-use tauri::Manager;
+use tauri::{AppHandle, Manager};
 
 use crate::{filesystem::WeFileSystem, launch::launch, state::WeResult};
 
 #[tauri::command]
-pub async fn is_keystore_initialized(app_handle: tauri::AppHandle) -> WeResult<bool> {
-    let fs = WeFileSystem::new(&app_handle)?;
-
+pub async fn is_keystore_initialized(fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
     let initialized = LairKeystoreManagerV0_2::is_initialized(fs.keystore_path());
     Ok(initialized)
 }
 
 #[tauri::command]
-pub async fn create_password(app_handle: tauri::AppHandle, password: String) -> WeResult<()> {
-    let fs = WeFileSystem::new(&app_handle)?;
-
+pub async fn create_password(
+    app_handle: AppHandle,
+    fs: tauri::State<'_, WeFileSystem>,
+    password: String,
+) -> WeResult<()> {
     LairKeystoreManagerV0_2::initialize(fs.keystore_path(), password.clone()).await?;
 
     let state = launch(&fs, password).await?;
@@ -26,9 +26,11 @@ pub async fn create_password(app_handle: tauri::AppHandle, password: String) -> 
 }
 
 #[tauri::command]
-pub async fn enter_password(app_handle: tauri::AppHandle, password: String) -> WeResult<()> {
-    let fs = WeFileSystem::new(&app_handle)?;
-
+pub async fn enter_password(
+    app_handle: AppHandle,
+    fs: tauri::State<'_, WeFileSystem>,
+    password: String,
+) -> WeResult<()> {
     let state = launch(&fs, password).await?;
 
     app_handle.manage(Mutex::new(state));

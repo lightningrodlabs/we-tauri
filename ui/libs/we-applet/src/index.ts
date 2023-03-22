@@ -22,18 +22,26 @@ export type View = (rootElement: HTMLElement) => void;
 export type EntryTypeView = (
   hash: EntryHash | ActionHash,
   context: any
-) => {
-  name: () => Promise<string>;
-  view: View;
-};
+) => View;
 
 export interface CrossGroupViews {
   blocks: { main: View } & Record<string, View>;
 }
 
+export type DnaViews = Record<
+  string, // Integrity zome
+  Record<
+    string, // Entry def id
+    {
+      name: (hash: EntryHash | ActionHash, context: any) => Promise<string>;
+      view: EntryTypeView;
+    }
+  >
+>;
+
 export interface GroupViews {
   blocks: { main: View } & Record<string, View>; // all events -> schedule
-  entries: Record<string, Record<string, Record<string, EntryTypeView>>>; // Segmented by RoleName, integrity ZomeName and EntryType
+  entries: Record<string, DnaViews>; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
 export interface GroupServices {

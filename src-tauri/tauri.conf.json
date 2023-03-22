@@ -9,6 +9,16 @@
     "version": "0.0.0"
   },
   "tauri": {
+    "cli": {
+      "description": "Running we from the command line",
+      "args": [
+        {
+          "name": "profile",
+          "takesValue": true,
+          "multiple": false
+        }
+      ]
+    },
     "allowlist": {
       "all": false,
       "shell": {

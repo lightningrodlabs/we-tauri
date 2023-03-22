@@ -7,7 +7,6 @@ use holochain_types::{
     prelude::{AgentPubKeyB64, AppBundle},
     web_app::WebAppBundle,
 };
-use tauri::AppHandle;
 
 use crate::{
     filesystem::WeFileSystem,
@@ -16,8 +15,8 @@ use crate::{
 
 #[tauri::command]
 pub async fn install_applet(
-    app_handle: AppHandle,
     state: tauri::State<'_, Mutex<LaunchedState>>,
+    we_fs: tauri::State<'_, WeFileSystem>,
     app_id: String,
     network_seed: Option<String>,
     membrane_proofs: HashMap<String, Vec<u8>>,
@@ -25,7 +24,7 @@ pub async fn install_applet(
     happ_release_hash: Option<String>,
     gui_release_hash: Option<String>,
 ) -> WeResult<AppInfo> {
-    let app_bundle_path = WeFileSystem::new(&app_handle)?
+    let app_bundle_path = we_fs
         .app_data_dir
         .join("webhapps")
         .join(format!("{}.webhapp", app_id));

@@ -13,7 +13,12 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["fs-all", "http-all", "shell-open"] }
+tauri = { version = "1.2", features = [
+  "fs-all",
+  "http-all",
+  "shell-open",
+  "cli",
+] }
 
 anyhow = "1"
 serde = { version = "1.0", features = ["derive"] }

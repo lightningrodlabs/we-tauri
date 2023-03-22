@@ -1,6 +1,6 @@
 import { CoordinatorSource } from "../update-coordinators";
 import { HRL_LOCATOR_COORDINATOR_ZOME } from "./locate-hrl";
-//@ts-ignore
+// @ts-ignore
 import ZOME from "../../../../../target/wasm32-unknown-unknown/release/hrl_locator.wasm?url";
 
 export async function hrlLocatorZome(): Promise<CoordinatorSource> {

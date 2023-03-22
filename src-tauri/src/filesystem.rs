@@ -12,21 +12,21 @@ pub struct WeFileSystem {
 }
 
 impl WeFileSystem {
-    pub fn new(app_handle: &AppHandle) -> WeResult<WeFileSystem> {
+    pub fn new(app_handle: &AppHandle, profile: &String) -> WeResult<WeFileSystem> {
         let app_data_dir =
             app_handle
                 .path_resolver()
                 .app_data_dir()
                 .ok_or(WeError::FileSystemError(String::from(
                     "Could not resolve the data dir for this app",
-                )))?;
+                )))?.join(profile);
         let app_config_dir =
             app_handle
                 .path_resolver()
                 .app_config_dir()
                 .ok_or(WeError::FileSystemError(String::from(
                     "Could not resolve the data dir for this app",
-                )))?;
+                )))?.join(profile);
 
         fs::create_dir_all(app_data_dir.join("webhapps"))
             .map_err(|err| WeError::IoError(format!("{:?}", err)))?;
