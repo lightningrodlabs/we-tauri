@@ -21,6 +21,10 @@ export type OpenViewParameters =
       groupDnaHash: DnaHash;
     }
   | {
+    view: "group-invite-member";
+    groupDnaHash: DnaHash;
+  }
+  | {
       view: "group-applet-main";
       groupDnaHash: DnaHash;
     }

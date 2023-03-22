@@ -61,6 +61,12 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       INSTALLED_APP_ID: info.we_app_id,
     };
 
+    console.log(`
+    APP_INTERFACE_PORT: ${info.app_port},
+    ADMIN_INTERFACE_PORT: ${info.admin_port},
+    INSTALLED_APP_ID: ${info.we_app_id},
+    `)
+
     const adminWebsocket = await AdminWebsocket.connect(
       `ws://localhost:${info.admin_port}`
     );
@@ -69,7 +75,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(DEVHUB_APP_ID, 60000);
+    const devhubClient = await initAppClient(DEVHUB_APP_ID, info.app_port);
 
     this._weStore = new WeStore(
       adminWebsocket,

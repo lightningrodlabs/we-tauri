@@ -62,6 +62,13 @@ export class DynamicLayout extends ScopedElementsMixin(LitElement) {
             groupDnaHash: encodeHashToBase64(groupDnaHash),
           },
         },
+        {
+          type: "component",
+          componentType: "group-invite-member",
+          componentState: {
+            groupDnaHash: encodeHashToBase64(groupDnaHash),
+          },
+        },
       ],
     });
   }
