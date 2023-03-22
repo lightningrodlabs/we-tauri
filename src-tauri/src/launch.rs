@@ -18,7 +18,11 @@ pub async fn launch(fs: &WeFileSystem, password: String) -> WeResult<LaunchedSta
     let version = holochain_version();
     let version_str = version.to_string();
 
-    let admin_port: u16 = portpicker::pick_unused_port().expect("No ports free");
+    let admin_port: u16 = match option_env!("ADMIN_PORT") {
+        Some(port) => port.parse().unwrap(),
+        None => portpicker::pick_unused_port().expect("No ports free"),
+    };
+
     let mut web_app_manager = WebAppManager::launch(
         version,
         LaunchHolochainConfig {

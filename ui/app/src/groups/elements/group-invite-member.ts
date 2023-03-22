@@ -54,21 +54,23 @@ export class GroupInviteMember extends LitElement {
           <div class="row">
             <span class="title">${msg("Invite New Member")}</span>
           </div>
-          <form id="pubkeyform" class="row" style="align-items: center; margin-top: 20px;" ${onSubmit(
-            (f) => this.inviteToJoin(decodeHashFromBase64(f.pubkey))
-          )}>
+          <form
+            id="pubkeyform"
+            class="row"
+            style="align-items: center; margin-top: 20px;"
+            ${onSubmit((f) =>
+              this.inviteToJoin(decodeHashFromBase64(f.pubkey))
+            )}
+          >
             <sl-input
               name="pubkey"
               .label=${msg("Public Key")}
               id="pubkey-field"
               required
             ></sl-input>
-            <sl-button
-              style="margin: 10px;"
-              variant="primary"
-              .label=${msg("Invite")}
-              type="submit"
-            ></sl-button>
+            <sl-button style="margin: 10px;" variant="primary" type="submit">
+              ${msg("Invite")}
+            </sl-button>
           </form>
           <div
             class="default-font"
@@ -77,7 +79,7 @@ export class GroupInviteMember extends LitElement {
             ${msg("ask a friend to send you their public key")}
           </div>
         </div>
-      </mwc-card>
+      </sl-card>
     `;
   }
 

@@ -6,6 +6,7 @@ import {
   GoldenLayout as GoldenLayoutEl,
 } from "@scoped-elements/golden-layout";
 customElements.define("golden-layout-register", GoldenLayoutRegister);
+customElements.define("golden-layout", GoldenLayoutEl);
 customElements.define("golden-layout-root", GoldenLayoutRoot);
 import { GoldenLayout, LayoutConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";

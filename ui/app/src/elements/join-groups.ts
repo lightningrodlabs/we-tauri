@@ -218,13 +218,7 @@ export class JoinGroups extends LitElement {
 
   render() {
     return html`
-      <mwc-snackbar
-        id="copied-snackbar"
-        timeoutMs="4000"
-        .labelText=${msg("Copied!")}
-      ></mwc-snackbar>
-
-      <mwc-card>
+      <sl-card>
         <div class="column content-pane">
           <div style="font-size: 1.7em;">${msg("Joining A Group")}</div>
           <div class="center-content">
@@ -274,7 +268,7 @@ export class JoinGroups extends LitElement {
             ${this.renderInvitationsBlock()}
           </div>
         </div>
-      </mwc-card>
+      </sl-card>
     `;
   }
 

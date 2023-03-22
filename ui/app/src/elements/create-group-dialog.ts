@@ -5,7 +5,7 @@ import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 
 import "@holochain-open-dev/elements/elements/select-avatar.js";
-import { SelectAvatar } from "@holochain-open-dev/elements/elements/select-avatar.js";
+import type { SelectAvatar } from "@holochain-open-dev/elements/elements/select-avatar.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -61,7 +61,11 @@ export class CreateGroupDialog extends LitElement {
       <sl-dialog id="dialog" .label=${msg("Create Group")}>
         <form ${onSubmit((f) => this.createGroup(f))}>
           <div class="row" style="margin-top: 16px">
-            <select-avatar id="select-avatar" name="logo_src"></select-avatar>
+            <select-avatar
+              id="select-avatar"
+              required
+              name="logo_src"
+            ></select-avatar>
 
             <sl-input
               name="name"
@@ -72,11 +76,8 @@ export class CreateGroupDialog extends LitElement {
             ></sl-input>
           </div>
 
-          <sl-button
-            id="primary-action-button"
-            type="submit"
-            .label=${msg("Create Group")}
-          >
+          <sl-button id="primary-action-button" type="submit">
+            ${msg("Create Group")}
           </sl-button>
         </form>
       </sl-dialog>

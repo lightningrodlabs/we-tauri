@@ -17,6 +17,7 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import "./sidebar-button.js";
 import { weStyles } from "../shared-styles.js";
+import "./create-group-dialog.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
 @localized()
