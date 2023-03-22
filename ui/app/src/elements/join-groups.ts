@@ -1,30 +1,35 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { consume } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import {
-  MdOutlinedButton,
-  MdFilledButton,
-  Card,
-  Snackbar,
-  MdIcon,
-} from "@scoped-elements/material-web";
-import { query } from "lit/decorators.js";
+import { customElement, query } from "lit/decorators.js";
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { DisplayError, HoloIdenticon } from "@holochain-open-dev/elements";
-import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, encodeHashToBase64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
+import {
+  notify,
+  notifyError,
+  wrapPathInSvg,
+} from "@holochain-open-dev/elements";
+import { mdiEmail, mdiKey } from "@mdi/js";
+
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@holochain-open-dev/elements/elements/holo-identicon.js";
+import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/profiles/elements/profile-list-item-skeleton.js";
 
 import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import { ProfileListItemSkeleton } from "@holochain-open-dev/profiles";
 
 @localized()
-export class JoinGroups extends ScopedElementsMixin(LitElement) {
+@customElement("join-groups")
+export class JoinGroups extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
@@ -32,9 +37,6 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
     this,
     () => this._weStore.membraneInvitationsStore.myInvitations
   );
-
-  @query("#copied-snackbar")
-  _copiedSnackbar!: Snackbar;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -60,9 +62,8 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
     } catch (e) {
       if (e.data.data) {
         if (e.data.data.includes("AppAlreadyInstalled")) {
-          (
-            this.shadowRoot?.getElementById("error-snackbar") as Snackbar
-          ).show();
+          // TODO: fix this
+          notifyError(msg("You are already part of this group"));
         }
       }
     }
@@ -116,17 +117,6 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  renderErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        style="text-align: center;"
-        id="error-snackbar"
-        labelText="You are already part of this Group!"
-      >
-      </mwc-snackbar>
-    `;
-  }
-
   renderInvitations(
     invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>
   ) {
@@ -150,7 +140,7 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
           .map(([actionHash, invitation]) => {
             return html`
               <div class="column" style="align-items: right; width: 100%;">
-                <mwc-card style="max-width: 800px; margin: 5px;">
+                <sl-card style="max-width: 800px;">
                   <div
                     class="row"
                     style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
@@ -170,22 +160,21 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
                       ${this.groupName(invitation)}
                     </div>
                     <div class="row" style="margin-left: auto;">
-                      <md-outlined-button
-                        class="delete-invitation"
-                        .label=${msg("REJECT")}
-                        icon="close"
+                      <sl-button
                         @click=${() => this.removeInvitation(actionHash)}
                       >
-                      </md-outlined-button>
-                      <md-filled-button
-                        class="accept-invitation"
-                        .label=${msg("JOIN")}
-                        icon="check"
+                        ${msg("Reject")}
+                      </sl-button>
+                      <sl-button
+                        style="margin-left: 4px"
+                        variant="primary"
                         @click=${() => this.joinGroup(actionHash, invitation)}
-                      ></md-filled-button>
+                      >
+                        ${msg("JOIN")}
+                      </sl-button>
                     </div>
                   </div>
-                </mwc-card>
+                </sl-card>
                 <div
                   style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;"
                 >
@@ -208,9 +197,8 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
         </div>`;
       case "complete":
         return html`
-          ${this.renderErrorSnackbar()}
           <div class="row title center-content" style="margin-top: 70px;">
-            <md-icon>mail</md-icon
+            <sl-icon .src=${wrapPathInSvg(mdiEmail)}></sl-icon
             ><span style="margin-left: 10px;">${msg("your invitations:")}</span>
           </div>
           <div
@@ -250,7 +238,7 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
 
             <div class="column center-content">
               <div class="row title center-content" style="margin-top: 50px;">
-                <md-icon>key</md-icon
+                <sl-icon .src=${wrapPathInSvg(mdiKey)}></sl-icon
                 ><span style="margin-left: 10px;"
                   >${msg("your public key")}</span
                 >
@@ -265,7 +253,7 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
                           this._weStore.appAgentWebsocket.myPubKey
                         )
                       );
-                      this._copiedSnackbar.show();
+                      notify("Copied your public key to the clipboard!");
                     }}
                   >
                     ${encodeHashToBase64(
@@ -290,20 +278,6 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
-    return {
-      "md-filled-button": MdFilledButton,
-      "md-outlined-button": MdOutlinedButton,
-      "mwc-card": Card,
-      "md-icon": MdIcon,
-      "mwc-snackbar": Snackbar,
-      "holo-identicon": HoloIdenticon,
-      "sl-tooltip": SlTooltip,
-      "profile-list-item-skeleton": ProfileListItemSkeleton,
-      "display-error": DisplayError,
-    };
-  }
-
   static styles = [
     css`
       .content-pane {
@@ -316,15 +290,6 @@ export class JoinGroups extends ScopedElementsMixin(LitElement) {
         font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
         font-size: 1.2em;
         text-align: center;
-      }
-
-      .accept-invitation {
-        --mdc-theme-primary: #17c200;
-      }
-
-      .delete-invitation {
-        --mdc-theme-primary: #cf0000;
-        margin-left: 5px;
       }
 
       .group-image {

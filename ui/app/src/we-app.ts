@@ -1,4 +1,3 @@
-// import "@webcomponents/scoped-custom-element-registry";
 import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
 import {
@@ -6,23 +5,22 @@ import {
   AdminWebsocket,
   encodeHashToBase64,
 } from "@holochain/client";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css } from "lit";
-import { sharedStyles } from "@holochain-open-dev/elements";
-import { CircularProgress } from "@scoped-elements/material-web";
+
+import "@holochain-open-dev/elements/elements/display-error.js";
 
 import { weStyles } from "./shared-styles.js";
 import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
-import { NavigationSidebar } from "./elements/navigation-sidebar.js";
+import "./elements/navigation-sidebar.js";
 import { DynamicLayout } from "./layout/dynamic-layout.js";
 import {
   getConductorInfo,
   isKeystoreInitialized,
   isLaunched,
 } from "./tauri.js";
-import { EnterPassword } from "./password/enter-password.js";
-import { CreatePassword } from "./password/create-password.js";
+import "./password/enter-password.js";
+import "./password/create-password.js";
 import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 
@@ -32,7 +30,7 @@ type View =
   | { view: "main" };
 
 @customElement("we-app")
-export class WeApp extends ScopedElementsMixin(LitElement) {
+export class WeApp extends LitElement {
   @state()
   view: View = { view: "loading" };
 
@@ -65,7 +63,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     APP_INTERFACE_PORT: ${info.app_port},
     ADMIN_INTERFACE_PORT: ${info.admin_port},
     INSTALLED_APP_ID: ${info.we_app_id},
-    `)
+    `);
 
     const adminWebsocket = await AdminWebsocket.connect(
       `ws://localhost:${info.admin_port}`
@@ -147,20 +145,9 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  static get scopedElements() {
-    return {
-      "mwc-circular-progress": CircularProgress,
-      "navigation-sidebar": NavigationSidebar,
-      "dynamic-layout": DynamicLayout,
-      "enter-password": EnterPassword,
-      "create-password": CreatePassword,
-    };
-  }
-
   static get styles() {
     return [
       weStyles,
-      sharedStyles,
       css`
         :host {
           flex: 1;

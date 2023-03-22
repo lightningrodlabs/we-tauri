@@ -15,14 +15,12 @@ import {
   AdminWebsocket,
   AgentPubKey,
   AppAgentWebsocket,
-  AppBundle,
   AppInfo,
   CellType,
   DnaHash,
   DnaModifiers,
   encodeHashToBase64,
   EntryHash,
-  InstallAppRequest,
   ProvisionedCell,
   StemCell,
 } from "@holochain/client";
@@ -36,7 +34,7 @@ import { initAppClient } from "../utils";
 import { fromUint8Array } from "js-base64";
 
 // Given a group, all the functionality related to that group
-export class GenericGroupStore<APPLET> {
+export class GroupStore {
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
   appletsClient: AppletsClient;

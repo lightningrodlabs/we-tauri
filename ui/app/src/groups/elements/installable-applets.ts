@@ -1,20 +1,17 @@
 import { html, LitElement, css } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { ListProfiles } from "@holochain-open-dev/profiles";
-import {
-  MdOutlinedButton,
-  CircularProgress,
-  Card,
-} from "@scoped-elements/material-web";
 import { consume } from "@lit-labs/context";
-import { query, state } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { DisplayError } from "@holochain-open-dev/elements";
+
+import "@holochain-open-dev/elements/elements/display-error.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { AppletMetadata } from "../../types.js";
 import { InstallAppletDialog } from "./install-applet-dialog.js";
-import { GenericGroupStore } from "../group-store.js";
+import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import {
@@ -23,9 +20,10 @@ import {
 } from "../../processes/devhub/get-happs.js";
 
 @localized()
-export class InstallableApplets extends ScopedElementsMixin(LitElement) {
+@customElement("installable-applets")
+export class InstallableApplets extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GenericGroupStore<any>;
+  groupStore!: GroupStore;
 
   _installableApplets = new StoreSubscriber(
     this,
@@ -40,7 +38,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
 
   renderInstallableApplet(appletInfo: AppletMetadata) {
     return html`
-      <mwc-card class="applet-card">
+      <sl-card class="applet-card">
         <div style="height: 145px;">
           <h2 style="padding: 5px; margin:0;">${appletInfo.title}</h2>
           <h3 style="padding: 5px; margin: 0;">${appletInfo.subtitle}</h3>
@@ -48,13 +46,13 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
             ${appletInfo.description}
           </div>
         </div>
-        <md-outlined-button
+        <sl-button
           @click=${() => {
             this._appletDialog.open(appletInfo);
           }}
           .label=${msg("Add to group")}
-        ></md-outlined-button>
-      </mwc-card>
+        ></sl-button>
+      </sl-card>
     `;
   }
 
@@ -100,7 +98,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
     switch (this._installableApplets.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress>
+          <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
         return this.renderApplets(this._installableApplets.value.value);
@@ -112,17 +110,6 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
           .error=${this._installableApplets.value.error}
         ></display-error>`;
     }
-  }
-
-  static get scopedElements() {
-    return {
-      "list-profiles": ListProfiles,
-      "md-outlined-button": MdOutlinedButton,
-      "mwc-circular-progress": CircularProgress,
-      "mwc-card": Card,
-      "install-applet-dialog": InstallAppletDialog,
-      "display-error": DisplayError,
-    };
   }
 
   static styles = [

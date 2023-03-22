@@ -1,8 +1,7 @@
 import { css, html, LitElement, PropertyValues } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { consume, ContextProvider, provide } from "@lit-labs/context";
-import { property, state } from "lit/decorators.js";
-import { StoreSubscriber, Unsubscriber } from "@holochain-open-dev/stores";
+import { consume, provide } from "@lit-labs/context";
+import { customElement, property, state } from "lit/decorators.js";
+import { Unsubscriber } from "@holochain-open-dev/stores";
 import {
   PeerStatusStore,
   peerStatusStoreContext,
@@ -16,9 +15,10 @@ import { DnaHash } from "@holochain/client";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { groupStoreContext } from "../context.js";
-import { GenericGroupStore } from "../group-store.js";
+import { GroupStore } from "../group-store.js";
 
-export class GroupContext extends ScopedElementsMixin(LitElement) {
+@customElement("group-context")
+export class GroupContext extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   @state()
   weStore!: WeStore;
@@ -27,7 +27,7 @@ export class GroupContext extends ScopedElementsMixin(LitElement) {
   groupDnaHash!: DnaHash;
 
   @provide({ context: groupStoreContext })
-  groupStore!: GenericGroupStore<any>;
+  groupStore!: GroupStore;
 
   @provide({ context: profilesStoreContext })
   profilesStore!: ProfilesStore;

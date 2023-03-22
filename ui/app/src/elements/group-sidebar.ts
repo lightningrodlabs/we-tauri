@@ -1,22 +1,27 @@
-import { DisplayError, sharedStyles } from "@holochain-open-dev/elements";
+import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { html, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 import { GroupInfo } from "@lightningrodlabs/we-applet";
-import { MdFab } from "@scoped-elements/material-web";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
+import { mdiAccountMultiplePlus } from "@mdi/js";
 
-import { weStoreContext } from "../context";
-import { WeStore } from "../we-store";
-import { SidebarButton } from "./sidebar-button.js";
-import { CreateGroupDialog } from "./create-group-dialog";
-import { weStyles } from "../shared-styles";
+import "@holochain-open-dev/elements/elements/display-error.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+
+import { weStoreContext } from "../context.js";
+import { WeStore } from "../we-store.js";
+import "./sidebar-button.js";
+import { weStyles } from "../shared-styles.js";
+import { CreateGroupDialog } from "./create-group-dialog.js";
 
 @localized()
-export class GroupSidebar extends ScopedElementsMixin(LitElement) {
+@customElement("group-sidebar")
+export class GroupSidebar extends LitElement {
   @consume({ context: weStoreContext })
   _weStore!: WeStore;
 
@@ -50,16 +55,19 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
         )}
 
       <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
-        <md-fab
-          icon="group_add"
+        <sl-button
+          size="large"
+          circle
           @click=${() =>
             (
               this.shadowRoot?.getElementById(
                 "create-group-dialog"
               ) as CreateGroupDialog
             ).open()}
-          style="margin-top: 4px; --md-theme-secondary: #9ca5e3;"
-        ></md-fab>
+          style="margin-top: 4px;"
+        >
+          <sl-icon .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
+        </sl-button>
       </sl-tooltip>
     `;
   }
@@ -78,16 +86,5 @@ export class GroupSidebar extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  static get scopedElements() {
-    return {
-      "sl-skeleton": SlSkeleton,
-      "display-error": DisplayError,
-      "sidebar-button": SidebarButton,
-      "md-fab": MdFab,
-      "create-group-dialog": CreateGroupDialog,
-      "sl-tooltip": SlTooltip,
-    };
-  }
-
-  static styles = [weStyles, sharedStyles];
+  static styles = [weStyles];
 }

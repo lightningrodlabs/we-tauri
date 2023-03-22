@@ -3,18 +3,19 @@ import { state, query, property } from "lit/decorators.js";
 
 import { consume } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import {
-  MdDialog,
-  MdOutlinedTextField,
-  MdFilledButton,
-  MdOutlinedButton,
-} from "@scoped-elements/material-web";
-import { SelectAvatar, sharedStyles } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 
-import { weStyles } from "../shared-styles";
-import { weStoreContext } from "../context";
-import { WeStore } from "../we-store";
+import "@holochain-open-dev/elements/elements/select-avatar.js";
+import { SelectAvatar } from "@holochain-open-dev/elements/elements/select-avatar.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+
+import { weStyles } from "../shared-styles.js";
+import { weStoreContext } from "../context.js";
+import { WeStore } from "../we-store.js";
+import { onSubmit } from "@holochain-open-dev/elements";
 
 /**
  * @element create-group-dialog
@@ -26,89 +27,60 @@ export class CreateGroupDialog extends ScopedElementsMixin(LitElement) {
   _weStore!: WeStore;
 
   async open() {
-    this._name = "";
-    this._logoSrc = "";
     this._dialog.show();
   }
 
   /** Private properties */
   @query("#dialog")
-  _dialog!: MdDialog;
+  _dialog!: SlDialog;
   @query("#name-field")
   _nameField!: HTMLInputElement;
   @query("#select-avatar")
   _avatarField!: SelectAvatar;
 
-  @state()
-  _name: string | undefined;
-  @state()
-  _logoSrc: string | undefined;
+  private async createGroup(fields: any) {
+    const groupDnaHash = await this._weStore.createGroup(
+      fields.name,
+      fields.logo_src
+    );
 
-  private async handleOk(e: any) {
-    // if statement is required to prevent ENTER key to close the dialog while the button is disabled
-    if (this._name && this._logoSrc) {
-      const groupDnaHash = await this._weStore.createGroup(
-        this._name!,
-        this._logoSrc!
-      );
-
-      this.dispatchEvent(
-        new CustomEvent("group-created", {
-          detail: { groupDnaHash },
-          bubbles: true,
-          composed: true,
-        })
-      );
-      this._dialog.close();
-      this._nameField.value = "";
-      this._avatarField.clear();
-    }
+    this.dispatchEvent(
+      new CustomEvent("group-created", {
+        detail: { groupDnaHash },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    this._dialog.hide();
+    this._nameField.value = "";
+    this._avatarField.clear();
   }
 
   render() {
     return html`
-      <md-dialog id="dialog">
-        <span slot="headline"> ${msg("Create Group")}</span>
-        <div class="row" style="margin-top: 16px">
-          <select-avatar
-            id="select-avatar"
-            @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
-          ></select-avatar>
+      <sl-dialog id="dialog" .label=${msg("Create Group")}>
+        <form ${onSubmit((f) => this.createGroup(f))}>
+          <div class="row" style="margin-top: 16px">
+            <select-avatar id="select-avatar" name="logo_src"></select-avatar>
 
-          <md-outlined-text-field
-            @input=${(e) => (this._name = e.target.value)}
-            style="margin-left: 16px"
-            id="name-field"
-            .label=${msg("Group name")}
-            required
-          ></md-outlined-text-field>
-        </div>
+            <sl-input
+              name="name"
+              style="margin-left: 16px"
+              id="name-field"
+              .label=${msg("Group name")}
+              required
+            ></sl-input>
+          </div>
 
-        <md-outlined-button
-          slot="footer"
-          dialogAction="cancel"
-          .label=${msg("Cancel")}
-        >
-        </md-outlined-button>
-        <md-filled-button
-          id="primary-action-button"
-          slot="footer"
-          .disabled=${!this._name || !this._logoSrc}
-          @click=${this.handleOk}
-          .label=${msg("Create Group")}
-        >
-        </md-filled-button>
-      </md-dialog>
+          <sl-button
+            id="primary-action-button"
+            type="submit"
+            .label=${msg("Create Group")}
+          >
+          </sl-button>
+        </form>
+      </sl-dialog>
     `;
-  }
-  static get scopedElements() {
-    return {
-      "select-avatar": SelectAvatar,
-      "md-filled-button": MdFilledButton,
-      "md-outlined-button": MdOutlinedButton,
-      "md-dialog": MdDialog,
-      "md-outlined-text-field": MdOutlinedTextField,
-    };
   }
   static get styles() {
     return [

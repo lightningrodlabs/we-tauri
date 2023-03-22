@@ -1,22 +1,20 @@
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement, css } from "lit";
-import {
-  Card,
-  Snackbar,
-  MdIcon,
-  MdDialog,
-} from "@scoped-elements/material-web";
-import { SlTooltip } from "@scoped-elements/shoelace";
+import { customElement } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { HoloIdenticon, sharedStyles } from "@holochain-open-dev/elements";
 
-import { weStyles } from "../../shared-styles";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+
+import { weStyles } from "../../shared-styles.js";
+import { wrapPathInSvg } from "@holochain-open-dev/elements";
+import { mdiAccountMultiplePlus, mdiHome } from "@mdi/js";
 
 @localized()
-export class WelcomeView extends ScopedElementsMixin(LitElement) {
+@customElement("welcome-view")
+export class WelcomeView extends LitElement {
   renderManagingGroupsCard() {
     return html`
-      <mwc-card style="width: 40%; margin-right: 30px">
+      <sl-card style="width: 40%; margin-right: 30px">
         <div class="column content-pane">
           <div style="font-size: 1.7em;">${msg("Managing Groups")}</div>
           <div
@@ -26,9 +24,10 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
             <ol style="line-height: 180%; margin: 0;">
               <li>
                 ${msg('To create a <b>new group</b>, click on the "Add Group"')}
-                <md-icon style="position: relative; top: 0.25em;"
-                  >group_add</md-icon
-                >
+                <sl-icon
+                  style="position: relative; top: 0.25em;"
+                  .src=${wrapPathInSvg(mdiAccountMultiplePlus)}
+                ></sl-icon>
                 ${msg("button in the left sidebar.")}
               </li>
               <li>
@@ -40,8 +39,11 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
                 ${msg(
                   "<b>Invite other members</b> to the group from the home screen of your new group"
                 )}
-                (<md-icon style="position: relative; top: 0.25em;">home</md-icon
-                >).
+                (<sl-icon
+                  style="position: relative; top: 0.25em;"
+                  .src=${wrapPathInSvg(mdiHome)}
+                ></sl-icon
+                >)
                 ${msg(
                   "You will need to ask them for their public key (copiable from the identicon in the bottom left corner of the screen)."
                 )}
@@ -54,7 +56,7 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
             </ol>
           </div>
         </div>
-      </mwc-card>
+      </sl-card>
     `;
   }
   render() {
@@ -80,17 +82,6 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
-    return {
-      "mwc-card": Card,
-      "md-icon": MdIcon,
-      "mwc-snackbar": Snackbar,
-      "holo-identicon": HoloIdenticon,
-      "sl-tooltip": SlTooltip,
-      "md-dialog": MdDialog,
-    };
-  }
-
   static styles = [
     css`
       .content-pane {
@@ -101,7 +92,6 @@ export class WelcomeView extends ScopedElementsMixin(LitElement) {
         flex: 1;
       }
     `,
-    sharedStyles,
     weStyles,
   ];
 }

@@ -1,28 +1,27 @@
 import { css, html, LitElement } from "lit";
-import { property, query, state } from "lit/decorators.js";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import {
-  MdOutlinedTextField,
-  MdOutlinedButton,
-  MdFilledButton,
-  Snackbar,
-  MdDialog,
-  CircularProgress,
-} from "@scoped-elements/material-web";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { consume } from "@lit-labs/context";
+
+import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
 import { AppletMetadata } from "../../types.js";
-import { consume } from "@lit-labs/context";
 import { groupStoreContext } from "../context.js";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { weStyles } from "../../shared-styles.js";
-import { GenericGroupStore } from "../group-store.js";
+import { GroupStore } from "../group-store.js";
+import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
 
 @localized()
-export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
+@customElement("install-applet-dialog")
+export class InstallAppletDialog extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GenericGroupStore<any>;
+  groupStore!: GroupStore;
 
   _installedApplets = new StoreSubscriber(
     this,
@@ -32,8 +31,8 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   @query("#applet-dialog")
   _appletDialog!: any;
 
-  @query("#custom-name-field")
-  _customNameField!: any;
+  @query("#form")
+  form!: HTMLFormElement;
 
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
@@ -58,16 +57,12 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
 
   open(appletInfo: AppletMetadata) {
     this._appletInfo = appletInfo;
-    this._customNameField.value = this._appletInfo.title;
+    this.form.reset();
     this._appletDialog.show();
   }
 
   get publishDisabled() {
-    return (
-      !this._customNameField ||
-      this._customNameField.value === "" ||
-      this._duplicateName
-    );
+    return this._duplicateName;
   }
 
   // TODO: is this what we want to do?
@@ -90,18 +85,15 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
   //   };
   // }
 
-  async installApplet() {
-    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+  async installApplet(customName: string) {
+    notify("Installing...");
     try {
       const appletEntryHash =
         await this.groupStore.installAndRegisterAppletOnGroup(
           this._appletInfo,
-          this._customNameField.value
+          customName
         );
-      (
-        this.shadowRoot?.getElementById("installing-progress") as Snackbar
-      ).close();
-      (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+      notify("Installation successful");
 
       this.dispatchEvent(
         new CustomEvent("applet-installed", {
@@ -111,97 +103,44 @@ export class InstallAppletDialog extends ScopedElementsMixin(LitElement) {
         })
       );
     } catch (e) {
-      (
-        this.shadowRoot?.getElementById("installing-progress") as Snackbar
-      ).close();
-      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+      notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
     }
   }
 
-  renderErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        id="error-snackbar"
-        labelText="Installation failed! (See console for details)"
-      >
-      </mwc-snackbar>
-    `;
-  }
-
-  renderSuccessSnackbar() {
-    return html`
-      <mwc-snackbar
-        id="success-snackbar"
-        labelText="Installation successful"
-      ></mwc-snackbar>
-    `;
-  }
-
-  renderInstallingProgress() {
-    return html`
-      <mwc-snackbar
-        id="installing-progress"
-        labelText="Installing..."
-        .timeoutMs=${-1}
-      >
-      </mwc-snackbar>
-    `;
-  }
-
   render() {
     return html`
-      ${this.renderErrorSnackbar()} ${this.renderSuccessSnackbar()}
-      ${this.renderInstallingProgress()}
-
-      <md-dialog id="applet-dialog">
-        <div slot="headline">${msg("Add Custom Name")}</div>
-        <div class="column" style="padding: 16px; margin-bottom: 24px;">
-          <md-outlined-text-field
+      <sl-dialog id="applet-dialog" .label=${msg("Install Applet")}>
+        <form
+          class="column"
+          style="padding: 16px; margin-bottom: 24px;"
+          ${onSubmit((f) => this.installApplet(f.custom_name))}
+        >
+          <sl-input
+            name="custom_name"
             id="custom-name-field"
             .label=${msg("Custom Name")}
             required
-            .value=${this._appletInfo.title}
-            @input=${() => this.requestUpdate()}
-          ></md-outlined-text-field>
-          ${
-            this._duplicateName
-              ? html`<div
-                  class="default-font"
-                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
-                >
-                  ${msg("Name already exists.")}
-                </div>`
-              : html``
-          }
-        </div>
+            .defaultValue=${this._appletInfo.title}
+          ></sl-input>
+          ${this._duplicateName
+            ? html`<div
+                class="default-font"
+                style="color: #b10323; font-size: 12px; margin-left: 4px;"
+              >
+                ${msg("Name already exists.")}
+              </div>`
+            : html``}
 
-        <md-outlined-button
-          slot="footer"
-          dialogAction="cancel"
-          .label=${msg("Cancel")}
-        ></md-outlined-button>
-        <md-filled-button
-          id="primary-action-button"
-          .disabled=${this.publishDisabled}
-          slot="footer"
-          dialogAction="close"
-          .label=${msg("INSTALL")}
-          @click=${() => this.installApplet()}
-        ></md-fillded-button>
-      </md-dialog>
+          <sl-button
+            id="primary-action-button"
+            variant="primary"
+            .label=${msg("INSTALL")}
+            type="submit"
+          ></sl-button>
+        </form>
+      </sl-dialog>
     `;
-  }
-
-  static get scopedElements() {
-    return {
-      "md-outlined-text-field": MdOutlinedTextField,
-      "md-outlined-button": MdOutlinedButton,
-      "md-filled-button": MdFilledButton,
-      "md-dialog": MdDialog,
-      "mwc-snackbar": Snackbar,
-      "mwc-circular-progress": CircularProgress,
-    };
   }
 
   static styles = weStyles;

@@ -1,24 +1,24 @@
-import { DisplayError, hashProperty } from "@holochain-open-dev/elements";
-import {
-  ListAgentsByStatus,
-  PeerStatusContext,
-} from "@holochain-open-dev/peer-status";
-import { ProfilesContext } from "@holochain-open-dev/profiles";
+import { hashProperty } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { AgentPubKey, DnaHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
+
+import "@holochain-open-dev/peer-status/elements/list-agents-by-status.js";
+import "@holochain-open-dev/elements/elements/display-error.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
-import { GenericGroupStore } from "../group-store.js";
+import { GroupStore } from "../group-store.js";
 
 @localized()
-export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
+@customElement("group-peers-status")
+export class GroupPeersStatus extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
-  _groupStore!: GenericGroupStore<any>;
+  _groupStore!: GroupStore;
 
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;
@@ -35,7 +35,7 @@ export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
     switch (this._group.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress>
+          <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
         return this.renderPeersStatus(this._group.value.value);
@@ -45,15 +45,6 @@ export class GroupPeersStatus extends ScopedElementsMixin(LitElement) {
           .error=${this._group.value.error.data.data}
         ></display-error>`;
     }
-  }
-
-  static get scopedElements() {
-    return {
-      "display-error": DisplayError,
-      // "profiles-context": ProfilesContext,
-      "list-agents-by-status": ListAgentsByStatus,
-      "peer-status-context": PeerStatusContext,
-    };
   }
 
   static styles = weStyles;

@@ -28,20 +28,14 @@ export interface CrossGroupViews {
   blocks: { main: View } & Record<string, View>;
 }
 
-export type DnaViews = Record<
-  string, // Integrity zome
-  Record<
-    string, // Entry def id
-    {
-      name: (hash: EntryHash | ActionHash, context: any) => Promise<string>;
-      view: EntryTypeView;
-    }
-  >
->;
+export interface EntryTypeHandlers {
+  name: (hash: EntryHash | ActionHash) => Promise<string>;
+  view: EntryTypeView;
+}
 
 export interface GroupViews {
   blocks: { main: View } & Record<string, View>; // all events -> schedule
-  entries: Record<string, DnaViews>; // Segmented by RoleName, integrity ZomeName and EntryType
+  entries: Record<string, Record<string, Record<string, EntryTypeHandlers>>>; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
 export interface GroupServices {

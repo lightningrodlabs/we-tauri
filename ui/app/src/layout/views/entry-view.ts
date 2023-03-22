@@ -1,25 +1,29 @@
-import { DisplayError } from "@holochain-open-dev/elements";
 import {
   AsyncReadable,
   join,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
-import { DnaHash, EntryHash, Record } from "@holochain/client";
-import { consume, provide } from "@lit-labs/context";
+import { Record } from "@holochain/client";
+import { consume } from "@lit-labs/context";
 import { msg } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 
-import { Hrl } from "../../../../libs/we-applet/dist";
-import { weStoreContext } from "../../context";
-import { DnaLocation, EntryDefLocation } from "../../processes/hrl/locate-hrl";
-import { weStyles } from "../../shared-styles";
-import { WeStore } from "../../we-store";
-import { GroupView } from "./group-view";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@holochain-open-dev/elements/elements/display-error.js";
 
-export class EntryView extends ScopedElementsMixin(LitElement) {
+import { Hrl } from "@lightningrodlabs/we-applet";
+import { weStoreContext } from "../../context.js";
+import {
+  DnaLocation,
+  EntryDefLocation,
+} from "../../processes/hrl/locate-hrl.js";
+import { weStyles } from "../../shared-styles.js";
+import { WeStore } from "../../we-store.js";
+import "./group-view.js";
+
+@customElement("entry-view")
+export class EntryView extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
@@ -81,14 +85,6 @@ export class EntryView extends ScopedElementsMixin(LitElement) {
           this.location.value.value[1] as any
         );
     }
-  }
-
-  static get scopedElements() {
-    return {
-      "mwc-circular-progress": CircularProgress,
-      "display-error": DisplayError,
-      "group-view": GroupView,
-    };
   }
 
   static styles = [

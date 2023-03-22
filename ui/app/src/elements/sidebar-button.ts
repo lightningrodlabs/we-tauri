@@ -1,10 +1,12 @@
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
-import { SlTooltip } from "@scoped-elements/shoelace";
 
-import { property, query } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 
-export class SidebarButton extends ScopedElementsMixin(LitElement) {
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+
+@customElement("sidebar-button")
+export class SidebarButton extends LitElement {
   @property()
   logoSrc!: string;
 
@@ -42,12 +44,6 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     >
       <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
     </sl-tooltip>`;
-  }
-
-  static get scopedElements() {
-    return {
-      "sl-tooltip": SlTooltip,
-    };
   }
 
   static get styles() {

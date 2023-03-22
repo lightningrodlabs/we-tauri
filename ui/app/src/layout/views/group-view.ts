@@ -1,4 +1,4 @@
-import { DisplayError, hashProperty } from "@holochain-open-dev/elements";
+import { hashProperty } from "@holochain-open-dev/elements";
 import {
   AsyncReadable,
   join,
@@ -6,24 +6,26 @@ import {
 } from "@holochain-open-dev/stores";
 import { AppAgentClient, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
-import { localized } from "@lit/localize";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { CircularProgress } from "@scoped-elements/material-web";
+import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { GroupInfo, Hrl, OpenViews } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@holochain-open-dev/elements/elements/display-error.js";
+
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
-import { GroupStore } from "../../we-store.js";
-import { ViewFrame } from "./view-frame.js";
+import "./view-frame.js";
 import { AppletInstance } from "../../groups/types.js";
 import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
+import { GroupStore } from "../../groups/group-store.js";
 
 @localized()
-export class GroupView extends ScopedElementsMixin(LitElement) {
+@customElement("group-view")
+export class GroupView extends LitElement {
   @property()
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
@@ -115,24 +117,17 @@ export class GroupView extends ScopedElementsMixin(LitElement) {
     switch (this._appletClient.value?.status) {
       case "pending":
         return html`<div class="row center-content">
-          <mwc-circular-progress></mwc-circular-progress>
+          <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "error":
         return html`<display-error
           tooltip
+          .headline=${msg("Error initializing the client for this group")}
           .error=${this._appletClient.value.error.data.data}
         ></display-error>`;
       case "complete":
         return this.renderAppletFrame(this._appletClient.value.value);
     }
-  }
-
-  static get scopedElements() {
-    return {
-      "mwc-circular-progress": CircularProgress,
-      "display-error": DisplayError,
-      "view-frame": ViewFrame,
-    };
   }
 
   static styles = [

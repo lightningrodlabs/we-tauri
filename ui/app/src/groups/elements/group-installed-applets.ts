@@ -1,22 +1,24 @@
-import { DisplayError } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { SlSkeleton } from "@scoped-elements/shoelace";
 import { html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
 import { EntryHash } from "@holochain/client";
 
-import { groupStoreContext } from "../context";
-import { GenericGroupStore } from "../group-store";
-import { AppletInstance } from "../types";
-import { SidebarButton } from "../../elements/sidebar-button";
-import { weStyles } from "../../shared-styles";
+import "@holochain-open-dev/elements/elements/display-error.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
+import { AppletInstance } from "../types.js";
+import "../../elements/sidebar-button.js";
+import { weStyles } from "../../shared-styles.js";
 
 @localized()
-export class GroupInstalledApplets extends ScopedElementsMixin(LitElement) {
+@customElement("group-installed-applets")
+export class GroupInstalledApplets extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
-  _groupStore!: GenericGroupStore<any>;
+  _groupStore!: GroupStore;
 
   _installedApplets = new StoreSubscriber(
     this,
@@ -63,14 +65,6 @@ export class GroupInstalledApplets extends ScopedElementsMixin(LitElement) {
       case "complete":
         return this.renderInstalledApplets(this._installedApplets.value.value);
     }
-  }
-
-  static get scopedElements() {
-    return {
-      "sl-skeleton": SlSkeleton,
-      "display-error": DisplayError,
-      "sidebar-button": SidebarButton,
-    };
   }
 
   static styles = [weStyles];

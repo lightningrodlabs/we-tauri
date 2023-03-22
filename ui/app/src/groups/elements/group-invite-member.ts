@@ -1,111 +1,84 @@
 import { css, html, LitElement } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import {
-  MdOutlinedButton,
-  MdOutlinedTextField,
-  Snackbar,
-  Card,
-} from "@scoped-elements/material-web";
 import { consume } from "@lit-labs/context";
-import { query, state } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 
-import { weStyles } from "../../shared-styles";
+import "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+
+import { weStyles } from "../../shared-styles.js";
 import {
-  DnaHash,
+  AgentPubKey,
   AgentPubKeyB64,
   decodeHashFromBase64,
 } from "@holochain/client";
 import { weStoreContext } from "../../context";
 import { WeStore } from "../../we-store";
 import { groupStoreContext } from "../context";
-import { GenericGroupStore } from "../group-store";
+import { GroupStore } from "../group-store";
+import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
+import { msg } from "@lit/localize";
 
-export class GroupInviteMember extends ScopedElementsMixin(LitElement) {
+@customElement("group-invite-member")
+export class GroupInviteMember extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
   @consume({ context: groupStoreContext, subscribe: true })
-  _groupStore!: GenericGroupStore<any>;
+  _groupStore!: GroupStore;
 
+  @query("#pubkeyform")
+  form!: HTMLFormElement;
 
-  @state()
-  _inviteePubKey: AgentPubKeyB64 | undefined;
+  async inviteToJoin(agentPubKey: AgentPubKey) {
+    try {
+      await this._weStore.inviteToJoinGroup(
+        this._groupStore.groupDnaHash,
+        agentPubKey
+      );
+      this.form.reset();
 
-  @query("#snackbar-success")
-  _snackbarSuccess!: Snackbar;
-
-  @query("#snackbar-error")
-  _snackbarError!: Snackbar;
-
-  @query("#pubkey-field")
-  _pubkeyField!: MdOutlinedTextField;
-
-  async inviteToJoin(agentPubKey: AgentPubKeyB64) {
-    this._weStore
-      .inviteToJoinGroup(this._groupStore.groupDnaHash, decodeHashFromBase64(agentPubKey))
-      .then((r) => {
-        this._pubkeyField.value = "";
-        this._inviteePubKey = undefined;
-        this._snackbarSuccess.show();
-      })
-      .catch((e) => {
-        this._snackbarError.show();
-        console.log(e);
-      });
+      notify("Invitation sent.");
+    } catch (e) {
+      notifyError(
+        "Error sending the invitation. The public key may be invalid."
+      );
+      console.log(e);
+    }
   }
 
   render() {
     return html`
-      <mwc-snackbar
-        id="snackbar-success"
-        timeoutMs="4000"
-        labelText="Invitation sent."
-      ></mwc-snackbar>
-      <mwc-snackbar
-        id="snackbar-error"
-        timeoutMs="4000"
-        labelText="Error. Public key may be invalid."
-      ></mwc-snackbar>
-      <mwc-card style="width: 440px;">
+      <sl-card style="width: 440px;">
         <div style="margin: 20px;">
           <div class="row">
-            <span class="title">Invite New Member</span>
+            <span class="title">${msg("Invite New Member")}</span>
           </div>
-          <div class="row" style="align-items: center; margin-top: 20px;">
-            <md-outlined-text-field
-              label="Public Key"
+          <form id="pubkeyform" class="row" style="align-items: center; margin-top: 20px;" ${onSubmit(
+            (f) => this.inviteToJoin(decodeHashFromBase64(f.pubkey))
+          )}>
+            <sl-input
+              name="pubkey"
+              .label=${msg("Public Key")}
               id="pubkey-field"
-              autoValidate
-              @input=${(e) => (this._inviteePubKey = e.target.value)}
-              outlined
-            ></md-outlined-text-field>
-            <md-outlined-button
+              required
+            ></sl-input>
+            <sl-button
               style="margin: 10px;"
-              raised
-              icon="send"
-              label="INVITE"
-              @click=${() => this.inviteToJoin(this._inviteePubKey!)}
-              .disabled=${!this._inviteePubKey}
-            ></md-outlined-button>
-          </div>
+              variant="primary"
+              .label=${msg("Invite")}
+              type="submit"
+            ></sl-button>
+          </form>
           <div
             class="default-font"
             style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;"
           >
-            ask a friend to send you their public key
+            ${msg("ask a friend to send you their public key")}
           </div>
         </div>
       </mwc-card>
     `;
-  }
-
-  static get scopedElements() {
-    return {
-      "md-outlined-button": MdOutlinedButton,
-      "md-outlined-text-field": MdOutlinedTextField,
-      "mwc-card": Card,
-      "mwc-snackbar": Snackbar,
-    };
   }
 
   static get styles() {

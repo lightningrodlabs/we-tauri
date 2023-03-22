@@ -38,7 +38,7 @@ import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
-import { GenericGroupStore } from "./groups/group-store";
+import { GroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import {
@@ -47,8 +47,6 @@ import {
   getCellId,
   initAppClient,
 } from "./utils.js";
-
-export class GroupStore extends GenericGroupStore<WeApplet> {}
 
 export class WeStore {
   public appletsStore: AppletsStore;
@@ -144,9 +142,10 @@ export class WeStore {
     weGroupId: DnaHash,
     agentPubKey: AgentPubKey
   ): Promise<void> {
-
     const appInfo = await this.appAgentWebsocket.appInfo();
-    const weCellInfo = appInfo.cell_info["group"].find((cellInfo) => "provisioned" in cellInfo);
+    const weCellInfo = appInfo.cell_info["group"].find(
+      (cellInfo) => "provisioned" in cellInfo
+    );
     const weDnaHash = getCellId(weCellInfo!)![0];
 
     const records =
@@ -171,8 +170,6 @@ export class WeStore {
       undefined
     );
   }
-
-
 
   groupsRolesByDnaHash = lazyLoadAndPoll(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();
@@ -276,7 +273,14 @@ export class WeStore {
                       const appletId = groupsStores
                         .get(groupDnaHash)
                         .appletAppIdFromAppletInstance(appletInstance);
-                      return initAppClient(appletId, parseInt((window as any).__HC_LAUNCHER_ENV__.APP_INTERFACE_PORT, 10));
+                      return initAppClient(
+                        appletId,
+                        parseInt(
+                          (window as any).__HC_LAUNCHER_ENV__
+                            .APP_INTERFACE_PORT,
+                          10
+                        )
+                      );
                     })
                 );
                 return {
