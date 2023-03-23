@@ -7,7 +7,7 @@
     "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\" \"ADMIN_PORT=10002 npm run start:agent\"",
     "start:ui": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run build:watch -w we\"",
     "start:agent": "concurrently \"sleep 30 && npm run tauri:dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"npm run publish:applets\"",
-    "tauri:dev": "RUST_LOG=info WASM_LOG=warn cargo tauri dev --release",
+    "tauri:dev": "RUST_LOG=info WASM_LOG=warn cargo run --release",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "tauri:build": "tauri build",
     "test": "npm run build:happ && cargo nextest run -j 1",
