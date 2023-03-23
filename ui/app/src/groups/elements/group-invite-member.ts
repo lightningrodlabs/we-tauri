@@ -7,11 +7,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 
 import { weStyles } from "../../shared-styles.js";
-import {
-  AgentPubKey,
-  AgentPubKeyB64,
-  decodeHashFromBase64,
-} from "@holochain/client";
+import { AgentPubKey, decodeHashFromBase64 } from "@holochain/client";
 import { weStoreContext } from "../../context";
 import { WeStore } from "../../we-store";
 import { groupStoreContext } from "../context";

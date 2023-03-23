@@ -1,3 +1,4 @@
+import { AsyncReadable } from "@holochain-open-dev/stores";
 import { EntryHashMap } from "@holochain-open-dev/utils";
 import {
   EntryHash,
@@ -12,6 +13,22 @@ import {
 } from "@holochain/client";
 import { AppletInstance } from "./groups/types";
 
+export async function toPromise<T>(
+  asyncReadable: AsyncReadable<T>
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = asyncReadable.subscribe((value) => {
+      if (value.status === "complete") {
+        resolve(value.value);
+        unsubscribe();
+      }
+      if (value.status === "error") {
+        reject(value.error);
+        unsubscribe();
+      }
+    });
+  });
+}
 export async function initAppClient(
   appId: string,
   defaultTimeout?: number

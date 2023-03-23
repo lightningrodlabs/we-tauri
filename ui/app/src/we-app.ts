@@ -94,9 +94,9 @@ export class WeApp extends LitElement {
         <navigation-sidebar
           style="flex: 0"
           @group-selected=${(e: CustomEvent) =>
-            this.dynamicLayout.openGroupHomeTab(e.detail.groupDnaHash)}
+            this.dynamicLayout.openGroup(e.detail.groupDnaHash)}
           @group-created=${(e: CustomEvent) =>
-            this.dynamicLayout.openGroupHomeTab(e.detail.groupDnaHash)}
+            this.dynamicLayout.openGroup(e.detail.groupDnaHash)}
           @applet-instance-selected=${(e: CustomEvent) => {
             this.dynamicLayout.openTab("Applet", {
               type: "row",
