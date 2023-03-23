@@ -5,7 +5,6 @@ import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 
 import "@holochain-open-dev/elements/elements/select-avatar.js";
-import type { SelectAvatar } from "@holochain-open-dev/elements/elements/select-avatar.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -33,10 +32,8 @@ export class CreateGroupDialog extends LitElement {
   /** Private properties */
   @query("#dialog")
   _dialog!: SlDialog;
-  @query("#name-field")
-  _nameField!: HTMLInputElement;
-  @query("#select-avatar")
-  _avatarField!: SelectAvatar;
+  @query("form")
+  form!: HTMLFormElement;
 
   private async createGroup(fields: any) {
     const groupDnaHash = await this._weStore.createGroup(
@@ -52,31 +49,25 @@ export class CreateGroupDialog extends LitElement {
       })
     );
     this._dialog.hide();
-    this._nameField.value = "";
-    this._avatarField.clear();
+    this.form.reset();
   }
 
   render() {
     return html`
       <sl-dialog id="dialog" .label=${msg("Create Group")}>
-        <form ${onSubmit((f) => this.createGroup(f))}>
-          <div class="row" style="margin-top: 16px">
-            <select-avatar
-              id="select-avatar"
-              required
-              name="logo_src"
-            ></select-avatar>
+        <form class="column" ${onSubmit((f) => this.createGroup(f))}>
+          <div class="row" style="justify-content: center">
+            <select-avatar required name="logo_src"></select-avatar>
 
             <sl-input
               name="name"
               style="margin-left: 16px"
-              id="name-field"
               .label=${msg("Group name")}
               required
             ></sl-input>
           </div>
 
-          <sl-button id="primary-action-button" type="submit">
+          <sl-button style="margin-top: 24px" variant="primary" type="submit">
             ${msg("Create Group")}
           </sl-button>
         </form>

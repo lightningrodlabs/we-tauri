@@ -145,17 +145,3 @@ export async function fetchWebHapp(
 
   return result.payload;
 }
-
-function devhubCells(devhubHapp: AppInfo) {
-  const happs = devhubHapp.cell_info["happs"];
-  const dnarepo = devhubHapp.cell_info["dnarepo"];
-  const webassets = devhubHapp.cell_info["web_assets"];
-
-  if (!happs || !dnarepo || !webassets) throw new Error("Bad app info");
-
-  return {
-    happs,
-    dnarepo,
-    webassets,
-  };
-}

@@ -20,11 +20,12 @@ use commands::{
 };
 use state::LaunchedState;
 
-pub fn iframe() -> String {
+pub fn iframe(applet_id: &String) -> String {
     format!(
         r#"
         <html>
           <head>
+            <link href="/applet/{applet_id}/styles.css" rel="stylesheet"></link>
           </head>
           <body>
           </body>
@@ -82,7 +83,7 @@ fn main() {
                                 match uri_components.get(5).map(|s| s.as_str()) {
                                     None | Some("index.html") => {
                                         let mutable_response = response.body_mut();
-                                        *mutable_response = iframe().as_bytes().to_vec();
+                                        *mutable_response = iframe(&applet_id).as_bytes().to_vec();
                                     }
                                     _ => tauri::async_runtime::block_on(async {
                                         let m = mutex.lock().await;

@@ -74,7 +74,7 @@ export class WeApp extends LitElement {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(DEVHUB_APP_ID, info.app_port);
+    const devhubClient = await initAppClient(DEVHUB_APP_ID, 300000);
 
     this._weStore = new WeStore(
       adminWebsocket,
@@ -90,7 +90,7 @@ export class WeApp extends LitElement {
 
   renderContent() {
     return html`
-      <div style="flex: 1;" class="row">
+      <div style="width: 100vw" class="row">
         <navigation-sidebar
           style="flex: 0"
           @group-selected=${(e: CustomEvent) =>
@@ -116,7 +116,10 @@ export class WeApp extends LitElement {
             });
           }}
         ></navigation-sidebar>
-        <dynamic-layout id="dynamic-layout" style="flex: 1"></dynamic-layout>
+        <dynamic-layout
+          id="dynamic-layout"
+          style="flex: 1; min-width: 0;"
+        ></dynamic-layout>
       </div>
     `;
   }

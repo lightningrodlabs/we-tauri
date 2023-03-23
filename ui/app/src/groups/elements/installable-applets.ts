@@ -11,6 +11,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { AppletMetadata } from "../../types.js";
 import { InstallAppletDialog } from "./install-applet-dialog.js";
+import "./install-applet-dialog.js";
 import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
@@ -50,8 +51,9 @@ export class InstallableApplets extends LitElement {
           @click=${() => {
             this._appletDialog.open(appletInfo);
           }}
-          .label=${msg("Add to group")}
-        ></sl-button>
+        >
+          ${msg("Add to group")}
+        </sl-button>
       </sl-card>
     `;
   }

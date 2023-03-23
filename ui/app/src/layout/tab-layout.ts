@@ -87,7 +87,7 @@ export class TabLayout extends LitElement {
     return html` <golden-layout
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
-      style="flex: 1; display: flex;"
+      style="flex: 1; display: flex; min-width: 0"
     >
       <golden-layout-register component-type="welcome">
         <template>

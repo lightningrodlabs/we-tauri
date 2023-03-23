@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
-
+use hdk::prelude::SerializedBytesError;
 use holochain_manager::versions::HolochainVersion;
 use holochain_web_app_manager::{error::LaunchWebAppManagerError, WebAppManager};
 use lair_keystore_manager::{error::LairKeystoreError, versions::v0_2::LairKeystoreManagerV0_2};
 use log::Level;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SetupState {
@@ -31,11 +31,18 @@ pub fn log_level() -> Level {
 pub enum WeError {
     #[error("Filesystem error: `{0}`")]
     FileSystemError(String),
+
     #[error("Holochain is not running")]
     NotRunning,
 
     #[error(transparent)]
     LaunchWebAppManagerError(#[from] LaunchWebAppManagerError),
+
+    #[error("Database error: `{0}`")]
+    DatabaseError(String),
+
+    #[error(transparent)]
+    SerializationError(#[from] SerializedBytesError),
 
     #[error("Error managing apps: `{0}`")]
     WebAppManagerError(String),
@@ -54,6 +61,9 @@ pub enum WeError {
 
     #[error("Admin Websocket Error: `{0}`")]
     AdminWebsocketError(String),
+
+    #[error("App Websocket Error: `{0}`")]
+    AppWebsocketError(String),
 }
 
 pub type WeResult<T> = Result<T, WeError>;

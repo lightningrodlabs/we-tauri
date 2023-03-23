@@ -1514,6 +1514,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "devhub_types"
+version = "0.1.0"
+source = "git+https://github.com/holochain/devhub-dnas?branch=master#10faff9c57af369f353330355eec5e0dac1c8f5d"
+dependencies = [
+ "essence_payloads",
+ "flate2",
+ "hc_crud_ceps",
+ "hdk",
+ "hex",
+ "rmp-serde 0.15.5",
+ "serde",
+ "serde_yaml 0.8.26",
+ "sha2 0.10.6",
+ "thiserror",
+]
+
+[[package]]
 name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1768,6 +1785,16 @@ checksum = "aa68f1b12764fab894d2755d2518754e71b4fd80ecfb822714a1206c2aab39bf"
 dependencies = [
  "cc",
  "libc",
+]
+
+[[package]]
+name = "essence_payloads"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5862712b20f8ee17bd1bc63a1bbef34a031c593b43d6bfdd7bdcb5c1f9b2e0a"
+dependencies = [
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -2478,6 +2505,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69fe1fcf8b4278d860ad0548329f892a3631fb63f82574df68275f34cdbe0ffa"
 dependencies = [
  "hashbrown 0.12.3",
+]
+
+[[package]]
+name = "hc_crud_ceps"
+version = "0.75.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "192dcd5755d34c37c1b4fa5007da4fc43871fecad5d66dba9d5bec7eb33ed5bc"
+dependencies = [
+ "hdk",
+ "holo_hash",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -7396,29 +7435,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tauri-app"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "futures",
- "hdk",
- "holochain_client",
- "holochain_launcher_utils",
- "holochain_manager",
- "holochain_types",
- "holochain_web_app_manager",
- "lair_keystore_manager",
- "log",
- "portpicker",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tempdir",
- "thiserror",
-]
-
-[[package]]
 name = "tauri-build"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8727,6 +8743,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af2b53f4da14db05d32e70e9c617abdf6620c575bd5dd972b7400037b4df2091"
 dependencies = [
  "wast",
+]
+
+[[package]]
+name = "we"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "devhub_types",
+ "essence_payloads",
+ "futures",
+ "hdk",
+ "holochain_client",
+ "holochain_launcher_utils",
+ "holochain_manager",
+ "holochain_state",
+ "holochain_types",
+ "holochain_web_app_manager",
+ "lair_keystore_manager",
+ "log",
+ "portpicker",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tempdir",
+ "thiserror",
 ]
 
 [[package]]

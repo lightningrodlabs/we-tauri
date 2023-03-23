@@ -184,7 +184,7 @@ export class WeStore {
       }
     }
     return roleNames;
-  }, 1000);
+  }, 3000);
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
     asyncDerived(this.groupsRolesByDnaHash, (rolesByDnaHash) => {

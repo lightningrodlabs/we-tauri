@@ -31,7 +31,7 @@ export class InstallAppletDialog extends LitElement {
   @query("#applet-dialog")
   _appletDialog!: any;
 
-  @query("#form")
+  @query("form")
   form!: HTMLFormElement;
 
   @state()
@@ -46,6 +46,9 @@ export class InstallAppletDialog extends LitElement {
   _duplicateName: boolean = false;
 
   @state()
+  _installing: boolean = false;
+
+  @state()
   _appletInfo: AppletMetadata = {
     title: "",
     subtitle: "",
@@ -57,8 +60,10 @@ export class InstallAppletDialog extends LitElement {
 
   open(appletInfo: AppletMetadata) {
     this._appletInfo = appletInfo;
-    this.form.reset();
-    this._appletDialog.show();
+    setTimeout(() => {
+      this.form.reset();
+      this._appletDialog.show();
+    });
   }
 
   get publishDisabled() {
@@ -86,7 +91,9 @@ export class InstallAppletDialog extends LitElement {
   // }
 
   async installApplet(customName: string) {
+    if (this._installing) return;
     notify("Installing...");
+    this._installing = true;
     try {
       const appletEntryHash =
         await this.groupStore.installAndRegisterAppletOnGroup(
@@ -97,7 +104,10 @@ export class InstallAppletDialog extends LitElement {
 
       this.dispatchEvent(
         new CustomEvent("applet-installed", {
-          detail: { appletEntryHash, groupDnaHash: this.groupStore },
+          detail: {
+            appletEntryHash,
+            groupDnaHash: this.groupStore.groupDnaHash,
+          },
           composed: true,
           bubbles: true,
         })
@@ -106,6 +116,7 @@ export class InstallAppletDialog extends LitElement {
       notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
     }
+    this._installing = false;
   }
 
   render() {
@@ -113,13 +124,13 @@ export class InstallAppletDialog extends LitElement {
       <sl-dialog id="applet-dialog" .label=${msg("Install Applet")}>
         <form
           class="column"
-          style="padding: 16px; margin-bottom: 24px;"
           ${onSubmit((f) => this.installApplet(f.custom_name))}
         >
           <sl-input
             name="custom_name"
             id="custom-name-field"
             .label=${msg("Custom Name")}
+            style="margin-bottom: 16px"
             required
             .defaultValue=${this._appletInfo.title}
           ></sl-input>
@@ -133,11 +144,12 @@ export class InstallAppletDialog extends LitElement {
             : html``}
 
           <sl-button
-            id="primary-action-button"
             variant="primary"
-            .label=${msg("INSTALL")}
             type="submit"
-          ></sl-button>
+            .loading=${this._installing}
+          >
+            ${msg("Install")}
+          </sl-button>
         </form>
       </sl-dialog>
     `;

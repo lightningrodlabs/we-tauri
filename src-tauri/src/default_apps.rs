@@ -10,6 +10,10 @@ pub fn we_app_id() -> String {
     format!("we-{}", env!("CARGO_PKG_VERSION"))
 }
 
+pub fn devhub_app_id() -> String {
+    format!("DevHub")
+}
+
 pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> WeResult<()> {
     let apps = manager
         .list_apps()
@@ -17,7 +21,6 @@ pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> W
         .map_err(|err| WeError::WebAppManagerError(err))?;
 
     // let version: String = manager.holochain_manager.version.manager().hdi_version().into();
-    let holochain_version: String = manager.holochain_manager.version.into();
 
     let network_seed = if cfg!(debug_assertions) {
         Some(format!("we-dev"))
@@ -25,13 +28,11 @@ pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> W
         Some(format!("we"))
     };
 
-    let devhub_app_id = format!("DevHub-{}", holochain_version);
-
     if apps
         .iter()
         .map(|info| info.installed_app_info.installed_app_id.clone())
         .collect::<Vec<String>>()
-        .contains(&devhub_app_id)
+        .contains(&devhub_app_id())
         == false
     {
         let mut admin_ws =
@@ -48,7 +49,7 @@ pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> W
 
         manager
             .install_web_app(
-                devhub_app_id,
+                devhub_app_id(),
                 dev_hub_bundle,
                 network_seed.clone(),
                 HashMap::new(),

@@ -7,12 +7,8 @@ import {
   EntryHash,
   InstalledAppId,
 } from "@holochain/client";
-import {
-  fetchWebHapp,
-  getAllAppsWithGui,
-} from "../processes/devhub/get-happs.js";
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
+import { getAllAppsWithGui } from "../processes/devhub/get-happs.js";
 
 export class AppletsStore {
   constructor(
@@ -31,19 +27,6 @@ export class AppletsStore {
     appId: InstalledAppId,
     networkSeed: string | undefined
   ): Promise<AppInfo> {
-    const compressedWebHapp = await fetchWebHapp(
-      this.devhubClient,
-      "hApp", // This is chosen arbitrarily at the moment
-      devhubHappReleaseHash,
-      devhubGuiReleaseHash
-    );
-
-    // Write a binary file to the `$APPDATA/avatar.png` path
-    await writeBinaryFile(
-      { path: `webhapps/${appId}.webhapp`, contents: compressedWebHapp },
-      { dir: BaseDirectory.AppData }
-    );
-
     const appInfo: AppInfo = await invoke("install_applet", {
       appId,
       networkSeed,

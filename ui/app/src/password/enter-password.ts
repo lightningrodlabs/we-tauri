@@ -1,6 +1,6 @@
 import { localized, msg } from "@lit/localize";
 import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { weStyles } from "../shared-styles.js";
 import { enterPassword } from "../tauri.js";
 
@@ -14,7 +14,11 @@ import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 @localized()
 @customElement("enter-password")
 export class EnterPassword extends LitElement {
+  @state()
+  _entering = false;
+
   async enterPassword(password: string) {
+    this._entering = true;
     try {
       await enterPassword(password);
       this.dispatchEvent(
@@ -27,6 +31,7 @@ export class EnterPassword extends LitElement {
       notifyError(msg("Invalid password"));
       console.log(JSON.stringify(e));
     }
+    this._entering = false;
   }
 
   render() {
@@ -40,7 +45,7 @@ export class EnterPassword extends LitElement {
           name="password"
           style="margin-bottom: 16px"
         ></sl-input>
-        <sl-button type="submit" variant="primary">
+        <sl-button type="submit" variant="primary" .loading=${this._entering}>
           ${msg("Enter Password")}
         </sl-button>
       </form></sl-card

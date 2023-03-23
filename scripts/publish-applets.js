@@ -19,7 +19,7 @@ async function publishApplets() {
   const appPorts = await adminWs.listAppInterfaces();
   const appWs = await AppAgentWebsocket.connect(
     `ws://localhost:${appPorts[0]}`,
-    "DevHub-0.1.3",
+    "DevHub",
     100000
   );
   const devhubCells = await appWs.appInfo();
@@ -330,7 +330,7 @@ async function publishAppletsRetry() {
     );
     setTimeout(async () => {
       await publishAppletsRetry();
-    }, 5000);
+    }, 15000);
   }
 }
 publishAppletsRetry();

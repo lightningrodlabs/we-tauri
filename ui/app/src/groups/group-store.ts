@@ -173,13 +173,13 @@ export class GroupStore {
 
   installedApplets = lazyLoadAndPoll(
     async () => this.appletsClient.getAppletsInstances(),
-    1000
+    4000
   );
 
   federatedGroups = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
     lazyLoadAndPoll(
       async () => this.appletsClient.getFederatedGroups(appletInstanceHash),
-      1000
+      5000
     )
   );
 
