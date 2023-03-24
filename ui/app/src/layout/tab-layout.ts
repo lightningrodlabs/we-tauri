@@ -8,7 +8,7 @@ import {
 customElements.define("golden-layout-register", GoldenLayoutRegister);
 customElements.define("golden-layout", GoldenLayoutEl);
 customElements.define("golden-layout-root", GoldenLayoutRoot);
-import { GoldenLayout, LayoutConfig } from "golden-layout";
+import { GoldenLayout, LayoutConfig, RootItemConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { provide } from "@lit-labs/context";
@@ -30,7 +30,14 @@ import { Hrl } from "../../../libs/we-applet/dist/index.js";
 @customElement("tab-layout")
 export class TabLayout extends LitElement {
   @property()
-  layoutConfig!: LayoutConfig;
+  rootItemConfig!: RootItemConfig;
+
+  get layoutConfig(): LayoutConfig {
+    return {
+      root: this.rootItemConfig,
+      header: {},
+    };
+  }
 
   @provide({ context: openViewsContext })
   openViews: AppOpenViews = {

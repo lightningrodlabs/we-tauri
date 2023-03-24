@@ -6,10 +6,14 @@ import {
 import {
   asyncDerived,
   asyncDeriveStore,
+  asyncReadable,
   AsyncReadable,
+  AsyncStatus,
+  get,
   join,
   joinAsyncMap,
   lazyLoadAndPoll,
+  writable,
 } from "@holochain-open-dev/stores";
 import {
   EntryHashMap,
@@ -29,11 +33,7 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import {
-  GroupInfo,
-  GroupWithApplets,
-  WeApplet,
-} from "@lightningrodlabs/we-applet";
+import { GroupInfo, GroupWithApplets } from "@lightningrodlabs/we-applet";
 import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 
@@ -46,7 +46,61 @@ import {
   findAppletInstanceForAppInfo,
   getCellId,
   initAppClient,
+  toPromise,
 } from "./utils.js";
+
+export function retryUntilSuccess<T>(
+  fn: () => Promise<T>,
+  pollInterval: number = 1000
+): AsyncReadable<T> {
+  const store = writable<AsyncStatus<T>>({ status: "pending" });
+
+  const tryOnce = async () => {
+    const value = await fn();
+    store.set({
+      status: "complete",
+      value,
+    });
+  };
+
+  const tryAndRetry = async () => {
+    try {
+      await tryOnce();
+    } catch (e) {
+      setTimeout(() => tryOnce(), pollInterval);
+    }
+  };
+
+  tryAndRetry();
+
+  return {
+    subscribe: store.subscribe,
+  };
+}
+
+export function manualReloadStore<T>(
+  fn: () => Promise<T>
+): AsyncReadable<T> & { reload: () => Promise<void> } {
+  const store = writable<AsyncStatus<T>>({ status: "pending" });
+
+  const reload = async () => {
+    try {
+      const value = await fn();
+      store.set({
+        status: "complete",
+        value,
+      });
+    } catch (error) {
+      store.set({ status: "error", error });
+    }
+  };
+
+  reload();
+  return {
+    subscribe: store.subscribe,
+    reload,
+  };
+}
 
 export class WeStore {
   public appletsStore: AppletsStore;
@@ -129,6 +183,8 @@ export class WeStore {
       },
     });
 
+    await this.groupsRolesByDnaHash.reload();
+
     return clonedCell.cell_id[0];
   }
 
@@ -171,7 +227,7 @@ export class WeStore {
     );
   }
 
-  groupsRolesByDnaHash = lazyLoadAndPoll(async () => {
+  groupsRolesByDnaHash = manualReloadStore(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();
     const roleNames = new HoloHashMap<DnaHash, RoleName>();
 
@@ -184,23 +240,28 @@ export class WeStore {
       }
     }
     return roleNames;
-  }, 3000);
+  });
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
-    asyncDerived(this.groupsRolesByDnaHash, (rolesByDnaHash) => {
+    retryUntilSuccess(async () => {
+      const roleNames = await toPromise(this.groupsRolesByDnaHash);
+      const groupRoleName = roleNames.get(groupDnaHash);
+
+      if (!groupRoleName) throw new Error("Group not found yet");
+
       return new GroupStore(
         this.adminWebsocket,
         this.appAgentWebsocket,
         groupDnaHash,
-        rolesByDnaHash.get(groupDnaHash),
+        groupRoleName,
         this.appletsStore
       );
     })
   );
 
-  allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (roleByDnaHash) =>
+  allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>
     joinAsyncMap(
-      mapValues(roleByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
+      mapValues(rolesByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
     )
   );
 

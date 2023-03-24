@@ -36,8 +36,12 @@ export class DynamicLayout extends LitElement {
       ],
     },
     header: {
+      maximise: false,
+      minimise: undefined,
       popout: false,
+      close: false,
     },
+    settings: {},
   };
 
   get goldenLayout(): GoldenLayout {
@@ -55,7 +59,6 @@ export class DynamicLayout extends LitElement {
 
   async openGroup(groupDnaHash: DnaHash) {
     const groupStore = await toPromise(this._weStore.groups.get(groupDnaHash));
-
     const myProfile = await toPromise(groupStore.profilesStore.myProfile);
     if (myProfile) {
       this.openGroupHomeTab(groupDnaHash);
@@ -65,19 +68,25 @@ export class DynamicLayout extends LitElement {
     }
   }
 
-  openGroupHomeTab(groupDnaHash: DnaHash) {
+  async openGroupHomeTab(groupDnaHash: DnaHash) {
+    const groupStore = await toPromise(this._weStore.groups.get(groupDnaHash));
+    const { name, logo_src } = await toPromise(groupStore.groupInfo);
+
     this.openTab("Group", {
       type: "row",
       content: [
         {
           type: "component",
           componentType: "group-installable-applets",
+          title: `Installable Applets - ${name}`,
+          header: {},
           componentState: {
             groupDnaHash: encodeHashToBase64(groupDnaHash),
           },
         },
         {
           type: "component",
+          title: `${name} members`,
           componentType: "group-peers-status",
           componentState: {
             groupDnaHash: encodeHashToBase64(groupDnaHash),
@@ -85,6 +94,7 @@ export class DynamicLayout extends LitElement {
         },
         {
           type: "component",
+          title: `Invite new member - ${name}`,
           componentType: "group-invite-member",
           componentState: {
             groupDnaHash: encodeHashToBase64(groupDnaHash),
@@ -144,7 +154,7 @@ export class DynamicLayout extends LitElement {
           component-type="tab-layout"
           .template=${(rootItemConfig: RootItemConfig) => html`
             <tab-layout
-              .layoutConfig=${{ root: rootItemConfig }}
+              .rootItemConfig=${rootItemConfig}
               style="flex: 1; min-width: 0"
             ></tab-layout>
           `}

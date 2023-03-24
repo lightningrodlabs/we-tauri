@@ -74,13 +74,14 @@ export class WeApp extends LitElement {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(DEVHUB_APP_ID, 300000);
+    const devhubClient = await initAppClient(DEVHUB_APP_ID);
 
     this._weStore = new WeStore(
       adminWebsocket,
       appAgentWebsocket,
       devhubClient
     );
+
     this.view = { view: "main" };
   }
 
@@ -95,8 +96,9 @@ export class WeApp extends LitElement {
           style="flex: 0"
           @group-selected=${(e: CustomEvent) =>
             this.dynamicLayout.openGroup(e.detail.groupDnaHash)}
-          @group-created=${(e: CustomEvent) =>
-            this.dynamicLayout.openGroup(e.detail.groupDnaHash)}
+          @group-created=${(e: CustomEvent) => {
+            this.dynamicLayout.openGroup(e.detail.groupDnaHash);
+          }}
           @applet-instance-selected=${(e: CustomEvent) => {
             this.dynamicLayout.openTab("Applet", {
               type: "row",

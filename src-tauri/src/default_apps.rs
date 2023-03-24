@@ -28,12 +28,11 @@ pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> W
         Some(format!("we"))
     };
 
-    if apps
+    if !apps
         .iter()
         .map(|info| info.installed_app_info.installed_app_id.clone())
         .collect::<Vec<String>>()
         .contains(&devhub_app_id())
-        == false
     {
         let mut admin_ws =
             AdminWebsocket::connect(format!("ws://localhost:{}", manager.admin_interface_port()))

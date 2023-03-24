@@ -46,7 +46,7 @@ export type Hrl = [DnaHash, ActionHash | EntryHash];
 
 // Contextual reference to a Hrl
 // Useful use case: image we want to point to a specific section of a document
-// The document action hash would be the Hrl, and the context could be { secion: "Second Paragraph" }
+// The document action hash would be the Hrl, and the context could be { section: "Second Paragraph" }
 export interface HrlWithContext {
   hrl: Hrl;
   context: any;
@@ -66,12 +66,16 @@ export interface GroupWithApplets {
   appletsClients: AppAgentClient[]; // These will be the same kind of applet
 }
 
+export interface WeServices {
+  openViews: OpenViews;
+}
+
 export interface WeApplet {
   groupViews: (
     appletClient: AppAgentClient,
     groupInfo: GroupInfo,
     groupServices: GroupServices,
-    openViews: OpenViews
+    weServices: WeServices
   ) => GroupViews;
 
   attachableTypes: Array<AttachableType>;
@@ -82,6 +86,6 @@ export interface WeApplet {
 
   crossGroupViews: (
     applets: GroupWithApplets[],
-    openViews: OpenViews
+    weServices: WeServices
   ) => CrossGroupViews;
 }

@@ -20,15 +20,16 @@ export async function toPromise<T>(
     const unsubscribe = asyncReadable.subscribe((value) => {
       if (value.status === "complete") {
         resolve(value.value);
-        unsubscribe();
+        setTimeout(() => unsubscribe());
       }
       if (value.status === "error") {
         reject(value.error);
-        unsubscribe();
+        setTimeout(() => unsubscribe());
       }
     });
   });
 }
+
 export async function initAppClient(
   appId: string,
   defaultTimeout?: number
@@ -182,14 +183,4 @@ export function getCellName(cellInfo: CellInfo): string | undefined {
   if ("stem" in cellInfo) {
     return cellInfo.stem.name;
   }
-}
-
-export function flattenCells(
-  cell_info: Record<string, CellInfo[]>
-): [string, CellInfo][] {
-  return Object.entries(cell_info)
-    .map(([roleName, cellInfos]) => {
-      return cellInfos.map((CellInfo) => [roleName, CellInfo]);
-    })
-    .flat() as any;
 }

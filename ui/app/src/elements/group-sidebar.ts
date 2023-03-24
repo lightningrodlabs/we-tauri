@@ -29,31 +29,51 @@ export class GroupSidebar extends LitElement {
   _groupsInfo = new StoreSubscriber(this, () => this._weStore.allGroupsInfo);
 
   renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo>) {
+    return Array.from(groups.entries())
+      .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
+      .map(
+        ([groupDnaHash, groupInfo]) =>
+          html`
+            <sidebar-button
+              style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+              .logoSrc=${groupInfo.logo_src}
+              .tooltipText=${groupInfo.name}
+              @click=${() => {
+                this.dispatchEvent(
+                  new CustomEvent("group-selected", {
+                    detail: {
+                      groupDnaHash,
+                    },
+                    bubbles: true,
+                    composed: true,
+                  })
+                );
+              }}
+            ></sidebar-button>
+          `
+      );
+  }
+
+  renderGroupsLoading() {
+    switch (this._groupsInfo.value.status) {
+      case "pending":
+        return html`<sl-skeleton></sl-skeleton>`;
+      case "error":
+        return html`<display-error
+          .headline=${msg("Error displaying the groups")}
+          tooltip
+          .error=${this._groupsInfo.value.error.data.data}
+        ></display-error>`;
+      case "complete":
+        return this.renderGroups(this._groupsInfo.value.value);
+    }
+  }
+
+  render() {
     return html`
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
-      ${Array.from(groups.entries())
-        .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
-        .map(
-          ([groupDnaHash, groupInfo]) =>
-            html`
-              <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-                .logoSrc=${groupInfo.logo_src}
-                .tooltipText=${groupInfo.name}
-                @click=${() => {
-                  this.dispatchEvent(
-                    new CustomEvent("group-selected", {
-                      detail: {
-                        groupDnaHash,
-                      },
-                      bubbles: true,
-                      composed: true,
-                    })
-                  );
-                }}
-              ></sidebar-button>
-            `
-        )}
+
+      ${this.renderGroupsLoading()}
 
       <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
         <sl-button
@@ -71,20 +91,6 @@ export class GroupSidebar extends LitElement {
         </sl-button>
       </sl-tooltip>
     `;
-  }
-
-  render() {
-    switch (this._groupsInfo.value.status) {
-      case "pending":
-        return html`<sl-skeleton></sl-skeleton>`;
-      case "error":
-        return html`<display-error
-          tooltip
-          .error=${this._groupsInfo.value.error.data.data}
-        ></display-error>`;
-      case "complete":
-        return this.renderGroups(this._groupsInfo.value.value);
-    }
   }
 
   static styles = [weStyles];
