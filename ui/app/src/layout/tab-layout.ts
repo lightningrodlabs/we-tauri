@@ -1,13 +1,6 @@
 import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
-import {
-  GoldenLayoutRegister,
-  GoldenLayoutRoot,
-  GoldenLayout as GoldenLayoutEl,
-} from "@scoped-elements/golden-layout";
-customElements.define("golden-layout-register", GoldenLayoutRegister);
-customElements.define("golden-layout", GoldenLayoutEl);
-customElements.define("golden-layout-root", GoldenLayoutRoot);
+import "@scoped-elements/golden-layout";
 import { GoldenLayout, LayoutConfig, RootItemConfig } from "golden-layout";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";

@@ -21,7 +21,7 @@
     "@lit/localize": "^0.11.4",
     "@mdi/js": "^7.2.96",
     "@msgpack/msgpack": "^2.7.2",
-    "@scoped-elements/golden-layout": "^0.1.8",
+    "@scoped-elements/golden-layout": "^0.2.0",
     "@shoelace-style/shoelace": "^2.3.0",
     "@tauri-apps/api": "^1.2.0",
     "golden-layout": "^2.6.0",
