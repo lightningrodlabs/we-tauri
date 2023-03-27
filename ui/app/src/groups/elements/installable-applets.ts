@@ -39,21 +39,21 @@ export class InstallableApplets extends LitElement {
 
   renderInstallableApplet(appletInfo: AppletMetadata) {
     return html`
-      <sl-card class="applet-card">
-        <div style="height: 145px;">
-          <h2 style="padding: 5px; margin:0;">${appletInfo.title}</h2>
-          <h3 style="padding: 5px; margin: 0;">${appletInfo.subtitle}</h3>
-          <div style="height: 70px; overflow-y: auto; padding: 5px;">
+      <sl-card class="applet-card" style="height: 200px">
+        <span slot="header">${appletInfo.title}</span>
+        <div class="column">
+          <span>${appletInfo.subtitle}</span>
+          <span class="placeholder" style="height: 70px; overflow-y: auto;">
             ${appletInfo.description}
-          </div>
+          </span>
+          <sl-button
+            @click=${() => {
+              this._appletDialog.open(appletInfo);
+            }}
+          >
+            ${msg("Add to group")}
+          </sl-button>
         </div>
-        <sl-button
-          @click=${() => {
-            this._appletDialog.open(appletInfo);
-          }}
-        >
-          ${msg("Add to group")}
-        </sl-button>
       </sl-card>
     `;
   }

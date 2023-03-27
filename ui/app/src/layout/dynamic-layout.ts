@@ -1,49 +1,77 @@
-import { DnaHash, encodeHashToBase64 } from "@holochain/client";
+import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { localized } from "@lit/localize";
-import { customElement, query } from "lit/decorators.js";
-import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
 import "@scoped-elements/golden-layout";
-import { GoldenLayout, RootItemConfig } from "golden-layout";
+import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
+import {
+  ComponentItemConfig,
+  GoldenLayout,
+  ItemConfig,
+  LayoutConfig,
+  RootItemConfig,
+} from "golden-layout";
 import { css, html, LitElement } from "lit";
-import { LayoutConfig } from "golden-layout";
+import { customElement, property } from "lit/decorators.js";
+import { provide } from "@lit-labs/context";
 
+import "../elements/join-groups.js";
+import "../groups/elements/group-context.js";
+import "../groups/elements/group-peers-status.js";
+import "../groups/elements/installable-applets.js";
+import "../groups/elements/group-invite-member.js";
+import "./views/welcome-view.js";
+import "./views/group-applet-block.js";
+import "./views/entry-view.js";
+import { openViewsContext } from "./context.js";
+import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
-import "./tab-layout.js";
-import { consume } from "@lit-labs/context";
-import { weStoreContext } from "../context.js";
-import { WeStore } from "../we-store.js";
-import "../groups/elements/create-profile.js";
-import { CreateProfileInGroup } from "../groups/elements/create-profile.js";
-import { toPromise } from "../utils.js";
+import { Hrl } from "../../../libs/we-applet/dist/index.js";
 
 @localized()
 @customElement("dynamic-layout")
 export class DynamicLayout extends LitElement {
-  layoutConfig: LayoutConfig = {
-    root: {
-      type: "stack",
-      content: [
+  @property()
+  rootItemConfig!: RootItemConfig;
+
+  get layoutConfig(): LayoutConfig {
+    return {
+      root: this.rootItemConfig,
+      header: {
+        popout: false,
+      },
+    };
+  }
+
+  @provide({ context: openViewsContext })
+  openViews: AppOpenViews = {
+    openGroupBlock: () => {},
+    openCrossGroupBlock: () => {},
+    openHrl: (hrl: Hrl, context: any) => {
+      this.goldenLayout.addItemAtLocation(
         {
+          title: "Entry Views",
           type: "component",
-          componentType: "tab-layout",
+          componentType: "entry",
           componentState: {
-            type: "row",
-            content: [
-              { type: "component", componentType: "welcome" },
-              { type: "component", componentType: "join-groups" },
-            ],
+            hrl: [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])],
+            context,
           },
         },
-      ],
+        [
+          {
+            typeId: 3,
+          },
+        ]
+      );
     },
-    header: {
-      maximise: false,
-      minimise: undefined,
-      popout: false,
-      close: false,
-    },
-    settings: {},
   };
+
+  openBlock(itemConfig: ComponentItemConfig) {
+    this.goldenLayout.addItemAtLocation(itemConfig, [
+      {
+        typeId: 3,
+      },
+    ]);
+  }
 
   get goldenLayout(): GoldenLayout {
     const el = this.shadowRoot?.getElementById(
@@ -52,117 +80,100 @@ export class DynamicLayout extends LitElement {
     return el.goldenLayout;
   }
 
-  @query("create-profile-in-group")
-  createProfileInGroup!: CreateProfileInGroup;
-
-  @consume({ context: weStoreContext, subscribe: true })
-  _weStore!: WeStore;
-
-  async openGroup(groupDnaHash: DnaHash) {
-    const groupStore = await toPromise(this._weStore.groups.get(groupDnaHash));
-    const myProfile = await toPromise(groupStore.profilesStore.myProfile);
-    if (myProfile) {
-      this.openGroupHomeTab(groupDnaHash);
-    } else {
-      this.createProfileInGroup.groupDnaHash = groupDnaHash;
-      this.createProfileInGroup.show();
-    }
-  }
-
-  async openGroupHomeTab(groupDnaHash: DnaHash) {
-    const groupStore = await toPromise(this._weStore.groups.get(groupDnaHash));
-    const { name, logo_src } = await toPromise(groupStore.groupInfo);
-
-    this.openTab("Group", {
-      type: "row",
-      content: [
-        {
-          type: "component",
-          componentType: "group-installable-applets",
-          title: `Installable Applets - ${name}`,
-          header: {},
-          componentState: {
-            groupDnaHash: encodeHashToBase64(groupDnaHash),
-          },
-        },
-        {
-          type: "component",
-          title: `${name} members`,
-          componentType: "group-peers-status",
-          componentState: {
-            groupDnaHash: encodeHashToBase64(groupDnaHash),
-          },
-        },
-        {
-          type: "component",
-          title: `Invite new member - ${name}`,
-          componentType: "group-invite-member",
-          componentState: {
-            groupDnaHash: encodeHashToBase64(groupDnaHash),
-          },
-        },
-      ],
-    });
-  }
-
-  openTab(title: string, rootItemConfig: RootItemConfig) {
-    this.goldenLayout.addItemAtLocation(
-      {
-        title,
-        type: "component",
-        componentType: "tab-layout",
-        componentState: rootItemConfig,
-      },
-      [
-        {
-          typeId: 2,
-        },
-      ]
-    );
-  }
-
-  // openAtLocation(openView: OpenViewParameters, locationSelector: any) {
-  //   switch (openView.view) {
-  //     case "group-peers-status":
-  //       this.goldenLayout.addItemAtLocation(
-  //         {
-  //           type: "component",
-  //           componentType: "group-peers-status",
-  //           componentState: {
-  //             groupDnaHash: encodeHashToBase64(openView.groupDnaHash),
-  //           },
-  //         },
-  //         [locationSelector]
-  //       );
-  //     default:
-  //       break;
-  //   }
-  // }
-
   render() {
-    return html` <create-profile-in-group
-        @profile-created=${() => {
-          this.openGroupHomeTab(this.createProfileInGroup.groupDnaHash);
-          this.createProfileInGroup.hide();
-        }}
-      ></create-profile-in-group>
-      <golden-layout
-        id="golden-layout"
-        .layoutConfig=${this.layoutConfig}
-        style="flex: 1; display: flex; min-width: 0;"
+    return html` <golden-layout
+      id="golden-layout"
+      .layoutConfig=${this.layoutConfig}
+      style="flex: 1; display: flex; min-width: 0"
+    >
+      <golden-layout-register component-type="welcome">
+        <template>
+          <welcome-view style="margin: 24px"></welcome-view>
+        </template>
+      </golden-layout-register>
+      <golden-layout-register component-type="join-groups">
+        <template>
+          <join-groups style="margin: 24px"></join-groups>
+        </template>
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-settings"
+        .template=${({ groupDnaHash }) => html`
+          <group-settings .groupDnaHash=${groupDnaHash}></group-settings>
+        `}
       >
-        <golden-layout-register
-          component-type="tab-layout"
-          .template=${(rootItemConfig: RootItemConfig) => html`
-            <tab-layout
-              .rootItemConfig=${rootItemConfig}
-              style="flex: 1; min-width: 0"
-            ></tab-layout>
-          `}
-        >
-        </golden-layout-register>
-        <golden-layout-root style="flex: 1"> </golden-layout-root>
-      </golden-layout>`;
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-peers-status"
+        .template=${({ groupDnaHash }) => html`
+          <div
+            style="flex: 1; display: flex; align-items: center; justify-content: center;"
+          >
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-peers-status></group-peers-status
+            ></group-context>
+          </div>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-installable-applets"
+        .template=${({ groupDnaHash }) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <installable-applets></installable-applets>
+          </group-context>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-invite-member"
+        .template=${({ groupDnaHash }) => html`
+          <div
+            style="flex: 1; display: flex; align-items: center; justify-content: center;"
+          >
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-invite-member></group-invite-member
+            ></group-context>
+          </div>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="cross-group-applet-block"
+        .template=${({
+          appletHash,
+          blockName,
+        }) => html` <cross-group-applet-block
+          .appletHash=${appletHash}
+          .blockName=${blockName}
+          style="flex: 1"
+        ></cross-group-applet-block>`}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="entry"
+        .template=${({ hrl, context }) => html` <entry-view
+          .hrl=${[decodeHashFromBase64(hrl[0]), decodeHashFromBase64(hrl[1])]}
+          .context=${context}
+          style="flex: 1"
+        ></entry-view>`}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-applet-block"
+        .template=${({ groupDnaHash, appletInstanceHash, block }) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-applet-block
+              .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
+              .block=${block}
+              style="flex: 1"
+            ></group-applet-block>
+          </group-context>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-root style="flex: 1"> </golden-layout-root>
+    </golden-layout>`;
   }
 
   static styles = [

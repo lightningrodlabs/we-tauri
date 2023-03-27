@@ -1,4 +1,8 @@
-import { hashProperty } from "@holochain-open-dev/elements";
+import {
+  hashProperty,
+  notifyError,
+  wrapPathInSvg,
+} from "@holochain-open-dev/elements";
 import {
   AsyncReadable,
   join,
@@ -8,7 +12,7 @@ import { AppAgentClient, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { GroupInfo, Hrl, OpenViews } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
@@ -22,6 +26,7 @@ import { AppletInstance } from "../../groups/types.js";
 import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
 import { GroupStore } from "../../groups/group-store.js";
+import { mdiInformationOutline } from "@mdi/js";
 
 @localized()
 @customElement("group-view")
@@ -36,9 +41,12 @@ export class GroupView extends LitElement {
   @consume({ context: openViewsContext, subscribe: true })
   openViews!: AppOpenViews;
 
+  @state()
+  installing = false;
+
   @property()
   view!:
-    | { type: "block"; block: string }
+    | { type: "block"; block: string; context: any }
     | {
         type: "entry";
         role: string;
@@ -51,9 +59,9 @@ export class GroupView extends LitElement {
   viewToRender(elementVar: string) {
     switch (this.view.type) {
       case "block":
-        return `blocks["${this.view.block}"](${elementVar})`;
+        return `blocks["${this.view.block}"](${elementVar}, window.context)`;
       case "entry":
-        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"].view(window.hrl[1], window.context)(${elementVar})`;
+        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"].view(${elementVar}, window.hrl[1], window.context)`;
     }
   }
 
@@ -64,20 +72,62 @@ export class GroupView extends LitElement {
         this.groupStore.groupInfo,
         this.groupStore.appletClient.get(this.appletInstanceHash),
         this.groupStore.applets.get(this.appletInstanceHash),
+        this.groupStore.isInstalled.get(this.appletInstanceHash),
       ]) as AsyncReadable<
-        [GroupInfo, AppAgentClient, EntryRecord<AppletInstance>]
+        [GroupInfo, AppAgentClient, EntryRecord<AppletInstance>, boolean]
       >,
     () => [this.groupStore, this.appletInstanceHash]
   );
 
-  renderAppletFrame([groupInfo, client, appletInstance]: [
+  renderAppletFrame([groupInfo, client, appletInstance, isInstalled]: [
     GroupInfo,
     AppAgentClient,
-    EntryRecord<AppletInstance>
+    EntryRecord<AppletInstance>,
+    boolean
   ]) {
+    if (!isInstalled) {
+      return html`
+        <div class="row center-content" style="flex: 1">
+          <sl-card
+            ><div class="column center-content">
+              <sl-icon
+                .src=${wrapPathInSvg(mdiInformationOutline)}
+                style="font-size: 64px; margin-bottom: 16px"
+              ></sl-icon>
+              <span style="margin-bottom: 4px"
+                >${msg("You don't have this applet installed yet.")}</span
+              >
+              <span style="margin-bottom: 16px"
+                >${msg("Install it if you want to see this view.")}</span
+              >
+              <sl-button
+                variant="primary"
+                .loading=${this.installing}
+                @click=${async () => {
+                  this.installing = true;
+                  try {
+                    await this.groupStore.installAppletInstance(
+                      this.appletInstanceHash
+                    );
+                    await this.groupStore.installedApps.reload();
+                  } catch (e) {
+                    notifyError(msg("Couldn't install applet"));
+                    console.error(e);
+                  }
+                  this.installing = false;
+                }}
+                >${msg("Install Applet")}</sl-button
+              >
+            </div></sl-card
+          >
+        </div>
+      `;
+    }
+
     const globalVars = {
       appletClient: client,
       groupInfo,
+      context: this.view.context,
       groupServices: { profilesStore: this.groupStore.profilesStore },
       openViews: {
         openHrl: (hrl: Hrl, context: any) => {
@@ -97,7 +147,6 @@ export class GroupView extends LitElement {
       } as OpenViews,
     };
     if (this.view.type === "entry") {
-      globalVars["context"] = this.view.context;
       globalVars["hrl"] = this.view.hrl;
     }
     return html`
@@ -116,7 +165,7 @@ export class GroupView extends LitElement {
   render() {
     switch (this._appletClient.value?.status) {
       case "pending":
-        return html`<div class="row center-content">
+        return html`<div class="row center-content" style="flex: 1">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "error":

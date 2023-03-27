@@ -7,10 +7,15 @@ import {
   asyncDerived,
   asyncDeriveStore,
   AsyncReadable,
+  join,
   lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import {
+  EntryRecord,
+  LazyHoloHashMap,
+  mapLazyValues,
+} from "@holochain-open-dev/utils";
 import {
   AdminWebsocket,
   AgentPubKey,
@@ -21,6 +26,7 @@ import {
   DnaModifiers,
   encodeHashToBase64,
   EntryHash,
+  ListAppsResponse,
   ProvisionedCell,
   StemCell,
 } from "@holochain/client";
@@ -30,8 +36,9 @@ import { AppletsStore } from "../applets/applets-store";
 import { AppletsClient } from "./applets-client";
 import { AppletInstance, GroupInfo } from "./types";
 import { AppletMetadata } from "../types";
-import { initAppClient } from "../utils";
+import { initAppClient, toPromise } from "../utils";
 import { fromUint8Array } from "js-base64";
+import { manualReloadStore } from "../we-store";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -171,9 +178,30 @@ export class GroupStore {
     return this.appletsClient.registerAppletInstance(applet);
   }
 
-  installedApplets = lazyLoadAndPoll(
+  registeredApplets = lazyLoadAndPoll(
     async () => this.appletsClient.getAppletsInstances(),
     4000
+  );
+
+  installedApps = manualReloadStore(async () =>
+    this.adminWebsocket.listApps({})
+  );
+
+  isInstalled = new LazyHoloHashMap((appletInstanceEntryHash) =>
+    asyncDerived(
+      join([
+        this.applets.get(appletInstanceEntryHash),
+        this.installedApps,
+      ]) as AsyncReadable<[EntryRecord<AppletInstance>, ListAppsResponse]>,
+      async ([appletInstance, apps]) => {
+        if (!appletInstance) return false;
+        const appletId = this.appletAppIdFromAppletInstance(
+          appletInstance.entry
+        );
+
+        return !!apps.find((app) => app.installed_app_id === appletId);
+      }
+    )
   );
 
   federatedGroups = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>

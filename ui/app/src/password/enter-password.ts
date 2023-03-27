@@ -41,6 +41,7 @@ export class EnterPassword extends LitElement {
         <sl-input
           id="password-field"
           type="password"
+          autofocus
           required
           name="password"
           style="margin-bottom: 16px"

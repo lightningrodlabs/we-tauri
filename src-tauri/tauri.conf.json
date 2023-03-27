@@ -20,14 +20,13 @@
       ]
     },
     "allowlist": {
+      "clipboard": {
+        "writeText": true
+      },
       "all": false,
       "shell": {
         "all": false,
         "open": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["$APPDATA/webhapps/*"]
       },
       "http": {
         "all": true

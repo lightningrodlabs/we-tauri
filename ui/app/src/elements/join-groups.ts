@@ -2,7 +2,7 @@ import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations
 import { consume } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { html, LitElement, css } from "lit";
-import { customElement, query } from "lit/decorators.js";
+import { customElement, query, state } from "lit/decorators.js";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 import { ActionHash, encodeHashToBase64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
@@ -13,6 +13,7 @@ import {
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { mdiEmail, mdiKey } from "@mdi/js";
+import { writeText } from "@tauri-apps/api/clipboard";
 
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
@@ -33,6 +34,9 @@ export class JoinGroups extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
+  @state()
+  joining: ActionHash | undefined = undefined;
+
   _myInvitations = new StoreSubscriber(
     this,
     () => this._weStore.membraneInvitationsStore.myInvitations
@@ -42,16 +46,17 @@ export class JoinGroups extends LitElement {
     invitationActionHash: ActionHash,
     invitation: JoinMembraneInvitation
   ) {
+    this.joining = invitationActionHash;
     const properties = decode(invitation.clone_dna_recipe.properties) as any;
     try {
       await this._weStore.joinGroup(
         invitationActionHash,
         properties.name,
-        properties.logoSrc,
+        properties.logo_src,
         invitation.clone_dna_recipe.network_seed as string
       );
       this.dispatchEvent(
-        new CustomEvent("we-group-joined", {
+        new CustomEvent("group-joined", {
           detail: {
             groupDnaHash: invitation.clone_dna_recipe.resulting_dna_hash,
           },
@@ -59,6 +64,7 @@ export class JoinGroups extends LitElement {
           composed: true,
         })
       );
+      this.joining = undefined;
     } catch (e) {
       if (e.data.data) {
         if (e.data.data.includes("AppAlreadyInstalled")) {
@@ -80,7 +86,7 @@ export class JoinGroups extends LitElement {
   }
 
   groupLogoSrc(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.clone_dna_recipe.properties) as any).logoSrc;
+    return (decode(invitation.clone_dna_recipe.properties) as any).logo_src;
   }
 
   inviter(invitation: JoinMembraneInvitation) {
@@ -168,9 +174,11 @@ export class JoinGroups extends LitElement {
                       <sl-button
                         style="margin-left: 4px"
                         variant="primary"
+                        .loading=${this.joining?.toString() ===
+                        actionHash.toString()}
                         @click=${() => this.joinGroup(actionHash, invitation)}
                       >
-                        ${msg("JOIN")}
+                        ${msg("Join")}
                       </sl-button>
                     </div>
                   </div>
@@ -190,20 +198,20 @@ export class JoinGroups extends LitElement {
   renderInvitationsBlock() {
     switch (this._myInvitations.value.status) {
       case "pending":
-        return html`<div class="column">
+        return html`<div class="column center-content">
           <profile-list-item-skeleton></profile-list-item-skeleton
           ><profile-list-item-skeleton></profile-list-item-skeleton
           ><profile-list-item-skeleton></profile-list-item-skeleton>
         </div>`;
       case "complete":
         return html`
-          <div class="row title center-content" style="margin-top: 70px;">
+          <div class="row title center-content" style="margin-top: 48px;">
             <sl-icon .src=${wrapPathInSvg(mdiEmail)}></sl-icon
             ><span style="margin-left: 10px;">${msg("your invitations:")}</span>
           </div>
           <div
             class="column center-content"
-            style="justify-content: space-between; margin-top: 30px;"
+            style="justify-content: space-between; margin-top: 16px; margin-bottom: 32px"
           >
             ${this.renderInvitations(this._myInvitations.value.value)}
           </div>
@@ -219,54 +227,48 @@ export class JoinGroups extends LitElement {
   render() {
     return html`
       <sl-card>
-        <div class="column content-pane">
-          <div style="font-size: 1.7em;">${msg("Joining A Group")}</div>
-          <div class="center-content">
-            <div
-              style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;"
-            >
-              ${msg(
-                "To join a group, send your public key to a member of the group you would like to join and ask them to invite you."
-              )}
-            </div>
+        <span slot="header">${msg("Joining A Group")}</span>
+        <div class="center-content">
+          <div style="text-align: left; font-size: 1.15em; line-height: 150%;">
+            ${msg(
+              "To join a group, send your public key to a member of the group you would like to join and ask them to invite you."
+            )}
+          </div>
 
-            <div class="column center-content">
-              <div class="row title center-content" style="margin-top: 50px;">
-                <sl-icon .src=${wrapPathInSvg(mdiKey)}></sl-icon
-                ><span style="margin-left: 10px;"
-                  >${msg("your public key")}</span
-                >
-              </div>
-              <div style="margin-top: 15px;">
-                <sl-tooltip placement="right" .content=${"copy"}>
-                  <div
-                    class="pubkey-field default-font"
-                    @click=${() => {
-                      navigator.clipboard.writeText(
-                        encodeHashToBase64(
-                          this._weStore.appAgentWebsocket.myPubKey
-                        )
-                      );
-                      notify("Copied your public key to the clipboard!");
-                    }}
-                  >
-                    ${encodeHashToBase64(
-                      this._weStore.appAgentWebsocket.myPubKey
-                    )}
-                  </div>
-                </sl-tooltip>
+          <div class="column center-content">
+            <div class="row title center-content" style="margin-top: 48px;">
+              <sl-icon .src=${wrapPathInSvg(mdiKey)}></sl-icon
+              ><span style="margin-left: 10px;">${msg("your public key")}</span>
+            </div>
+            <div style="margin-top: 15px;">
+              <sl-tooltip placement="right" .content=${"copy"}>
                 <div
-                  style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center"
+                  class="pubkey-field default-font"
+                  @click=${() => {
+                    writeText(
+                      encodeHashToBase64(
+                        this._weStore.appAgentWebsocket.myPubKey
+                      )
+                    );
+                    notify("Copied your public key to the clipboard!");
+                  }}
                 >
-                  ${msg(
-                    "send your public key to your friends if they want to invite you to their group"
+                  ${encodeHashToBase64(
+                    this._weStore.appAgentWebsocket.myPubKey
                   )}
                 </div>
+              </sl-tooltip>
+              <div
+                style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center"
+              >
+                ${msg(
+                  "send your public key to your friends if they want to invite you to their group"
+                )}
               </div>
             </div>
-
-            ${this.renderInvitationsBlock()}
           </div>
+
+          ${this.renderInvitationsBlock()}
         </div>
       </sl-card>
     `;
@@ -274,11 +276,6 @@ export class JoinGroups extends LitElement {
 
   static styles = [
     css`
-      .content-pane {
-        padding: 30px;
-        font-family: Arial, sans-serif;
-      }
-
       .title {
         align-items: center;
         font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;

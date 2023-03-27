@@ -1,8 +1,13 @@
-import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
+import {
+  hashProperty,
+  hashState,
+  sharedStyles,
+  wrapPathInSvg,
+} from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { GroupInfo } from "@lightningrodlabs/we-applet";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
@@ -13,11 +18,14 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
+import "../groups/elements/group-context.js";
+import "../groups/elements/registered-applets-sidebar.js";
+import "./sidebar-button.js";
+import "./create-group-dialog.js";
+
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import "./sidebar-button.js";
 import { weStyles } from "../shared-styles.js";
-import "./create-group-dialog.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
 @localized()
@@ -26,7 +34,18 @@ export class GroupSidebar extends LitElement {
   @consume({ context: weStoreContext })
   _weStore!: WeStore;
 
+  @property(hashProperty("selected-group-dna-hash"))
+  selectedGroupDnaHash: DnaHash | undefined;
+
   _groupsInfo = new StoreSubscriber(this, () => this._weStore.allGroupsInfo);
+
+  renderGroupApplets(groupDnaHash: DnaHash) {
+    return html`
+      <group-context .groupDnaHash=${groupDnaHash}>
+        <registered-applets-sidebar></registered-applets-sidebar
+      ></group-context>
+    `;
+  }
 
   renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo>) {
     return Array.from(groups.entries())
@@ -38,6 +57,8 @@ export class GroupSidebar extends LitElement {
               style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
               .logoSrc=${groupInfo.logo_src}
               .tooltipText=${groupInfo.name}
+              .selected=${this.selectedGroupDnaHash?.toString() ===
+              groupDnaHash.toString()}
               @click=${() => {
                 this.dispatchEvent(
                   new CustomEvent("group-selected", {
@@ -73,23 +94,49 @@ export class GroupSidebar extends LitElement {
     return html`
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
-      ${this.renderGroupsLoading()}
+      <div class="row">
+        <div class="column">
+          <sl-tooltip placement="right" .content=${msg("Home")} hoist>
+            <sl-button
+              size="large"
+              circle
+              @click=${() => {
+                this.dispatchEvent(
+                  new CustomEvent("home-selected", {
+                    bubbles: true,
+                    composed: true,
+                  })
+                );
+              }}
+              style="margin-top: 4px;"
+            >
+              <sl-icon src="/we_logo.png"></sl-icon>
+            </sl-button>
+          </sl-tooltip>
 
-      <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
-        <sl-button
-          size="large"
-          circle
-          @click=${() =>
-            (
-              this.shadowRoot?.getElementById(
-                "create-group-dialog"
-              ) as CreateGroupDialog
-            ).open()}
-          style="margin-top: 4px;"
-        >
-          <sl-icon .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
-        </sl-button>
-      </sl-tooltip>
+          ${this.renderGroupsLoading()}
+
+          <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
+            <sl-button
+              size="large"
+              circle
+              @click=${() =>
+                (
+                  this.shadowRoot?.getElementById(
+                    "create-group-dialog"
+                  ) as CreateGroupDialog
+                ).open()}
+              style="margin-top: 4px;"
+            >
+              <sl-icon .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
+            </sl-button>
+          </sl-tooltip>
+        </div>
+
+        ${this.selectedGroupDnaHash
+          ? this.renderGroupApplets(this.selectedGroupDnaHash)
+          : html``}
+      </div>
     `;
   }
 

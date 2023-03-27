@@ -46,35 +46,30 @@ export class GroupInviteMember extends LitElement {
   render() {
     return html`
       <sl-card style="width: 440px;">
-        <div style="margin: 20px;">
-          <div class="row">
-            <span class="title">${msg("Invite New Member")}</span>
-          </div>
-          <form
-            id="pubkeyform"
-            class="row"
-            style="align-items: center; margin-top: 20px;"
-            ${onSubmit((f) =>
-              this.inviteToJoin(decodeHashFromBase64(f.pubkey))
-            )}
-          >
-            <sl-input
-              name="pubkey"
-              .label=${msg("Public Key")}
-              id="pubkey-field"
-              required
-            ></sl-input>
-            <sl-button style="margin: 10px;" variant="primary" type="submit">
-              ${msg("Invite")}
-            </sl-button>
-          </form>
+        <span slot="header">${msg("Invite New Member")}</span>
+        <form
+          id="pubkeyform"
+          class="column"
+          style="align-items: center; margin-top: 20px;"
+          ${onSubmit((f) => this.inviteToJoin(decodeHashFromBase64(f.pubkey)))}
+        >
           <div
             class="default-font"
-            style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;"
+            style="margin-bottom: 16px; font-size: 0.8em; color: gray; text-align: left;"
           >
-            ${msg("ask a friend to send you their public key")}
+            ${msg("Ask a friend to send you their public key")}
           </div>
-        </div>
+          <sl-input
+            name="pubkey"
+            .label=${msg("Public Key")}
+            id="pubkey-field"
+            required
+            style="margin-bottom: 16px"
+          ></sl-input>
+          <sl-button variant="primary" type="submit">
+            ${msg("Invite")}
+          </sl-button>
+        </form>
       </sl-card>
     `;
   }

@@ -2,6 +2,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
+import { ref } from "lit/directives/ref.js";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 
@@ -23,9 +24,9 @@ export class InstallAppletDialog extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
-  _installedApplets = new StoreSubscriber(
+  _registeredApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.installedApplets
+    () => this.groupStore.registeredApplets
   );
 
   @query("#applet-dialog")
@@ -70,26 +71,6 @@ export class InstallAppletDialog extends LitElement {
     return this._duplicateName;
   }
 
-  // TODO: is this what we want to do?
-  // checkValidity(_newValue, _nativeValidity) {
-  //   if (this._allApplets.value) {
-  //     const allNames = this._allApplets.value!.map(
-  //       ([_appletEntryHash, applet]) => applet.customName
-  //     );
-  //     if (allNames.includes(this._installedAppIdField.value)) {
-  //       this._duplicateName = true;
-  //       return {
-  //         valid: false,
-  //       };
-  //     }
-  //   }
-
-  //   this._duplicateName = false;
-  //   return {
-  //     valid: true,
-  //   };
-  // }
-
   async installApplet(customName: string) {
     if (this._installing) return;
     notify("Installing...");
@@ -116,7 +97,66 @@ export class InstallAppletDialog extends LitElement {
       notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
     }
+    this._appletDialog.hide();
     this._installing = false;
+  }
+
+  renderForm() {
+    switch (this._registeredApplets.value.status) {
+      case "pending":
+        return html`<div class="row center-content">
+          <sl-spinner></sl-spinner>
+        </div>`;
+      case "complete":
+        const allAppletsNames = Array.from(
+          this._registeredApplets.value.value.values()
+        ).map((appletInstance) => appletInstance.custom_name);
+        return html`
+          <sl-input
+            name="custom_name"
+            id="custom-name-field"
+            .label=${msg("Custom Name")}
+            style="margin-bottom: 16px"
+            required
+            ${ref((input) => {
+              if (!input) return;
+              setTimeout(() => {
+                if (allAppletsNames.includes(this._appletInfo.title)) {
+                  (input as HTMLInputElement).setCustomValidity(
+                    "Name already exists"
+                  );
+                } else {
+                  (input as HTMLInputElement).setCustomValidity("");
+                }
+              });
+            })}
+            @input=${(e) => {
+              if (allAppletsNames.includes(e.target.value)) {
+                e.target.setCustomValidity("Name already exists");
+              } else {
+                e.target.setCustomValidity("");
+              }
+            }}
+            .defaultValue=${this._appletInfo.title}
+          ></sl-input>
+
+          <sl-button
+            variant="primary"
+            type="submit"
+            .loading=${this._installing}
+          >
+            ${msg("Install")}
+          </sl-button>
+        </form>`;
+
+      case "error":
+        return html`<display-error
+          .headline=${msg(
+            "Error fetching the registered applets in this group"
+          )}
+          .error=${this._registeredApplets.value.error}
+        ></display-error>`;
+    }
   }
 
   render() {
@@ -126,30 +166,7 @@ export class InstallAppletDialog extends LitElement {
           class="column"
           ${onSubmit((f) => this.installApplet(f.custom_name))}
         >
-          <sl-input
-            name="custom_name"
-            id="custom-name-field"
-            .label=${msg("Custom Name")}
-            style="margin-bottom: 16px"
-            required
-            .defaultValue=${this._appletInfo.title}
-          ></sl-input>
-          ${this._duplicateName
-            ? html`<div
-                class="default-font"
-                style="color: #b10323; font-size: 12px; margin-left: 4px;"
-              >
-                ${msg("Name already exists.")}
-              </div>`
-            : html``}
-
-          <sl-button
-            variant="primary"
-            type="submit"
-            .loading=${this._installing}
-          >
-            ${msg("Install")}
-          </sl-button>
+          ${this.renderForm()}
         </form>
       </sl-dialog>
     `;

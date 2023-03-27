@@ -15,14 +15,14 @@ import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
 
 @localized()
-@customElement("group-installed-applets")
-export class GroupInstalledApplets extends LitElement {
+@customElement("registered-applets-sidebar")
+export class RegisteredAppletsSidebar extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   _groupStore!: GroupStore;
 
-  _installedApplets = new StoreSubscriber(
+  _registeredApplets = new StoreSubscriber(
     this,
-    () => this._groupStore?.installedApplets
+    () => this._groupStore?.registeredApplets
   );
 
   renderInstalledApplets(applets: ReadonlyMap<EntryHash, AppletInstance>) {
@@ -32,7 +32,9 @@ export class GroupInstalledApplets extends LitElement {
           html`
             <sidebar-button
               style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-              .logoSrc=${appletInstance.logo_src}
+              .logoSrc=${`/applet/${this._groupStore.appletAppIdFromAppletInstance(
+                appletInstance
+              )}/icon.png`}
               .tooltipText=${appletInstance.custom_name}
               @click=${() => {
                 this.dispatchEvent(
@@ -53,17 +55,17 @@ export class GroupInstalledApplets extends LitElement {
   }
 
   render() {
-    switch (this._installedApplets.value?.status) {
+    switch (this._registeredApplets.value?.status) {
       case "pending":
         return html`<sl-skeleton></sl-skeleton>`;
       case "error":
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the applets installed in this group")}
-          .error=${this._installedApplets.value.error.data.data}
+          .error=${this._registeredApplets.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderInstalledApplets(this._installedApplets.value.value);
+        return this.renderInstalledApplets(this._registeredApplets.value.value);
     }
   }
 

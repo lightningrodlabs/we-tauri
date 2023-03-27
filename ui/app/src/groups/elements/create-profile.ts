@@ -56,7 +56,7 @@ export class CreateProfileInGroup extends LitElement {
       <sl-dialog .label=${msg("Create Profile For This Group")}>
         ${this.groupDnaHash
           ? html`
-              <span class="placholder" style="margin-bottom: 16px"
+              <span class="placeholder" style="margin-bottom: 24px"
                 >In we, there is a different profile per group. Create your
                 profile in this group:</span
               >

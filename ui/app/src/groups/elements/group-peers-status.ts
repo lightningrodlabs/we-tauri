@@ -27,11 +27,17 @@ export class GroupPeersStatus extends LitElement {
 
   renderPeersStatus(members: AgentPubKey[]) {
     return html`
-      <list-agents-by-status .agents=${members}></list-agents-by-status>
+      <list-agents-by-status
+        .agents=${members.filter(
+          (m) =>
+            m.toString() !==
+            this._groupStore.appletsClient.appAgentClient.myPubKey.toString()
+        )}
+      ></list-agents-by-status>
     `;
   }
 
-  render() {
+  renderContent() {
     switch (this._group.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">
@@ -45,6 +51,15 @@ export class GroupPeersStatus extends LitElement {
           .error=${this._group.value.error.data.data}
         ></display-error>`;
     }
+  }
+
+  render() {
+    return html`
+      <sl-card>
+        <span slot="header">${msg("Members")}</span>
+        ${this.renderContent()}</sl-card
+      >
+    `;
   }
 
   static styles = weStyles;

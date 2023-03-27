@@ -43,6 +43,7 @@ export class CreatePassword extends LitElement {
           type="password"
           required
           name="password"
+          autofocus
           style="margin-bottom: 16px"
         ></sl-input>
         <sl-button type="submit" variant="primary" .loading=${this._creating}>

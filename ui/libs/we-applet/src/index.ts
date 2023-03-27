@@ -12,30 +12,30 @@ export interface GroupInfo {
 }
 
 export interface OpenViews {
-  openGroupBlock(block: string): void;
-  openCrossGroupBlock(block: string): void;
+  openGroupBlock(block: string, context: any): void;
+  openCrossGroupBlock(block: string, context: any): void;
   openHrl(hrl: Hrl, context: any): void;
 }
 
-export type View = (rootElement: HTMLElement) => void;
-
+export type BlockView = (rootElement: HTMLElement, context: any) => void;
 export type EntryTypeView = (
+  rootElement: HTMLElement,
   hash: EntryHash | ActionHash,
   context: any
-) => View;
+) => void;
 
 export interface CrossGroupViews {
-  blocks: { main: View } & Record<string, View>;
+  blocks: { main: BlockView } & Record<string, BlockView>;
 }
 
-export interface EntryTypeHandlers {
+export interface EntryTypeDescriptors {
   name: (hash: EntryHash | ActionHash) => Promise<string>;
   view: EntryTypeView;
 }
 
 export interface GroupViews {
-  blocks: { main: View } & Record<string, View>; // all events -> schedule
-  entries: Record<string, Record<string, Record<string, EntryTypeHandlers>>>; // Segmented by RoleName, integrity ZomeName and EntryType
+  blocks: { main: BlockView } & Record<string, BlockView>; // all events -> schedule
+  entries: Record<string, Record<string, Record<string, EntryTypeDescriptors>>>; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
 export interface GroupServices {
