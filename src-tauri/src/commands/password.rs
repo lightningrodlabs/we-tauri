@@ -15,10 +15,11 @@ pub async fn create_password(
     app_handle: AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
     password: String,
+    mdns: bool,
 ) -> WeResult<()> {
     LairKeystoreManagerV0_2::initialize(fs.keystore_path(), password.clone()).await?;
 
-    let state = launch(&fs, password).await?;
+    let state = launch(&fs, password, mdns).await?;
 
     app_handle.manage(Mutex::new(state));
 
@@ -30,8 +31,9 @@ pub async fn enter_password(
     app_handle: AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
     password: String,
+    mdns: bool,
 ) -> WeResult<()> {
-    let state = launch(&fs, password).await?;
+    let state = launch(&fs, password, mdns).await?;
 
     app_handle.manage(Mutex::new(state));
 

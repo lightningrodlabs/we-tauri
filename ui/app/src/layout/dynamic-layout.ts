@@ -120,7 +120,7 @@ export class DynamicLayout extends LitElement {
         component-type="group-installable-applets"
         .template=${({ groupDnaHash }) => html`
           <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-            <installable-applets></installable-applets>
+            <installable-applets style="flex: 1"></installable-applets>
           </group-context>
         `}
       >

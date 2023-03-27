@@ -49,7 +49,7 @@ export class SidebarButton extends LitElement {
         class="icon"
         src="${this.logoSrc}"
         style="${this.selected
-          ? "border: 3px solid black;"
+          ? "border: 3px solid purple;"
           : "border: 3px solid transparent"}"
         @click=${this.handleClick}
       />
@@ -64,8 +64,8 @@ export class SidebarButton extends LitElement {
       .icon {
         cursor: pointer;
         border-radius: 50%;
-        width: 50px;
-        height: 50px;
+        width: 48px;
+        height: 48px;
         object-fit: cover;
       }
     `;

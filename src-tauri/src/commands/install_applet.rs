@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, fs, sync::Arc};
 
 use devhub_types::DevHubResponse;
 use futures::lock::Mutex;
@@ -10,7 +10,7 @@ use holochain_client::{AgentPubKey, AppInfo, AppWebsocket};
 use holochain_manager::versions::holochain_conductor_api_latest::CellInfo;
 use holochain_state::nonce::fresh_nonce;
 use holochain_types::{
-    prelude::{AgentPubKeyB64, AppBundle, EntryHashB64},
+    prelude::{AgentPubKeyB64, EntryHashB64},
     web_app::WebAppBundle,
 };
 use lair_keystore_manager::{versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager};
@@ -29,7 +29,7 @@ pub async fn install_applet(
     agent_pub_key: String, // TODO: remove when every applet has a different key
     happ_release_hash: String,
     gui_release_hash: String,
-) -> WeResult<AppInfo> {
+) -> WeResult<(AppInfo, Option<Vec<u8>>)> {
     log::info!("Installing: app_id = {:?}", app_id);
 
     let mut converted_membrane_proofs: HashMap<String, MembraneProof> = HashMap::new();
@@ -57,41 +57,37 @@ pub async fn install_applet(
     )
     .await?;
 
-    let app_info = match WebAppBundle::decode(&bytes) {
-        Ok(web_app_bundle) => m
-            .web_app_manager
-            .install_web_app(
-                app_id.clone(),
-                web_app_bundle,
-                network_seed,
-                converted_membrane_proofs,
-                Some(pub_key),
-                Some(happ_release_hash),
-                Some(gui_release_hash),
-            )
-            .await
-            .map_err(|err| WeError::WebAppManagerError(err)),
-        Err(_) => {
-            let app_bundle = AppBundle::decode(&bytes).or(Err(WeError::FileSystemError(
-                String::from("Failed to read Web hApp bundle file"),
-            )))?;
-            m.web_app_manager
-                .install_app(
-                    app_id.clone(),
-                    app_bundle,
-                    network_seed,
-                    converted_membrane_proofs,
-                    Some(pub_key),
-                    Some(happ_release_hash),
-                )
-                .await
-                .map_err(|err| WeError::WebAppManagerError(err))
-        }
-    }?;
+    let web_app_bundle = WebAppBundle::decode(&bytes).or(Err(WeError::FileSystemError(
+        String::from("Failed to read Web hApp bundle file"),
+    )))?;
+
+    let app_info = m
+        .web_app_manager
+        .install_web_app(
+            app_id.clone(),
+            web_app_bundle,
+            network_seed,
+            converted_membrane_proofs,
+            Some(pub_key),
+            Some(happ_release_hash),
+            Some(gui_release_hash),
+        )
+        .await
+        .map_err(|err| WeError::WebAppManagerError(err))?;
 
     log::info!("Installed hApp {}", app_id);
 
-    Ok(app_info)
+    let ui_folder_path = m
+        .web_app_manager
+        .get_app_assets_dir(&app_info.installed_app_id, &String::from("default"));
+
+    // TODO: change when devhub includes the icon
+    let bytes = match fs::read(ui_folder_path.join("icon.png")) {
+        Ok(bytes) => Some(bytes),
+        Err(_) => None,
+    };
+
+    Ok((app_info, bytes))
 }
 
 #[derive(Debug, Serialize)]

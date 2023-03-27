@@ -6,6 +6,7 @@ import { createPassword } from "../tauri.js";
 
 import "@holochain-open-dev/elements/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
@@ -17,10 +18,10 @@ export class CreatePassword extends LitElement {
   @state()
   _creating = false;
 
-  async createPassword(password: string) {
+  async createPassword(password: string, mdns: boolean) {
     this._creating = true;
     try {
-      await createPassword(password);
+      await createPassword(password, mdns);
       this.dispatchEvent(
         new CustomEvent("password-created", {
           bubbles: true,
@@ -37,15 +38,23 @@ export class CreatePassword extends LitElement {
   render() {
     return html` <sl-card>
       <span slot="header">${msg("Create Password")}</span>
-      <form class="column" ${onSubmit((f) => this.createPassword(f.password))}>
+      <form
+        class="column"
+        ${onSubmit((f) => this.createPassword(f.password, f.mdns === "on"))}
+      >
         <sl-input
           id="password-field"
           type="password"
           required
           name="password"
           autofocus
+          .placeholder=${msg("Password")}
           style="margin-bottom: 16px"
         ></sl-input>
+
+        <sl-switch name="mdns" style="margin-bottom: 16px" checked
+          >${msg("Connect only with local network peers")}
+        </sl-switch>
         <sl-button type="submit" variant="primary" .loading=${this._creating}>
           ${msg("Create Password")}
         </sl-button>

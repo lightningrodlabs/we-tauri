@@ -9,7 +9,7 @@ use crate::{
     state::{holochain_version, log_level, LaunchedState, WeError, WeResult},
 };
 
-pub async fn launch(fs: &WeFileSystem, password: String) -> WeResult<LaunchedState> {
+pub async fn launch(fs: &WeFileSystem, password: String, mdns: bool) -> WeResult<LaunchedState> {
     let lair_keystore_manager =
         LairKeystoreManagerV0_2::launch(log_level(), fs.keystore_path(), password.clone())
             .await
@@ -33,6 +33,7 @@ pub async fn launch(fs: &WeFileSystem, password: String) -> WeResult<LaunchedSta
             conductor_config_dir: fs.conductor_path(&version),
             environment_path: fs.conductor_path(&version),
             keystore_connection_url: lair_keystore_manager.connection_url(),
+            mdns,
         },
         password.clone(),
     )

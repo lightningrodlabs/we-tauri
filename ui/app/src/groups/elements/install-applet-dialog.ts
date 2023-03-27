@@ -73,7 +73,6 @@ export class InstallAppletDialog extends LitElement {
 
   async installApplet(customName: string) {
     if (this._installing) return;
-    notify("Installing...");
     this._installing = true;
     try {
       const appletEntryHash =

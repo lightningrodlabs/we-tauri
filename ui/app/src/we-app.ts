@@ -20,6 +20,7 @@ import {
 } from "./tauri.js";
 import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
+import { msg } from "@lit/localize";
 
 type State =
   | { state: "loading" }
@@ -88,23 +89,21 @@ export class WeApp extends LitElement {
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "password":
-        if (this.state.initialized) {
-          return html`
-            <div class="column center-content" style="flex: 1">
-              <enter-password
-                @password-entered=${() => this.connect()}
-              ></enter-password>
-            </div>
-          `;
-        } else {
-          return html`
-            <div class="column center-content" style="flex: 1">
-              <create-password
-                @password-created=${() => this.connect()}
-              ></create-password>
-            </div>
-          `;
-        }
+        return html`
+          <div class="column center-content" style="flex: 1">
+            ${this.state.initialized
+              ? html`
+                  <enter-password
+                    @password-entered=${() => this.connect()}
+                  ></enter-password>
+                `
+              : html`
+                  <create-password
+                    @password-created=${() => this.connect()}
+                  ></create-password>
+                `}
+          </div>
+        `;
       case "running":
         return html`<main-dashboard></main-dashboard>`;
     }

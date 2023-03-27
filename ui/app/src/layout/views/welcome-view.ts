@@ -50,7 +50,7 @@ export class WelcomeView extends LitElement {
   }
   render() {
     return html`
-      <div class="column center-content">
+      <div class="column">
         <div
           class="row center-content default-font"
           style="font-size: 3em; color: #2c3888; margin-top: 15px;"
@@ -58,7 +58,7 @@ export class WelcomeView extends LitElement {
           <div>${msg("Welcome to We!")}</div>
         </div>
 
-        <div class="row" style="margin-top: 70px;">
+        <div class="row" style="margin-top: 48px;">
           ${this.renderManagingGroupsCard()}
         </div>
       </div>

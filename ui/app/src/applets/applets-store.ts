@@ -9,6 +9,7 @@ import {
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
 import { getAllAppsWithGui } from "../processes/devhub/get-happs.js";
+import { toSrc } from "../processes/import-logsrc-from-file.js";
 
 export class AppletsStore {
   constructor(
@@ -26,8 +27,8 @@ export class AppletsStore {
     devhubGuiReleaseHash: EntryHash,
     appId: InstalledAppId,
     networkSeed: string | undefined
-  ): Promise<AppInfo> {
-    const appInfo: AppInfo = await invoke("install_applet", {
+  ): Promise<[AppInfo, string | undefined]> {
+    const [appInfo, iconBytes] = await invoke("install_applet", {
       appId,
       networkSeed,
       membraneProofs: {},
@@ -36,6 +37,6 @@ export class AppletsStore {
       agentPubKey: encodeHashToBase64(this.devhubClient.myPubKey),
     });
 
-    return appInfo;
+    return [appInfo, toSrc(new Uint8Array(iconBytes))];
   }
 }

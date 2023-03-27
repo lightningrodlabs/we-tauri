@@ -6,12 +6,12 @@ import {
 } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { GroupInfo } from "@lightningrodlabs/we-applet";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
-import { mdiAccountMultiplePlus } from "@mdi/js";
+import { mdiAccountMultiplePlus, mdiHome } from "@mdi/js";
 
 import "@holochain-open-dev/elements/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -42,7 +42,9 @@ export class GroupSidebar extends LitElement {
   renderGroupApplets(groupDnaHash: DnaHash) {
     return html`
       <group-context .groupDnaHash=${groupDnaHash}>
-        <registered-applets-sidebar></registered-applets-sidebar
+        <registered-applets-sidebar
+          style="padding: 4px"
+        ></registered-applets-sidebar
       ></group-context>
     `;
   }
@@ -95,7 +97,10 @@ export class GroupSidebar extends LitElement {
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
       <div class="row">
-        <div class="column">
+        <div
+          class="column"
+          style="padding: 4px; align-items: center; background-color: rgba(48, 63, 159, 0.51)"
+        >
           <sl-tooltip placement="right" .content=${msg("Home")} hoist>
             <sl-button
               size="large"
@@ -108,9 +113,11 @@ export class GroupSidebar extends LitElement {
                   })
                 );
               }}
-              style="margin-top: 4px;"
+              style="${this.selectedGroupDnaHash === undefined
+                ? "border: 3px solid purple;"
+                : "border: 3px solid transparent;"}; border-radius: 50%; margin-top: 2px; margin-bottom: 2px;"
             >
-              <sl-icon src="/we_logo.png"></sl-icon>
+              <sl-icon .src=${wrapPathInSvg(mdiHome)}></sl-icon>
             </sl-button>
           </sl-tooltip>
 
@@ -140,5 +147,12 @@ export class GroupSidebar extends LitElement {
     `;
   }
 
-  static styles = [weStyles];
+  static styles = [
+    weStyles,
+    css`
+      :host {
+        display: flex;
+      }
+    `,
+  ];
 }

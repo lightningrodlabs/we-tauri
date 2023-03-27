@@ -18,10 +18,16 @@ export async function getConductorInfo(): Promise<ConductorInfo> {
   return invoke("get_conductor_info");
 }
 
-export async function enterPassword(password: string): Promise<void> {
-  return invoke("enter_password", { password });
+export async function enterPassword(
+  password: string,
+  mdns: boolean
+): Promise<void> {
+  return invoke("enter_password", { password, mdns });
 }
 
-export async function createPassword(password: string): Promise<void> {
-  return invoke("create_password", { password });
+export async function createPassword(
+  password: string,
+  mdns: boolean
+): Promise<void> {
+  return invoke("create_password", { password, mdns });
 }

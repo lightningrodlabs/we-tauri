@@ -1,7 +1,7 @@
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
 import { EntryHash } from "@holochain/client";
 
@@ -27,37 +27,39 @@ export class RegisteredAppletsSidebar extends LitElement {
 
   renderInstalledApplets(applets: ReadonlyMap<EntryHash, AppletInstance>) {
     return html`
-      ${Array.from(applets.entries()).map(
-        ([appletInstanceHash, appletInstance]) =>
-          html`
-            <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-              .logoSrc=${`/applet/${this._groupStore.appletAppIdFromAppletInstance(
-                appletInstance
-              )}/icon.png`}
-              .tooltipText=${appletInstance.custom_name}
-              @click=${() => {
-                this.dispatchEvent(
-                  new CustomEvent("applet-instance-selected", {
-                    detail: {
-                      groupDnaHash: this._groupStore.groupDnaHash,
-                      appletInstanceHash,
-                    },
-                    bubbles: true,
-                    composed: true,
-                  })
-                );
-              }}
-            ></sidebar-button>
-          `
-      )}
+      ${Array.from(applets.entries())
+        .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
+        .map(
+          ([appletInstanceHash, appletInstance]) =>
+            html`
+              <sidebar-button
+                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+                .logoSrc=${appletInstance.logo_src}
+                .tooltipText=${appletInstance.custom_name}
+                @click=${() => {
+                  this.dispatchEvent(
+                    new CustomEvent("applet-instance-selected", {
+                      detail: {
+                        groupDnaHash: this._groupStore.groupDnaHash,
+                        appletInstanceHash,
+                      },
+                      bubbles: true,
+                      composed: true,
+                    })
+                  );
+                }}
+              ></sidebar-button>
+            `
+        )}
     `;
   }
 
   render() {
     switch (this._registeredApplets.value?.status) {
       case "pending":
-        return html`<sl-skeleton></sl-skeleton>`;
+        return html`<sl-skeleton
+          style="height: 48px; width: 48px;"
+        ></sl-skeleton>`;
       case "error":
         return html`<display-error
           tooltip
@@ -69,5 +71,12 @@ export class RegisteredAppletsSidebar extends LitElement {
     }
   }
 
-  static styles = [weStyles];
+  static styles = [
+    weStyles,
+    css`
+      :host {
+        background-color: rgba(48, 63, 159, 0.21);
+      }
+    `,
+  ];
 }

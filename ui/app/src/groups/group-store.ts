@@ -111,12 +111,13 @@ export class GroupStore {
     if (!appletInstance)
       throw new Error("Given applet instance hash was not found");
 
-    return this.appletsStore.installApplet(
+    const [appInfo, _] = await this.appletsStore.installApplet(
       appletInstance.entry.devhub_happ_release_hash,
       appletInstance.entry.devhub_gui_release_hash,
       this.appletAppIdFromAppletInstance(appletInstance.entry),
       appletInstance.entry.network_seed
     );
+    return appInfo;
   }
 
   // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA
@@ -126,12 +127,13 @@ export class GroupStore {
   ): Promise<EntryHash> {
     const networkSeed = uuidv4(); // generate random network seed if not provided
 
-    const appletInfo: AppInfo = await this.appletsStore.installApplet(
-      appletMetadata.devhubHappReleaseHash,
-      appletMetadata.devhubGuiReleaseHash,
-      this.appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
-      networkSeed
-    );
+    const [appletInfo, logo_src]: [AppInfo, string | undefined] =
+      await this.appletsStore.installApplet(
+        appletMetadata.devhubHappReleaseHash,
+        appletMetadata.devhubGuiReleaseHash,
+        this.appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
+        networkSeed
+      );
 
     // --- Register hApp in the We DNA ---
 
@@ -169,7 +171,7 @@ export class GroupStore {
       description: appletMetadata.description,
       devhub_gui_release_hash: appletMetadata.devhubGuiReleaseHash,
       devhub_happ_release_hash: appletMetadata.devhubHappReleaseHash,
-      logo_src: undefined, // TODO: change
+      logo_src,
       network_seed: networkSeed,
       properties: {},
       dna_hashes: dnaHashes,

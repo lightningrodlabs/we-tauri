@@ -2916,7 +2916,7 @@ dependencies = [
 [[package]]
 name = "holochain_launcher_utils"
 version = "0.0.5"
-source = "git+https://github.com/holochain/launcher?branch=we#bcf559d5abaf5696fab632b9a500d6ec9cc88255"
+source = "git+https://github.com/holochain/launcher?branch=we#a0cadf7683eb48ab01f0c34f8117bda4cc2fc348"
 dependencies = [
  "holochain_client",
  "holochain_conductor_api",
@@ -2933,7 +2933,7 @@ dependencies = [
 [[package]]
 name = "holochain_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#bcf559d5abaf5696fab632b9a500d6ec9cc88255"
+source = "git+https://github.com/holochain/launcher?branch=we#a0cadf7683eb48ab01f0c34f8117bda4cc2fc348"
 dependencies = [
  "ascii",
  "async-trait",
@@ -3275,7 +3275,7 @@ dependencies = [
 [[package]]
 name = "holochain_web_app_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#bcf559d5abaf5696fab632b9a500d6ec9cc88255"
+source = "git+https://github.com/holochain/launcher?branch=we#a0cadf7683eb48ab01f0c34f8117bda4cc2fc348"
 dependencies = [
  "async-trait",
  "fs_extra",
@@ -4099,7 +4099,7 @@ dependencies = [
 [[package]]
 name = "lair_keystore_manager"
 version = "0.1.0"
-source = "git+https://github.com/holochain/launcher?branch=we#bcf559d5abaf5696fab632b9a500d6ec9cc88255"
+source = "git+https://github.com/holochain/launcher?branch=we#a0cadf7683eb48ab01f0c34f8117bda4cc2fc348"
 dependencies = [
  "ascii",
  "async-trait",
