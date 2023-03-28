@@ -1,0 +1,28 @@
+import { {{pascal_case entry_type.name}} } from './types';
+
+{{#merge_scope previous_file_content (concat "export class " (pascal_case coordinator_zome_manifest.name) "Store {" ) }}
+  {{previous_scope_content}}
+  
+  /** {{title_case entry_type.name}} */
+
+  {{camel_case (plural entry_type.name)}} = new LazyHoloHashMap(({{camel_case entry_type.name}}Hash: {{#if entry_type.reference_entry_hash}}EntryHash{{else}}ActionHash{{/if}}) =>
+    lazyLoadAndPoll(async () => this.client.get{{pascal_case entry_type.name}}({{camel_case entry_type.name}}Hash), 4000)
+  );
+
+  {{#each entry_type.fields}}
+    {{#if linked_from}}
+  {{camel_case (plural ../entry_type.name)}}For{{pascal_case linked_from.name}} = new LazyHoloHashMap(({{camel_case linked_from.singular_arg}}: {{#if ../entry_type.reference_entry_hash}}EntryHash{{else}}ActionHash{{/if}}) =>
+    lazyLoadAndPoll(
+      async () => {
+        const records = await this.client.get{{pascal_case (plural ../entry_type.name)}}For{{pascal_case linked_from.name}}({{camel_case linked_from.singular_arg}});
+        return records.map(r => {{#if ../entry_type.reference_entry_hash}}r.entryHash{{else}}r.actionHash{{/if}});
+      },
+      4000
+    )
+  );
+
+    {{/if}}
+  {{/each}}
+
+  
+{{/merge_scope}}

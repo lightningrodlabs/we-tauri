@@ -1,0 +1,93 @@
+import { LitElement, html } from 'lit';
+import { state, customElement, property } from 'lit/decorators.js';
+import { AgentPubKey, EntryHash, ActionHash, Record } from '@holochain/client';
+import { StoreSubscriber } from '@holochain-open-dev/stores';
+import { consume } from '@lit-labs/context';
+import { localized, msg } from '@lit/localize';
+import { hashProperty, sharedStyles, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { mdiInformationOutline } from '@mdi/js';
+
+import '@holochain-open-dev/elements/elements/display-error.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+
+import './{{kebab_case referenceable.name}}-summary.js';
+import { {{pascal_case coordinator_zome_manifest.name}}Store } from '../{{kebab_case coordinator_zome_manifest.name}}-store.js';
+import { {{camel_case coordinator_zome_manifest.name}}StoreContext } from '../context.js';
+
+/**
+ * @element {{kebab_case collection_name}}
+ */
+@localized()
+@customElement('{{kebab_case collection_name}}')
+export class {{pascal_case collection_name}} extends LitElement {
+  {{#if (eq collection_type.type "ByAuthor")}}
+
+  // REQUIRED. The author for which the {{plural (pascal_case referenceable.name)}} should be fetched
+  @property(hashProperty('author'))
+  author!: AgentPubKey;
+  {{/if}}
+  
+  /**
+   * @internal
+   */
+  @consume({ context: {{camel_case coordinator_zome_manifest.name}}StoreContext, subscribe: true })
+  {{camel_case coordinator_zome_manifest.name}}Store!: {{pascal_case coordinator_zome_manifest.name}}Store;
+
+  /**
+   * @internal
+   */
+  _{{camel_case collection_name}} = new StoreSubscriber(this, 
+    () => this.{{camel_case coordinator_zome_manifest.name}}Store.{{camel_case collection_name}}{{#if (eq collection_type.type "ByAuthor")}}.get(this.author),
+    () => [this.author]
+    {{/if}}
+  );
+
+  {{#if (eq collection_type.type "ByAuthor")}}
+  firstUpdated() {
+    if (this.author === undefined) {
+      throw new Error(`The author property is required for the {{pascal_case collection_name}} element`);
+    }
+  }
+  {{/if}}
+
+  renderList(hashes: Array<{{referenceable.hash_type}}>) {
+    if (hashes.length === 0) 
+      return html` <div class="column center-content">
+        <sl-icon
+          .src=${wrapPathInSvg(mdiInformationOutline)}
+          style="color: grey; height: 64px; width: 64px; margin-bottom: 16px"
+          ></sl-icon
+        >
+        <span class="placeholder">${msg("No {{lower_case (plural referenceable.name)}} found")}</span>
+      </div>`;
+
+    return html`
+      <div style="display: flex; flex-direction: column; flex: 1">
+        ${hashes.map(hash => 
+          html`<{{kebab_case referenceable.name}}-summary .{{camel_case referenceable.name}}Hash=${hash} style="margin-bottom: 16px;"></{{kebab_case referenceable.name}}-summary>`
+        )}
+      </div>
+    `;
+  }
+
+  render() {
+    switch (this._{{camel_case collection_name}}.value.status) {
+      case "pending":
+        return html`<div
+          style="display: flex; flex: 1; align-items: center; justify-content: center"
+        >
+          <sl-spinner style="font-size: 2rem;"></sl-spinner>
+        </div>`;
+      case "complete":
+        return this.renderList(this._{{camel_case collection_name}}.value.value);
+      case "error":
+        return html`<display-error
+          .headline=${msg("Error fetching the {{lower_case (plural referenceable.name)}}")}
+          .error=${this._{{camel_case collection_name}}.value.error.data.data}
+        ></display-error>`;
+    }
+  }
+  
+  static styles = [sharedStyles];
+}

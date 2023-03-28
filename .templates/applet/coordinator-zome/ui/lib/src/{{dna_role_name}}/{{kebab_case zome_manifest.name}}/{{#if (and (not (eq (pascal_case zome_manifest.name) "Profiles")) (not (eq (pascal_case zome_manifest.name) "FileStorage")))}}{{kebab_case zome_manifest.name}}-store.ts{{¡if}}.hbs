@@ -1,0 +1,11 @@
+import { lazyLoadAndPoll, AsyncReadable } from "@holochain-open-dev/stores";
+import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { NewEntryAction, Record, ActionHash, EntryHash, AgentPubKey } from '@holochain/client';
+
+import { {{pascal_case zome_manifest.name}}Client } from './{{kebab_case zome_manifest.name}}-client.js';
+
+export class {{pascal_case zome_manifest.name}}Store {
+
+  constructor(public client: {{pascal_case zome_manifest.name}}Client) {}
+  
+}

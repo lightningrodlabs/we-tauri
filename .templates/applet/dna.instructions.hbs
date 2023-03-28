@@ -1,0 +1,9 @@
+If you want the UI to work, you must include the profiles zome in one of your DNAs.
+
+Scaffold the profiles zome in this DNA by running these commands, if you haven't already:
+
+  hc-scaffold zome profiles --coordinator dnas/{{dna_name}}/zomes/coordinator --integrity dnas/{{dna_name}}/zomes/integrity
+  cargo add -p profiles hc_zome_profiles_coordinator
+  echo "extern crate hc_zome_profiles_coordinator;" > dnas/{{dna_name}}/zomes/coordinator/profiles/src/lib.rs
+  cargo add -p profiles_integrity hc_zome_profiles_integrity
+  echo "extern crate hc_zome_profiles_integrity;" > dnas/{{dna_name}}/zomes/integrity/profiles/src/lib.rs

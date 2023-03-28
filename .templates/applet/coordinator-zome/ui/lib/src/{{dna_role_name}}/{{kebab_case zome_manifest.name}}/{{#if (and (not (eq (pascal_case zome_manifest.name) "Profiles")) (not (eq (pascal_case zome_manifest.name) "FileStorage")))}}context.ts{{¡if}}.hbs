@@ -1,0 +1,7 @@
+import { createContext } from '@lit-labs/context';
+import { {{pascal_case zome_manifest.name}}Store } from './{{kebab_case zome_manifest.name}}-store';
+
+export const {{camel_case zome_manifest.name}}StoreContext = createContext<{{pascal_case zome_manifest.name}}Store>(
+  'hc_zome_{{snake_case zome_manifest.name}}/store'
+);
+

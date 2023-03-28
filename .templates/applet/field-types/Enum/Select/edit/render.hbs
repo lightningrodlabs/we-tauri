@@ -1,0 +1,5 @@
+<sl-select name="{{snake_case field_name}}" .helpText=${msg("{{label}}")} {{#if required}}required{{/if}} {{#if edit}}.defaultValue=${ {{default_value}} }{{/if}}>
+{{#each field_type.variants}}
+  <sl-option value="{{pascal_case this}}">{{title_case this}}</sl-option>
+{{/each}}
+</sl-select>

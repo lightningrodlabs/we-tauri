@@ -1,0 +1,18 @@
+import 'lib/{{dna_role_name}}/{{kebab_case coordinator_zome_manifest.name}}/elements/{{kebab_case entry_type.name}}-detail.js';
+
+{{#merge_scope previous_file_content (concat (snake_case coordinator_zome_manifest.name) "_integrity: {" ) }}
+{{previous_scope_content}},
+    {{snake_case entry_type.name}}: {
+      name: async (hash: ActionHash) => '',
+      view: (element, hash: ActionHash, context) =>
+        render(
+          wrap{{pascal_case coordinator_zome_manifest.name}}GroupView(
+            client,
+            groupInfo,
+            groupServices,
+            html` <{{kebab_case entry_type.name}}-detail .{{camel_case entry_type.name}}Hash=${hash}></{{kebab_case entry_type.name}}-detail> `
+          ),
+        element
+      ),
+    }
+{{/merge_scope}}

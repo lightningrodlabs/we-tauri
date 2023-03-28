@@ -1,0 +1,15 @@
+{{#each entry_type.fields}}
+  {{#if (and widget (eq widget "Image"))}}
+You have scaffolded an entry type with an image field.
+
+Scaffold the file-storage zome in one of your DNAs by running these commands, if you haven't already:
+
+  npm i -w ui @holochain-open-dev/file-storage
+  hc-scaffold zome file_storage --coordinator dnas/{{../dna_role_name}}/zomes/coordinator --integrity dnas/{{../dna_role_name}}/zomes/integrity
+  cargo add -p file_storage hc_zome_file_storage_coordinator
+  echo "extern crate hc_zome_file_storage_coordinator;" > dnas/{{../dna_role_name}}/zomes/coordinator/file_storage/src/lib.rs
+  cargo add -p file_storage_integrity hc_zome_file_storage_integrity
+  echo "extern crate hc_zome_file_storage_integrity;" > dnas/{{../dna_role_name}}/zomes/integrity/file_storage/src/lib.rs
+  
+  {{/if}}
+{{/each}}

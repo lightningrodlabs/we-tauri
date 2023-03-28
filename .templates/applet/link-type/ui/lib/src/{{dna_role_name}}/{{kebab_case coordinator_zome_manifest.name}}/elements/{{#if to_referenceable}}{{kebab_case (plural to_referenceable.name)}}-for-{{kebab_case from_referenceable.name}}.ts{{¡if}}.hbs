@@ -1,0 +1,96 @@
+import { LitElement, html } from 'lit';
+import { state, property, customElement } from 'lit/decorators.js';
+import { AgentPubKey, EntryHash, ActionHash, Record } from '@holochain/client';
+import { consume } from '@lit-labs/context';
+import { hashProperty, sharedStyles, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { StoreSubscriber } from '@holochain-open-dev/stores';
+import { localized, msg } from '@lit/localize';
+import { mdiInformationOutline } from '@mdi/js';
+
+import '@holochain-open-dev/elements/elements/display-error.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+
+{{#if (not (eq to_referenceable.hash_type "AgentPubKey") )}}
+import './{{kebab_case to_referenceable.name}}-summary.js';
+{{else}}
+import '@holochain-open-dev/profiles/elements/agent-avatar.js';
+{{/if}}
+
+import { {{pascal_case coordinator_zome_manifest.name}}Store } from '../{{kebab_case coordinator_zome_manifest.name}}-store.js';
+import { {{camel_case coordinator_zome_manifest.name}}StoreContext } from '../context.js';
+
+/**
+ * @element {{kebab_case (plural to_referenceable.name)}}-for-{{kebab_case from_referenceable.name}}
+ */
+@localized()
+@customElement('{{kebab_case (plural to_referenceable.name)}}-for-{{kebab_case from_referenceable.name}}')
+export class {{pascal_case (plural to_referenceable.name)}}For{{pascal_case from_referenceable.name}} extends LitElement {
+
+  // REQUIRED. The {{pascal_case from_referenceable.singular_arg}} for which the {{plural (pascal_case to_referenceable.name)}} should be fetched
+  @property(hashProperty('{{kebab_case from_referenceable.singular_arg}}'))
+  {{camel_case from_referenceable.singular_arg}}!: {{from_referenceable.hash_type}}; 
+
+  /**
+   * @internal
+   */
+  @consume({ context: {{camel_case coordinator_zome_manifest.name}}StoreContext, subscribe: true })
+  {{camel_case coordinator_zome_manifest.name}}Store!: {{pascal_case coordinator_zome_manifest.name}}Store;
+
+  /**
+   * @internal
+   */
+  _{{camel_case (plural to_referenceable.name)}} = new StoreSubscriber(this,
+    () => this.{{camel_case coordinator_zome_manifest.name}}Store.{{camel_case (plural to_referenceable.name)}}For{{pascal_case from_referenceable.name}}.get(this.{{camel_case from_referenceable.singular_arg}}),
+    () => [this.{{camel_case from_referenceable.singular_arg}}]
+  );
+  
+  firstUpdated() {
+    if (this.{{camel_case from_referenceable.singular_arg}} === undefined) {
+      throw new Error(`The {{camel_case from_referenceable.singular_arg}} property is required for the {{kebab_case (plural to_referenceable.name)}}-for-{{kebab_case from_referenceable.name}} element`);
+    }
+  }
+
+  renderList(hashes: Array<{{to_referenceable.hash_type}}>) {
+    if (hashes.length === 0) 
+      return html` <div class="column center-content">
+        <sl-icon
+          style="color: grey; height: 64px; width: 64px; margin-bottom: 16px"
+          .src=${wrapPathInSvg(mdiInformationOutline)}
+        ></sl-icon>
+        <span class="placeholder">${msg("No {{lower_case (plural to_referenceable.name)}} found for this {{lower_case from_referenceable.name}}")}</span>
+      </div>`;
+    
+    return html`
+      <div style="display: flex; flex-direction: column">
+        ${hashes.map(hash => 
+      {{#if (not (eq to_referenceable.hash_type "AgentPubKey") )}}
+          html`<{{kebab_case to_referenceable.name}}-summary .{{camel_case to_referenceable.name}}Hash=${hash} style="margin-bottom: 16px;" ></{{kebab_case to_referenceable.name}}-summary>`
+      {{else}}
+          html`<agent-avatar .agentPubKey=${hash}></agent-avatar>`
+      {{/if}}
+        )}
+      </div>
+    `;
+  }
+
+  render() {
+    switch (this._{{camel_case (plural to_referenceable.name)}}.value.status) {
+      case "pending":
+        return html`<div
+          style="display: flex; flex: 1; align-items: center; justify-content: center"
+        >
+          <sl-spinner style="font-size: 2rem;"></sl-spinner>
+        </div>`;
+      case "complete":
+        return this.renderList(this._{{camel_case (plural to_referenceable.name)}}.value.value);
+      case "error":
+        return html`<display-error
+          .headline=${msg("Error fetching the {{lower_case (plural to_referenceable.name)}}")}
+          .error=${this._{{camel_case (plural to_referenceable.name)}}.value.error.data.data}
+        ></display-error>`;
+    }
+  }
+  
+  static styles = [sharedStyles];
+}

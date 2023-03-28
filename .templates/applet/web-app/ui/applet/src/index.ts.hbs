@@ -1,0 +1,69 @@
+import { ActionHash, AppAgentClient, CellType } from '@holochain/client';
+import { html, render, TemplateResult } from 'lit';
+import '@holochain-open-dev/profiles/elements/profiles-context.js';
+
+import {
+  CrossGroupViews,
+  GroupInfo,
+  GroupServices,
+  GroupViews,
+  GroupWithApplets,
+  OpenViews,
+  WeApplet,
+  WeServices,
+} from '@lightningrodlabs/we-applet';
+import './main-block';
+
+function wrapGroupView(
+  client: AppAgentClient,
+  groupInfo: GroupInfo,
+  groupServices: GroupServices,
+  innerTemplate: TemplateResult
+): TemplateResult {
+  return html`
+    <profiles-context .store=${groupServices.profilesStore}>
+      ${innerTemplate}
+    </profiles-context>`;
+}
+
+function groupViews(
+  client: AppAgentClient,
+  groupInfo: GroupInfo,
+  groupServices: GroupServices,
+  weServices: WeServices
+): GroupViews {
+  return {
+    blocks: {
+      main: element =>
+        render(
+          wrapGroupView(
+            client,
+            groupInfo,
+            groupServices,
+            html`<main-block></main-block>`
+          ),
+          element
+        ),
+    },
+    entries: {},
+  };
+}
+
+function crossGroupViews(
+  groupWithApplets: GroupWithApplets[]
+): CrossGroupViews {
+  return {
+    blocks: {
+      main: element => {},
+    },
+  };
+}
+
+const applet: WeApplet = {
+  attachableTypes: [],
+  search: async () => [],
+  groupViews,
+  crossGroupViews,
+};
+
+export default applet;

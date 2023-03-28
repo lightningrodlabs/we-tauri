@@ -1,0 +1,36 @@
+{{#merge_scope previous_file_content (concat "export class " (pascal_case coordinator_zome_manifest.name) "Client extends ZomeClient<" (pascal_case coordinator_zome_manifest.name) "Signal> {" ) }}
+  {{previous_scope_content}}
+
+  /** {{title_case (plural to_referenceable.name)}} for {{title_case from_referenceable.name}} */
+
+  {{#if (eq to_referenceable.hash_type "AgentPubKey")}}
+  async get{{pascal_case (plural to_referenceable.name)}}For{{pascal_case from_referenceable.name}}({{camel_case from_referenceable.singular_arg}}: {{from_referenceable.hash_type}}): Promise<Array<AgentPubKey>> {
+    return this.callZome('get_{{snake_case (plural to_referenceable.name)}}_for_{{snake_case from_referenceable.name}}', {{camel_case from_referenceable.singular_arg}});
+  }
+  {{else}}
+  async get{{pascal_case (plural to_referenceable.name)}}For{{pascal_case from_referenceable.name}}({{camel_case from_referenceable.singular_arg}}: {{from_referenceable.hash_type}}): Promise<Array<EntryRecord<{{pascal_case to_referenceable.name}}>>> {
+    const records: Record[] = await this.callZome('get_{{snake_case (plural to_referenceable.name)}}_for_{{snake_case from_referenceable.name}}', {{camel_case from_referenceable.singular_arg}});
+    return records.map(r => new EntryRecord(r));
+  }
+  {{/if}}
+  
+  add{{pascal_case to_referenceable.name}}For{{pascal_case from_referenceable.name}}({{camel_case from_referenceable.singular_arg}}: {{from_referenceable.hash_type}}, {{camel_case to_referenceable.singular_arg}}: {{to_referenceable.hash_type}}): Promise<void> {
+    return this.callZome('add_{{snake_case to_referenceable.name}}_for_{{snake_case from_referenceable.name}}', {
+      {{snake_case from_referenceable.singular_arg}}: {{camel_case from_referenceable.singular_arg}},
+      {{snake_case to_referenceable.singular_arg}}: {{camel_case to_referenceable.singular_arg}},
+    });
+  }  
+	
+  {{#if bidireccional}}
+    {{#if (eq from_referenceable.hash_type "AgentPubKey")}}
+  async get{{pascal_case (plural from_referenceable.name)}}For{{pascal_case to_referenceable.name}}({{camel_case to_referenceable.singular_arg}}: {{to_referenceable.hash_type}}): Promise<Array<AgentPubKey>> {
+    return this.callZome('get_{{snake_case (plural from_referenceable.name)}}_for_{{snake_case to_referenceable.name}}', {{camel_case to_referenceable.singular_arg}});
+  }
+    {{else}}
+  async get{{pascal_case (plural from_referenceable.name)}}For{{pascal_case to_referenceable.name}}({{camel_case to_referenceable.singular_arg}}: {{to_referenceable.hash_type}}): Promise<Array<EntryRecord<{{pascal_case from_referenceable.name}}>>> {
+    const records: Record[] = await this.callZome('get_{{snake_case (plural from_referenceable.name)}}_for_{{snake_case to_referenceable.name}}', {{camel_case to_referenceable.singular_arg}});
+    return records.map(r => new EntryRecord(r));
+  }
+    {{/if}}
+  {{/if}}
+{{/merge_scope}}

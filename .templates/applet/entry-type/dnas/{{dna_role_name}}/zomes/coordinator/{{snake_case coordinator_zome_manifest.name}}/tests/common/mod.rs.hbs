@@ -1,0 +1,89 @@
+{{previous_file_content}}
+
+pub async fn sample_{{snake_case entry_type.name}}_1(conductor: &SweetConductor, zome: &SweetZome) -> {{pascal_case entry_type.name}} {
+    {{pascal_case entry_type.name}} {
+{{#each entry_type.fields}}
+  {{#if linked_from}}
+    {{#if (ne linked_from.hash_type "AgentPubKey")}}
+      {{#if (eq cardinality "vector")}}
+        {{#if (eq (pascal_case linked_from.name) (pascal_case ../entry_type.name))}}
+          {{field_name}}: vec![],
+        {{else}}
+          {{#if (eq linked_from.hash_type "ActionHash")}}
+          {{field_name}}: vec![create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_1(conductor, zome).await).await.signed_action.hashed.hash],
+          {{else}}
+          {{field_name}}: vec![create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_1(conductor, zome).await).await.signed_action.hashed.content.entry_hash().unwrap().clone()],
+          {{/if}}
+        {{/if}}
+      {{else}}
+        {{#if (eq (pascal_case linked_from.name) (pascal_case ../entry_type.name))}}
+          {{field_name}}: None,
+        {{else}}
+	  {{#if (eq linked_from.hash_type "ActionHash")}}
+          {{field_name}}: create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_1(conductor, zome).await).await.signed_action.hashed.hash,
+          {{else}}
+          {{field_name}}: create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_1(conductor, zome).await).await.signed_action.hashed.content.entry_hash().unwrap().clone(),
+          {{/if}}
+        {{/if}}
+      {{/if}}
+    {{else}}
+          {{field_name}}: zome.cell_id().agent_pubkey().clone(),
+    {{/if}}
+  {{else}}
+      {{#if (eq cardinality "vector")}}
+	  {{field_name}}: vec![{{> (concat field_type.type "/sample1")}}],
+      {{else}}
+	  {{field_name}}: {{> (concat field_type.type "/sample1")}},
+      {{/if}}
+  {{/if}}
+{{/each}}
+    }
+}
+
+pub async fn sample_{{snake_case entry_type.name}}_2(conductor: &SweetConductor, zome: &SweetZome) -> {{pascal_case entry_type.name}} {
+    {{pascal_case entry_type.name}} {
+{{#each entry_type.fields}}
+  {{#if linked_from}}
+    {{#if (ne linked_from.hash_type "AgentPubKey")}}
+      {{#if (eq cardinality "vector")}}
+        {{#if (eq (pascal_case linked_from.name) (pascal_case ../entry_type.name))}}
+          {{field_name}}: vec![],
+        {{else}}
+          {{#if (eq linked_from.hash_type "ActionHash")}}
+          {{field_name}}: vec![create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_2(conductor, zome).await).await.signed_action.hashed.hash],
+          {{else}}
+          {{field_name}}: vec![create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_2(conductor, zome).await).await.signed_action.hashed.content.entry_hash().unwrap().clone()],
+          {{/if}}
+        {{/if}}
+      {{else}}
+        {{#if (eq (pascal_case linked_from.name) (pascal_case ../entry_type.name))}}
+          {{field_name}}: None,
+        {{else}}
+	  {{#if (eq linked_from.hash_type "ActionHash")}}
+          {{field_name}}: create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_2(conductor, zome).await).await.signed_action.hashed.hash,
+          {{else}}
+          {{field_name}}: create_{{snake_case linked_from.name}}(conductor, zome, sample_{{snake_case linked_from.name}}_2(conductor, zome).await).await.signed_action.hashed.content.entry_hash().unwrap().clone(),
+          {{/if}}
+        {{/if}}
+      {{/if}}
+    {{else}}
+          {{field_name}}: zome.cell_id().agent_pubkey().clone(),
+    {{/if}}
+  {{else}}
+      {{#if (eq cardinality "vector")}}
+	  {{field_name}}: vec![{{> (concat field_type.type "/sample2")}}],
+      {{else}}
+	  {{field_name}}: {{> (concat field_type.type "/sample2")}},
+      {{/if}}
+  {{/if}}
+{{/each}}
+    }
+}
+
+pub async fn create_{{snake_case entry_type.name}}(conductor: &SweetConductor, zome: &SweetZome, {{snake_case entry_type.name}}: {{pascal_case entry_type.name}}) -> Record {
+    let record: Record = conductor
+        .call(zome, "create_{{snake_case entry_type.name}}", {{snake_case entry_type.name}})
+        .await;
+    record
+}
+

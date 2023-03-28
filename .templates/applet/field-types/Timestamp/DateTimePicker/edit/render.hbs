@@ -1,0 +1,7 @@
+<lit-flatpickr
+  .dateFormat=${'Y-m-d H:i'}
+  .enableTime=${true}
+>
+  <sl-input name="{{snake_case field_name}}" .label=${msg("{{label}}")} {{#if required}} required{{/if}}{{#if edit}} .defaultValue=${new Date({{default_value}}/1000).toLocaleString()} {{/if}}></sl-input>
+</lit-flatpickr>
+

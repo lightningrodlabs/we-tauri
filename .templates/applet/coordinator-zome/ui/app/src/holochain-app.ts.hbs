@@ -1,0 +1,40 @@
+{{#if (eq (pascal_case zome_manifest.name) "Profiles")}}
+
+{{#merge_scope previous_file_content "export class HolochainApp extends LitElement {"}}
+  {{#merge_scope previous_scope_content "async initStores(appAgentClient: AppAgentClient) {"}}
+    {{previous_scope_content}}
+    this._profilesStore = new ProfilesStore(new ProfilesClient(appAgentClient, '{{dna_role_name}}'));
+    this._myProfile = new StoreSubscriber(this, () => this._profilesStore.myProfile);
+  {{/merge_scope}}
+
+{{/merge_scope}}
+
+{{else}}
+  {{#if (eq (pascal_case zome_manifest.name) "FileStorage")}}
+import { fileStorageClientContext, FileStorageClient } from '@holochain-open-dev/file-storage';
+
+{{#merge_scope previous_file_content "export class HolochainApp extends LitElement {"}}
+  @provide({ context: fileStorageClientContext })
+  @property()
+  _fileStorageClient!: FileStorageClient;
+
+  {{#merge_scope previous_scope_content "async initStores(appAgentClient: AppAgentClient) {"}}
+    {{previous_scope_content}}
+    this._fileStorageClient = new FileStorageClient(appAgentClient, '{{dna_role_name}}');
+  {{/merge_scope}}
+{{/merge_scope}}
+  {{else}}
+import { {{camel_case zome_manifest.name}}StoreContext, {{pascal_case zome_manifest.name}}Store, {{pascal_case zome_manifest.name}}Client } from 'lib';
+
+{{#merge_scope previous_file_content "export class HolochainApp extends LitElement {"}}
+  @provide({ context: {{camel_case zome_manifest.name}}StoreContext })
+  @property()
+  _{{camel_case zome_manifest.name}}Store!: {{pascal_case zome_manifest.name}}Store;
+
+  {{#merge_scope previous_scope_content "async initStores(appAgentClient: AppAgentClient) {"}}
+    {{previous_scope_content}}
+    this._{{camel_case zome_manifest.name}}Store = new {{pascal_case zome_manifest.name}}Store(new {{pascal_case zome_manifest.name}}Client(appAgentClient, '{{dna_role_name}}'));
+  {{/merge_scope}}
+{{/merge_scope}}
+  {{/if}}
+{{/if}}

@@ -1,0 +1,46 @@
+import { {{pascal_case entry_type.name}} } from './types';
+
+{{#merge_scope previous_file_content (concat "export class " (pascal_case coordinator_zome_manifest.name) "Client extends ZomeClient<" (pascal_case coordinator_zome_manifest.name) "Signal> {" ) }}
+  {{previous_scope_content}}
+  /** {{title_case entry_type.name}} */
+
+  async create{{pascal_case entry_type.name}}({{camel_case entry_type.name}}: {{pascal_case entry_type.name}}): Promise<EntryRecord<{{pascal_case entry_type.name}}>> {
+    const record: Record = await this.callZome('create_{{snake_case entry_type.name}}', {{camel_case entry_type.name}});
+    return new EntryRecord(record);
+  }
+  
+  async get{{pascal_case entry_type.name}}({{camel_case entry_type.name}}Hash: {{#if entry_type.reference_entry_hash}}EntryHash{{else}}ActionHash{{/if}}): Promise<EntryRecord<{{pascal_case entry_type.name}}> | undefined> {
+    const record: Record = await this.callZome('get_{{snake_case entry_type.name}}', {{camel_case entry_type.name}}Hash);
+    return record ? new EntryRecord(record) : undefined;
+  }
+
+  {{#if crud.delete}}
+  delete{{pascal_case entry_type.name}}(original{{pascal_case entry_type.name}}Hash: ActionHash): Promise<ActionHash> {
+    return this.callZome('delete_{{snake_case entry_type.name}}', original{{pascal_case entry_type.name}}Hash);
+  }
+  {{/if}}
+
+  {{#if crud.update}}
+  async update{{pascal_case entry_type.name}}({{#if link_from_original_to_each_update}}original{{pascal_case entry_type.name}}Hash: ActionHash, {{/if}}previous{{pascal_case entry_type.name}}Hash: ActionHash, updated{{pascal_case entry_type.name}}: {{pascal_case entry_type.name}}): Promise<EntryRecord<{{pascal_case entry_type.name}}>> {
+    const record: Record = await this.callZome('update_{{snake_case entry_type.name}}', {
+      {{#if link_from_original_to_each_update}}
+      original_{{snake_case entry_type.name}}_hash: original{{pascal_case entry_type.name}}Hash,
+      {{/if}}
+      previous_{{snake_case entry_type.name}}_hash: previous{{pascal_case entry_type.name}}Hash,
+      updated_{{snake_case entry_type.name}}: updated{{pascal_case entry_type.name}}
+    });
+    return new EntryRecord(record);
+  }
+  {{/if}}
+  
+  {{#each entry_type.fields}}
+    {{#if linked_from}}
+  async get{{pascal_case (plural ../entry_type.name)}}For{{pascal_case linked_from.name}}({{camel_case linked_from.singular_arg}}: {{linked_from.hash_type}}): Promise<Array<EntryRecord<{{pascal_case ../entry_type.name}}>>> {
+    const records: Record[] = await this.callZome('get_{{snake_case (plural ../entry_type.name)}}_for_{{snake_case linked_from.name}}', {{camel_case linked_from.singular_arg}});
+    return records.map(r => new EntryRecord(r));
+  }
+
+    {{/if}}
+  {{/each}}
+
+{{/merge_scope}}

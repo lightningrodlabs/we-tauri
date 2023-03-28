@@ -1,0 +1,45 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+
+use hdk::prelude::*;
+use holochain::test_utils::consistency_10s;
+use holochain::{conductor::config::ConductorConfig, sweettest::*};
+
+mod common;
+use common::{create_{{snake_case referenceable.name}}, sample_{{snake_case referenceable.name}}_1};
+
+#[tokio::test(flavor = "multi_thread")]
+async fn create_a_{{snake_case referenceable.name}}_and_get_{{snake_case collection_name}}() {
+    // Use prebuilt dna file
+    let dna_path = std::env::current_dir()
+        .unwrap()
+        .join("../../../workdir/{{dna_role_name}}.dna");
+    let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
+
+    // Set up conductors
+    let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
+    let apps = conductors.setup_app("{{dna_role_name}}", &[dna]).await.unwrap();
+    conductors.exchange_peer_info().await;
+
+    let ((alice,), (bobbo,)) = apps.into_tuples();
+    
+    let alice_zome = alice.zome("{{snake_case coordinator_zome_manifest.name}}");
+    let bob_zome = bobbo.zome("{{snake_case coordinator_zome_manifest.name}}");
+    
+    let sample = sample_{{snake_case referenceable.name}}_1(&conductors[0], &alice_zome).await;
+    
+    // Alice creates a {{pascal_case referenceable.name}}
+    let record: Record = create_{{snake_case referenceable.name}}(&conductors[0], &alice_zome, sample.clone()).await;
+    
+    consistency_10s([&alice, &bobbo]).await;
+    
+    let get_records: Vec<Record> = conductors[1]
+        .call(&bob_zome, "get_{{snake_case collection_name}}", {{#if (eq collection_type.type "Global")}}(){{else}}alice_zome.cell_id().agent_pubkey().clone(){{/if}})
+        .await;
+        
+    assert_eq!(get_records.len(), 1);    
+    assert_eq!(get_records[0], record);    
+}
+
+

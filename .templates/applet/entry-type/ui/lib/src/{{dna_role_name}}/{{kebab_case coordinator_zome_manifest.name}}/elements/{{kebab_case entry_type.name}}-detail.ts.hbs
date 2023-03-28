@@ -1,0 +1,167 @@
+import { LitElement, html } from 'lit';
+import { state, property, customElement } from 'lit/decorators.js';
+import { EntryHash, Record, ActionHash } from '@holochain/client';
+import { EntryRecord } from '@holochain-open-dev/utils';
+import { StoreSubscriber } from '@holochain-open-dev/stores';
+import { sharedStyles, hashProperty, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { consume } from '@lit-labs/context';
+import { localized, msg } from '@lit/localize';
+import { mdiAlertCircleOutline, mdiPencil, mdiDelete } from '@mdi/js';
+
+{{#uniq_lines}}
+import '@holochain-open-dev/elements/elements/display-error.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
+import '@shoelace-style/shoelace/dist/components/alert/alert.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+  {{#each entry_type.fields}}
+    {{#if widget}}
+{{> (concat field_type.type "/" widget "/detail/imports") }}
+
+    {{/if}}
+  {{/each}}
+{{/uniq_lines}}
+
+{{#if crud.update}}
+import './edit-{{kebab_case entry_type.name}}.js';
+{{/if}}
+
+import { {{pascal_case coordinator_zome_manifest.name}}Store } from '../{{kebab_case coordinator_zome_manifest.name}}-store.js';
+import { {{camel_case coordinator_zome_manifest.name}}StoreContext } from '../context.js';
+import { {{pascal_case entry_type.name}}{{#each entry_type.fields}}{{#if (eq field_type.type "Enum")}}, {{field_type.label}}{{/if}}{{/each}} } from '../types.js';
+
+/**
+ * @element {{kebab_case entry_type.name}}-detail
+ * @fires {{kebab_case entry_type.name}}-deleted: detail will contain { {{camel_case entry_type.name}}Hash }
+ */
+@localized()
+@customElement('{{kebab_case entry_type.name}}-detail')
+export class {{pascal_case entry_type.name}}Detail extends LitElement {
+
+  // REQUIRED. The hash of the {{pascal_case entry_type.name}} to show
+  @property(hashProperty('{{kebab_case entry_type.name}}-hash'))
+  {{camel_case entry_type.name}}Hash!: {{#if entry_type.reference_entry_hash}}EntryHash{{else}}ActionHash{{/if}};
+
+  /**
+   * @internal
+   */
+  @consume({ context: {{camel_case coordinator_zome_manifest.name}}StoreContext, subscribe: true })
+  {{camel_case coordinator_zome_manifest.name}}Store!: {{pascal_case coordinator_zome_manifest.name}}Store;
+
+  /**
+   * @internal
+   */
+   _{{camel_case entry_type.name}} = new StoreSubscriber(this, () => this.{{camel_case coordinator_zome_manifest.name}}Store.{{camel_case (plural entry_type.name)}}.get(this.{{camel_case entry_type.name}}Hash));
+
+  {{#if crud.update}}
+  /**
+   * @internal
+   */
+  @state()
+  _editing = false;
+  {{/if}}
+
+  {{#if crud.delete}}
+  async delete{{pascal_case entry_type.name}}() {
+    try {
+      await this.{{camel_case coordinator_zome_manifest.name}}Store.client.delete{{pascal_case entry_type.name}}(this.{{camel_case entry_type.name}}Hash);
+ 
+      this.dispatchEvent(new CustomEvent('{{kebab_case entry_type.name}}-deleted', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          {{camel_case entry_type.name}}Hash: this.{{camel_case entry_type.name}}Hash
+        }
+      }));
+    } catch (e: any) {
+      console.error(e);
+      const errorAlert = this.shadowRoot?.getElementById('update-error') as SlAlert;
+      errorAlert.toast();
+    }
+  }
+  {{/if}}
+
+  renderDetail(entryRecord: EntryRecord<{{pascal_case entry_type.name}}>) {
+    return html`{{#if crud.delete}}
+      <sl-alert id="update-error" variant="danger" duration="3000">
+        <sl-icon slot="icon" .src=${wrapPathInSvg(mdiAlertCircleOutline)} style="color: red"></sl-icon>
+        <strong>${msg("Error deleting the {{lower_case entry_type.name}}")}</strong><br />
+      </sl-alert>
+      {{/if}}
+
+      <sl-card>
+      	<div slot="header" style="display: flex; flex-direction: row">
+          <span style="font-size: 18px; flex: 1;">${msg("{{title_case entry_type.name}}")}</span>
+
+          {{#if crud.update}}
+          <sl-icon-button style="margin-left: 8px" .src=${wrapPathInSvg(mdiPencil)} @click=${() => { this._editing = true; } }></sl-icon-button>
+          {{/if}}
+          {{#if crud.delete}}
+          <sl-icon-button style="margin-left: 8px" .src=${wrapPathInSvg(mdiDelete)} @click=${() => this.delete{{pascal_case entry_type.name}}()}></sl-icon-button>
+          {{/if}}
+        </div>
+
+        <div style="display: flex; flex-direction: column">
+  
+	{{#each entry_type.fields}}
+          {{#if widget}}	  
+          <div style="display: flex; flex-direction: column; margin-bottom: 16px">
+	    <span style="margin-bottom: 8px"><strong>${msg("{{title_case field_name}}")}:</strong></span>
+            {{#if (not (eq cardinality "vector") )}}
+ 	    <span style="white-space: pre-line">{{> (concat field_type.type "/" widget "/detail/render") field_name=field_name variable_to_read=(concat "entryRecord.entry." (snake_case field_name) ) }}</span>
+            {{else}}
+              {{> Vec/detail/render variable_to_read=(concat "entryRecord.entry." (snake_case field_name) ) field_name=field_name field_type=field_type widget=widget }}
+            {{/if}}
+	  </div>
+
+ 	  {{/if}}
+	{{/each}}
+      </div>
+      </sl-card>
+    `;
+  }
+  
+  render() {
+    switch (this._{{camel_case entry_type.name}}.value.status) {
+      case "pending":
+        return html`<sl-card>
+          <div
+            style="display: flex; flex: 1; align-items: center; justify-content: center"
+          >
+            <sl-spinner style="font-size: 2rem;"></sl-spinner>
+          </div>
+        </sl-card>`;
+      case "complete":
+        const {{camel_case entry_type.name}} = this._{{camel_case entry_type.name}}.value.value;
+        
+        if (!{{camel_case entry_type.name}}) return html`<span>${msg("The requested {{lower_case entry_type.name}} doesn't exist")}</span>`;
+    
+{{#if crud.update}}
+        if (this._editing) {
+    	  return html`<edit-{{kebab_case entry_type.name}}
+  {{#if link_from_original_to_each_update}}
+    	    .original{{pascal_case entry_type.name}}Hash=${this.{{camel_case entry_type.name}}Hash}
+  {{/if}}
+    	    .currentRecord=${ {{camel_case entry_type.name}} }
+            @{{kebab_case entry_type.name}}-updated=${async () => { this._editing = false; } }
+      	    @edit-canceled=${() => { this._editing = false; } }
+    	    style="display: flex; flex: 1;"
+    	  ></edit-{{kebab_case entry_type.name}}>`;
+      }
+
+{{/if}}
+        return this.renderDetail({{camel_case entry_type.name}});
+      case "error":
+        return html`<sl-card>
+          <display-error
+            .headline=${msg("Error fetching the {{lower_case entry_type.name}}")}
+            .error=${this._{{camel_case entry_type.name}}.value.error.data.data}
+          ></display-error>
+        </sl-card>`;
+    }
+  }
+  
+  static styles = [sharedStyles];
+}

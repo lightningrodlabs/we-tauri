@@ -1,0 +1,17 @@
+import { 
+  AppAgentClient, 
+  Record, 
+  ActionHash, 
+  EntryHash, 
+  AgentPubKey,
+} from '@holochain/client';
+import { isSignalFromCellWithRole, EntryRecord, ZomeClient } from '@holochain-open-dev/utils';
+
+import { {{pascal_case zome_manifest.name}}Signal } from './types.js';
+
+export class {{pascal_case zome_manifest.name}}Client extends ZomeClient<{{pascal_case zome_manifest.name}}Signal> {
+
+  constructor(public client: AppAgentClient, public roleName: string, public zomeName = '{{snake_case zome_manifest.name}}') {
+    super(client, roleName, zomeName);
+  }
+}

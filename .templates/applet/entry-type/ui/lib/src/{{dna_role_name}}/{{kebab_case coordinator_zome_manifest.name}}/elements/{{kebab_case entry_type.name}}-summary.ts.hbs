@@ -1,0 +1,105 @@
+import { LitElement, html } from 'lit';
+import { state, property, customElement } from 'lit/decorators.js';
+import { EntryHash, Record, ActionHash } from '@holochain/client';
+import { EntryRecord } from '@holochain-open-dev/utils';
+import { StoreSubscriber } from '@holochain-open-dev/stores';
+import { hashProperty, sharedStyles } from '@holochain-open-dev/elements';
+import { consume } from '@lit-labs/context';
+
+import { localized, msg } from '@lit/localize';
+
+{{#uniq_lines}}
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@holochain-open-dev/elements/elements/display-error.js';
+  {{#each entry_type.fields}}
+    {{#if widget}}
+{{> (concat field_type.type "/" widget "/detail/imports") }}
+
+    {{/if}}
+  {{/each}}
+{{/uniq_lines}}
+
+import { {{pascal_case coordinator_zome_manifest.name}}Store } from '../{{kebab_case coordinator_zome_manifest.name}}-store';
+import { {{camel_case coordinator_zome_manifest.name}}StoreContext } from '../context';
+import { {{pascal_case entry_type.name}}{{#each entry_type.fields}}{{#if (eq field_type.type "Enum")}}, {{field_type.label}}{{/if}}{{/each}} } from '../types';
+
+/**
+ * @element {{kebab_case entry_type.name}}-summary
+ * @fires {{kebab_case entry_type.name}}-selected: detail will contain { {{camel_case entry_type.name}}Hash }
+ */
+@localized()
+@customElement('{{kebab_case entry_type.name}}-summary')
+export class {{pascal_case entry_type.name}}Summary extends LitElement {
+
+  // REQUIRED. The hash of the {{pascal_case entry_type.name}} to show
+  @property(hashProperty('{{kebab_case entry_type.name}}-hash'))
+  {{camel_case entry_type.name}}Hash!: {{#if entry_type.reference_entry_hash}}EntryHash{{else}}ActionHash{{/if}};
+
+  /**
+   * @internal
+   */
+  @consume({ context: {{camel_case coordinator_zome_manifest.name}}StoreContext, subscribe: true })
+  {{camel_case coordinator_zome_manifest.name}}Store!: {{pascal_case coordinator_zome_manifest.name}}Store;
+
+  /**
+   * @internal
+   */
+  _{{camel_case entry_type.name}} = new StoreSubscriber(this, () => this.{{camel_case coordinator_zome_manifest.name}}Store.{{camel_case (plural entry_type.name)}}.get(this.{{camel_case entry_type.name}}Hash));
+
+  renderSummary(entryRecord: EntryRecord<{{pascal_case entry_type.name}}>) {
+    return html`
+      <div style="display: flex; flex-direction: column">
+
+	{{#each entry_type.fields}}
+          {{#if widget}}	  
+          <div style="display: flex; flex-direction: column; margin-bottom: 16px">
+	    <span style="margin-bottom: 8px"><strong>${msg("{{title_case field_name}}")}:</strong></span>
+            {{#if (not (eq cardinality "vector") )}}
+ 	    <span style="white-space: pre-line">{{> (concat field_type.type "/" widget "/detail/render") field_name=field_name variable_to_read=(concat "entryRecord.entry." (snake_case field_name) ) }}</span>
+            {{else}}
+              {{> Vec/detail/render variable_to_read=(concat "entryRecord.entry." (snake_case field_name) ) field_name=field_name field_type=field_type widget=widget }}
+            {{/if}}
+	  </div>
+
+ 	  {{/if}}
+	{{/each}}
+      </div>
+    `;
+  }
+  
+  render{{pascal_case entry_type.name}}() {
+    switch (this._{{camel_case entry_type.name}}.value.status) {
+      case "pending":
+        return html`<div
+          style="display: flex; flex: 1; align-items: center; justify-content: center"
+        >
+            <sl-spinner style="font-size: 2rem;"></sl-spinner>
+        </div>`;
+      case "complete":
+        if (!this._{{camel_case entry_type.name}}.value.value) return html`<span>${msg("The requested {{lower_case entry_type.name}} doesn't exist")}</span>`;
+
+        return this.renderSummary(this._{{camel_case entry_type.name}}.value.value);
+      case "error":
+        return html`<display-error
+          .headline=${msg("Error fetching the {{lower_case entry_type.name}}")}
+          .error=${this._{{camel_case entry_type.name}}.value.error.data.data}
+        ></display-error>`;
+    }
+  }
+  
+  render() {
+    return html`<sl-card style="flex: 1; cursor: grab;" @click=${() => this.dispatchEvent(new CustomEvent('{{kebab_case entry_type.name}}-selected', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            {{camel_case entry_type.name}}Hash: this.{{camel_case entry_type.name}}Hash
+          }
+        }))}>
+        ${this.render{{pascal_case entry_type.name}}()}
+    </sl-card>`;
+  }
+
+  
+  static styles = [sharedStyles];
+}

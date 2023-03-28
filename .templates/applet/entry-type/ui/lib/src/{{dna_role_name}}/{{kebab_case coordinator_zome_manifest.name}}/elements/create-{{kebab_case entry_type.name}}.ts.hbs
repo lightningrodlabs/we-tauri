@@ -1,0 +1,160 @@
+import { LitElement, html } from 'lit';
+import { keyed } from "lit/directives/keyed.js";
+import { state, property, query, customElement } from 'lit/decorators.js';
+import { ActionHash, Record, DnaHash, AgentPubKey, EntryHash } from '@holochain/client';
+import { EntryRecord } from '@holochain-open-dev/utils';
+import { hashProperty, notifyError, hashState, sharedStyles, onSubmit, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { consume } from '@lit-labs/context';
+import { localized, msg } from '@lit/localize';
+import { mdiAlertCircleOutline, mdiDelete } from "@mdi/js";
+
+{{#uniq_lines}}
+import '@holochain-open-dev/elements/elements/display-error.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
+import '@shoelace-style/shoelace/dist/components/alert/alert.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+  {{#each entry_type.fields}}
+    {{#if widget}}
+{{> (concat field_type.type "/" widget "/edit/imports") }}
+
+    {{/if}}
+  {{/each}}
+{{/uniq_lines}}
+
+import { {{pascal_case coordinator_zome_manifest.name}}Store } from '../{{kebab_case coordinator_zome_manifest.name}}-store.js';
+import { {{camel_case coordinator_zome_manifest.name}}StoreContext } from '../context.js';
+import { {{pascal_case entry_type.name}}{{#each entry_type.fields}}{{#if (eq field_type.type "Enum")}}, {{field_type.label}}{{/if}}{{/each}} } from '../types.js';
+
+/**
+ * @element create-{{kebab_case entry_type.name}}
+ * @fires {{kebab_case entry_type.name}}-created: detail will contain { {{camel_case entry_type.name}}Hash }
+ */
+@localized()
+@customElement('create-{{kebab_case entry_type.name}}')
+export class Create{{pascal_case entry_type.name}} extends LitElement {
+  {{#each entry_type.fields}}
+    {{#if (not widget) }}
+      {{#if (not (eq cardinality "vector" ) )}}
+  // REQUIRED. The {{lower_case field_name}} for this {{pascal_case ../entry_type.name}}
+  @property({{#if (or (eq field_type.type "AgentPubKey") (or (eq field_type.type "ActionHash") (eq field_type.type "EntryHash" ) ) ) }}hashProperty('{{kebab_case field_name}}'){{/if}})
+  {{camel_case field_name}}!: {{> (concat field_type.type "/type") }};
+
+      {{else}}
+  // REQUIRED. The {{plural (lower_case field_name)}} for this {{pascal_case ../entry_type.name}}
+  @property()
+  {{camel_case field_name}}!: Array<{{> (concat field_type.type "/type") }}>;
+
+      {{/if}}
+    {{/if}}
+  {{/each}}
+
+  /**
+   * @internal
+   */
+  @consume({ context: {{camel_case coordinator_zome_manifest.name}}StoreContext, subscribe: true })
+  {{camel_case coordinator_zome_manifest.name}}Store!: {{pascal_case coordinator_zome_manifest.name}}Store;
+
+  /**
+   * @internal
+   */
+  @state()
+  committing = false;
+
+  /**
+   * @internal
+   */
+  @query('#create-form')
+  form!: HTMLFormElement;
+
+{{#each entry_type.fields}}
+  {{#if widget}}
+    {{#if (eq cardinality "vector")}}
+  /**
+   * @internal
+   */
+  @state()
+  _{{camel_case field_name}}Fields = [0];
+    {{/if}}
+  {{/if}}
+{{/each}}
+
+  async create{{pascal_case entry_type.name}}(fields: any) {
+    {{#each entry_type.fields}}
+      {{#if (not widget)}}
+        {{#if (ne cardinality "option")}}
+    if (this.{{camel_case field_name}} === undefined) throw new Error('Cannot create a new {{title_case ../entry_type.name}} without its {{snake_case field_name}} field');
+        {{/if}}
+      {{/if}}
+    {{/each}}
+  
+    const {{camel_case entry_type.name}}: {{pascal_case entry_type.name}} = {
+    {{#each entry_type.fields}}
+      {{#if widget}}
+        {{#if (eq cardinality "vector")}}
+      {{snake_case field_name}}: (Array.isArray(fields.{{snake_case field_name}}) ? fields.{{snake_case field_name}} : [fields.{{snake_case field_name}}]).map((el: any) => {{> (concat field_type.type "/" widget "/edit/to-value") field_name=field_name variable_to_read="el" }}),
+        {{else}}
+      {{snake_case field_name}}: {{> (concat field_type.type "/" widget "/edit/to-value") field_name=field_name variable_to_read=(concat "fields." (snake_case field_name)) }},
+        {{/if}}
+      {{else}}
+      {{snake_case field_name}}: this.{{camel_case field_name}},
+      {{/if}}
+    {{/each}}
+    };
+
+    try {
+      this.committing = true;
+      const record: EntryRecord<{{pascal_case entry_type.name}}> = await this.{{camel_case coordinator_zome_manifest.name}}Store.client.create{{pascal_case entry_type.name}}({{camel_case entry_type.name}});
+
+      this.dispatchEvent(new CustomEvent('{{kebab_case entry_type.name}}-created', {
+        composed: true,
+        bubbles: true,
+        detail: {
+          {{camel_case entry_type.name}}Hash: record.actionHash
+        }
+      }));
+      
+      this.form.reset();
+    } catch (e: any) {
+      console.error(e);
+      notifyError(msg("Error creating the {{lower_case entry_type.name}}"));
+    }
+    this.committing = false;
+  }
+
+  render() {
+    return html`
+      <sl-card style="flex: 1;">
+        <span slot="header">${msg("Create {{title_case entry_type.name}}")}</span>
+
+        <form 
+          id="create-form"
+          style="display: flex; flex: 1; flex-direction: column;"
+          ${onSubmit(fields => this.create{{pascal_case entry_type.name}}(fields))}
+        >  
+          {{#each entry_type.fields}}
+            {{#if widget}}
+          <div style="margin-bottom: 16px;">
+              {{#if (not (eq cardinality "vector") )}}
+          {{> (concat field_type.type "/" widget "/edit/render") label=(title_case field_name) field_name=field_name required=(eq cardinality "single") }}
+              {{else}}
+          {{> Vec/edit/render field_name=field_name field_type=field_type widget=widget }}
+              {{/if}}
+          </div>
+
+            {{/if}}
+          {{/each}}
+
+          <sl-button
+            variant="primary"
+            type="submit"
+            .loading=${this.committing}
+          >${msg("Create {{title_case entry_type.name}}")}</sl-button>
+        </form> 
+      </sl-card>`;
+  }
+  
+  static styles = [sharedStyles];
+}

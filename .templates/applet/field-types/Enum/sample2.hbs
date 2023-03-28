@@ -1,0 +1,5 @@
+{{#if (eq (len field_type.variants) 1)}}
+{{field_type.label}}::{{lookup field_type.variants 0}}
+{{else}}
+{{field_type.label}}::{{lookup field_type.variants 1}}
+{{/if}}
