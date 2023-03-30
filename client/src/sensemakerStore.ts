@@ -80,8 +80,10 @@ export class SensemakerStore {
   async getAssessmentForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
     const resourceAssessments = await this.service.getAssessmentsForResource(getAssessmentsInput);
     this.#resourceAssessments.update(resourceAssessmentsPrev => {
-      resourceAssessmentsPrev[encodeHashToBase64(getAssessmentsInput.resource_eh)] = resourceAssessments;
-      return resourceAssessmentsPrev
+      let resourceAssessmentsNew = {};
+      resourceAssessmentsNew[encodeHashToBase64(getAssessmentsInput.resource_eh)] = resourceAssessments;
+      resourceAssessmentsNew = {...resourceAssessmentsPrev, ...resourceAssessmentsNew};
+      return resourceAssessmentsNew;
     });
     return resourceAssessments;
   }
