@@ -1,22 +1,23 @@
 {
-  description = "Template for Holochain app development";
+  description = "Flake for Holochain app development";
 
   inputs = {
-    nixpkgs.follows = "holochain/nixpkgs";
+    nixpkgs.follows = "holochain-dev/nixpkgs";
 
-    holochain = {
+    holochain-dev = {
       url = "github:holochain/holochain";
-      inputs.versions.url = "github:holochain/holochain?dir=versions/0_1";
+      inputs.versions.url = "github:holochain/holochain/?dir=versions/0_1";
+      inputs.versions.inputs.holochain.url = "github:holochain/holochain/v0_1_1";
     };
   };
 
   outputs = inputs @ { ... }:
-    inputs.holochain.inputs.flake-parts.lib.mkFlake
+    inputs.holochain-dev.inputs.flake-parts.lib.mkFlake
       {
         inherit inputs;
       }
       {
-        systems = builtins.attrNames inputs.holochain.devShells;
+        systems = builtins.attrNames inputs.holochain-dev.devShells;
         perSystem =
           { config
           , pkgs
@@ -24,28 +25,11 @@
           , ...
           }: {
             devShells.default = pkgs.mkShell {
-              nativeBuildInputs = with pkgs; [
-                wrapGAppsHook
-                perl
-                pkg-config
+              inputsFrom = [ inputs.holochain-dev.devShells.${system}.holonix ];
+              packages = with pkgs; [
+                nodejs-18_x
+                nodePackages.pnpm
               ];
-              buildInputs = with pkgs; [
-                openssl
-                glib
-                gtk3
-                gdk-pixbuf
-                webkitgtk.dev
-              ];
-              inputsFrom = [ inputs.holochain.devShells.${system}.holonix ];
-              packages = [ pkgs.nodejs-18_x pkgs.cargo-nextest ];
-
-              shellHook = ''
-                export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
-                export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
-                export WEBKIT_DISABLE_COMPOSITING_MODE=1
-                unset CARGO_TARGET_DIR
-                unset CARGO_HOME
-              '';
             };
           };
       };
