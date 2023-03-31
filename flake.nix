@@ -37,7 +37,7 @@
                 webkitgtk.dev
               ];
               inputsFrom = [ inputs.holochain.devShells.${system}.holonix ];
-              packages = [ pkgs.nodejs-18_x pkgs.cargo-nextest ];
+              packages = [ pkgs.nodejs-18_x pkgs.cargo-nextest pkgs.cargo-tauri ];
 
               shellHook = ''
                 export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/

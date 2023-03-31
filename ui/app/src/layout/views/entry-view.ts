@@ -72,7 +72,7 @@ export class EntryView extends LitElement {
     switch (this.location.value.status) {
       case "pending":
         return html`<div class="row center-content">
-          <mwc-circular-progress></mwc-circular-progress>
+          <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "error":
         return html`<display-error

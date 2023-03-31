@@ -3,7 +3,7 @@ import { state, property, customElement } from 'lit/decorators.js';
 import { EntryHash, Record, ActionHash } from '@holochain/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { StoreSubscriber } from '@holochain-open-dev/stores';
-import { sharedStyles, hashProperty, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { sharedStyles, hashProperty, wrapPathInSvg, notifyError } from '@holochain-open-dev/elements';
 import { consume } from '@lit-labs/context';
 import { localized, msg } from '@lit/localize';
 import { mdiAlertCircleOutline, mdiPencil, mdiDelete } from '@mdi/js';
@@ -77,20 +77,13 @@ export class {{pascal_case entry_type.name}}Detail extends LitElement {
       }));
     } catch (e: any) {
       console.error(e);
-      const errorAlert = this.shadowRoot?.getElementById('update-error') as SlAlert;
-      errorAlert.toast();
+      notifyError(msg("Error deleting the {{lower_case entry_type.name}}"));
     }
   }
   {{/if}}
 
   renderDetail(entryRecord: EntryRecord<{{pascal_case entry_type.name}}>) {
-    return html`{{#if crud.delete}}
-      <sl-alert id="update-error" variant="danger" duration="3000">
-        <sl-icon slot="icon" .src=${wrapPathInSvg(mdiAlertCircleOutline)} style="color: red"></sl-icon>
-        <strong>${msg("Error deleting the {{lower_case entry_type.name}}")}</strong><br />
-      </sl-alert>
-      {{/if}}
-
+    return html`
       <sl-card>
       	<div slot="header" style="display: flex; flex-direction: row">
           <span style="font-size: 18px; flex: 1;">${msg("{{title_case entry_type.name}}")}</span>
