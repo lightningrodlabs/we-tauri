@@ -1,8 +1,9 @@
 import { RangeValue } from "./range"
 import { AgentPubKey, EntryHash, Record } from "@holochain/client"
-import { Dimension } from "./dimension"
+import { Dimension, DimensionEh } from "./dimension"
 import { DataSet } from "./method"
 import { Option } from "./utils"
+import { ResourceDefEh, ResourceEh } from "./resourceDef"
 
 export interface CreateAssessmentInput {
     value: RangeValue,
@@ -17,8 +18,8 @@ export type Assessment = CreateAssessmentInput & {
 }
 
 export interface GetAssessmentsForResourceInput {
-    resource_eh: EntryHash,
-    dimension_eh: EntryHash,
+    resource_ehs: ResourceEh[],
+    dimension_ehs: DimensionEh[],
 }
 
 export interface AssessmentWithDimensionAndResource {
@@ -26,3 +27,5 @@ export interface AssessmentWithDimensionAndResource {
     dimension: Option<Dimension>,
     resource: Option<Record>
 }
+
+export type AssessmentEh = EntryHash

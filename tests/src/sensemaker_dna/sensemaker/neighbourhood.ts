@@ -1,4 +1,4 @@
-import { DnaSource, Record, ActionHash, EntryHash } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {
   pause,
   runScenario,
@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -299,20 +299,20 @@ export default () => {
           decode((createAssessmentReadOutput.entry as any).Present.entry) as any
         );
 
-        const getAssessmentsForResourceInput = {
-          resource_eh: createPostEntryHash,
-          dimension_eh: createDimensionEntryHash,
+        const getAssessmentsForResourceInput: GetAssessmentsForResourceInput = {
+          resource_ehs: [createPostEntryHash],
+          dimension_ehs: [createDimensionEntryHash],
         }
-        const assessmentsForResource: any[] = await callZomeBob(
+        const assessmentsForResources: { [resource_eh: EntryHashB64]: Assessment[] } = await callZomeBob(
           "sensemaker",
-          "get_assessments_for_resource",
+          "get_assessments_for_resources",
           getAssessmentsForResourceInput,
           true
         );
-        t.ok(assessmentsForResource.length === 2)
-        console.log('assessments for resource', assessmentsForResource)
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key })))
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key })))
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].length === 2)
+        console.log('assessments for resource', assessmentsForResources)
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key })))
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key })))
 
         // define objective dimension
 

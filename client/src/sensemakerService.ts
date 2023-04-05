@@ -1,4 +1,4 @@
-import { AgentPubKey, AppAgentCallZomeRequest, AppAgentClient, EntryHash, Record, RoleName } from '@holochain/client';
+import { AgentPubKey, AppAgentCallZomeRequest, AppAgentClient, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput } from './index';
 import { Option } from './utils';
 
@@ -26,12 +26,12 @@ export class SensemakerService {
     return this.callZome('create_assessment', assessment);
   }
 
-  async getAssessment(assessmentEh: EntryHash): Promise<Record> {
+  async getAssessment(assessmentEh: EntryHash): Promise<HolochainRecord> {
     return this.callZome('get_assessment', assessmentEh);
   }
 
-  async getAssessmentsForResource(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Array<Assessment>> {
-    return this.callZome('get_assessments_for_resource', getAssessmentsInput);
+  async getAssessmentsForResources(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Record<EntryHashB64, Array<Assessment>>> {
+    return this.callZome('get_assessments_for_resources', getAssessmentsInput);
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
@@ -46,7 +46,7 @@ export class SensemakerService {
     return this.callZome('create_cultural_context', culturalContext);
   }
 
-  async getCulturalContext(culturalContextEh: EntryHash): Promise<Record> {
+  async getCulturalContext(culturalContextEh: EntryHash): Promise<HolochainRecord> {
     return this.callZome('get_cultural_context', culturalContextEh);
   }
 

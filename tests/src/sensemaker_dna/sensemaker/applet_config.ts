@@ -1,7 +1,7 @@
 import { AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/client";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "./neighbourhood";

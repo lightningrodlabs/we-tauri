@@ -12,3 +12,5 @@ export type Dimension = CoreDimension & {
 export type ConfigDimension = CoreDimension & {
     range: Range
 }
+
+export type DimensionEh = EntryHash

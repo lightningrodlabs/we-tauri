@@ -12,3 +12,7 @@ export type ResourceDef = CoreResourceDef & {
 export type ConfigResourceDef = CoreResourceDef & {
     dimensions: Array<ConfigDimension>,
 }
+
+export type ResourceDefEh = EntryHash
+
+export type ResourceEh = EntryHash

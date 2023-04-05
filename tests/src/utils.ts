@@ -10,7 +10,7 @@ import {
 import {
   Conductor,
 } from "@holochain/tryorama";
-import { AppletConfigInput } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfigInput } from "@neighbourhoods/client";
 import path from "path";
 import { fileURLToPath } from "url";
 

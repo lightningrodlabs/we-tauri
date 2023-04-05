@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { AppletConfig, Assessment, AssessmentWithDimensionAndResource, CreateAppletConfigInput, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
+import { AppletConfig, Assessment, AssessmentWithDimensionAndResource, CreateAppletConfigInput, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, sampleAppletConfig } from "../../utils";
