@@ -70,8 +70,11 @@ export class JoinGroups extends LitElement {
         if (e.data.data.includes("AppAlreadyInstalled")) {
           // TODO: fix this
           notifyError(msg("You are already part of this group"));
+          return;
         }
       }
+      notifyError(msg("Error installing the group"));
+      console.error(e);
     }
   }
 
