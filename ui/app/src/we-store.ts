@@ -270,7 +270,7 @@ export class WeStore {
   );
 
   appletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
-    joinAsyncMap(mapValues(allGroups, (store) => store.installedApplets))
+    joinAsyncMap(mapValues(allGroups, (store) => store.registeredApplets))
   );
 
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>

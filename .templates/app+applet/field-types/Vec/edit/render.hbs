@@ -1,6 +1,6 @@
 <div style="display: flex; flex-direction: column">
   <span>${msg("{{title_case field_name}}")}</span>
 
-  ${this._{{camel_case field_name}}Fields.map((index) => keyed(index, html`<div class="row" style="align-items: center; margin-top: 8px">{{> (concat field_type.type "/" widget "/edit/render") edit=edit label="" field_name=field_name default_value=(concat "this.currentRecord.entry." (snake_case field_name) "[index]") }} <sl-icon-button .src=${wrapPathInSvg(mdiDelete)} @click=${() => { this._{{camel_case field_name}}Fields = this._{{camel_case field_name}}Fields.filter(i => i !== index) } }></sl-icon-button></div>`))}
+  ${repeat(this._{{camel_case field_name}}Fields, i => i, index => html`<div class="row" style="align-items: center; margin-top: 8px">{{> (concat field_type.type "/" widget "/edit/render") edit=edit label="" field_name=field_name default_value=(concat "this.currentRecord.entry." (snake_case field_name) "[index]") }} <sl-icon-button .src=${wrapPathInSvg(mdiDelete)} @click=${() => { this._{{camel_case field_name}}Fields = this._{{camel_case field_name}}Fields.filter(i => i !== index) } }></sl-icon-button></div>`)}
   <sl-button style="margin-top: 8px;" @click=${() => { this._{{camel_case field_name}}Fields = [...this._{{camel_case field_name}}Fields, Math.max(...this._{{camel_case field_name}}Fields) + 1]; } }>${msg("Add {{title_case field_name}}")}</sl-button>
 </div>

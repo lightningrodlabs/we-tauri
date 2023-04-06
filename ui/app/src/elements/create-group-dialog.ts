@@ -13,7 +13,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import { onSubmit } from "@holochain-open-dev/elements";
+import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 
 /**
  * @element create-group-dialog
@@ -32,24 +32,38 @@ export class CreateGroupDialog extends LitElement {
   /** Private properties */
   @query("#dialog")
   _dialog!: SlDialog;
+
   @query("form")
   form!: HTMLFormElement;
 
-  private async createGroup(fields: any) {
-    const groupDnaHash = await this._weStore.createGroup(
-      fields.name,
-      fields.logo_src
-    );
+  @state()
+  committing = false;
 
-    this.dispatchEvent(
-      new CustomEvent("group-created", {
-        detail: { groupDnaHash },
-        bubbles: true,
-        composed: true,
-      })
-    );
-    this._dialog.hide();
-    this.form.reset();
+  private async createGroup(fields: any) {
+    if (this.committing) return;
+
+    this.committing = true;
+
+    try {
+      const groupDnaHash = await this._weStore.createGroup(
+        fields.name,
+        fields.logo_src
+      );
+
+      this.dispatchEvent(
+        new CustomEvent("group-created", {
+          detail: { groupDnaHash },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      this._dialog.hide();
+      this.form.reset();
+    } catch (e) {
+      notifyError(msg("Error creating the group."));
+      console.error(e);
+    }
+    this.committing = false;
   }
 
   render() {
