@@ -129,29 +129,31 @@ export class GroupView extends LitElement {
       groupInfo,
       context: this.view.context,
       groupServices: { profilesStore: this.groupStore.profilesStore },
-      openViews: {
-        openHrl: (hrl: Hrl, context: any) => {
-          this.openViews.openHrl(hrl, context);
-        },
-        openGroupBlock: (block: string) =>
-          this.openViews.openGroupBlock(
-            this.groupStore.groupDnaHash,
-            this.appletInstanceHash,
-            block
-          ),
-        openCrossGroupBlock: (block: string) =>
-          this.openViews.openCrossGroupBlock(
-            appletInstance.entry.devhub_happ_release_hash,
-            block
-          ),
-      } as OpenViews,
+      weServices: {
+        openViews: {
+          openHrl: (hrl: Hrl, context: any) => {
+            this.openViews.openHrl(hrl, context);
+          },
+          openGroupBlock: (block: string) =>
+            this.openViews.openGroupBlock(
+              this.groupStore.groupDnaHash,
+              this.appletInstanceHash,
+              block
+            ),
+          openCrossGroupBlock: (block: string) =>
+            this.openViews.openCrossGroupBlock(
+              appletInstance.entry.devhub_happ_release_hash,
+              block
+            ),
+        } as OpenViews,
+      },
     };
     if (this.view.type === "entry") {
       globalVars["hrl"] = this.view.hrl;
     }
     return html`
       <view-frame
-        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices, vars.openViews).${this.viewToRender(
+        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices, vars.weServices).${this.viewToRender(
           "el"
         )}; }`}
         .appletId=${this.groupStore.appletAppIdFromAppletInstance(

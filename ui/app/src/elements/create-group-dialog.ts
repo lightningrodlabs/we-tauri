@@ -81,7 +81,12 @@ export class CreateGroupDialog extends LitElement {
             ></sl-input>
           </div>
 
-          <sl-button style="margin-top: 24px" variant="primary" type="submit">
+          <sl-button
+            style="margin-top: 24px"
+            variant="primary"
+            type="submit"
+            .loading=${this.committing}
+          >
             ${msg("Create Group")}
           </sl-button>
         </form>
