@@ -22,7 +22,6 @@ export class SensemakerStore {
   }
   */
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
-  // #resourceAssessments: Writable<Record<ResourceDefEh, Record<ResourceEh, Record<DimensionEh, Array<Assessment>>>> = writable({});
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -33,8 +32,22 @@ export class SensemakerStore {
     this.myAgentPubKey = service.myPubKey();
   }
 
-  resourceAssessments() {
-    return derived(this._resourceAssessments, resourceAssessments => resourceAssessments)
+  // if provided a list of resource ehs, filter the assessments to only those resources, and return that object, otherwise return the whole thing.
+  resourceAssessments(resource_ehs?: Array<EntryHashB64>) {
+    return derived(this._resourceAssessments, resourceAssessments => {
+      if(resource_ehs) {
+        const filteredResourceAssessments = resource_ehs.reduce((resourceSubsetAssessment, resource_eh) => {
+          if (resourceAssessments.hasOwnProperty(resource_eh)) {
+            resourceSubsetAssessment[resource_eh] = resourceAssessments[resource_eh];
+          }
+          return resourceSubsetAssessment;
+        }, {});
+        return filteredResourceAssessments;
+      }
+      else {
+        return resourceAssessments;
+      }
+    })
   }
 
   appletConfig() {
@@ -68,6 +81,7 @@ export class SensemakerStore {
     this._resourceAssessments.update(resourceAssessments => {
       const maybePrevAssessments = resourceAssessments[encodeHashToBase64(assessment.resource_eh)];
       const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
+      // TODO: here is an instance where returning the assessment instead of the hash would be useful
       resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey}]
       return resourceAssessments;
     })
