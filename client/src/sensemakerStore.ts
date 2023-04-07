@@ -1,6 +1,6 @@
 import { AgentPubKey, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput } from './index';
 import { derived, get, Writable, writable } from 'svelte/store';
 import { EntryHashMap } from '@holochain-open-dev/utils'
 import { Option } from './utils';
@@ -97,7 +97,7 @@ export class SensemakerStore {
     return methodEh;
   }
 
-  async runMethod(runMethodInput: RunMethodInput): Promise<EntryHash> {
+  async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
     return await this.service.runMethod(runMethodInput) 
   }
 
@@ -131,7 +131,7 @@ export class SensemakerStore {
     return maybeAppletConfig;
   }
 
-  async registerApplet(appletConfigInput: AppletConfigInput): Promise<AppletConfig> {
+  async registerApplet(appletConfigInput: CreateAppletConfigInput): Promise<AppletConfig> {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
     this._appletConfig.update(() => appletConfig);
     return appletConfig;

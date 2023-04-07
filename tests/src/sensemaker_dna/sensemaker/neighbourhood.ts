@@ -386,7 +386,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput: EntryHash = await callZomeAlice(
+        const runMethodOutput: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput,
@@ -395,13 +395,6 @@ export default () => {
         t.ok(runMethodOutput);
 
         await pause(pauseDuration);
-
-        const readObjectiveAssessmentOutput: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput,
-          true
-        );
 
         const objectiveAssessment: Assessment = {
           value: {
@@ -416,9 +409,7 @@ export default () => {
         };
         t.deepEqual(
           objectiveAssessment,
-          decode(
-            (readObjectiveAssessmentOutput.entry as any).Present.entry
-          ) as any
+          runMethodOutput
         );
       } catch (e) {
         console.log(e);
@@ -794,7 +785,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput: EntryHash = await callZomeAlice(
+        const runMethodOutput: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput,
@@ -807,7 +798,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput2: EntryHash = await callZomeAlice(
+        const runMethodOutput2: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput2,
@@ -820,7 +811,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput3: EntryHash = await callZomeAlice(
+        const runMethodOutput3: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput3,
@@ -829,13 +820,6 @@ export default () => {
         t.ok(runMethodOutput3);
 
         await pause(pauseDuration);
-
-        const readObjectiveAssessmentOutput: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput,
-          true
-        );
 
         const objectiveAssessment: Assessment = {
           value: {
@@ -851,16 +835,7 @@ export default () => {
         };
         t.deepEqual(
           objectiveAssessment,
-          decode(
-            (readObjectiveAssessmentOutput.entry as any).Present.entry
-          ) as any
-        );
-
-        const readObjectiveAssessmentOutput2: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput2,
-          true
+          runMethodOutput
         );
 
         const objectiveAssessment2: Assessment = {
@@ -877,16 +852,7 @@ export default () => {
         };
         t.deepEqual(
           objectiveAssessment2,
-          decode(
-            (readObjectiveAssessmentOutput2.entry as any).Present.entry
-          ) as any
-        );
-
-        const readObjectiveAssessmentOutput3: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput3,
-          true
+          runMethodOutput2
         );
 
         const objectiveAssessment3: Assessment = {
@@ -903,9 +869,7 @@ export default () => {
         };
         t.deepEqual(
           objectiveAssessment3,
-          decode(
-            (readObjectiveAssessmentOutput3.entry as any).Present.entry
-          ) as any
+          runMethodOutput3
         );
 
         // create context and threshold
