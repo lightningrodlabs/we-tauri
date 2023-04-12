@@ -162,20 +162,21 @@ async function publishApplets() {
       dnaEntities.push([dnaEntity, dnaVersionEntity]);
     }
 
+    const happManifest = yaml.load(
+      fs.readFileSync(`${TESTING_APPLETS_PATH}/${appletName}/happ/happ.yaml`)
+    );
+
     const appEntity = await appWs.callZome({
       role_name: "happs",
       zome_name: "happ_library",
       fn_name: "create_happ",
       payload: {
         title: appletName,
-        subtitle: appletName,
-        description: appletName,
+        subtitle: happManifest.description,
+        description: "",
         tags: ["we-applet"],
       },
     });
-    const happManifest = yaml.load(
-      fs.readFileSync(`${TESTING_APPLETS_PATH}/${appletName}/happ/happ.yaml`)
-    );
 
     const file_bytes = fs.readFileSync(
       `${TESTING_APPLETS_PATH}/${appletName}/ui.zip`

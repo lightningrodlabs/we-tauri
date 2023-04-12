@@ -4,7 +4,7 @@ import { customElement, state } from "lit/decorators.js";
 import { weStyles } from "../shared-styles.js";
 import { createPassword } from "../tauri.js";
 
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/switch/switch.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";

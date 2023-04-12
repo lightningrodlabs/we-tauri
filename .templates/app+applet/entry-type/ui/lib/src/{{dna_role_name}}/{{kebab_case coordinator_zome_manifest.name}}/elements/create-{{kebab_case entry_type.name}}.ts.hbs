@@ -9,7 +9,7 @@ import { localized, msg } from '@lit/localize';
 import { mdiAlertCircleOutline, mdiDelete } from "@mdi/js";
 
 {{#uniq_lines}}
-import '@holochain-open-dev/elements/elements/display-error.js';
+import '@holochain-open-dev/elements/dist/elements/display-error.js';
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
@@ -82,6 +82,8 @@ export class Create{{pascal_case entry_type.name}} extends LitElement {
 {{/each}}
 
   async create{{pascal_case entry_type.name}}(fields: any) {
+    if (this.committing) return;
+  
     {{#each entry_type.fields}}
       {{#if (not widget)}}
         {{#if (ne cardinality "option")}}

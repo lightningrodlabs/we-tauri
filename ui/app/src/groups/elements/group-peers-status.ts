@@ -6,8 +6,8 @@ import { localized, msg } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import "@holochain-open-dev/peer-status/elements/list-agents-by-status.js";
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/peer-status/dist/elements/list-agents-by-status.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
 import { groupStoreContext } from "../context.js";

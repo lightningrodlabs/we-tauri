@@ -8,12 +8,12 @@
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
   },
   "dependencies": {
-    "@holochain-open-dev/elements": "^0.3.8",
+    "@holochain-open-dev/elements": "^0.4.0",
     "@holochain-open-dev/membrane-invitations": "^0.1.1",
-    "@holochain-open-dev/peer-status": "^0.6.0",
-    "@holochain-open-dev/profiles": "^0.12.0",
+    "@holochain-open-dev/peer-status": "^0.7.0",
+    "@holochain-open-dev/profiles": "^0.13.0",
     "@holochain-open-dev/stores": "^0.4.3",
-    "@holochain-open-dev/utils": "^0.12.0",
+    "@holochain-open-dev/utils": "^0.13.0",
     "@holochain/client": "^0.12.5",
     "@lightningrodlabs/we-applet": "^0",
     "@lit-labs/context": "^0.2.0",

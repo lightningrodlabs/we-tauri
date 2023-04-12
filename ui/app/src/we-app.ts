@@ -3,7 +3,7 @@ import { state, customElement } from "lit/decorators.js";
 import { AppAgentWebsocket, AdminWebsocket } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
 import "./password/enter-password.js";

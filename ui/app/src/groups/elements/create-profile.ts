@@ -2,8 +2,8 @@ import { html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { DnaHash } from "@holochain/client";
 
-import "@holochain-open-dev/profiles/elements/profiles-context.js";
-import "@holochain-open-dev/profiles/elements/create-profile.js";
+import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
+import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import { localized, msg } from "@lit/localize";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";

@@ -4,7 +4,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";

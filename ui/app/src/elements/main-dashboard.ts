@@ -3,7 +3,7 @@ import { state, customElement, query } from "lit/decorators.js";
 import { encodeHashToBase64, DnaHash, EntryHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
 import "../elements/group-sidebar.js";
@@ -19,7 +19,11 @@ import { toPromise } from "../utils.js";
 import { ComponentItemConfig } from "golden-layout";
 
 type View =
-  | { view: "groupViews"; selectedGroupDnaHash: DnaHash | undefined }
+  | {
+      view: "groupViews";
+      selectedGroupDnaHash: DnaHash | undefined;
+      selectedAppleReleaseEntryHash: EntryHash | undefined;
+    }
   | {
       view: "crossGroupViews";
       selectedAppletDevHubReleaseEntryHash: EntryHash | undefined;
@@ -28,7 +32,11 @@ type View =
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
   @state()
-  view: View = { view: "groupViews", selectedGroupDnaHash: undefined };
+  view: View = {
+    view: "groupViews",
+    selectedGroupDnaHash: undefined,
+    selectedAppleReleaseEntryHash: undefined,
+  };
 
   @consume({ context: weStoreContext })
   @state()
@@ -50,6 +58,7 @@ export class MainDashboard extends LitElement {
       this.view = {
         view: "groupViews",
         selectedGroupDnaHash: groupDnaHash,
+        selectedAppleReleaseEntryHash: undefined,
       };
     } else {
       this.createProfileInGroup.groupDnaHash = groupDnaHash;
@@ -57,7 +66,10 @@ export class MainDashboard extends LitElement {
     }
   }
 
-  renderGroupView(selectedGroupDnaHash: DnaHash | undefined) {
+  renderGroupView(
+    selectedGroupDnaHash: DnaHash | undefined,
+    selectedAppletInstanceHash: EntryHash | undefined
+  ) {
     return html`
       <div style="width: 100vw" class="row">
         <group-sidebar
@@ -67,6 +79,7 @@ export class MainDashboard extends LitElement {
             (this.view = {
               view: "groupViews",
               selectedGroupDnaHash: undefined,
+              selectedAppleReleaseEntryHash: undefined,
             })}
           @group-selected=${(e: CustomEvent) =>
             this.openGroup(e.detail.groupDnaHash)}
@@ -74,21 +87,39 @@ export class MainDashboard extends LitElement {
             this.openGroup(e.detail.groupDnaHash);
           }}
           @applet-instance-selected=${(e: CustomEvent) => {
-            this.dynamicLayout.openBlock({
-              type: "component",
-              componentType: "group-applet-block",
-              componentState: {
-                groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
-                appletInstanceHash: encodeHashToBase64(
-                  e.detail.appletInstanceHash
-                ),
-                block: "main",
-              },
-            });
+            this.view = {
+              view: "groupViews",
+              selectedGroupDnaHash: e.detail.groupDnaHash,
+              selectedAppleReleaseEntryHash: e.detail.appletInstanceHash,
+            };
           }}
         ></group-sidebar>
 
-        ${selectedGroupDnaHash
+        ${selectedAppletInstanceHash
+          ? html`
+              <dynamic-layout
+                id="group-dynamic-layout"
+                .rootItemConfig=${{
+                  type: "row",
+                  content: [
+                    {
+                      type: "component",
+                      title: `Group Applet`,
+                      componentType: "group-applet-block",
+                      componentState: {
+                        block: "main",
+                        groupDnaHash: encodeHashToBase64(selectedGroupDnaHash!),
+                        appletInstanceHash: encodeHashToBase64(
+                          selectedAppletInstanceHash
+                        ),
+                      },
+                    },
+                  ],
+                }}
+                style="flex: 1; min-width: 0;"
+              ></dynamic-layout>
+            `
+          : selectedGroupDnaHash
           ? html`
               <dynamic-layout
                 id="group-dynamic-layout"
@@ -170,12 +201,16 @@ export class MainDashboard extends LitElement {
           this.view = {
             view: "groupViews",
             selectedGroupDnaHash: this.createProfileInGroup.groupDnaHash,
+            selectedAppleReleaseEntryHash: undefined,
           };
           this.createProfileInGroup.hide();
         }}
       ></create-profile-in-group>
       ${this.view.view === "groupViews"
-        ? this.renderGroupView(this.view.selectedGroupDnaHash)
+        ? this.renderGroupView(
+            this.view.selectedGroupDnaHash,
+            this.view.selectedAppleReleaseEntryHash
+          )
         : html``}
     `;
   }

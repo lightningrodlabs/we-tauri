@@ -4,7 +4,7 @@ import { state, query, property, customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 
-import "@holochain-open-dev/elements/elements/select-avatar.js";
+import "@holochain-open-dev/elements/dist/elements/select-avatar.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";

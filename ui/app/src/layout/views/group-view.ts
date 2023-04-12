@@ -17,7 +17,7 @@ import { GroupInfo, Hrl, OpenViews } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";

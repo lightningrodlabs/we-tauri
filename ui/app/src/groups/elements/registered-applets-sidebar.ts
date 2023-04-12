@@ -5,7 +5,7 @@ import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
 import { EntryHash } from "@holochain/client";
 
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
 import { groupStoreContext } from "../context.js";

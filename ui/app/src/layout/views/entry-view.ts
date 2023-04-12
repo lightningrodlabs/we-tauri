@@ -10,7 +10,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
-import "@holochain-open-dev/elements/elements/display-error.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import { Hrl } from "@lightningrodlabs/we-applet";
 import { weStoreContext } from "../../context.js";

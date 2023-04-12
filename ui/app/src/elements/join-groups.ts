@@ -20,9 +20,9 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
-import "@holochain-open-dev/elements/elements/holo-identicon.js";
-import "@holochain-open-dev/elements/elements/display-error.js";
-import "@holochain-open-dev/profiles/elements/profile-list-item-skeleton.js";
+import "@holochain-open-dev/elements/dist/elements/holo-identicon.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
+import "@holochain-open-dev/profiles/dist/elements/profile-list-item-skeleton.js";
 
 import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
