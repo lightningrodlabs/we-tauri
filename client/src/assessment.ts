@@ -1,5 +1,5 @@
 import { RangeValue } from "./range"
-import { AgentPubKey, EntryHash, Record } from "@holochain/client"
+import { AgentPubKey, EntryHash, Record, Timestamp } from "@holochain/client"
 import { Dimension, DimensionEh } from "./dimension"
 import { DataSet } from "./method"
 import { Option } from "./utils"
@@ -14,7 +14,8 @@ export interface CreateAssessmentInput {
 }
 
 export type Assessment = CreateAssessmentInput & {
-    author: AgentPubKey
+    author: AgentPubKey,
+    timestamp: Timestamp,
 }
 
 export interface GetAssessmentsForResourceInput {

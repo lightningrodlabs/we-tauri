@@ -69,6 +69,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
         resource_def_eh,
         maybe_input_dataset,
         author: agent_info()?.agent_latest_pubkey,
+        timestamp: sys_time()?.into(),
     };
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;

@@ -83,7 +83,10 @@ export class SensemakerStore {
       const maybePrevAssessments = resourceAssessments[encodeHashToBase64(assessment.resource_eh)];
       const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
       // TODO: here is an instance where returning the assessment instead of the hash would be useful
-      resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey}]
+      // NOTE: there will be a slight discrepancy between the assessment returned from the service and the one stored in the store
+      // because we are not returning the assessment, and so recreating the timestamp. This works enough for now, but would be worth it to change
+      // it such that the assessment itself is return.
+      resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey, timestamp: Date.now() * 1000}]
       return resourceAssessments;
     })
     return assessmentEh;
