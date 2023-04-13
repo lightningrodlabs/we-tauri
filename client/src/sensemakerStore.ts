@@ -4,6 +4,7 @@ import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, Creat
 import { derived, get, Writable, writable } from 'svelte/store';
 import { EntryHashMap } from '@holochain-open-dev/utils'
 import { Option } from './utils';
+import { createContext } from '@lit-labs/context';
 
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
@@ -158,3 +159,7 @@ export class SensemakerStore {
     return appletConfig;
   }
 }
+
+export const sensemakerStoreContext = createContext<SensemakerStore>(
+  'sensemaker-store-context'
+);
