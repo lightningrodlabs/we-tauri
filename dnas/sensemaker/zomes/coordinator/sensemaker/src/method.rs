@@ -87,7 +87,27 @@ fn compute_objective_assessment(
             };
             Ok(Some(assessment))
         }
-        Program::Average => Ok(None),
+        Program::Average => {
+            // collapse into vec for easy computation - will have to be more careful if of different types
+            let flat_assessments = flatten_btree_map(assessments);
+            let mut sum: u32 = 0;
+
+            for assessment in flat_assessments.clone() {
+                match assessment.value {
+                    RangeValue::Integer(value) => sum = sum + value,
+                    RangeValue::Float(_) => (), // TODO: complete this
+                }
+            }
+            let average = sum / flat_assessments.len() as u32;
+            let assessment = CreateAssessmentInput {
+                value: RangeValue::Integer(average),
+                dimension_eh: method.output_dimension_eh,
+                resource_eh,
+                resource_def_eh: method.target_resource_def_eh,
+                maybe_input_dataset: None,
+            };
+            Ok(Some(assessment))
+        },
     }
 }
 
