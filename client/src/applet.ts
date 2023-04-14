@@ -38,3 +38,11 @@ export interface CreateAppletConfigInput {
     applet_config_input: AppletConfigInput,
     role_name: string,
 }
+
+export interface AppletUIConfig {
+    [resourceDefEh: string]: {
+      display_objective_dimension: EntryHash, // the dimension eh
+      create_assessment_dimension: EntryHash, // the dimension eh
+      method_for_created_assessment: EntryHash, // the method eh
+  }
+}

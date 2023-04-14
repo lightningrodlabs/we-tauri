@@ -1,6 +1,6 @@
 import { AgentPubKey, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput } from './index';
+import { AppletConfig, AppletConfigInput, AppletUIConfig, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput } from './index';
 import { derived, get, Writable, writable } from 'svelte/store';
 import { EntryHashMap } from '@holochain-open-dev/utils'
 import { Option } from './utils';
@@ -23,6 +23,17 @@ export class SensemakerStore {
   }
   */
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
+  
+  // TODO: we probably want there to be a default Applet UI Config, specified in the applet config or somewhere.
+  _appletUIConfig: Writable<AppletUIConfig> = writable({});
+  /*
+  {
+    [resourceDefEh: string]: {
+      display_objective_dimension: EntryHash, // the dimension eh
+      create_assessment_dimension: EntryHash, // the dimension eh
+    }
+  }
+  */
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -57,6 +68,10 @@ export class SensemakerStore {
 
   contextResults() {
     return derived(this._contextResults, contextResults => contextResults)
+  }
+
+  appletUIConfig() {
+    return derived(this._appletUIConfig, appletUIConfig => appletUIConfig)
   }
 
   async createDimension(dimension: Dimension): Promise<EntryHash> {
@@ -160,6 +175,23 @@ export class SensemakerStore {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
     this._appletConfig.update(() => appletConfig);
     return appletConfig;
+  }
+
+  async updateAppletUIConfig(
+    resourceDefEh: EntryHashB64, 
+    currentObjectiveDimensionEh: EntryHash, 
+    currentCreateAssessmentDimensionEh: EntryHash,
+    currentMethodEh: EntryHash
+  ) {
+    this._appletUIConfig.update(appletUIConfig => {
+      appletUIConfig[resourceDefEh] = {
+        display_objective_dimension: currentObjectiveDimensionEh,
+        create_assessment_dimension: currentCreateAssessmentDimensionEh,
+        method_for_created_assessment: currentMethodEh
+      } 
+      return appletUIConfig;
+    }
+    )
   }
 }
 
