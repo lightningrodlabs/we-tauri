@@ -51,13 +51,19 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<Assessment>> {
             if let Some(assessment) = maybe_assessment {
                 Ok(Some(entry_from_record::<Assessment>(assessment)?))
             } else {
-                Ok(None)
+                Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                    "not able to get method created assessment"
+                ))))
             }
         } else {
-            Ok(None)
+            Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Issue With Computation"
+            ))))
         }
     } else {
-        Ok(None)
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Method Not Found"
+        ))))
     }
 }
 
