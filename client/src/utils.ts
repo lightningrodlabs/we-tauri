@@ -23,3 +23,23 @@ export function getLargestAssessment(assessments: Assessment[], dimension_eh: En
         return latestAssessment;
     }
 }
+
+export function getLatestAssessment(assessments: Assessment[], dimension_eh: EntryHashB64): Option<Assessment> {
+    const assessmentOnDimension = assessments.filter(assessment => encodeHashToBase64(assessment.dimension_eh) === dimension_eh);
+    // return latestAssessment to the one with the greatest value
+    if (assessmentOnDimension.length === 0) {
+        return null;
+    }
+    else {
+        const latestAssessment = assessmentOnDimension.reduce((prev, current) => {
+            if (prev.timestamp > current.timestamp) {
+                return prev;
+            }
+            else {
+                return current;
+            }
+        }
+        )
+        return latestAssessment;
+    }
+}
