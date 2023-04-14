@@ -10,6 +10,7 @@ use sensemaker_integrity::OrderingKind;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
+use crate::utils::reduce_assessments_to_latest;
 
 #[hdk_extern]
 pub fn get_cultural_context(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
@@ -67,7 +68,8 @@ pub fn compute_context(compute_context_input: ComputeContextInput) -> ExternResu
 
             // check the assessments against all thresholds?
             // flatten the assessment map and compare
-            let assessments = flatten_btree_map(resource_assessments.clone());
+            let assessments = reduce_assessments_to_latest(flatten_btree_map(resource_assessments.clone()));
+
             // for each assessment, check against each threshold
             // TODO: clarify the exact comparison logic between multiple assessments and thresholds
             let mut meets_threshold = true;
