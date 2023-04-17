@@ -1,0 +1,1 @@
+(async()=>{if(!HTMLTemplateElement.prototype.hasOwnProperty("shadowRoot")){const{hydrateShadowRoots:o}=await import("./8a5db1ac.js");o(document.body),document.body.removeAttribute("dsd-pending")}})();
