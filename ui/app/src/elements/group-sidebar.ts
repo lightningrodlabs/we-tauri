@@ -11,7 +11,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { GroupInfo } from "@lightningrodlabs/we-applet";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
-import { mdiAccountMultiplePlus, mdiHome } from "@mdi/js";
+import { mdiAccountMultiplePlus, mdiHelpCircleOutline, mdiHome } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -50,19 +50,44 @@ export class GroupSidebar extends LitElement {
   }
 
   renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo | undefined>) {
-    return (
-      Array.from(groups.entries()).filter(
-        ([_, groupInfo]) => !!groupInfo
-      ) as Array<[DnaHash, GroupInfo]>
-    )
-      .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
-      .map(
-        ([groupDnaHash, groupInfo]) =>
+    const knownGroups = Array.from(groups.entries()).filter(
+      ([_, groupInfo]) => !!groupInfo
+    ) as Array<[DnaHash, GroupInfo]>;
+    const unknownGroups = Array.from(groups.entries()).filter(
+      ([_, groupInfo]) => !groupInfo
+    ) as Array<[DnaHash, GroupInfo]>;
+
+    return html`
+      ${knownGroups
+        .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
+        .map(
+          ([groupDnaHash, groupInfo]) =>
+            html`
+              <sidebar-button
+                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+                .logoSrc=${groupInfo.logo_src}
+                .tooltipText=${groupInfo.name}
+                @click=${() => {
+                  this.dispatchEvent(
+                    new CustomEvent("group-selected", {
+                      detail: {
+                        groupDnaHash,
+                      },
+                      bubbles: true,
+                      composed: true,
+                    })
+                  );
+                }}
+              ></sidebar-button>
+            `
+        )}
+      ${unknownGroups.map(
+        ([groupDnaHash]) =>
           html`
             <sidebar-button
               style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-              .logoSrc=${groupInfo.logo_src}
-              .tooltipText=${groupInfo.name}
+              .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
+              .tooltipText=${msg("Not synched")}
               @click=${() => {
                 this.dispatchEvent(
                   new CustomEvent("group-selected", {
@@ -76,7 +101,8 @@ export class GroupSidebar extends LitElement {
               }}
             ></sidebar-button>
           `
-      );
+      )}
+    `;
   }
 
   renderGroupsLoading() {

@@ -6,6 +6,7 @@ import { listen } from "@tauri-apps/api/event";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 
 import "./group-sidebar.js";
 import "./join-group-dialog.js";
@@ -23,7 +24,9 @@ import {
   toPromise,
 } from "@holochain-open-dev/stores";
 import { mapValues } from "@holochain-open-dev/utils";
-import { hashState } from "@holochain-open-dev/elements";
+import { hashState, notifyError } from "@holochain-open-dev/elements";
+import { decodeHashFromBase64 } from "@holochain/client";
+import { msg } from "@lit/localize";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
@@ -39,7 +42,26 @@ export class MainDashboard extends LitElement {
 
   async firstUpdated() {
     const unlisten = await listen("join-group", async (e) => {
-      const networkSeed = e.payload as string;
+      const deepLink = e.payload as string;
+
+      const split = deepLink.split("://")[1].split("/");
+
+      const originalDnaHashForLink = decodeHashFromBase64(split[0]);
+
+      const originalDnaHash = await toPromise(
+        this._weStore.originalGroupDnaHash
+      );
+
+      if (originalDnaHash.toString() !== originalDnaHashForLink.toString()) {
+        notifyError(
+          msg(
+            "This version of We can't handle joining this group; check if there is a new We version and upgrade to that."
+          )
+        );
+        return;
+      }
+
+      const networkSeed = split[1];
 
       const groups = await toPromise(
         asyncDeriveStore(this._weStore.allGroups, (groups) =>

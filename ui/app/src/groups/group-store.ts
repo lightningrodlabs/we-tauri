@@ -29,7 +29,7 @@ import { encode } from "@msgpack/msgpack";
 import { fromUint8Array } from "js-base64";
 
 import { AppletsStore } from "../applets/applets-store";
-import { AppletInstance, GroupInfo } from "./types";
+import { AppletInstance } from "./types";
 import { AppletMetadata } from "../types";
 import { initAppClient } from "../utils";
 import { manualReloadStore } from "../we-store";

@@ -46,6 +46,7 @@ export class GroupView extends LitElement {
 
   @property()
   view!:
+    | { type: "main" }
     | { type: "block"; block: string; context: any }
     | {
         type: "entry";
@@ -58,6 +59,8 @@ export class GroupView extends LitElement {
 
   viewToRender(elementVar: string) {
     switch (this.view.type) {
+      case "main":
+        return `main(${elementVar})`;
       case "block":
         return `blocks["${this.view.block}"](${elementVar}, window.context)`;
       case "entry":
@@ -127,7 +130,6 @@ export class GroupView extends LitElement {
     const globalVars = {
       appletClient: client,
       groupInfo,
-      context: this.view.context,
       groupServices: { profilesStore: this.groupStore.profilesStore },
       weServices: {
         openViews: {
@@ -148,6 +150,9 @@ export class GroupView extends LitElement {
         } as OpenViews,
       },
     };
+    if (this.view.type !== "main") {
+      globalVars["context"] = this.view.context;
+    }
     if (this.view.type === "entry") {
       globalVars["hrl"] = this.view.hrl;
     }

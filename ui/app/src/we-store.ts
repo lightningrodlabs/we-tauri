@@ -12,6 +12,7 @@ import {
   get,
   join,
   joinAsyncMap,
+  lazyLoad,
   lazyLoadAndPoll,
   retryUntilSuccess,
   toPromise,
@@ -125,6 +126,18 @@ export class WeStore {
 
     return clonedCell;
   }
+
+  originalGroupDnaHash = lazyLoad<DnaHash>(async () => {
+    const appInfo = await this.appAgentWebsocket.appInfo();
+
+    for (const cellInfo of appInfo.cell_info["group"]) {
+      if (CellType.Provisioned in cellInfo) {
+        return cellInfo[CellType.Provisioned].cell_id[0];
+      }
+    }
+
+    throw new Error("There is no provisioned cell in this app");
+  });
 
   groupsRolesByDnaHash = manualReloadStore(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();

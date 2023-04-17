@@ -5,7 +5,7 @@ use filesystem::WeFileSystem;
 use futures::lock::Mutex;
 use holochain_launcher_utils::window_builder::read_resource_from_path;
 use serde_json::Value;
-use tauri::{Manager, WindowBuilder, WindowUrl};
+use tauri::{Manager, UserAttentionType, WindowBuilder, WindowUrl};
 
 mod commands;
 mod default_apps;
@@ -110,8 +110,8 @@ fn main() {
                 .build()?;
 
             tauri_plugin_deep_link::register("we-group", move |request| {
-                let network_seed = request.split("//").last().unwrap().to_string();
-                window.emit("join-group", network_seed).unwrap();
+                window.emit("join-group", request).unwrap();
+                window.request_user_attention(Some(UserAttentionType::Informational));
             })
             .unwrap();
 

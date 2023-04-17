@@ -17,6 +17,7 @@ export interface OpenViews {
   openHrl(hrl: Hrl, context: any): void;
 }
 
+export type MainView = (rootElement: HTMLElement) => void;
 export type BlockView = (rootElement: HTMLElement, context: any) => void;
 export type EntryTypeView = (
   rootElement: HTMLElement,
@@ -25,17 +26,22 @@ export type EntryTypeView = (
 ) => void;
 
 export interface CrossGroupViews {
-  blocks: { main: BlockView } & Record<string, BlockView>;
+  main: MainView;
+  blocks: Record<string, BlockView>;
 }
 
-export interface EntryTypeDescriptors {
+export interface ReferenceableEntryType {
   name: (hash: EntryHash | ActionHash) => Promise<string>;
   view: EntryTypeView;
 }
 
 export interface GroupViews {
-  blocks: { main: BlockView } & Record<string, BlockView>; // all events -> schedule
-  entries: Record<string, Record<string, Record<string, EntryTypeDescriptors>>>; // Segmented by RoleName, integrity ZomeName and EntryType
+  main: MainView;
+  blocks: Record<string, BlockView>; // all events -> schedule
+  entries: Record<
+    string,
+    Record<string, Record<string, ReferenceableEntryType>>
+  >; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
 export interface GroupServices {
