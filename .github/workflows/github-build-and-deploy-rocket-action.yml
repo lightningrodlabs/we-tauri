@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy Site
 on:
   push:
     branches: [ main ]
@@ -9,13 +9,23 @@ jobs:
     concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v18
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.12.0/install
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v10
+        with:
+          name: holochain-ci
 
       - name: Install and Build 🔧 
         run: |
-          npm install
-          npm run build -w site
+          nix develop --command bash -c "npm install && npm run build -w site"
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
