@@ -1,7 +1,7 @@
 {
   "name": "we-dev",
   "private": true,
-  "workspaces": ["ui/app", "ui/libs/*"],
+  "workspaces": ["ui/app", "ui/libs/*", "site"],
   "scripts": {
     "start": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\"",
     "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\" \"ADMIN_PORT=10002 npm run start:agent\"",

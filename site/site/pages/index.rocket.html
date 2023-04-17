@@ -1,0 +1,147 @@
+<script type="module" server>
+/* START - Rocket auto generated - do not touch */
+export const sourceRelativeFilePath = 'index.rocket.html';
+import { components } from './recursive.data.js';
+export { components };
+export async function registerCustomElements() {
+  // server-only components
+  // prettier-ignore
+  customElements.define('rocket-content-area', await import('@rocket/components/content-area.js').then(m => m.RocketContentArea));
+  // prettier-ignore
+  customElements.define('rocket-header-scroll-menu', await import('@rocket/components/header-scroll-menu.js').then(m => m.RocketHeaderScrollMenu));
+  // prettier-ignore
+  customElements.define('rocket-columns', await import('@rocket/components/columns.js').then(m => m.RocketColumns));
+}
+/* END - Rocket auto generated - do not touch */
+
+  import { LayoutHome } from "@rocket/spark";
+  import { layoutData } from "#src/layouts/layoutData.js";
+
+  export const layout = new LayoutHome({
+    ...layoutData,
+  });
+
+  export const title = "We";
+  export const description =
+    "An alternative holochain runtime based around groups";
+</script>
+<script>
+  function DeepLinker(options) {
+    if (!options) {
+      throw new Error("no options");
+    }
+
+    var hasFocus = true;
+    var didHide = false;
+
+    // window is blurred when dialogs are shown
+    function onBlur() {
+      hasFocus = false;
+    }
+
+    // document is hidden when native app is shown or browser is backgrounded
+    function onVisibilityChange(e) {
+      if (e.target.visibilityState === "hidden") {
+        didHide = true;
+      }
+    }
+
+    // window is focused when dialogs are hidden, or browser comes into view
+    function onFocus() {
+      if (didHide) {
+        if (options.onReturn) {
+          options.onReturn();
+        }
+
+        didHide = false; // reset
+      } else {
+        // ignore duplicate focus event when returning from native app on
+        // iOS Safari 13.3+
+        if (!hasFocus && options.onFallback) {
+          // wait for app switch transition to fully complete - only then is
+          // 'visibilitychange' fired
+          setTimeout(function () {
+            // if browser was not hidden, the deep link failed
+            if (!didHide) {
+              options.onFallback();
+            }
+          }, 1000);
+        }
+      }
+
+      hasFocus = true;
+    }
+
+    // add/remove event listeners
+    // `mode` can be "add" or "remove"
+    function bindEvents(mode) {
+      [
+        [window, "blur", onBlur],
+        [document, "visibilitychange", onVisibilityChange],
+        [window, "focus", onFocus],
+      ].forEach(function (conf) {
+        conf[0][mode + "EventListener"](conf[1], conf[2]);
+      });
+    }
+
+    // add event listeners
+    bindEvents("add");
+
+    // expose public API
+    this.destroy = bindEvents.bind(null, "remove");
+    this.openURL = function (url) {
+      // it can take a while for the dialog to appear
+      var dialogTimeout = 500;
+
+      setTimeout(function () {
+        if (hasFocus && options.onIgnored) {
+          options.onIgnored();
+        }
+      }, dialogTimeout);
+
+      window.location = url;
+    };
+  }
+
+  const linker = new DeepLinker({
+    onIgnored: function () {
+      console.log("browser failed to respond to the deep link");
+    },
+    onFallback: function () {
+      console.log("dialog hidden or user returned to tab");
+    },
+    onReturn: function () {
+      console.log("user returned to the page from the native app");
+    },
+  });
+
+  const deepLink = window.location.href.split("?")[1];
+
+  if (deepLink) {
+    linker.openURL(deepLink);
+  }
+</script>
+
+<rocket-content-area>
+  <rocket-columns>
+    <div>
+      <h1 id="home">
+        <span>We</span>
+      </h1>
+      <p>
+        If we find life out there, and it's not us, we will deem it not
+        intelligent.
+      </p>
+      <a class="cta" href="#signup">Windows</a>
+      <a class="cta" href="#signup">MacOs</a>
+      <a class="cta" href="#signup">Linux</a>
+    </div>
+
+    <img
+      src="resolve:#src/images/header-illustration.svg"
+      alt="alternative"
+      width="189"
+      height="150"
+    />
+  </rocket-columns>
+</rocket-content-area>
