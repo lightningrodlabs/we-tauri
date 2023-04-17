@@ -33,7 +33,7 @@ export class WelcomeView extends LitElement {
             </li>
             <li>
               ${msg(
-                "Invite other members to the group by sharing the group link with them"
+                "Invite other members to the group by sharing the group link with them."
               )}
             </li>
             <li>${msg("Install applets that you want to use as a group.")}</li>

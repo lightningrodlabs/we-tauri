@@ -23,33 +23,19 @@ import {
   toPromise,
 } from "@holochain-open-dev/stores";
 import { mapValues } from "@holochain-open-dev/utils";
-
-type View =
-  | {
-      view: "groupViews";
-      selectedGroupDnaHash: DnaHash | undefined;
-      selectedAppleReleaseEntryHash: EntryHash | undefined;
-    }
-  | {
-      view: "crossGroupViews";
-      selectedAppletDevHubReleaseEntryHash: EntryHash | undefined;
-    };
+import { hashState } from "@holochain-open-dev/elements";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
-  @state()
-  view: View = {
-    view: "groupViews",
-    selectedGroupDnaHash: undefined,
-    selectedAppleReleaseEntryHash: undefined,
-  };
-
   @consume({ context: weStoreContext })
   @state()
   _weStore!: WeStore;
 
   @query("join-group-dialog")
   joinGroupDialog!: JoinGroupDialog;
+
+  @state(hashState())
+  selectedGroupDnaHash: DnaHash | undefined;
 
   async firstUpdated() {
     const unlisten = await listen("join-group", async (e) => {
@@ -76,120 +62,68 @@ export class MainDashboard extends LitElement {
   }
 
   get dynamicLayout() {
-    return this.shadowRoot?.getElementById(
-      "group-dynamic-layout"
-    ) as DynamicLayout;
+    return this.shadowRoot?.getElementById("dynamic-layout") as DynamicLayout;
   }
 
   async openGroup(groupDnaHash: DnaHash) {
-    this.view = {
-      view: "groupViews",
-      selectedGroupDnaHash: groupDnaHash,
-      selectedAppleReleaseEntryHash: undefined,
-    };
+    this.selectedGroupDnaHash = groupDnaHash;
+    this.dynamicLayout.openTab({
+      type: "component",
+      componentType: "group-home",
+      componentState: {
+        groupDnaHash: encodeHashToBase64(groupDnaHash),
+      },
+    });
   }
 
-  renderGroupView(
-    selectedGroupDnaHash: DnaHash | undefined,
-    selectedAppletInstanceHash: EntryHash | undefined
-  ) {
+  render() {
     return html`
+      <join-group-dialog></join-group-dialog>
       <div style="width: 100vw" class="row">
         <group-sidebar
           style="flex: 0"
-          .selectedGroupDnaHash=${selectedGroupDnaHash}
-          @home-selected=${() =>
-            (this.view = {
-              view: "groupViews",
-              selectedGroupDnaHash: undefined,
-              selectedAppleReleaseEntryHash: undefined,
-            })}
+          .selectedGroupDnaHash=${this.selectedGroupDnaHash}
+          @home-selected=${() => {
+            this.dynamicLayout.openTab({
+              type: "component",
+              componentType: "welcome",
+            });
+          }}
           @group-selected=${(e: CustomEvent) =>
             this.openGroup(e.detail.groupDnaHash)}
           @group-created=${(e: CustomEvent) => {
             this.openGroup(e.detail.groupDnaHash);
           }}
           @applet-instance-selected=${(e: CustomEvent) => {
-            this.view = {
-              view: "groupViews",
-              selectedGroupDnaHash: e.detail.groupDnaHash,
-              selectedAppleReleaseEntryHash: e.detail.appletInstanceHash,
-            };
+            this.dynamicLayout.openTab({
+              type: "component",
+              componentType: "group-applet-block",
+              componentState: {
+                groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
+                appletInstanceHash: encodeHashToBase64(
+                  e.detail.appletInstanceHash
+                ),
+                block: "main",
+              },
+            });
           }}
         ></group-sidebar>
 
-        ${selectedAppletInstanceHash
-          ? html`
-              <dynamic-layout
-                id="group-dynamic-layout"
-                .rootItemConfig=${{
-                  type: "row",
-                  content: [
-                    {
-                      type: "component",
-                      title: `Group Applet`,
-                      componentType: "group-applet-block",
-                      componentState: {
-                        block: "main",
-                        groupDnaHash: encodeHashToBase64(selectedGroupDnaHash!),
-                        appletInstanceHash: encodeHashToBase64(
-                          selectedAppletInstanceHash
-                        ),
-                      },
-                    },
-                  ],
-                }}
-                style="flex: 1; min-width: 0;"
-              ></dynamic-layout>
-            `
-          : selectedGroupDnaHash
-          ? html`
-              <dynamic-layout
-                id="group-dynamic-layout"
-                .rootItemConfig=${{
-                  type: "row",
-                  content: [
-                    {
-                      type: "component",
-                      title: `Group`,
-                      componentType: "group-home",
-                      componentState: {
-                        groupDnaHash: encodeHashToBase64(selectedGroupDnaHash),
-                      },
-                    },
-                  ],
-                }}
-                style="flex: 1; min-width: 0;"
-              ></dynamic-layout>
-            `
-          : html`
-              <dynamic-layout
-                .rootItemConfig=${{
-                  type: "row",
-                  content: [
-                    {
-                      type: "component",
-                      title: "Welcome",
-                      componentType: "welcome",
-                    },
-                  ],
-                }}
-                style="flex: 1; min-width: 0;"
-              ></dynamic-layout>
-            `}
+        <dynamic-layout
+          id="dynamic-layout"
+          .rootItemConfig=${{
+            type: "row",
+            content: [
+              {
+                type: "component",
+                title: "Welcome",
+                componentType: "welcome",
+              },
+            ],
+          }}
+          style="flex: 1; min-width: 0;"
+        ></dynamic-layout>
       </div>
-    `;
-  }
-
-  render() {
-    return html`
-      <join-group-dialog></join-group-dialog>
-      ${this.view.view === "groupViews"
-        ? this.renderGroupView(
-            this.view.selectedGroupDnaHash,
-            this.view.selectedAppleReleaseEntryHash
-          )
-        : html``}
     `;
   }
 

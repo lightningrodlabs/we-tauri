@@ -61,10 +61,10 @@ export class DynamicLayout extends LitElement {
     },
   };
 
-  openBlock(itemConfig: ComponentItemConfig) {
+  openTab(itemConfig: ComponentItemConfig) {
     this.goldenLayout.addItemAtLocation(itemConfig, [
       {
-        typeId: 3,
+        typeId: 2,
       },
     ]);
   }
@@ -102,12 +102,9 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="cross-group-applet-block"
-        .template=${({
-          appletHash,
-          blockName,
-        }) => html` <cross-group-applet-block
+        .template=${({ appletHash, block }) => html` <cross-group-applet-block
           .appletHash=${appletHash}
-          .blockName=${blockName}
+          .blockName=${block}
           style="flex: 1"
         ></cross-group-applet-block>`}
       >

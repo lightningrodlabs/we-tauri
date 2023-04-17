@@ -28,15 +28,14 @@ export class GroupHome extends LitElement {
   renderInviteToGroupCard() {
     return html`<sl-card>
       <span slot="header">${msg("Invite Members")}</span>
+      <div class="column">
+        <span
+          >${msg(
+            "To invite other people to join this group, send them this link:"
+          )}</span
+        >
 
-      <span
-        >${msg(
-          "To invite other people to join this group, send them this link:"
-        )}</span
-      >
-
-      <span
-        >${this.networkSeed.value.status === "complete"
+        ${this.networkSeed.value.status === "complete"
           ? html`<a
               style="pointer-events: none"
               href="https://lightningrodlabs.org/we?we-group://${this
@@ -44,17 +43,21 @@ export class GroupHome extends LitElement {
               >https://lightningrodlabs.org/we?we-group://${this.networkSeed
                 .value.value}</a
             >`
-          : msg("Loading...")}</span
-      >
+          : msg("Loading...")}
+      </div>
     </sl-card>`;
   }
 
   render() {
     return html`
       <profile-prompt>
-        ${this.renderInviteToGroupCard()}
-        <group-peers-status></group-peers-status>
-        <installable-applets style="flex: 1"></installable-applets>
+        <div class="column">
+          <div class="row">
+            ${this.renderInviteToGroupCard()}
+            <group-peers-status></group-peers-status>
+          </div>
+          <installable-applets style="flex: 1"></installable-applets>
+        </div>
       </profile-prompt>
     `;
   }
