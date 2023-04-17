@@ -13,6 +13,8 @@ import {
   join,
   joinAsyncMap,
   lazyLoadAndPoll,
+  retryUntilSuccess,
+  toPromise,
   writable,
 } from "@holochain-open-dev/stores";
 import {
@@ -29,6 +31,7 @@ import {
   AppAgentClient,
   AppAgentWebsocket,
   CellType,
+  ClonedCell,
   DnaHash,
   EntryHash,
   RoleName,
@@ -38,6 +41,7 @@ import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
+import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
@@ -46,37 +50,7 @@ import {
   findAppletInstanceForAppInfo,
   getCellId,
   initAppClient,
-  toPromise,
 } from "./utils.js";
-
-export function retryUntilSuccess<T>(
-  fn: () => Promise<T>,
-  pollInterval: number = 1000
-): AsyncReadable<T> {
-  const store = writable<AsyncStatus<T>>({ status: "pending" });
-
-  const tryOnce = async () => {
-    const value = await fn();
-    store.set({
-      status: "complete",
-      value,
-    });
-  };
-
-  const tryAndRetry = async () => {
-    try {
-      await tryOnce();
-    } catch (e) {
-      setTimeout(() => tryOnce(), pollInterval);
-    }
-  };
-
-  tryAndRetry();
-
-  return {
-    subscribe: store.subscribe,
-  };
-}
 
 export function manualReloadStore<T>(
   fn: () => Promise<T>
@@ -104,7 +78,6 @@ export function manualReloadStore<T>(
 
 export class WeStore {
   public appletsStore: AppletsStore;
-  public membraneInvitationsStore: MembraneInvitationsStore;
 
   constructor(
     public adminWebsocket: AdminWebsocket,
@@ -112,119 +85,45 @@ export class WeStore {
     public devhubClient: AppAgentClient
   ) {
     this.appletsStore = new AppletsStore(devhubClient, adminWebsocket);
-    this.membraneInvitationsStore = new MembraneInvitationsStore(
-      new MembraneInvitationsClient(appAgentWebsocket, "lobby")
-    );
   }
 
   /**
-   * Clones the We DNA with a new unique weId as its UID
-   * @param weName
-   * @param weLogo
+   * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
    */
-  public async createGroup(name: string, logo: string): Promise<DnaHash> {
+  public async createGroup(name: string, logo: string): Promise<ClonedCell> {
     // generate random network seed (maybe use random words instead later, e.g. https://www.npmjs.com/package/generate-passphrase)
     const networkSeed = uuidv4();
 
-    const newGroupDnaHash = await this.installGroup(name, logo, networkSeed); // this line also updates the matrix store
+    const groupClonedCell = await this.joinGroup(networkSeed); // this line also updates the matrix store
 
-    const appInfo = await this.appAgentWebsocket.appInfo();
-
-    const groupCellInfo = appInfo.cell_info["group"].find(
-      (cellInfo) => CellType.Provisioned in cellInfo
+    const groupClient = new GroupClient(
+      this.appAgentWebsocket,
+      groupClonedCell.clone_id
     );
-    const groupDnaHash = getCellId(groupCellInfo!)![0];
 
-    const properties: GroupInfo = {
+    const groupInfo: GroupInfo = {
       logo_src: logo,
       name: name,
     };
 
-    await this.membraneInvitationsStore.client.createCloneDnaRecipe({
-      original_dna_hash: groupDnaHash,
-      network_seed: networkSeed,
-      properties: encode(properties),
-      resulting_dna_hash: newGroupDnaHash,
-    });
+    await groupClient.setGroupInfo(groupInfo);
 
-    return newGroupDnaHash;
+    return groupClonedCell;
   }
 
-  public async joinGroup(
-    invitationActionHash: ActionHash,
-    name: string,
-    logo: string,
-    networkSeed: string
-  ): Promise<DnaHash> {
-    const newWeGroupDnaHash = await this.installGroup(name, logo, networkSeed);
-    await this.membraneInvitationsStore.client.removeInvitation(
-      invitationActionHash
-    );
-    return newWeGroupDnaHash;
-  }
-
-  private async installGroup(
-    name: string,
-    logo: string,
-    networkSeed: string
-  ): Promise<DnaHash> {
-    const properties: GroupInfo = {
-      logo_src: logo,
-      name: name,
-    };
-
-    // Create the We cell
+  public async joinGroup(networkSeed: string): Promise<ClonedCell> {
+    // Create the group cell
     const clonedCell = await this.appAgentWebsocket.createCloneCell({
       role_name: "group",
       modifiers: {
         network_seed: networkSeed,
-        properties,
         // origin_time: Date.now() * 1000,
       },
     });
 
     await this.groupsRolesByDnaHash.reload();
 
-    return clonedCell.cell_id[0];
-  }
-
-  /**
-   * Invite another agent to join the specified We group.
-   *
-   * @param weGroupId : DnaHash
-   * @param agentPubKey : AgentPubKey
-   */
-  public async inviteToJoinGroup(
-    weGroupId: DnaHash,
-    agentPubKey: AgentPubKey
-  ): Promise<void> {
-    const appInfo = await this.appAgentWebsocket.appInfo();
-    const weCellInfo = appInfo.cell_info["group"].find(
-      (cellInfo) => "provisioned" in cellInfo
-    );
-    const weDnaHash = getCellId(weCellInfo!)![0];
-
-    const records =
-      await this.membraneInvitationsStore.client.getCloneRecipesForDna(
-        weDnaHash
-      );
-
-    const clones: Array<EntryRecord<CloneDnaRecipe>> = records.map(
-      (r) => new EntryRecord(r)
-    );
-
-    const recipe = clones.find(
-      (c) => c.entry.resulting_dna_hash.toString() === weGroupId.toString()
-    )!;
-
-    console.log("Inviting with recipe: ", recipe.entry);
-
-    // membrane invitations API will need to change uid --> network_seed
-    await this.membraneInvitationsStore.client.inviteToJoinMembrane(
-      recipe.entry,
-      agentPubKey,
-      undefined
-    );
+    return clonedCell;
   }
 
   groupsRolesByDnaHash = manualReloadStore(async () => {
@@ -239,6 +138,7 @@ export class WeStore {
         );
       }
     }
+
     return roleNames;
   });
 
@@ -318,8 +218,6 @@ export class WeStore {
           AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>
         ]),
         async ([groupsStores, groupInfos, groupAppletInstances]) => {
-          // TODO: install dialog if it hasn't been installed yet
-
           const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
             Array.from(groupAppletInstances.entries()).map(
               async ([groupDnaHash, instances], index) => {

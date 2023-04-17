@@ -2,7 +2,7 @@
   "name": "lib",
   "version": "0.1.0",
   "scripts": {
-    "build:watch": "tsc -w",
+    "build:watch": "tsc -w --preserveWatchOutput",
     "build": "tsc",
     "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "format": "eslint --fix --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
@@ -14,14 +14,14 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./*": "./dist/*"
+    "./dist/*": "./dist/*"
   },
   "dependencies": {
     "@holochain/client": "{{holochain_client_version}}",
-    "@holochain-open-dev/elements": "^0.3.7",
-    "@holochain-open-dev/profiles": "^0.12.1",
+    "@holochain-open-dev/elements": "^0.4.0",
+    "@holochain-open-dev/profiles": "^0.13.0",
     "@holochain-open-dev/stores": "^0.4.2",
-    "@holochain-open-dev/utils": "^0.12.0",
+    "@holochain-open-dev/utils": "^0.13.0",
     "@lit-labs/context": "^0.2.0",
     "@lit/localize": "^0.11.4",
     "@mdi/js": "^7.2.0",

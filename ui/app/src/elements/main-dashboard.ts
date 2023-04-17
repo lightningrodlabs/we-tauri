@@ -2,21 +2,27 @@ import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
 import { encodeHashToBase64, DnaHash, EntryHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
+import { listen } from "@tauri-apps/api/event";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
-import "../elements/group-sidebar.js";
+import "./group-sidebar.js";
+import "./join-group-dialog.js";
 import "../layout/dynamic-layout.js";
 import { DynamicLayout } from "../layout/dynamic-layout.js";
-import "../groups/elements/create-profile.js";
-import { CreateProfileInGroup } from "../groups/elements/create-profile.js";
 
 import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import { toPromise } from "../utils.js";
-import { ComponentItemConfig } from "golden-layout";
+import { JoinGroupDialog } from "./join-group-dialog.js";
+import {
+  asyncDerived,
+  asyncDeriveStore,
+  joinAsyncMap,
+  toPromise,
+} from "@holochain-open-dev/stores";
+import { mapValues } from "@holochain-open-dev/utils";
 
 type View =
   | {
@@ -42,8 +48,32 @@ export class MainDashboard extends LitElement {
   @state()
   _weStore!: WeStore;
 
-  @query("create-profile-in-group")
-  createProfileInGroup!: CreateProfileInGroup;
+  @query("join-group-dialog")
+  joinGroupDialog!: JoinGroupDialog;
+
+  async firstUpdated() {
+    const unlisten = await listen("join-group", async (e) => {
+      const networkSeed = e.payload as string;
+
+      const groups = await toPromise(
+        asyncDeriveStore(this._weStore.allGroups, (groups) =>
+          joinAsyncMap(
+            mapValues(groups, (groupStore) => groupStore.networkSeed)
+          )
+        )
+      );
+
+      const alreadyJoinedGroup = Array.from(groups.entries()).find(
+        ([_, groupNetworkSeed]) => groupNetworkSeed === networkSeed
+      );
+
+      if (alreadyJoinedGroup) {
+        this.openGroup(alreadyJoinedGroup[0]);
+      } else {
+        this.joinGroupDialog.open(networkSeed);
+      }
+    });
+  }
 
   get dynamicLayout() {
     return this.shadowRoot?.getElementById(
@@ -52,18 +82,11 @@ export class MainDashboard extends LitElement {
   }
 
   async openGroup(groupDnaHash: DnaHash) {
-    const groupStore = await toPromise(this._weStore.groups.get(groupDnaHash));
-    const myProfile = await toPromise(groupStore.profilesStore.myProfile);
-    if (myProfile) {
-      this.view = {
-        view: "groupViews",
-        selectedGroupDnaHash: groupDnaHash,
-        selectedAppleReleaseEntryHash: undefined,
-      };
-    } else {
-      this.createProfileInGroup.groupDnaHash = groupDnaHash;
-      this.createProfileInGroup.show();
-    }
+    this.view = {
+      view: "groupViews",
+      selectedGroupDnaHash: groupDnaHash,
+      selectedAppleReleaseEntryHash: undefined,
+    };
   }
 
   renderGroupView(
@@ -127,43 +150,12 @@ export class MainDashboard extends LitElement {
                   type: "row",
                   content: [
                     {
-                      type: "column",
-                      content: [
-                        {
-                          type: "row",
-                          content: [
-                            {
-                              type: "component",
-                              title: `Invite new member`,
-                              componentType: "group-invite-member",
-                              componentState: {
-                                groupDnaHash:
-                                  encodeHashToBase64(selectedGroupDnaHash),
-                              },
-                            },
-                            {
-                              type: "component",
-                              title: `Members`,
-                              componentType: "group-peers-status",
-                              componentState: {
-                                groupDnaHash:
-                                  encodeHashToBase64(selectedGroupDnaHash),
-                              },
-                            },
-                          ],
-                        },
-
-                        {
-                          type: "component",
-                          componentType: "group-installable-applets",
-                          title: `Installable Applets`,
-                          header: {},
-                          componentState: {
-                            groupDnaHash:
-                              encodeHashToBase64(selectedGroupDnaHash),
-                          },
-                        },
-                      ],
+                      type: "component",
+                      title: `Group`,
+                      componentType: "group-home",
+                      componentState: {
+                        groupDnaHash: encodeHashToBase64(selectedGroupDnaHash),
+                      },
                     },
                   ],
                 }}
@@ -180,11 +172,6 @@ export class MainDashboard extends LitElement {
                       title: "Welcome",
                       componentType: "welcome",
                     },
-                    {
-                      type: "component",
-                      title: "Join Groups",
-                      componentType: "join-groups",
-                    },
                   ],
                 }}
                 style="flex: 1; min-width: 0;"
@@ -196,16 +183,7 @@ export class MainDashboard extends LitElement {
 
   render() {
     return html`
-      <create-profile-in-group
-        @profile-created=${() => {
-          this.view = {
-            view: "groupViews",
-            selectedGroupDnaHash: this.createProfileInGroup.groupDnaHash,
-            selectedAppleReleaseEntryHash: undefined,
-          };
-          this.createProfileInGroup.hide();
-        }}
-      ></create-profile-in-group>
+      <join-group-dialog></join-group-dialog>
       ${this.view.view === "groupViews"
         ? this.renderGroupView(
             this.view.selectedGroupDnaHash,

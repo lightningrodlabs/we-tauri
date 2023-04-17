@@ -1,12 +1,12 @@
 [package]
 authors = ["eric@harris-braun.com"]
 edition = "2021"
-name = "applets_integrity"
+name = "group_integrity"
 version = "0.0.1-alpha1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "applets_integrity"
+name = "group_integrity"
 
 [dependencies]
 hdk = { workspace = true }

@@ -3,16 +3,6 @@ manifest_version: "1"
 name: we
 description: ~
 roles:
-  - name: lobby
-    provisioning:
-      strategy: create
-      deferred: false
-    dna:
-      bundled: "../dnas/lobby/workdir/lobby.dna"
-      properties: ~
-      network_seed: ~
-      version: ~
-      clone_limit: 100
   - name: group
     provisioning:
       strategy: create

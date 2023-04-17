@@ -5,17 +5,12 @@ import {
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   asyncDerived,
-  asyncDeriveStore,
   AsyncReadable,
   join,
   lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
-import {
-  EntryRecord,
-  LazyHoloHashMap,
-  mapLazyValues,
-} from "@holochain-open-dev/utils";
+import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   AdminWebsocket,
   AgentPubKey,
@@ -23,7 +18,6 @@ import {
   AppInfo,
   CellType,
   DnaHash,
-  DnaModifiers,
   encodeHashToBase64,
   EntryHash,
   ListAppsResponse,
@@ -31,20 +25,22 @@ import {
   StemCell,
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
-import { decode, encode } from "@msgpack/msgpack";
+import { encode } from "@msgpack/msgpack";
+import { fromUint8Array } from "js-base64";
+
 import { AppletsStore } from "../applets/applets-store";
-import { AppletsClient } from "./applets-client";
 import { AppletInstance, GroupInfo } from "./types";
 import { AppletMetadata } from "../types";
-import { initAppClient, toPromise } from "../utils";
-import { fromUint8Array } from "js-base64";
+import { initAppClient } from "../utils";
 import { manualReloadStore } from "../we-store";
+import { GroupClient } from "./group-client";
+import { DnaModifiers } from "@holochain/client";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
-  appletsClient: AppletsClient;
+  groupClient: GroupClient;
 
   members: AsyncReadable<Array<AgentPubKey>>;
 
@@ -55,7 +51,7 @@ export class GroupStore {
     public roleName: string,
     public appletsStore: AppletsStore
   ) {
-    this.appletsClient = new AppletsClient(appAgentWebsocket, roleName);
+    this.groupClient = new GroupClient(appAgentWebsocket, roleName);
 
     this.peerStatusStore = new PeerStatusStore(
       new PeerStatusClient(appAgentWebsocket, roleName)
@@ -79,10 +75,15 @@ export class GroupStore {
     return cellInfo[CellType.Cloned].dna_modifiers;
   }
 
-  groupInfo = lazyLoad(async () => {
-    const modifiers = await this.groupDnaModifiers();
-    return decode(modifiers.properties) as GroupInfo;
+  networkSeed = lazyLoad(async () => {
+    const dnaModifiers = await this.groupDnaModifiers();
+    return dnaModifiers.network_seed;
   });
+
+  groupInfo = lazyLoadAndPoll(async () => {
+    const entryRecord = await this.groupClient.getGroupInfo();
+    return entryRecord?.entry;
+  }, 4000);
 
   appletAppId(
     devhubHappReleaseHash: EntryHash,
@@ -104,7 +105,7 @@ export class GroupStore {
 
   // Installs an applet instance that already exists in this group into this conductor
   async installAppletInstance(appletInstanceHash: EntryHash) {
-    const appletInstance = await this.appletsClient.getAppletInstance(
+    const appletInstance = await this.groupClient.getAppletInstance(
       appletInstanceHash
     );
 
@@ -177,11 +178,11 @@ export class GroupStore {
       dna_hashes: dnaHashes,
     };
 
-    return this.appletsClient.registerAppletInstance(applet);
+    return this.groupClient.registerAppletInstance(applet);
   }
 
   registeredApplets = lazyLoadAndPoll(
-    async () => this.appletsClient.getAppletsInstances(),
+    async () => this.groupClient.getAppletsInstances(),
     4000
   );
 
@@ -208,15 +209,13 @@ export class GroupStore {
 
   federatedGroups = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
     lazyLoadAndPoll(
-      async () => this.appletsClient.getFederatedGroups(appletInstanceHash),
+      async () => this.groupClient.getFederatedGroups(appletInstanceHash),
       5000
     )
   );
 
   applets = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
-    lazyLoad(async () =>
-      this.appletsClient.getAppletInstance(appletInstanceHash)
-    )
+    lazyLoad(async () => this.groupClient.getAppletInstance(appletInstanceHash))
   );
 
   appletClient = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>

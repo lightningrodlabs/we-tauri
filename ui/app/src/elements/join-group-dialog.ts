@@ -10,22 +10,23 @@ import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js"
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
-import { weStyles } from "../shared-styles.js";
-import { weStoreContext } from "../context.js";
-import { WeStore } from "../we-store.js";
 import { notifyError, onSubmit } from "@holochain-open-dev/elements";
+import { WeStore } from "../we-store";
+import { weStoreContext } from "../context";
+import { weStyles } from "../shared-styles";
 
 /**
  * @element create-group-dialog
  */
 @localized()
-@customElement("create-group-dialog")
-export class CreateGroupDialog extends LitElement {
+@customElement("join-group-dialog")
+export class JoinGroupDialog extends LitElement {
   /** Dependencies */
   @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
-  async open() {
+  async open(networkSeed: string) {
+    this.networkSeed = networkSeed;
     this._dialog.show();
   }
 
@@ -33,63 +34,51 @@ export class CreateGroupDialog extends LitElement {
   @query("#dialog")
   _dialog!: SlDialog;
 
-  @query("form")
-  form!: HTMLFormElement;
+  @property()
+  networkSeed: string | undefined;
 
   @state()
-  committing = false;
+  joining = false;
 
-  private async createGroup(fields: any) {
-    if (this.committing) return;
+  private async joinGroup() {
+    if (this.joining) return;
 
-    this.committing = true;
+    this.joining = true;
 
     try {
-      const groupClonedCell = await this._weStore.createGroup(
-        fields.name,
-        fields.logo_src
-      );
+      const groupClonedCell = await this._weStore.joinGroup(this.networkSeed!);
 
       this.dispatchEvent(
-        new CustomEvent("group-created", {
+        new CustomEvent("group-joined", {
           detail: { groupDnaHash: groupClonedCell.cell_id[0] },
           bubbles: true,
           composed: true,
         })
       );
       this._dialog.hide();
-      this.form.reset();
+      this.networkSeed = undefined;
     } catch (e) {
-      notifyError(msg("Error creating the group."));
+      notifyError(msg("Error joining the group."));
       console.error(e);
     }
-    this.committing = false;
+    this.joining = false;
   }
 
   render() {
     return html`
-      <sl-dialog id="dialog" .label=${msg("Create Group")}>
-        <form class="column" ${onSubmit((f) => this.createGroup(f))}>
-          <div class="row" style="justify-content: center">
-            <select-avatar required name="logo_src"></select-avatar>
-
-            <sl-input
-              name="name"
-              style="margin-left: 16px"
-              .label=${msg("Group name")}
-              required
-            ></sl-input>
-          </div>
+      <sl-dialog id="dialog" .label=${msg("Join Group")}>
+        <div class="column" style="justify-content: center">
+          <span>${msg("Do you want to join this group?")}</span>
 
           <sl-button
             style="margin-top: 24px"
             variant="primary"
-            type="submit"
-            .loading=${this.committing}
+            @click=${() => this.joinGroup()}
+            .loading=${this.joining}
           >
-            ${msg("Create Group")}
+            ${msg("Join Group")}
           </sl-button>
-        </form>
+        </div>
       </sl-dialog>
     `;
   }

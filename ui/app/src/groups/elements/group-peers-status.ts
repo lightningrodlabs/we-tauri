@@ -31,7 +31,7 @@ export class GroupPeersStatus extends LitElement {
         .agents=${members.filter(
           (m) =>
             m.toString() !==
-            this._groupStore.appletsClient.appAgentClient.myPubKey.toString()
+            this._groupStore.groupClient.appAgentClient.myPubKey.toString()
         )}
       ></list-agents-by-status>
     `;

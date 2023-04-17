@@ -6,17 +6,17 @@ integrity:
   properties: ~
   origin_time: 2022-07-25T13:55:49.200Z
   zomes:
-  - name: applets_integrity
-    bundled: ../../../target/wasm32-unknown-unknown/release/applets_integrity.wasm
+  - name: group_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/group_integrity.wasm
   - name: profiles_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
 
 coordinator:
   zomes:
-    - name: applets
-      bundled: ../../../target/wasm32-unknown-unknown/release/applets_coordinator.wasm
+    - name: group
+      bundled: ../../../target/wasm32-unknown-unknown/release/group_coordinator.wasm
       dependencies:
-        - name: applets_integrity
+        - name: group_integrity
     - name: profiles
       bundled: ../../../target/wasm32-unknown-unknown/release/profiles_coordinator.wasm
       dependencies:

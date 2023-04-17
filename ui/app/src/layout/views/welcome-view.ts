@@ -27,19 +27,13 @@ export class WelcomeView extends LitElement {
               ${msg("button in the left sidebar.")}
             </li>
             <li>
-              ${msg("You will be prompted to create a profile for this group.")}
+              ${msg(
+                "In we, you have a profile for each group you are in. When you create a group, you will be prompted to create a profile for this group."
+              )}
             </li>
             <li>
               ${msg(
-                "Invite other members to the group from the home screen of your new group"
-              )}
-              (<sl-icon
-                style="position: relative; top: 0.25em;"
-                .src=${wrapPathInSvg(mdiHome)}
-              ></sl-icon
-              >)
-              ${msg(
-                "You will need to ask them for their public key (copiable from the identicon in the bottom left corner of the screen)."
+                "Invite other members to the group by sharing the group link with them"
               )}
             </li>
             <li>${msg("Install applets that you want to use as a group.")}</li>
@@ -48,6 +42,7 @@ export class WelcomeView extends LitElement {
       </sl-card>
     `;
   }
+
   render() {
     return html`
       <div class="column">

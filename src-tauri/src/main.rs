@@ -35,6 +35,9 @@ pub fn iframe(applet_id: &String) -> String {
 }
 
 fn main() {
+    // Needs to be equal to the identifier in tauri.conf.json
+    tauri_plugin_deep_link::prepare("we");
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
@@ -71,7 +74,7 @@ fn main() {
             let fs = WeFileSystem::new(&handle, &profile)?;
             app.manage(fs);
 
-            WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
+            let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .on_web_resource_request(move |request, response| {
                     let uri = request.uri();
                     let uri_components: Vec<String> =
@@ -105,6 +108,13 @@ fn main() {
                 })
                 .title("We")
                 .build()?;
+
+            tauri_plugin_deep_link::register("we-group", move |request| {
+                let network_seed = request.split("//").last().unwrap().to_string();
+                window.emit("join-group", network_seed).unwrap();
+            })
+            .unwrap();
+
             Ok(())
         })
         .run(tauri::generate_context!())

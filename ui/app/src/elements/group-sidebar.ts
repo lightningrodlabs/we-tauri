@@ -49,8 +49,12 @@ export class GroupSidebar extends LitElement {
     `;
   }
 
-  renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo>) {
-    return Array.from(groups.entries())
+  renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo | undefined>) {
+    return (
+      Array.from(groups.entries()).filter(
+        ([_, groupInfo]) => !!groupInfo
+      ) as Array<[DnaHash, GroupInfo]>
+    )
       .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
       .map(
         ([groupDnaHash, groupInfo]) =>
@@ -59,8 +63,6 @@ export class GroupSidebar extends LitElement {
               style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
               .logoSrc=${groupInfo.logo_src}
               .tooltipText=${groupInfo.name}
-              .selected=${this.selectedGroupDnaHash?.toString() ===
-              groupDnaHash.toString()}
               @click=${() => {
                 this.dispatchEvent(
                   new CustomEvent("group-selected", {

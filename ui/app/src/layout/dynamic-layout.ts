@@ -5,7 +5,6 @@ import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
 import {
   ComponentItemConfig,
   GoldenLayout,
-  ItemConfig,
   LayoutConfig,
   RootItemConfig,
 } from "golden-layout";
@@ -13,11 +12,8 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { provide } from "@lit-labs/context";
 
-import "../elements/join-groups.js";
 import "../groups/elements/group-context.js";
-import "../groups/elements/group-peers-status.js";
-import "../groups/elements/installable-applets.js";
-import "../groups/elements/group-invite-member.js";
+import "../groups/elements/group-home.js";
 import "./views/welcome-view.js";
 import "./views/group-applet-block.js";
 import "./views/entry-view.js";
@@ -91,49 +87,15 @@ export class DynamicLayout extends LitElement {
           <welcome-view style="margin: 24px"></welcome-view>
         </template>
       </golden-layout-register>
-      <golden-layout-register component-type="join-groups">
-        <template>
-          <join-groups style="margin: 24px"></join-groups>
-        </template>
-      </golden-layout-register>
       <golden-layout-register
-        component-type="group-settings"
-        .template=${({ groupDnaHash }) => html`
-          <group-settings .groupDnaHash=${groupDnaHash}></group-settings>
-        `}
-      >
-      </golden-layout-register>
-      <golden-layout-register
-        component-type="group-peers-status"
+        component-type="group-home"
         .template=${({ groupDnaHash }) => html`
           <div
             style="flex: 1; display: flex; align-items: center; justify-content: center;"
           >
             <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-peers-status></group-peers-status
-            ></group-context>
-          </div>
-        `}
-      >
-      </golden-layout-register>
-      <golden-layout-register
-        component-type="group-installable-applets"
-        .template=${({ groupDnaHash }) => html`
-          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-            <installable-applets style="flex: 1"></installable-applets>
-          </group-context>
-        `}
-      >
-      </golden-layout-register>
-      <golden-layout-register
-        component-type="group-invite-member"
-        .template=${({ groupDnaHash }) => html`
-          <div
-            style="flex: 1; display: flex; align-items: center; justify-content: center;"
-          >
-            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-invite-member></group-invite-member
-            ></group-context>
+              <group-home></group-home>
+            </group-context>
           </div>
         `}
       >

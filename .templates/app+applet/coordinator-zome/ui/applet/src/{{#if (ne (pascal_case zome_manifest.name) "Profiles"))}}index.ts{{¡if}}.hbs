@@ -1,5 +1,5 @@
 import { {{pascal_case zome_manifest.name}}Store, {{pascal_case zome_manifest.name}}Client } from 'lib';
-import 'lib/{{dna_role_name}}/{{kebab_case zome_manifest.name}}/elements/{{kebab_case zome_manifest.name}}-context.js';
+import 'lib/{{dna_role_name}}/{{kebab_case zome_manifest.name}}/dist/elements/{{kebab_case zome_manifest.name}}-context.js';
 
 {{#merge_scope previous_file_content "entries: {"}}
 {{previous_scope_content}}
@@ -13,12 +13,8 @@ function wrap{{pascal_case zome_manifest.name}}GroupView(
   innerTemplate: TemplateResult
 ): TemplateResult {
   const {{camel_case zome_manifest.name}}Store = new {{pascal_case zome_manifest.name}}Store(new {{pascal_case zome_manifest.name}}Client(client, '{{snake_case zome_manifest.name}}'));
-  return wrapGroupView(
-    client,
-    groupInfo,
-    groupServices,
-    html`<{{kebab_case zome_manifest.name}}-context .store=${ {{camel_case zome_manifest.name}}Store}>
+  return html`<{{kebab_case zome_manifest.name}}-context .store=${ {{camel_case zome_manifest.name}}Store}>
       ${innerTemplate}
-    </{{kebab_case zome_manifest.name}}-context>`);
+    </{{kebab_case zome_manifest.name}}-context>`;
 }
 

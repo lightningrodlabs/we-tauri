@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     AppletInstance(AppletInstance),
+    GroupInfo(GroupInfo),
 }
 
 #[hdk_link_types]
@@ -13,6 +14,8 @@ pub enum LinkTypes {
     AnchorToApplet,
     AppletToExternalAgent,
     AppletToInvitedGroup, // links to "first-order" neighbor groups if an app is being federated
+    GroupInfoPath,
+    AnchorToGroupInfo,
 }
 
 /// An applet insatnce
@@ -39,4 +42,11 @@ pub struct AppletInstance {
 pub struct FederateAppletInstanceInput {
     pub applet_instance_hash: EntryHash,
     pub group_dna_hash: DnaHash,
+}
+
+#[hdk_entry_helper]
+#[derive(Clone)]
+pub struct GroupInfo {
+    pub name: String,
+    pub logo_src: String,
 }

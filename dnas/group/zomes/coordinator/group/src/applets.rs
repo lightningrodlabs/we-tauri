@@ -1,4 +1,4 @@
-use applets_integrity::*;
+use group_integrity::*;
 use hdk::prelude::*;
 
 fn get_applets_path() -> Path {
