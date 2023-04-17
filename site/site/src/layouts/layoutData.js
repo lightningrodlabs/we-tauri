@@ -21,7 +21,8 @@ export const layoutData = {
         <div>
           <strong>Find Us</strong><br />
           lightningrodlabs<br />
-          <a href="https://lightningrodlabs.org">https://lightningrodlabs.org>/a><br />
+          <a href="https://lightningrodlabs.org">https://lightningrodlabs.org</a
+          ><br />
         </div>
       </rocket-columns>
     </rocket-content-area>

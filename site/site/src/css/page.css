@@ -1,13 +1,28 @@
-footer {
-  background: #272456;
+main rocket-content-area {
+  background: #272456 !important;
   color: #fff;
 }
 
+main rocket-content-area a.cta {
+  background: white !important;
+  color: #272456 !important;
+}
+
+footer {
+  background: white !important;
+  color: #272456;
+}
+
 footer a {
+  color: #272456 !important;
+}
+
+rocket-content-area a {
   color: #fff;
 }
 
 h1 {
+  color: white !important;
   font-size: var(--step-2);
   line-height: var(--step-3);
 }

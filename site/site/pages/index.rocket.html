@@ -26,6 +26,8 @@ export async function registerCustomElements() {
     "An alternative holochain runtime based around groups";
 </script>
 <script>
+  const initialUrl = window.location.href.split("?")[0];
+
   function DeepLinker(options) {
     if (!options) {
       throw new Error("no options");
@@ -99,16 +101,19 @@ export async function registerCustomElements() {
         }
       }, dialogTimeout);
 
-      window.location = url;
+      window.location.replace(url);
     };
   }
 
   const linker = new DeepLinker({
     onIgnored: function () {
       console.log("browser failed to respond to the deep link");
+      window.location.replace(initialUrl);
     },
     onFallback: function () {
       console.log("dialog hidden or user returned to tab");
+
+      window.location.replace(initialUrl);
     },
     onReturn: function () {
       console.log("user returned to the page from the native app");
@@ -128,10 +133,8 @@ export async function registerCustomElements() {
       <h1 id="home">
         <span>We</span>
       </h1>
-      <p>
-        If we find life out there, and it's not us, we will deem it not
-        intelligent.
-      </p>
+      <p>Next-gen tooling for creating Social Spaces</p>
+      <p>To open We links, install We in your computer</p>
       <a class="cta" href="#signup">Windows</a>
       <a class="cta" href="#signup">MacOs</a>
       <a class="cta" href="#signup">Linux</a>

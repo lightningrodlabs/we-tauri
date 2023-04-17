@@ -39,10 +39,10 @@ export class GroupHome extends LitElement {
         >${this.networkSeed.value.status === "complete"
           ? html`<a
               style="pointer-events: none"
-              href="https://lightningrodlabs.github.io/we?we-group://${this
+              href="https://lightningrodlabs.org/we?we-group://${this
                 .networkSeed.value.value}"
-              >https://lightningrodlabs.github.io/we?we-group://${this
-                .networkSeed.value.value}</a
+              >https://lightningrodlabs.org/we?we-group://${this.networkSeed
+                .value.value}</a
             >`
           : msg("Loading...")}</span
       >
