@@ -40,7 +40,7 @@
         <link rel="stylesheet" href="8be09000.css">
         <link rel="stylesheet" href="1d5ad776.css">
         <link rel="stylesheet" href="eb933c4b.css">
-      <!--/lit-part--><!--lit-part KpwPUg/hUAU=--><link rel="stylesheet" href="6b93af1d.css"><!--/lit-part--><!--/lit-part-->
+      <!--/lit-part--><!--lit-part KpwPUg/hUAU=--><link rel="stylesheet" href="e9a34790.css"><!--/lit-part--><!--/lit-part-->
       
 <link rel="preload" href="./b8fedbf83.js" as="script" crossorigin="anonymous" />
 </head>
@@ -128,7 +128,9 @@
           <!--/lit-part--><!--/lit-part-->
       </rocket-header-scroll-menu>
     <!--/lit-part-->
-        <!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--lit-part 5K15HOADMuI=--><script>
+        <!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--lit-part FYNtrAPAv5s=--><script>
+  const initialUrl = window.location.href.split("?")[0];
+
   function DeepLinker(options) {
     if (!options) {
       throw new Error("no options");
@@ -202,16 +204,19 @@
         }
       }, dialogTimeout);
 
-      window.location = url;
+      window.location.replace(url);
     };
   }
 
   const linker = new DeepLinker({
     onIgnored: function () {
       console.log("browser failed to respond to the deep link");
+      window.location.replace(initialUrl);
     },
     onFallback: function () {
       console.log("dialog hidden or user returned to tab");
+
+      window.location.replace(initialUrl);
     },
     onReturn: function () {
       console.log("user returned to the page from the native app");
@@ -276,10 +281,8 @@
       <h1 id="home">
         <span>We</span>
       </h1>
-      <p>
-        If we find life out there, and it's not us, we will deem it not
-        intelligent.
-      </p>
+      <p>Next-gen tooling for creating Social Spaces</p>
+      <p>To open We links, install We in your computer</p>
       <a class="cta" href="#signup">Windows</a>
       <a class="cta" href="#signup">MacOs</a>
       <a class="cta" href="#signup">Linux</a>
@@ -289,7 +292,7 @@
   </rocket-columns>
 </rocket-content-area>
 <!--/lit-part--><!--/lit-part--></main><!--/lit-part--> <!--lit-part ylGgZbYd3gg=-->
-      <footer id="main-footer"><!--lit-part--><!--lit-part 1e8dexfd/gA=-->
+      <footer id="main-footer"><!--lit-part--><!--lit-part POGJVpZcRiY=-->
     <rocket-content-area><template shadowroot="open"><style>
       :host {
         display: block;
@@ -340,11 +343,11 @@
         <div>
           <strong>Find Us</strong><br>
           lightningrodlabs<br>
-          <a href="https://lightningrodlabs.org">https://lightningrodlabs.org&gt;/a&gt;<br>
-        </a></div><a href="https://lightningrodlabs.org">
-      </a></rocket-columns><a href="https://lightningrodlabs.org">
-    </a></rocket-content-area><a href="https://lightningrodlabs.org">
-  <!--/lit-part--><!--/lit-part--></a></footer><a href="https://lightningrodlabs.org">
+          <a href="https://lightningrodlabs.org">https://lightningrodlabs.org</a><br>
+        </div>
+      </rocket-columns>
+    </rocket-content-area>
+  <!--/lit-part--><!--/lit-part--></footer>
     <!--/lit-part-->
         <!--lit-part--><!--lit-part ode3Yst/eRo=-->
       
@@ -352,7 +355,7 @@
       
     
       
-    </a>
+    
 <script type="module" src="./b8fedbf83.js"></script>
 
 </body><!--/lit-part--></html>
