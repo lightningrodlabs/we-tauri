@@ -119,13 +119,12 @@ export class MainDashboard extends LitElement {
           @applet-instance-selected=${(e: CustomEvent) => {
             this.dynamicLayout.openTab({
               type: "component",
-              componentType: "group-applet-block",
+              componentType: "group-applet-main",
               componentState: {
                 groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
                 appletInstanceHash: encodeHashToBase64(
                   e.detail.appletInstanceHash
                 ),
-                block: "main",
               },
             });
           }}

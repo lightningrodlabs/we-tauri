@@ -16,6 +16,7 @@
     "@holochain-open-dev/utils": "^0.13.0",
     "@holochain/client": "^0.13.0",
     "@lightningrodlabs/we-applet": "^0",
+    "@lightningrodlabs/hrl": "^0",
     "@lit-labs/context": "^0.2.0",
     "@lit-labs/task": "^1.1.2",
     "@lit/localize": "^0.11.4",
@@ -24,7 +25,9 @@
     "@scoped-elements/golden-layout": "^0.2.0",
     "@shoelace-style/shoelace": "^2.3.0",
     "@tauri-apps/api": "^1.2.0",
+    "applet-messages": "^0",
     "golden-layout": "^2.6.0",
+    "inline-webworker-functional": "^2.0.0",
     "js-base64": "^3.7.2",
     "lit": "^2.2.0",
     "uuid": "^8.3.2"

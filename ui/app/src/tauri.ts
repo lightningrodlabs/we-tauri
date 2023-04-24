@@ -1,3 +1,9 @@
+import { CallZomeRequestUnsigned } from "@holochain/client";
+import { randomNonce } from "@holochain/client";
+import { CallZomeRequest } from "@holochain/client";
+import { getNonceExpiration } from "@holochain/client";
+import { CallZomeRequestSigned } from "@holochain/client";
+import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
@@ -5,6 +11,10 @@ export async function isKeystoreInitialized(): Promise<boolean> {
 }
 
 export async function isLaunched(): Promise<boolean> {
+  return invoke("is_launched");
+}
+
+export async function sign_cal(): Promise<boolean> {
   return invoke("is_launched");
 }
 

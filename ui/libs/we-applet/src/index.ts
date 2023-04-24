@@ -1,21 +1,9 @@
-import { ProfilesStore } from "@holochain-open-dev/profiles";
-import {
-  AppAgentClient,
-  ActionHash,
-  EntryHash,
-  DnaHash,
-} from "@holochain/client";
+import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
+import { AppAgentClient, ActionHash, EntryHash } from "@holochain/client";
+import { Hrl, HrlWithContext } from "@lightningrodlabs/hrl";
+import { EntryInfo, WeServices } from "./types";
 
-export interface GroupInfo {
-  logo_src: string;
-  name: string;
-}
-
-export interface OpenViews {
-  openGroupBlock(block: string, context: any): void;
-  openCrossGroupBlock(block: string, context: any): void;
-  openHrl(hrl: Hrl, context: any): void;
-}
+export * from "./types.js";
 
 export type MainView = (rootElement: HTMLElement) => void;
 export type BlockView = (rootElement: HTMLElement, context: any) => void;
@@ -31,7 +19,7 @@ export interface CrossGroupViews {
 }
 
 export interface ReferenceableEntryType {
-  name: (hash: EntryHash | ActionHash) => Promise<string>;
+  info: (hash: EntryHash | ActionHash) => Promise<EntryInfo | undefined>;
   view: EntryTypeView;
 }
 
@@ -45,17 +33,7 @@ export interface GroupViews {
 }
 
 export interface GroupServices {
-  profilesStore: ProfilesStore;
-}
-
-export type Hrl = [DnaHash, ActionHash | EntryHash];
-
-// Contextual reference to a Hrl
-// Useful use case: image we want to point to a specific section of a document
-// The document action hash would be the Hrl, and the context could be { section: "Second Paragraph" }
-export interface HrlWithContext {
-  hrl: Hrl;
-  context: any;
+  profilesClient: ProfilesClient;
 }
 
 export interface AttachableType {
@@ -67,19 +45,13 @@ export interface AttachableType {
 }
 
 export interface GroupWithApplets {
-  groupInfo: GroupInfo;
   groupServices: GroupServices;
   appletsClients: AppAgentClient[]; // These will be the same kind of applet
-}
-
-export interface WeServices {
-  openViews: OpenViews;
 }
 
 export interface WeApplet {
   groupViews: (
     appletClient: AppAgentClient,
-    groupInfo: GroupInfo,
     groupServices: GroupServices,
     weServices: WeServices
   ) => GroupViews;

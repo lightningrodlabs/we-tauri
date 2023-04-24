@@ -1,6 +1,6 @@
 import { createContext } from "@lit-labs/context";
-import { GenericGroupStore } from "./group-store";
+import { GroupStore } from "./group-store";
 
-export const groupStoreContext = createContext<GenericGroupStore<any>>(
+export const groupStoreContext = createContext<GroupStore>(
   "hc_zome_we/group_context"
 );

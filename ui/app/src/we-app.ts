@@ -22,6 +22,8 @@ import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 import { msg } from "@lit/localize";
 
+console.log("asdf");
+
 type State =
   | { state: "loading" }
   | { state: "password"; initialized: boolean }
@@ -76,6 +78,7 @@ export class WeApp extends LitElement {
     this._weStore = new WeStore(
       adminWebsocket,
       appAgentWebsocket,
+      info.we_app_id,
       devhubClient
     );
 

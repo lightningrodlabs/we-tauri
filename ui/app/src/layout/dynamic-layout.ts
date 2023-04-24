@@ -16,6 +16,7 @@ import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
 import "./views/welcome-view.js";
 import "./views/group-applet-block.js";
+import "./views/group-applet-main.js";
 import "./views/entry-view.js";
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
@@ -127,6 +128,18 @@ export class DynamicLayout extends LitElement {
               .block=${block}
               style="flex: 1"
             ></group-applet-block>
+          </group-context>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="group-applet-main"
+        .template=${({ groupDnaHash, appletInstanceHash }) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-applet-main
+              .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
+              style="flex: 1"
+            ></group-applet-main>
           </group-context>
         `}
       >

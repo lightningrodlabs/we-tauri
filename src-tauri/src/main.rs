@@ -5,7 +5,7 @@ use filesystem::WeFileSystem;
 use futures::lock::Mutex;
 use holochain_launcher_utils::window_builder::read_resource_from_path;
 use serde_json::Value;
-use tauri::{Manager, UserAttentionType, WindowBuilder, WindowUrl};
+use tauri::{http::ResponseBuilder, Manager, UserAttentionType, WindowBuilder, WindowUrl};
 
 mod commands;
 mod default_apps;
@@ -20,14 +20,24 @@ use commands::{
 };
 use state::LaunchedState;
 
-pub fn iframe(applet_id: &String) -> String {
+pub fn iframe() -> String {
     format!(
         r#"
         <html>
           <head>
-            <link href="/applet/{applet_id}/styles.css" rel="stylesheet"></link>
+            <style>
+              body {{
+                margin: 0; 
+                height: 100%; 
+                width: 100%; 
+                display: flex;
+              }}
+            </style>
+            <link href="/styles.css" rel="stylesheet"></link>
           </head>
           <body>
+            <script src="/applet-sandbox.js"></script>
+            <script src="/index.js" type="module"></script>
           </body>
         </html>
     "#
@@ -75,47 +85,74 @@ fn main() {
             app.manage(fs);
 
             let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
-                .on_web_resource_request(move |request, response| {
-                    let uri = request.uri();
-                    let uri_components: Vec<String> =
-                        uri.split("/").map(|s| s.to_string()).collect();
-
-                    if let Some("applet") = uri_components.get(3).map(|s| s.as_str()) {
-                        if let Some(mutex) = handle.try_state::<Mutex<LaunchedState>>() {
-                            if let Some(applet_id) = uri_components.get(4) {
-                                match uri_components.get(5).map(|s| s.as_str()) {
-                                    None | Some("index.html") => {
-                                        let mutable_response = response.body_mut();
-                                        *mutable_response = iframe(&applet_id).as_bytes().to_vec();
-                                    }
-                                    _ => tauri::async_runtime::block_on(async {
-                                        let m = mutex.lock().await;
-
-                                        let assets_path = m.web_app_manager.get_app_assets_dir(
-                                            &applet_id,
-                                            &String::from("default"),
-                                        );
-                                        let mut path = assets_path;
-                                        for i in 5..uri_components.len() {
-                                            path = path.join(uri_components[i].clone());
-                                        }
-                                        read_resource_from_path(path, response, true, None);
-                                    }),
-                                }
-                            }
-                        }
-                    }
-                })
                 .title("We")
                 .build()?;
 
             tauri_plugin_deep_link::register("we-group", move |request| {
                 window.emit("join-group", request).unwrap();
-                window.request_user_attention(Some(UserAttentionType::Informational));
+                window
+                    .request_user_attention(Some(UserAttentionType::Informational))
+                    .unwrap();
             })
             .unwrap();
 
             Ok(())
+        })
+        .register_uri_scheme_protocol("applet", |app_handle, request| {
+            // prepare our response
+            let response_builder = ResponseBuilder::new();
+
+            let uri = request.uri().strip_prefix("applet://").unwrap();
+            let uri_components: Vec<String> = uri.split("/").map(|s| s.to_string()).collect();
+
+            println!("asdf{:?}", uri_components);
+
+            let applet_id = uri_components.get(0).unwrap();
+
+            if let Some(mutex) = app_handle.try_state::<Mutex<LaunchedState>>() {
+                match uri_components.get(1).map(|s| s.as_str()) {
+                    None | Some("index.html") | Some("") => {
+                        println!("iframe");
+                        return response_builder
+                            .mimetype("text/html")
+                            .status(200)
+                            .body(iframe().as_bytes().to_vec());
+                    }
+                    Some("applet-sandbox.js") => {
+                        // Redirect
+                        return response_builder
+                            .mimetype("text/javascript")
+                            .status(200)
+                            .body(
+                                include_bytes!("../../ui/applet-sandbox/dist/index.mjs").to_vec(),
+                            );
+                    }
+                    _ => {
+                        let r = tauri::async_runtime::block_on(async {
+                            let m = mutex.lock().await;
+
+                            let assets_path = m
+                                .web_app_manager
+                                .get_app_assets_dir(&applet_id, &String::from("default"));
+                            let mut path = assets_path;
+                            for i in 1..uri_components.len() {
+                                path = path.join(uri_components[i].clone());
+                            }
+
+                            println!("path {:?}", path);
+
+                            let mut response = response_builder.status(200).body(vec![]).unwrap();
+
+                            read_resource_from_path(path, &mut response, true, None);
+
+                            return response;
+                        });
+                        return Ok(r);
+                    }
+                }
+            }
+
+            return Err("Not found")?;
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -11,6 +11,7 @@ import {
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
 import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { makeStatefulWorker } from "inline-webworker-functional/browser";
 import {
   AdminWebsocket,
   AgentPubKey,
@@ -35,6 +36,8 @@ import { initAppClient } from "../utils";
 import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
 import { DnaModifiers } from "@holochain/client";
+import { ActionHash } from "@holochain/client";
+import { getConductorInfo } from "../tauri";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -90,7 +93,7 @@ export class GroupStore {
     networkSeed: string | undefined,
     properties: any
   ): string {
-    return `applet@${encodeHashToBase64(devhubHappReleaseHash)}-${
+    return `${encodeHashToBase64(devhubHappReleaseHash)}-${
       networkSeed || ""
     }-${fromUint8Array(encode(properties))}`;
   }
@@ -216,6 +219,21 @@ export class GroupStore {
 
   applets = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
     lazyLoad(async () => this.groupClient.getAppletInstance(appletInstanceHash))
+  );
+
+  appletWorker = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+    asyncDerived(
+      this.applets.get(appletInstanceHash),
+      async (appletInstance) => {
+        const appletId = this.appletAppIdFromAppletInstance(
+          appletInstance!.entry
+        );
+        const info = await getConductorInfo();
+
+        const worker = new Worker("applet-sandbox.js");
+        return worker;
+      }
+    )
   );
 
   appletClient = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>

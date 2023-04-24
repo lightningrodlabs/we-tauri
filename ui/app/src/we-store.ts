@@ -1,26 +1,17 @@
 import {
-  CloneDnaRecipe,
-  MembraneInvitationsClient,
-  MembraneInvitationsStore,
-} from "@holochain-open-dev/membrane-invitations";
-import {
   asyncDerived,
   asyncDeriveStore,
-  asyncReadable,
   AsyncReadable,
   AsyncStatus,
-  get,
   join,
   joinAsyncMap,
   lazyLoad,
-  lazyLoadAndPoll,
   retryUntilSuccess,
   toPromise,
   writable,
 } from "@holochain-open-dev/stores";
 import {
   EntryHashMap,
-  EntryRecord,
   HoloHashMap,
   LazyHoloHashMap,
   mapValues,
@@ -28,7 +19,6 @@ import {
 import {
   ActionHash,
   AdminWebsocket,
-  AgentPubKey,
   AppAgentClient,
   AppAgentWebsocket,
   CellType,
@@ -37,19 +27,17 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import { GroupInfo, GroupWithApplets } from "@lightningrodlabs/we-applet";
-import { encode } from "@msgpack/msgpack";
+import { GroupWithApplets } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 
 import { AppletsStore } from "./applets/applets-store";
 import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
-import { AppletInstance } from "./groups/types";
+import { AppletInstance, GroupInfo } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import {
   findAppForDnaHash,
   findAppletInstanceForAppInfo,
-  getCellId,
   initAppClient,
 } from "./utils.js";
 
@@ -83,6 +71,7 @@ export class WeStore {
   constructor(
     public adminWebsocket: AdminWebsocket,
     public appAgentWebsocket: AppAgentWebsocket,
+    public appId: string,
     public devhubClient: AppAgentClient
   ) {
     this.appletsStore = new AppletsStore(devhubClient, adminWebsocket);
@@ -258,7 +247,8 @@ export class WeStore {
                 return {
                   appletsClients,
                   groupServices: {
-                    profilesStore: groupsStores.get(groupDnaHash).profilesStore,
+                    profilesClient:
+                      groupsStores.get(groupDnaHash).profilesStore.client,
                   },
                   groupInfo: groupInfos[index],
                 } as GroupWithApplets;

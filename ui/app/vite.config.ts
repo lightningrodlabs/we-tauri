@@ -44,11 +44,16 @@ export default defineConfig({
       targets: [
         {
           src: "../../node_modules/@shoelace-style/shoelace/dist/assets",
-          dest: "dist/shoelace",
+          dest: "shoelace",
         },
         {
           src: "we_logo.png",
-          dest: "dist",
+          dest: "dist/assets",
+        },
+        {
+          src: "../applet-sandbox/dist/index.mjs",
+          dest: "",
+          rename: "applet-sandbox.js",
         },
       ],
     }),

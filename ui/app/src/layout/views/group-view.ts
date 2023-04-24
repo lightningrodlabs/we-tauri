@@ -7,33 +7,40 @@ import {
   AsyncReadable,
   join,
   StoreSubscriber,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { AppAgentClient, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { GroupInfo, Hrl, OpenViews } from "@lightningrodlabs/we-applet";
+import { Hrl, OpenViews, WeServices } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
+import { GroupView, ParentToIframeMessage, RenderView } from "applet-messages";
 
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
-import { AppletInstance } from "../../groups/types.js";
+import { AppletInstance, GroupInfo } from "../../groups/types.js";
 import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
 import { GroupStore } from "../../groups/group-store.js";
 import { mdiInformationOutline } from "@mdi/js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
 
 @localized()
 @customElement("group-view")
-export class GroupView extends LitElement {
+export class GroupViewEl extends LitElement {
   @property()
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
+
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
 
   @property(hashProperty("applet-instance-hash"))
   appletInstanceHash!: EntryHash;
@@ -45,28 +52,7 @@ export class GroupView extends LitElement {
   installing = false;
 
   @property()
-  view!:
-    | { type: "main" }
-    | { type: "block"; block: string; context: any }
-    | {
-        type: "entry";
-        role: string;
-        zome: string;
-        entryType: string;
-        hrl: Hrl;
-        context: any;
-      };
-
-  viewToRender(elementVar: string) {
-    switch (this.view.type) {
-      case "main":
-        return `main(${elementVar})`;
-      case "block":
-        return `blocks["${this.view.block}"](${elementVar}, window.context)`;
-      case "entry":
-        return `entries["${this.view.role}"]["${this.view.zome}"]["${this.view.entryType}"].view(${elementVar}, window.hrl[1], window.context)`;
-    }
-  }
+  view!: GroupView;
 
   _appletClient = new StoreSubscriber(
     this,
@@ -81,6 +67,51 @@ export class GroupView extends LitElement {
       >,
     () => [this.groupStore, this.appletInstanceHash]
   );
+
+  weServices(appletInstance: EntryRecord<AppletInstance>): WeServices {
+    return {
+      openViews: {
+        openHrl: (hrl: Hrl, context: any) => {
+          this.openViews.openHrl(hrl, context);
+        },
+        openGroupBlock: (block: string) =>
+          this.openViews.openGroupBlock(
+            this.groupStore.groupDnaHash,
+            this.appletInstanceHash,
+            block
+          ),
+        openCrossGroupBlock: (block: string) =>
+          this.openViews.openCrossGroupBlock(
+            appletInstance.entry.devhub_happ_release_hash,
+            block
+          ),
+      } as OpenViews,
+      info: async (hrl) => {
+        const dnaLocation = await toPromise(
+          this.weStore.dnaLocations.get(hrl[0])
+        );
+        const hrlLocation = await toPromise(
+          this.weStore.hrlLocations.get(hrl[0]).get(hrl[1])
+        );
+
+        if (!hrlLocation) return undefined;
+
+        const groupStore = await toPromise(
+          this.weStore.groups.get(dnaLocation.groupDnaHash)
+        );
+        const worker = await toPromise(
+          groupStore.appletWorker.get(dnaLocation.appletInstanceHash)
+        );
+
+        // return worker.info(
+        //   dnaLocation.roleName,
+        //   hrlLocation.integrity_zome,
+        //   hrlLocation.entry_def,
+        //   hrl[1]
+        // );
+      },
+    };
+  }
 
   renderAppletFrame([groupInfo, client, appletInstance, isInstalled]: [
     GroupInfo,
@@ -131,40 +162,29 @@ export class GroupView extends LitElement {
       appletClient: client,
       groupInfo,
       groupServices: { profilesStore: this.groupStore.profilesStore },
-      weServices: {
-        openViews: {
-          openHrl: (hrl: Hrl, context: any) => {
-            this.openViews.openHrl(hrl, context);
-          },
-          openGroupBlock: (block: string) =>
-            this.openViews.openGroupBlock(
-              this.groupStore.groupDnaHash,
-              this.appletInstanceHash,
-              block
-            ),
-          openCrossGroupBlock: (block: string) =>
-            this.openViews.openCrossGroupBlock(
-              appletInstance.entry.devhub_happ_release_hash,
-              block
-            ),
-        } as OpenViews,
-      },
+      weServices: this.weServices(appletInstance),
     };
     if (this.view.type !== "main") {
       globalVars["context"] = this.view.context;
     }
     if (this.view.type === "entry") {
       globalVars["hrl"] = this.view.hrl;
+      this.weServices(appletInstance).info(this.view.hrl);
     }
+    const appletId = this.groupStore.appletAppIdFromAppletInstance(
+      appletInstance.entry
+    );
     return html`
       <view-frame
-        .initFrameJs=${`function render(applet, el, vars) { applet.groupViews(vars.appletClient, vars.groupInfo, vars.groupServices, vars.weServices).${this.viewToRender(
-          "el"
-        )}; }`}
-        .appletId=${this.groupStore.appletAppIdFromAppletInstance(
-          appletInstance.entry
-        )}
-        .globalVars=${globalVars}
+        .renderView=${{
+          type: "group-view",
+          info: {
+            appletId,
+            profilesAppId: this.weStore.appId,
+            profilesRoleName: this.groupStore.roleName,
+          },
+        } as RenderView}
+        .appletId=${appletId}
         style="flex: 1"
       ></view-frame>
     `;
