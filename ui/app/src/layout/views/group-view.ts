@@ -14,7 +14,7 @@ import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { Hrl, OpenViews, WeServices } from "@lightningrodlabs/we-applet";
+import { GroupInfo, OpenViews, WeServices } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -29,7 +29,7 @@ import {
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
-import { AppletInstance, GroupInfo } from "../../groups/types.js";
+import { AppletInstance } from "../../groups/types.js";
 import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
 import { GroupStore } from "../../groups/group-store.js";
@@ -113,16 +113,33 @@ export class GroupViewEl extends LitElement {
 
         if (!hrlLocation) return undefined;
 
-        const groupStore = await toPromise(
+        let groupStore = await toPromise(
           this.weStore.groups.get(dnaLocation.groupDnaHash)
         );
-        const worker = await toPromise(
+        let worker = await toPromise(
           groupStore.appletWorker.get(dnaLocation.appletInstanceHash)
         );
 
-        break;
+        return worker.info(
+          dnaLocation.roleName,
+          hrlLocation.integrity_zome,
+          hrlLocation.entry_def,
+          message.hrl
+        );
       case "sign-zome-call":
         return signZomeCallTauri(message.request);
+      case "create-attachment":
+        groupStore = await toPromise(
+          this.weStore.groups.get(message.request.groupDnaHash)
+        );
+        worker = await toPromise(
+          groupStore.appletWorker.get(message.request.appletInstanceHash)
+        );
+
+        return worker.createAttachment(
+          message.request.attachmentType,
+          message.request.attachToHrl
+        );
     }
   }
 

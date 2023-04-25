@@ -1,5 +1,11 @@
-import { ActionHash, CallZomeRequest, EntryHash } from "@holochain/client";
+import {
+  ActionHash,
+  CallZomeRequest,
+  DnaHash,
+  EntryHash,
+} from "@holochain/client";
 import { Hrl } from "@lightningrodlabs/hrl";
+import { GroupInfo } from "@lightningrodlabs/we-applet";
 
 export type OpenViewRequest =
   | {
@@ -14,6 +20,13 @@ export type OpenViewRequest =
       context: any;
     };
 
+export interface CreateAttachmentRequest {
+  groupDnaHash: DnaHash;
+  appletInstanceHash: EntryHash;
+  attachmentType: string;
+  attachToHrl: Hrl;
+}
+
 export type AppletToParentRequest =
   | {
       type: "sign-zome-call";
@@ -22,6 +35,10 @@ export type AppletToParentRequest =
   | {
       type: "open-view";
       request: OpenViewRequest;
+    }
+  | {
+      type: "create-attachment";
+      request: CreateAttachmentRequest;
     }
   | {
       type: "get-info";
@@ -62,9 +79,28 @@ export type CrossGroupView =
       context: any;
     };
 
+export interface InternalAttachmentType {
+  label: string;
+  icon_src: string;
+}
+
+export interface InternalAppletAttachmentTypes {
+  appletInstanceHash: EntryHash;
+  appletName: string;
+  attachmentTypes: Record<string, InternalAttachmentType>;
+}
+
+export interface InternalGroupAttachmentTypes {
+  groupDnaHash: DnaHash;
+  groupInfo: GroupInfo;
+  appletsAttachmentTypes: Array<InternalAppletAttachmentTypes>;
+}
+
 export interface ParentToIframeMessage {
   appPort: number;
   message: RenderView;
+
+  groupsAttachmentTypes: Array<InternalGroupAttachmentTypes>;
 }
 
 export type RenderView =
@@ -90,5 +126,10 @@ export type ParentToWebWorkerMessage =
       roleName: string;
       integrityZomeName: string;
       entryDefId: string;
-      hash: ActionHash | EntryHash;
+      hrl: Hrl;
+    }
+  | {
+      type: "create-attachment";
+      attachmentType: string;
+      attachToHrl: Hrl;
     };

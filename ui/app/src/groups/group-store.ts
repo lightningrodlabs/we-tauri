@@ -38,6 +38,8 @@ import { GroupClient } from "./group-client";
 import { DnaModifiers } from "@holochain/client";
 import { ActionHash } from "@holochain/client";
 import { getConductorInfo } from "../tauri";
+import { ParentToWebWorkerMessage } from "../../../applet-messages/dist";
+import { Hrl } from "../../../libs/hrl/dist";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -231,7 +233,42 @@ export class GroupStore {
         const info = await getConductorInfo();
 
         const worker = new Worker("applet-sandbox.js");
-        return worker;
+
+        async function postMessage(message: ParentToWebWorkerMessage) {
+          await new Promise((resolve) => {
+            const { port1, port2 } = new MessageChannel();
+
+            worker.postMessage([port2]);
+
+            port1.onmessage = (m) => {
+              resolve(null);
+            };
+          });
+        }
+
+        await postMessage({
+          type: "setup",
+          appPort: info.app_port,
+          appletId,
+        } as ParentToWebWorkerMessage);
+
+        return {
+          info: (roleName, integrityZomeName, entryDefId, hrl) =>
+            postMessage({
+              type: "info",
+              roleName,
+              integrityZomeName,
+              entryDefId,
+              hrl,
+            }),
+          createAttachment: (attachmentType: string, attachToHrl: Hrl) => {
+            postMessage({
+              type: "create-attachment",
+              attachmentType,
+              attachToHrl,
+            });
+          },
+        };
       }
     )
   );

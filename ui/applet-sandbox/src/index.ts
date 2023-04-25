@@ -10,8 +10,11 @@ import {
   AppletToParentRequest,
   ParentToIframeMessage,
   RenderView,
+  InternalGroupAttachmentTypes,
+  ParentToWebWorkerMessage,
 } from "applet-messages";
 import {
+  AttachmentType,
   GroupWithApplets,
   WeApplet,
   WeServices,
@@ -55,13 +58,56 @@ async function fetchApplet(): Promise<WeApplet> {
 }
 
 async function handleIframeMessage(message: ParentToIframeMessage) {
-  handleRenderViewMessage(message.appPort, message.message);
+  handleRenderViewMessage(
+    message.appPort,
+    message.message,
+    message.groupsAttachmentTypes
+  );
 }
 
-async function handleRenderViewMessage(appPort: number, message: RenderView) {
+async function handleRenderViewMessage(
+  appPort: number,
+  message: RenderView,
+  groupsAttachmentTypes: Array<InternalGroupAttachmentTypes>
+) {
   const applet = await fetchApplet();
 
   const weServices: WeServices = {
+    groupsAttachmentTypes: groupsAttachmentTypes.map(
+      (groupAttachmentTypes) => ({
+        groupInfo: groupAttachmentTypes.groupInfo,
+        appletsAttachmentTypes: groupAttachmentTypes.appletsAttachmentTypes.map(
+          (appletAttachmentTypes) => {
+            const attachmentTypes: Record<string, AttachmentType> = {};
+
+            for (const [name, attachmentType] of Object.entries(
+              appletAttachmentTypes.attachmentTypes
+            )) {
+              attachmentTypes[name] = {
+                label: attachmentType.label,
+                icon_src: attachmentType.icon_src,
+                create: (attachToHrl) =>
+                  postMessage({
+                    type: "create-attachment",
+                    request: {
+                      groupDnaHash: groupAttachmentTypes.groupDnaHash,
+                      appletInstanceHash:
+                        appletAttachmentTypes.appletInstanceHash,
+                      attachmentType: name,
+                      attachToHrl,
+                    },
+                  }),
+              };
+            }
+
+            return {
+              appletName: appletAttachmentTypes.appletName,
+              attachmentTypes,
+            };
+          }
+        ),
+      })
+    ),
     info: (hrl) =>
       postMessage({
         type: "get-info",
@@ -123,7 +169,7 @@ async function handleRenderViewMessage(appPort: number, message: RenderView) {
           .groupViews(client, { profilesClient }, weServices)
           .entries[message.view.role][message.view.zome][
             message.view.entryType
-          ].view(document.body, message.view.hrl[1], message.view.context);
+          ].view(document.body, message.view.hrl, message.view.context);
         break;
     }
   } else {
@@ -167,21 +213,25 @@ async function handleRenderViewMessage(appPort: number, message: RenderView) {
 let applet: WeApplet | undefined = undefined;
 let client: AppAgentClient | undefined = undefined;
 
-// async function handleWorkerMessage(message: ParentToWebWorkerMessage) {
-//   if (!applet) applet = await fetchApplet(message);
+async function handleWorkerMessage(message: ParentToWebWorkerMessage) {
+  if (!applet) applet = await fetchApplet();
 
-//   switch (message.type) {
-//     case "setup":
-//       client = await setupAppletClient(message.appPort, message.appletId);
-//       break;
-//     case "info":
-//       return applet
-//         .groupViews(client!, null as any, null as any)
-//         .entries[message.roleName][message.integrityZomeName][
-//           message.entryDefId
-//         ].info(message.hash);
-//   }
-// }
+  switch (message.type) {
+    case "setup":
+      client = await setupAppletClient(message.appPort, message.appletId);
+      break;
+    case "info":
+      return applet
+        .groupViews(client!, null as any, null as any)
+        .entries[message.roleName][message.integrityZomeName][
+          message.entryDefId
+        ].info(message.hrl);
+    case "create-attachment":
+      return applet
+        .attachmentTypes(client!)
+        [message.attachmentType].create(message.attachToHrl);
+  }
+}
 
 async function signZomeCall(
   request: CallZomeRequest
@@ -213,8 +263,8 @@ if (isIframe) {
   });
 } else {
   // This sandbox is inside a webworker
-  // self.onmessage = async (m) => {
-  //   const result = await handleWorkerMessage(m.data);
-  //   m.ports[0].postMessage(result);
-  // };
+  self.onmessage = async (m) => {
+    const result = await handleWorkerMessage(m.data);
+    m.ports[0].postMessage(result);
+  };
 }

@@ -1,15 +1,16 @@
-import { ProfilesClient } from "@holochain-open-dev/profiles";
-import { AppAgentClient, ActionHash, EntryHash } from "@holochain/client";
+import { AppAgentClient } from "@holochain/client";
 import { Hrl, HrlWithContext } from "@lightningrodlabs/hrl";
-import { EntryInfo, WeServices } from "./types";
+import { AttachmentType, EntryInfo, GroupServices, WeServices } from "./types";
 
 export * from "./types.js";
+export * from "./attachments/attachments-client.js";
+export * from "./attachments/attachments-store.js";
 
 export type MainView = (rootElement: HTMLElement) => void;
 export type BlockView = (rootElement: HTMLElement, context: any) => void;
 export type EntryTypeView = (
   rootElement: HTMLElement,
-  hash: EntryHash | ActionHash,
+  hrl: Hrl,
   context: any
 ) => void;
 
@@ -19,7 +20,7 @@ export interface CrossGroupViews {
 }
 
 export interface ReferenceableEntryType {
-  info: (hash: EntryHash | ActionHash) => Promise<EntryInfo | undefined>;
+  info: (hrl: Hrl) => Promise<EntryInfo | undefined>;
   view: EntryTypeView;
 }
 
@@ -30,18 +31,6 @@ export interface GroupViews {
     string,
     Record<string, Record<string, ReferenceableEntryType>>
   >; // Segmented by RoleName, integrity ZomeName and EntryType
-}
-
-export interface GroupServices {
-  profilesClient: ProfilesClient;
-}
-
-export interface AttachableType {
-  name: string;
-  create: (
-    appletClient: AppAgentClient,
-    attachToHrl: Hrl
-  ) => Promise<HrlWithContext>;
 }
 
 export interface GroupWithApplets {
@@ -56,7 +45,9 @@ export interface WeApplet {
     weServices: WeServices
   ) => GroupViews;
 
-  attachableTypes: Array<AttachableType>;
+  attachmentTypes: (
+    appletClient: AppAgentClient
+  ) => Record<string, AttachmentType>;
   search: (
     appletClient: AppAgentClient,
     searchFilter: string

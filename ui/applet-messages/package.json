@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@holochain/client": "^0.13.0",
+    "@lightningrodlabs/we-applet": "^0",
     "@lightningrodlabs/hrl": "0.0.1"
   },
   "devDependencies": {

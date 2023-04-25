@@ -8,13 +8,8 @@ export interface AppletInstance {
   devhub_happ_release_hash: EntryHash;
   devhub_gui_release_hash: EntryHash;
 
-  network_seed: string | undefined; 
+  network_seed: string | undefined;
 
   properties: Record<string, Uint8Array>; // Segmented by RoleId
   dna_hashes: Record<string, DnaHash>; // Segmented by RoleId
-}
-
-export interface GroupInfo {
-  name: string;
-  logo_src: string;
 }
