@@ -21,7 +21,7 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { encodeHashToBase64 } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { GroupInfo } from "../../../../libs/we-applet/dist/index.js";
+import { GroupProfile } from "../../../../libs/we-applet/dist/index.js";
 
 @localized()
 @customElement("group-home")
@@ -32,14 +32,14 @@ export class GroupHome extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
-  groupInfo = new StoreSubscriber(
+  groupProfile = new StoreSubscriber(
     this,
     () =>
       join([
-        this.groupStore.groupInfo,
+        this.groupStore.groupProfile,
         this.weStore.originalGroupDnaHash,
         this.groupStore.networkSeed,
-      ]) as AsyncReadable<[GroupInfo | undefined, DnaHash, string]>,
+      ]) as AsyncReadable<[GroupProfile | undefined, DnaHash, string]>,
     () => [this.groupStore, this.weStore]
   );
 
@@ -67,15 +67,15 @@ export class GroupHome extends LitElement {
   }
 
   render() {
-    switch (this.groupInfo.value.status) {
+    switch (this.groupProfile.value.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
-        const groupInfo = this.groupInfo.value.value[0];
+        const groupProfile = this.groupProfile.value.value[0];
 
-        if (!groupInfo)
+        if (!groupProfile)
           return html`<div class="column">
             <h2>${msg("Out of sync")}</h2>
             <span
@@ -90,8 +90,8 @@ export class GroupHome extends LitElement {
             <div class="column">
               <div class="row">
                 ${this.renderInviteToGroupCard(
-                  this.groupInfo.value.value[1],
-                  this.groupInfo.value.value[2]
+                  this.groupProfile.value.value[1],
+                  this.groupProfile.value.value[2]
                 )}
                 <group-peers-status></group-peers-status>
               </div>
@@ -102,7 +102,7 @@ export class GroupHome extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the group information")}
-          .error=${this.groupInfo.value.error.data.data}
+          .error=${this.groupProfile.value.error.data.data}
         ></display-error>`;
     }
   }

@@ -27,7 +27,6 @@
     "@tauri-apps/api": "^1.2.0",
     "applet-messages": "^0",
     "golden-layout": "^2.6.0",
-    "inline-webworker-functional": "^2.0.0",
     "js-base64": "^3.7.2",
     "lit": "^2.2.0",
     "uuid": "^8.3.2"

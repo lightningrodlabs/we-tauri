@@ -3,9 +3,12 @@ import {
   AppAgentWebsocket,
   CallZomeRequest,
   CallZomeRequestSigned,
+  DnaHash,
+  EntryHash,
 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
 import { ProfilesClient } from "@holochain-open-dev/profiles";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 import {
   AppletToParentRequest,
   ParentToIframeMessage,
@@ -14,7 +17,9 @@ import {
   ParentToWebWorkerMessage,
 } from "applet-messages";
 import {
+  AppletAttachmentTypes,
   AttachmentType,
+  GroupAttachmentTypes,
   GroupWithApplets,
   WeApplet,
   WeServices,
@@ -22,11 +27,11 @@ import {
 
 async function setupAppletClient(
   appPort: number,
-  appletId: string
+  appletInstalledAppId: string
 ): Promise<AppAgentClient> {
   const appletClient = await AppAgentWebsocket.connect(
     `ws://localhost:${appPort}`,
-    appletId
+    appletInstalledAppId
   );
 
   appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
@@ -61,73 +66,95 @@ async function handleIframeMessage(message: ParentToIframeMessage) {
   handleRenderViewMessage(
     message.appPort,
     message.message,
-    message.groupsAttachmentTypes
+    message.attachmentTypesByGroup
   );
 }
 
 async function handleRenderViewMessage(
   appPort: number,
   message: RenderView,
-  groupsAttachmentTypes: Array<InternalGroupAttachmentTypes>
+  internalAttachmentTypesByGroups: HoloHashMap<
+    DnaHash,
+    InternalGroupAttachmentTypes
+  >
 ) {
   const applet = await fetchApplet();
 
+  const attachmentTypesByGroup = new HoloHashMap<
+    DnaHash,
+    GroupAttachmentTypes
+  >();
+
+  for (const [
+    groupId,
+    groupAttachmentTypes,
+  ] of internalAttachmentTypesByGroups) {
+    const attachmentTypesByApplet = new HoloHashMap<
+      EntryHash,
+      AppletAttachmentTypes
+    >();
+
+    for (const [
+      appletInstanceId,
+      appletAttachmentTypes,
+    ] of groupAttachmentTypes.attachmentTypesByApplet) {
+      const attachmentTypes: Record<string, AttachmentType> = {};
+      for (const [name, attachmentType] of Object.entries(
+        appletAttachmentTypes.attachmentTypes
+      )) {
+        attachmentTypes[name] = {
+          label: attachmentType.label,
+          icon_src: attachmentType.icon_src,
+          create: (attachToHrl) =>
+            postMessage({
+              type: "create-attachment",
+              request: {
+                groupId: groupId,
+                appletInstanceId: appletInstanceId,
+                attachmentType: name,
+                attachToHrl,
+              },
+            }),
+        };
+      }
+
+      attachmentTypesByApplet.set(appletInstanceId, {
+        appletName: appletAttachmentTypes.appletName,
+        attachmentTypes,
+      });
+    }
+
+    attachmentTypesByGroup.set(groupId, {
+      groupProfile: groupAttachmentTypes.groupProfile,
+      attachmentTypesByApplet,
+    });
+  }
+
   const weServices: WeServices = {
-    groupsAttachmentTypes: groupsAttachmentTypes.map(
-      (groupAttachmentTypes) => ({
-        groupInfo: groupAttachmentTypes.groupInfo,
-        appletsAttachmentTypes: groupAttachmentTypes.appletsAttachmentTypes.map(
-          (appletAttachmentTypes) => {
-            const attachmentTypes: Record<string, AttachmentType> = {};
-
-            for (const [name, attachmentType] of Object.entries(
-              appletAttachmentTypes.attachmentTypes
-            )) {
-              attachmentTypes[name] = {
-                label: attachmentType.label,
-                icon_src: attachmentType.icon_src,
-                create: (attachToHrl) =>
-                  postMessage({
-                    type: "create-attachment",
-                    request: {
-                      groupDnaHash: groupAttachmentTypes.groupDnaHash,
-                      appletInstanceHash:
-                        appletAttachmentTypes.appletInstanceHash,
-                      attachmentType: name,
-                      attachToHrl,
-                    },
-                  }),
-              };
-            }
-
-            return {
-              appletName: appletAttachmentTypes.appletName,
-              attachmentTypes,
-            };
-          }
-        ),
-      })
-    ),
+    attachmentTypesByGroup,
     info: (hrl) =>
       postMessage({
         type: "get-info",
         hrl,
       }),
     openViews: {
-      openGroupBlock: (block, context) =>
+      openGroupBlock: (groupId, appletInstanceId, block, context) =>
         postMessage({
           type: "open-view",
           request: {
             type: "group-block",
+            groupId,
+            appletInstanceId,
             block,
             context,
           },
         }),
-      openCrossGroupBlock: (block, context) =>
+      openCrossGroupBlock: (appletId, block, context) =>
         postMessage({
           type: "open-view",
           request: {
             type: "cross-group-block",
+            appletId,
             block,
             context,
           },
@@ -147,63 +174,84 @@ async function handleRenderViewMessage(
   if (message.type === "group-view") {
     let profilesClient = await setupProfilesClient(
       appPort,
-      message.info.profilesAppId,
-      message.info.profilesRoleName
+      message.profilesAppId,
+      message.profilesRoleName
     );
-    let client = await setupAppletClient(appPort, message.info.appletId);
+    let client = await setupAppletClient(appPort, message.appletInstalledAppId);
 
     switch (message.view.type) {
       case "main":
         applet
-          .groupViews(client, { profilesClient }, weServices)
+          .groupViews(
+            client,
+            message.groupId,
+            message.appletInstanceId,
+            { profilesClient, groupProfile: message.groupProfile },
+            weServices
+          )
           .main(document.body);
         break;
       case "block":
         applet
-          .groupViews(client, { profilesClient }, weServices)
+          .groupViews(
+            client,
+            message.groupId,
+            message.appletInstanceId,
+            { profilesClient, groupProfile: message.groupProfile },
+            weServices
+          )
           .blocks[message.view.block](document.body, message.view.context);
         break;
 
       case "entry":
         applet
-          .groupViews(client, { profilesClient }, weServices)
+          .groupViews(
+            client,
+            message.groupId,
+            message.appletInstanceId,
+            { profilesClient, groupProfile: message.groupProfile },
+            weServices
+          )
           .entries[message.view.role][message.view.zome][
             message.view.entryType
           ].view(document.body, message.view.hrl, message.view.context);
         break;
     }
   } else {
-    const groupsWithApplets: GroupWithApplets[] = await Promise.all(
-      message.infos.map(async (info) => {
-        const appletsClients = await Promise.all(
-          info.appletsIds.map((appletId) =>
-            setupAppletClient(appPort, appletId)
-          )
-        );
-        const profilesClient = await setupProfilesClient(
-          appPort,
-          info.profilesAppId,
-          info.profilesRoleName
-        );
+    const appletsByGroup: HoloHashMap<DnaHash, GroupWithApplets> =
+      new HoloHashMap();
 
-        return {
-          appletsClients,
-          groupServices: {
-            profilesClient,
-          },
-        };
-      })
-    );
+    for (const [groupId, groupWithApplets] of Array.from(
+      message.appletsByGroup.entries()
+    )) {
+      const applets: HoloHashMap<EntryHash, AppAgentClient> = new HoloHashMap();
+      for (const [appletId, appletInstalledAppId] of groupWithApplets.applets) {
+        applets.set(
+          appletId,
+          await setupAppletClient(appPort, appletInstalledAppId)
+        );
+      }
+
+      appletsByGroup.set(groupId, {
+        applets,
+        groupServices: {
+          groupProfile: groupWithApplets.groupProfile,
+          profilesClient: await setupProfilesClient(
+            appPort,
+            groupWithApplets.profilesAppId,
+            groupWithApplets.profilesRoleName
+          ),
+        },
+      });
+    }
 
     switch (message.view.type) {
       case "main":
-        applet
-          .crossGroupViews(groupsWithApplets, weServices)
-          .main(document.body);
+        applet.crossGroupViews(appletsByGroup, weServices).main(document.body);
         break;
       case "block":
         applet
-          .crossGroupViews(groupsWithApplets, weServices)
+          .crossGroupViews(appletsByGroup, weServices)
           .blocks[message.view.block](document.body, message.view.context);
         break;
     }
@@ -222,7 +270,13 @@ async function handleWorkerMessage(message: ParentToWebWorkerMessage) {
       break;
     case "info":
       return applet
-        .groupViews(client!, null as any, null as any)
+        .groupViews(
+          client!,
+          message.groupId,
+          message.appletInstanceId,
+          { profilesClient: null as any, groupProfile: message.groupProfile },
+          null as any
+        )
         .entries[message.roleName][message.integrityZomeName][
           message.entryDefId
         ].info(message.hrl);

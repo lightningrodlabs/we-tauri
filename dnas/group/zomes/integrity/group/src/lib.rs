@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     AppletInstance(AppletInstance),
-    GroupInfo(GroupInfo),
+    GroupProfile(GroupProfile),
 }
 
 #[hdk_link_types]
@@ -46,7 +46,7 @@ pub struct FederateAppletInstanceInput {
 
 #[hdk_entry_helper]
 #[derive(Clone)]
-pub struct GroupInfo {
+pub struct GroupProfile {
     pub name: String,
     pub logo_src: String,
 }

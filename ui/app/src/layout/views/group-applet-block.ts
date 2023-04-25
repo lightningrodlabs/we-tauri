@@ -15,9 +15,12 @@ export class GroupAppletBlock extends LitElement {
   @property()
   block!: string;
 
+  @property()
+  context!: any;
+
   render() {
     return html`<group-view
-      .view=${{ type: "block", block: this.block }}
+      .view=${{ type: "block", block: this.block, context: this.context }}
       .appletInstanceHash=${this.appletInstanceHash}
       style="flex: 1"
     ></group-view>`;

@@ -27,14 +27,16 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import { GroupWithApplets } from "@lightningrodlabs/we-applet";
+import { GroupProfile, GroupWithApplets } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
+import { InternalGroupWithApplets } from "../../applet-messages/dist";
 
 import { AppletsStore } from "./applets/applets-store";
 import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
-import { AppletInstance, GroupInfo } from "./groups/types";
+import { AppletInstance } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
+import { getConductorInfo } from "./tauri";
 import {
   findAppForDnaHash,
   findAppletInstanceForAppInfo,
@@ -91,12 +93,12 @@ export class WeStore {
       groupClonedCell.clone_id
     );
 
-    const groupInfo: GroupInfo = {
+    const groupProfile: GroupProfile = {
       logo_src: logo,
       name: name,
     };
 
-    await groupClient.setGroupInfo(groupInfo);
+    await groupClient.setGroupInfo(groupProfile);
 
     return groupClonedCell;
   }
@@ -168,7 +170,7 @@ export class WeStore {
   );
 
   allGroupsInfo = asyncDeriveStore(this.allGroups, (groupsStores) =>
-    joinAsyncMap(mapValues(groupsStores, (store) => store.groupInfo))
+    joinAsyncMap(mapValues(groupsStores, (store) => store.groupProfile))
   );
 
   appletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
@@ -205,7 +207,7 @@ export class WeStore {
       )
   );
 
-  groupAppletInfos = new LazyHoloHashMap(
+  appletsByGroup = new LazyHoloHashMap(
     (
       devhubReleaseEntryHash: EntryHash // appletid
     ) =>
@@ -216,47 +218,48 @@ export class WeStore {
           this.appletsInstancesByGroup,
         ] as [
           AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
-          AsyncReadable<HoloHashMap<DnaHash, GroupInfo>>,
+          AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
           AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>
         ]),
         async ([groupsStores, groupInfos, groupAppletInstances]) => {
-          const groupAppletsInfos: GroupWithApplets[] = await Promise.all(
-            Array.from(groupAppletInstances.entries()).map(
-              async ([groupDnaHash, instances], index) => {
-                const appletsClients = await Promise.all(
-                  Array.from(instances.values())
-                    .filter(
-                      (instance) =>
-                        instance.devhub_happ_release_hash.toString() ===
-                        devhubReleaseEntryHash.toString()
-                    )
-                    .map(async (appletInstance) => {
-                      const appletId = groupsStores
-                        .get(groupDnaHash)
-                        .appletAppIdFromAppletInstance(appletInstance);
-                      return initAppClient(
-                        appletId,
-                        parseInt(
-                          (window as any).__HC_LAUNCHER_ENV__
-                            .APP_INTERFACE_PORT,
-                          10
-                        )
-                      );
-                    })
-                );
-                return {
-                  appletsClients,
-                  groupServices: {
-                    profilesClient:
-                      groupsStores.get(groupDnaHash).profilesStore.client,
-                  },
-                  groupInfo: groupInfos[index],
-                } as GroupWithApplets;
-              }
-            )
-          );
+          const appletsByGroup: HoloHashMap<DnaHash, InternalGroupWithApplets> =
+            new HoloHashMap();
+          let appletInstalledAppId: string;
 
-          return groupAppletsInfos;
+          for (const [groupDnaHash, instances] of Array.from(
+            groupAppletInstances.entries()
+          )) {
+            const groupStore = groupsStores.get(groupDnaHash);
+
+            if (instances.size > 0) {
+              appletInstalledAppId = groupStore.appletAppIdFromAppletInstance(
+                Array.from(instances.values())[0]
+              );
+            }
+
+            const applets = new HoloHashMap(
+              Array.from(instances.entries())
+                .filter(
+                  ([_, i]) =>
+                    i.devhub_happ_release_hash.toString() ===
+                    devhubReleaseEntryHash.toString()
+                )
+                .map(([appletInstanceHash, instance]) => [
+                  appletInstanceHash,
+                  groupStore.appletAppIdFromAppletInstance(instance),
+                ])
+            );
+
+            appletsByGroup.set(groupDnaHash, {
+              applets,
+              groupId: groupDnaHash,
+              groupProfile: groupInfos.get(groupDnaHash),
+              profilesAppId: this.appId,
+              profilesRoleName: groupStore.roleName,
+            });
+          }
+
+          return { appletsByGroup, appletInstalledAppId };
         }
       )
   );

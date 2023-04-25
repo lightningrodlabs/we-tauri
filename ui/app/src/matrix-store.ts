@@ -518,7 +518,7 @@ export class MatrixStore {
   }
 
   /**
-   * Gets an array of [GroupInfo, AppletInstanceInfo] of the installed applet instances of the specified applet class
+   * Gets an array of [GroupProfile, AppletInstanceInfo] of the installed applet instances of the specified applet class
    * Used to display the group icons in NavifationMode.AppletCentric in the secondary navigation panel.
    */
   public getInstanceInfosForAppletClass(

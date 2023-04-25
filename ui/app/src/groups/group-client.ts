@@ -10,7 +10,7 @@ import {
   AppAgentClient,
   AppAgentCallZomeRequest,
 } from "@holochain/client";
-import { GroupInfo } from "../../../libs/we-applet/dist";
+import { GroupProfile } from "../../../libs/we-applet/dist";
 import { AppletInstance } from "./types";
 
 export class GroupClient {
@@ -20,15 +20,15 @@ export class GroupClient {
     public zomeName: string = "group"
   ) {}
 
-  /** GroupInfo */
+  /** GroupProfile */
 
-  async getGroupInfo(): Promise<EntryRecord<GroupInfo> | undefined> {
+  async getGroupInfo(): Promise<EntryRecord<GroupProfile> | undefined> {
     const record = await this.callZome("get_group_info", null);
     return record ? new EntryRecord(record) : undefined;
   }
 
-  async setGroupInfo(groupInfo: GroupInfo): Promise<void> {
-    await this.callZome("set_group_info", groupInfo);
+  async setGroupInfo(groupProfile: GroupProfile): Promise<void> {
+    await this.callZome("set_group_info", groupProfile);
   }
 
   /** Applets */

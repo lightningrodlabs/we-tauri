@@ -8,7 +8,6 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
 import { msg } from "@lit/localize";
-import { AnyDhtHash } from "@holochain/client";
 
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
@@ -19,6 +18,7 @@ import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
+import { AnyDhtHash } from "@holochain/client";
 
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
@@ -66,10 +66,14 @@ export class CreateAttachment extends LitElement {
           ></sl-button>
 
           <sl-menu>
-            ${this.weServices.groupsAttachmentTypes.map(
-              (ga) => html`<sl-menu-label>${ga.groupInfo.name}</sl-menu-label>
-                ${ga.appletsAttachmentTypes.map((appletAttachments) =>
-                  Object.entries(appletAttachments.attachmentTypes).map(
+            ${Array.from(this.weServices.attachmentTypesByGroup.entries()).map(
+              ([groupId, groupAttachmentTypes]) => html`<sl-menu-label
+                  >${groupAttachmentTypes.groupProfile.name}</sl-menu-label
+                >
+                ${Array.from(
+                  groupAttachmentTypes.attachmentTypesByApplet.entries()
+                ).map(([appletInstanceId, appletAttachmentTypes]) =>
+                  Object.entries(appletAttachmentTypes.attachmentTypes).map(
                     ([name, attachmentType]) => html`
                       <sl-menu-item
                         @click=${() => this.createAttachment(attachmentType)}
@@ -80,7 +84,8 @@ export class CreateAttachment extends LitElement {
                         ></sl-icon>
                         ${attachmentType.label}
                         <span slot="suffix"
-                          >${msg("in")} ${appletAttachments.appletName}</span
+                          >${msg("in")}
+                          ${appletAttachmentTypes.appletName}</span
                         >
                       </sl-menu-item>
                     `

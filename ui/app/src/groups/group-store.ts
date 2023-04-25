@@ -11,7 +11,6 @@ import {
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
 import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
-import { makeStatefulWorker } from "inline-webworker-functional/browser";
 import {
   AdminWebsocket,
   AgentPubKey,
@@ -28,6 +27,12 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
 import { fromUint8Array } from "js-base64";
+import { DnaModifiers } from "@holochain/client";
+import {
+  AppletToParentRequest,
+  ParentToWebWorkerMessage,
+} from "applet-messages";
+import { Hrl } from "@lightningrodlabs/hrl";
 
 import { AppletsStore } from "../applets/applets-store";
 import { AppletInstance } from "./types";
@@ -35,11 +40,8 @@ import { AppletMetadata } from "../types";
 import { initAppClient } from "../utils";
 import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
-import { DnaModifiers } from "@holochain/client";
-import { ActionHash } from "@holochain/client";
-import { getConductorInfo } from "../tauri";
-import { ParentToWebWorkerMessage } from "../../../applet-messages/dist";
-import { Hrl } from "../../../libs/hrl/dist";
+import { getConductorInfo, signZomeCallTauri } from "../tauri";
+import { GroupProfile } from "../../../libs/we-applet/dist";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -85,7 +87,7 @@ export class GroupStore {
     return dnaModifiers.network_seed;
   });
 
-  groupInfo = lazyLoadAndPoll(async () => {
+  groupProfile = lazyLoadAndPoll(async () => {
     const entryRecord = await this.groupClient.getGroupInfo();
     return entryRecord?.entry;
   }, 4000);
@@ -225,10 +227,13 @@ export class GroupStore {
 
   appletWorker = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
     asyncDerived(
-      this.applets.get(appletInstanceHash),
-      async (appletInstance) => {
+      join([
+        this.groupProfile,
+        this.applets.get(appletInstanceHash),
+      ]) as AsyncReadable<[GroupProfile, EntryRecord<AppletInstance>]>,
+      async ([groupProfile, appletInstance]) => {
         const appletId = this.appletAppIdFromAppletInstance(
-          appletInstance!.entry
+          appletInstance.entry
         );
         const info = await getConductorInfo();
 
@@ -238,10 +243,10 @@ export class GroupStore {
           await new Promise((resolve) => {
             const { port1, port2 } = new MessageChannel();
 
-            worker.postMessage([port2]);
+            worker.postMessage(message, [port2]);
 
             port1.onmessage = (m) => {
-              resolve(null);
+              resolve(m.data);
             };
           });
         }
@@ -252,10 +257,25 @@ export class GroupStore {
           appletId,
         } as ParentToWebWorkerMessage);
 
+        worker.onmessage = (m) => {
+          const message = m.data as AppletToParentRequest;
+          if (message.type === "sign-zome-call") {
+            return signZomeCallTauri(message.request);
+          }
+        };
+
         return {
-          info: (roleName, integrityZomeName, entryDefId, hrl) =>
+          info: (
+            roleName: string,
+            integrityZomeName: string,
+            entryDefId: string,
+            hrl: Hrl
+          ) =>
             postMessage({
               type: "info",
+              groupId: this.groupDnaHash,
+              groupProfile,
+              appletInstanceId: appletInstanceHash,
               roleName,
               integrityZomeName,
               entryDefId,
@@ -269,22 +289,6 @@ export class GroupStore {
             });
           },
         };
-      }
-    )
-  );
-
-  appletClient = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
-    asyncDerived(
-      this.applets.get(appletInstanceHash),
-      async (appletInstance) => {
-        if (!appletInstance) throw new Error("Applet instance not found");
-
-        // TODO: if this applet is not installed yet, display dialog to install it
-        const appletId = this.appletAppIdFromAppletInstance(
-          appletInstance.entry
-        );
-
-        return initAppClient(appletId);
       }
     )
   );

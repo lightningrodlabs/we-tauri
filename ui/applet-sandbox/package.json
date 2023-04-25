@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@holochain/client": "^0.13.0",
+    "@holochain-open-dev/utils": "^0.13.0",
     "@lightningrodlabs/we-applet": "0.2.0",
     "applet-messages": "0.0.1"
   },

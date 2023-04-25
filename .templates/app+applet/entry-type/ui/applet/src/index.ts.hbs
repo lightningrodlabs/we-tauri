@@ -8,7 +8,7 @@ import 'lib/{{dna_role_name}}/{{kebab_case coordinator_zome_manifest.name}}/dist
         render(
           wrap{{pascal_case coordinator_zome_manifest.name}}GroupView(
             client,
-            groupInfo,
+            groupProfile,
             groupServices,
             html` <{{kebab_case entry_type.name}}-detail .{{camel_case entry_type.name}}Hash=${hash}></{{kebab_case entry_type.name}}-detail> `
           ),

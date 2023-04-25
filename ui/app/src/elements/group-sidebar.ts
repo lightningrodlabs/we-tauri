@@ -8,7 +8,7 @@ import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { GroupInfo } from "@lightningrodlabs/we-applet";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
 import { mdiAccountMultiplePlus, mdiHelpCircleOutline, mdiHome } from "@mdi/js";
@@ -49,24 +49,24 @@ export class GroupSidebar extends LitElement {
     `;
   }
 
-  renderGroups(groups: ReadonlyMap<DnaHash, GroupInfo | undefined>) {
+  renderGroups(groups: ReadonlyMap<DnaHash, GroupProfile | undefined>) {
     const knownGroups = Array.from(groups.entries()).filter(
-      ([_, groupInfo]) => !!groupInfo
-    ) as Array<[DnaHash, GroupInfo]>;
+      ([_, groupProfile]) => !!groupProfile
+    ) as Array<[DnaHash, GroupProfile]>;
     const unknownGroups = Array.from(groups.entries()).filter(
-      ([_, groupInfo]) => !groupInfo
-    ) as Array<[DnaHash, GroupInfo]>;
+      ([_, groupProfile]) => !groupProfile
+    ) as Array<[DnaHash, GroupProfile]>;
 
     return html`
       ${knownGroups
         .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
         .map(
-          ([groupDnaHash, groupInfo]) =>
+          ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-                .logoSrc=${groupInfo.logo_src}
-                .tooltipText=${groupInfo.name}
+                .logoSrc=${groupProfile.logo_src}
+                .tooltipText=${groupProfile.name}
                 @click=${() => {
                   this.dispatchEvent(
                     new CustomEvent("group-selected", {

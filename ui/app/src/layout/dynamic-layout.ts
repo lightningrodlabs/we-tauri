@@ -11,6 +11,7 @@ import {
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { provide } from "@lit-labs/context";
+import { Hrl } from "@lightningrodlabs/hrl";
 
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
@@ -21,7 +22,6 @@ import "./views/entry-view.js";
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
-import { Hrl } from "../../../libs/we-applet/dist/index.js";
 
 @localized()
 @customElement("dynamic-layout")
@@ -40,8 +40,45 @@ export class DynamicLayout extends LitElement {
 
   @provide({ context: openViewsContext })
   openViews: AppOpenViews = {
-    openGroupBlock: () => {},
-    openCrossGroupBlock: () => {},
+    openGroupBlock: (groupDnaHash, appletInstanceHash, block, context) => {
+      this.goldenLayout.addItemAtLocation(
+        {
+          title: "Group Block",
+          type: "component",
+          componentType: "group-block",
+          componentState: {
+            groupDnaHash: encodeHashToBase64(groupDnaHash),
+            appletInstanceHash: encodeHashToBase64(appletInstanceHash),
+            block,
+            context,
+          },
+        },
+        [
+          {
+            typeId: 3,
+          },
+        ]
+      );
+    },
+    openCrossGroupBlock: (devhubAppReleaseHash, block, context) => {
+      this.goldenLayout.addItemAtLocation(
+        {
+          title: "Cross Group Block",
+          type: "component",
+          componentType: "cross-group-block",
+          componentState: {
+            devhubAppReleaseHash: encodeHashToBase64(devhubAppReleaseHash),
+            block,
+            context,
+          },
+        },
+        [
+          {
+            typeId: 3,
+          },
+        ]
+      );
+    },
     openHrl: (hrl: Hrl, context: any) => {
       this.goldenLayout.addItemAtLocation(
         {
@@ -65,7 +102,7 @@ export class DynamicLayout extends LitElement {
   openTab(itemConfig: ComponentItemConfig) {
     this.goldenLayout.addItemAtLocation(itemConfig, [
       {
-        typeId: 2,
+        typeId: 3,
       },
     ]);
   }
@@ -102,15 +139,6 @@ export class DynamicLayout extends LitElement {
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-applet-block"
-        .template=${({ appletHash, block }) => html` <cross-group-applet-block
-          .appletHash=${appletHash}
-          .blockName=${block}
-          style="flex: 1"
-        ></cross-group-applet-block>`}
-      >
-      </golden-layout-register>
-      <golden-layout-register
         component-type="entry"
         .template=${({ hrl, context }) => html` <entry-view
           .hrl=${[decodeHashFromBase64(hrl[0]), decodeHashFromBase64(hrl[1])]}
@@ -121,11 +149,17 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="group-applet-block"
-        .template=${({ groupDnaHash, appletInstanceHash, block }) => html`
+        .template=${({
+          groupDnaHash,
+          appletInstanceHash,
+          block,
+          context,
+        }) => html`
           <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
             <group-applet-block
               .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
               .block=${block}
+              .context=${context}
               style="flex: 1"
             ></group-applet-block>
           </group-context>
@@ -142,6 +176,28 @@ export class DynamicLayout extends LitElement {
             ></group-applet-main>
           </group-context>
         `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="cross-group-applet-main"
+        .template=${({ devhubAppReleaseHash }) => html` <cross-group-applet-main
+          .devhubAppReleaseHash=${decodeHashFromBase64(devhubAppReleaseHash)}
+          style="flex: 1"
+        ></cross-group-applet-main>`}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="cross-group-applet-block"
+        .template=${({
+          devhubAppReleaseHash,
+          block,
+          context,
+        }) => html` <cross-group-applet-block
+          .devhubAppReleaseHash=${decodeHashFromBase64(devhubAppReleaseHash)}
+          .block=${block}
+          .context=${context}
+          style="flex: 1"
+        ></cross-group-applet-block>`}
       >
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>

@@ -4,7 +4,7 @@ import '@holochain-open-dev/profiles/dist/elements/profiles-context.js';
 
 import {
   CrossGroupViews,
-  GroupInfo,
+  GroupProfile,
   GroupServices,
   GroupViews,
   GroupWithApplets,
@@ -16,7 +16,7 @@ import './main-block';
 
 function wrapGroupView(
   client: AppAgentClient,
-  groupInfo: GroupInfo,
+  groupProfile: GroupProfile,
   groupServices: GroupServices,
   innerTemplate: TemplateResult
 ): TemplateResult {
@@ -28,7 +28,7 @@ function wrapGroupView(
 
 function groupViews(
   client: AppAgentClient,
-  groupInfo: GroupInfo,
+  groupProfile: GroupProfile,
   groupServices: GroupServices,
   weServices: WeServices
 ): GroupViews {
@@ -38,7 +38,7 @@ function groupViews(
         render(
           wrapGroupView(
             client,
-            groupInfo,
+            groupProfile,
             groupServices,
             html`<main-block></main-block>`
           ),

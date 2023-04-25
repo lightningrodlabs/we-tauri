@@ -4,7 +4,7 @@ use hdk::prelude::*;
 pub mod applets;
 
 pub fn group_info_path() -> ExternResult<TypedPath> {
-    Path::from("group_info").typed(LinkTypes::GroupInfoPath)
+    Path::from("group_profile").typed(LinkTypes::GroupInfoPath)
 }
 
 // If this function returns None, it means that we haven't synced up yet
@@ -29,10 +29,10 @@ pub fn get_group_info(_: ()) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-pub fn set_group_info(group_info: GroupInfo) -> ExternResult<()> {
+pub fn set_group_info(group_profile: GroupProfile) -> ExternResult<()> {
     let path = group_info_path()?;
 
-    let action_hash = create_entry(EntryTypes::GroupInfo(group_info))?;
+    let action_hash = create_entry(EntryTypes::GroupProfile(group_profile))?;
 
     create_link(
         path.path_entry_hash()?,
