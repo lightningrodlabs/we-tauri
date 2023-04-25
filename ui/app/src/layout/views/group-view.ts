@@ -19,7 +19,12 @@ import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { GroupView, ParentToIframeMessage, RenderView } from "applet-messages";
+import {
+  AppletToParentRequest,
+  GroupView,
+  ParentToIframeMessage,
+  RenderView,
+} from "applet-messages";
 
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
@@ -31,6 +36,7 @@ import { GroupStore } from "../../groups/group-store.js";
 import { mdiInformationOutline } from "@mdi/js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
+import { signZomeCallTauri } from "../../tauri.js";
 
 @localized()
 @customElement("group-view")
@@ -45,14 +51,14 @@ export class GroupViewEl extends LitElement {
   @property(hashProperty("applet-instance-hash"))
   appletInstanceHash!: EntryHash;
 
-  @consume({ context: openViewsContext, subscribe: true })
-  openViews!: AppOpenViews;
-
   @state()
   installing = false;
 
   @property()
   view!: GroupView;
+
+  @consume({ context: openViewsContext, subscribe: true })
+  openViews!: AppOpenViews;
 
   _appletClient = new StoreSubscriber(
     this,
@@ -68,30 +74,41 @@ export class GroupViewEl extends LitElement {
     () => [this.groupStore, this.appletInstanceHash]
   );
 
-  weServices(appletInstance: EntryRecord<AppletInstance>): WeServices {
-    return {
-      openViews: {
-        openHrl: (hrl: Hrl, context: any) => {
-          this.openViews.openHrl(hrl, context);
-        },
-        openGroupBlock: (block: string) =>
-          this.openViews.openGroupBlock(
-            this.groupStore.groupDnaHash,
-            this.appletInstanceHash,
-            block
-          ),
-        openCrossGroupBlock: (block: string) =>
-          this.openViews.openCrossGroupBlock(
-            appletInstance.entry.devhub_happ_release_hash,
-            block
-          ),
-      } as OpenViews,
-      info: async (hrl) => {
+  async handleMessage(
+    appletInstance: EntryRecord<AppletInstance>,
+    message: AppletToParentRequest
+  ) {
+    switch (message.type) {
+      case "open-view":
+        switch (message.request.type) {
+          case "group-block":
+            return this.openViews.openGroupBlock(
+              this.groupStore.groupDnaHash,
+              this.appletInstanceHash,
+              message.request.block,
+              message.request.context
+            );
+          case "cross-group-block":
+            return this.openViews.openCrossGroupBlock(
+              appletInstance.entry.devhub_happ_release_hash,
+              message.request.block,
+              message.request.context
+            );
+          case "hrl":
+            return this.openViews.openHrl(
+              message.request.hrl,
+              message.request.context
+            );
+        }
+
+      case "get-info":
+        const dnaHash = message.hrl[0];
+
         const dnaLocation = await toPromise(
-          this.weStore.dnaLocations.get(hrl[0])
+          this.weStore.dnaLocations.get(dnaHash)
         );
         const hrlLocation = await toPromise(
-          this.weStore.hrlLocations.get(hrl[0]).get(hrl[1])
+          this.weStore.hrlLocations.get(dnaHash).get(message.hrl[1])
         );
 
         if (!hrlLocation) return undefined;
@@ -103,14 +120,10 @@ export class GroupViewEl extends LitElement {
           groupStore.appletWorker.get(dnaLocation.appletInstanceHash)
         );
 
-        // return worker.info(
-        //   dnaLocation.roleName,
-        //   hrlLocation.integrity_zome,
-        //   hrlLocation.entry_def,
-        //   hrl[1]
-        // );
-      },
-    };
+        break;
+      case "sign-zome-call":
+        return signZomeCallTauri(message.request);
+    }
   }
 
   renderAppletFrame([groupInfo, client, appletInstance, isInstalled]: [
@@ -158,19 +171,6 @@ export class GroupViewEl extends LitElement {
       `;
     }
 
-    const globalVars = {
-      appletClient: client,
-      groupInfo,
-      groupServices: { profilesStore: this.groupStore.profilesStore },
-      weServices: this.weServices(appletInstance),
-    };
-    if (this.view.type !== "main") {
-      globalVars["context"] = this.view.context;
-    }
-    if (this.view.type === "entry") {
-      globalVars["hrl"] = this.view.hrl;
-      this.weServices(appletInstance).info(this.view.hrl);
-    }
     const appletId = this.groupStore.appletAppIdFromAppletInstance(
       appletInstance.entry
     );
@@ -183,9 +183,12 @@ export class GroupViewEl extends LitElement {
             profilesAppId: this.weStore.appId,
             profilesRoleName: this.groupStore.roleName,
           },
+          view: this.view,
         } as RenderView}
         .appletId=${appletId}
         style="flex: 1"
+        .messageHandler=${(request: AppletToParentRequest) =>
+          this.handleMessage(appletInstance, request)}
       ></view-frame>
     `;
   }

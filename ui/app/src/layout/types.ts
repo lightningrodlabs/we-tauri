@@ -5,8 +5,13 @@ export interface AppOpenViews {
   openGroupBlock(
     groupDnaHash: DnaHash,
     appletInstanceHash: EntryHash,
-    block: string
+    block: string,
+    context: any
   ): void;
-  openCrossGroupBlock(devhubAppReleaseHash: EntryHash, block: string): void;
+  openCrossGroupBlock(
+    devhubAppReleaseHash: EntryHash,
+    block: string,
+    context: any
+  ): void;
   openHrl(hrl: Hrl, context: any): void;
 }

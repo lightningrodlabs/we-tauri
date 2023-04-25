@@ -1,6 +1,19 @@
 import { ActionHash, CallZomeRequest, EntryHash } from "@holochain/client";
 import { Hrl } from "@lightningrodlabs/hrl";
 
+export type OpenViewRequest =
+  | {
+      type: "group-block";
+      block: string;
+      context: any;
+    }
+  | { type: "cross-group-block"; block: string; context: any }
+  | {
+      type: "hrl";
+      hrl: Hrl;
+      context: any;
+    };
+
 export type AppletToParentRequest =
   | {
       type: "sign-zome-call";
@@ -8,6 +21,11 @@ export type AppletToParentRequest =
     }
   | {
       type: "open-view";
+      request: OpenViewRequest;
+    }
+  | {
+      type: "get-info";
+      hrl: Hrl;
     };
 
 export interface GroupAppletInfo {

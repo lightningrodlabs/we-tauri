@@ -1,6 +1,10 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { ParentToIframeMessage, RenderView } from "applet-messages";
+import {
+  AppletToParentRequest,
+  ParentToIframeMessage,
+  RenderView,
+} from "applet-messages";
 import { weStyles } from "../../shared-styles.js";
 import { getConductorInfo } from "../../tauri.js";
 
@@ -15,29 +19,29 @@ export class ViewFrame extends LitElement {
   @property()
   renderView!: RenderView;
 
+  @property()
+  messageHandler!: (request: AppletToParentRequest) => any;
+
   async onLoad() {
     const info = await getConductorInfo();
+
+    const { port1, port2 } = new MessageChannel();
 
     this.iframe.contentWindow!.postMessage(
       {
         message: this.renderView,
         appPort: info.app_port,
       } as ParentToIframeMessage,
-      `applet://${this.appletId}`
+      `applet://${this.appletId}`,
+      [port2]
     );
-
-    // const iframe = this.iframe;
-
-    // if (this.globalVars) {
-    //   for (const [key, value] of Object.entries(this.globalVars)) {
-    //     this.iframe.contentWindow![key] = value;
-    //   }
-    // }
-    // const scriptChild = iframe.contentDocument!.createElement("script");
-    // scriptChild.type = "module";
-    // scriptChild.innerHTML = `
-    //   import('/index.js').then(m => { const applet = m.default;
-    //   (${this.initFrameJs})(applet, document.body, window) });`;
+    const childWindow = this.iframe.contentWindow!;
+    window.addEventListener("message", async (message) => {
+      if (message.source === childWindow) {
+        const result = await this.messageHandler(message.data);
+        message.ports[0].postMessage(result);
+      }
+    });
   }
 
   render() {

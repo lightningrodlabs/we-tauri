@@ -11,7 +11,11 @@ import {
   ParentToIframeMessage,
   RenderView,
 } from "applet-messages";
-import { GroupWithApplets, WeApplet } from "@lightningrodlabs/we-applet";
+import {
+  GroupWithApplets,
+  WeApplet,
+  WeServices,
+} from "@lightningrodlabs/we-applet";
 
 async function setupAppletClient(
   appPort: number,
@@ -25,7 +29,7 @@ async function setupAppletClient(
   appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
     "call_zome",
     {
-      input: (request) => signZomeCall(request),
+      input: async (request) => signZomeCall(request),
       output: (o) => decode(o as any),
     }
   );
@@ -57,7 +61,42 @@ async function handleIframeMessage(message: ParentToIframeMessage) {
 async function handleRenderViewMessage(appPort: number, message: RenderView) {
   const applet = await fetchApplet();
 
-  const weServices: any = null;
+  const weServices: WeServices = {
+    info: (hrl) =>
+      postMessage({
+        type: "get-info",
+        hrl,
+      }),
+    openViews: {
+      openGroupBlock: (block, context) =>
+        postMessage({
+          type: "open-view",
+          request: {
+            type: "group-block",
+            block,
+            context,
+          },
+        }),
+      openCrossGroupBlock: (block, context) =>
+        postMessage({
+          type: "open-view",
+          request: {
+            type: "cross-group-block",
+            block,
+            context,
+          },
+        }),
+      openHrl: (hrl, context) =>
+        postMessage({
+          type: "open-view",
+          request: {
+            type: "hrl",
+            hrl,
+            context,
+          },
+        }),
+    },
+  };
 
   if (message.type === "group-view") {
     let profilesClient = await setupProfilesClient(
@@ -70,18 +109,18 @@ async function handleRenderViewMessage(appPort: number, message: RenderView) {
     switch (message.view.type) {
       case "main":
         applet
-          .groupViews(client, { profilesClient }, null as any)
+          .groupViews(client, { profilesClient }, weServices)
           .main(document.body);
         break;
       case "block":
         applet
-          .groupViews(client, { profilesClient }, null as any)
+          .groupViews(client, { profilesClient }, weServices)
           .blocks[message.view.block](document.body, message.view.context);
         break;
 
       case "entry":
         applet
-          .groupViews(client, null as any, null as any)
+          .groupViews(client, { profilesClient }, weServices)
           .entries[message.view.role][message.view.zome][
             message.view.entryType
           ].view(document.body, message.view.hrl[1], message.view.context);
@@ -159,7 +198,7 @@ async function postMessage(m: AppletToParentRequest): Promise<any> {
       self.postMessage(m, "*", [channel.port2]);
     }
 
-    channel.port1.onmessage = (m) => resolve(m);
+    channel.port1.onmessage = (m) => resolve(m.data);
   });
 }
 
@@ -169,7 +208,8 @@ if (isIframe) {
   // This sandbox is inside an iframe
   window.addEventListener("message", async (m) => {
     const result = await handleIframeMessage(m.data);
-    m.ports[0].postMessage(result);
+    // IFrame requests don't need to return anything
+    // m.ports[0].postMessage(result);
   });
 } else {
   // This sandbox is inside a webworker

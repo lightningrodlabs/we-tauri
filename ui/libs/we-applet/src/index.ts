@@ -1,4 +1,4 @@
-import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
+import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { AppAgentClient, ActionHash, EntryHash } from "@holochain/client";
 import { Hrl, HrlWithContext } from "@lightningrodlabs/hrl";
 import { EntryInfo, WeServices } from "./types";
