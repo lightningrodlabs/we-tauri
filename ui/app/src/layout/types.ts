@@ -1,5 +1,5 @@
 import { DnaHash, EntryHash } from "@holochain/client";
-import { Hrl } from "@lightningrodlabs/hrl";
+import { Hrl } from "@lightningrodlabs/we-applet";
 
 export interface AppOpenViews {
   openGroupBlock(

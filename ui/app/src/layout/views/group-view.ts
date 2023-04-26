@@ -7,18 +7,13 @@ import {
   AsyncReadable,
   join,
   StoreSubscriber,
-  toPromise,
 } from "@holochain-open-dev/stores";
-import { AppAgentClient, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import {
-  GroupProfile,
-  OpenViews,
-  WeServices,
-} from "@lightningrodlabs/we-applet";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -130,6 +125,7 @@ export class GroupViewEl extends LitElement {
       ></view-frame>
     `;
   }
+
   render() {
     switch (this._appletClient.value?.status) {
       case "pending":

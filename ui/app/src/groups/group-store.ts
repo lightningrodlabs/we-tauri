@@ -32,16 +32,14 @@ import {
   AppletToParentRequest,
   ParentToWebWorkerMessage,
 } from "applet-messages";
-import { Hrl } from "@lightningrodlabs/hrl";
+import { Hrl, GroupProfile } from "@lightningrodlabs/we-applet";
 
 import { AppletsStore } from "../applets/applets-store";
 import { AppletInstance } from "./types";
 import { AppletMetadata } from "../types";
-import { initAppClient } from "../utils";
 import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
 import { getConductorInfo, signZomeCallTauri } from "../tauri";
-import { GroupProfile } from "../../../libs/we-applet/dist";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {

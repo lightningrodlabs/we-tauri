@@ -9,10 +9,9 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
-import { Hrl } from "@lightningrodlabs/hrl";
 
 import { weServicesContext } from "../context";
-import { WeServices } from "../types";
+import { Hrl, WeServices } from "../types";
 
 @localized()
 @customElement("hrl-link")

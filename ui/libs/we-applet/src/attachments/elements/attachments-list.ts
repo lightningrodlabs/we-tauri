@@ -3,19 +3,18 @@ import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
+import { AnyDhtHash } from "@holochain/client";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
 
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { HrlWithContext } from "@lightningrodlabs/hrl";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
 
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
 import { weServicesContext } from "../../context";
-import { WeServices } from "../../types";
+import { HrlWithContext, WeServices } from "../../types";
 
 import "../../elements/hrl-link.js";
-import { AnyDhtHash } from "@holochain/client";
 
 @customElement("attachments-list")
 export class AttachmentsList extends LitElement {

@@ -9,7 +9,7 @@ import { AttachmentsStore } from "../attachments-store.js";
 export class AttachmentsContext extends LitElement {
   @provide({ context: attachmentsStoreContext })
   @property({ type: Object })
-  attachmentsStore!: AttachmentsStore;
+  store!: AttachmentsStore;
 
   render() {
     return html`<slot></slot>`;

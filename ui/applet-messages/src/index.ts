@@ -1,6 +1,5 @@
 import { CallZomeRequest, DnaHash, EntryHash } from "@holochain/client";
-import { Hrl } from "@lightningrodlabs/hrl";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { Hrl, GroupProfile } from "@lightningrodlabs/we-applet";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 export type OpenViewRequest =

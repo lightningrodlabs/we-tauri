@@ -7,7 +7,7 @@ import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
-import { msg } from "@lit/localize";
+import { msg, localized } from "@lit/localize";
 
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
@@ -25,6 +25,7 @@ import { attachmentsStoreContext } from "../context";
 import { weServicesContext } from "../../context";
 import { AttachmentType, WeServices } from "../../types";
 
+@localized()
 @customElement("create-attachment")
 export class CreateAttachment extends LitElement {
   @consume({ context: attachmentsStoreContext, subscribe: true })

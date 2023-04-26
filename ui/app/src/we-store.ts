@@ -259,7 +259,10 @@ export class WeStore {
             });
           }
 
-          return { appletsByGroup, appletInstalledAppId };
+          return {
+            appletsByGroup,
+            appletInstalledAppId: appletInstalledAppId!,
+          };
         }
       )
   );

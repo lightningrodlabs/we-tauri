@@ -1,10 +1,20 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
-import { EntryHash } from "@holochain/client";
-import { DnaHash } from "@holochain/client";
-import { Hrl, HrlWithContext } from "@lightningrodlabs/hrl";
+import {
+  AppAgentClient,
+  ActionHash,
+  EntryHash,
+  DnaHash,
+} from "@holochain/client";
 
-import { AppAgentClient } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+export type Hrl = [DnaHash, ActionHash | EntryHash];
+
+// Contextual reference to a Hrl
+// Useful use case: image we want to point to a specific section of a document
+// The document action hash would be the Hrl, and the context could be { section: "Second Paragraph" }
+export interface HrlWithContext {
+  hrl: Hrl;
+  context: any;
+}
 
 export interface EntryInfo {
   name: string;
@@ -45,12 +55,12 @@ export interface AppletAttachmentTypes {
 
 export interface GroupAttachmentTypes {
   groupProfile: GroupProfile;
-  attachmentTypesByApplet: HoloHashMap<EntryHash, AppletAttachmentTypes>; // segmented by appletInstanceId
+  attachmentTypesByApplet: ReadonlyMap<EntryHash, AppletAttachmentTypes>; // segmented by appletInstanceId
 }
 
 export interface WeServices {
   openViews: OpenViews;
-  attachmentTypesByGroup: HoloHashMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
+  attachmentTypesByGroup: ReadonlyMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
 
   info(hrl: Hrl): Promise<EntryInfo | undefined>;
 }
@@ -84,7 +94,7 @@ export interface GroupViews {
 
 export interface GroupWithApplets {
   groupServices: GroupServices;
-  applets: HoloHashMap<EntryHash, AppAgentClient>; // segmented by appletInstanceId
+  applets: ReadonlyMap<EntryHash, AppAgentClient>; // segmented by appletInstanceId
 }
 
 export interface WeApplet {
@@ -97,7 +107,7 @@ export interface WeApplet {
   ) => GroupViews;
 
   crossGroupViews: (
-    appletsByGroup: HoloHashMap<DnaHash, GroupWithApplets>, // Segmented by groupId
+    appletsByGroup: ReadonlyMap<DnaHash, GroupWithApplets>, // Segmented by groupId
     weServices: WeServices
   ) => CrossGroupViews;
 

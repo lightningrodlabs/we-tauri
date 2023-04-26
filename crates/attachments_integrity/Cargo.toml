@@ -1,12 +1,12 @@
 [package]
 authors = ["guillem.cordoba@gmail.com"]
 edition = "2021"
-name = "attachments_integrity"
+name = "hc_zome_attachments_integrity"
 version = "0.0.1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "attachments_integrity"
+name = "hc_zome_attachments_integrity"
 
 [dependencies]
 hdi = { workspace = true }

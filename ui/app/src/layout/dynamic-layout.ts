@@ -11,7 +11,6 @@ import {
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { provide } from "@lit-labs/context";
-import { Hrl } from "@lightningrodlabs/hrl";
 
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
@@ -22,6 +21,7 @@ import "./views/entry-view.js";
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
+import { Hrl } from "../../../libs/we-applet/dist/types.js";
 
 @localized()
 @customElement("dynamic-layout")

@@ -1,4 +1,4 @@
-use attachments_integrity::*;
+use hc_zome_attachments_integrity::*;
 use hdk::prelude::holo_hash::DnaHash;
 use hdk::prelude::*;
 

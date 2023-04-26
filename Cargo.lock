@@ -386,23 +386,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "debc29dde2e69f9e47506b525f639ed42300fc014a3e007832592448fa8e4599"
 
 [[package]]
-name = "attachments"
-version = "0.0.1"
-dependencies = [
- "attachments_integrity",
- "hdk",
- "serde",
-]
-
-[[package]]
-name = "attachments_integrity"
-version = "0.0.1"
-dependencies = [
- "hdi",
- "serde",
-]
-
-[[package]]
 name = "attohttpc"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2568,6 +2551,23 @@ dependencies = [
  "serde",
  "serde_bytes",
  "sodoken",
+]
+
+[[package]]
+name = "hc_zome_attachments_coordinator"
+version = "0.0.1"
+dependencies = [
+ "hc_zome_attachments_integrity",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_attachments_integrity"
+version = "0.0.1"
+dependencies = [
+ "hdi",
+ "serde",
 ]
 
 [[package]]
