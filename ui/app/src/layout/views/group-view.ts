@@ -24,7 +24,10 @@ import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
 import { AppletInstance } from "../../groups/types.js";
-import { GroupStore } from "../../groups/group-store.js";
+import {
+  appletAppIdFromAppletInstance,
+  GroupStore,
+} from "../../groups/group-store.js";
 import { mdiInformationOutline } from "@mdi/js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
@@ -103,7 +106,7 @@ export class GroupViewEl extends LitElement {
       `;
     }
 
-    const appletInstalledAppId = this.groupStore.appletAppIdFromAppletInstance(
+    const appletInstalledAppId = appletAppIdFromAppletInstance(
       appletInstance.entry
     );
 
@@ -113,7 +116,7 @@ export class GroupViewEl extends LitElement {
       groupId: this.groupStore.groupDnaHash,
       appletInstanceId: this.appletInstanceHash,
       appletInstalledAppId,
-      profilesAppId: this.weStore.appId,
+      profilesAppId: this.weStore.conductorInfo.we_app_id,
       profilesRoleName: this.groupStore.roleName,
       view: this.view,
     };
@@ -121,6 +124,8 @@ export class GroupViewEl extends LitElement {
       <view-frame
         .renderView=${renderView}
         .appletInstalledAppId=${appletInstalledAppId}
+        .groupDnaHash=${this.groupStore.groupDnaHash}
+        .appletInstanceHash=${this.appletInstanceHash}
         style="flex: 1"
       ></view-frame>
     `;

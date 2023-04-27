@@ -16,6 +16,9 @@ import {
   LazyHoloHashMap,
   mapValues,
 } from "@holochain-open-dev/utils";
+import { DnaHashB64 } from "@holochain/client";
+import { encodeHashToBase64 } from "@holochain/client";
+import { EntryHashB64 } from "@holochain/client";
 import {
   ActionHash,
   AdminWebsocket,
@@ -27,21 +30,26 @@ import {
   EntryHash,
   RoleName,
 } from "@holochain/client";
-import { GroupProfile, GroupWithApplets } from "@lightningrodlabs/we-applet";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
-import { InternalGroupWithApplets } from "../../applet-messages/dist";
+import {
+  InternalAppletAttachmentTypes,
+  InternalAttachmentType,
+  InternalGroupAttachmentTypes,
+  InternalGroupWithApplets,
+} from "../../applet-messages/dist";
+import { AppletHost } from "./applet-host";
 
 import { AppletsStore } from "./applets/applets-store";
 import { GroupClient } from "./groups/group-client";
-import { GroupStore } from "./groups/group-store";
+import {
+  appletAppIdFromAppletInstance,
+  GroupStore,
+} from "./groups/group-store";
 import { AppletInstance } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
-import { getConductorInfo } from "./tauri";
-import {
-  findAppForDnaHash,
-  findAppletInstanceForAppInfo,
-  initAppClient,
-} from "./utils.js";
+import { ConductorInfo } from "./tauri";
+import { findAppForDnaHash, findAppletInstanceForAppInfo } from "./utils.js";
 
 export function manualReloadStore<T>(
   fn: () => Promise<T>
@@ -73,7 +81,7 @@ export class WeStore {
   constructor(
     public adminWebsocket: AdminWebsocket,
     public appAgentWebsocket: AppAgentWebsocket,
-    public appId: string,
+    public conductorInfo: ConductorInfo,
     public devhubClient: AppAgentClient
   ) {
     this.appletsStore = new AppletsStore(devhubClient, adminWebsocket);
@@ -169,17 +177,26 @@ export class WeStore {
     )
   );
 
-  allGroupsInfo = asyncDeriveStore(this.allGroups, (groupsStores) =>
+  allGroupsProfiles = asyncDeriveStore(this.allGroups, (groupsStores) =>
     joinAsyncMap(mapValues(groupsStores, (store) => store.groupProfile))
   );
 
-  appletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
+  allAppletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
     joinAsyncMap(mapValues(allGroups, (store) => store.registeredApplets))
+  );
+
+  appletsInstancesByGroup = new LazyHoloHashMap(
+    (groupDnaHash: DnaHash) =>
+      new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+        asyncDeriveStore(this.groups.get(groupDnaHash), (groupStore) =>
+          groupStore.applets.get(appletInstanceHash)
+        )
+      )
   );
 
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
     asyncDerived(
-      this.appletsInstancesByGroup,
+      this.allAppletsInstancesByGroup,
       async (appletsInstancesByGroup) => {
         const apps = await this.adminWebsocket.listApps({});
         const app = findAppForDnaHash(apps, dnaHash);
@@ -214,8 +231,8 @@ export class WeStore {
       asyncDerived(
         join([
           this.allGroups,
-          this.allGroupsInfo,
-          this.appletsInstancesByGroup,
+          this.allGroupsProfiles,
+          this.allAppletsInstancesByGroup,
         ] as [
           AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
           AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
@@ -232,29 +249,33 @@ export class WeStore {
             const groupStore = groupsStores.get(groupDnaHash);
 
             if (instances.size > 0) {
-              appletInstalledAppId = groupStore.appletAppIdFromAppletInstance(
+              appletInstalledAppId = appletAppIdFromAppletInstance(
                 Array.from(instances.values())[0]
               );
             }
 
-            const applets = new HoloHashMap(
-              Array.from(instances.entries())
-                .filter(
-                  ([_, i]) =>
-                    i.devhub_happ_release_hash.toString() ===
-                    devhubReleaseEntryHash.toString()
-                )
-                .map(([appletInstanceHash, instance]) => [
-                  appletInstanceHash,
-                  groupStore.appletAppIdFromAppletInstance(instance),
-                ])
+            const applets: Record<string, string> = {};
+            const instancesForThisApplet = Array.from(
+              instances.entries()
+            ).filter(
+              ([_, i]) =>
+                i.devhub_happ_release_hash.toString() ===
+                devhubReleaseEntryHash.toString()
             );
+
+            for (const [
+              appletInstanceHash,
+              instance,
+            ] of instancesForThisApplet) {
+              applets[encodeHashToBase64(appletInstanceHash)] =
+                appletAppIdFromAppletInstance(instance);
+            }
 
             appletsByGroup.set(groupDnaHash, {
               applets,
               groupId: groupDnaHash,
               groupProfile: groupInfos.get(groupDnaHash),
-              profilesAppId: this.appId,
+              profilesAppId: this.conductorInfo.we_app_id,
               profilesRoleName: groupStore.roleName,
             });
           }
@@ -265,5 +286,118 @@ export class WeStore {
           };
         }
       )
+  );
+
+  appletsHosts = new LazyHoloHashMap(
+    (groupDnaHash: DnaHash) =>
+      new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+        asyncDerived(
+          this.appletsInstancesByGroup
+            .get(groupDnaHash)
+            .get(appletInstanceHash),
+          async (appletInstance) => {
+            const appletInstalledAppId = appletAppIdFromAppletInstance(
+              appletInstance!.entry
+            );
+
+            const origin = `applet://${appletInstalledAppId}`;
+            const iframe = document.createElement("iframe");
+            iframe.src = origin;
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
+
+            return AppletHost.connect(
+              appletInstalledAppId,
+              groupDnaHash,
+              appletInstanceHash,
+              iframe,
+              this,
+              undefined
+            );
+          }
+        )
+      )
+  );
+
+  allAppletsHosts = asyncDeriveStore(
+    this.allAppletsInstancesByGroup,
+    async (groupAppletInstances) => {
+      return joinAsyncMap(
+        mapValues(groupAppletInstances, (appletsInGroup, groupDnaHash) =>
+          joinAsyncMap(
+            mapValues(appletsInGroup, (_, appletInstanceHash) =>
+              this.appletsHosts.get(groupDnaHash).get(appletInstanceHash)
+            )
+          )
+        )
+      );
+    }
+  );
+
+  attachmentTypesByGroup = asyncDeriveStore(
+    this.allAppletsHosts,
+    async (appletsHostsByGroupAndApplet) => {
+      return joinAsyncMap(
+        mapValues(appletsHostsByGroupAndApplet, (hostsByApplet) =>
+          joinAsyncMap(
+            mapValues(hostsByApplet, (host) =>
+              lazyLoad(() => host.getAttachmentTypes())
+            )
+          )
+        )
+      );
+    }
+  );
+
+  groupAttachmentTypes: AsyncReadable<
+    Record<DnaHashB64, InternalGroupAttachmentTypes>
+  > = asyncDerived(
+    join([
+      this.allAppletsInstancesByGroup,
+      this.allGroupsProfiles,
+      this.attachmentTypesByGroup,
+    ] as [
+      AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>,
+      AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
+      AsyncReadable<
+        HoloHashMap<
+          DnaHash,
+          EntryHashMap<Record<string, InternalAttachmentType>>
+        >
+      >
+    ]),
+    ([appletInstancesByGroup, groupsProfiles, attachmentTypesByGroup]) => {
+      const groupAttachmentTypes: Record<
+        DnaHashB64,
+        InternalGroupAttachmentTypes
+      > = {};
+
+      for (const [groupDnaHash, attachmentsByApplet] of Array.from(
+        attachmentTypesByGroup.entries()
+      )) {
+        const internalAppletAttachmentTypes: Record<
+          EntryHashB64,
+          InternalAppletAttachmentTypes
+        > = {};
+        for (const [appletInstanceHash, appletAttachmentTypes] of Array.from(
+          attachmentsByApplet.entries()
+        )) {
+          internalAppletAttachmentTypes[
+            encodeHashToBase64(appletInstanceHash)
+          ] = {
+            attachmentTypes: appletAttachmentTypes,
+            appletName: appletInstancesByGroup
+              .get(groupDnaHash)
+              .get(appletInstanceHash).custom_name,
+          };
+        }
+        groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {
+          groupProfile: groupsProfiles.get(groupDnaHash),
+          attachmentTypesByApplet: internalAppletAttachmentTypes,
+        };
+      }
+
+      return groupAttachmentTypes;
+    }
   );
 }

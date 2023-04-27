@@ -55,7 +55,7 @@ export class DynamicLayout extends LitElement {
         },
         [
           {
-            typeId: 3,
+            typeId: 2,
           },
         ]
       );
@@ -74,7 +74,7 @@ export class DynamicLayout extends LitElement {
         },
         [
           {
-            typeId: 3,
+            typeId: 2,
           },
         ]
       );
@@ -92,7 +92,7 @@ export class DynamicLayout extends LitElement {
         },
         [
           {
-            typeId: 3,
+            typeId: 2,
           },
         ]
       );
@@ -102,7 +102,7 @@ export class DynamicLayout extends LitElement {
   openTab(itemConfig: ComponentItemConfig) {
     this.goldenLayout.addItemAtLocation(itemConfig, [
       {
-        typeId: 3,
+        typeId: 2,
       },
     ]);
   }

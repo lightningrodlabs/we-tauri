@@ -62,7 +62,7 @@ export interface WeServices {
   openViews: OpenViews;
   attachmentTypesByGroup: ReadonlyMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
 
-  info(hrl: Hrl): Promise<EntryInfo | undefined>;
+  getEntryInfo(hrl: Hrl): Promise<EntryInfo | undefined>;
 }
 
 export type MainView = (rootElement: HTMLElement) => void;

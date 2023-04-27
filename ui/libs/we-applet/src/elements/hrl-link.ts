@@ -27,7 +27,7 @@ export class HrlLink extends LitElement {
 
   info = new StoreSubscriber(
     this,
-    () => lazyLoad(() => this.weServices.info(this.hrl)),
+    () => lazyLoad(() => this.weServices.getEntryInfo(this.hrl)),
     () => [this.hrl]
   );
 

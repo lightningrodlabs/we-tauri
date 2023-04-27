@@ -37,7 +37,10 @@ export class GroupSidebar extends LitElement {
   @property(hashProperty("selected-group-dna-hash"))
   selectedGroupDnaHash: DnaHash | undefined;
 
-  _groupsInfo = new StoreSubscriber(this, () => this._weStore.allGroupsInfo);
+  _groupsProfiles = new StoreSubscriber(
+    this,
+    () => this._weStore.allGroupsProfiles
+  );
 
   renderGroupApplets(groupDnaHash: DnaHash) {
     return html`
@@ -106,17 +109,17 @@ export class GroupSidebar extends LitElement {
   }
 
   renderGroupsLoading() {
-    switch (this._groupsInfo.value.status) {
+    switch (this._groupsProfiles.value.status) {
       case "pending":
         return html`<sl-skeleton></sl-skeleton>`;
       case "error":
         return html`<display-error
           .headline=${msg("Error displaying the groups")}
           tooltip
-          .error=${this._groupsInfo.value.error.data.data}
+          .error=${this._groupsProfiles.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderGroups(this._groupsInfo.value.value);
+        return this.renderGroups(this._groupsProfiles.value.value);
     }
   }
 

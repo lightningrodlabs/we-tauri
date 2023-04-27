@@ -36,8 +36,7 @@ pub fn iframe() -> String {
             <link href="/styles.css" rel="stylesheet"></link>
           </head>
           <body>
-            <script src="/applet-sandbox.js"></script>
-            <script src="/index.js" type="module"></script>
+            <script src="/applet-iframe.js"></script>
           </body>
         </html>
     "#
@@ -104,27 +103,25 @@ fn main() {
 
             let uri = request.uri().strip_prefix("applet://").unwrap();
             let uri_components: Vec<String> = uri.split("/").map(|s| s.to_string()).collect();
-
-            println!("asdf{:?}", uri_components);
+            println!("asdf {:?}", uri);
 
             let applet_id = uri_components.get(0).unwrap();
 
             if let Some(mutex) = app_handle.try_state::<Mutex<LaunchedState>>() {
                 match uri_components.get(1).map(|s| s.as_str()) {
                     None | Some("index.html") | Some("") => {
-                        println!("iframe");
                         return response_builder
                             .mimetype("text/html")
                             .status(200)
                             .body(iframe().as_bytes().to_vec());
                     }
-                    Some("applet-sandbox.js") => {
+                    Some("applet-iframe.js") => {
                         // Redirect
                         return response_builder
                             .mimetype("text/javascript")
                             .status(200)
                             .body(
-                                include_bytes!("../../ui/applet-sandbox/dist/index.mjs").to_vec(),
+                                include_bytes!("../../ui/applet-iframe/dist/index.mjs").to_vec(),
                             );
                     }
                     _ => {
@@ -138,8 +135,6 @@ fn main() {
                             for i in 1..uri_components.len() {
                                 path = path.join(uri_components[i].clone());
                             }
-
-                            println!("path {:?}", path);
 
                             let mut response = response_builder.status(200).body(vec![]).unwrap();
 

@@ -32,7 +32,9 @@
         "open": true
       },
       "http": {
-        "all": true
+        "all": true,
+        "request": true,
+        "scope": ["applet://*"]
       }
     },
     "bundle": {
@@ -49,7 +51,7 @@
       "targets": "all"
     },
     "security": {
-      "csp": null,
+      "csp": "worker-src *",
       "dangerousDisableAssetCspModification": true
     },
     "updater": {

@@ -12,16 +12,8 @@ import { customElement, property } from "lit/decorators.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
-import "@lightningrodlabs/we-applet/dist/attachments/elements/attachments-context.js";
-import "@lightningrodlabs/we-applet/dist/attachments/elements/attachments-list.js";
-import "@lightningrodlabs/we-applet/dist/attachments/elements/create-attachment.js";
+import { Hrl } from "@lightningrodlabs/we-applet";
 
-import {
-  Hrl,
-  AttachmentsStore,
-  AttachmentsClient,
-} from "@lightningrodlabs/we-applet";
-import { AttachmentsZomeMock } from "@lightningrodlabs/we-applet/dist/attachments/attachments-mock.js";
 import { weStoreContext } from "../../context.js";
 import {
   DnaLocation,
@@ -62,17 +54,6 @@ export class EntryView extends LitElement {
     dnaLocation: DnaLocation,
     entryTypeLocation: EntryDefLocation
   ) {
-    return html`
-      <attachments-context
-        .store=${new AttachmentsStore(
-          new AttachmentsClient(new AttachmentsZomeMock(), "")
-        )}
-      >
-        <attachment-list .hash=${this.hrl[1]}></attachment-list>
-        <create-attachment .hash=${this.hrl[1]}></create-attachment>
-      </attachments-context>
-    `;
-
     return html` <group-context .groupDnaHash=${dnaLocation.groupDnaHash}>
       <group-view
         style="flex: 1"

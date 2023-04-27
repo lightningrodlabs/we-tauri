@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "ui/applet-messages",
-    "ui/applet-sandbox",
+    "ui/applet-iframe",
     "ui/libs/*",
     "ui/app",
     "site"

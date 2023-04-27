@@ -3,7 +3,9 @@ import {
   AppAgentWebsocket,
   CallZomeRequest,
   CallZomeRequestSigned,
+  decodeHashFromBase64,
   DnaHash,
+  DnaHashB64,
   EntryHash,
 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
@@ -11,10 +13,10 @@ import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 import {
   AppletToParentRequest,
-  ParentToIframeMessage,
   RenderView,
   InternalGroupAttachmentTypes,
-  ParentToWebWorkerMessage,
+  InternalAttachmentType,
+  ParentToAppletMessage,
 } from "applet-messages";
 import {
   AppletAttachmentTypes,
@@ -62,42 +64,31 @@ async function fetchApplet(): Promise<WeApplet> {
   return js.default as WeApplet;
 }
 
-async function handleIframeMessage(message: ParentToIframeMessage) {
-  handleRenderViewMessage(
-    message.appPort,
-    message.message,
-    message.attachmentTypesByGroup
-  );
-}
-
 async function handleRenderViewMessage(
+  applet: WeApplet,
   appPort: number,
   message: RenderView,
-  internalAttachmentTypesByGroups: HoloHashMap<
-    DnaHash,
+  internalAttachmentTypesByGroups: Record<
+    DnaHashB64,
     InternalGroupAttachmentTypes
   >
 ) {
-  const applet = await fetchApplet();
-
   const attachmentTypesByGroup = new HoloHashMap<
     DnaHash,
     GroupAttachmentTypes
   >();
 
-  for (const [
-    groupId,
-    groupAttachmentTypes,
-  ] of internalAttachmentTypesByGroups) {
+  for (const [groupId, groupAttachmentTypes] of Object.entries(
+    internalAttachmentTypesByGroups
+  )) {
     const attachmentTypesByApplet = new HoloHashMap<
       EntryHash,
       AppletAttachmentTypes
     >();
 
-    for (const [
-      appletInstanceId,
-      appletAttachmentTypes,
-    ] of groupAttachmentTypes.attachmentTypesByApplet) {
+    for (const [appletInstanceId, appletAttachmentTypes] of Object.entries(
+      groupAttachmentTypes.attachmentTypesByApplet
+    )) {
       const attachmentTypes: Record<string, AttachmentType> = {};
       for (const [name, attachmentType] of Object.entries(
         appletAttachmentTypes.attachmentTypes
@@ -109,8 +100,8 @@ async function handleRenderViewMessage(
             postMessage({
               type: "create-attachment",
               request: {
-                groupId: groupId,
-                appletInstanceId: appletInstanceId,
+                groupId: decodeHashFromBase64(groupId),
+                appletInstanceId: decodeHashFromBase64(appletInstanceId),
                 attachmentType: name,
                 attachToHrl,
               },
@@ -118,13 +109,13 @@ async function handleRenderViewMessage(
         };
       }
 
-      attachmentTypesByApplet.set(appletInstanceId, {
+      attachmentTypesByApplet.set(decodeHashFromBase64(appletInstanceId), {
         appletName: appletAttachmentTypes.appletName,
         attachmentTypes,
       });
     }
 
-    attachmentTypesByGroup.set(groupId, {
+    attachmentTypesByGroup.set(decodeHashFromBase64(groupId), {
       groupProfile: groupAttachmentTypes.groupProfile,
       attachmentTypesByApplet,
     });
@@ -132,9 +123,9 @@ async function handleRenderViewMessage(
 
   const weServices: WeServices = {
     attachmentTypesByGroup,
-    info: (hrl) =>
+    getEntryInfo: (hrl) =>
       postMessage({
-        type: "get-info",
+        type: "get-entry-info",
         hrl,
       }),
     openViews: {
@@ -221,18 +212,20 @@ async function handleRenderViewMessage(
     const appletsByGroup: HoloHashMap<DnaHash, GroupWithApplets> =
       new HoloHashMap();
 
-    for (const [groupId, groupWithApplets] of Array.from(
-      message.appletsByGroup.entries()
+    for (const [groupId, groupWithApplets] of Object.entries(
+      message.appletsByGroup
     )) {
       const applets: HoloHashMap<EntryHash, AppAgentClient> = new HoloHashMap();
-      for (const [appletId, appletInstalledAppId] of groupWithApplets.applets) {
+      for (const [appletId, appletInstalledAppId] of Object.entries(
+        groupWithApplets.applets
+      )) {
         applets.set(
-          appletId,
+          decodeHashFromBase64(appletId),
           await setupAppletClient(appPort, appletInstalledAppId)
         );
       }
 
-      appletsByGroup.set(groupId, {
+      appletsByGroup.set(decodeHashFromBase64(groupId), {
         applets,
         groupServices: {
           groupProfile: groupWithApplets.groupProfile,
@@ -259,31 +252,60 @@ async function handleRenderViewMessage(
 }
 
 let applet: WeApplet | undefined = undefined;
-let client: AppAgentClient | undefined = undefined;
 
-async function handleWorkerMessage(message: ParentToWebWorkerMessage) {
+async function handleMessage(message: ParentToAppletMessage) {
   if (!applet) applet = await fetchApplet();
 
-  switch (message.type) {
-    case "setup":
-      client = await setupAppletClient(message.appPort, message.appletId);
-      break;
-    case "info":
-      return applet
+  let client: AppAgentClient;
+
+  switch (message.request.type) {
+    case "render-view":
+      return handleRenderViewMessage(
+        applet,
+        message.appPort,
+        message.request.message,
+        message.request.attachmentTypesByGroup
+      );
+    case "get-entry-info":
+      client = await setupAppletClient(
+        message.appPort,
+        message.appletInstalledAppId
+      );
+      return applet!
         .groupViews(
           client!,
-          message.groupId,
-          message.appletInstanceId,
-          { profilesClient: null as any, groupProfile: message.groupProfile },
+          message.request.groupId,
+          message.request.appletInstanceId,
+          {
+            profilesClient: null as any,
+            groupProfile: message.request.groupProfile,
+          },
           null as any
         )
-        .entries[message.roleName][message.integrityZomeName][
-          message.entryDefId
-        ].info(message.hrl);
+        .entries[message.request.roleName][message.request.integrityZomeName][
+          message.request.entryDefId
+        ].info(message.request.hrl);
+    case "get-attachment-types":
+      client = await setupAppletClient(
+        message.appPort,
+        message.appletInstalledAppId
+      );
+      const types = applet.attachmentTypes(client!);
+
+      const internalAttachmentTypes: Record<string, InternalAttachmentType> =
+        {};
+      for (const [name, attachmentType] of Object.entries(types)) {
+        internalAttachmentTypes[name] = {
+          icon_src: attachmentType.icon_src,
+          label: attachmentType.label,
+        };
+      }
+
+      return internalAttachmentTypes;
     case "create-attachment":
-      return applet
+      return applet!
         .attachmentTypes(client!)
-        [message.attachmentType].create(message.attachToHrl);
+        [message.request.attachmentType].create(message.request.attachToHrl);
   }
 }
 
@@ -296,29 +318,14 @@ async function signZomeCall(
 async function postMessage(m: AppletToParentRequest): Promise<any> {
   return new Promise((resolve) => {
     const channel = new MessageChannel();
-    if (isIframe) {
-      parent.postMessage(m, "*", [channel.port2]);
-    } else {
-      self.postMessage(m, "*", [channel.port2]);
-    }
+    parent.postMessage(m, "*", [channel.port2]);
 
     channel.port1.onmessage = (m) => resolve(m.data);
   });
 }
 
-const isIframe = window !== undefined && typeof window === "object";
-
-if (isIframe) {
-  // This sandbox is inside an iframe
-  window.addEventListener("message", async (m) => {
-    const result = await handleIframeMessage(m.data);
-    // IFrame requests don't need to return anything
-    // m.ports[0].postMessage(result);
-  });
-} else {
-  // This sandbox is inside a webworker
-  self.onmessage = async (m) => {
-    const result = await handleWorkerMessage(m.data);
-    m.ports[0].postMessage(result);
-  };
-}
+window.addEventListener("message", async (m) => {
+  const result = await handleMessage(m.data);
+  // IFrame requests don't need to return anything
+  m.ports[0].postMessage(result);
+});

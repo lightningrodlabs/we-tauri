@@ -51,9 +51,14 @@ export default defineConfig({
           dest: "dist/assets",
         },
         {
-          src: "../applet-sandbox/dist/index.mjs",
+          src: "../applet-worker/dist/index.mjs",
           dest: "",
-          rename: "applet-sandbox.js",
+          rename: "applet-worker.js",
+        },
+        {
+          src: "../applet-iframe/dist/index.mjs",
+          dest: "",
+          rename: "applet-iframe.js",
         },
       ],
     }),

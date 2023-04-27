@@ -28,18 +28,32 @@ import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
 import { fromUint8Array } from "js-base64";
 import { DnaModifiers } from "@holochain/client";
-import {
-  AppletToParentRequest,
-  ParentToWebWorkerMessage,
-} from "applet-messages";
-import { Hrl, GroupProfile } from "@lightningrodlabs/we-applet";
 
 import { AppletsStore } from "../applets/applets-store";
 import { AppletInstance } from "./types";
 import { AppletMetadata } from "../types";
 import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
-import { getConductorInfo, signZomeCallTauri } from "../tauri";
+
+export function appletAppId(
+  devhubHappReleaseHash: EntryHash,
+  networkSeed: string | undefined,
+  properties: any
+): string {
+  return `${encodeHashToBase64(devhubHappReleaseHash)}-${
+    networkSeed || ""
+  }-${fromUint8Array(encode(properties))}`;
+}
+
+export function appletAppIdFromAppletInstance(
+  appletInstance: AppletInstance
+): string {
+  return appletAppId(
+    appletInstance.devhub_happ_release_hash,
+    appletInstance.network_seed,
+    appletInstance.properties
+  );
+}
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -90,24 +104,6 @@ export class GroupStore {
     return entryRecord?.entry;
   }, 4000);
 
-  appletAppId(
-    devhubHappReleaseHash: EntryHash,
-    networkSeed: string | undefined,
-    properties: any
-  ): string {
-    return `${encodeHashToBase64(devhubHappReleaseHash)}-${
-      networkSeed || ""
-    }-${fromUint8Array(encode(properties))}`;
-  }
-
-  appletAppIdFromAppletInstance(appletInstance: AppletInstance): string {
-    return this.appletAppId(
-      appletInstance.devhub_happ_release_hash,
-      appletInstance.network_seed,
-      appletInstance.properties
-    );
-  }
-
   // Installs an applet instance that already exists in this group into this conductor
   async installAppletInstance(appletInstanceHash: EntryHash) {
     const appletInstance = await this.groupClient.getAppletInstance(
@@ -120,7 +116,7 @@ export class GroupStore {
     const [appInfo, _] = await this.appletsStore.installApplet(
       appletInstance.entry.devhub_happ_release_hash,
       appletInstance.entry.devhub_gui_release_hash,
-      this.appletAppIdFromAppletInstance(appletInstance.entry),
+      appletAppIdFromAppletInstance(appletInstance.entry),
       appletInstance.entry.network_seed
     );
     return appInfo;
@@ -137,7 +133,7 @@ export class GroupStore {
       await this.appletsStore.installApplet(
         appletMetadata.devhubHappReleaseHash,
         appletMetadata.devhubGuiReleaseHash,
-        this.appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
+        appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
         networkSeed
       );
 
@@ -203,9 +199,7 @@ export class GroupStore {
       ]) as AsyncReadable<[EntryRecord<AppletInstance>, ListAppsResponse]>,
       async ([appletInstance, apps]) => {
         if (!appletInstance) return false;
-        const appletId = this.appletAppIdFromAppletInstance(
-          appletInstance.entry
-        );
+        const appletId = appletAppIdFromAppletInstance(appletInstance.entry);
 
         return !!apps.find((app) => app.installed_app_id === appletId);
       }
@@ -221,73 +215,5 @@ export class GroupStore {
 
   applets = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
     lazyLoad(async () => this.groupClient.getAppletInstance(appletInstanceHash))
-  );
-
-  appletWorker = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
-    asyncDerived(
-      join([
-        this.groupProfile,
-        this.applets.get(appletInstanceHash),
-      ]) as AsyncReadable<[GroupProfile, EntryRecord<AppletInstance>]>,
-      async ([groupProfile, appletInstance]) => {
-        const appletId = this.appletAppIdFromAppletInstance(
-          appletInstance.entry
-        );
-        const info = await getConductorInfo();
-
-        const worker = new Worker("applet-sandbox.js");
-
-        async function postMessage(message: ParentToWebWorkerMessage) {
-          await new Promise((resolve) => {
-            const { port1, port2 } = new MessageChannel();
-
-            worker.postMessage(message, [port2]);
-
-            port1.onmessage = (m) => {
-              resolve(m.data);
-            };
-          });
-        }
-
-        await postMessage({
-          type: "setup",
-          appPort: info.app_port,
-          appletId,
-        } as ParentToWebWorkerMessage);
-
-        worker.onmessage = (m) => {
-          const message = m.data as AppletToParentRequest;
-          if (message.type === "sign-zome-call") {
-            return signZomeCallTauri(message.request);
-          }
-        };
-
-        return {
-          info: (
-            roleName: string,
-            integrityZomeName: string,
-            entryDefId: string,
-            hrl: Hrl
-          ) =>
-            postMessage({
-              type: "info",
-              groupId: this.groupDnaHash,
-              groupProfile,
-              appletInstanceId: appletInstanceHash,
-              roleName,
-              integrityZomeName,
-              entryDefId,
-              hrl,
-            }),
-          createAttachment: (attachmentType: string, attachToHrl: Hrl) => {
-            postMessage({
-              type: "create-attachment",
-              attachmentType,
-              attachToHrl,
-            });
-          },
-        };
-      }
-    )
   );
 }

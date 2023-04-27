@@ -1,6 +1,11 @@
-import { CallZomeRequest, DnaHash, EntryHash } from "@holochain/client";
+import {
+  CallZomeRequest,
+  DnaHash,
+  DnaHashB64,
+  EntryHash,
+  EntryHashB64,
+} from "@holochain/client";
 import { Hrl, GroupProfile } from "@lightningrodlabs/we-applet";
-import { HoloHashMap } from "@holochain-open-dev/utils";
 
 export type OpenViewRequest =
   | {
@@ -29,6 +34,37 @@ export interface CreateAttachmentRequest {
   attachToHrl: Hrl;
 }
 
+export type ParentToAppletRequest =
+  | {
+      type: "render-view";
+      message: RenderView;
+      attachmentTypesByGroup: Record<DnaHashB64, InternalGroupAttachmentTypes>;
+    }
+  | {
+      type: "get-entry-info";
+      groupId: DnaHash;
+      groupProfile: GroupProfile;
+      appletInstanceId: EntryHash;
+      roleName: string;
+      integrityZomeName: string;
+      entryDefId: string;
+      hrl: Hrl;
+    }
+  | {
+      type: "get-attachment-types";
+    }
+  | {
+      type: "create-attachment";
+      attachmentType: string;
+      attachToHrl: Hrl;
+    };
+
+export type ParentToAppletMessage = {
+  request: ParentToAppletRequest;
+  appPort: number;
+  appletInstalledAppId: string;
+};
+
 export type AppletToParentRequest =
   | {
       type: "sign-zome-call";
@@ -43,7 +79,7 @@ export type AppletToParentRequest =
       request: CreateAttachmentRequest;
     }
   | {
-      type: "get-info";
+      type: "get-entry-info";
       hrl: Hrl;
     };
 
@@ -52,7 +88,7 @@ export interface InternalGroupWithApplets {
   groupProfile: GroupProfile;
   profilesAppId: string;
   profilesRoleName: string;
-  applets: HoloHashMap<EntryHash, string>; // These will be the same kind of applet
+  applets: Record<EntryHashB64, string>; // These will be the same kind of applet
 }
 
 export type GroupView =
@@ -89,17 +125,7 @@ export interface InternalAppletAttachmentTypes {
 
 export interface InternalGroupAttachmentTypes {
   groupProfile: GroupProfile;
-  attachmentTypesByApplet: HoloHashMap<
-    EntryHash,
-    InternalAppletAttachmentTypes
-  >;
-}
-
-export interface ParentToIframeMessage {
-  appPort: number;
-  message: RenderView;
-
-  attachmentTypesByGroup: HoloHashMap<DnaHash, InternalGroupAttachmentTypes>;
+  attachmentTypesByApplet: Record<EntryHashB64, InternalAppletAttachmentTypes>;
 }
 
 export type RenderView =
@@ -115,28 +141,6 @@ export type RenderView =
     }
   | {
       type: "cross-group-view";
-      appletsByGroup: HoloHashMap<DnaHash, InternalGroupWithApplets>;
+      appletsByGroup: Record<DnaHashB64, InternalGroupWithApplets>;
       view: CrossGroupView;
-    };
-
-export type ParentToWebWorkerMessage =
-  | {
-      type: "setup";
-      appPort: number;
-      appletId: string;
-    }
-  | {
-      type: "info";
-      groupId: DnaHash;
-      groupProfile: GroupProfile;
-      appletInstanceId: EntryHash;
-      roleName: string;
-      integrityZomeName: string;
-      entryDefId: string;
-      hrl: Hrl;
-    }
-  | {
-      type: "create-attachment";
-      attachmentType: string;
-      attachToHrl: Hrl;
     };

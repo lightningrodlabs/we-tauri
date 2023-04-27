@@ -1,13 +1,14 @@
 {
-  "name": "applet-sandbox",
+  "name": "applet-iframe",
   "version": "0.0.1",
   "scripts": {
     "build": "vite build"
   },
   "dependencies": {
     "@holochain/client": "^0.13.0",
-    "@holochain-open-dev/utils": "^0.13.0",
-    "@lightningrodlabs/we-applet": "0.2.0",
+    "@holochain-open-dev/profiles": "^0.13.0",
+    "@holochain-open-dev/utils": "^0.13.7",
+    "@lightningrodlabs/we-applet": "0.3.2",
     "applet-messages": "0.0.1"
   },
   "devDependencies": {
