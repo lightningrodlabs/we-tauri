@@ -8,6 +8,7 @@ use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
 use crate::create_assessment;
+use crate::get_assessment;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
@@ -25,7 +26,7 @@ pub fn create_method(method: Method) -> ExternResult<EntryHash> {
 }
 
 #[hdk_extern]
-pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
+pub fn run_method(input: RunMethodInput) -> ExternResult<Option<Assessment>> {
     let maybe_record = get_method(input.method_eh.clone())?;
     if let Some(record) = maybe_record {
         let method = entry_from_record::<Method>(record)?;
@@ -44,12 +45,25 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<EntryHash>> {
         let maybe_objective_assessment =
             compute_objective_assessment(method, assessments, input.resource_eh)?;
         if let Some(objective_assessment) = maybe_objective_assessment {
-            Ok(Some(create_assessment(objective_assessment)?))
+            // TODO: may want to change `create_assessment` to return the created assessment rather than the hash. For now sticking with this for minimal side-effects.
+            let assessment_eh = create_assessment(objective_assessment)?;
+            let maybe_assessment = get_assessment(assessment_eh)?;
+            if let Some(assessment) = maybe_assessment {
+                Ok(Some(entry_from_record::<Assessment>(assessment)?))
+            } else {
+                Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                    "not able to get method created assessment"
+                ))))
+            }
         } else {
-            Ok(None)
+            Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                "Issue With Computation"
+            ))))
         }
     } else {
-        Ok(None)
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Method Not Found"
+        ))))
     }
 }
 
@@ -79,7 +93,27 @@ fn compute_objective_assessment(
             };
             Ok(Some(assessment))
         }
-        Program::Average => Ok(None),
+        Program::Average => {
+            // collapse into vec for easy computation - will have to be more careful if of different types
+            let flat_assessments = flatten_btree_map(assessments);
+            let mut sum: u32 = 0;
+
+            for assessment in flat_assessments.clone() {
+                match assessment.value {
+                    RangeValue::Integer(value) => sum = sum + value,
+                    RangeValue::Float(_) => (), // TODO: complete this
+                }
+            }
+            let average = sum / flat_assessments.len() as u32;
+            let assessment = CreateAssessmentInput {
+                value: RangeValue::Integer(average),
+                dimension_eh: method.output_dimension_eh,
+                resource_eh,
+                resource_def_eh: method.target_resource_def_eh,
+                maybe_input_dataset: None,
+            };
+            Ok(Some(assessment))
+        },
     }
 }
 

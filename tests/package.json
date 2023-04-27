@@ -25,8 +25,7 @@
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.14",
     "tape-promise": "^4.0.0",
-    "@neighbourhoods/nh-we-applet": "0.0.9",
-    "@neighbourhoods/sensemaker-lite-types": "0.5.0"
+    "@neighbourhoods/client": "file:../client"
   },
   "type": "module"
 }

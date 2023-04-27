@@ -11,4 +11,5 @@ pub struct Assessment {
     pub resource_def_eh: EntryHash,
     pub maybe_input_dataset: Option<DataSet>,
     pub author: AgentPubKey,
+    pub timestamp: Timestamp,
 }

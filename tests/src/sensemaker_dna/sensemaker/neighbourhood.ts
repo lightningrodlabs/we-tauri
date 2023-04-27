@@ -1,4 +1,4 @@
-import { DnaSource, Record, ActionHash, EntryHash } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {
   pause,
   runScenario,
@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/sensemaker-lite-types";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -294,25 +294,26 @@ export default () => {
           createAssessmentEntryHash,
           true
         );
+        const createAssessmentReadOutputDecoded = decode((createAssessmentReadOutput.entry as any).Present.entry) as Assessment;
         t.deepEqual(
-          { ...createAssessment, author: alice_agent_key },
-          decode((createAssessmentReadOutput.entry as any).Present.entry) as any
+          { ...createAssessment, author: alice_agent_key, timestamp: createAssessmentReadOutputDecoded.timestamp },
+          createAssessmentReadOutputDecoded
         );
 
-        const getAssessmentsForResourceInput = {
-          resource_eh: createPostEntryHash,
-          dimension_eh: createDimensionEntryHash,
+        const getAssessmentsForResourceInput: GetAssessmentsForResourceInput = {
+          resource_ehs: [createPostEntryHash],
+          dimension_ehs: [createDimensionEntryHash],
         }
-        const assessmentsForResource: any[] = await callZomeBob(
+        const assessmentsForResources: { [resource_eh: EntryHashB64]: Assessment[] } = await callZomeBob(
           "sensemaker",
-          "get_assessments_for_resource",
+          "get_assessments_for_resources",
           getAssessmentsForResourceInput,
           true
         );
-        t.ok(assessmentsForResource.length === 2)
-        console.log('assessments for resource', assessmentsForResource)
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key })))
-        t.ok(assessmentsForResource.find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key })))
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].length === 2)
+        console.log('assessments for resource', assessmentsForResources)
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key, timestamp: assessment.timestamp })))
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
 
         // define objective dimension
 
@@ -386,7 +387,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput: EntryHash = await callZomeAlice(
+        const runMethodOutput: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput,
@@ -395,13 +396,6 @@ export default () => {
         t.ok(runMethodOutput);
 
         await pause(pauseDuration);
-
-        const readObjectiveAssessmentOutput: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput,
-          true
-        );
 
         const objectiveAssessment: Assessment = {
           value: {
@@ -413,12 +407,11 @@ export default () => {
           resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
+          timestamp: runMethodOutput.timestamp,
         };
         t.deepEqual(
           objectiveAssessment,
-          decode(
-            (readObjectiveAssessmentOutput.entry as any).Present.entry
-          ) as any
+          runMethodOutput
         );
       } catch (e) {
         console.log(e);
@@ -794,7 +787,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput: EntryHash = await callZomeAlice(
+        const runMethodOutput: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput,
@@ -807,7 +800,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput2: EntryHash = await callZomeAlice(
+        const runMethodOutput2: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput2,
@@ -820,7 +813,7 @@ export default () => {
           method_eh: createMethodEntryHash,
         };
 
-        const runMethodOutput3: EntryHash = await callZomeAlice(
+        const runMethodOutput3: Assessment = await callZomeAlice(
           "sensemaker",
           "run_method",
           runMethodInput3,
@@ -829,13 +822,6 @@ export default () => {
         t.ok(runMethodOutput3);
 
         await pause(pauseDuration);
-
-        const readObjectiveAssessmentOutput: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput,
-          true
-        );
 
         const objectiveAssessment: Assessment = {
           value: {
@@ -848,19 +834,11 @@ export default () => {
           resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
+          timestamp: runMethodOutput.timestamp,
         };
         t.deepEqual(
           objectiveAssessment,
-          decode(
-            (readObjectiveAssessmentOutput.entry as any).Present.entry
-          ) as any
-        );
-
-        const readObjectiveAssessmentOutput2: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput2,
-          true
+          runMethodOutput
         );
 
         const objectiveAssessment2: Assessment = {
@@ -874,19 +852,11 @@ export default () => {
           resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
+          timestamp: runMethodOutput2.timestamp,
         };
         t.deepEqual(
           objectiveAssessment2,
-          decode(
-            (readObjectiveAssessmentOutput2.entry as any).Present.entry
-          ) as any
-        );
-
-        const readObjectiveAssessmentOutput3: Record = await callZomeBob(
-          "sensemaker",
-          "get_assessment",
-          runMethodOutput3,
-          true
+          runMethodOutput2
         );
 
         const objectiveAssessment3: Assessment = {
@@ -900,12 +870,11 @@ export default () => {
           resource_def_eh: createResourceDefEntryHash,
           maybe_input_dataset: null,
           author: alice_agent_key,
+          timestamp: runMethodOutput3.timestamp,
         };
         t.deepEqual(
           objectiveAssessment3,
-          decode(
-            (readObjectiveAssessmentOutput3.entry as any).Present.entry
-          ) as any
+          runMethodOutput3
         );
 
         // create context and threshold
@@ -1061,6 +1030,242 @@ export default () => {
         console.log('all assessments', allAssessments)
         t.deepEqual(allAssessments.length, 9);
 
+      } catch (e) {
+        console.log(e);
+        t.ok(null);
+      }
+
+      await alice.shutDown();
+      await bob.shutDown();
+      await cleanAllConductors();
+    });
+  });
+  test("average method computation", async (t) => {
+    await runScenario(async (scenario) => {
+      const {
+        alice,
+        bob,
+        alice_happs,
+        bob_happs,
+        alice_agent_key,
+        bob_agent_key,
+        ss_cell_id_alice,
+        ss_cell_id_bob,
+        provider_cell_id_alice,
+        provider_cell_id_bob,
+      } = await setUpAliceandBob();
+
+      const callZomeAlice = async (
+        zome_name,
+        fn_name,
+        payload,
+        is_ss = false
+      ) => {
+        return await alice.appWs().callZome({
+          cap_secret: null,
+          cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
+          zome_name,
+          fn_name,
+          payload,
+          provenance: alice_agent_key,
+        });
+      };
+      const callZomeBob = async (
+        zome_name,
+        fn_name,
+        payload,
+        is_ss = false
+      ) => {
+        return await bob.appWs().callZome({
+          cap_secret: null,
+          cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
+          zome_name,
+          fn_name,
+          payload,
+          provenance: bob_agent_key,
+        });
+      };
+      try {
+        const pauseDuration = 1000;
+        await scenario.shareAllAgents();
+        await pause(pauseDuration);
+
+        // create an entry type in the provider DNA
+        const createPost = {
+          title: "Intro",
+          content: "anger!!",
+        };
+        const createPostEntryHash: EntryHash = await callZomeAlice(
+          "test_provider",
+          "create_post",
+          createPost
+        );
+        // create range for dimension
+        const integerRange = {
+          name: "10-scale",
+          kind: {
+            Integer: { min: 0, max: 10 },
+          },
+        };
+
+        const rangeHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
+        const createDimension = {
+          name: "heat",
+          range_eh: rangeHash,
+          computed: false,
+        };
+
+        const createDimension2 = {
+          name: "total_heat",
+          range_eh: rangeHash,
+          computed: true,
+        };
+
+        // Alice creates a dimension
+        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createDimension,
+          true
+        );
+        t.ok(createDimensionEntryHash);
+
+        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createDimension2,
+          true
+        );
+        t.ok(createDimensionEntryHash2);
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        const createResourceDef = {
+          name: "angryPost",
+          //@ts-ignore
+          base_types: [
+            //@ts-ignore
+            { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
+          ],
+          dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
+        };
+
+        // Alice creates a resource type
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_resource_def",
+          createResourceDef,
+          true
+        );
+        t.ok(createResourceDefEntryHash);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // Bob gets the created resource type
+        // create an assessment on the Post
+        const createAssessment: CreateAssessmentInput = {
+          value: { Integer: 2 },
+          dimension_eh: createDimensionEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+        };
+
+        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createAssessment,
+          true
+        );
+        t.ok(createAssessmentEntryHash);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // create a second assessment on the Post
+        const createAssessment2: CreateAssessmentInput = {
+          value: { Integer: 4 },
+          dimension_eh: createDimensionEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+        };
+
+        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createAssessment2,
+          true
+        );
+        t.ok(createAssessmentEntryHash2);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // Alice creates a dimension
+        // create a method
+        const totalHeatMethod = {
+          name: "total_heat_method",
+          target_resource_def_eh: createResourceDefEntryHash,
+          input_dimension_ehs: [createDimensionEntryHash],
+          output_dimension_eh: createDimensionEntryHash2,
+          program: { Average: null },
+          can_compute_live: false,
+          requires_validation: false,
+        };
+
+        const createMethodEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_method",
+          totalHeatMethod,
+          true
+        );
+        t.ok(createMethodEntryHash);
+
+        await pause(pauseDuration);
+
+        // compute objective dimension
+        const runMethodInput = {
+          resource_eh: createPostEntryHash,
+          method_eh: createMethodEntryHash,
+        };
+
+        const runMethodOutput: Assessment = await callZomeAlice(
+          "sensemaker",
+          "run_method",
+          runMethodInput,
+          true
+        );
+        t.ok(runMethodOutput);
+        console.log('runMethodOutput', runMethodOutput);
+
+        await pause(pauseDuration);
+
+        const objectiveAssessment: Assessment = {
+          value: {
+            Integer:
+              ((createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer) / 2,
+          },
+          dimension_eh: createDimensionEntryHash2,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+          author: alice_agent_key,
+          timestamp: runMethodOutput.timestamp,
+        };
+        
+        t.deepEqual(
+          objectiveAssessment,
+          runMethodOutput
+        );
       } catch (e) {
         console.log(e);
         t.ok(null);

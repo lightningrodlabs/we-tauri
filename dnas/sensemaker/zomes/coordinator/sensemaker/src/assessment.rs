@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use hdk::prelude::*;
 use holo_hash::EntryHashB64;
 use sensemaker_integrity::Assessment;
@@ -10,6 +12,7 @@ use sensemaker_integrity::RangeValue;
 use crate::get_dimension;
 use crate::utils::entry_from_record;
 use crate::utils::fetch_provider_resource;
+use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
 
 const ALL_ASSESSED_RESOURCES_BASE: &str = "all_assessed_resources";
@@ -21,8 +24,8 @@ pub fn get_assessment(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetAssessmentsForResourceInput {
-    resource_eh: EntryHash,
-    dimension_eh: EntryHash,
+    resource_ehs: Vec<EntryHash>,
+    dimension_ehs: Vec<EntryHash>,
 }
 
 
@@ -34,16 +37,18 @@ pub struct AssessmentWithDimensionAndResource {
 }
 
 #[hdk_extern]
-pub fn get_assessments_for_resource(
-    input: GetAssessmentsForResourceInput,
-) -> ExternResult<Vec<Assessment>> {
-    let dimension_ehs = vec![input.dimension_eh.clone()];
-    let assessments = get_assessments_for_resource_inner(input.resource_eh, dimension_ehs)?;
-    let maybe_flat_assessments = assessments.get(&input.dimension_eh);
-    let flat_assessments = maybe_flat_assessments.ok_or(wasm_error!(WasmErrorInner::Guest(
-        String::from("No Assessments found for resource")
-    )))?;
-    Ok(flat_assessments.clone())
+pub fn get_assessments_for_resources(
+    GetAssessmentsForResourceInput {
+        resource_ehs,
+        dimension_ehs,
+    }: GetAssessmentsForResourceInput,
+) -> ExternResult<BTreeMap<EntryHashB64, Vec<Assessment>>> {
+    let mut resource_assessments = BTreeMap::<EntryHashB64, Vec<Assessment>>::new();
+    for resource_eh in resource_ehs {
+        let assessments = get_assessments_for_resource_inner(resource_eh.clone(), dimension_ehs.clone())?;
+        resource_assessments.insert(resource_eh.into(), flatten_btree_map(assessments));
+    }
+    Ok(resource_assessments)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -64,6 +69,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
         resource_def_eh,
         maybe_input_dataset,
         author: agent_info()?.agent_latest_pubkey,
+        timestamp: sys_time()?.into(),
     };
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;

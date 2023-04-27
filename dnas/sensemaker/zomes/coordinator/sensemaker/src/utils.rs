@@ -104,3 +104,23 @@ pub fn fetch_provider_resource(
         Ok(None)
     }
 }
+
+pub fn reduce_assessments_to_latest(mut assessments: Vec<Assessment>) -> Vec<Assessment> {
+    // Sort the assessments by timestamp in descending order
+    assessments.sort_by_key(|a| std::cmp::Reverse(a.timestamp));
+
+    // Use a hash set to keep track of which dimension_eh values have already been added
+    let mut seen_dimension_eh = std::collections::HashSet::new();
+
+    // Filter the assessments to include only the most recent assessment for each unique dimension_eh value
+    let filtered_assessments = assessments.into_iter().filter(|a| {
+        if seen_dimension_eh.contains(&a.dimension_eh) {
+            false
+        } else {
+            seen_dimension_eh.insert(a.dimension_eh.clone());
+            true
+        }
+    }).collect();
+
+    filtered_assessments
+}
