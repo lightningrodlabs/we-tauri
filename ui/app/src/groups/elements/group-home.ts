@@ -2,26 +2,28 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
-
-import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
-import "@shoelace-style/shoelace/dist/components/card/card.js";
-import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
-
-import "./group-peers-status.js";
-import "./installable-applets.js";
-import { consume } from "@lit-labs/context";
-import { groupStoreContext } from "../context.js";
-import { GroupStore } from "../group-store.js";
+import { encodeHashToBase64 } from "@holochain/client";
+import { DnaHash } from "@holochain/client";
 import {
   AsyncReadable,
   join,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
+import { consume } from "@lit-labs/context";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
+
+import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+
+import "./group-peers-status.js";
+import "./installable-applets.js";
+
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { encodeHashToBase64 } from "@holochain/client";
-import { DnaHash } from "@holochain/client";
-import { GroupProfile } from "../../../../libs/we-applet/dist/index.js";
 
 @localized()
 @customElement("group-home")

@@ -1,5 +1,5 @@
 import { decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
-import { localized } from "@lit/localize";
+import { localized, msg } from "@lit/localize";
 import "@scoped-elements/golden-layout";
 import { GoldenLayout as GoldenLayoutEl } from "@scoped-elements/golden-layout";
 import {
@@ -12,9 +12,13 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { consume, provide } from "@lit-labs/context";
 import { toPromise } from "@holochain-open-dev/stores";
+import { Hrl } from "@lightningrodlabs/we-applet";
 
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
+import "../groups/elements/group-logo.js";
+import "../groups/elements/applet-instance-name.js";
+import "../groups/elements/entry-title.js";
 import "./views/welcome-view.js";
 import "./views/group-applet-block.js";
 import "./views/group-applet-main.js";
@@ -25,7 +29,6 @@ import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
 import { WeStore } from "../we-store.js";
 import { weStoreContext } from "../context.js";
-import { Hrl } from "../../../libs/we-applet/dist/types.js";
 
 @localized()
 @customElement("dynamic-layout")
@@ -50,7 +53,6 @@ export class DynamicLayout extends LitElement {
     openGroupBlock: (groupDnaHash, appletInstanceHash, block, context) => {
       this.goldenLayout.addItemAtLocation(
         {
-          title: "Group Block",
           type: "component",
           componentType: "group-block",
           componentState: {
@@ -70,7 +72,6 @@ export class DynamicLayout extends LitElement {
     openCrossGroupBlock: (devhubAppReleaseHash, block, context) => {
       this.goldenLayout.addItemAtLocation(
         {
-          title: "Cross Group Block",
           type: "component",
           componentType: "cross-group-block",
           componentState: {
@@ -87,13 +88,8 @@ export class DynamicLayout extends LitElement {
       );
     },
     openHrl: async (hrl: Hrl, context: any) => {
-      const entryInfo = await toPromise(
-        this.weStore.entryInfo.get(hrl[0]).get(hrl[1])
-      );
-
       this.goldenLayout.addItemAtLocation(
         {
-          title: entryInfo?.name,
           type: "component",
           componentType: "entry",
           componentState: {
@@ -138,6 +134,13 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="group-home"
+        .titleRenderer=${({ groupDnaHash }) =>
+          html`
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-logo></group-logo>
+              <span>${msg("Home")}</span>
+            </group-context>
+          `}
         .template=${({ groupDnaHash }) => html`
           <div
             style="flex: 1; display: flex; align-items: center; justify-content: center;"
@@ -151,6 +154,15 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="entry"
+        .titleRenderer=${({ hrl }) =>
+          html`
+            <entry-title
+              .hrl=${[
+                decodeHashFromBase64(hrl[0]),
+                decodeHashFromBase64(hrl[1]),
+              ]}
+            ></entry-title>
+          `}
         .template=${({ hrl, context }) => html` <entry-view
           .hrl=${[decodeHashFromBase64(hrl[0]), decodeHashFromBase64(hrl[1])]}
           .context=${context}
@@ -160,6 +172,16 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="group-applet-block"
+        .titleRenderer=${({ groupDnaHash, appletInstanceHash, block }) =>
+          html`
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-logo></group-logo>
+              <applet-instance-name
+                .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
+              ></applet-instance-name>
+              <span>: ${block}</span>
+            </group-context>
+          `}
         .template=${({
           groupDnaHash,
           appletInstanceHash,
@@ -179,6 +201,15 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="group-applet-main"
+        .titleRenderer=${({ groupDnaHash, appletInstanceHash }) =>
+          html`
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-logo></group-logo>
+              <applet-instance-name
+                .appletInstanceHash=${decodeHashFromBase64(appletInstanceHash)}
+              ></applet-instance-name>
+            </group-context>
+          `}
         .template=${({ groupDnaHash, appletInstanceHash }) => html`
           <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
             <group-applet-main
