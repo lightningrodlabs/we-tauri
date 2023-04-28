@@ -110,7 +110,7 @@ async function handleRenderViewMessage(
       }
 
       attachmentTypesByApplet.set(decodeHashFromBase64(appletInstanceId), {
-        appletName: appletAttachmentTypes.appletName,
+        appletInstanceName: appletAttachmentTypes.appletInstanceName,
         attachmentTypes,
       });
     }

@@ -8,7 +8,12 @@ import {
   ParentToAppletRequest,
   RenderView,
 } from "applet-messages";
-import { EntryInfo, Hrl, HrlWithContext } from "@lightningrodlabs/we-applet";
+import {
+  EntryInfo,
+  EntryLocationAndInfo,
+  Hrl,
+  HrlWithContext,
+} from "@lightningrodlabs/we-applet";
 import { AppOpenViews } from "./layout/types";
 import { signZomeCallTauri } from "./tauri";
 import { WeStore } from "./we-store";
@@ -169,12 +174,40 @@ export class AppletHost {
             .get(dnaLocation.appletInstanceHash)
         );
 
-        return host.getEntryInfo(
+        const entryInfo = await host.getEntryInfo(
           dnaLocation.roleName,
           hrlLocation.integrity_zome,
           hrlLocation.entry_def,
           message.hrl
         );
+
+        if (!entryInfo) return undefined;
+
+        const appletInstance = await toPromise(
+          this.weStore.appletsInstancesByGroup
+            .get(dnaLocation.groupDnaHash)
+            .get(dnaLocation.appletInstanceHash)
+        );
+
+        if (!appletInstance) return undefined;
+
+        const groupStore = await toPromise(
+          this.weStore.groups.get(dnaLocation.groupDnaHash)
+        );
+
+        const groupProfile = await toPromise(groupStore.groupProfile);
+
+        if (!groupProfile) return undefined;
+
+        const entryAndAppletInfo: EntryLocationAndInfo = {
+          groupId: dnaLocation.groupDnaHash,
+          groupProfile,
+          appletInstanceId: dnaLocation.appletInstanceHash,
+          appletInstanceName: appletInstance.entry.custom_name,
+          entryInfo,
+        };
+
+        return entryAndAppletInfo;
       case "sign-zome-call":
         return signZomeCallTauri(message.request);
       case "create-attachment":

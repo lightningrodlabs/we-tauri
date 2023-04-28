@@ -119,7 +119,7 @@ export interface InternalAttachmentType {
 }
 
 export interface InternalAppletAttachmentTypes {
-  appletName: string;
+  appletInstanceName: string;
   attachmentTypes: Record<string, InternalAttachmentType>;
 }
 
