@@ -60,45 +60,46 @@ export class CreateAttachment extends LitElement {
 
   render() {
     return html`
-      <sl-tooltip .content=${msg("Create Attachment")}>
-        <sl-dropdown>
-          <sl-button slot="trigger" variant="default" size="medium" circle
-            ><sl-icon .src=${wrapPathInSvg(mdiAttachmentPlus)}></sl-icon
-          ></sl-button>
+      <sl-dropdown>
+        <sl-button slot="trigger" variant="default"
+          ><sl-icon .src=${wrapPathInSvg(mdiAttachmentPlus)}></sl-icon>
+          ${msg("Create Attachment")}
+        </sl-button>
 
-          <sl-menu>
-            ${Array.from(this.weServices.attachmentTypesByGroup.entries()).map(
-              ([groupId, groupAttachmentTypes], i) => html`<sl-menu-label
-                  >${groupAttachmentTypes.groupProfile.name}</sl-menu-label
-                >
-                ${Array.from(
-                  groupAttachmentTypes.attachmentTypesByApplet.entries()
-                ).map(([appletInstanceId, appletAttachmentTypes]) =>
-                  Object.entries(appletAttachmentTypes.attachmentTypes).map(
-                    ([name, attachmentType]) => html`
-                      <sl-menu-item
-                        @click=${() => this.createAttachment(attachmentType)}
+        <sl-menu>
+          ${Array.from(this.weServices.attachmentTypesByGroup.entries()).map(
+            ([groupId, groupAttachmentTypes], i) => html`<sl-menu-label
+                >${groupAttachmentTypes.groupProfile.name}</sl-menu-label
+              >
+              ${Array.from(
+                groupAttachmentTypes.attachmentTypesByApplet.entries()
+              ).map(([appletInstanceId, appletAttachmentTypes]) =>
+                Object.entries(appletAttachmentTypes.attachmentTypes).map(
+                  ([name, attachmentType]) => html`
+                    <sl-menu-item
+                      @click=${() => this.createAttachment(attachmentType)}
+                    >
+                      <sl-icon
+                        slot="prefix"
+                        .src=${attachmentType.icon_src}
+                      ></sl-icon>
+                      ${attachmentType.label}
+                      <span
+                        slot="suffix"
+                        style="color: var(--sl-color-neutral-500);"
+                        >${msg("in")}
+                        ${appletAttachmentTypes.appletInstanceName}</span
                       >
-                        <sl-icon
-                          slot="prefix"
-                          .src=${attachmentType.icon_src}
-                        ></sl-icon>
-                        ${attachmentType.label}
-                        <span slot="suffix"
-                          >${msg("in")}
-                          ${appletAttachmentTypes.appletName}</span
-                        >
-                      </sl-menu-item>
-                    `
-                  )
-                )}
-                ${i < this.weServices.attachmentTypesByGroup.size
-                  ? html` <sl-divider></sl-divider> `
-                  : html``} `
-            )}
-          </sl-menu>
-        </sl-dropdown>
-      </sl-tooltip>
+                    </sl-menu-item>
+                  `
+                )
+              )}
+              ${i < this.weServices.attachmentTypesByGroup.size
+                ? html` <sl-divider></sl-divider> `
+                : html``} `
+          )}
+        </sl-menu>
+      </sl-dropdown>
     `;
   }
 }

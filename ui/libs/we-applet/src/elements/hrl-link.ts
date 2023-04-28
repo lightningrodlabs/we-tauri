@@ -8,6 +8,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
+
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 
 import { weServicesContext } from "../context";
@@ -38,15 +39,19 @@ export class HrlLink extends LitElement {
       case "complete":
         const info = this.info.value.value;
 
-        if (info === undefined) return html`<sl-icon></sl-icon>`;
+        if (info === undefined) return html``; // TODO: what to put here?
 
         return html`<sl-button
+          variant="text"
           @click=${() =>
             this.weServices.openViews.openHrl(this.hrl, this.context)}
         >
-          <sl-icon slot="prefix" .src=${info.icon_src}></sl-icon>
+          <sl-icon slot="prefix" .src=${info.entryInfo.icon_src}></sl-icon>
+          <span slot="suffix" style="color: var(--sl-color-neutral-500);"
+            >${msg("in")} ${info.appletInstanceName}</span
+          >
 
-          ${info.name}
+          ${info.entryInfo.name}
         </sl-button>`;
       case "error":
         return html`<display-error

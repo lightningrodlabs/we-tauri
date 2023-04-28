@@ -49,7 +49,7 @@ export interface OpenViews {
 }
 
 export interface AppletAttachmentTypes {
-  appletName: string;
+  appletInstanceName: string;
   attachmentTypes: Record<string, AttachmentType>;
 }
 
@@ -58,11 +58,19 @@ export interface GroupAttachmentTypes {
   attachmentTypesByApplet: ReadonlyMap<EntryHash, AppletAttachmentTypes>; // segmented by appletInstanceId
 }
 
+export interface EntryLocationAndInfo {
+  groupId: DnaHash;
+  groupProfile: GroupProfile;
+  appletInstanceId: EntryHash;
+  appletInstanceName: string;
+  entryInfo: EntryInfo;
+}
+
 export interface WeServices {
   openViews: OpenViews;
   attachmentTypesByGroup: ReadonlyMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
 
-  getEntryInfo(hrl: Hrl): Promise<EntryInfo | undefined>;
+  getEntryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
 }
 
 export type MainView = (rootElement: HTMLElement) => void;

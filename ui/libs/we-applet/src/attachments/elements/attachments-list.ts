@@ -33,12 +33,13 @@ export class AttachmentsList extends LitElement {
 
   renderAttachments(attachments: Array<HrlWithContext>) {
     return html`
-      <div class="row">
+      <div class="column">
         ${attachments.map(
           (attachment) =>
             html`<hrl-link
               .hrl=${attachment.hrl}
               .context=${attachment.context}
+              style="margin-bottom: 8px"
             ></hrl-link>`
         )}
       </div>
