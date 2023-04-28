@@ -73,7 +73,7 @@ export class EntryView extends LitElement {
   render() {
     switch (this.location.value.status) {
       case "pending":
-        return html`<div class="row center-content">
+        return html`<div class="row center-content" style="flex: 1">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "error":

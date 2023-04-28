@@ -5,7 +5,7 @@ use hdk::prelude::*;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Hrl {
     dna_hash: DnaHash,
-    resource_hash: ExternalHash,
+    resource_hash: AnyDhtHash,
 }
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug)]

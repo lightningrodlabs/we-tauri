@@ -103,7 +103,6 @@ fn main() {
 
             let uri = request.uri().strip_prefix("applet://").unwrap();
             let uri_components: Vec<String> = uri.split("/").map(|s| s.to_string()).collect();
-            println!("asdf {:?}", uri);
 
             let applet_id = uri_components.get(0).unwrap();
 

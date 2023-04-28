@@ -60,7 +60,7 @@ export class CreateAttachment extends LitElement {
 
   render() {
     return html`
-      <sl-tooltip .label=${msg("Create Attachment")}>
+      <sl-tooltip .content=${msg("Create Attachment")}>
         <sl-dropdown>
           <sl-button slot="trigger" variant="default" size="medium" circle
             ><sl-icon .src=${wrapPathInSvg(mdiAttachmentPlus)}></sl-icon
@@ -68,7 +68,7 @@ export class CreateAttachment extends LitElement {
 
           <sl-menu>
             ${Array.from(this.weServices.attachmentTypesByGroup.entries()).map(
-              ([groupId, groupAttachmentTypes]) => html`<sl-menu-label
+              ([groupId, groupAttachmentTypes], i) => html`<sl-menu-label
                   >${groupAttachmentTypes.groupProfile.name}</sl-menu-label
                 >
                 ${Array.from(
@@ -91,7 +91,10 @@ export class CreateAttachment extends LitElement {
                       </sl-menu-item>
                     `
                   )
-                )} <sl-divider></sl-divider> `
+                )}
+                ${i < this.weServices.attachmentTypesByGroup.size
+                  ? html` <sl-divider></sl-divider> `
+                  : html``} `
             )}
           </sl-menu>
         </sl-dropdown>

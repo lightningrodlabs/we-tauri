@@ -6,6 +6,7 @@ import {
   join,
   joinAsyncMap,
   lazyLoad,
+  Readable,
   retryUntilSuccess,
   toPromise,
   writable,
@@ -73,6 +74,12 @@ export function manualReloadStore<T>(
     subscribe: store.subscribe,
     reload,
   };
+}
+
+export function alwaysSubscribed<T>(readable: Readable<T>): Readable<T> {
+  readable.subscribe(() => {});
+
+  return readable;
 }
 
 export class WeStore {
@@ -351,53 +358,60 @@ export class WeStore {
 
   groupAttachmentTypes: AsyncReadable<
     Record<DnaHashB64, InternalGroupAttachmentTypes>
-  > = asyncDerived(
-    join([
-      this.allAppletsInstancesByGroup,
-      this.allGroupsProfiles,
-      this.attachmentTypesByGroup,
-    ] as [
-      AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>,
-      AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
-      AsyncReadable<
-        HoloHashMap<
-          DnaHash,
-          EntryHashMap<Record<string, InternalAttachmentType>>
+  > = alwaysSubscribed(
+    asyncDerived(
+      join([
+        this.allAppletsInstancesByGroup,
+        this.allGroupsProfiles,
+        this.attachmentTypesByGroup,
+      ] as [
+        AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>,
+        AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
+        AsyncReadable<
+          HoloHashMap<
+            DnaHash,
+            EntryHashMap<Record<string, InternalAttachmentType>>
+          >
         >
-      >
-    ]),
-    ([appletInstancesByGroup, groupsProfiles, attachmentTypesByGroup]) => {
-      const groupAttachmentTypes: Record<
-        DnaHashB64,
-        InternalGroupAttachmentTypes
-      > = {};
-
-      for (const [groupDnaHash, attachmentsByApplet] of Array.from(
-        attachmentTypesByGroup.entries()
-      )) {
-        const internalAppletAttachmentTypes: Record<
-          EntryHashB64,
-          InternalAppletAttachmentTypes
+      ]),
+      ([appletInstancesByGroup, groupsProfiles, attachmentTypesByGroup]) => {
+        const groupAttachmentTypes: Record<
+          DnaHashB64,
+          InternalGroupAttachmentTypes
         > = {};
-        for (const [appletInstanceHash, appletAttachmentTypes] of Array.from(
-          attachmentsByApplet.entries()
-        )) {
-          internalAppletAttachmentTypes[
-            encodeHashToBase64(appletInstanceHash)
-          ] = {
-            attachmentTypes: appletAttachmentTypes,
-            appletName: appletInstancesByGroup
-              .get(groupDnaHash)
-              .get(appletInstanceHash).custom_name,
-          };
-        }
-        groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {
-          groupProfile: groupsProfiles.get(groupDnaHash),
-          attachmentTypesByApplet: internalAppletAttachmentTypes,
-        };
-      }
 
-      return groupAttachmentTypes;
-    }
+        for (const [groupDnaHash, attachmentsByApplet] of Array.from(
+          attachmentTypesByGroup.entries()
+        )) {
+          const groupProfile = groupsProfiles.get(groupDnaHash);
+          if (groupProfile) {
+            const internalAppletAttachmentTypes: Record<
+              EntryHashB64,
+              InternalAppletAttachmentTypes
+            > = {};
+            for (const [
+              appletInstanceHash,
+              appletAttachmentTypes,
+            ] of Array.from(attachmentsByApplet.entries())) {
+              internalAppletAttachmentTypes[
+                encodeHashToBase64(appletInstanceHash)
+              ] = {
+                attachmentTypes: appletAttachmentTypes,
+                appletName: appletInstancesByGroup
+                  .get(groupDnaHash)
+                  .get(appletInstanceHash).custom_name,
+              };
+            }
+            console.log(groupsProfiles.get(groupDnaHash));
+            groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {
+              groupProfile,
+              attachmentTypesByApplet: internalAppletAttachmentTypes,
+            };
+          }
+        }
+
+        return groupAttachmentTypes;
+      }
+    )
   );
 }

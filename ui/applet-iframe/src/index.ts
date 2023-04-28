@@ -252,11 +252,15 @@ async function handleRenderViewMessage(
 }
 
 let applet: WeApplet | undefined = undefined;
+let client: AppAgentClient | undefined;
 
 async function handleMessage(message: ParentToAppletMessage) {
   if (!applet) applet = await fetchApplet();
-
-  let client: AppAgentClient;
+  if (!client && message.request.type !== "render-view")
+    client = await setupAppletClient(
+      message.appPort,
+      message.appletInstalledAppId
+    );
 
   switch (message.request.type) {
     case "render-view":
@@ -267,10 +271,6 @@ async function handleMessage(message: ParentToAppletMessage) {
         message.request.attachmentTypesByGroup
       );
     case "get-entry-info":
-      client = await setupAppletClient(
-        message.appPort,
-        message.appletInstalledAppId
-      );
       return applet!
         .groupViews(
           client!,
@@ -286,11 +286,7 @@ async function handleMessage(message: ParentToAppletMessage) {
           message.request.entryDefId
         ].info(message.request.hrl);
     case "get-attachment-types":
-      client = await setupAppletClient(
-        message.appPort,
-        message.appletInstalledAppId
-      );
-      const types = applet.attachmentTypes(client!);
+      const types = await applet.attachmentTypes(client!);
 
       const internalAttachmentTypes: Record<string, InternalAttachmentType> =
         {};
@@ -303,9 +299,9 @@ async function handleMessage(message: ParentToAppletMessage) {
 
       return internalAttachmentTypes;
     case "create-attachment":
-      return applet!
-        .attachmentTypes(client!)
-        [message.request.attachmentType].create(message.request.attachToHrl);
+      return (await applet!.attachmentTypes(client!))[
+        message.request.attachmentType
+      ].create(message.request.attachToHrl);
   }
 }
 

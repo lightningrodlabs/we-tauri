@@ -115,15 +115,19 @@ export class AppletHost {
         appletInstalledAppId: this.appletInstalledAppId,
         appPort: this.weStore.conductorInfo.app_port,
       };
+
+      console.log(message, "asdf");
       this.iframe.contentWindow!.postMessage(message, "*", [port2]);
 
       port1.onmessage = (m) => {
+        console.log("result", m.data);
         resolve(m.data);
       };
     });
   }
 
   async handleMessage(message: AppletToParentRequest) {
+    let host: AppletHost;
     switch (message.type) {
       case "open-view":
         switch (message.request.type) {
@@ -159,7 +163,7 @@ export class AppletHost {
 
         if (!hrlLocation) return undefined;
 
-        let host = await toPromise(
+        host = await toPromise(
           this.weStore.appletsHosts
             .get(dnaLocation.groupDnaHash)
             .get(dnaLocation.appletInstanceHash)
