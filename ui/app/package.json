@@ -4,8 +4,7 @@
   "scripts": {
     "start": "vite --clearScreen false --port 1420",
     "build": "vite build",
-    "build:watch": "vite build -w",
-    "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * "
+    "build:watch": "vite build -w"
   },
   "dependencies": {
     "@holochain-open-dev/elements": "^0.4.0",

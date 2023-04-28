@@ -87,13 +87,14 @@ fn main() {
                 .title("We")
                 .build()?;
 
-            tauri_plugin_deep_link::register("we-group", move |request| {
-                window.emit("join-group", request).unwrap();
-                window
-                    .request_user_attention(Some(UserAttentionType::Informational))
-                    .unwrap();
-            })
-            .unwrap();
+            if let Err(err) = tauri_plugin_deep_link::register("we-group", move |request| {
+                // window.emit("join-group", request).unwrap();
+                // window
+                //     .request_user_attention(Some(UserAttentionType::Informational))
+                //     .unwrap();
+            }) {
+                println!("Error registering the deep link plugin: {:?}", err);
+            }
 
             Ok(())
         })
