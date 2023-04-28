@@ -42,11 +42,7 @@ export class EntryView extends LitElement {
 
   location = new StoreSubscriber(
     this,
-    () =>
-      join([
-        this._weStore.dnaLocations.get(this.hrl[0]),
-        this._weStore.hrlLocations.get(this.hrl[0]).get(this.hrl[1]),
-      ]) as AsyncReadable<[DnaLocation, Record | undefined]>,
+    () => this._weStore.hrlLocations.get(this.hrl[0]).get(this.hrl[1]),
     () => [this.hrl]
   );
 
@@ -82,9 +78,12 @@ export class EntryView extends LitElement {
           .error=${this.location.value.error}
         ></display-error>`;
       case "complete":
+        if (this.location.value.value === undefined)
+          return html`<span>${msg("Entry not found.")}</span>`;
+
         return this.renderGroupView(
-          this.location.value.value[0],
-          this.location.value.value[1] as any
+          this.location.value.value.dnaLocation,
+          this.location.value.value.entryDefLocation
         );
     }
   }

@@ -28,7 +28,10 @@ export class AttachmentsClient {
     return this.callZome("add_attachment", {
       hash,
       hrl_with_context: {
-        hrl: hrlWithContext.hrl,
+        hrl: {
+          dna_hash: hrlWithContext.hrl[0],
+          resource_hash: hrlWithContext.hrl[1],
+        },
         context: encode(hrlWithContext.context),
       },
     });
@@ -38,7 +41,7 @@ export class AttachmentsClient {
     const hrls = await this.callZome("get_attachments", hash);
 
     return hrls.map((hrlWithContext) => ({
-      hrl: hrlWithContext.hrl,
+      hrl: [hrlWithContext.hrl.dna_hash, hrlWithContext.hrl.resource_hash],
       context: decode(hrlWithContext.context),
     }));
   }

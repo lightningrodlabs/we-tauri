@@ -10,7 +10,8 @@ import {
 } from "golden-layout";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { provide } from "@lit-labs/context";
+import { consume, provide } from "@lit-labs/context";
+import { toPromise } from "@holochain-open-dev/stores";
 
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
@@ -18,9 +19,12 @@ import "./views/welcome-view.js";
 import "./views/group-applet-block.js";
 import "./views/group-applet-main.js";
 import "./views/entry-view.js";
+
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
+import { WeStore } from "../we-store.js";
+import { weStoreContext } from "../context.js";
 import { Hrl } from "../../../libs/we-applet/dist/types.js";
 
 @localized()
@@ -37,6 +41,9 @@ export class DynamicLayout extends LitElement {
       },
     };
   }
+
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
 
   @provide({ context: openViewsContext })
   openViews: AppOpenViews = {
@@ -79,10 +86,14 @@ export class DynamicLayout extends LitElement {
         ]
       );
     },
-    openHrl: (hrl: Hrl, context: any) => {
+    openHrl: async (hrl: Hrl, context: any) => {
+      const entryInfo = await toPromise(
+        this.weStore.entryInfo.get(hrl[0]).get(hrl[1])
+      );
+
       this.goldenLayout.addItemAtLocation(
         {
-          title: "Entry Views",
+          title: entryInfo?.name,
           type: "component",
           componentType: "entry",
           componentState: {

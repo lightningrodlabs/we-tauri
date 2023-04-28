@@ -225,8 +225,46 @@ export class WeStore {
   hrlLocations = new LazyHoloHashMap(
     (dnaHash: DnaHash) =>
       new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
-        asyncDerived(this.dnaLocations.get(dnaHash), (location) =>
-          locateHrl(this.adminWebsocket, location, [dnaHash, hash])
+        asyncDerived(
+          this.dnaLocations.get(dnaHash),
+          async (dnaLocation: DnaLocation) => {
+            const entryDefLocation = await locateHrl(
+              this.adminWebsocket,
+              dnaLocation,
+              [dnaHash, hash]
+            );
+            if (!entryDefLocation) return undefined;
+
+            return {
+              dnaLocation,
+              entryDefLocation,
+            };
+          }
+        )
+      )
+  );
+
+  entryInfo = new LazyHoloHashMap(
+    (dnaHash: DnaHash) =>
+      new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
+        asyncDeriveStore(
+          this.hrlLocations.get(dnaHash).get(hash),
+          (location) => {
+            if (!location) return lazyLoad(async () => undefined);
+
+            return asyncDerived(
+              this.appletsHosts
+                .get(location.dnaLocation.groupDnaHash)
+                .get(location.dnaLocation.appletInstanceHash),
+              (host) =>
+                host.getEntryInfo(
+                  location.dnaLocation.roleName,
+                  location.entryDefLocation.integrity_zome,
+                  location.entryDefLocation.entry_def,
+                  [dnaHash, hash]
+                )
+            );
+          }
         )
       )
   );
@@ -313,14 +351,20 @@ export class WeStore {
             iframe.style.display = "none";
             document.body.appendChild(iframe);
 
-            return AppletHost.connect(
-              appletInstalledAppId,
-              groupDnaHash,
-              appletInstanceHash,
-              iframe,
-              this,
-              undefined
-            );
+            return new Promise<AppletHost>((resolve) => {
+              iframe.onload = () => {
+                resolve(
+                  new AppletHost(
+                    appletInstalledAppId,
+                    groupDnaHash,
+                    appletInstanceHash,
+                    iframe,
+                    this,
+                    undefined
+                  )
+                );
+              };
+            });
           }
         )
       )
@@ -397,12 +441,11 @@ export class WeStore {
                 encodeHashToBase64(appletInstanceHash)
               ] = {
                 attachmentTypes: appletAttachmentTypes,
-                appletName: appletInstancesByGroup
+                appletInstanceName: appletInstancesByGroup
                   .get(groupDnaHash)
                   .get(appletInstanceHash).custom_name,
               };
             }
-            console.log(groupsProfiles.get(groupDnaHash));
             groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {
               groupProfile,
               attachmentTypesByApplet: internalAppletAttachmentTypes,

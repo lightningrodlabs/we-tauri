@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { AppletToParentRequest, RenderView } from "applet-messages";
+import { RenderView } from "applet-messages";
 import { weStyles } from "../../shared-styles.js";
 import { consume } from "@lit-labs/context";
 import { AppOpenViews } from "../types.js";
@@ -37,8 +37,8 @@ export class ViewFrame extends LitElement {
 
   host!: AppletHost;
 
-  async firstUpdated() {
-    this.host = await AppletHost.connect(
+  async connect() {
+    this.host = new AppletHost(
       this.appletInstalledAppId,
       this.groupDnaHash,
       this.appletInstanceHash,
@@ -54,6 +54,7 @@ export class ViewFrame extends LitElement {
     return html`<iframe
       id="view-frame"
       src="applet://${this.appletInstalledAppId}"
+      @load=${() => this.connect()}
       style="flex: 1"
     ></iframe>`;
   }

@@ -32,6 +32,11 @@ export class AttachmentsList extends LitElement {
   );
 
   renderAttachments(attachments: Array<HrlWithContext>) {
+    if (attachments.length === 0)
+      return html`<span class="placeholder"
+        >${msg("There are no attachments yet.")}</span
+      >`;
+
     return html`
       <div class="column">
         ${attachments.map(
@@ -39,7 +44,6 @@ export class AttachmentsList extends LitElement {
             html`<hrl-link
               .hrl=${attachment.hrl}
               .context=${attachment.context}
-              style="margin-bottom: 8px"
             ></hrl-link>`
         )}
       </div>

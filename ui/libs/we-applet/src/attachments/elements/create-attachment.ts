@@ -94,7 +94,7 @@ export class CreateAttachment extends LitElement {
                   `
                 )
               )}
-              ${i < this.weServices.attachmentTypesByGroup.size
+              ${i < this.weServices.attachmentTypesByGroup.size - 1
                 ? html` <sl-divider></sl-divider> `
                 : html``} `
           )}

@@ -19,7 +19,7 @@ import { signZomeCallTauri } from "./tauri";
 import { WeStore } from "./we-store";
 
 export class AppletHost {
-  private constructor(
+  constructor(
     public appletInstalledAppId: string,
     public groupDnaHash: DnaHash,
     public appletInstanceHash: EntryHash,
@@ -33,30 +33,6 @@ export class AppletHost {
         const result = await this.handleMessage(message.data);
         message.ports[0].postMessage(result);
       }
-    });
-  }
-
-  static async connect(
-    appletInstalledAppId: string,
-    groupDnaHash: DnaHash,
-    appletInstanceHash: EntryHash,
-    iframe: HTMLIFrameElement,
-    weStore: WeStore,
-    openViews: AppOpenViews | undefined
-  ): Promise<AppletHost> {
-    return new Promise((resolve) => {
-      iframe.onload = () => {
-        resolve(
-          new AppletHost(
-            appletInstalledAppId,
-            groupDnaHash,
-            appletInstanceHash,
-            iframe,
-            weStore,
-            openViews
-          )
-        );
-      };
     });
   }
 
@@ -121,11 +97,9 @@ export class AppletHost {
         appPort: this.weStore.conductorInfo.app_port,
       };
 
-      console.log(message, "asdf");
       this.iframe.contentWindow!.postMessage(message, "*", [port2]);
 
       port1.onmessage = (m) => {
-        console.log("result", m.data);
         resolve(m.data);
       };
     });
@@ -159,40 +133,28 @@ export class AppletHost {
       case "get-entry-info":
         const dnaHash = message.hrl[0];
 
-        const dnaLocation = await toPromise(
-          this.weStore.dnaLocations.get(dnaHash)
-        );
-        const hrlLocation = await toPromise(
+        const location = await toPromise(
           this.weStore.hrlLocations.get(dnaHash).get(message.hrl[1])
         );
 
-        if (!hrlLocation) return undefined;
+        if (!location) return undefined;
 
-        host = await toPromise(
-          this.weStore.appletsHosts
-            .get(dnaLocation.groupDnaHash)
-            .get(dnaLocation.appletInstanceHash)
-        );
-
-        const entryInfo = await host.getEntryInfo(
-          dnaLocation.roleName,
-          hrlLocation.integrity_zome,
-          hrlLocation.entry_def,
-          message.hrl
+        const entryInfo = await toPromise(
+          this.weStore.entryInfo.get(message.hrl[0]).get(message.hrl[1])
         );
 
         if (!entryInfo) return undefined;
 
         const appletInstance = await toPromise(
           this.weStore.appletsInstancesByGroup
-            .get(dnaLocation.groupDnaHash)
-            .get(dnaLocation.appletInstanceHash)
+            .get(location.dnaLocation.groupDnaHash)
+            .get(location.dnaLocation.appletInstanceHash)
         );
 
         if (!appletInstance) return undefined;
 
         const groupStore = await toPromise(
-          this.weStore.groups.get(dnaLocation.groupDnaHash)
+          this.weStore.groups.get(location.dnaLocation.groupDnaHash)
         );
 
         const groupProfile = await toPromise(groupStore.groupProfile);
@@ -200,9 +162,9 @@ export class AppletHost {
         if (!groupProfile) return undefined;
 
         const entryAndAppletInfo: EntryLocationAndInfo = {
-          groupId: dnaLocation.groupDnaHash,
+          groupId: location.dnaLocation.groupDnaHash,
           groupProfile,
-          appletInstanceId: dnaLocation.appletInstanceHash,
+          appletInstanceId: location.dnaLocation.appletInstanceHash,
           appletInstanceName: appletInstance.entry.custom_name,
           entryInfo,
         };
