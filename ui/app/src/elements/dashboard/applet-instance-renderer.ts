@@ -1,7 +1,7 @@
 import { PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { EntryHash } from "@holochain/client";
-import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/nh-launcher-applet";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
