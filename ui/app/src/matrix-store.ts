@@ -54,9 +54,8 @@ import {
   AppletInfo,
   WeServices,
   WeInfo,
-  SensemakerStore,
-  SensemakerService,
 } from "@neighbourhoods/nh-launcher-applet";
+import { SensemakerStore, SensemakerService } from "@neighbourhoods/client";
 import {
   Applet,
   AppletGui,
