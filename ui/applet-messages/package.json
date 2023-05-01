@@ -11,8 +11,7 @@
   "dependencies": {
     "@holochain/client": "^0.13.0",
     "@holochain-open-dev/utils": "^0.13.7",
-    "@lightningrodlabs/we-applet": "^0",
-    "@lightningrodlabs/hrl": "0.0.1"
+    "@lightningrodlabs/we-applet": "^0"
   },
   "devDependencies": {
     "tslib": "^2.3.1",

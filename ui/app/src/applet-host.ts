@@ -70,6 +70,13 @@ export class AppletHost {
     });
   }
 
+  search(filter: string): Promise<Array<HrlWithContext>> {
+    return this.postMessage({
+      type: "search",
+      filter,
+    });
+  }
+
   createAttachment(
     attachmentType: string,
     attachToHrl: Hrl
@@ -130,6 +137,22 @@ export class AppletHost {
             );
         }
 
+      case "search":
+        const hosts = await toPromise(this.weStore.allAppletsHosts);
+
+        const promises: Array<Promise<Array<HrlWithContext>>> = [];
+
+        for (const groupHosts of Array.from(hosts.values())) {
+          for (const host of Array.from(groupHosts.values())) {
+            promises.push(host.search(message.filter));
+          }
+        }
+
+        const hrlsWithApplets = await Promise.all(promises);
+
+        const hrls = ([] as Array<HrlWithContext>).concat(...hrlsWithApplets);
+
+        return hrls;
       case "get-entry-info":
         const dnaHash = message.hrl[0];
 

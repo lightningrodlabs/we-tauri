@@ -123,11 +123,6 @@ async function handleRenderViewMessage(
 
   const weServices: WeServices = {
     attachmentTypesByGroup,
-    getEntryInfo: (hrl) =>
-      postMessage({
-        type: "get-entry-info",
-        hrl,
-      }),
     openViews: {
       openGroupBlock: (groupId, appletId, block, context) =>
         postMessage({
@@ -160,6 +155,16 @@ async function handleRenderViewMessage(
           },
         }),
     },
+    getEntryInfo: (hrl) =>
+      postMessage({
+        type: "get-entry-info",
+        hrl,
+      }),
+    search: (filter: string) =>
+      postMessage({
+        type: "search",
+        filter,
+      }),
   };
 
   if (message.type === "group-view") {

@@ -54,6 +54,10 @@ export type ParentToAppletRequest =
       type: "get-attachment-types";
     }
   | {
+      type: "search";
+      filter: string;
+    }
+  | {
       type: "create-attachment";
       attachmentType: string;
       attachToHrl: Hrl;
@@ -77,6 +81,10 @@ export type AppletToParentRequest =
   | {
       type: "create-attachment";
       request: CreateAttachmentRequest;
+    }
+  | {
+      type: "search";
+      filter: string;
     }
   | {
       type: "get-entry-info";
