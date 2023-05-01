@@ -11,6 +11,8 @@ DevHub/web-app
 testing-applets/
 .running
 
+*.tsbuildinfo
+
 # custom holochain binaries
 holochain-v0.0.155-x86_64-unknown-linux-gnu
 holochain-v0.0.156-x86_64-unknown-linux-gnu
