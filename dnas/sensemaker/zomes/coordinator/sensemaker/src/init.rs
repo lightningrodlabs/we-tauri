@@ -4,6 +4,18 @@ use sensemaker_integrity::{EntryTypes, LinkTypes, Properties};
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    // set up capability grants to allow for remote signals    
+    let mut functions = BTreeSet::new();
+    functions.insert((zome_info()?.name, FunctionName("recv_remote_signal".into())));
+    let cap_grant_entry: CapGrantEntry = CapGrantEntry::new(
+        String::from("new primitives signals"), // A string by which to later query for saved grants.
+        ().into(), // Unrestricted access means any external agent can call the extern
+        GrantedFunctions::Listed(functions),
+    );
+
+    create_cap_grant(cap_grant_entry)?;
+
+    // check if CA and if true, create config entry and link it from the CA
     let prop = Properties::get()?;
     let my_key = agent_info()?.agent_latest_pubkey;
     if let false = Properties::is_community_activator(my_key.clone())? {
