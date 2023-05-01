@@ -11,24 +11,24 @@ import { invoke } from "@tauri-apps/api";
 import { getAllAppsWithGui } from "../processes/devhub/get-happs.js";
 import { toSrc } from "../processes/import-logsrc-from-file.js";
 
-export class AppletsStore {
+export class AppletBundlesStore {
   constructor(
     public devhubClient: AppAgentClient,
     public adminWebsocket: AdminWebsocket
   ) {}
 
-  installableApplets = lazyLoadAndPoll(
+  appletBundles = lazyLoadAndPoll(
     async () => getAllAppsWithGui(this.devhubClient),
     5000
   );
 
-  async installApplet(
+  async installAppletBundle(
     devhubHappReleaseHash: EntryHash,
     devhubGuiReleaseHash: EntryHash,
     appId: InstalledAppId,
     networkSeed: string | undefined
   ): Promise<[AppInfo, string | undefined]> {
-    const [appInfo, iconBytes] = await invoke("install_applet", {
+    const [appInfo, iconBytes] = await invoke("install_applet_bundle", {
       appId,
       networkSeed,
       membraneProofs: {},

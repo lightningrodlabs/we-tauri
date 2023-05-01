@@ -73,7 +73,7 @@ export class CreateAttachment extends LitElement {
               >
               ${Array.from(
                 groupAttachmentTypes.attachmentTypesByApplet.entries()
-              ).map(([appletInstanceId, appletAttachmentTypes]) =>
+              ).map(([appletId, appletAttachmentTypes]) =>
                 Object.entries(appletAttachmentTypes.attachmentTypes).map(
                   ([name, attachmentType]) => html`
                     <sl-menu-item
@@ -88,7 +88,7 @@ export class CreateAttachment extends LitElement {
                         slot="suffix"
                         style="color: var(--sl-color-neutral-500);"
                         >${msg("in")}
-                        ${appletAttachmentTypes.appletInstanceName}</span
+                        ${appletAttachmentTypes.appletName}</span
                       >
                     </sl-menu-item>
                   `

@@ -10,7 +10,7 @@ import {
   DnaHash,
   CellType,
 } from "@holochain/client";
-import { AppletInstance } from "./groups/types";
+import { Applet } from "./groups/types";
 
 export async function initAppClient(
   appId: string,
@@ -51,20 +51,20 @@ export function findAppForDnaHash(
   return undefined;
 }
 
-export function findAppletInstanceForAppInfo(
-  appletsInstancesByGroup: ReadonlyMap<DnaHash, EntryHashMap<AppletInstance>>,
+export function findAppletForAppInfo(
+  appletsInstancesByGroup: ReadonlyMap<DnaHash, EntryHashMap<Applet>>,
   appInfo: AppInfo
-): { groupDnaHash: DnaHash; appletInstanceHash: EntryHash } {
+): { groupDnaHash: DnaHash; appletHash: EntryHash } {
   for (const [
     groupDnaHash,
     appletsInstances,
   ] of appletsInstancesByGroup.entries()) {
     for (const [
-      appletInstanceHash,
-      appletInstance,
+      appletHash,
+      applet,
     ] of appletsInstances.entries()) {
       for (const [appletRole, dnaHash] of Object.entries(
-        appletInstance.dna_hashes
+        applet.dna_hashes
       )) {
         for (const [role, cells] of Object.entries(appInfo.cell_info)) {
           if (role === appletRole) {
@@ -74,7 +74,7 @@ export function findAppletInstanceForAppInfo(
                   cell[CellType.Provisioned].cell_id[0].toString() ===
                   dnaHash.toString()
                 ) {
-                  return { groupDnaHash, appletInstanceHash };
+                  return { groupDnaHash, appletHash };
                 }
               }
             }

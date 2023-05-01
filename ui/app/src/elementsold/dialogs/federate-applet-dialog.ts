@@ -13,7 +13,7 @@ import {
 } from "@scoped-elements/material-web";
 
 import { weStyles } from "../../sharedStyles";
-import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
+import { AppletInfo, MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -31,7 +31,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
   _selectedGroup: DnaHash | undefined;
 
   @state()
-  _appletInfo: AppletInstanceInfo | undefined;
+  _appletInfo: AppletInfo | undefined;
 
   @query("#federate-dialog")
   _federateDialog!: Dialog;
@@ -40,7 +40,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
     this._matrixStore.getAllWeGroupInfos()
   );
 
-  open(appletInfo: AppletInstanceInfo) {
+  open(appletInfo: AppletInfo) {
     this._appletInfo = appletInfo;
     this._selectedGroup = undefined;
     this._federateDialog.show();

@@ -41,16 +41,13 @@ import {
 } from "../../applet-messages/dist";
 import { AppletHost } from "./applet-host";
 
-import { AppletsStore } from "./applets/applets-store";
+import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store";
 import { GroupClient } from "./groups/group-client";
-import {
-  appletAppIdFromAppletInstance,
-  GroupStore,
-} from "./groups/group-store";
-import { AppletInstance } from "./groups/types";
+import { appletAppIdFromApplet, GroupStore } from "./groups/group-store";
+import { Applet } from "./groups/types";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
-import { findAppForDnaHash, findAppletInstanceForAppInfo } from "./utils.js";
+import { findAppForDnaHash, findAppletForAppInfo } from "./utils.js";
 
 export function manualReloadStore<T>(
   fn: () => Promise<T>
@@ -83,7 +80,7 @@ export function alwaysSubscribed<T>(readable: Readable<T>): Readable<T> {
 }
 
 export class WeStore {
-  public appletsStore: AppletsStore;
+  public appletsStore: AppletBundlesStore;
 
   constructor(
     public adminWebsocket: AdminWebsocket,
@@ -91,7 +88,7 @@ export class WeStore {
     public conductorInfo: ConductorInfo,
     public devhubClient: AppAgentClient
   ) {
-    this.appletsStore = new AppletsStore(devhubClient, adminWebsocket);
+    this.appletsStore = new AppletBundlesStore(devhubClient, adminWebsocket);
   }
 
   /**
@@ -113,7 +110,7 @@ export class WeStore {
       name: name,
     };
 
-    await groupClient.setGroupInfo(groupProfile);
+    await groupClient.setGroupProfile(groupProfile);
 
     return groupClonedCell;
   }
@@ -194,9 +191,9 @@ export class WeStore {
 
   appletsInstancesByGroup = new LazyHoloHashMap(
     (groupDnaHash: DnaHash) =>
-      new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+      new LazyHoloHashMap((appletHash: EntryHash) =>
         asyncDeriveStore(this.groups.get(groupDnaHash), (groupStore) =>
-          groupStore.applets.get(appletInstanceHash)
+          groupStore.applets.get(appletHash)
         )
       )
   );
@@ -210,11 +207,13 @@ export class WeStore {
 
         if (!app) throw new Error("The given dna is not installed");
 
-        const { groupDnaHash, appletInstanceHash } =
-          findAppletInstanceForAppInfo(appletsInstancesByGroup, app.appInfo);
+        const { groupDnaHash, appletHash } = findAppletForAppInfo(
+          appletsInstancesByGroup,
+          app.appInfo
+        );
         return {
           groupDnaHash,
-          appletInstanceHash,
+          appletHash,
           appInfo: app.appInfo,
           roleName: app.roleName,
         } as DnaLocation;
@@ -255,7 +254,7 @@ export class WeStore {
             return asyncDerived(
               this.appletsHosts
                 .get(location.dnaLocation.groupDnaHash)
-                .get(location.dnaLocation.appletInstanceHash),
+                .get(location.dnaLocation.appletHash),
               (host) =>
                 host.getEntryInfo(
                   location.dnaLocation.roleName,
@@ -271,7 +270,7 @@ export class WeStore {
 
   appletsByGroup = new LazyHoloHashMap(
     (
-      devhubReleaseEntryHash: EntryHash // appletid
+      appBundleHash: EntryHash // appletid
     ) =>
       asyncDerived(
         join([
@@ -281,20 +280,20 @@ export class WeStore {
         ] as [
           AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
           AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
-          AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>
+          AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<Applet>>>
         ]),
-        async ([groupsStores, groupInfos, groupAppletInstances]) => {
+        async ([groupsStores, groupsProfiless, groupApplets]) => {
           const appletsByGroup: HoloHashMap<DnaHash, InternalGroupWithApplets> =
             new HoloHashMap();
           let appletInstalledAppId: string;
 
           for (const [groupDnaHash, instances] of Array.from(
-            groupAppletInstances.entries()
+            groupApplets.entries()
           )) {
             const groupStore = groupsStores.get(groupDnaHash);
 
             if (instances.size > 0) {
-              appletInstalledAppId = appletAppIdFromAppletInstance(
+              appletInstalledAppId = appletAppIdFromApplet(
                 Array.from(instances.values())[0]
               );
             }
@@ -305,21 +304,18 @@ export class WeStore {
             ).filter(
               ([_, i]) =>
                 i.devhub_happ_release_hash.toString() ===
-                devhubReleaseEntryHash.toString()
+                appBundleHash.toString()
             );
 
-            for (const [
-              appletInstanceHash,
-              instance,
-            ] of instancesForThisApplet) {
-              applets[encodeHashToBase64(appletInstanceHash)] =
-                appletAppIdFromAppletInstance(instance);
+            for (const [appletHash, instance] of instancesForThisApplet) {
+              applets[encodeHashToBase64(appletHash)] =
+                appletAppIdFromApplet(instance);
             }
 
             appletsByGroup.set(groupDnaHash, {
               applets,
               groupId: groupDnaHash,
-              groupProfile: groupInfos.get(groupDnaHash),
+              groupProfile: groupsProfiless.get(groupDnaHash),
               profilesAppId: this.conductorInfo.we_app_id,
               profilesRoleName: groupStore.roleName,
             });
@@ -335,15 +331,11 @@ export class WeStore {
 
   appletsHosts = new LazyHoloHashMap(
     (groupDnaHash: DnaHash) =>
-      new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+      new LazyHoloHashMap((appletHash: EntryHash) =>
         asyncDerived(
-          this.appletsInstancesByGroup
-            .get(groupDnaHash)
-            .get(appletInstanceHash),
-          async (appletInstance) => {
-            const appletInstalledAppId = appletAppIdFromAppletInstance(
-              appletInstance!.entry
-            );
+          this.appletsInstancesByGroup.get(groupDnaHash).get(appletHash),
+          async (applet) => {
+            const appletInstalledAppId = appletAppIdFromApplet(applet!.entry);
 
             const origin = `applet://${appletInstalledAppId}`;
             const iframe = document.createElement("iframe");
@@ -357,7 +349,7 @@ export class WeStore {
                   new AppletHost(
                     appletInstalledAppId,
                     groupDnaHash,
-                    appletInstanceHash,
+                    appletHash,
                     iframe,
                     this,
                     undefined
@@ -372,12 +364,12 @@ export class WeStore {
 
   allAppletsHosts = asyncDeriveStore(
     this.allAppletsInstancesByGroup,
-    async (groupAppletInstances) => {
+    async (groupApplets) => {
       return joinAsyncMap(
-        mapValues(groupAppletInstances, (appletsInGroup, groupDnaHash) =>
+        mapValues(groupApplets, (appletsInGroup, groupDnaHash) =>
           joinAsyncMap(
-            mapValues(appletsInGroup, (_, appletInstanceHash) =>
-              this.appletsHosts.get(groupDnaHash).get(appletInstanceHash)
+            mapValues(appletsInGroup, (_, appletHash) =>
+              this.appletsHosts.get(groupDnaHash).get(appletHash)
             )
           )
         )
@@ -409,7 +401,7 @@ export class WeStore {
         this.allGroupsProfiles,
         this.attachmentTypesByGroup,
       ] as [
-        AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<AppletInstance>>>,
+        AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<Applet>>>,
         AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
         AsyncReadable<
           HoloHashMap<
@@ -418,7 +410,7 @@ export class WeStore {
           >
         >
       ]),
-      ([appletInstancesByGroup, groupsProfiles, attachmentTypesByGroup]) => {
+      ([appletsByGroup, groupsProfiles, attachmentTypesByGroup]) => {
         const groupAttachmentTypes: Record<
           DnaHashB64,
           InternalGroupAttachmentTypes
@@ -433,17 +425,13 @@ export class WeStore {
               EntryHashB64,
               InternalAppletAttachmentTypes
             > = {};
-            for (const [
-              appletInstanceHash,
-              appletAttachmentTypes,
-            ] of Array.from(attachmentsByApplet.entries())) {
-              internalAppletAttachmentTypes[
-                encodeHashToBase64(appletInstanceHash)
-              ] = {
+            for (const [appletHash, appletAttachmentTypes] of Array.from(
+              attachmentsByApplet.entries()
+            )) {
+              internalAppletAttachmentTypes[encodeHashToBase64(appletHash)] = {
                 attachmentTypes: appletAttachmentTypes,
-                appletInstanceName: appletInstancesByGroup
-                  .get(groupDnaHash)
-                  .get(appletInstanceHash).custom_name,
+                appletName: appletsByGroup.get(groupDnaHash).get(appletHash)
+                  .custom_name,
               };
             }
             groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {

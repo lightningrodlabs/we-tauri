@@ -23,11 +23,8 @@ import { GroupView, RenderView } from "applet-messages";
 import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
-import { AppletInstance } from "../../groups/types.js";
-import {
-  appletAppIdFromAppletInstance,
-  GroupStore,
-} from "../../groups/group-store.js";
+import { Applet } from "../../groups/types.js";
+import { appletAppIdFromApplet, GroupStore } from "../../groups/group-store.js";
 import { mdiInformationOutline } from "@mdi/js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
@@ -42,8 +39,8 @@ export class GroupViewEl extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   weStore!: WeStore;
 
-  @property(hashProperty("applet-instance-hash"))
-  appletInstanceHash!: EntryHash;
+  @property(hashProperty("applet-hash"))
+  appletHash!: EntryHash;
 
   @state()
   installing = false;
@@ -51,20 +48,20 @@ export class GroupViewEl extends LitElement {
   @property()
   view!: GroupView;
 
-  _appletClient = new StoreSubscriber(
+  _applet = new StoreSubscriber(
     this,
     () =>
       join([
         this.groupStore.groupProfile,
-        this.groupStore.applets.get(this.appletInstanceHash),
-        this.groupStore.isInstalled.get(this.appletInstanceHash),
-      ]) as AsyncReadable<[GroupProfile, EntryRecord<AppletInstance>, boolean]>,
-    () => [this.groupStore, this.appletInstanceHash]
+        this.groupStore.applets.get(this.appletHash),
+        this.groupStore.isInstalled.get(this.appletHash),
+      ]) as AsyncReadable<[GroupProfile, EntryRecord<Applet>, boolean]>,
+    () => [this.groupStore, this.appletHash]
   );
 
-  renderAppletFrame([groupProfile, appletInstance, isInstalled]: [
+  renderAppletFrame([groupProfile, applet, isInstalled]: [
     GroupProfile,
-    EntryRecord<AppletInstance>,
+    EntryRecord<Applet>,
     boolean
   ]) {
     if (!isInstalled) {
@@ -88,9 +85,7 @@ export class GroupViewEl extends LitElement {
                 @click=${async () => {
                   this.installing = true;
                   try {
-                    await this.groupStore.installAppletInstance(
-                      this.appletInstanceHash
-                    );
+                    await this.groupStore.installApplet(this.appletHash);
                     await this.groupStore.installedApps.reload();
                   } catch (e) {
                     notifyError(msg("Couldn't install applet"));
@@ -106,15 +101,13 @@ export class GroupViewEl extends LitElement {
       `;
     }
 
-    const appletInstalledAppId = appletAppIdFromAppletInstance(
-      appletInstance.entry
-    );
+    const appletInstalledAppId = appletAppIdFromApplet(applet.entry);
 
     const renderView: RenderView = {
       type: "group-view",
       groupProfile,
       groupId: this.groupStore.groupDnaHash,
-      appletInstanceId: this.appletInstanceHash,
+      appletId: this.appletHash,
       appletInstalledAppId,
       profilesAppId: this.weStore.conductorInfo.we_app_id,
       profilesRoleName: this.groupStore.roleName,
@@ -125,26 +118,25 @@ export class GroupViewEl extends LitElement {
         .renderView=${renderView}
         .appletInstalledAppId=${appletInstalledAppId}
         .groupDnaHash=${this.groupStore.groupDnaHash}
-        .appletInstanceHash=${this.appletInstanceHash}
+        .appletHash=${this.appletHash}
         style="flex: 1"
       ></view-frame>
     `;
   }
 
   render() {
-    switch (this._appletClient.value?.status) {
+    switch (this._applet.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "error":
         return html`<display-error
-          tooltip
           .headline=${msg("Error initializing the client for this group")}
-          .error=${this._appletClient.value.error.data.data}
+          .error=${this._applet.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderAppletFrame(this._appletClient.value.value);
+        return this.renderAppletFrame(this._applet.value.value);
     }
   }
 

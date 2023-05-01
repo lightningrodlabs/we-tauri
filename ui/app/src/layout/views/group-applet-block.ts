@@ -9,8 +9,8 @@ import "./group-view.js";
 @localized()
 @customElement("group-applet-block")
 export class GroupAppletBlock extends LitElement {
-  @property(hashProperty("applet-instance-hash"))
-  appletInstanceHash!: EntryHash;
+  @property(hashProperty("applet-hash"))
+  appletHash!: EntryHash;
 
   @property()
   block!: string;
@@ -21,7 +21,7 @@ export class GroupAppletBlock extends LitElement {
   render() {
     return html`<group-view
       .view=${{ type: "block", block: this.block, context: this.context }}
-      .appletInstanceHash=${this.appletInstanceHash}
+      .appletHash=${this.appletHash}
       style="flex: 1"
     ></group-view>`;
   }

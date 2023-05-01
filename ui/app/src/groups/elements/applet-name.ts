@@ -13,39 +13,39 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 import { groupStoreContext } from "../context";
 import { GroupStore } from "../group-store";
-import { AppletInstance } from "../types";
+import { Applet } from "../types";
 
-@customElement("applet-instance-name")
-export class AppletInstanceName extends LitElement {
+@customElement("applet-name")
+export class AppletName extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
-  @property(hashProperty("applet-instance-hash"))
-  appletInstanceHash!: EntryHash;
+  @property(hashProperty("applet-hash"))
+  appletHash!: EntryHash;
 
-  appletInstance = new StoreSubscriber(
+  applet = new StoreSubscriber(
     this,
-    () => this.groupStore.applets.get(this.appletInstanceHash),
+    () => this.groupStore.applets.get(this.appletHash),
     () => []
   );
 
-  renderName(appletInstance: EntryRecord<AppletInstance> | undefined) {
-    if (!appletInstance) return html``;
+  renderName(applet: EntryRecord<Applet> | undefined) {
+    if (!applet) return html``;
 
-    return html`<span>${appletInstance.entry.custom_name}</span>`;
+    return html`<span>${applet.entry.custom_name}</span>`;
   }
 
   render() {
-    switch (this.appletInstance.value.status) {
+    switch (this.applet.value.status) {
       case "pending":
         return html``;
       case "complete":
-        return this.renderName(this.appletInstance.value.value);
+        return this.renderName(this.applet.value.value);
       case "error":
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the group profile")}
-          .error=${this.appletInstance.value.error.data.data}
+          .error=${this.applet.value.error.data.data}
         ></display-error>`;
     }
   }

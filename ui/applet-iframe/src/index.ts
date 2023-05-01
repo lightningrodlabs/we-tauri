@@ -86,7 +86,7 @@ async function handleRenderViewMessage(
       AppletAttachmentTypes
     >();
 
-    for (const [appletInstanceId, appletAttachmentTypes] of Object.entries(
+    for (const [appletId, appletAttachmentTypes] of Object.entries(
       groupAttachmentTypes.attachmentTypesByApplet
     )) {
       const attachmentTypes: Record<string, AttachmentType> = {};
@@ -101,7 +101,7 @@ async function handleRenderViewMessage(
               type: "create-attachment",
               request: {
                 groupId: decodeHashFromBase64(groupId),
-                appletInstanceId: decodeHashFromBase64(appletInstanceId),
+                appletId: decodeHashFromBase64(appletId),
                 attachmentType: name,
                 attachToHrl,
               },
@@ -109,8 +109,8 @@ async function handleRenderViewMessage(
         };
       }
 
-      attachmentTypesByApplet.set(decodeHashFromBase64(appletInstanceId), {
-        appletInstanceName: appletAttachmentTypes.appletInstanceName,
+      attachmentTypesByApplet.set(decodeHashFromBase64(appletId), {
+        appletName: appletAttachmentTypes.appletName,
         attachmentTypes,
       });
     }
@@ -129,13 +129,13 @@ async function handleRenderViewMessage(
         hrl,
       }),
     openViews: {
-      openGroupBlock: (groupId, appletInstanceId, block, context) =>
+      openGroupBlock: (groupId, appletId, block, context) =>
         postMessage({
           type: "open-view",
           request: {
             type: "group-block",
             groupId,
-            appletInstanceId,
+            appletId,
             block,
             context,
           },
@@ -176,7 +176,7 @@ async function handleRenderViewMessage(
           .groupViews(
             client,
             message.groupId,
-            message.appletInstanceId,
+            message.appletId,
             { profilesClient, groupProfile: message.groupProfile },
             weServices
           )
@@ -187,7 +187,7 @@ async function handleRenderViewMessage(
           .groupViews(
             client,
             message.groupId,
-            message.appletInstanceId,
+            message.appletId,
             { profilesClient, groupProfile: message.groupProfile },
             weServices
           )
@@ -199,7 +199,7 @@ async function handleRenderViewMessage(
           .groupViews(
             client,
             message.groupId,
-            message.appletInstanceId,
+            message.appletId,
             { profilesClient, groupProfile: message.groupProfile },
             weServices
           )
@@ -275,7 +275,7 @@ async function handleMessage(message: ParentToAppletMessage) {
         .groupViews(
           client!,
           message.request.groupId,
-          message.request.appletInstanceId,
+          message.request.appletId,
           {
             profilesClient: null as any,
             groupProfile: message.request.groupProfile,

@@ -1,5 +1,5 @@
 import { DnaHash, EntryHash, InstalledAppId } from "@holochain/client";
-import { IconSrcOption } from "./applets/types";
+import { IconSrcOption } from "./applet-bundles/types";
 
 /**
  * appletCentricNavigation lets you choose the applet *class* on the main panel and will only display the groups
@@ -35,7 +35,7 @@ export enum RenderingMode {
   Agnostic,
 }
 
-export interface AppletMetadata {
+export interface AppletBundleMetadata {
   title: string;
   subtitle: string | undefined;
   description: string;

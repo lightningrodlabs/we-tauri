@@ -16,7 +16,7 @@ import { RenderBlock } from "../components/render-block";
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 
 
-export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
+export class AppletRenderer extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -28,18 +28,18 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   _peerStatusStore!: PeerStatusStore;
 
   @property()
-  appletInstanceId!: EntryHash;
+  appletId!: EntryHash;
 
 
   _rendererTask = new Task(
     this,
     async () => {
       await sleep(1);
-      return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId, {
+      return this._matrixStore.fetchAppletRenderers(this.appletId, {
         profilesStore: this._profilesStore,
       });
     },
-    () => [this._matrixStore, this.appletInstanceId]
+    () => [this._matrixStore, this.appletId]
   );
 
 

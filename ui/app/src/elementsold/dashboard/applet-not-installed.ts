@@ -13,9 +13,9 @@ import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import {
-  AppletInstanceInfo,
+  AppletInfo,
   MatrixStore,
-  NewAppletInstanceInfo,
+  NewAppletInfo,
 } from "../../matrix-store";
 import { weStyles } from "../../sharedStyles";
 import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
@@ -29,7 +29,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   weGroupId!: DnaHash;
 
   @property()
-  appletInstanceId!: EntryHash;
+  appletId!: EntryHash;
 
   @state()
   private _showAppletDescription: boolean = false;
@@ -48,12 +48,12 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
 
     await this._matrixStore
-      .joinApplet(this.weGroupId, this.appletInstanceId)
+      .joinApplet(this.weGroupId, this.appletId)
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
             detail: {
-              appletEntryHash: this.appletInstanceId,
+              appletEntryHash: this.appletId,
               weGroupId: this.weGroupId,
             },
             composed: true,
@@ -80,12 +80,12 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
 
     await this._matrixStore
-      .reinstallApplet(this.weGroupId, this.appletInstanceId)
+      .reinstallApplet(this.weGroupId, this.appletId)
       .then(() => {
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
             detail: {
-              appletEntryHash: this.appletInstanceId,
+              appletEntryHash: this.appletId,
               weGroupId: this.weGroupId,
             },
             composed: true,
@@ -148,16 +148,16 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
-    const appletInstanceInfo:
-      | AppletInstanceInfo
-      | NewAppletInstanceInfo
+    const appletInfo:
+      | AppletInfo
+      | NewAppletInfo
       | undefined =
       this.mode == "reinstall"
-        ? this._matrixStore.getUninstalledAppletInstanceInfo(
-            this.appletInstanceId
+        ? this._matrixStore.getUninstalledAppletInfo(
+            this.appletId
           )
-        : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId);
-    if (!appletInstanceInfo) {
+        : this._matrixStore.getNewAppletInfo(this.appletId);
+    if (!appletInfo) {
       return html`
         <div class="center-content" style="flex: 1;display: flex;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
@@ -171,7 +171,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
       <join-from-fs-dialog
         mode=${this.mode}
-        .appletInstanceId=${this.appletInstanceId}
+        .appletId=${this.appletId}
         id="join-from-fs-dialog"
       >
       </join-from-fs-dialog>
@@ -183,22 +183,22 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
               class="column center-content"
               style="flex: 1; margin-top: 50px;"
             >
-              ${!appletInstanceInfo.applet.logoSrc
+              ${!appletInfo.applet.logoSrc
                 ? html`<div
                     class="logo-placeholder-large"
                     style="width: 100px; height: 100px;"
                   >
-                    ${appletInstanceInfo.applet.customName[0]}
+                    ${appletInfo.applet.customName[0]}
                   </div>`
                 : html`<img
                     class="logo-large"
-                    src=${appletInstanceInfo.applet.logoSrc}
+                    src=${appletInfo.applet.logoSrc}
                   />`}
               <div class="row center-content" style="margin-top: 20px;">
                 <div
                   style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
                 >
-                  ${appletInstanceInfo.applet.customName}
+                  ${appletInfo.applet.customName}
                 </div>
                 <mwc-icon-button-toggle
                   onIcon="expand_less"
@@ -210,7 +210,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
                 ? html`<div
                     style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
                   >
-                    ${appletInstanceInfo.applet.description}
+                    ${appletInfo.applet.description}
                   </div>`
                 : html``}
               ${this.mode == "reinstall"

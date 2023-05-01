@@ -1,5 +1,5 @@
 import { Base64 } from "js-base64";
-import { IconFileOption, IconSrcOption } from "../applets/types";
+import { IconFileOption, IconSrcOption } from "../applet-bundles/types";
 
 export function toSrc(png: IconFileOption): IconSrcOption {
   if (png) {

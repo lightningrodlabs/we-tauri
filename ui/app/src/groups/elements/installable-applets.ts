@@ -9,9 +9,10 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
-import { AppletMetadata } from "../../types.js";
-import { InstallAppletDialog } from "./install-applet-dialog.js";
-import "./install-applet-dialog.js";
+import { InstallAppletDialog } from "./install-applet-bundle-dialog.js";
+import "./install-applet-bundle-dialog.js";
+
+import { AppletBundleMetadata } from "../../types.js";
 import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
@@ -28,16 +29,13 @@ export class InstallableApplets extends LitElement {
 
   _installableApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.appletsStore.installableApplets
+    () => this.groupStore.appletsStore.appletBundles
   );
-
-  @state()
-  private _selectedAppletInfo: AppletMetadata | undefined;
 
   @query("#applet-dialog")
   _appletDialog!: InstallAppletDialog;
 
-  renderInstallableApplet(appletInfo: AppletMetadata) {
+  renderInstallableApplet(appletInfo: AppletBundleMetadata) {
     return html`
       <sl-card class="applet-card" style="height: 200px">
         <span slot="header">${appletInfo.title}</span>
@@ -60,13 +58,9 @@ export class InstallableApplets extends LitElement {
 
   renderApplets(applets: Array<AppWithReleases>) {
     return html`
-      <install-applet-dialog
+      <install-applet-bundle-dialog
         id="applet-dialog"
-        .appletInfo=${this._selectedAppletInfo}
-        @closed=${() => {
-          this._selectedAppletInfo = undefined;
-        }}
-      ></install-applet-dialog>
+      ></install-applet-bundle-dialog>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
         ${applets.length == 0
@@ -81,7 +75,7 @@ export class InstallableApplets extends LitElement {
               let latestRelease = getLatestRelease(item);
 
               if (latestRelease) {
-                let appletInfo: AppletMetadata = {
+                let appletInfo: AppletBundleMetadata = {
                   title: item.app.content.title,
                   subtitle: item.app.content.subtitle,
                   description: item.app.content.description,

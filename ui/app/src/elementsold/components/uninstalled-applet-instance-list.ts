@@ -22,9 +22,9 @@ import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
-import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
+import { UninstallAppletDialog } from "../dialogs/uninstall-applet-bundle-dialog";
 
-export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
+export class UninstalledAppletList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -34,15 +34,15 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
 
   _uninstalledApplets = new StoreSubscriber(
     this,
-    () => this.matrixStore.getUninstalledAppletInstanceInfosForGroup(this.weGroupId)
+    () => this.matrixStore.getUninstalledAppletInfosForGroup(this.weGroupId)
   );
 
 
 
-  reinstallApp(appletInstanceId: EntryHash) {
+  reinstallApp(appletId: EntryHash) {
     this.dispatchEvent(
       new CustomEvent("reinstall-applet", {
-        detail: appletInstanceId,
+        detail: appletId,
         bubbles: true,
         composed: true,
       })
@@ -63,8 +63,8 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   }
 
   renderAppStates() {
-    const appletInstanceInfos = this._uninstalledApplets.value;
-    if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
+    const appletInfos = this._uninstalledApplets.value;
+    if (!appletInfos || appletInfos.length == 0) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
         <div style="margin-top: 10px;">There are no uninstalled applet instances.</div>
@@ -79,7 +79,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
       `;
     } else {
       return html`
-        ${appletInstanceInfos
+        ${appletInfos
           .sort((info_a, info_b) => info_a.applet.customName.localeCompare(info_b.applet.customName)) // sort alphabetically
           .map((appletInfo) => {
             return html`
@@ -160,7 +160,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
       "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
-      "uninstall-applet-dialog": UninstallAppletDialog,
+      "uninstall-applet-bundle-dialog": UninstallAppletDialog,
     };
   }
 

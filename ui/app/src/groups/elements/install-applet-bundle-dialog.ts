@@ -1,5 +1,5 @@
-import { css, html, LitElement } from "lit";
-import { customElement, property, query, state } from "lit/decorators.js";
+import { html, LitElement } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
@@ -12,14 +12,14 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
-import { AppletMetadata } from "../../types.js";
+import { AppletBundleMetadata } from "../../types.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
 import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
 
 @localized()
-@customElement("install-applet-dialog")
+@customElement("install-applet-bundle-dialog")
 export class InstallAppletDialog extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
@@ -50,7 +50,7 @@ export class InstallAppletDialog extends LitElement {
   _installing: boolean = false;
 
   @state()
-  _appletInfo: AppletMetadata = {
+  _appletInfo: AppletBundleMetadata = {
     title: "",
     subtitle: "",
     description: "",
@@ -59,7 +59,7 @@ export class InstallAppletDialog extends LitElement {
     icon: undefined,
   };
 
-  open(appletInfo: AppletMetadata) {
+  open(appletInfo: AppletBundleMetadata) {
     this._appletInfo = appletInfo;
     setTimeout(() => {
       this.form.reset();
@@ -75,11 +75,10 @@ export class InstallAppletDialog extends LitElement {
     if (this._installing) return;
     this._installing = true;
     try {
-      const appletEntryHash =
-        await this.groupStore.installAndRegisterAppletOnGroup(
-          this._appletInfo,
-          customName
-        );
+      const appletEntryHash = await this.groupStore.installedAppletBundle(
+        this._appletInfo,
+        customName
+      );
       notify("Installation successful");
 
       this.dispatchEvent(
@@ -109,7 +108,7 @@ export class InstallAppletDialog extends LitElement {
       case "complete":
         const allAppletsNames = Array.from(
           this._registeredApplets.value.value.values()
-        ).map((appletInstance) => appletInstance.custom_name);
+        ).map((applet) => applet.custom_name);
         return html`
           <sl-input
             name="custom_name"

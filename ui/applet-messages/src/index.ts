@@ -11,7 +11,7 @@ export type OpenViewRequest =
   | {
       type: "group-block";
       groupId: DnaHash;
-      appletInstanceId: EntryHash;
+      appletId: EntryHash;
       block: string;
       context: any;
     }
@@ -29,7 +29,7 @@ export type OpenViewRequest =
 
 export interface CreateAttachmentRequest {
   groupId: DnaHash;
-  appletInstanceId: EntryHash;
+  appletId: EntryHash;
   attachmentType: string;
   attachToHrl: Hrl;
 }
@@ -44,7 +44,7 @@ export type ParentToAppletRequest =
       type: "get-entry-info";
       groupId: DnaHash;
       groupProfile: GroupProfile;
-      appletInstanceId: EntryHash;
+      appletId: EntryHash;
       roleName: string;
       integrityZomeName: string;
       entryDefId: string;
@@ -119,7 +119,7 @@ export interface InternalAttachmentType {
 }
 
 export interface InternalAppletAttachmentTypes {
-  appletInstanceName: string;
+  appletName: string;
   attachmentTypes: Record<string, InternalAttachmentType>;
 }
 
@@ -134,7 +134,7 @@ export type RenderView =
       view: GroupView;
       groupId: DnaHash;
       groupProfile: GroupProfile;
-      appletInstanceId: EntryHash;
+      appletId: EntryHash;
       appletInstalledAppId: string;
       profilesAppId: string;
       profilesRoleName: string;

@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
-    AppletInstance(AppletInstance),
+    Applet(Applet),
     GroupProfile(GroupProfile),
 }
 
@@ -21,7 +21,7 @@ pub enum LinkTypes {
 /// An applet insatnce
 #[hdk_entry_helper]
 #[derive(Clone)]
-pub struct AppletInstance {
+pub struct Applet {
     // name of the applet "instance" as chosen by the person adding it to the group,
     // (is also used as part of the installed_app_id in the conductor)
     pub custom_name: String,
@@ -39,8 +39,8 @@ pub struct AppletInstance {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct FederateAppletInstanceInput {
-    pub applet_instance_hash: EntryHash,
+pub struct FederateAppletInput {
+    pub applet_hash: EntryHash,
     pub group_dna_hash: DnaHash,
 }
 

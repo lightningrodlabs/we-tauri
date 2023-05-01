@@ -11,7 +11,7 @@ import {
   AppAgentCallZomeRequest,
 } from "@holochain/client";
 import { GroupProfile } from "../../../libs/we-applet/dist";
-import { AppletInstance } from "./types";
+import { Applet } from "./types";
 
 export class GroupClient {
   constructor(
@@ -22,49 +22,47 @@ export class GroupClient {
 
   /** GroupProfile */
 
-  async getGroupInfo(): Promise<EntryRecord<GroupProfile> | undefined> {
-    const record = await this.callZome("get_group_info", null);
+  async getGroupProfile(): Promise<EntryRecord<GroupProfile> | undefined> {
+    const record = await this.callZome("get_group_profile", null);
     return record ? new EntryRecord(record) : undefined;
   }
 
-  async setGroupInfo(groupProfile: GroupProfile): Promise<void> {
-    await this.callZome("set_group_info", groupProfile);
+  async setGroupProfile(groupProfile: GroupProfile): Promise<void> {
+    await this.callZome("set_group_profile", groupProfile);
   }
 
   /** Applets */
 
-  async getAppletsInstances(): Promise<EntryHashMap<AppletInstance>> {
-    const records = await this.callZome("get_applets_instances", null);
-    return new RecordBag<AppletInstance>(records).entryMap;
+  async getApplets(): Promise<EntryHashMap<Applet>> {
+    const records = await this.callZome("get_applets", null);
+    return new RecordBag<Applet>(records).entryMap;
   }
 
-  async getAppletInstance(
-    appletInstanceHash: EntryHash
-  ): Promise<EntryRecord<AppletInstance> | undefined> {
-    const record = await this.callZome(
-      "get_applet_instance",
-      appletInstanceHash
-    );
+  async getApplet(
+    appletHash: EntryHash
+  ): Promise<EntryRecord<Applet> | undefined> {
+    const record = await this.callZome("get_applet", appletHash);
     return new EntryRecord(record);
   }
 
-  async registerAppletInstance(applet: AppletInstance): Promise<EntryHash> {
-    return this.callZome("register_applet_instance", applet);
+  async registerApplet(applet: Applet): Promise<EntryHash> {
+    return this.callZome("register_applet", applet);
   }
 
   async federateApplet(
-    appletInstanceHash: EntryHash,
+    appletHash: EntryHash,
     groupDnaHash: DnaHash
   ): Promise<ActionHash> {
     return this.callZome("federate_applet", {
-      applet_instance_hash: appletInstanceHash,
+      applet_hash: appletHash,
       group_dna_hash: groupDnaHash,
     });
   }
 
-  async getFederatedGroups(appletInstanceHash: EntryHash): Promise<DnaHash[]> {
-    return this.callZome("get_federated_groups", appletInstanceHash);
+  async getFederatedGroups(appletHash: EntryHash): Promise<DnaHash[]> {
+    return this.callZome("get_federated_groups", appletHash);
   }
+
   private callZome(fn_name: string, payload: any) {
     const req: AppAgentCallZomeRequest = {
       role_name: this.roleName,

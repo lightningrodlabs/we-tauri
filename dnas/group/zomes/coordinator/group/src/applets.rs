@@ -6,10 +6,10 @@ fn get_applets_path() -> Path {
 }
 
 #[hdk_extern]
-fn register_applet_instance(applet: AppletInstance) -> ExternResult<EntryHash> {
+fn register_applet(applet: Applet) -> ExternResult<EntryHash> {
     let applet_hash = hash_entry(&applet)?;
 
-    create_entry(EntryTypes::AppletInstance(applet))?;
+    create_entry(EntryTypes::Applet(applet))?;
 
     let path = get_applets_path().typed(LinkTypes::AppletPath)?;
     path.ensure()?;
@@ -25,12 +25,12 @@ fn register_applet_instance(applet: AppletInstance) -> ExternResult<EntryHash> {
 }
 
 #[hdk_extern]
-fn get_applet_instance(applet_instance_hash: EntryHash) -> ExternResult<Option<Record>> {
-    get(applet_instance_hash, GetOptions::default())
+fn get_applet(applet_hash: EntryHash) -> ExternResult<Option<Record>> {
+    get(applet_hash, GetOptions::default())
 }
 
 #[hdk_extern]
-fn get_applets_instances(_: ()) -> ExternResult<Vec<Record>> {
+fn get_applets(_: ()) -> ExternResult<Vec<Record>> {
     let path = get_applets_path();
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
@@ -51,9 +51,9 @@ fn get_applets_instances(_: ()) -> ExternResult<Vec<Record>> {
 }
 
 #[hdk_extern]
-pub fn federate_applet_instance(input: FederateAppletInstanceInput) -> ExternResult<ActionHash> {
+pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
     create_link(
-        input.applet_instance_hash,
+        input.applet_hash,
         input.group_dna_hash.retype(holo_hash::hash_type::Entry),
         LinkTypes::AppletToInvitedGroup,
         (),

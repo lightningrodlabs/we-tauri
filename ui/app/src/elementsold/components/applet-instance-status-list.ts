@@ -24,10 +24,10 @@ import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
-import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
+import { UninstallAppletDialog } from "../dialogs/uninstall-applet-bundle-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 
-export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
+export class AppletStatusList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
@@ -37,14 +37,14 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   _installedApplets = new StoreSubscriber(
     this,
-    () => this.matrixStore.getAppletInstanceInfosForGroup(this.weGroupId)
+    () => this.matrixStore.getAppletInfosForGroup(this.weGroupId)
   );
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
 
 
-  @query("#uninstall-applet-dialog")
+  @query("#uninstall-applet-bundle-dialog")
   _uninstallAppletDialog!: UninstallAppletDialog;
 
   @query("#federate-applet-dialog")
@@ -132,8 +132,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
   }
 
   renderAppStates() {
-    const appletInstanceInfos = this._installedApplets.value;
-    if (appletInstanceInfos!.length == 0 || !appletInstanceInfos) {
+    const appletInfos = this._installedApplets.value;
+    if (appletInfos!.length == 0 || !appletInfos) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
         <div style="margin-top: 10px;">You have no applet instances installed in this group.</div>
@@ -148,7 +148,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       `;
     } else {
       return html`
-        ${appletInstanceInfos
+        ${appletInfos
           .sort((info_a, info_b) => { // show disabled applets on top, then sort alphabetically
             if (getStatus(info_a.appInfo) !== getStatus(info_b.appInfo)) {
               return getStatus(info_a.appInfo).localeCompare(getStatus(info_b.appInfo));
@@ -255,10 +255,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       ${this.renderErrorSnackbar()}
 
 
-      <uninstall-applet-dialog
-        id="uninstall-applet-dialog"
+      <uninstall-applet-bundle-dialog
+        id="uninstall-applet-bundle-dialog"
         @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
-      ></uninstall-applet-dialog>
+      ></uninstall-applet-bundle-dialog>
 
       <federate-applet-dialog
         id="federate-applet-dialog"
@@ -282,7 +282,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
-      "uninstall-applet-dialog": UninstallAppletDialog,
+      "uninstall-applet-bundle-dialog": UninstallAppletDialog,
       "federate-applet-dialog": FederateAppletDialog,
     };
   }

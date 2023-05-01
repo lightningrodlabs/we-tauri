@@ -10,7 +10,7 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
-import { AppletInstance } from "../types.js";
+import { Applet } from "../types.js";
 import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
 
@@ -25,23 +25,23 @@ export class RegisteredAppletsSidebar extends LitElement {
     () => this._groupStore?.registeredApplets
   );
 
-  renderInstalledApplets(applets: ReadonlyMap<EntryHash, AppletInstance>) {
+  renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
     return html`
       ${Array.from(applets.entries())
         .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
         .map(
-          ([appletInstanceHash, appletInstance]) =>
+          ([appletHash, applet]) =>
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-                .logoSrc=${appletInstance.logo_src}
-                .tooltipText=${appletInstance.custom_name}
+                .logoSrc=${applet.logo_src}
+                .tooltipText=${applet.custom_name}
                 @click=${() => {
                   this.dispatchEvent(
-                    new CustomEvent("applet-instance-selected", {
+                    new CustomEvent("applet-selected", {
                       detail: {
                         groupDnaHash: this._groupStore.groupDnaHash,
-                        appletInstanceHash,
+                        appletHash,
                       },
                       bubbles: true,
                       composed: true,

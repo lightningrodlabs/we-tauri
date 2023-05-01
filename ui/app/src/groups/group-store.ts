@@ -29,9 +29,9 @@ import { encode } from "@msgpack/msgpack";
 import { fromUint8Array } from "js-base64";
 import { DnaModifiers } from "@holochain/client";
 
-import { AppletsStore } from "../applets/applets-store";
-import { AppletInstance } from "./types";
-import { AppletMetadata } from "../types";
+import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store";
+import { Applet } from "./types";
+import { AppletBundleMetadata } from "../types";
 import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
 
@@ -45,13 +45,11 @@ export function appletAppId(
   }-${fromUint8Array(encode(properties))}`;
 }
 
-export function appletAppIdFromAppletInstance(
-  appletInstance: AppletInstance
-): string {
+export function appletAppIdFromApplet(applet: Applet): string {
   return appletAppId(
-    appletInstance.devhub_happ_release_hash,
-    appletInstance.network_seed,
-    appletInstance.properties
+    applet.devhub_happ_release_hash,
+    applet.network_seed,
+    applet.properties
   );
 }
 
@@ -68,7 +66,7 @@ export class GroupStore {
     public appAgentWebsocket: AppAgentWebsocket,
     public groupDnaHash: DnaHash,
     public roleName: string,
-    public appletsStore: AppletsStore
+    public appletsStore: AppletBundlesStore
   ) {
     this.groupClient = new GroupClient(appAgentWebsocket, roleName);
 
@@ -100,37 +98,34 @@ export class GroupStore {
   });
 
   groupProfile = lazyLoadAndPoll(async () => {
-    const entryRecord = await this.groupClient.getGroupInfo();
+    const entryRecord = await this.groupClient.getGroupProfile();
     return entryRecord?.entry;
   }, 4000);
 
   // Installs an applet instance that already exists in this group into this conductor
-  async installAppletInstance(appletInstanceHash: EntryHash) {
-    const appletInstance = await this.groupClient.getAppletInstance(
-      appletInstanceHash
-    );
+  async installApplet(appletHash: EntryHash) {
+    const applet = await this.groupClient.getApplet(appletHash);
 
-    if (!appletInstance)
-      throw new Error("Given applet instance hash was not found");
+    if (!applet) throw new Error("Given applet instance hash was not found");
 
-    const [appInfo, _] = await this.appletsStore.installApplet(
-      appletInstance.entry.devhub_happ_release_hash,
-      appletInstance.entry.devhub_gui_release_hash,
-      appletAppIdFromAppletInstance(appletInstance.entry),
-      appletInstance.entry.network_seed
+    const [appInfo, _] = await this.appletsStore.installAppletBundle(
+      applet.entry.devhub_happ_release_hash,
+      applet.entry.devhub_gui_release_hash,
+      appletAppIdFromApplet(applet.entry),
+      applet.entry.network_seed
     );
     return appInfo;
   }
 
   // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA
-  async installAndRegisterAppletOnGroup(
-    appletMetadata: AppletMetadata,
+  async installedAppletBundle(
+    appletMetadata: AppletBundleMetadata,
     customName: string
   ): Promise<EntryHash> {
     const networkSeed = uuidv4(); // generate random network seed if not provided
 
     const [appletInfo, logo_src]: [AppInfo, string | undefined] =
-      await this.appletsStore.installApplet(
+      await this.appletsStore.installAppletBundle(
         appletMetadata.devhubHappReleaseHash,
         appletMetadata.devhubGuiReleaseHash,
         appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
@@ -168,7 +163,7 @@ export class GroupStore {
       }
     });
 
-    const applet: AppletInstance = {
+    const applet: Applet = {
       custom_name: customName,
       description: appletMetadata.description,
       devhub_gui_release_hash: appletMetadata.devhubGuiReleaseHash,
@@ -179,11 +174,11 @@ export class GroupStore {
       dna_hashes: dnaHashes,
     };
 
-    return this.groupClient.registerAppletInstance(applet);
+    return this.groupClient.registerApplet(applet);
   }
 
   registeredApplets = lazyLoadAndPoll(
-    async () => this.groupClient.getAppletsInstances(),
+    async () => this.groupClient.getApplets(),
     4000
   );
 
@@ -191,29 +186,29 @@ export class GroupStore {
     this.adminWebsocket.listApps({})
   );
 
-  isInstalled = new LazyHoloHashMap((appletInstanceEntryHash) =>
+  isInstalled = new LazyHoloHashMap((appletEntryHash) =>
     asyncDerived(
       join([
-        this.applets.get(appletInstanceEntryHash),
+        this.applets.get(appletEntryHash),
         this.installedApps,
-      ]) as AsyncReadable<[EntryRecord<AppletInstance>, ListAppsResponse]>,
-      async ([appletInstance, apps]) => {
-        if (!appletInstance) return false;
-        const appletId = appletAppIdFromAppletInstance(appletInstance.entry);
+      ]) as AsyncReadable<[EntryRecord<Applet>, ListAppsResponse]>,
+      async ([applet, apps]) => {
+        if (!applet) return false;
+        const appletId = appletAppIdFromApplet(applet.entry);
 
         return !!apps.find((app) => app.installed_app_id === appletId);
       }
     )
   );
 
-  federatedGroups = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
+  federatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>
     lazyLoadAndPoll(
-      async () => this.groupClient.getFederatedGroups(appletInstanceHash),
+      async () => this.groupClient.getFederatedGroups(appletHash),
       5000
     )
   );
 
-  applets = new LazyHoloHashMap((appletInstanceHash: EntryHash) =>
-    lazyLoad(async () => this.groupClient.getAppletInstance(appletInstanceHash))
+  applets = new LazyHoloHashMap((appletHash: EntryHash) =>
+    lazyLoad(async () => this.groupClient.getApplet(appletHash))
   );
 }

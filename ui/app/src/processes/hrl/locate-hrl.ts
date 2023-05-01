@@ -12,7 +12,7 @@ export interface EntryDefLocation {
 export interface DnaLocation {
   groupDnaHash: DnaHash;
 
-  appletInstanceHash: EntryHash;
+  appletHash: EntryHash;
   appInfo: AppInfo;
   roleName: string;
 }

@@ -40,7 +40,7 @@ export interface AttachmentType {
 export interface OpenViews {
   openGroupBlock(
     groupId: DnaHash,
-    appletInstanceId: EntryHash,
+    appletId: EntryHash,
     block: string,
     context: any
   ): void;
@@ -49,20 +49,20 @@ export interface OpenViews {
 }
 
 export interface AppletAttachmentTypes {
-  appletInstanceName: string;
+  appletName: string;
   attachmentTypes: Record<string, AttachmentType>;
 }
 
 export interface GroupAttachmentTypes {
   groupProfile: GroupProfile;
-  attachmentTypesByApplet: ReadonlyMap<EntryHash, AppletAttachmentTypes>; // segmented by appletInstanceId
+  attachmentTypesByApplet: ReadonlyMap<EntryHash, AppletAttachmentTypes>; // segmented by appletId
 }
 
 export interface EntryLocationAndInfo {
   groupId: DnaHash;
   groupProfile: GroupProfile;
-  appletInstanceId: EntryHash;
-  appletInstanceName: string;
+  appletId: EntryHash;
+  appletName: string;
   entryInfo: EntryInfo;
 }
 
@@ -70,6 +70,7 @@ export interface WeServices {
   openViews: OpenViews;
   attachmentTypesByGroup: ReadonlyMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
 
+  search(filter: string): Promise<Array<HrlWithContext>>;
   getEntryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
 }
 
@@ -102,14 +103,14 @@ export interface GroupViews {
 
 export interface GroupWithApplets {
   groupServices: GroupServices;
-  applets: ReadonlyMap<EntryHash, AppAgentClient>; // segmented by appletInstanceId
+  applets: ReadonlyMap<EntryHash, AppAgentClient>; // segmented by appletId
 }
 
 export interface WeApplet {
   groupViews: (
     client: AppAgentClient,
     groupId: DnaHash,
-    appletInstanceId: EntryHash,
+    appletId: EntryHash,
     groupServices: GroupServices,
     weServices: WeServices
   ) => GroupViews;

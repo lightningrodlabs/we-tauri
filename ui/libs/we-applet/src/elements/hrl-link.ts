@@ -48,7 +48,7 @@ export class HrlLink extends LitElement {
         >
           <sl-icon slot="prefix" .src=${info.entryInfo.icon_src}></sl-icon>
           <span slot="suffix" style="color: var(--sl-color-neutral-500);"
-            >${msg("in")} ${info.appletInstanceName}</span
+            >${msg("in")} ${info.appletName}</span
           >
 
           ${info.entryInfo.name}

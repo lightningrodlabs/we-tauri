@@ -9,7 +9,7 @@ pub fn group_info_path() -> ExternResult<TypedPath> {
 
 // If this function returns None, it means that we haven't synced up yet
 #[hdk_extern]
-pub fn get_group_info(_: ()) -> ExternResult<Option<Record>> {
+pub fn get_group_profile(_: ()) -> ExternResult<Option<Record>> {
     let path = group_info_path()?;
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToGroupInfo, None)?;
@@ -29,7 +29,7 @@ pub fn get_group_info(_: ()) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-pub fn set_group_info(group_profile: GroupProfile) -> ExternResult<()> {
+pub fn set_group_profile(group_profile: GroupProfile) -> ExternResult<()> {
     let path = group_info_path()?;
 
     let action_hash = create_entry(EntryTypes::GroupProfile(group_profile))?;

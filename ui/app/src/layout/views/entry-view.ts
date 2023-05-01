@@ -53,7 +53,7 @@ export class EntryView extends LitElement {
     return html` <group-context .groupDnaHash=${dnaLocation.groupDnaHash}>
       <group-view
         style="flex: 1"
-        .appletInstanceHash=${dnaLocation.appletInstanceHash}
+        .appletHash=${dnaLocation.appletHash}
         .view=${{
           type: "entry",
           role: dnaLocation.roleName,

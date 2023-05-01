@@ -93,7 +93,7 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
         text-align: center;
       }
 
-      .applet-instances-container {
+      .applets-container {
         position: absolute;
         max-width: 400px;
         left: 96px;

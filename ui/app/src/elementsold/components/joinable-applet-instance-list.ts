@@ -21,9 +21,9 @@ import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
-import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
+import { UninstallAppletDialog } from "../dialogs/uninstall-applet-bundle-dialog";
 
-export class JoinableAppletInstanceList extends ScopedElementsMixin(
+export class JoinableAppletList extends ScopedElementsMixin(
   LitElement
 ) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -34,14 +34,14 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(
 
   _joinableApplets = new TaskSubscriber(
     this,
-    () => this.matrixStore.fetchNewAppletInstancesForGroup(this.weGroupId),
+    () => this.matrixStore.fetchNewAppletsForGroup(this.weGroupId),
     () => [this.weGroupId, this.matrixStore]
   );
 
-  joinApplet(appletInstanceId: EntryHash) {
+  joinApplet(appletId: EntryHash) {
     this.dispatchEvent(
       new CustomEvent("join-applet", {
-        detail: appletInstanceId,
+        detail: appletId,
         bubbles: true,
         composed: true,
       })
@@ -60,8 +60,8 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(
   }
 
   renderAppStates() {
-    const appletInstanceInfos = this._joinableApplets.value;
-    if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
+    const appletInfos = this._joinableApplets.value;
+    if (!appletInfos || appletInfos.length == 0) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
         <div style="margin-top: 10px;">
@@ -81,7 +81,7 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(
       `;
     } else {
       return html`
-        ${appletInstanceInfos
+        ${appletInfos
           .sort((info_a, info_b) =>
             info_a.applet.customName.localeCompare(info_b.applet.customName)
           ) // sort alphabetically
@@ -164,7 +164,7 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(
       "create-we-group-dialog": CreateWeGroupDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
-      "uninstall-applet-dialog": UninstallAppletDialog,
+      "uninstall-applet-bundle-dialog": UninstallAppletDialog,
     };
   }
 

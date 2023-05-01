@@ -10,12 +10,12 @@ import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
-import { UninstalledAppletInstanceList } from "../components/uninstalled-applet-instance-list";
+import { AppletStatusList } from "../components/applet-status-list";
+import { UninstalledAppletList } from "../components/uninstalled-applet-list";
 import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 import { AppletNotInstalled } from "./applet-not-installed";
-import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
+import { JoinableAppletList } from "../components/joinable-applet-list";
 
 
 
@@ -77,10 +77,10 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     this._showAppletDescription = !this._showAppletDescription;
   }
 
-  async leaveGroup(appletInstanceId: EntryHash) {
+  async leaveGroup(appletId: EntryHash) {
     (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
     await this._matrixStore
-      .joinApplet(this.weGroupId, appletInstanceId)
+      .joinApplet(this.weGroupId, appletId)
       .then(() => {
         (
           this.shadowRoot?.getElementById("installing-progress") as Snackbar
@@ -91,7 +91,7 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         this.requestUpdate(); // to show the newly installed applet in case user is still on same page
         this.dispatchEvent(
           new CustomEvent("applet-installed", {
-            detail: { appletEntryHash: appletInstanceId, weGroupId: this.weGroupId },
+            detail: { appletEntryHash: appletId, weGroupId: this.weGroupId },
             composed: true,
             bubbles: true,
         })
@@ -121,21 +121,21 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
           <span style="align-self: start" title="applet instances initiated by other group members">Applets to Join</span>
         </div>
         <hr style="width: 100%" />
-        <joinable-applet-instance-list></joinable-applet-instance-list>
+        <joinable-applet-list></joinable-applet-list>
 
         <div class="row title" style="margin-top: 30px;">
           <span style="align-self: start">Installed Applets</span>
         </div>
         <hr style="width: 100%" />
 
-        <applet-instance-status-list></applet-instance-status-list>
+        <applet-status-list></applet-status-list>
 
         <div class="row title" style="margin-top: 30px;">
           <span style="align-self: start">Uninstalled Applets</span>
         </div>
         <hr style="width: 100%" />
 
-        <uninstalled-applet-instance-list></uninstalled-applet-instance-list>
+        <uninstalled-applet-list></uninstalled-applet-list>
 
 
         <div class="row title" style="margin-top: 30px;">
@@ -182,9 +182,9 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       "mwc-linear-progress": LinearProgress,
       "mwc-snackbar": Snackbar,
       "leave-group-dialog": LeaveGroupDialog,
-      "applet-instance-status-list": AppletInstanceStatusList,
-      "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
-      "joinable-applet-instance-list": JoinableAppletInstanceList,
+      "applet-status-list": AppletStatusList,
+      "uninstalled-applet-list": UninstalledAppletList,
+      "joinable-applet-list": JoinableAppletList,
     };
   }
 

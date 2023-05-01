@@ -35,7 +35,7 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
     <div class="column" style="flex: 1; align-items: center; position: relative;">
 
 
-      <div class="applet-instances-container ${this._showHelp ? "" : "invisible"}">On the left end of the top bar you can see all instances of this applet in all of your groups.</div>
+      <div class="applets-container ${this._showHelp ? "" : "invisible"}">On the left end of the top bar you can see all instances of this applet in all of your groups.</div>
       <div class="special-mode-container ${this._showHelp ? "" : "invisible"}">On that end of the top bar you can see special modes this applet may provide.</div>
 
       ${ appletClassInfo!.logoSrc
@@ -74,7 +74,7 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
         text-align: center;
       }
 
-      .applet-instances-container {
+      .applets-container {
         position: absolute;
         max-width: 400px;
         left: 96px;

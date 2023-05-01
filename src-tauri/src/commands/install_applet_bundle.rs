@@ -21,7 +21,7 @@ use crate::{
 };
 
 #[tauri::command]
-pub async fn install_applet(
+pub async fn install_applet_bundle(
     state: tauri::State<'_, Mutex<LaunchedState>>,
     app_id: String,
     network_seed: Option<String>,

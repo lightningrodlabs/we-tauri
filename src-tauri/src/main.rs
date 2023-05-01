@@ -14,7 +14,7 @@ mod launch;
 mod state;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
-    install_applet::install_applet,
+    install_applet_bundle::install_applet_bundle,
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
@@ -50,7 +50,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
-            install_applet,
+            install_applet_bundle,
             create_password,
             enter_password,
             is_keystore_initialized,
@@ -88,10 +88,10 @@ fn main() {
                 .build()?;
 
             if let Err(err) = tauri_plugin_deep_link::register("we-group", move |request| {
-                // window.emit("join-group", request).unwrap();
-                // window
-                //     .request_user_attention(Some(UserAttentionType::Informational))
-                //     .unwrap();
+                window.emit("join-group", request).unwrap();
+                window
+                    .request_user_attention(Some(UserAttentionType::Informational))
+                    .unwrap();
             }) {
                 println!("Error registering the deep link plugin: {:?}", err);
             }

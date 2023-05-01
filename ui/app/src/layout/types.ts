@@ -4,7 +4,7 @@ import { Hrl } from "@lightningrodlabs/we-applet";
 export interface AppOpenViews {
   openGroupBlock(
     groupDnaHash: DnaHash,
-    appletInstanceHash: EntryHash,
+    appletHash: EntryHash,
     block: string,
     context: any
   ): void;

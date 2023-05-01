@@ -1,7 +1,7 @@
 use ::fixt::prelude::fixt;
 use std::collections::BTreeMap;
 
-use applets_integrity::AppletInstance;
+use applets_integrity::Applet;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 use holochain::test_utils::consistency_10s;
@@ -25,7 +25,7 @@ async fn create_applet() {
     let alice_zome = alice.zome("applets_coordinator");
     let bob_zome = bobbo.zome("applets_coordinator");
 
-    let applet = AppletInstance {
+    let applet = Applet {
         custom_name: String::from("custom name"),
         description: String::from("description"),
         logo_src: None,
@@ -38,13 +38,13 @@ async fn create_applet() {
     };
 
     let _entry_hash: EntryHash = conductors[0]
-        .call(&alice_zome, "register_applet_instance", applet)
+        .call(&alice_zome, "register_applet", applet)
         .await;
 
     consistency_10s([&alice, &bobbo]).await;
 
     let all_applets: Vec<Record> = conductors[1]
-        .call(&bob_zome, "get_applets_instances", ())
+        .call(&bob_zome, "get_applets", ())
         .await;
 
     assert_eq!(all_applets.len(), 1);

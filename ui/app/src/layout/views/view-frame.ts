@@ -20,8 +20,8 @@ export class ViewFrame extends LitElement {
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;
 
-  @property(hashProperty("applet-instance-hash"))
-  appletInstanceHash!: EntryHash;
+  @property(hashProperty("applet-hash"))
+  appletHash!: EntryHash;
 
   @query("#view-frame")
   iframe!: HTMLIFrameElement;
@@ -41,7 +41,7 @@ export class ViewFrame extends LitElement {
     this.host = new AppletHost(
       this.appletInstalledAppId,
       this.groupDnaHash,
-      this.appletInstanceHash,
+      this.appletHash,
       this.iframe,
       this.weStore,
       this.openViews

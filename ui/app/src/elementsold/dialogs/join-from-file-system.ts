@@ -34,7 +34,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   );
 
   @property()
-  appletInstanceId!: EntryHash;
+  appletId!: EntryHash;
 
   @property()
   mode: "reinstall" | "join" = "join";
@@ -92,10 +92,10 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     if (this._fakeDevhubHappReleaseHash) {
       const devhubHappReleaseHash =
         this.mode == "reinstall"
-          ? this._matrixStore.getUninstalledAppletInstanceInfo(
-              this.appletInstanceId
+          ? this._matrixStore.getUninstalledAppletInfo(
+              this.appletId
             )?.applet.devhubHappReleaseHash
-          : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)
+          : this._matrixStore.getNewAppletInfo(this.appletId)
               ?.applet.devhubHappReleaseHash;
       return (
         JSON.stringify(devhubHappReleaseHash) ===
@@ -115,10 +115,10 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     try {
       await this._matrixStore.joinApplet(
         this.weGroupId,
-        this.appletInstanceId,
+        this.appletId,
         this._fileBytes // compressed webhapp as Uint8Array
       );
-      const appletEntryHash = this.appletInstanceId;
+      const appletEntryHash = this.appletId;
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
       ).close();
@@ -145,10 +145,10 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
     try {
       await this._matrixStore.reinstallApplet(
         this.weGroupId,
-        this.appletInstanceId,
+        this.appletId,
         this._fileBytes // compressed webhapp as Uint8Array
       );
-      const appletEntryHash = this.appletInstanceId;
+      const appletEntryHash = this.appletId;
       (
         this.shadowRoot?.getElementById("installing-progress") as Snackbar
       ).close();

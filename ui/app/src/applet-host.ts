@@ -22,7 +22,7 @@ export class AppletHost {
   constructor(
     public appletInstalledAppId: string,
     public groupDnaHash: DnaHash,
-    public appletInstanceHash: EntryHash,
+    public appletHash: EntryHash,
     public iframe: HTMLIFrameElement,
     public weStore: WeStore,
     public openViews: AppOpenViews | undefined
@@ -62,7 +62,7 @@ export class AppletHost {
       type: "get-entry-info",
       groupId: this.groupDnaHash,
       groupProfile: groupProfile!,
-      appletInstanceId: this.appletInstanceHash,
+      appletId: this.appletHash,
       roleName,
       integrityZomeName,
       entryDefId,
@@ -113,7 +113,7 @@ export class AppletHost {
           case "group-block":
             return this.openViews?.openGroupBlock(
               message.request.groupId,
-              message.request.appletInstanceId,
+              message.request.appletId,
               message.request.block,
               message.request.context
             );
@@ -145,13 +145,13 @@ export class AppletHost {
 
         if (!entryInfo) return undefined;
 
-        const appletInstance = await toPromise(
+        const applet = await toPromise(
           this.weStore.appletsInstancesByGroup
             .get(location.dnaLocation.groupDnaHash)
-            .get(location.dnaLocation.appletInstanceHash)
+            .get(location.dnaLocation.appletHash)
         );
 
-        if (!appletInstance) return undefined;
+        if (!applet) return undefined;
 
         const groupStore = await toPromise(
           this.weStore.groups.get(location.dnaLocation.groupDnaHash)
@@ -164,8 +164,8 @@ export class AppletHost {
         const entryAndAppletInfo: EntryLocationAndInfo = {
           groupId: location.dnaLocation.groupDnaHash,
           groupProfile,
-          appletInstanceId: location.dnaLocation.appletInstanceHash,
-          appletInstanceName: appletInstance.entry.custom_name,
+          appletId: location.dnaLocation.appletHash,
+          appletName: applet.entry.custom_name,
           entryInfo,
         };
 
@@ -176,7 +176,7 @@ export class AppletHost {
         host = await toPromise(
           this.weStore.appletsHosts
             .get(message.request.groupId)
-            .get(message.request.appletInstanceId)
+            .get(message.request.appletId)
         );
 
         return host.createAttachment(
