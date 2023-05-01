@@ -9,7 +9,9 @@ use sensemaker_integrity::EntryTypes;
 use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::RangeValue;
 
+use crate::agent::get_all_agents;
 use crate::get_dimension;
+use crate::signals::Signal;
 use crate::utils::entry_from_record;
 use crate::utils::fetch_provider_resource;
 use crate::utils::flatten_btree_map;
@@ -73,7 +75,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
     };
     create_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;
-    let assessment_path = assessment_typed_path(assessment.resource_eh.clone(), assessment.dimension_eh)?;
+    let assessment_path = assessment_typed_path(assessment.resource_eh.clone(), assessment.dimension_eh.clone())?;
     // ensure the path components are created so we can fetch child paths later
     assessment_path.clone().ensure()?;
     create_link(
@@ -82,6 +84,12 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
         LinkTypes::Assessment,
         (),
     )?;
+    
+    // send signal after assessment is created
+    let signal = Signal::NewAssessment { assessment: assessment.clone() };
+    let encoded_signal = ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
+    remote_signal(encoded_signal, get_all_agents()?)?;
+    
     Ok(assessment_eh)
 }
 

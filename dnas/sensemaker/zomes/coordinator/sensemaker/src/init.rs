@@ -1,9 +1,18 @@
-use crate::create_entries_from_applet_config;
+use crate::{create_entries_from_applet_config, agent::all_agents_typed_path};
 use hdk::prelude::*;
 use sensemaker_integrity::{EntryTypes, LinkTypes, Properties};
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    // register agent in NH
+    // create a link from all agents path to my pub key
+    create_link(
+        all_agents_typed_path()?.path_entry_hash()?,
+        agent_info()?.agent_latest_pubkey,
+        LinkTypes::AllAgentsPath,
+        (),
+    )?;
+
     // set up capability grants to allow for remote signals    
     let mut functions = BTreeSet::new();
     functions.insert((zome_info()?.name, FunctionName("recv_remote_signal".into())));
