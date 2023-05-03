@@ -1,9 +1,4 @@
-import {
-  hashProperty,
-  hashState,
-  sharedStyles,
-  wrapPathInSvg,
-} from "@holochain-open-dev/elements";
+import { hashProperty, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
@@ -39,7 +34,8 @@ export class GroupSidebar extends LitElement {
 
   _groupsProfiles = new StoreSubscriber(
     this,
-    () => this._weStore.allGroupsProfiles
+    () => this._weStore.allGroupsProfiles,
+    () => []
   );
 
   renderGroupApplets(groupDnaHash: DnaHash) {

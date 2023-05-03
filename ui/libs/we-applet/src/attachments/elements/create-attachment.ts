@@ -9,7 +9,10 @@ import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
 import { msg, localized } from "@lit/localize";
 
+import "@holochain-open-dev/elements/dist/elements/display-error.js";
+
 import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -24,6 +27,8 @@ import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
 import { weServicesContext } from "../../context";
 import { AttachmentType, WeServices } from "../../types";
+import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
+import { getAppletsInfosAndGroupsProfiles } from "../../utils";
 
 @localized()
 @customElement("create-attachment")
@@ -36,6 +41,18 @@ export class CreateAttachment extends LitElement {
 
   @property(hashProperty("hash"))
   hash!: AnyDhtHash;
+
+  appletsInfosAndGroupsProfiles = new StoreSubscriber(
+    this,
+    () =>
+      lazyLoad(async () =>
+        getAppletsInfosAndGroupsProfiles(
+          this.weServices,
+          Array.from(this.weServices.attachmentTypes.keys())
+        )
+      ),
+    () => []
+  );
 
   async createAttachment(attachmentType: AttachmentType) {
     try {
@@ -58,6 +75,56 @@ export class CreateAttachment extends LitElement {
     }
   }
 
+  renderMenuItems() {
+    switch (this.appletsInfosAndGroupsProfiles.value.status) {
+      case "pending":
+        return Array(3).map(
+          () => html`<sl-menu-item><sl-skeleton></sl-skeleton></sl-menu-item>`
+        );
+
+      case "complete":
+        const { appletsInfos, groupsProfiles } =
+          this.appletsInfosAndGroupsProfiles.value.value;
+
+        return Array.from(this.weServices.attachmentTypes.entries()).map(
+          ([appletId, attachmentTypes], i) =>
+            Object.entries(attachmentTypes.value).map(
+              ([name, attachmentType]) => html`
+                <sl-menu-item
+                  @click=${() => this.createAttachment(attachmentType)}
+                >
+                  <sl-icon
+                    slot="prefix"
+                    .src=${attachmentType.icon_src}
+                  ></sl-icon>
+                  ${attachmentType.label}
+                  <div slot="suffix" class="row">
+                    ${appletsInfos
+                      .get(appletId)
+                      ?.groupsIds.map(
+                        (groupId) => html`
+                          <img
+                            .src=${groupsProfiles.get(groupId)}
+                            style="height: 16px; width: 16px; margin-right: 2px;"
+                          />
+                        `
+                      )}
+                    <span class="placeholder">
+                      ${appletsInfos.get(appletId)?.appletName}</span
+                    >
+                  </div>
+                </sl-menu-item>
+              `
+            )
+        );
+
+      case "error":
+        return html`<display-error
+          .headline=${msg("Error fetching the attachment types")}
+        ></display-error>`;
+    }
+  }
+
   render() {
     return html`
       <sl-dropdown>
@@ -66,39 +133,7 @@ export class CreateAttachment extends LitElement {
           ${msg("Create Attachment")}
         </sl-button>
 
-        <sl-menu>
-          ${Array.from(this.weServices.attachmentTypesByGroup.entries()).map(
-            ([groupId, groupAttachmentTypes], i) => html`<sl-menu-label
-                >${groupAttachmentTypes.groupProfile.name}</sl-menu-label
-              >
-              ${Array.from(
-                groupAttachmentTypes.attachmentTypesByApplet.entries()
-              ).map(([appletId, appletAttachmentTypes]) =>
-                Object.entries(appletAttachmentTypes.attachmentTypes).map(
-                  ([name, attachmentType]) => html`
-                    <sl-menu-item
-                      @click=${() => this.createAttachment(attachmentType)}
-                    >
-                      <sl-icon
-                        slot="prefix"
-                        .src=${attachmentType.icon_src}
-                      ></sl-icon>
-                      ${attachmentType.label}
-                      <span
-                        slot="suffix"
-                        style="color: var(--sl-color-neutral-500);"
-                        >${msg("in")}
-                        ${appletAttachmentTypes.appletName}</span
-                      >
-                    </sl-menu-item>
-                  `
-                )
-              )}
-              ${i < this.weServices.attachmentTypesByGroup.size - 1
-                ? html` <sl-divider></sl-divider> `
-                : html``} `
-          )}
-        </sl-menu>
+        <sl-menu> ${this.renderMenuItems()} </sl-menu>
       </sl-dropdown>
     `;
   }

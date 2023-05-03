@@ -26,11 +26,6 @@ export interface GroupProfile {
   logo_src: string;
 }
 
-export interface GroupServices {
-  groupProfile: GroupProfile;
-  profilesClient: ProfilesClient;
-}
-
 export interface AttachmentType {
   label: string;
   icon_src: string;
@@ -38,40 +33,34 @@ export interface AttachmentType {
 }
 
 export interface OpenViews {
-  openGroupBlock(
-    groupId: DnaHash,
-    appletId: EntryHash,
+  openAppletBlock(appletId: EntryHash, block: string, context: any): void;
+  openCrossAppletBlock(
+    appletBundleId: EntryHash,
     block: string,
     context: any
   ): void;
-  openCrossGroupBlock(appletId: EntryHash, block: string, context: any): void;
   openHrl(hrl: Hrl, context: any): void;
 }
 
-export interface AppletAttachmentTypes {
-  appletName: string;
-  attachmentTypes: Record<string, AttachmentType>;
-}
-
-export interface GroupAttachmentTypes {
-  groupProfile: GroupProfile;
-  attachmentTypesByApplet: ReadonlyMap<EntryHash, AppletAttachmentTypes>; // segmented by appletId
-}
-
 export interface EntryLocationAndInfo {
-  groupId: DnaHash;
-  groupProfile: GroupProfile;
   appletId: EntryHash;
-  appletName: string;
   entryInfo: EntryInfo;
+}
+
+export interface AppletInfo {
+  appletBundleId: EntryHash;
+  appletName: string;
+  groupsIds: Array<DnaHash>;
 }
 
 export interface WeServices {
   openViews: OpenViews;
-  attachmentTypesByGroup: ReadonlyMap<DnaHash, GroupAttachmentTypes>; // Segmented by groupId
+  attachmentTypes: ReadonlyMap<EntryHash, Record<string, AttachmentType>>; // Segmented by groupId
 
+  groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
+  appletInfo(appletId: EntryHash): Promise<AppletInfo | undefined>;
+  entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
   search(filter: string): Promise<Array<HrlWithContext>>;
-  getEntryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
 }
 
 export type MainView = (rootElement: HTMLElement) => void;
@@ -82,17 +71,12 @@ export type EntryTypeView = (
   context: any
 ) => void;
 
-export interface CrossGroupViews {
-  main: MainView;
-  blocks: Record<string, BlockView>;
-}
-
 export interface ReferenceableEntryType {
   info: (hrl: Hrl) => Promise<EntryInfo | undefined>;
   view: EntryTypeView;
 }
 
-export interface GroupViews {
+export interface AppletViews {
   main: MainView;
   blocks: Record<string, BlockView>; // all events -> schedule
   entries: Record<
@@ -101,24 +85,26 @@ export interface GroupViews {
   >; // Segmented by RoleName, integrity ZomeName and EntryType
 }
 
-export interface GroupWithApplets {
-  groupServices: GroupServices;
-  applets: ReadonlyMap<EntryHash, AppAgentClient>; // segmented by appletId
+export interface CrossAppletViews {
+  main: MainView;
+  blocks: Record<string, BlockView>;
 }
 
 export interface WeApplet {
-  groupViews: (
+  appletViews: (
     client: AppAgentClient,
-    groupId: DnaHash,
     appletId: EntryHash,
-    groupServices: GroupServices,
+    profilesClient: ProfilesClient,
     weServices: WeServices
-  ) => GroupViews;
+  ) => AppletViews;
 
-  crossGroupViews: (
-    appletsByGroup: ReadonlyMap<DnaHash, GroupWithApplets>, // Segmented by groupId
+  crossAppletViews: (
+    applets: ReadonlyMap<
+      EntryHash,
+      { appletClient: AppAgentClient; profilesClient: ProfilesClient }
+    >,
     weServices: WeServices
-  ) => CrossGroupViews;
+  ) => CrossAppletViews;
 
   attachmentTypes: (
     appletClient: AppAgentClient

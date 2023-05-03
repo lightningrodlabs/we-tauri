@@ -1,6 +1,6 @@
 import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
-import { encodeHashToBase64, DnaHash, EntryHash } from "@holochain/client";
+import { encodeHashToBase64, DnaHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 import { listen } from "@tauri-apps/api/event";
 
@@ -18,7 +18,6 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
 import {
-  asyncDerived,
   asyncDeriveStore,
   joinAsyncMap,
   toPromise,
@@ -122,9 +121,7 @@ export class MainDashboard extends LitElement {
               componentType: "group-applet-main",
               componentState: {
                 groupDnaHash: encodeHashToBase64(e.detail.groupDnaHash),
-                appletHash: encodeHashToBase64(
-                  e.detail.appletHash
-                ),
+                appletHash: encodeHashToBase64(e.detail.appletHash),
               },
             });
           }}

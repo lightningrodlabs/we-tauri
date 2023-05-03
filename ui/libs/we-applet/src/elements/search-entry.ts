@@ -3,14 +3,6 @@ import { css, html, LitElement } from "lit";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import {
-  AgentPubKey,
-  EntryHash,
-  DnaHash,
-  decodeHashFromBase64,
-  encodeHashToBase64,
-} from "@holochain/client";
-import {
-  asyncDeriveStore,
   AsyncStatus,
   lazyLoad,
   StoreSubscriber,
@@ -21,7 +13,6 @@ import {
   hashProperty,
   sharedStyles,
 } from "@holochain-open-dev/elements";
-import { mapValues } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -33,12 +24,23 @@ import SlInput from "@shoelace-style/shoelace/dist/components/input/input";
 import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 
 import {
-  EntryInfo,
+  AppletInfo,
   EntryLocationAndInfo,
+  GroupProfile,
   HrlWithContext,
   WeServices,
 } from "../types";
 import { weServicesContext } from "../context";
+import { EntryHash } from "@holochain/client";
+import { DnaHash } from "@holochain/client";
+import { HoloHashMap } from "@holochain-open-dev/utils";
+import { getAppletsInfosAndGroupsProfiles } from "../utils";
+
+export interface SearchResult {
+  hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
+  groupsProfiles: ReadonlyMap<DnaHash, GroupProfile>;
+  appletsInfos: ReadonlyMap<EntryHash, AppletInfo>;
+}
 
 /**
  * @element search-entry
@@ -128,9 +130,7 @@ export class SearchEntry extends LitElement implements FormField {
    */
   @state()
   private _searchEntries:
-    | StoreSubscriber<
-        AsyncStatus<Array<[HrlWithContext, EntryLocationAndInfo | undefined]>>
-      >
+    | StoreSubscriber<AsyncStatus<SearchResult>>
     | undefined;
 
   /**
@@ -145,21 +145,29 @@ export class SearchEntry extends LitElement implements FormField {
   @query("#dropdown")
   private dropdown!: SlDropdown;
 
-  async search(
-    filter: string
-  ): Promise<Array<[HrlWithContext, EntryLocationAndInfo | undefined]>> {
+  async search(filter: string): Promise<SearchResult> {
     const hrls = await this.services.search(filter);
 
     const hrlsWithInfo = await Promise.all(
       hrls.map(async (hrlWithContext) => {
-        const info = await this.services.getEntryInfo(hrlWithContext.hrl);
+        const info = await this.services.entryInfo(hrlWithContext.hrl);
         return [hrlWithContext, info] as [
           HrlWithContext,
           EntryLocationAndInfo | undefined
         ];
       })
     );
-    return hrlsWithInfo;
+    const filteredHrls = hrlsWithInfo.filter(
+      ([hrl, info]) => info !== undefined
+    ) as Array<[HrlWithContext, EntryLocationAndInfo]>;
+
+    const { appletsInfos, groupsProfiles } =
+      await getAppletsInfosAndGroupsProfiles(
+        this.services,
+        filteredHrls.map(([_, info]) => info.appletId)
+      );
+
+    return { hrlsWithInfo: filteredHrls, groupsProfiles, appletsInfos };
   }
 
   onFilterChange() {
@@ -218,17 +226,15 @@ export class SearchEntry extends LitElement implements FormField {
           ></display-error>
         `;
       case "complete": {
-        const entries = this._searchEntries.value.value.filter(
-          ([hrlWithContext, info]) => info !== undefined
-        ) as Array<[HrlWithContext, EntryLocationAndInfo]>;
+        const searchResult = this._searchEntries.value.value;
 
-        if (entries.length === 0)
+        if (searchResult.hrlsWithInfo.length === 0)
           return html`<sl-menu-item>
             ${msg("No entries match the filter")}
           </sl-menu-item>`;
 
         return html`
-          ${entries.map(
+          ${searchResult.hrlsWithInfo.map(
             ([hrlWithContext, info]) => html`
               <sl-menu-item .info=${info} .hrl=${hrlWithContext}>
                 <sl-icon
@@ -237,6 +243,22 @@ export class SearchEntry extends LitElement implements FormField {
                   style="margin-right: 16px"
                 ></sl-icon>
                 ${info.entryInfo.name}
+                <div slot="suffix" class="row">
+                  ${searchResult.appletsInfos
+                    .get(info.appletId)
+                    ?.groupsIds.map(
+                      (groupId) => html`
+                        <img
+                          .src=${searchResult.groupsProfiles.get(groupId)}
+                          style="height: 16px; width: 16px; margin-right: 2px;"
+                        />
+                      `
+                    )}
+                  <span class="placeholder">
+                    ${searchResult.appletsInfos.get(info.appletId)
+                      ?.appletName}</span
+                  >
+                </div>
               </sl-menu-item>
             `
           )}

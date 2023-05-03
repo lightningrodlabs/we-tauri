@@ -11,7 +11,7 @@ import {
   AppAgentCallZomeRequest,
 } from "@holochain/client";
 import { GroupProfile } from "../../../libs/we-applet/dist";
-import { Applet } from "./types";
+import { Applet } from "../applets/types";
 
 export class GroupClient {
   constructor(
@@ -33,16 +33,13 @@ export class GroupClient {
 
   /** Applets */
 
-  async getApplets(): Promise<EntryHashMap<Applet>> {
-    const records = await this.callZome("get_applets", null);
-    return new RecordBag<Applet>(records).entryMap;
+  async getApplets(): Promise<Array<EntryHash>> {
+    return this.callZome("get_applets", null);
   }
 
-  async getApplet(
-    appletHash: EntryHash
-  ): Promise<EntryRecord<Applet> | undefined> {
+  async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {
     const record = await this.callZome("get_applet", appletHash);
-    return new EntryRecord(record);
+    return new EntryRecord<Applet>(record).entry;
   }
 
   async registerApplet(applet: Applet): Promise<EntryHash> {

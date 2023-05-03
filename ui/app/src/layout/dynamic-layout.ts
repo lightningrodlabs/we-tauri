@@ -18,9 +18,10 @@ import "../groups/elements/group-home.js";
 import "../groups/elements/group-logo.js";
 import "../groups/elements/applet-name.js";
 import "../groups/elements/entry-title.js";
+import "../applets/elements/applet-title.js";
 import "./views/welcome-view.js";
-import "./views/group-applet-block.js";
-import "./views/group-applet-main.js";
+import "./views/applet-block.js";
+import "./views/applet-main.js";
 import "./views/entry-view.js";
 
 import { openViewsContext } from "./context.js";
@@ -49,13 +50,12 @@ export class DynamicLayout extends LitElement {
 
   @provide({ context: openViewsContext })
   openViews: AppOpenViews = {
-    openGroupBlock: (groupDnaHash, appletHash, block, context) => {
+    openAppletBlock: (appletHash, block, context) => {
       this.goldenLayout.addItemAtLocation(
         {
           type: "component",
-          componentType: "group-block",
+          componentType: "applet-block",
           componentState: {
-            groupDnaHash: encodeHashToBase64(groupDnaHash),
             appletHash: encodeHashToBase64(appletHash),
             block,
             context,
@@ -68,13 +68,13 @@ export class DynamicLayout extends LitElement {
         ]
       );
     },
-    openCrossGroupBlock: (devhubAppReleaseHash, block, context) => {
+    openCrossAppletBlock: (appletBundleHash, block, context) => {
       this.goldenLayout.addItemAtLocation(
         {
           type: "component",
-          componentType: "cross-group-block",
+          componentType: "cross-applet-block",
           componentState: {
-            devhubAppReleaseHash: encodeHashToBase64(devhubAppReleaseHash),
+            appletBundleHash: encodeHashToBase64(appletBundleHash),
             block,
             context,
           },
@@ -170,70 +170,59 @@ export class DynamicLayout extends LitElement {
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-applet-block"
-        .titleRenderer=${({ groupDnaHash, appletHash, block }) =>
+        component-type="applet-main"
+        .titleRenderer=${({ appletHash }) =>
           html`
-            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-logo></group-logo>
-              <applet-name
-                .appletHash=${decodeHashFromBase64(appletHash)}
-              ></applet-name>
-              <span>: ${block}</span>
-            </group-context>
-          `}
-        .template=${({ groupDnaHash, appletHash, block, context }) => html`
-          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-            <group-applet-block
+            <applet-title
               .appletHash=${decodeHashFromBase64(appletHash)}
-              .block=${block}
-              .context=${context}
-              style="flex: 1"
-            ></group-applet-block>
-          </group-context>
+            ></applet-title>
+          `}
+        .template=${({ appletHash }) => html`
+          <applet-main
+            .appletHash=${decodeHashFromBase64(appletHash)}
+            style="flex: 1"
+          ></applet-main>
         `}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="group-applet-main"
-        .titleRenderer=${({ groupDnaHash, appletHash }) =>
+        component-type="applet-block"
+        .titleRenderer=${({ appletHash, block }) =>
           html`
-            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-logo></group-logo>
-              <applet-name
-                .appletHash=${decodeHashFromBase64(appletHash)}
-              ></applet-name>
-            </group-context>
-          `}
-        .template=${({ groupDnaHash, appletHash }) => html`
-          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-            <group-applet-main
+            <applet-title
               .appletHash=${decodeHashFromBase64(appletHash)}
-              style="flex: 1"
-            ></group-applet-main>
-          </group-context>
+            ></applet-title>
+          `}
+        .template=${({ appletHash, block, context }) => html`
+          <applet-block
+            .appletHash=${decodeHashFromBase64(appletHash)}
+            .block=${block}
+            .context=${context}
+            style="flex: 1"
+          ></applet-block>
         `}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-applet-main"
-        .template=${({ devhubAppReleaseHash }) => html` <cross-group-applet-main
-          .devhubAppReleaseHash=${decodeHashFromBase64(devhubAppReleaseHash)}
+        component-type="cross-applet-main"
+        .template=${({ appletBundleHash }) => html` <cross-applet-main
+          .appletBundleHash=${decodeHashFromBase64(appletBundleHash)}
           style="flex: 1"
-        ></cross-group-applet-main>`}
+        ></cross-applet-main>`}
       >
       </golden-layout-register>
       <golden-layout-register
-        component-type="cross-group-applet-block"
+        component-type="cross-applet-block"
         .template=${({
-          devhubAppReleaseHash,
+          appletBundleHash,
           block,
           context,
-        }) => html` <cross-group-applet-block
-          .devhubAppReleaseHash=${decodeHashFromBase64(devhubAppReleaseHash)}
+        }) => html` <cross-applet-block
+          .appletBundleHash=${decodeHashFromBase64(appletBundleHash)}
           .block=${block}
           .context=${context}
           style="flex: 1"
-        ></cross-group-applet-block>`}
+        ></cross-applet-block>`}
       >
       </golden-layout-register>
       <golden-layout-root style="flex: 1"> </golden-layout-root>

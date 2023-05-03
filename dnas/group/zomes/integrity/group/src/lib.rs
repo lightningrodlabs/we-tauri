@@ -22,12 +22,9 @@ pub enum LinkTypes {
 #[hdk_entry_helper]
 #[derive(Clone)]
 pub struct Applet {
-    // name of the applet "instance" as chosen by the person adding it to the group,
-    // (is also used as part of the installed_app_id in the conductor)
+    // name of the applet as chosen by the person adding it to the group,
     pub custom_name: String,
     pub description: String,
-
-    pub logo_src: Option<String>,
 
     pub devhub_happ_release_hash: EntryHash,
     pub devhub_gui_release_hash: EntryHash,
@@ -35,7 +32,6 @@ pub struct Applet {
     pub network_seed: Option<String>,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleName
-    pub dna_hashes: BTreeMap<String, DnaHash>,         // Segmented by RoleName
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -45,4 +45,20 @@ export class AttachmentsClient {
       context: decode(hrlWithContext.context),
     }));
   }
+
+  removeAttachment(
+    hash: AnyDhtHash,
+    hrlWithContext: HrlWithContext
+  ): Promise<void> {
+    return this.callZome("remove_attachment", {
+      hash,
+      hrl_with_context: {
+        hrl: {
+          dna_hash: hrlWithContext.hrl[0],
+          resource_hash: hrlWithContext.hrl[1],
+        },
+        context: encode(hrlWithContext.context),
+      },
+    });
+  }
 }

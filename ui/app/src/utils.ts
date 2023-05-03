@@ -1,4 +1,3 @@
-import { EntryHashMap } from "@holochain-open-dev/utils";
 import {
   EntryHash,
   CellId,
@@ -10,7 +9,6 @@ import {
   DnaHash,
   CellType,
 } from "@holochain/client";
-import { Applet } from "./groups/types";
 
 export async function initAppClient(
   appId: string,
@@ -49,42 +47,6 @@ export function findAppForDnaHash(
     }
   }
   return undefined;
-}
-
-export function findAppletForAppInfo(
-  appletsInstancesByGroup: ReadonlyMap<DnaHash, EntryHashMap<Applet>>,
-  appInfo: AppInfo
-): { groupDnaHash: DnaHash; appletHash: EntryHash } {
-  for (const [
-    groupDnaHash,
-    appletsInstances,
-  ] of appletsInstancesByGroup.entries()) {
-    for (const [
-      appletHash,
-      applet,
-    ] of appletsInstances.entries()) {
-      for (const [appletRole, dnaHash] of Object.entries(
-        applet.dna_hashes
-      )) {
-        for (const [role, cells] of Object.entries(appInfo.cell_info)) {
-          if (role === appletRole) {
-            for (const cell of cells) {
-              if (CellType.Provisioned in cell) {
-                if (
-                  cell[CellType.Provisioned].cell_id[0].toString() ===
-                  dnaHash.toString()
-                ) {
-                  return { groupDnaHash, appletHash };
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  throw new Error("Can't find applet for the given app info");
 }
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {

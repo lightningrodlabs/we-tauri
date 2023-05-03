@@ -1,13 +1,15 @@
 import { hashProperty } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { EntryHash } from "@holochain/client";
+import {
+  decodeHashFromBase64,
+  EntryHash,
+  EntryHashB64,
+} from "@holochain/client";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { InternalGroupWithApplets, RenderView } from "applet-messages";
+import { ProfilesLocation, RenderView } from "applet-messages";
 import { consume } from "@lit-labs/context";
 import { msg, localized } from "@lit/localize";
-import { DnaHash } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -18,10 +20,10 @@ import { weStoreContext } from "../../context";
 import { weStyles } from "../../shared-styles";
 
 @localized()
-@customElement("cross-group-block")
-export class CrossGroupBlock extends LitElement {
-  @property(hashProperty("devhub-app-release-hash"))
-  devhubAppReleaseHash!: EntryHash;
+@customElement("cross-applet-block")
+export class CrossAppletBlock extends LitElement {
+  @property(hashProperty("app-bundle-hash"))
+  appletBundleHash!: EntryHash;
 
   @property()
   block!: string;
@@ -32,35 +34,32 @@ export class CrossGroupBlock extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   weStore!: WeStore;
 
-  appletsByGroup = new StoreSubscriber(
+  appletsForBundle = new StoreSubscriber(
     this,
-    () => this.weStore.appletsByGroup.get(this.devhubAppReleaseHash),
-    () => [this.devhubAppReleaseHash]
+    () => this.weStore.appletsForBundleHash.get(this.appletBundleHash),
+    () => [this.appletBundleHash]
   );
 
-  renderBlock(
-    appletsByGroup: HoloHashMap<DnaHash, InternalGroupWithApplets>,
-    appletInstalledAppId: string
-  ) {
+  renderBlock(applets: Record<EntryHashB64, ProfilesLocation>) {
     const renderView: RenderView = {
-      type: "cross-group-view",
+      type: "cross-applet-view",
       view: {
         type: "block",
         block: this.block,
         context: this.context,
       },
-      appletsByGroup,
+      applets,
     };
 
     return html`<view-frame
       .renderView=${renderView}
-      .appletInstalledAppId=${appletInstalledAppId}
+      .appletHash=${decodeHashFromBase64(Object.keys(applets)[0])}
     >
     </view-frame>`;
   }
 
   render() {
-    switch (this.appletsByGroup.value.status) {
+    switch (this.appletsForBundle.value.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
@@ -69,13 +68,10 @@ export class CrossGroupBlock extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error initializing the client for this group")}
-          .error=${this.appletsByGroup.value.error.data.data}
+          .error=${this.appletsForBundle.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderBlock(
-          this.appletsByGroup.value.value.appletsByGroup,
-          this.appletsByGroup.value.value.appletInstalledAppId
-        );
+        return this.renderBlock(this.appletsForBundle.value.value);
     }
   }
 

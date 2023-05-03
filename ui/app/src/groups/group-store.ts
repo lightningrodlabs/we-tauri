@@ -4,54 +4,26 @@ import {
 } from "@holochain-open-dev/peer-status";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
-  asyncDerived,
   AsyncReadable,
-  join,
   lazyLoad,
   lazyLoadAndPoll,
 } from "@holochain-open-dev/stores";
-import { EntryRecord, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
-  AdminWebsocket,
   AgentPubKey,
   AppAgentWebsocket,
-  AppInfo,
   CellType,
   DnaHash,
   encodeHashToBase64,
   EntryHash,
-  ListAppsResponse,
-  ProvisionedCell,
-  StemCell,
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
-import { encode } from "@msgpack/msgpack";
-import { fromUint8Array } from "js-base64";
 import { DnaModifiers } from "@holochain/client";
 
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store";
-import { Applet } from "./types";
 import { AppletBundleMetadata } from "../types";
-import { manualReloadStore } from "../we-store";
 import { GroupClient } from "./group-client";
-
-export function appletAppId(
-  devhubHappReleaseHash: EntryHash,
-  networkSeed: string | undefined,
-  properties: any
-): string {
-  return `${encodeHashToBase64(devhubHappReleaseHash)}-${
-    networkSeed || ""
-  }-${fromUint8Array(encode(properties))}`;
-}
-
-export function appletAppIdFromApplet(applet: Applet): string {
-  return appletAppId(
-    applet.devhub_happ_release_hash,
-    applet.network_seed,
-    applet.properties
-  );
-}
+import { Applet } from "../applets/types";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -62,11 +34,10 @@ export class GroupStore {
   members: AsyncReadable<Array<AgentPubKey>>;
 
   constructor(
-    protected adminWebsocket: AdminWebsocket,
     public appAgentWebsocket: AppAgentWebsocket,
     public groupDnaHash: DnaHash,
     public roleName: string,
-    public appletsStore: AppletBundlesStore
+    public appletBundlesStore: AppletBundlesStore
   ) {
     this.groupClient = new GroupClient(appAgentWebsocket, roleName);
 
@@ -108,98 +79,38 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    const [appInfo, _] = await this.appletsStore.installAppletBundle(
-      applet.entry.devhub_happ_release_hash,
-      applet.entry.devhub_gui_release_hash,
-      appletAppIdFromApplet(applet.entry),
-      applet.entry.network_seed
+    const [appInfo, _] = await this.appletBundlesStore.installApplet(
+      appletHash,
+      applet
     );
+
     return appInfo;
   }
 
   // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA
-  async installedAppletBundle(
+  async installAppletBundle(
     appletMetadata: AppletBundleMetadata,
     customName: string
   ): Promise<EntryHash> {
     const networkSeed = uuidv4(); // generate random network seed if not provided
 
-    const [appletInfo, logo_src]: [AppInfo, string | undefined] =
-      await this.appletsStore.installAppletBundle(
-        appletMetadata.devhubHappReleaseHash,
-        appletMetadata.devhubGuiReleaseHash,
-        appletAppId(appletMetadata.devhubHappReleaseHash, networkSeed, {}),
-        networkSeed
-      );
-
     // --- Register hApp in the We DNA ---
-
-    const dnaHashes: Record<string, DnaHash> = {};
-    // add dna hashes and network seeds of all provisioned or deferred cells to the Applet entry
-    Object.entries(appletInfo.cell_info).forEach(([roleName, cellInfos]) => {
-      const provisionedCell = cellInfos.find(
-        (cellInfo) => "provisioned" in cellInfo
-      );
-      const stemCell = cellInfos.find((cellInfo) => "stem" in cellInfo);
-      if (stemCell && provisionedCell) {
-        throw new Error(
-          `Found a deferred cell and a provisioned cell for the role_name '${roleName}'`
-        );
-      }
-      if (!stemCell && !provisionedCell) {
-        throw new Error(
-          `Found neither a deferred nor a provisioned cell for role_name '${roleName}'`
-        );
-      }
-      if (provisionedCell) {
-        dnaHashes[roleName] = (
-          provisionedCell as { [CellType.Provisioned]: ProvisionedCell }
-        ).provisioned.cell_id[0];
-      }
-      if (stemCell) {
-        dnaHashes[roleName] = (
-          stemCell as { [CellType.Stem]: StemCell }
-        ).stem.dna;
-      }
-    });
 
     const applet: Applet = {
       custom_name: customName,
       description: appletMetadata.description,
       devhub_gui_release_hash: appletMetadata.devhubGuiReleaseHash,
       devhub_happ_release_hash: appletMetadata.devhubHappReleaseHash,
-      logo_src,
       network_seed: networkSeed,
       properties: {},
-      dna_hashes: dnaHashes,
     };
 
-    return this.groupClient.registerApplet(applet);
+    const appletHash = await this.groupClient.registerApplet(applet);
+
+    await this.appletBundlesStore.installApplet(appletHash, applet);
+
+    return appletHash;
   }
-
-  registeredApplets = lazyLoadAndPoll(
-    async () => this.groupClient.getApplets(),
-    4000
-  );
-
-  installedApps = manualReloadStore(async () =>
-    this.adminWebsocket.listApps({})
-  );
-
-  isInstalled = new LazyHoloHashMap((appletEntryHash) =>
-    asyncDerived(
-      join([
-        this.applets.get(appletEntryHash),
-        this.installedApps,
-      ]) as AsyncReadable<[EntryRecord<Applet>, ListAppsResponse]>,
-      async ([applet, apps]) => {
-        if (!applet) return false;
-        const appletId = appletAppIdFromApplet(applet.entry);
-
-        return !!apps.find((app) => app.installed_app_id === appletId);
-      }
-    )
-  );
 
   federatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>
     lazyLoadAndPoll(
@@ -211,4 +122,6 @@ export class GroupStore {
   applets = new LazyHoloHashMap((appletHash: EntryHash) =>
     lazyLoad(async () => this.groupClient.getApplet(appletHash))
   );
+
+  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
 }

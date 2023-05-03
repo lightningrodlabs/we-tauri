@@ -13,6 +13,7 @@ import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 
 import { weServicesContext } from "../context";
 import { Hrl, WeServices } from "../types";
+import { getAppletsInfosAndGroupsProfiles } from "../utils";
 
 @localized()
 @customElement("hrl-link")
@@ -28,7 +29,22 @@ export class HrlLink extends LitElement {
 
   info = new StoreSubscriber(
     this,
-    () => lazyLoad(() => this.weServices.getEntryInfo(this.hrl)),
+    () =>
+      lazyLoad(async () => {
+        const entryInfo = await this.weServices.entryInfo(this.hrl);
+        if (!entryInfo) return undefined;
+
+        const { groupsProfiles, appletsInfos } =
+          await getAppletsInfosAndGroupsProfiles(this.weServices, [
+            entryInfo.appletId,
+          ]);
+
+        return {
+          entryInfo,
+          groupsProfiles,
+          appletsInfos,
+        };
+      }),
     () => [this.hrl]
   );
 
@@ -37,21 +53,34 @@ export class HrlLink extends LitElement {
       case "pending":
         return html`<sl-skeleton></sl-skeleton>`;
       case "complete":
-        const info = this.info.value.value;
+        if (this.info.value.value === undefined) return html``; // TODO: what to put here?
 
-        if (info === undefined) return html``; // TODO: what to put here?
+        const { appletsInfos, groupsProfiles, entryInfo } =
+          this.info.value.value;
 
         return html`<sl-button
           variant="text"
           @click=${() =>
             this.weServices.openViews.openHrl(this.hrl, this.context)}
         >
-          <sl-icon slot="prefix" .src=${info.entryInfo.icon_src}></sl-icon>
-          <span slot="suffix" style="color: var(--sl-color-neutral-500);"
-            >${msg("in")} ${info.appletName}</span
-          >
+          <sl-icon slot="prefix" .src=${entryInfo.entryInfo.icon_src}></sl-icon>
+          <div slot="suffix" class="row">
+            ${appletsInfos
+              .get(entryInfo.appletId)
+              ?.groupsIds.map(
+                (groupId) => html`
+                  <img
+                    .src=${groupsProfiles.get(groupId)}
+                    style="height: 16px; width: 16px; margin-right: 2px;"
+                  />
+                `
+              )}
+            <span class="placeholder">
+              ${appletsInfos.get(entryInfo.appletId)?.appletName}</span
+            >
+          </div>
 
-          ${info.entryInfo.name}
+          ${entryInfo.entryInfo.name}
         </sl-button>`;
       case "error":
         return html`<display-error

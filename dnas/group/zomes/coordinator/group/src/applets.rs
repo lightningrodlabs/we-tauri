@@ -30,24 +30,17 @@ fn get_applet(applet_hash: EntryHash) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-fn get_applets(_: ()) -> ExternResult<Vec<Record>> {
+fn get_applets(_: ()) -> ExternResult<Vec<EntryHash>> {
     let path = get_applets_path();
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
 
-    let get_input = links
+    let entry_hashes = links
         .into_iter()
-        .map(|link| {
-            GetInput::new(
-                AnyDhtHash::from(EntryHash::from(link.target)),
-                GetOptions::default(),
-            )
-        })
+        .map(|link| EntryHash::from(link.target))
         .collect();
 
-    let applet_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
-
-    Ok(applet_records.into_iter().filter_map(|r| r).collect())
+    Ok(entry_hashes)
 }
 
 #[hdk_extern]

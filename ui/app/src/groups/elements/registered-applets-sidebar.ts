@@ -1,4 +1,8 @@
-import { StoreSubscriber } from "@holochain-open-dev/stores";
+import {
+  AsyncReadable,
+  joinAsyncMap,
+  StoreSubscriber,
+} from "@holochain-open-dev/stores";
 import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
@@ -10,9 +14,11 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
-import { Applet } from "../types.js";
 import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
+import { Applet } from "../../applets/types.js";
+import { slice } from "@holochain-open-dev/utils";
+import { pipe } from "../../we-store.js";
 
 @localized()
 @customElement("registered-applets-sidebar")
@@ -22,7 +28,15 @@ export class RegisteredAppletsSidebar extends LitElement {
 
   _registeredApplets = new StoreSubscriber(
     this,
-    () => this._groupStore?.registeredApplets
+    () =>
+      pipe(
+        this._groupStore.allApplets,
+        (allApplets) =>
+          joinAsyncMap(
+            slice(this._groupStore.applets, allApplets)
+          ) as AsyncReadable<ReadonlyMap<EntryHash, Applet>>
+      ),
+    () => []
   );
 
   renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
@@ -34,7 +48,7 @@ export class RegisteredAppletsSidebar extends LitElement {
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-                .logoSrc=${applet.logo_src}
+                .logoSrc=${""}
                 .tooltipText=${applet.custom_name}
                 @click=${() => {
                   this.dispatchEvent(

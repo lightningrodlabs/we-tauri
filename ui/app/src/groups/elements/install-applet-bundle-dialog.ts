@@ -3,7 +3,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { joinAsyncMap, StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -17,16 +17,19 @@ import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
 import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
+import { slice } from "@holochain-open-dev/utils";
+import { pipe } from "../../we-store.js";
 
 @localized()
 @customElement("install-applet-bundle-dialog")
-export class InstallAppletDialog extends LitElement {
+export class InstallAppletBundleDialog extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
-  _registeredApplets = new StoreSubscriber(
-    this,
-    () => this.groupStore.registeredApplets
+  _registeredApplets = new StoreSubscriber(this, () =>
+    pipe(this.groupStore.allApplets, (allAppletsHashes) =>
+      joinAsyncMap(slice(this.groupStore.applets, allAppletsHashes))
+    )
   );
 
   @query("#applet-dialog")
@@ -75,7 +78,7 @@ export class InstallAppletDialog extends LitElement {
     if (this._installing) return;
     this._installing = true;
     try {
-      const appletEntryHash = await this.groupStore.installedAppletBundle(
+      const appletEntryHash = await this.groupStore.installAppletBundle(
         this._appletInfo,
         customName
       );
@@ -108,7 +111,7 @@ export class InstallAppletDialog extends LitElement {
       case "complete":
         const allAppletsNames = Array.from(
           this._registeredApplets.value.value.values()
-        ).map((applet) => applet.custom_name);
+        ).map((applet) => applet?.custom_name);
         return html`
           <sl-input
             name="custom_name"

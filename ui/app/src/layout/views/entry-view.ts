@@ -21,7 +21,7 @@ import {
 } from "../../processes/hrl/locate-hrl.js";
 import { weStyles } from "../../shared-styles.js";
 import { WeStore } from "../../we-store.js";
-import "./group-view.js";
+import "./applet-view.js";
 
 @customElement("entry-view")
 export class EntryView extends LitElement {
@@ -50,20 +50,18 @@ export class EntryView extends LitElement {
     dnaLocation: DnaLocation,
     entryTypeLocation: EntryDefLocation
   ) {
-    return html` <group-context .groupDnaHash=${dnaLocation.groupDnaHash}>
-      <group-view
-        style="flex: 1"
-        .appletHash=${dnaLocation.appletHash}
-        .view=${{
-          type: "entry",
-          role: dnaLocation.roleName,
-          zome: entryTypeLocation.integrity_zome,
-          entryType: entryTypeLocation.entry_def,
-          hrl: this.hrl,
-          context: this.context,
-        }}
-      ></group-view
-    ></group-context>`;
+    return html` <applet-view
+      style="flex: 1"
+      .appletHash=${dnaLocation.appletHash}
+      .view=${{
+        type: "entry",
+        role: dnaLocation.roleName,
+        zome: entryTypeLocation.integrity_zome,
+        entryType: entryTypeLocation.entry_def,
+        hrl: this.hrl,
+        context: this.context,
+      }}
+    ></applet-view>`;
   }
 
   render() {

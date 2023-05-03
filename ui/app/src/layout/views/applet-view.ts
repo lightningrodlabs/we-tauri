@@ -8,34 +8,27 @@ import {
   join,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
-import { EntryHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { EntryRecord } from "@holochain-open-dev/utils";
+import { mdiAlertOutline, mdiInformationOutline } from "@mdi/js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { GroupView, RenderView } from "applet-messages";
+import { AppletView, RenderView } from "applet-messages";
 
-import { groupStoreContext } from "../../groups/context.js";
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
-import { Applet } from "../../groups/types.js";
-import { appletAppIdFromApplet, GroupStore } from "../../groups/group-store.js";
-import { mdiInformationOutline } from "@mdi/js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
+import { Applet } from "../../applets/types.js";
+import { GroupStore } from "../../groups/group-store.js";
 
 @localized()
-@customElement("group-view")
-export class GroupViewEl extends LitElement {
-  @property()
-  @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GroupStore;
-
+@customElement("applet-view")
+export class AppletViewEl extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   weStore!: WeStore;
 
@@ -46,24 +39,48 @@ export class GroupViewEl extends LitElement {
   installing = false;
 
   @property()
-  view!: GroupView;
+  view!: AppletView;
 
   _applet = new StoreSubscriber(
     this,
     () =>
       join([
-        this.groupStore.groupProfile,
-        this.groupStore.applets.get(this.appletHash),
-        this.groupStore.isInstalled.get(this.appletHash),
-      ]) as AsyncReadable<[GroupProfile, EntryRecord<Applet>, boolean]>,
-    () => [this.groupStore, this.appletHash]
+        this.weStore.applets.get(this.appletHash),
+        this.weStore.groupsForApplet.get(this.appletHash),
+        this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
+      ]) as AsyncReadable<
+        [Applet | undefined, ReadonlyMap<DnaHash, GroupStore>, boolean]
+      >,
+    () => [this.appletHash]
   );
 
-  renderAppletFrame([groupProfile, applet, isInstalled]: [
-    GroupProfile,
-    EntryRecord<Applet>,
+  renderAppletFrame([applet, groupsStores, isInstalled]: [
+    Applet | undefined,
+    ReadonlyMap<DnaHash, GroupStore>,
     boolean
   ]) {
+    if (!applet)
+      return html`
+        <div class="row center-content" style="flex: 1">
+          <sl-card
+            ><div class="column center-content">
+              <sl-icon
+                .src=${wrapPathInSvg(mdiAlertOutline)}
+                style="font-size: 64px; margin-bottom: 16px"
+              ></sl-icon>
+              <span style="margin-bottom: 4px"
+                >${msg("Applet not found.")}</span
+              >
+              <span style="margin-bottom: 16px"
+                >${msg(
+                  "Join a group with this applet installed it if you want to see this view."
+                )}</span
+              >
+            </div></sl-card
+          >
+        </div>
+      `;
+
     if (!isInstalled) {
       return html`
         <div class="row center-content" style="flex: 1">
@@ -85,8 +102,10 @@ export class GroupViewEl extends LitElement {
                 @click=${async () => {
                   this.installing = true;
                   try {
-                    await this.groupStore.installApplet(this.appletHash);
-                    await this.groupStore.installedApps.reload();
+                    await this.weStore.appletBundlesStore.installApplet(
+                      this.appletHash,
+                      applet
+                    );
                   } catch (e) {
                     notifyError(msg("Couldn't install applet"));
                     console.error(e);
@@ -101,23 +120,19 @@ export class GroupViewEl extends LitElement {
       `;
     }
 
-    const appletInstalledAppId = appletAppIdFromApplet(applet.entry);
+    // TODO: change this when personas and profiles is integrated
+    const groupStore = Array.from(groupsStores.values())[0];
 
     const renderView: RenderView = {
-      type: "group-view",
-      groupProfile,
-      groupId: this.groupStore.groupDnaHash,
+      type: "applet-view",
       appletId: this.appletHash,
-      appletInstalledAppId,
       profilesAppId: this.weStore.conductorInfo.we_app_id,
-      profilesRoleName: this.groupStore.roleName,
+      profilesRoleName: groupStore.roleName,
       view: this.view,
     };
     return html`
       <view-frame
         .renderView=${renderView}
-        .appletInstalledAppId=${appletInstalledAppId}
-        .groupDnaHash=${this.groupStore.groupDnaHash}
         .appletHash=${this.appletHash}
         style="flex: 1"
       ></view-frame>

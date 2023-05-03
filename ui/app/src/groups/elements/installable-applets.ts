@@ -9,7 +9,7 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
-import { InstallAppletDialog } from "./install-applet-bundle-dialog.js";
+import { InstallAppletBundleDialog } from "./install-applet-bundle-dialog.js";
 import "./install-applet-bundle-dialog.js";
 
 import { AppletBundleMetadata } from "../../types.js";
@@ -29,11 +29,11 @@ export class InstallableApplets extends LitElement {
 
   _installableApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.appletsStore.appletBundles
+    () => this.groupStore.appletBundlesStore.appletBundles
   );
 
   @query("#applet-dialog")
-  _appletDialog!: InstallAppletDialog;
+  _appletDialog!: InstallAppletBundleDialog;
 
   renderInstallableApplet(appletInfo: AppletBundleMetadata) {
     return html`

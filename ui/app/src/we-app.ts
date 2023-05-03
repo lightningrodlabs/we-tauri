@@ -20,6 +20,7 @@ import {
 } from "./tauri.js";
 import { initAppClient } from "./utils.js";
 import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
+import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 
 type State =
   | { state: "loading" }
@@ -76,7 +77,7 @@ export class WeApp extends LitElement {
       adminWebsocket,
       appAgentWebsocket,
       info,
-      devhubClient
+      new AppletBundlesStore(devhubClient, adminWebsocket)
     );
 
     this.state = { state: "running" };

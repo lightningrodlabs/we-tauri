@@ -9,6 +9,7 @@ import {
   RenderView,
 } from "applet-messages";
 import {
+  AppletInfo,
   EntryInfo,
   EntryLocationAndInfo,
   Hrl,
@@ -16,12 +17,10 @@ import {
 } from "@lightningrodlabs/we-applet";
 import { AppOpenViews } from "./layout/types";
 import { signZomeCallTauri } from "./tauri";
-import { WeStore } from "./we-store";
+import { pipe, WeStore } from "./we-store";
 
 export class AppletHost {
   constructor(
-    public appletInstalledAppId: string,
-    public groupDnaHash: DnaHash,
     public appletHash: EntryHash,
     public iframe: HTMLIFrameElement,
     public weStore: WeStore,
@@ -37,13 +36,11 @@ export class AppletHost {
   }
 
   async renderView(renderView: RenderView) {
-    const attachmentTypesByGroup = await toPromise(
-      this.weStore.groupAttachmentTypes
-    );
+    const attachmentTypes = await toPromise(this.weStore.allAttachmentTypes);
     return this.postMessage({
       type: "render-view",
       message: renderView,
-      attachmentTypesByGroup,
+      attachmentTypes,
     });
   }
 
@@ -53,15 +50,8 @@ export class AppletHost {
     entryDefId: string,
     hrl: Hrl
   ): Promise<EntryInfo | undefined> {
-    const groupStore = await toPromise(
-      this.weStore.groups.get(this.groupDnaHash)
-    );
-    const groupProfile = await toPromise(groupStore.groupProfile);
-
     return this.postMessage({
       type: "get-entry-info",
-      groupId: this.groupDnaHash,
-      groupProfile: groupProfile!,
       appletId: this.appletHash,
       roleName,
       integrityZomeName,
@@ -100,7 +90,7 @@ export class AppletHost {
 
       const message: ParentToAppletMessage = {
         request,
-        appletInstalledAppId: this.appletInstalledAppId,
+        appletId: this.appletHash,
         appPort: this.weStore.conductorInfo.app_port,
       };
 
@@ -117,16 +107,15 @@ export class AppletHost {
     switch (message.type) {
       case "open-view":
         switch (message.request.type) {
-          case "group-block":
-            return this.openViews?.openGroupBlock(
-              message.request.groupId,
+          case "applet-block":
+            return this.openViews?.openAppletBlock(
               message.request.appletId,
               message.request.block,
               message.request.context
             );
-          case "cross-group-block":
-            return this.openViews?.openCrossGroupBlock(
-              message.request.appletId,
+          case "cross-applet-block":
+            return this.openViews?.openCrossAppletBlock(
+              message.request.appletBundleId,
               message.request.block,
               message.request.context
             );
@@ -142,10 +131,8 @@ export class AppletHost {
 
         const promises: Array<Promise<Array<HrlWithContext>>> = [];
 
-        for (const groupHosts of Array.from(hosts.values())) {
-          for (const host of Array.from(groupHosts.values())) {
-            promises.push(host.search(message.filter));
-          }
+        for (const host of Array.from(hosts.values())) {
+          promises.push(host.search(message.filter));
         }
 
         const hrlsWithApplets = await Promise.all(promises);
@@ -153,6 +140,29 @@ export class AppletHost {
         const hrls = ([] as Array<HrlWithContext>).concat(...hrlsWithApplets);
 
         return hrls;
+      case "get-applet-info":
+        const applet = await toPromise(
+          this.weStore.applets.get(message.appletId)
+        );
+        if (!applet) return undefined;
+        const groupsForApplet = await toPromise(
+          this.weStore.groupsForApplet.get(message.appletId)
+        );
+
+        return {
+          appletBundleId: applet.applet.devhub_happ_release_hash,
+          appletName: applet.applet.custom_name,
+          groupsIds: Array.from(groupsForApplet.keys()),
+        } as AppletInfo;
+      case "get-group-profile":
+        const groupProfile = await toPromise(
+          pipe(
+            this.weStore.groups.get(message.groupId),
+            (groupStore) => groupStore.groupProfile
+          )
+        );
+
+        return groupProfile;
       case "get-entry-info":
         const dnaHash = message.hrl[0];
 
@@ -168,27 +178,8 @@ export class AppletHost {
 
         if (!entryInfo) return undefined;
 
-        const applet = await toPromise(
-          this.weStore.appletsInstancesByGroup
-            .get(location.dnaLocation.groupDnaHash)
-            .get(location.dnaLocation.appletHash)
-        );
-
-        if (!applet) return undefined;
-
-        const groupStore = await toPromise(
-          this.weStore.groups.get(location.dnaLocation.groupDnaHash)
-        );
-
-        const groupProfile = await toPromise(groupStore.groupProfile);
-
-        if (!groupProfile) return undefined;
-
         const entryAndAppletInfo: EntryLocationAndInfo = {
-          groupId: location.dnaLocation.groupDnaHash,
-          groupProfile,
           appletId: location.dnaLocation.appletHash,
-          appletName: applet.entry.custom_name,
           entryInfo,
         };
 
@@ -197,9 +188,10 @@ export class AppletHost {
         return signZomeCallTauri(message.request);
       case "create-attachment":
         host = await toPromise(
-          this.weStore.appletsHosts
-            .get(message.request.groupId)
-            .get(message.request.appletId)
+          pipe(
+            this.weStore.applets.get(message.request.appletId),
+            (appletStore) => appletStore!.host
+          )
         );
 
         return host.createAttachment(

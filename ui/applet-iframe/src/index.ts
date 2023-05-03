@@ -5,35 +5,30 @@ import {
   CallZomeRequestSigned,
   decodeHashFromBase64,
   DnaHash,
-  DnaHashB64,
+  encodeHashToBase64,
   EntryHash,
+  EntryHashB64,
 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
 import { ProfilesClient } from "@holochain-open-dev/profiles";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import {
   AppletToParentRequest,
   RenderView,
-  InternalGroupAttachmentTypes,
   InternalAttachmentType,
   ParentToAppletMessage,
 } from "applet-messages";
 import {
-  AppletAttachmentTypes,
   AttachmentType,
-  GroupAttachmentTypes,
-  GroupWithApplets,
+  GroupProfile,
   WeApplet,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 
-async function setupAppletClient(
-  appPort: number,
-  appletInstalledAppId: string
-): Promise<AppAgentClient> {
+async function setupAppAgentClient(appPort: number, installedAppId: string) {
   const appletClient = await AppAgentWebsocket.connect(
     `ws://localhost:${appPort}`,
-    appletInstalledAppId
+    installedAppId
   );
 
   appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
@@ -47,12 +42,19 @@ async function setupAppletClient(
   return appletClient;
 }
 
+async function setupAppletClient(
+  appPort: number,
+  appletId: EntryHash
+): Promise<AppAgentClient> {
+  return setupAppAgentClient(appPort, encodeHashToBase64(appletId));
+}
+
 async function setupProfilesClient(
   appPort: number,
   appId: string,
   roleName: string
 ) {
-  const client = await setupAppletClient(appPort, appId);
+  const client = await setupAppAgentClient(appPort, appId);
 
   return new ProfilesClient(client, roleName);
 }
@@ -69,78 +71,62 @@ async function handleRenderViewMessage(
   appPort: number,
   message: RenderView,
   internalAttachmentTypesByGroups: Record<
-    DnaHashB64,
-    InternalGroupAttachmentTypes
+    EntryHashB64,
+    Record<string, InternalAttachmentType>
   >
 ) {
-  const attachmentTypesByGroup = new HoloHashMap<
-    DnaHash,
-    GroupAttachmentTypes
+  const attachmentTypes = new HoloHashMap<
+    EntryHash,
+    Record<string, AttachmentType>
   >();
 
-  for (const [groupId, groupAttachmentTypes] of Object.entries(
+  for (const [appletId, appletAttachmentTypes] of Object.entries(
     internalAttachmentTypesByGroups
   )) {
-    const attachmentTypesByApplet = new HoloHashMap<
-      EntryHash,
-      AppletAttachmentTypes
-    >();
-
-    for (const [appletId, appletAttachmentTypes] of Object.entries(
-      groupAttachmentTypes.attachmentTypesByApplet
+    const attachmentTypesForThisApplet: Record<string, AttachmentType> = {};
+    for (const [name, attachmentType] of Object.entries(
+      appletAttachmentTypes
     )) {
-      const attachmentTypes: Record<string, AttachmentType> = {};
-      for (const [name, attachmentType] of Object.entries(
-        appletAttachmentTypes.attachmentTypes
-      )) {
-        attachmentTypes[name] = {
-          label: attachmentType.label,
-          icon_src: attachmentType.icon_src,
-          create: (attachToHrl) =>
-            postMessage({
-              type: "create-attachment",
-              request: {
-                groupId: decodeHashFromBase64(groupId),
-                appletId: decodeHashFromBase64(appletId),
-                attachmentType: name,
-                attachToHrl,
-              },
-            }),
-        };
-      }
-
-      attachmentTypesByApplet.set(decodeHashFromBase64(appletId), {
-        appletName: appletAttachmentTypes.appletName,
-        attachmentTypes,
-      });
+      attachmentTypesForThisApplet[name] = {
+        label: attachmentType.label,
+        icon_src: attachmentType.icon_src,
+        create: (attachToHrl) =>
+          postMessage({
+            type: "create-attachment",
+            request: {
+              appletId: decodeHashFromBase64(appletId),
+              attachmentType: name,
+              attachToHrl,
+            },
+          }),
+      };
     }
 
-    attachmentTypesByGroup.set(decodeHashFromBase64(groupId), {
-      groupProfile: groupAttachmentTypes.groupProfile,
-      attachmentTypesByApplet,
-    });
+    attachmentTypes.set(
+      decodeHashFromBase64(appletId),
+      attachmentTypesForThisApplet
+    );
   }
 
   const weServices: WeServices = {
-    attachmentTypesByGroup,
+    attachmentTypes,
     openViews: {
-      openGroupBlock: (groupId, appletId, block, context) =>
+      openAppletBlock: (appletId, block, context) =>
         postMessage({
           type: "open-view",
           request: {
-            type: "group-block",
-            groupId,
+            type: "applet-block",
             appletId,
             block,
             context,
           },
         }),
-      openCrossGroupBlock: (appletId, block, context) =>
+      openCrossAppletBlock: (appletBundleId, block, context) =>
         postMessage({
           type: "open-view",
           request: {
-            type: "cross-group-block",
-            appletId,
+            type: "cross-applet-block",
+            appletBundleId,
             block,
             context,
           },
@@ -155,10 +141,20 @@ async function handleRenderViewMessage(
           },
         }),
     },
-    getEntryInfo: (hrl) =>
+    entryInfo: (hrl) =>
       postMessage({
         type: "get-entry-info",
         hrl,
+      }),
+    appletInfo: (appletId) =>
+      postMessage({
+        type: "get-applet-info",
+        appletId,
+      }),
+    groupProfile: (groupId) =>
+      postMessage({
+        type: "get-group-profile",
+        groupId,
       }),
     search: (filter: string) =>
       postMessage({
@@ -167,89 +163,64 @@ async function handleRenderViewMessage(
       }),
   };
 
-  if (message.type === "group-view") {
+  if (message.type === "applet-view") {
     let profilesClient = await setupProfilesClient(
       appPort,
-      message.profilesAppId,
-      message.profilesRoleName
+      message.profilesLocation.profilesAppId,
+      message.profilesLocation.profilesRoleName
     );
-    let client = await setupAppletClient(appPort, message.appletInstalledAppId);
+    let client = await setupAppletClient(appPort, message.appletId);
 
     switch (message.view.type) {
       case "main":
         applet
-          .groupViews(
-            client,
-            message.groupId,
-            message.appletId,
-            { profilesClient, groupProfile: message.groupProfile },
-            weServices
-          )
+          .appletViews(client, message.appletId, profilesClient, weServices)
           .main(document.body);
         break;
       case "block":
         applet
-          .groupViews(
-            client,
-            message.groupId,
-            message.appletId,
-            { profilesClient, groupProfile: message.groupProfile },
-            weServices
-          )
+          .appletViews(client, message.appletId, profilesClient, weServices)
           .blocks[message.view.block](document.body, message.view.context);
         break;
 
       case "entry":
         applet
-          .groupViews(
-            client,
-            message.groupId,
-            message.appletId,
-            { profilesClient, groupProfile: message.groupProfile },
-            weServices
-          )
+          .appletViews(client, message.appletId, profilesClient, weServices)
           .entries[message.view.role][message.view.zome][
             message.view.entryType
           ].view(document.body, message.view.hrl, message.view.context);
         break;
     }
   } else {
-    const appletsByGroup: HoloHashMap<DnaHash, GroupWithApplets> =
-      new HoloHashMap();
+    const applets: EntryHashMap<{
+      appletClient: AppAgentClient;
+      profilesClient: ProfilesClient;
+    }> = new HoloHashMap();
 
-    for (const [groupId, groupWithApplets] of Object.entries(
-      message.appletsByGroup
-    )) {
-      const applets: HoloHashMap<EntryHash, AppAgentClient> = new HoloHashMap();
-      for (const [appletId, appletInstalledAppId] of Object.entries(
-        groupWithApplets.applets
-      )) {
-        applets.set(
-          decodeHashFromBase64(appletId),
-          await setupAppletClient(appPort, appletInstalledAppId)
-        );
-      }
-
-      appletsByGroup.set(decodeHashFromBase64(groupId), {
-        applets,
-        groupServices: {
-          groupProfile: groupWithApplets.groupProfile,
-          profilesClient: await setupProfilesClient(
-            appPort,
-            groupWithApplets.profilesAppId,
-            groupWithApplets.profilesRoleName
-          ),
-        },
+    for (const [
+      appletId,
+      { profilesAppId, profilesRoleName },
+    ] of Object.entries(message.applets)) {
+      applets.set(decodeHashFromBase64(appletId), {
+        appletClient: await setupAppletClient(
+          appPort,
+          decodeHashFromBase64(appletId)
+        ),
+        profilesClient: await setupProfilesClient(
+          appPort,
+          profilesAppId,
+          profilesRoleName
+        ),
       });
     }
 
     switch (message.view.type) {
       case "main":
-        applet.crossGroupViews(appletsByGroup, weServices).main(document.body);
+        applet.crossAppletViews(applets, weServices).main(document.body);
         break;
       case "block":
         applet
-          .crossGroupViews(appletsByGroup, weServices)
+          .crossAppletViews(applets, weServices)
           .blocks[message.view.block](document.body, message.view.context);
         break;
     }
@@ -262,10 +233,7 @@ let client: AppAgentClient | undefined;
 async function handleMessage(message: ParentToAppletMessage) {
   if (!applet) applet = await fetchApplet();
   if (!client && message.request.type !== "render-view")
-    client = await setupAppletClient(
-      message.appPort,
-      message.appletInstalledAppId
-    );
+    client = await setupAppletClient(message.appPort, message.appletId);
 
   switch (message.request.type) {
     case "render-view":
@@ -273,18 +241,14 @@ async function handleMessage(message: ParentToAppletMessage) {
         applet,
         message.appPort,
         message.request.message,
-        message.request.attachmentTypesByGroup
+        message.request.attachmentTypes
       );
     case "get-entry-info":
       return applet!
-        .groupViews(
+        .appletViews(
           client!,
-          message.request.groupId,
           message.request.appletId,
-          {
-            profilesClient: null as any,
-            groupProfile: message.request.groupProfile,
-          },
+          null as any,
           null as any
         )
         .entries[message.request.roleName][message.request.integrityZomeName][

@@ -1,25 +1,20 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import { RenderView } from "applet-messages";
-import { weStyles } from "../../shared-styles.js";
+import { hashProperty } from "@holochain-open-dev/elements";
+import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
+
+import { RenderView } from "applet-messages";
+
+import { weStyles } from "../../shared-styles.js";
 import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { AppletHost } from "../../applet-host.js";
-import { hashProperty } from "@holochain-open-dev/elements";
-import { DnaHash } from "@holochain/client";
-import { EntryHash } from "@holochain/client";
 
 @customElement("view-frame")
 export class ViewFrame extends LitElement {
-  @property()
-  appletInstalledAppId!: string;
-
-  @property(hashProperty("group-dna-hash"))
-  groupDnaHash!: DnaHash;
-
   @property(hashProperty("applet-hash"))
   appletHash!: EntryHash;
 
@@ -39,8 +34,6 @@ export class ViewFrame extends LitElement {
 
   async connect() {
     this.host = new AppletHost(
-      this.appletInstalledAppId,
-      this.groupDnaHash,
       this.appletHash,
       this.iframe,
       this.weStore,
@@ -53,7 +46,7 @@ export class ViewFrame extends LitElement {
   render() {
     return html`<iframe
       id="view-frame"
-      src="applet://${this.appletInstalledAppId}"
+      src="applet://${encodeHashToBase64(this.appletHash)}"
       @load=${() => this.connect()}
       style="flex: 1"
     ></iframe>`;

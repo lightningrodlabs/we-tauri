@@ -3,27 +3,28 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   AsyncStatus,
-  join,
+  derived,
   joinAsyncMap,
   lazyLoad,
+  readable,
   Readable,
   retryUntilSuccess,
   toPromise,
   writable,
 } from "@holochain-open-dev/stores";
 import {
-  EntryHashMap,
   HoloHashMap,
   LazyHoloHashMap,
   mapValues,
+  pickBy,
+  slice,
 } from "@holochain-open-dev/utils";
-import { DnaHashB64 } from "@holochain/client";
+import { decodeHashFromBase64, HoloHash } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
   ActionHash,
   AdminWebsocket,
-  AppAgentClient,
   AppAgentWebsocket,
   CellType,
   ClonedCell,
@@ -33,21 +34,15 @@ import {
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
-import {
-  InternalAppletAttachmentTypes,
-  InternalAttachmentType,
-  InternalGroupAttachmentTypes,
-  InternalGroupWithApplets,
-} from "../../applet-messages/dist";
-import { AppletHost } from "./applet-host";
+import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store";
 import { GroupClient } from "./groups/group-client";
-import { appletAppIdFromApplet, GroupStore } from "./groups/group-store";
-import { Applet } from "./groups/types";
+import { GroupStore } from "./groups/group-store";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
-import { findAppForDnaHash, findAppletForAppInfo } from "./utils.js";
+import { findAppForDnaHash } from "./utils.js";
+import { AppletStore } from "./applets/applet-store";
 
 export function manualReloadStore<T>(
   fn: () => Promise<T>
@@ -79,17 +74,94 @@ export function alwaysSubscribed<T>(readable: Readable<T>): Readable<T> {
   return readable;
 }
 
-export class WeStore {
-  public appletsStore: AppletBundlesStore;
+export function pipe<T, U>(
+  store: AsyncReadable<T>,
+  fn1: (arg: T) => AsyncReadable<U>
+): AsyncReadable<U>;
+export function pipe<T, U, V>(
+  store: AsyncReadable<T>,
+  fn1: (arg: T) => AsyncReadable<U>,
+  fn2: (arg: U) => AsyncReadable<V>
+): AsyncReadable<V>;
+export function pipe<T, U, V, W>(
+  store: AsyncReadable<T>,
+  fn1: (arg: T) => AsyncReadable<U>,
+  fn2: (arg: U) => AsyncReadable<V>,
+  fn3: (arg: V) => AsyncReadable<W>
+): AsyncReadable<W>;
+export function pipe<T, U, V, W>(
+  store: AsyncReadable<T>,
+  fn1: (arg: T) => AsyncReadable<U>,
+  fn2?: (arg: U) => AsyncReadable<V>,
+  fn3?: (arg: V) => AsyncReadable<W>
+): AsyncReadable<W> {
+  let s: AsyncReadable<any> = asyncDeriveStore(store, fn1);
 
+  if (fn2) {
+    s = asyncDeriveStore(s, fn2);
+  }
+  if (fn3) {
+    s = asyncDeriveStore(s, fn3);
+  }
+
+  return s;
+}
+
+export function race<T>(stores: Array<AsyncReadable<T>>): AsyncReadable<T> {
+  let found: T | undefined = undefined;
+  return derived(stores, (values) => {
+    if (found)
+      return {
+        status: "complete",
+        value: found,
+      } as AsyncStatus<T>;
+
+    const firstCompleted = values.find((v) => v.status === "complete");
+    if (firstCompleted) {
+      found = (firstCompleted as any).value as T;
+      return {
+        status: "complete",
+        value: found,
+      } as AsyncStatus<T>;
+    }
+
+    return {
+      status: "pending",
+    } as AsyncStatus<T>;
+  });
+}
+
+export function completed<T>(v: T): AsyncReadable<T> {
+  return readable<AsyncStatus<T>>({
+    status: "complete",
+    value: v,
+  });
+}
+
+export function asyncDeriveAndJoin<T, U>(
+  store: AsyncReadable<T>,
+  fn: (arg: T) => AsyncReadable<U>
+): AsyncReadable<[T, U]> {
+  return asyncDeriveStore(store, (v) => asyncDerived(fn(v), (u) => [v, u]));
+}
+
+export function getAll<H extends HoloHash, T>(
+  hashes: AsyncReadable<Array<H>>,
+  values: LazyHoloHashMap<H, AsyncReadable<T | undefined>>
+): AsyncReadable<ReadonlyMap<H, T>> {
+  return asyncDeriveStore(
+    hashes,
+    (h) => joinAsyncMap(slice(values, h)) as AsyncReadable<ReadonlyMap<H, T>>
+  );
+}
+
+export class WeStore {
   constructor(
     public adminWebsocket: AdminWebsocket,
     public appAgentWebsocket: AppAgentWebsocket,
     public conductorInfo: ConductorInfo,
-    public devhubClient: AppAgentClient
-  ) {
-    this.appletsStore = new AppletBundlesStore(devhubClient, adminWebsocket);
-  }
+    public appletBundlesStore: AppletBundlesStore
+  ) {}
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
@@ -166,13 +238,28 @@ export class WeStore {
       if (!groupRoleName) throw new Error("Group not found yet");
 
       return new GroupStore(
-        this.adminWebsocket,
         this.appAgentWebsocket,
         groupDnaHash,
         groupRoleName,
-        this.appletsStore
+        this.appletBundlesStore
       );
     })
+  );
+
+  applets = new LazyHoloHashMap((appletHash: EntryHash) =>
+    pipe(
+      this.groupsForApplet.get(appletHash),
+      (groups) =>
+        race(
+          Array.from(groups.values()).map((groupStore) =>
+            groupStore.applets.get(appletHash)
+          )
+        ),
+      (applet) =>
+        completed(
+          applet ? new AppletStore(appletHash, applet, this) : undefined
+        )
+    )
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>
@@ -181,39 +268,46 @@ export class WeStore {
     )
   );
 
+  allInstalledApplets = pipe(
+    this.appletBundlesStore.installedApplets,
+    (appletsIds) =>
+      joinAsyncMap(slice(this.applets, appletsIds)) as AsyncReadable<
+        ReadonlyMap<EntryHash, AppletStore>
+      >
+  );
+
   allGroupsProfiles = asyncDeriveStore(this.allGroups, (groupsStores) =>
     joinAsyncMap(mapValues(groupsStores, (store) => store.groupProfile))
   );
 
-  allAppletsInstancesByGroup = asyncDeriveStore(this.allGroups, (allGroups) =>
-    joinAsyncMap(mapValues(allGroups, (store) => store.registeredApplets))
-  );
-
-  appletsInstancesByGroup = new LazyHoloHashMap(
-    (groupDnaHash: DnaHash) =>
-      new LazyHoloHashMap((appletHash: EntryHash) =>
-        asyncDeriveStore(this.groups.get(groupDnaHash), (groupStore) =>
-          groupStore.applets.get(appletHash)
-        )
-      )
+  groupsForApplet = new LazyHoloHashMap((appletHash: EntryHash) =>
+    pipe(
+      this.allGroups,
+      (allGroups) =>
+        joinAsyncMap(mapValues(allGroups, (store) => store.allApplets)),
+      (appletsByGroup) => {
+        const groupDnaHashes = Array.from(appletsByGroup.entries())
+          .filter(([_groupDnaHash, appletsHashes]) =>
+            appletsHashes.find(
+              (hash) => hash.toString() === appletHash.toString()
+            )
+          )
+          .map(([groupDnaHash, _]) => groupDnaHash);
+        return joinAsyncMap(slice(this.groups, groupDnaHashes));
+      }
+    )
   );
 
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
     asyncDerived(
-      this.allAppletsInstancesByGroup,
-      async (appletsInstancesByGroup) => {
-        const apps = await this.adminWebsocket.listApps({});
-        const app = findAppForDnaHash(apps, dnaHash);
+      this.appletBundlesStore.installedApps,
+      async (installedApps) => {
+        const app = findAppForDnaHash(installedApps, dnaHash);
 
         if (!app) throw new Error("The given dna is not installed");
 
-        const { groupDnaHash, appletHash } = findAppletForAppInfo(
-          appletsInstancesByGroup,
-          app.appInfo
-        );
         return {
-          groupDnaHash,
-          appletHash,
+          appletHash: decodeHashFromBase64(app.appInfo.installed_app_id),
           appInfo: app.appInfo,
           roleName: app.roleName,
         } as DnaLocation;
@@ -246,202 +340,92 @@ export class WeStore {
   entryInfo = new LazyHoloHashMap(
     (dnaHash: DnaHash) =>
       new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
-        asyncDeriveStore(
-          this.hrlLocations.get(dnaHash).get(hash),
-          (location) => {
-            if (!location) return lazyLoad(async () => undefined);
-
-            return asyncDerived(
-              this.appletsHosts
-                .get(location.dnaLocation.groupDnaHash)
-                .get(location.dnaLocation.appletHash),
-              (host) =>
-                host.getEntryInfo(
-                  location.dnaLocation.roleName,
-                  location.entryDefLocation.integrity_zome,
-                  location.entryDefLocation.entry_def,
-                  [dnaHash, hash]
-                )
-            );
-          }
+        pipe(this.hrlLocations.get(dnaHash).get(hash), (location) =>
+          location
+            ? pipe(
+                this.applets.get(location.dnaLocation.appletHash),
+                (appletStore) => appletStore!.host,
+                (host) =>
+                  lazyLoad(() =>
+                    host.getEntryInfo(
+                      location.dnaLocation.roleName,
+                      location.entryDefLocation.integrity_zome,
+                      location.entryDefLocation.entry_def,
+                      [dnaHash, hash]
+                    )
+                  )
+              )
+            : completed(undefined)
         )
       )
   );
 
-  appletsByGroup = new LazyHoloHashMap(
+  appletsForBundleHash = new LazyHoloHashMap(
     (
       appBundleHash: EntryHash // appletid
     ) =>
-      asyncDerived(
-        join([
-          this.allGroups,
-          this.allGroupsProfiles,
-          this.allAppletsInstancesByGroup,
-        ] as [
-          AsyncReadable<HoloHashMap<DnaHash, GroupStore>>,
-          AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
-          AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<Applet>>>
-        ]),
-        async ([groupsStores, groupsProfiless, groupApplets]) => {
-          const appletsByGroup: HoloHashMap<DnaHash, InternalGroupWithApplets> =
-            new HoloHashMap();
-          let appletInstalledAppId: string;
-
-          for (const [groupDnaHash, instances] of Array.from(
-            groupApplets.entries()
-          )) {
-            const groupStore = groupsStores.get(groupDnaHash);
-
-            if (instances.size > 0) {
-              appletInstalledAppId = appletAppIdFromApplet(
-                Array.from(instances.values())[0]
-              );
-            }
-
-            const applets: Record<string, string> = {};
-            const instancesForThisApplet = Array.from(
-              instances.entries()
-            ).filter(
-              ([_, i]) =>
-                i.devhub_happ_release_hash.toString() ===
+      pipe(
+        this.allInstalledApplets,
+        (installedApplets) =>
+          completed(
+            pickBy(
+              installedApplets,
+              (appletStore) =>
+                appletStore.applet.devhub_happ_release_hash.toString() ===
                 appBundleHash.toString()
-            );
+            )
+          ),
+        (appletsForThisBundleHash) =>
+          joinAsyncMap(
+            mapValues(appletsForThisBundleHash, (_, appletHash) =>
+              this.groupsForApplet.get(appletHash)
+            )
+          ),
+        (groupsByApplets) => {
+          const appletsB64: Record<EntryHashB64, ProfilesLocation> = {};
 
-            for (const [appletHash, instance] of instancesForThisApplet) {
-              applets[encodeHashToBase64(appletHash)] =
-                appletAppIdFromApplet(instance);
-            }
-
-            appletsByGroup.set(groupDnaHash, {
-              applets,
-              groupId: groupDnaHash,
-              groupProfile: groupsProfiless.get(groupDnaHash),
+          for (const [appletHash, groups] of Array.from(
+            groupsByApplets.entries()
+          )) {
+            appletsB64[encodeHashToBase64(appletHash)] = {
               profilesAppId: this.conductorInfo.we_app_id,
-              profilesRoleName: groupStore.roleName,
-            });
-          }
-
-          return {
-            appletsByGroup,
-            appletInstalledAppId: appletInstalledAppId!,
-          };
-        }
-      )
-  );
-
-  appletsHosts = new LazyHoloHashMap(
-    (groupDnaHash: DnaHash) =>
-      new LazyHoloHashMap((appletHash: EntryHash) =>
-        asyncDerived(
-          this.appletsInstancesByGroup.get(groupDnaHash).get(appletHash),
-          async (applet) => {
-            const appletInstalledAppId = appletAppIdFromApplet(applet!.entry);
-
-            const origin = `applet://${appletInstalledAppId}`;
-            const iframe = document.createElement("iframe");
-            iframe.src = origin;
-            iframe.style.display = "none";
-            document.body.appendChild(iframe);
-
-            return new Promise<AppletHost>((resolve) => {
-              iframe.onload = () => {
-                resolve(
-                  new AppletHost(
-                    appletInstalledAppId,
-                    groupDnaHash,
-                    appletHash,
-                    iframe,
-                    this,
-                    undefined
-                  )
-                );
-              };
-            });
-          }
-        )
-      )
-  );
-
-  allAppletsHosts = asyncDeriveStore(
-    this.allAppletsInstancesByGroup,
-    async (groupApplets) => {
-      return joinAsyncMap(
-        mapValues(groupApplets, (appletsInGroup, groupDnaHash) =>
-          joinAsyncMap(
-            mapValues(appletsInGroup, (_, appletHash) =>
-              this.appletsHosts.get(groupDnaHash).get(appletHash)
-            )
-          )
-        )
-      );
-    }
-  );
-
-  attachmentTypesByGroup = asyncDeriveStore(
-    this.allAppletsHosts,
-    async (appletsHostsByGroupAndApplet) => {
-      return joinAsyncMap(
-        mapValues(appletsHostsByGroupAndApplet, (hostsByApplet) =>
-          joinAsyncMap(
-            mapValues(hostsByApplet, (host) =>
-              lazyLoad(() => host.getAttachmentTypes())
-            )
-          )
-        )
-      );
-    }
-  );
-
-  groupAttachmentTypes: AsyncReadable<
-    Record<DnaHashB64, InternalGroupAttachmentTypes>
-  > = alwaysSubscribed(
-    asyncDerived(
-      join([
-        this.allAppletsInstancesByGroup,
-        this.allGroupsProfiles,
-        this.attachmentTypesByGroup,
-      ] as [
-        AsyncReadable<HoloHashMap<DnaHash, EntryHashMap<Applet>>>,
-        AsyncReadable<HoloHashMap<DnaHash, GroupProfile>>,
-        AsyncReadable<
-          HoloHashMap<
-            DnaHash,
-            EntryHashMap<Record<string, InternalAttachmentType>>
-          >
-        >
-      ]),
-      ([appletsByGroup, groupsProfiles, attachmentTypesByGroup]) => {
-        const groupAttachmentTypes: Record<
-          DnaHashB64,
-          InternalGroupAttachmentTypes
-        > = {};
-
-        for (const [groupDnaHash, attachmentsByApplet] of Array.from(
-          attachmentTypesByGroup.entries()
-        )) {
-          const groupProfile = groupsProfiles.get(groupDnaHash);
-          if (groupProfile) {
-            const internalAppletAttachmentTypes: Record<
-              EntryHashB64,
-              InternalAppletAttachmentTypes
-            > = {};
-            for (const [appletHash, appletAttachmentTypes] of Array.from(
-              attachmentsByApplet.entries()
-            )) {
-              internalAppletAttachmentTypes[encodeHashToBase64(appletHash)] = {
-                attachmentTypes: appletAttachmentTypes,
-                appletName: appletsByGroup.get(groupDnaHash).get(appletHash)
-                  .custom_name,
-              };
-            }
-            groupAttachmentTypes[encodeHashToBase64(groupDnaHash)] = {
-              groupProfile,
-              attachmentTypesByApplet: internalAppletAttachmentTypes,
+              profilesRoleName: Array.from(groups.values())[0].roleName,
             };
           }
+          return completed(appletsB64);
+        }
+      )
+  );
+
+  allAppletsHosts = pipe(this.allInstalledApplets, (applets) =>
+    joinAsyncMap(mapValues(applets, (appletStore) => appletStore.host))
+  );
+
+  allAttachmentTypes: AsyncReadable<
+    Record<EntryHashB64, Record<string, InternalAttachmentType>>
+  > = alwaysSubscribed(
+    pipe(
+      this.allInstalledApplets,
+      (installedApplets) =>
+        joinAsyncMap(
+          mapValues(
+            installedApplets,
+            (appletStore) => appletStore.attachmentTypes
+          )
+        ),
+      (allAttachmentTypes) => {
+        const attachments: Record<
+          EntryHashB64,
+          Record<string, InternalAttachmentType>
+        > = {};
+
+        for (const [appletHash, appletAttachments] of Array.from(
+          allAttachmentTypes.entries()
+        )) {
+          attachments[encodeHashToBase64(appletHash)] = appletAttachments;
         }
 
-        return groupAttachmentTypes;
+        return completed(attachments);
       }
     )
   );
