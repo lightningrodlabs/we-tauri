@@ -107,8 +107,15 @@ export function pipe<T, U, V, W>(
   return s;
 }
 
+export function completed<T>(v: T): AsyncReadable<T> {
+  return readable<AsyncStatus<T>>({
+    status: "complete",
+    value: v,
+  });
+}
+
 export function race<T>(stores: Array<AsyncReadable<T>>): AsyncReadable<T> {
-  let found: T | undefined = undefined;
+  let found: T | undefined;
   return derived(stores, (values) => {
     if (found)
       return {
@@ -128,13 +135,6 @@ export function race<T>(stores: Array<AsyncReadable<T>>): AsyncReadable<T> {
     return {
       status: "pending",
     } as AsyncStatus<T>;
-  });
-}
-
-export function completed<T>(v: T): AsyncReadable<T> {
-  return readable<AsyncStatus<T>>({
-    status: "complete",
-    value: v,
   });
 }
 

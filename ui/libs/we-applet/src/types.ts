@@ -90,6 +90,11 @@ export interface CrossAppletViews {
   blocks: Record<string, BlockView>;
 }
 
+export interface AppletClients {
+  appletClient: AppAgentClient;
+  profilesClient: ProfilesClient;
+}
+
 export interface WeApplet {
   appletViews: (
     client: AppAgentClient,
@@ -99,10 +104,7 @@ export interface WeApplet {
   ) => AppletViews;
 
   crossAppletViews: (
-    applets: ReadonlyMap<
-      EntryHash,
-      { appletClient: AppAgentClient; profilesClient: ProfilesClient }
-    >,
+    applets: ReadonlyMap<EntryHash, AppletClients>,
     weServices: WeServices
   ) => CrossAppletViews;
 
