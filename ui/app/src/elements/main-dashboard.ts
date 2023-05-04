@@ -17,7 +17,8 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 
-import "./group-sidebar.js";
+import "./groups-sidebar.js";
+import "./applets-sidebar.js";
 import "./join-group-dialog.js";
 import "../layout/dynamic-layout.js";
 import { DynamicLayout } from "../layout/dynamic-layout.js";
@@ -115,46 +116,64 @@ export class MainDashboard extends LitElement {
   render() {
     return html`
       <join-group-dialog></join-group-dialog>
-      <div style="width: 100vw" class="row">
-        <group-sidebar
-          style="flex: 0"
-          .selectedGroupDnaHash=${this.selectedGroupDnaHash}
-          @home-selected=${() => {
-            this.dynamicLayout.openTab({
-              type: "component",
-              componentType: "welcome",
-            });
-          }}
-          @group-selected=${(e: CustomEvent) =>
-            this.openGroup(e.detail.groupDnaHash)}
-          @group-created=${(e: CustomEvent) => {
-            this.openGroup(e.detail.groupDnaHash);
-          }}
-          @applet-selected=${(e: CustomEvent) => {
-            this.dynamicLayout.openTab({
-              type: "component",
-              componentType: "applet-main",
-              componentState: {
-                appletHash: encodeHashToBase64(e.detail.appletHash),
-              },
-            });
-          }}
-        ></group-sidebar>
 
-        <dynamic-layout
-          id="dynamic-layout"
-          .rootItemConfig=${{
-            type: "row",
-            content: [
-              {
+      <div class="row" style="flex: 1">
+        <div class="column">
+          <div class="top-left-corner-bg"></div>
+          <div class="column top-left-corner">
+            <sidebar-button
+              style="border-radius: 50%;"
+              logoSrc="/we_logo.png"
+              tooltipText="Home"
+              @click=${() => {}}
+            ></sidebar-button>
+          </div>
+
+          <groups-sidebar
+            class="left-sidebar"
+            style="flex: 1"
+            .selectedGroupDnaHash=${this.selectedGroupDnaHash}
+            @home-selected=${() => {
+              this.dynamicLayout.openTab({
                 type: "component",
-                title: "Welcome",
                 componentType: "welcome",
-              },
-            ],
-          }}
-          style="flex: 1; min-width: 0;"
-        ></dynamic-layout>
+              });
+            }}
+            @group-selected=${(e: CustomEvent) =>
+              this.openGroup(e.detail.groupDnaHash)}
+            @group-created=${(e: CustomEvent) => {
+              this.openGroup(e.detail.groupDnaHash);
+            }}
+            @applet-selected=${(e: CustomEvent) => {
+              this.dynamicLayout.openTab({
+                type: "component",
+                componentType: "applet-main",
+                componentState: {
+                  appletHash: encodeHashToBase64(e.detail.appletHash),
+                },
+              });
+            }}
+          ></groups-sidebar>
+        </div>
+
+        <div class="column" style="flex: 1">
+          <applets-sidebar class="top-bar"></applets-sidebar>
+
+          <dynamic-layout
+            id="dynamic-layout"
+            .rootItemConfig=${{
+              type: "row",
+              content: [
+                {
+                  type: "component",
+                  title: "Welcome",
+                  componentType: "welcome",
+                },
+              ],
+            }}
+            style="flex: 1; min-width: 0;"
+          ></dynamic-layout>
+        </div>
       </div>
     `;
   }
@@ -166,6 +185,43 @@ export class MainDashboard extends LitElement {
         :host {
           flex: 1;
           display: flex;
+        }
+
+        .top-left-corner-bg {
+          border-style: solid;
+          border-width: 72px 0 0 72px;
+          position: absolute;
+          z-index: 0;
+          border-color: #9ca5e3 #9ca5e3 #9ca5e3 #303f9f;
+        }
+
+        .top-left-corner {
+          align-items: center;
+          background-color: transparent;
+          margin: 4px 4px;
+          height: 54px;
+          z-index: 1;
+        }
+
+        .left-sidebar {
+          overflow-y: auto;
+          z-index: 1;
+        }
+
+        .top-bar {
+          overflow-x: auto;
+          z-index: 0.5;
+          min-height: 64px;
+          align-items: center;
+        }
+
+        groups-sidebar {
+          background-color: #303f9f;
+          width: 64px;
+        }
+
+        applets-sidebar {
+          background-color: #9ca5e3;
         }
       `,
     ];
