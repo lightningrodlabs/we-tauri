@@ -162,7 +162,15 @@ export class InstallAppletBundleDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog id="applet-dialog" .label=${msg("Install Applet")}>
+      <sl-dialog
+        id="applet-dialog"
+        .label=${msg("Install Applet")}
+        @sl-request-close=${(e) => {
+          if (this._installing) {
+            e.preventDefault();
+          }
+        }}
+      >
         <form
           class="column"
           ${onSubmit((f) => this.installApplet(f.custom_name))}

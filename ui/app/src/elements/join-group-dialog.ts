@@ -66,7 +66,15 @@ export class JoinGroupDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog id="dialog" .label=${msg("Join Group")}>
+      <sl-dialog
+        id="dialog"
+        .label=${msg("Join Group")}
+        @sl-request-close=${(e) => {
+          if (this.joining) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div class="column" style="justify-content: center">
           <span>${msg("Do you want to join this group?")}</span>
 

@@ -1,6 +1,5 @@
 import { toPromise } from "@holochain-open-dev/stores";
-import { EntryHash } from "@holochain/client";
-import { DnaHash } from "@holochain/client";
+import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import {
   AppletToParentRequest,
   InternalAttachmentType,
@@ -15,6 +14,7 @@ import {
   Hrl,
   HrlWithContext,
 } from "@lightningrodlabs/we-applet";
+
 import { AppOpenViews } from "./layout/types";
 import { signZomeCallTauri } from "./tauri";
 import { pipe, WeStore } from "./we-store";
@@ -29,14 +29,19 @@ export class AppletHost {
     const childWindow = this.iframe.contentWindow!;
     window.addEventListener("message", async (message) => {
       if (message.source === childWindow) {
-        const result = await this.handleMessage(message.data);
-        message.ports[0].postMessage(result);
+        try {
+          const result = await this.handleMessage(message.data);
+          message.ports[0].postMessage({ type: "success", result });
+        } catch (e) {
+          message.ports[0].postMessage({ type: "error", error: e });
+        }
       }
     });
   }
 
   async renderView(renderView: RenderView) {
     const attachmentTypes = await toPromise(this.weStore.allAttachmentTypes);
+
     return this.postMessage({
       type: "render-view",
       message: renderView,
@@ -85,7 +90,7 @@ export class AppletHost {
   }
 
   private async postMessage<T>(request: ParentToAppletRequest) {
-    return new Promise<T>((resolve) => {
+    return new Promise<T>((resolve, reject) => {
       const { port1, port2 } = new MessageChannel();
 
       const message: ParentToAppletMessage = {
@@ -97,7 +102,11 @@ export class AppletHost {
       this.iframe.contentWindow!.postMessage(message, "*", [port2]);
 
       port1.onmessage = (m) => {
-        resolve(m.data);
+        if (m.data.type === "success") {
+          resolve(m.data.result);
+        } else if (m.data.type === "error") {
+          reject(m.data.error);
+        }
       };
     });
   }
@@ -132,13 +141,28 @@ export class AppletHost {
         const promises: Array<Promise<Array<HrlWithContext>>> = [];
 
         for (const host of Array.from(hosts.values())) {
-          promises.push(host.search(message.filter));
+          promises.push(
+            (async function () {
+              try {
+                const results = await host.search(message.filter);
+                return results;
+              } catch (e) {
+                console.warn(e);
+                return [];
+              }
+            })()
+          );
         }
 
         const hrlsWithApplets = await Promise.all(promises);
 
-        const hrls = ([] as Array<HrlWithContext>).concat(...hrlsWithApplets);
-
+        const hrls = ([] as Array<HrlWithContext>)
+          .concat(
+            ...(hrlsWithApplets.filter((h) => !!h) as Array<
+              Array<HrlWithContext>
+            >)
+          )
+          .filter((h) => !!h);
         return hrls;
       case "get-applet-info":
         const applet = await toPromise(

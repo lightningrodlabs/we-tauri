@@ -49,6 +49,7 @@ export class DynamicLayout extends LitElement {
   weStore!: WeStore;
 
   @provide({ context: openViewsContext })
+  @property()
   openViews: AppOpenViews = {
     openAppletBlock: (appletHash, block, context) => {
       this.goldenLayout.addItemAtLocation(

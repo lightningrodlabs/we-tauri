@@ -21,6 +21,7 @@ import { WeStore } from "../../we-store";
 import { weStoreContext } from "../../context";
 import { Applet } from "../types";
 import { weStyles } from "../../shared-styles";
+import { AppletStore } from "../applet-store";
 
 @customElement("applet-title")
 export class AppletTitle extends LitElement {
@@ -46,27 +47,29 @@ export class AppletTitle extends LitElement {
             )
         ),
       ]) as AsyncReadable<
-        [Applet | undefined, ReadonlyMap<DnaHash, GroupProfile>]
+        [AppletStore | undefined, ReadonlyMap<DnaHash, GroupProfile>]
       >,
     () => [this.appletHash]
   );
 
-  renderTitle([applet, groupsProfiles]: [
-    Applet | undefined,
+  renderTitle([appletStore, groupsProfiles]: [
+    AppletStore | undefined,
     ReadonlyMap<DnaHash, GroupProfile>
   ]) {
-    if (!applet) return html``;
+    if (!appletStore) return html``;
 
     return html` <div class="row">
       ${Array.from(groupsProfiles.values()).map(
         (groupProfile) => html`
-          <sl-icon
+          <img
             .src=${groupProfile.logo_src}
-            style="display: flex; margin-top: 1px; margin-right: 4px"
-          ></sl-icon>
+            style="height: 16px; width: 16px; display: flex; margin-right: 4px"
+          />
         `
       )}
-      <span>${applet.custom_name}</span>
+      <span style="color: rgb(119, 119, 119)"
+        >${appletStore.applet.custom_name}</span
+      >
     </div>`;
   }
 

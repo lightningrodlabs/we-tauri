@@ -18,11 +18,13 @@ export class AttachmentsCard extends LitElement {
   render() {
     return html`
       <sl-card style="flex: 1">
-        <span slot="header">${msg("Attachments")}</span>
+        <div class="row" style="align-items: center" slot="header">
+          <span style="flex: 1" class="title">${msg("Attachments")}</span>
 
-        <attachments-list .hash=${this.hash}></attachments-list>
+          <create-attachment .hash=${this.hash}></create-attachment>
+        </div>
 
-        <create-attachment .hash=${this.hash} slot="footer"></create-attachment>
+        <attachments-list .hash=${this.hash} style="flex: 1"></attachments-list>
       </sl-card>
     `;
   }

@@ -57,10 +57,10 @@ export class GroupHome extends LitElement {
 
         <a
           style="pointer-events: none"
-          href="https://lightningrodlabs.org/we?we-group://${encodeHashToBase64(
+          href="https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
             originalGroupDnaHash
           )}/${networkSeed}"
-          >https://lightningrodlabs.org/we?we-group://${encodeHashToBase64(
+          >https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
             originalGroupDnaHash
           )}/${networkSeed}</a
         >
@@ -95,7 +95,9 @@ export class GroupHome extends LitElement {
                   this.groupProfile.value.value[1],
                   this.groupProfile.value.value[2]
                 )}
-                <group-peers-status></group-peers-status>
+                <group-peers-status
+                  style="margin-left: 16px"
+                ></group-peers-status>
               </div>
               <installable-applets style="flex: 1"></installable-applets>
             </div>

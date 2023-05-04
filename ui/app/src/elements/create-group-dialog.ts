@@ -68,7 +68,15 @@ export class CreateGroupDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog id="dialog" .label=${msg("Create Group")}>
+      <sl-dialog
+        id="dialog"
+        .label=${msg("Create Group")}
+        @sl-request-close=${(e) => {
+          if (this.committing) {
+            e.preventDefault();
+          }
+        }}
+      >
         <form class="column" ${onSubmit((f) => this.createGroup(f))}>
           <div class="row" style="justify-content: center">
             <select-avatar required name="logo_src"></select-avatar>

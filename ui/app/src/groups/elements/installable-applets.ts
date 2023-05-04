@@ -39,9 +39,9 @@ export class InstallableApplets extends LitElement {
     return html`
       <sl-card class="applet-card" style="height: 200px">
         <span slot="header">${appletInfo.title}</span>
-        <div class="column">
+        <div class="column" style="flex: 1">
           <span>${appletInfo.subtitle}</span>
-          <span class="placeholder" style="height: 70px; overflow-y: auto;">
+          <span class="placeholder" style="flex: 1; overflow-y: auto;">
             ${appletInfo.description}
           </span>
           <sl-button

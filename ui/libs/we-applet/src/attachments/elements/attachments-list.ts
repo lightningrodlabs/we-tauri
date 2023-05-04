@@ -79,6 +79,11 @@ export class AttachmentsList extends LitElement {
               @sl-hide=${() => {
                 this._attachmentToRemove = undefined;
               }}
+              @sl-request-close=${(e) => {
+                if (this.removing) {
+                  e.preventDefault();
+                }
+              }}
             >
               <span>${msg("Do you want to remove this attachment?")}</span>
 

@@ -87,8 +87,8 @@ fn main() {
                 .title("We")
                 .build()?;
 
-            if let Err(err) = tauri_plugin_deep_link::register("we-group", move |request| {
-                window.emit("join-group", request).unwrap();
+            if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
+                window.emit("deep-link-received", request).unwrap();
                 window
                     .request_user_attention(Some(UserAttentionType::Informational))
                     .unwrap();

@@ -126,8 +126,10 @@ export class AppletViewEl extends LitElement {
     const renderView: RenderView = {
       type: "applet-view",
       appletId: this.appletHash,
-      profilesAppId: this.weStore.conductorInfo.we_app_id,
-      profilesRoleName: groupStore.roleName,
+      profilesLocation: {
+        profilesAppId: this.weStore.conductorInfo.we_app_id,
+        profilesRoleName: groupStore.roleName,
+      },
       view: this.view,
     };
     return html`

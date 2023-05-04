@@ -422,7 +422,9 @@ export class WeStore {
         for (const [appletHash, appletAttachments] of Array.from(
           allAttachmentTypes.entries()
         )) {
-          attachments[encodeHashToBase64(appletHash)] = appletAttachments;
+          if (Object.keys(appletAttachments).length > 0) {
+            attachments[encodeHashToBase64(appletHash)] = appletAttachments;
+          }
         }
 
         return completed(attachments);

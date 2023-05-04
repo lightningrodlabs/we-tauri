@@ -33,7 +33,6 @@ import {
 import { weServicesContext } from "../context";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
 
 export interface SearchResult {
@@ -79,15 +78,12 @@ export class SearchEntry extends LitElement implements FormField {
   /** Public attributes */
 
   /**
-   * Label for the agent searching field.
+   * Label for the entry searching field.
    * @attr field-label
    */
   @property({ type: String, attribute: "field-label" })
   fieldLabel!: string;
 
-  /**
-   * Profiles store for this element, not required if you embed this element inside a <profiles-context>
-   */
   @consume({ context: weServicesContext, subscribe: true })
   @property()
   services!: WeServices;
@@ -243,14 +239,16 @@ export class SearchEntry extends LitElement implements FormField {
                   style="margin-right: 16px"
                 ></sl-icon>
                 ${info.entryInfo.name}
-                <div slot="suffix" class="row">
+                <div slot="suffix" class="row" style="align-items: center">
+                  <span class="placeholder">${msg(" in ")}</span>
                   ${searchResult.appletsInfos
                     .get(info.appletId)
                     ?.groupsIds.map(
                       (groupId) => html`
                         <img
-                          .src=${searchResult.groupsProfiles.get(groupId)}
-                          style="height: 16px; width: 16px; margin-right: 2px;"
+                          .src=${searchResult.groupsProfiles.get(groupId)
+                            ?.logo_src}
+                          style="height: 16px; width: 16px; margin-right: 4px;"
                         />
                       `
                     )}
@@ -288,7 +286,7 @@ export class SearchEntry extends LitElement implements FormField {
             .label=${this._label}
             .placeholder=${msg("At least 3 chars...")}
             @input=${() => this.onFilterChange()}
-            .value=${this.info?.entryInfo.name}
+            .value=${this.info ? this.info.entryInfo.name : ""}
           >
             ${this.info
               ? html`<sl-icon

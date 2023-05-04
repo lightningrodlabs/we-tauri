@@ -40,9 +40,9 @@ export class EntryTitle extends LitElement {
 
     return html` <sl-icon
         .src=${info.icon_src}
-        style="display: flex; margin-top: 1px; margin-right: 4px"
+        style="display: flex; margin-top: 2px; margin-right: 4px"
       ></sl-icon>
-      <span>${info.name}</span>`;
+      <span style="color: rgb(119,119,119)">${info.name}</span>`;
   }
 
   render() {

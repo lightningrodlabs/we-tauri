@@ -14,6 +14,7 @@ import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 import { weServicesContext } from "../context";
 import { Hrl, WeServices } from "../types";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
+import { sharedStyles } from "@holochain-open-dev/elements";
 
 @localized()
 @customElement("hrl-link")
@@ -64,14 +65,17 @@ export class HrlLink extends LitElement {
             this.weServices.openViews.openHrl(this.hrl, this.context)}
         >
           <sl-icon slot="prefix" .src=${entryInfo.entryInfo.icon_src}></sl-icon>
-          <div slot="suffix" class="row">
+          <div slot="suffix" class="row" style="align-items: center">
+            <span class="placeholder" style="margin-right: 8px"
+              >${msg(" in ")}</span
+            >
             ${appletsInfos
               .get(entryInfo.appletId)
               ?.groupsIds.map(
                 (groupId) => html`
                   <img
-                    .src=${groupsProfiles.get(groupId)}
-                    style="height: 16px; width: 16px; margin-right: 2px;"
+                    .src=${groupsProfiles.get(groupId)?.logo_src}
+                    style="height: 16px; width: 16px; margin-right: 4px;"
                   />
                 `
               )}
@@ -90,4 +94,6 @@ export class HrlLink extends LitElement {
         ></display-error>`;
     }
   }
+
+  static styles = [sharedStyles];
 }

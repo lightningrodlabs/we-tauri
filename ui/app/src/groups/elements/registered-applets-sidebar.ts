@@ -7,7 +7,7 @@ import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
-import { EntryHash } from "@holochain/client";
+import { encodeHashToBase64, EntryHash } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -36,7 +36,7 @@ export class RegisteredAppletsSidebar extends LitElement {
             slice(this._groupStore.applets, allApplets)
           ) as AsyncReadable<ReadonlyMap<EntryHash, Applet>>
       ),
-    () => []
+    () => [this._groupStore]
   );
 
   renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
@@ -48,7 +48,9 @@ export class RegisteredAppletsSidebar extends LitElement {
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
-                .logoSrc=${""}
+                .logoSrc=${`applet://${encodeHashToBase64(
+                  appletHash
+                )}/icon.png`}
                 .tooltipText=${applet.custom_name}
                 @click=${() => {
                   this.dispatchEvent(

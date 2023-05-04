@@ -4,7 +4,6 @@ import {
   CallZomeRequest,
   CallZomeRequestSigned,
   decodeHashFromBase64,
-  DnaHash,
   encodeHashToBase64,
   EntryHash,
   EntryHashB64,
@@ -20,7 +19,6 @@ import {
 } from "applet-messages";
 import {
   AttachmentType,
-  GroupProfile,
   WeApplet,
   WeServices,
 } from "@lightningrodlabs/we-applet";
@@ -267,6 +265,8 @@ async function handleMessage(message: ParentToAppletMessage) {
       }
 
       return internalAttachmentTypes;
+    case "search":
+      return applet!.search(client!, message.request.filter);
     case "create-attachment":
       return (await applet!.attachmentTypes(client!))[
         message.request.attachmentType
@@ -281,16 +281,25 @@ async function signZomeCall(
 }
 
 async function postMessage(m: AppletToParentRequest): Promise<any> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const channel = new MessageChannel();
     parent.postMessage(m, "*", [channel.port2]);
 
-    channel.port1.onmessage = (m) => resolve(m.data);
+    channel.port1.onmessage = (m) => {
+      if (m.data.type === "success") {
+        resolve(m.data.result);
+      } else if (m.data.type === "error") {
+        reject(m.data.error);
+      }
+    };
   });
 }
 
 window.addEventListener("message", async (m) => {
-  const result = await handleMessage(m.data);
-  // IFrame requests don't need to return anything
-  m.ports[0].postMessage(result);
+  try {
+    const result = await handleMessage(m.data);
+    m.ports[0].postMessage({ type: "success", result });
+  } catch (e) {
+    m.ports[0].postMessage({ type: "error", error: e.message });
+  }
 });

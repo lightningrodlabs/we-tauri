@@ -1,6 +1,7 @@
 import {
   hashProperty,
   notifyError,
+  sharedStyles,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
@@ -8,9 +9,10 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
 import { msg, localized } from "@lit/localize";
+import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
+import { AnyDhtHash } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
@@ -21,13 +23,11 @@ import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
-import { AnyDhtHash } from "@holochain/client";
 
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
 import { weServicesContext } from "../../context";
 import { AttachmentType, WeServices } from "../../types";
-import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 import { getAppletsInfosAndGroupsProfiles } from "../../utils";
 
 @localized()
@@ -87,8 +87,8 @@ export class CreateAttachment extends LitElement {
           this.appletsInfosAndGroupsProfiles.value.value;
 
         return Array.from(this.weServices.attachmentTypes.entries()).map(
-          ([appletId, attachmentTypes], i) =>
-            Object.entries(attachmentTypes.value).map(
+          ([appletId, attachmentTypes]) =>
+            Object.entries(attachmentTypes).map(
               ([name, attachmentType]) => html`
                 <sl-menu-item
                   @click=${() => this.createAttachment(attachmentType)}
@@ -98,14 +98,15 @@ export class CreateAttachment extends LitElement {
                     .src=${attachmentType.icon_src}
                   ></sl-icon>
                   ${attachmentType.label}
-                  <div slot="suffix" class="row">
+                  <div slot="suffix" class="row" style="align-items: center">
+                    <span style="margin-right: 8px">${msg(" in ")}</span>
                     ${appletsInfos
                       .get(appletId)
                       ?.groupsIds.map(
                         (groupId) => html`
                           <img
-                            .src=${groupsProfiles.get(groupId)}
-                            style="height: 16px; width: 16px; margin-right: 2px;"
+                            .src=${groupsProfiles.get(groupId)?.logo_src}
+                            style="height: 16px; width: 16px; margin-right: 4px;"
                           />
                         `
                       )}
@@ -128,13 +129,13 @@ export class CreateAttachment extends LitElement {
   render() {
     return html`
       <sl-dropdown>
-        <sl-button slot="trigger" variant="default"
-          ><sl-icon .src=${wrapPathInSvg(mdiAttachmentPlus)}></sl-icon>
-          ${msg("Create Attachment")}
-        </sl-button>
+        <sl-icon-button slot="trigger" .src=${wrapPathInSvg(mdiAttachmentPlus)}>
+        </sl-icon-button>
 
         <sl-menu> ${this.renderMenuItems()} </sl-menu>
       </sl-dropdown>
     `;
   }
+
+  static styles = [sharedStyles];
 }

@@ -77,7 +77,7 @@ export class WeApp extends LitElement {
       adminWebsocket,
       appAgentWebsocket,
       info,
-      new AppletBundlesStore(devhubClient, adminWebsocket)
+      new AppletBundlesStore(devhubClient, appAgentWebsocket, adminWebsocket)
     );
 
     this.state = { state: "running" };
