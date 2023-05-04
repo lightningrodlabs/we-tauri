@@ -1,8 +1,7 @@
-import { AgentPubKey, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord } from '@holochain/client';
+import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, AppletUIConfig, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput } from './index';
+import { AppletConfig, AppletConfigInput, AppletUIConfig, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput, SignalPayload } from './index';
 import { derived, get, Writable, writable } from 'svelte/store';
-import { EntryHashMap } from '@holochain-open-dev/utils'
 import { Option } from './utils';
 import { createContext } from '@lit-labs/context';
 
@@ -37,11 +36,28 @@ export class SensemakerStore {
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
+  protected service: SensemakerService;
 
-  constructor(
-    protected service: SensemakerService,
-  ) {
-    this.myAgentPubKey = service.myPubKey();
+  constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker')
+  {
+    client.on("signal", (signal: AppSignal) => {
+      const payload = (signal.payload as SignalPayload);
+
+      switch (payload.type) {
+        case "NewAssessment":
+          const assessment = payload.assessment;
+          this._resourceAssessments.update(resourceAssessments => {
+            const maybePrevAssessments = resourceAssessments[encodeHashToBase64(assessment.resource_eh)];
+            const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
+            resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, assessment]
+            return resourceAssessments;
+          })
+          break;
+      }
+    });
+    
+    this.service = new SensemakerService(client, roleName);
+    this.myAgentPubKey = this.service.myPubKey();
   }
 
   // if provided a list of resource ehs, filter the assessments to only those resources, and return that object, otherwise return the whole thing.
