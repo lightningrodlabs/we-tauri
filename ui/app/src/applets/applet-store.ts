@@ -2,11 +2,12 @@ import {
   AsyncReadable,
   lazyLoad,
   lazyLoadAndPoll,
+  pipe,
 } from "@holochain-open-dev/stores";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { InternalAttachmentType } from "../../../applet-messages/dist/index.js";
 import { AppletHost } from "../applet-host.js";
-import { pipe, WeStore } from "../we-store.js";
+import { WeStore } from "../we-store.js";
 import { Applet } from "./types.js";
 
 export class AppletStore {

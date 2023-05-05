@@ -1,16 +1,16 @@
 import {
+  alwaysSubscribed,
   asyncDerived,
   asyncDeriveStore,
   AsyncReadable,
-  AsyncStatus,
-  derived,
+  completed,
   joinAsyncMap,
   lazyLoad,
-  readable,
-  Readable,
+  manualReloadStore,
+  pipe,
+  race,
   retryUntilSuccess,
   toPromise,
-  writable,
 } from "@holochain-open-dev/stores";
 import {
   HoloHashMap,
@@ -43,100 +43,6 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
 import { findAppForDnaHash } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
-
-export function manualReloadStore<T>(
-  fn: () => Promise<T>
-): AsyncReadable<T> & { reload: () => Promise<void> } {
-  const store = writable<AsyncStatus<T>>({ status: "pending" });
-
-  const reload = async () => {
-    try {
-      const value = await fn();
-      store.set({
-        status: "complete",
-        value,
-      });
-    } catch (error) {
-      store.set({ status: "error", error });
-    }
-  };
-
-  reload();
-  return {
-    subscribe: store.subscribe,
-    reload,
-  };
-}
-
-export function alwaysSubscribed<T>(readable: Readable<T>): Readable<T> {
-  readable.subscribe(() => {});
-
-  return readable;
-}
-
-export function pipe<T, U>(
-  store: AsyncReadable<T>,
-  fn1: (arg: T) => AsyncReadable<U>
-): AsyncReadable<U>;
-export function pipe<T, U, V>(
-  store: AsyncReadable<T>,
-  fn1: (arg: T) => AsyncReadable<U>,
-  fn2: (arg: U) => AsyncReadable<V>
-): AsyncReadable<V>;
-export function pipe<T, U, V, W>(
-  store: AsyncReadable<T>,
-  fn1: (arg: T) => AsyncReadable<U>,
-  fn2: (arg: U) => AsyncReadable<V>,
-  fn3: (arg: V) => AsyncReadable<W>
-): AsyncReadable<W>;
-export function pipe<T, U, V, W>(
-  store: AsyncReadable<T>,
-  fn1: (arg: T) => AsyncReadable<U>,
-  fn2?: (arg: U) => AsyncReadable<V>,
-  fn3?: (arg: V) => AsyncReadable<W>
-): AsyncReadable<W> {
-  let s: AsyncReadable<any> = asyncDeriveStore(store, fn1);
-
-  if (fn2) {
-    s = asyncDeriveStore(s, fn2);
-  }
-  if (fn3) {
-    s = asyncDeriveStore(s, fn3);
-  }
-
-  return s;
-}
-
-export function completed<T>(v: T): AsyncReadable<T> {
-  return readable<AsyncStatus<T>>({
-    status: "complete",
-    value: v,
-  });
-}
-
-export function race<T>(stores: Array<AsyncReadable<T>>): AsyncReadable<T> {
-  let found: T | undefined;
-  return derived(stores, (values) => {
-    if (found)
-      return {
-        status: "complete",
-        value: found,
-      } as AsyncStatus<T>;
-
-    const firstCompleted = values.find((v) => v.status === "complete");
-    if (firstCompleted) {
-      found = (firstCompleted as any).value as T;
-      return {
-        status: "complete",
-        value: found,
-      } as AsyncStatus<T>;
-    }
-
-    return {
-      status: "pending",
-    } as AsyncStatus<T>;
-  });
-}
 
 export function asyncDeriveAndJoin<T, U>(
   store: AsyncReadable<T>,
@@ -184,10 +90,32 @@ export class WeStore {
 
     await groupClient.setGroupProfile(groupProfile);
 
+    await this.groupsRolesByDnaHash.reload();
+
     return groupClonedCell;
   }
 
   public async joinGroup(networkSeed: string): Promise<ClonedCell> {
+    const appInfo = await this.appAgentWebsocket.appInfo();
+
+    for (const cellInfo of appInfo.cell_info["group"]) {
+      if (CellType.Cloned in cellInfo) {
+        const cell = cellInfo[CellType.Cloned];
+        if (cell.dna_modifiers.network_seed === networkSeed) {
+          if (cell.enabled) {
+            throw new Error("This group is already installed");
+          } else {
+            const clonedCell = await this.appAgentWebsocket.enableCloneCell({
+              clone_cell_id: [cell.cell_id[0], this.appAgentWebsocket.myPubKey],
+            });
+
+            await this.groupsRolesByDnaHash.reload();
+            return clonedCell;
+          }
+        }
+      }
+    }
+
     // Create the group cell
     const clonedCell = await this.appAgentWebsocket.createCloneCell({
       role_name: "group",
@@ -196,10 +124,16 @@ export class WeStore {
         // origin_time: Date.now() * 1000,
       },
     });
-
     await this.groupsRolesByDnaHash.reload();
 
     return clonedCell;
+  }
+
+  public async leaveGroup(groupDnaHash: DnaHash) {
+    await this.appAgentWebsocket.disableCloneCell({
+      clone_cell_id: [groupDnaHash, this.appAgentWebsocket.myPubKey],
+    });
+    await this.groupsRolesByDnaHash.reload();
   }
 
   originalGroupDnaHash = lazyLoad<DnaHash>(async () => {
@@ -219,7 +153,7 @@ export class WeStore {
     const roleNames = new HoloHashMap<DnaHash, RoleName>();
 
     for (const cellInfo of appInfo.cell_info["group"]) {
-      if (CellType.Cloned in cellInfo) {
+      if (CellType.Cloned in cellInfo && cellInfo[CellType.Cloned].enabled) {
         roleNames.set(
           cellInfo[CellType.Cloned].cell_id[0],
           cellInfo[CellType.Cloned].clone_id

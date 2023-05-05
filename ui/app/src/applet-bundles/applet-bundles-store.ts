@@ -1,4 +1,8 @@
-import { asyncDerived, lazyLoadAndPoll } from "@holochain-open-dev/stores";
+import {
+  asyncDerived,
+  lazyLoadAndPoll,
+  manualReloadStore,
+} from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   AdminWebsocket,
@@ -13,7 +17,6 @@ import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
 import { getAllAppsWithGui } from "../processes/devhub/get-happs.js";
 import { toSrc } from "../processes/import-logsrc-from-file.js";
-import { manualReloadStore } from "../we-store.js";
 
 export class AppletBundlesStore {
   constructor(
@@ -34,6 +37,14 @@ export class AppletBundlesStore {
       encodeHashToBase64(appletHash),
       applet.network_seed
     );
+  }
+
+  async uninstallApplet(appletHash: EntryHash) {
+    await this.adminWebsocket.uninstallApp({
+      installed_app_id: encodeHashToBase64(appletHash),
+    });
+
+    await this.installedApps.reload();
   }
 
   async installAppletBundle(

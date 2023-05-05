@@ -4,6 +4,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -11,7 +12,6 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
-import "../groups/elements/registered-applets-sidebar.js";
 import "./sidebar-button.js";
 import "./create-group-dialog.js";
 
@@ -19,7 +19,6 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
-import { HoloHashMap } from "@holochain-open-dev/utils";
 
 @localized()
 @customElement("applets-sidebar")
@@ -36,7 +35,6 @@ export class AppletsSidebar extends LitElement {
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
     const appletsByBundleHash: HoloHashMap<EntryHash, AppletStore> =
       new HoloHashMap();
-    console.log(applets);
 
     for (const [appletHash, appletStore] of Array.from(applets.entries())) {
       if (
@@ -54,10 +52,10 @@ export class AppletsSidebar extends LitElement {
         ([appletBundleHash, appletStore]) =>
           html`
             <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+              style="margin-top: 2px; margin-bottom: 2px; --border-radius: 8px"
               .logoSrc=${`applet://${encodeHashToBase64(
                 appletStore.appletHash
-              )}/logo.png`}
+              )}/icon.png`}
               .tooltipText=${appletStore.applet.custom_name}
               @click=${() => {
                 this.dispatchEvent(

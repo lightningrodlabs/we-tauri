@@ -46,6 +46,10 @@ export class GroupClient {
     return this.callZome("register_applet", applet);
   }
 
+  async unregisterApplet(appletHash: EntryHash): Promise<void> {
+    return this.callZome("unregister_applet", appletHash);
+  }
+
   async federateApplet(
     appletHash: EntryHash,
     groupDnaHash: DnaHash

@@ -115,7 +115,9 @@ export class MainDashboard extends LitElement {
 
   render() {
     return html`
-      <join-group-dialog></join-group-dialog>
+      <join-group-dialog
+        @group-joined=${(e) => this.openGroup(e.detail.groupDnaHash)}
+      ></join-group-dialog>
 
       <div class="row" style="flex: 1">
         <div class="column">
@@ -144,20 +146,24 @@ export class MainDashboard extends LitElement {
             @group-created=${(e: CustomEvent) => {
               this.openGroup(e.detail.groupDnaHash);
             }}
-            @applet-selected=${(e: CustomEvent) => {
-              this.dynamicLayout.openTab({
-                type: "component",
-                componentType: "applet-main",
-                componentState: {
-                  appletHash: encodeHashToBase64(e.detail.appletHash),
-                },
-              });
-            }}
           ></groups-sidebar>
         </div>
 
         <div class="column" style="flex: 1">
-          <applets-sidebar class="top-bar"></applets-sidebar>
+          <applets-sidebar
+            class="top-bar"
+            @applet-selected=${(e: CustomEvent) => {
+              this.dynamicLayout.openTab({
+                type: "component",
+                componentType: "cross-applet-main",
+                componentState: {
+                  appletBundleHash: encodeHashToBase64(
+                    e.detail.appletBundleHash
+                  ),
+                },
+              });
+            }}
+          ></applets-sidebar>
 
           <dynamic-layout
             id="dynamic-layout"
@@ -172,6 +178,15 @@ export class MainDashboard extends LitElement {
               ],
             }}
             style="flex: 1; min-width: 0;"
+            @applet-selected=${(e: CustomEvent) => {
+              this.dynamicLayout.openTab({
+                type: "component",
+                componentType: "applet-main",
+                componentState: {
+                  appletHash: encodeHashToBase64(e.detail.appletHash),
+                },
+              });
+            }}
           ></dynamic-layout>
         </div>
       </div>
@@ -192,7 +207,8 @@ export class MainDashboard extends LitElement {
           border-width: 72px 0 0 72px;
           position: absolute;
           z-index: 0;
-          border-color: #9ca5e3 #9ca5e3 #9ca5e3 #303f9f;
+          border-color: var(--sl-color-primary-600) var(--sl-color-primary-600)
+            var(--sl-color-primary-600) var(--sl-color-primary-900);
         }
 
         .top-left-corner {
@@ -216,12 +232,12 @@ export class MainDashboard extends LitElement {
         }
 
         groups-sidebar {
-          background-color: #303f9f;
+          background-color: var(--sl-color-primary-900);
           width: 64px;
         }
 
         applets-sidebar {
-          background-color: #9ca5e3;
+          background-color: var(--sl-color-primary-600);
         }
       `,
     ];

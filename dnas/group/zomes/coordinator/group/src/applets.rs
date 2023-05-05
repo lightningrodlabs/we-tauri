@@ -25,6 +25,34 @@ fn register_applet(applet: Applet) -> ExternResult<EntryHash> {
 }
 
 #[hdk_extern]
+fn unregister_applet(applet_hash: EntryHash) -> ExternResult<()> {
+    let details = get_details(applet_hash.clone(), GetOptions::default())?;
+
+    let entry_details = match details {
+        Some(Details::Entry(d)) => Ok(d),
+        _ => Err(wasm_error!(WasmErrorInner::Guest(
+            "Malformed details result".to_string()
+        ))),
+    }?;
+
+    for a in entry_details.actions {
+        delete_entry(a.action_address().clone())?;
+    }
+
+    let path = get_applets_path();
+
+    let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
+
+    for link in links {
+        if EntryHash::from(link.target).eq(&applet_hash) {
+            delete_link(link.create_link_hash)?;
+        }
+    }
+
+    Ok(())
+}
+
+#[hdk_extern]
 fn get_applet(applet_hash: EntryHash) -> ExternResult<Option<Record>> {
     get(applet_hash, GetOptions::default())
 }

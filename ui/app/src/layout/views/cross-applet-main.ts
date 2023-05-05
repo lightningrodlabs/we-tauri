@@ -5,7 +5,7 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { msg, localized } from "@lit/localize";
@@ -46,6 +46,7 @@ export class CrossAppletMain extends LitElement {
     return html`<view-frame
       .renderView=${renderView}
       .appletHash=${decodeHashFromBase64(Object.keys(applets)[0])}
+      style="flex: 1"
     >
     </view-frame>`;
   }
@@ -67,5 +68,12 @@ export class CrossAppletMain extends LitElement {
     }
   }
 
-  static styles = [weStyles];
+  static styles = [
+    weStyles,
+    css`
+      :host {
+        display: flex;
+      }
+    `,
+  ];
 }

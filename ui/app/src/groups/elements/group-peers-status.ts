@@ -37,7 +37,7 @@ export class GroupPeersStatus extends LitElement {
     `;
   }
 
-  renderContent() {
+  render() {
     switch (this._group.value?.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1;">
@@ -51,15 +51,6 @@ export class GroupPeersStatus extends LitElement {
           .error=${this._group.value.error.data.data}
         ></display-error>`;
     }
-  }
-
-  render() {
-    return html`
-      <sl-card>
-        <span slot="header">${msg("Members")}</span>
-        ${this.renderContent()}</sl-card
-      >
-    `;
   }
 
   static styles = weStyles;

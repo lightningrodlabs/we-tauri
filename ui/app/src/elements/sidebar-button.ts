@@ -63,9 +63,9 @@ export class SidebarButton extends LitElement {
       }
       .icon {
         cursor: pointer;
-        border-radius: 50%;
         width: 48px;
         height: 48px;
+        border-radius: var(--border-radius, 50%);
         object-fit: cover;
       }
     `;

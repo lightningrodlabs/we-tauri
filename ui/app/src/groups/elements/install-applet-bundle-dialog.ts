@@ -3,8 +3,14 @@ import { customElement, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
-import { joinAsyncMap, StoreSubscriber } from "@holochain-open-dev/stores";
+import {
+  joinAsyncMap,
+  pipe,
+  StoreSubscriber,
+} from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
+import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
+import { slice } from "@holochain-open-dev/utils";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -16,9 +22,6 @@ import { AppletBundleMetadata } from "../../types.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
-import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
-import { slice } from "@holochain-open-dev/utils";
-import { pipe } from "../../we-store.js";
 
 @localized()
 @customElement("install-applet-bundle-dialog")

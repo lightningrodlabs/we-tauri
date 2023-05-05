@@ -14,7 +14,6 @@ import {
   AppAgentWebsocket,
   CellType,
   DnaHash,
-  encodeHashToBase64,
   EntryHash,
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
@@ -110,6 +109,11 @@ export class GroupStore {
     await this.appletBundlesStore.installApplet(appletHash, applet);
 
     return appletHash;
+  }
+
+  async uninstallApplet(appletHash: EntryHash) {
+    await this.groupClient.unregisterApplet(appletHash);
+    await this.appletBundlesStore.uninstallApplet(appletHash);
   }
 
   federatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>

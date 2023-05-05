@@ -14,7 +14,6 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
-import "../groups/elements/registered-applets-sidebar.js";
 import "./sidebar-button.js";
 import "./create-group-dialog.js";
 

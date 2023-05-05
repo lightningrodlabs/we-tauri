@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import checker from "vite-plugin-checker";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const components = [
@@ -27,12 +26,6 @@ const exclude = components.map(
   (c) => `@shoelace-style/shoelace/dist/components/${c}/${c}.js`
 );
 export default defineConfig({
-  optimizeDeps: {
-    exclude: [
-      ...exclude,
-      "@holochain-open-dev/elements/dist/elements/display-error.js",
-    ],
-  },
   plugins: [
     // checker({
     //   typescript: true,

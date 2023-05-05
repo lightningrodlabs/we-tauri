@@ -1,4 +1,4 @@
-import { toPromise } from "@holochain-open-dev/stores";
+import { pipe, toPromise } from "@holochain-open-dev/stores";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import {
   AppletToParentRequest,
@@ -17,7 +17,7 @@ import {
 
 import { AppOpenViews } from "./layout/types";
 import { signZomeCallTauri } from "./tauri";
-import { pipe, WeStore } from "./we-store";
+import { WeStore } from "./we-store";
 
 export class AppletHost {
   constructor(

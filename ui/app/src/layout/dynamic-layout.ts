@@ -19,6 +19,8 @@ import "../groups/elements/group-logo.js";
 import "../groups/elements/applet-name.js";
 import "../groups/elements/entry-title.js";
 import "../applets/elements/applet-title.js";
+import "./views/cross-applet-main.js";
+import "./views/cross-applet-block.js";
 import "./views/welcome-view.js";
 import "./views/applet-block.js";
 import "./views/applet-main.js";
@@ -141,14 +143,15 @@ export class DynamicLayout extends LitElement {
               <span>${msg("Home")}</span>
             </group-context>
           `}
-        .template=${({ groupDnaHash }) => html`
-          <div
-            style="flex: 1; display: flex; align-items: center; justify-content: center;"
-          >
-            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-home></group-home>
-            </group-context>
-          </div>
+        .template=${({ groupDnaHash }, container) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <group-home
+              style="flex: 1"
+              @group-left=${() => {
+                container.close();
+              }}
+            ></group-home>
+          </group-context>
         `}
       >
       </golden-layout-register>
