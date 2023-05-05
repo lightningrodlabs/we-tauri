@@ -13,7 +13,10 @@ export class SensemakerService {
       return this.client.myPubKey
     }
     
-
+  async getAllAgents(): Promise<AgentPubKey[]> {
+    return this.callZome('get_all_agents', null);
+  }
+  
   async createDimension(dimension: Dimension): Promise<EntryHash> {
     return this.callZome('create_dimension', dimension);
   }

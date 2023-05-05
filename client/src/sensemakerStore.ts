@@ -41,6 +41,7 @@ export class SensemakerStore {
   constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker')
   {
     client.on("signal", (signal: AppSignal) => {
+      console.log("received signal: ", signal)
       const payload = (signal.payload as SignalPayload);
 
       switch (payload.type) {
@@ -90,6 +91,9 @@ export class SensemakerStore {
     return derived(this._appletUIConfig, appletUIConfig => appletUIConfig)
   }
 
+  async getAllAgents() {
+    return await this.service.getAllAgents();
+  }
   async createDimension(dimension: Dimension): Promise<EntryHash> {
     const dimensionEh = await this.service.createDimension(dimension);
     this._appletConfig.update(appletConfig => {
