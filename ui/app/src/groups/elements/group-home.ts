@@ -61,7 +61,7 @@ export class GroupHome extends LitElement {
 
   renderMain(
     groupProfile: GroupProfile,
-    originalGroupDnaHash,
+    originalGroupDnaHash: DnaHash,
     networkSeed: string
   ) {
     return html`
@@ -196,7 +196,11 @@ export class GroupHome extends LitElement {
               <span class="title">${msg("Applets Library")}</span>
             </div>
 
-            <installable-applets></installable-applets>
+            <installable-applets
+              @applet-installed=${() => {
+                this.view = "main";
+              }}
+            ></installable-applets>
           </div>
         `;
       case "settings":

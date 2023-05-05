@@ -37,4 +37,8 @@ export class AppletStore {
     this.host,
     (host) => lazyLoadAndPoll(() => host.getAttachmentTypes(), 10000)
   );
+
+  logo = this.weStore.appletBundlesStore.appletBundleLogo
+    .get(this.applet.devhub_happ_release_hash)
+    .get(this.applet.devhub_gui_release_hash);
 }

@@ -213,9 +213,9 @@ export class MainDashboard extends LitElement {
 
         .top-left-corner {
           align-items: center;
+          justify-content: center;
           background-color: transparent;
-          margin: 4px 4px;
-          height: 54px;
+          height: 64px;
           z-index: 1;
         }
 
@@ -237,6 +237,7 @@ export class MainDashboard extends LitElement {
         }
 
         applets-sidebar {
+          z-index: 1;
           background-color: var(--sl-color-primary-600);
         }
       `,

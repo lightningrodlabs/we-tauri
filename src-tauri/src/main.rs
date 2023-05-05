@@ -14,7 +14,7 @@ mod launch;
 mod state;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
-    install_applet_bundle::install_applet_bundle,
+    install_applet_bundle::{fetch_icon, install_applet_bundle},
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
@@ -55,7 +55,8 @@ fn main() {
             enter_password,
             is_keystore_initialized,
             is_launched,
-            get_conductor_info
+            get_conductor_info,
+            fetch_icon
         ])
         .setup(|app| {
             let handle = app.handle();

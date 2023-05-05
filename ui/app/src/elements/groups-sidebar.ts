@@ -135,6 +135,8 @@ export class GroupsSidebar extends LitElement {
     weStyles,
     css`
       :host {
+        flex-direction: column;
+        align-items: center;
         display: flex;
       }
     `,

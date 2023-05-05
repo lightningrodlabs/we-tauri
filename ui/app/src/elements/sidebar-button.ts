@@ -1,5 +1,4 @@
 import { css, html, LitElement } from "lit";
-import { styleMap } from "lit/directives/style-map.js";
 import { customElement, property, query } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -45,14 +44,7 @@ export class SidebarButton extends LitElement {
       placement="${this.placement}"
       .content=${this.tooltipText}
     >
-      <img
-        class="icon"
-        src="${this.logoSrc}"
-        style="${this.selected
-          ? "border: 3px solid purple;"
-          : "border: 3px solid transparent"}"
-        @click=${this.handleClick}
-      />
+      <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
     </sl-tooltip>`;
   }
 

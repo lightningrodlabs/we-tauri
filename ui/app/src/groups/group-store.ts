@@ -78,12 +78,7 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    const [appInfo, _] = await this.appletBundlesStore.installApplet(
-      appletHash,
-      applet
-    );
-
-    return appInfo;
+    return this.appletBundlesStore.installApplet(appletHash, applet);
   }
 
   // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA

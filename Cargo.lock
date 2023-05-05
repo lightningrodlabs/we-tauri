@@ -8828,6 +8828,7 @@ dependencies = [
  "tauri-plugin-deep-link",
  "tempdir",
  "thiserror",
+ "zip 0.5.13",
 ]
 
 [[package]]

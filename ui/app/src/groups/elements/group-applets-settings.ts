@@ -64,6 +64,7 @@ export class GroupAppletsSettings extends LitElement {
     this.uninstalling = true;
     try {
       await this._groupStore.uninstallApplet(appletToUninstall);
+      this.appletToUninstall = undefined;
     } catch (e) {
       notifyError(msg("Error uninstalling applet."));
       console.error(e);

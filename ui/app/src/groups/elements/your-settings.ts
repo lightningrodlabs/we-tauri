@@ -1,11 +1,16 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
+import { notifyError, sharedStyles } from "@holochain-open-dev/elements";
+import { consume } from "@lit-labs/context";
+import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
+import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
 
 import "@shoelace-style/shoelace/dist/components/button/button.js";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
-import { notifyError } from "@holochain-open-dev/elements";
-import { consume } from "@lit-labs/context";
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+
 import { groupStoreContext } from "../context";
 import { GroupStore } from "../group-store";
 import { WeStore } from "../../we-store";
@@ -79,9 +84,27 @@ export class YourSettings extends LitElement {
   render() {
     return html`
       ${this.renderLeaveGroupDialog()}
-      <sl-button variant="danger" @click=${() => this.dialog.show()}
-        >${msg("Leave Group")}</sl-button
-      >
+      <div class="column" style="align-items: center">
+        <div class="column" style="width: 400px">
+          <profiles-context .store=${this.groupStore.profilesStore}>
+            <sl-card>
+              <span class="title" slot="header">${msg("Your Profile")}</span>
+              <my-profile style="flex: 1"></my-profile
+            ></sl-card>
+          </profiles-context>
+          <div class="row">
+            <span style="flex: 1"></span>
+            <sl-button
+              variant="danger"
+              @click=${() => this.dialog.show()}
+              style="margin-top: 16px"
+              >${msg("Leave Group")}</sl-button
+            >
+          </div>
+        </div>
+      </div>
     `;
   }
+
+  static styles = [sharedStyles];
 }

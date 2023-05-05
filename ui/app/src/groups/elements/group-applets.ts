@@ -8,19 +8,21 @@ import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 import { slice } from "@holochain-open-dev/utils";
+import { wrapPathInSvg } from "@holochain-open-dev/elements";
+import { mdiToyBrickPlus } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
+import "../../elements/sidebar-button.js";
+import "../../applets/elements/applet-logo.js";
+
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
-import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
-import { wrapPathInSvg } from "@holochain-open-dev/elements";
-import { mdiToyBrickPlus } from "@mdi/js";
 
 @localized()
 @customElement("group-applets")
@@ -64,24 +66,21 @@ export class GroupApplets extends LitElement {
               html`
                 <div
                   class="column"
-                  style="margin-right: 16px; align-items: center"
+                  style="margin-right: 16px; align-items: center; cursor: pointer"
+                  @click=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("applet-selected", {
+                        detail: {
+                          groupDnaHash: this._groupStore.groupDnaHash,
+                          appletHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
                 >
-                  <img
-                    style="height: 64px; width: 64px; margin-bottom: 8px; border-radius: 8px"
-                    src="applet://${encodeHashToBase64(appletHash)}/icon.png"
-                    @click=${() => {
-                      this.dispatchEvent(
-                        new CustomEvent("applet-selected", {
-                          detail: {
-                            groupDnaHash: this._groupStore.groupDnaHash,
-                            appletHash,
-                          },
-                          bubbles: true,
-                          composed: true,
-                        })
-                      );
-                    }}
-                  />
+                  <applet-logo .appletHash=${appletHash}></applet-logo>
                   <span>${applet.custom_name}</span>
                 </div>
               `

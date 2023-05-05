@@ -91,10 +91,7 @@ export class AppletsSidebar extends LitElement {
 
   render() {
     return html`
-      <div
-        class="row"
-        style="flex: 1; height: 48px; padding: 4px; align-items: center;"
-      >
+      <div class="row" style="flex: 1; padding: 4px; align-items: center;">
         ${this.renderAppletsLoading()}
       </div>
     `;

@@ -1,5 +1,6 @@
 import {
   asyncDerived,
+  lazyLoad,
   lazyLoadAndPoll,
   manualReloadStore,
 } from "@holochain-open-dev/stores";
@@ -30,6 +31,20 @@ export class AppletBundlesStore {
     5000
   );
 
+  appletBundleLogo = new LazyHoloHashMap(
+    (appletBundleHash: EntryHash) =>
+      new LazyHoloHashMap((guiReleaseHash: EntryHash) =>
+        lazyLoad(async () => {
+          const bytes: any = await invoke("fetch_icon", {
+            happReleaseHashB64: encodeHashToBase64(appletBundleHash),
+            guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
+            pubKeyB64: encodeHashToBase64(this.devhubClient.myPubKey),
+          });
+          return toSrc(new Uint8Array(bytes));
+        })
+      )
+  );
+
   async installApplet(appletHash: EntryHash, applet: Applet) {
     return this.installAppletBundle(
       applet.devhub_happ_release_hash,
@@ -52,8 +67,8 @@ export class AppletBundlesStore {
     devhubGuiReleaseHash: EntryHash,
     appId: InstalledAppId,
     networkSeed: string | undefined
-  ): Promise<[AppInfo, string | undefined]> {
-    const [appInfo, iconBytes] = await invoke("install_applet_bundle", {
+  ): Promise<AppInfo> {
+    const appInfo: AppInfo = await invoke("install_applet_bundle", {
       appId,
       networkSeed,
       membraneProofs: {},
@@ -64,7 +79,7 @@ export class AppletBundlesStore {
 
     await this.installedApps.reload();
 
-    return [appInfo, toSrc(new Uint8Array(iconBytes))];
+    return appInfo;
   }
 
   installedApps = manualReloadStore(async () =>

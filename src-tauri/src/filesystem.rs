@@ -46,4 +46,8 @@ impl WeFileSystem {
             .join("conductor")
             .join(holochain_version.to_string())
     }
+
+    pub fn webhapps_path(&self) -> PathBuf {
+        self.app_data_dir.join("webhapps")
+    }
 }
