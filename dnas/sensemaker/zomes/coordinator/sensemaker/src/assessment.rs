@@ -88,7 +88,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
     // send signal after assessment is created
     let signal = Signal::NewAssessment { assessment: assessment.clone() };
     let encoded_signal = ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
-    remote_signal(encoded_signal, get_all_agents()?)?;
+    remote_signal(encoded_signal, get_all_agents(())?)?;
     
     Ok(assessment_eh)
 }
