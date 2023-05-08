@@ -49,7 +49,7 @@ export class GroupsSidebar extends LitElement {
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
+                style="margin-bottom: 8px; border-radius: 50%;"
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
                 @click=${() => {
@@ -70,7 +70,7 @@ export class GroupsSidebar extends LitElement {
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+              style="margin-bottom: 8px; border-radius: 50%;"
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
               @click=${() => {
@@ -122,7 +122,6 @@ export class GroupsSidebar extends LitElement {
                   "create-group-dialog"
                 ) as CreateGroupDialog
               ).open()}
-            style="margin-top: 4px;"
           >
             <sl-icon .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
           </sl-button>

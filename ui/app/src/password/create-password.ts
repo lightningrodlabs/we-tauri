@@ -21,7 +21,7 @@ export class CreatePassword extends LitElement {
   async createPassword(password: string) {
     this._creating = true;
     try {
-      await createPassword(password, true);
+      await createPassword(password, false);
       this.dispatchEvent(
         new CustomEvent("password-created", {
           bubbles: true,
@@ -37,7 +37,13 @@ export class CreatePassword extends LitElement {
 
   render() {
     return html` <sl-card>
-      <span slot="header">${msg("Create Password")}</span>
+      <span class="title" slot="header">${msg("Create Password")}</span>
+      <span style="margin-bottom: 16px"
+        >${msg(
+          "We'll use this password to encrypt and protect all your data in We. Note that there is no password recovery mechanism, so be careful not to lose it."
+        )}</span
+      >
+
       <form class="column" ${onSubmit((f) => this.createPassword(f.password))}>
         <sl-input
           id="password-field"

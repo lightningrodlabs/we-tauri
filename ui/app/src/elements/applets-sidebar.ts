@@ -48,29 +48,33 @@ export class AppletsSidebar extends LitElement {
     }
 
     return html`
-      ${Array.from(appletsByBundleHash.entries()).map(
-        ([appletBundleHash, appletStore]) =>
-          html`
-            <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; --border-radius: 8px; margin-right: 8px"
-              .logoSrc=${`applet://${encodeHashToBase64(
-                appletStore.appletHash
-              )}/icon.png`}
-              .tooltipText=${appletStore.applet.custom_name}
-              @click=${() => {
-                this.dispatchEvent(
-                  new CustomEvent("applet-selected", {
-                    detail: {
-                      appletBundleHash,
-                    },
-                    bubbles: true,
-                    composed: true,
-                  })
-                );
-              }}
-            ></sidebar-button>
-          `
-      )}
+      ${Array.from(appletsByBundleHash.entries())
+        .sort((a1, a2) =>
+          a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
+        )
+        .map(
+          ([appletBundleHash, appletStore]) =>
+            html`
+              <sidebar-button
+                style="margin-top: 2px; margin-bottom: 2px; --border-radius: 8px; margin-right: 12px"
+                .logoSrc=${`applet://${encodeHashToBase64(
+                  appletStore.appletHash
+                )}/icon.png`}
+                .tooltipText=${appletStore.applet.custom_name}
+                @click=${() => {
+                  this.dispatchEvent(
+                    new CustomEvent("applet-selected", {
+                      detail: {
+                        appletBundleHash,
+                      },
+                      bubbles: true,
+                      composed: true,
+                    })
+                  );
+                }}
+              ></sidebar-button>
+            `
+        )}
     `;
   }
 

@@ -21,7 +21,7 @@ export class EnterPassword extends LitElement {
   async enterPassword(password: string) {
     this._entering = true;
     try {
-      await enterPassword(password, true);
+      await enterPassword(password, false);
       this.dispatchEvent(
         new CustomEvent("password-entered", {
           bubbles: true,
@@ -37,7 +37,7 @@ export class EnterPassword extends LitElement {
 
   render() {
     return html` <sl-card>
-      <span slot="header">${msg("Enter Password")}</span>
+      <span class="title" slot="header">${msg("Enter Password")}</span>
       <form class="column" ${onSubmit((f) => this.enterPassword(f.password))}>
         <sl-input
           id="password-field"
