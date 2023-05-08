@@ -1,18 +1,18 @@
 <script type="module" server>
-  /* START - Rocket auto generated - do not touch */
-  export const sourceRelativeFilePath = "index.rocket.html";
-  import { components } from "./recursive.data.js";
-  export { components };
-  export async function registerCustomElements() {
-    // server-only components
-    // prettier-ignore
-    customElements.define('rocket-content-area', await import('@rocket/components/content-area.js').then(m => m.RocketContentArea));
-    // prettier-ignore
-    customElements.define('rocket-header-scroll-menu', await import('@rocket/components/header-scroll-menu.js').then(m => m.RocketHeaderScrollMenu));
-    // prettier-ignore
-    customElements.define('rocket-columns', await import('@rocket/components/columns.js').then(m => m.RocketColumns));
-  }
-  /* END - Rocket auto generated - do not touch */
+/* START - Rocket auto generated - do not touch */
+export const sourceRelativeFilePath = 'index.rocket.html';
+import { components } from './recursive.data.js';
+export { components };
+export async function registerCustomElements() {
+  // server-only components
+  // prettier-ignore
+  customElements.define('rocket-content-area', await import('@rocket/components/content-area.js').then(m => m.RocketContentArea));
+  // prettier-ignore
+  customElements.define('rocket-header-scroll-menu', await import('@rocket/components/header-scroll-menu.js').then(m => m.RocketHeaderScrollMenu));
+  // prettier-ignore
+  customElements.define('rocket-columns', await import('@rocket/components/columns.js').then(m => m.RocketColumns));
+}
+/* END - Rocket auto generated - do not touch */
 
   import { LayoutHome } from "@rocket/spark";
   import { layoutData } from "#src/layouts/layoutData.js";
@@ -133,19 +133,31 @@
       <h1 id="home">
         <span>We</span>
       </h1>
-      <p>Next-gen tooling for creating Social Spaces</p>
-      <p>To open We links, install We in your computer</p>
+      <p>Next-gen tooling for creating Social Spaces.</p>
+      <p>To open We links, install We in your computer.</p>
       <a
         class="cta"
         href="https://github.com/lightningrodlabs/we/releases/download/v0.0.1/we_0.0.1_en-US.msi"
         >Windows</a
       >
-      <a class="cta" href="#signup">MacOs</a>
-      <a class="cta" href="#signup">Linux</a>
+      <a
+        class="cta"
+        href="https://github.com/lightningrodlabs/we/releases/download/v0.0.1/we_0.0.1_x64.dmg"
+        >MacOs</a
+      >
+      <a
+        class="cta"
+        href="https://github.com/lightningrodlabs/we/releases/download/v0.0.1/we_0.0.1_amd64.AppImage"
+        >Linux</a
+      >
+      <p style="margin-top: 32px">
+        WARNING! We is in alpha. Expect bugs, breaking changes and loss of data
+        when upgrading to a new version of We.
+      </p>
     </div>
 
     <img
-      src="resolve:#public/icon.svg"
+      src="resolve:#src/images/header-illustration.svg"
       alt="alternative"
       width="189"
       height="150"

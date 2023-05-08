@@ -19,8 +19,7 @@ export const layoutData = {
     <rocket-content-area>
       <rocket-columns>
         <div>
-          <strong>Find Us</strong><br />
-          lightningrodlabs<br />
+          We is a project by lightningrodlabs<br />
           <a href="https://lightningrodlabs.org">https://lightningrodlabs.org</a
           ><br />
         </div>
