@@ -1,15 +1,21 @@
 use holochain_manager::config::LaunchHolochainConfig;
 use holochain_web_app_manager::WebAppManager;
 use lair_keystore_manager::{versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager};
-use tauri::api::process::Command;
+use tauri::{api::process::Command, };
 
 use crate::{
     default_apps::install_default_apps_if_necessary,
     filesystem::WeFileSystem,
+    config::WeConfig,
     state::{holochain_version, log_level, LaunchedState, WeError, WeResult},
 };
 
-pub async fn launch(fs: &WeFileSystem, password: String, mdns: bool) -> WeResult<LaunchedState> {
+pub async fn launch(
+    config: &WeConfig,
+    fs: &WeFileSystem,
+    password: String,
+    mdns: bool,
+) -> WeResult<LaunchedState> {
     let lair_keystore_manager =
         LairKeystoreManagerV0_2::launch(log_level(), fs.keystore_path(), password.clone())
             .await
@@ -39,7 +45,7 @@ pub async fn launch(fs: &WeFileSystem, password: String, mdns: bool) -> WeResult
     )
     .await?;
 
-    install_default_apps_if_necessary(&mut web_app_manager).await?;
+    install_default_apps_if_necessary(config, &mut web_app_manager).await?;
 
     Ok(LaunchedState {
         lair_keystore_manager,

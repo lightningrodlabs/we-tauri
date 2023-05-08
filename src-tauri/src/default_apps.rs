@@ -4,7 +4,10 @@ use holochain_client::AdminWebsocket;
 use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
 use holochain_web_app_manager::WebAppManager;
 
-use crate::state::{WeError, WeResult};
+use crate::{
+    config::WeConfig,
+    state::{WeError, WeResult},
+};
 
 pub fn we_app_id() -> String {
     format!("we-{}", env!("CARGO_PKG_VERSION"))
@@ -14,20 +17,23 @@ pub fn devhub_app_id() -> String {
     format!("DevHub")
 }
 
-pub async fn install_default_apps_if_necessary(manager: &mut WebAppManager) -> WeResult<()> {
+pub async fn install_default_apps_if_necessary(
+    config: &WeConfig,
+    manager: &mut WebAppManager,
+) -> WeResult<()> {
     let apps = manager
         .list_apps()
         .await
         .map_err(|err| WeError::WebAppManagerError(err))?;
 
-    // let version: String = manager.holochain_manager.version.manager().hdi_version().into();
-
-    let network_seed = if cfg!(debug_assertions) {
+    let network_seed =         if let Some(network_seed) = &config.network_seed {
+        Some(network_seed.clone())
+    } else         if cfg!(debug_assertions) {
         Some(format!("we-dev"))
     } else {
         Some(format!("we"))
-    };
-
+};
+    
     if !apps
         .iter()
         .map(|info| info.installed_app_info.installed_app_id.clone())

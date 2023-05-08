@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use config::WeConfig;
 use filesystem::WeFileSystem;
 use futures::lock::Mutex;
 use holochain_launcher_utils::window_builder::read_resource_from_path;
@@ -8,6 +9,7 @@ use serde_json::Value;
 use tauri::{http::ResponseBuilder, Manager, UserAttentionType, WindowBuilder, WindowUrl};
 
 mod commands;
+mod config;
 mod default_apps;
 mod filesystem;
 mod launch;
@@ -85,6 +87,17 @@ fn main() {
 
             let fs = WeFileSystem::new(&handle, &profile)?;
             app.manage(fs);
+
+            // reading profile from cli
+            let cli_matches = app.get_cli_matches()?;
+            let network_seed = match cli_matches.args.get("network-seed") {
+                Some(data) => match data.value.clone() {
+                    Value::String(network_seed) => Some(network_seed),
+                    _ => None,
+                },
+                None => None,
+            };
+            app.manage(WeConfig { network_seed });
 
             let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .title("We")
