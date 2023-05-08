@@ -3,6 +3,7 @@ import {
   lazyLoad,
   lazyLoadAndPoll,
   manualReloadStore,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
@@ -16,7 +17,12 @@ import {
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
-import { getAllAppsWithGui } from "../processes/devhub/get-happs.js";
+import {
+  ContentAddress,
+  getAllAppsWithGui,
+  getLatestRelease,
+} from "../processes/devhub/get-happs.js";
+import { HappReleaseEntry } from "../processes/devhub/types.js";
 import { toSrc } from "../processes/import-logsrc-from-file.js";
 
 export class AppletBundlesStore {
@@ -26,23 +32,46 @@ export class AppletBundlesStore {
     public adminWebsocket: AdminWebsocket
   ) {}
 
-  appletBundles = lazyLoadAndPoll(
+  allAppletBundles = lazyLoadAndPoll(
     async () => getAllAppsWithGui(this.devhubClient),
     5000
   );
 
-  appletBundleLogo = new LazyHoloHashMap(
-    (appletBundleHash: EntryHash) =>
-      new LazyHoloHashMap((guiReleaseHash: EntryHash) =>
-        lazyLoad(async () => {
-          const bytes: any = await invoke("fetch_icon", {
-            happReleaseHashB64: encodeHashToBase64(appletBundleHash),
-            guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
-            pubKeyB64: encodeHashToBase64(this.devhubClient.myPubKey),
-          });
-          return toSrc(new Uint8Array(bytes));
-        })
-      )
+  appletBundles = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
+    asyncDerived(this.allAppletBundles, async (appletBundles) => {
+      const appletBundle = appletBundles
+        .map(
+          (b) =>
+            [b.app.content.title, getLatestRelease(b)] as [
+              string,
+              ContentAddress<HappReleaseEntry>
+            ]
+        )
+        .find(([name, b]) => b.id.toString() === appletBundleHash.toString());
+      return appletBundle;
+    })
+  );
+
+  appletBundleLogo = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
+    asyncDerived(
+      this.appletBundles.get(appletBundleHash),
+      async (bundleWithName) => {
+        if (!bundleWithName) throw new Error("Can't find app bundle");
+        const appletBundle = bundleWithName[1];
+
+        const guiReleaseHash = appletBundle?.content.official_gui;
+
+        if (!guiReleaseHash)
+          throw new Error("This app doesn't have a UI release");
+
+        const bytes: any = await invoke("fetch_icon", {
+          happReleaseHashB64: encodeHashToBase64(appletBundleHash),
+          guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
+          pubKeyB64: encodeHashToBase64(this.devhubClient.myPubKey),
+        });
+        return toSrc(new Uint8Array(bytes));
+      }
+    )
   );
 
   async installApplet(appletHash: EntryHash, applet: Applet) {
@@ -55,7 +84,7 @@ export class AppletBundlesStore {
   }
 
   async uninstallApplet(appletHash: EntryHash) {
-    await this.adminWebsocket.uninstallApp({
+    await this.adminWebsocket.disableApp({
       installed_app_id: encodeHashToBase64(appletHash),
     });
 
@@ -68,6 +97,19 @@ export class AppletBundlesStore {
     appId: InstalledAppId,
     networkSeed: string | undefined
   ): Promise<AppInfo> {
+    const installedApps = await toPromise(this.installedApps);
+
+    const appletInfo = installedApps.find(
+      (app) => app.installed_app_id === appId
+    );
+
+    if (appletInfo) {
+      await this.adminWebsocket.enableApp({
+        installed_app_id: appId,
+      });
+      return appletInfo;
+    }
+
     const appInfo: AppInfo = await invoke("install_applet_bundle", {
       appId,
       networkSeed,
@@ -94,7 +136,8 @@ export class AppletBundlesStore {
       .filter(
         (app) =>
           app.installed_app_id !== weAppInfo.installed_app_id &&
-          app.installed_app_id !== devhubAppInfo.installed_app_id
+          app.installed_app_id !== devhubAppInfo.installed_app_id &&
+          "running" in app.status
       )
       .map((app) => decodeHashFromBase64(app.installed_app_id));
   });

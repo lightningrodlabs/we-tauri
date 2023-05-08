@@ -41,7 +41,7 @@ import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
-import { findAppForDnaHash } from "./utils.js";
+import { findAppForDnaHash, mapAndJoin } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
 
 export function asyncDeriveAndJoin<T, U>(
@@ -181,19 +181,18 @@ export class WeStore {
   );
 
   applets = new LazyHoloHashMap((appletHash: EntryHash) =>
-    pipe(
-      this.groupsForApplet.get(appletHash),
-      (groups) =>
-        race(
-          Array.from(groups.values()).map((groupStore) =>
-            groupStore.applets.get(appletHash)
-          )
-        ),
-      (applet) =>
-        completed(
-          applet ? new AppletStore(appletHash, applet, this) : undefined
+    retryUntilSuccess(async () => {
+      const groups = await toPromise(this.groupsForApplet.get(appletHash));
+
+      const applet = await Promise.race(
+        Array.from(groups.values()).map((groupStore) =>
+          toPromise(groupStore.applets.get(appletHash))
         )
-    )
+      );
+      if (!applet) throw new Error("Applet not found yet");
+
+      return new AppletStore(appletHash, applet, this);
+    })
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>
@@ -211,14 +210,13 @@ export class WeStore {
   );
 
   allGroupsProfiles = asyncDeriveStore(this.allGroups, (groupsStores) =>
-    joinAsyncMap(mapValues(groupsStores, (store) => store.groupProfile))
+    mapAndJoin(groupsStores, (store) => store.groupProfile)
   );
 
   groupsForApplet = new LazyHoloHashMap((appletHash: EntryHash) =>
     pipe(
       this.allGroups,
-      (allGroups) =>
-        joinAsyncMap(mapValues(allGroups, (store) => store.allApplets)),
+      (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
@@ -310,10 +308,8 @@ export class WeStore {
             )
           ),
         (appletsForThisBundleHash) =>
-          joinAsyncMap(
-            mapValues(appletsForThisBundleHash, (_, appletHash) =>
-              this.groupsForApplet.get(appletHash)
-            )
+          mapAndJoin(appletsForThisBundleHash, (_, appletHash) =>
+            this.groupsForApplet.get(appletHash)
           ),
         (groupsByApplets) => {
           const appletsB64: Record<EntryHashB64, ProfilesLocation> = {};
@@ -341,11 +337,9 @@ export class WeStore {
     pipe(
       this.allInstalledApplets,
       (installedApplets) =>
-        joinAsyncMap(
-          mapValues(
-            installedApplets,
-            (appletStore) => appletStore.attachmentTypes
-          )
+        mapAndJoin(
+          installedApplets,
+          (appletStore) => appletStore.attachmentTypes
         ),
       (allAttachmentTypes) => {
         const attachments: Record<

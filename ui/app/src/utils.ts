@@ -1,3 +1,10 @@
+import { AsyncReadable, joinAsyncMap } from "@holochain-open-dev/stores";
+import {
+  GetonlyMap,
+  HoloHashMap,
+  mapValues,
+  slice,
+} from "@holochain-open-dev/utils";
 import {
   EntryHash,
   CellId,
@@ -8,7 +15,30 @@ import {
   ListAppsResponse,
   DnaHash,
   CellType,
+  HoloHash,
 } from "@holochain/client";
+
+export function mapAndJoin<H extends HoloHash, T, U>(
+  map: ReadonlyMap<H, T>,
+  fn: (value: T, key: H) => AsyncReadable<U>
+): AsyncReadable<ReadonlyMap<H, U>> {
+  return joinAsyncMap(mapValues(map, fn));
+}
+
+export type Option<T> = T | undefined;
+
+export function sliceAndJoin<H extends HoloHash, T>(
+  map: GetonlyMap<H, AsyncReadable<Option<T>>>,
+  hashes: Array<H>
+): AsyncReadable<ReadonlyMap<H, T>> {
+  const s = slice(map, hashes);
+
+  const hs = new HoloHashMap(
+    Array.from(s.entries()).filter(([h, v]) => v !== undefined)
+  ) as HoloHashMap<H, AsyncReadable<T>>;
+
+  return joinAsyncMap(hs);
+}
 
 export async function initAppClient(
   appId: string,

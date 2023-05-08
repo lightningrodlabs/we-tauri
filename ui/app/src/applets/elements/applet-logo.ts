@@ -3,7 +3,6 @@ import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";

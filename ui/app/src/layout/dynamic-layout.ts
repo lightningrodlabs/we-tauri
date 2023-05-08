@@ -19,6 +19,7 @@ import "../groups/elements/group-logo.js";
 import "../groups/elements/applet-name.js";
 import "../groups/elements/entry-title.js";
 import "../applets/elements/applet-title.js";
+import "../applet-bundles/elements/applet-bundle-title.js";
 import "./views/cross-applet-main.js";
 import "./views/cross-applet-block.js";
 import "./views/welcome-view.js";
@@ -140,7 +141,7 @@ export class DynamicLayout extends LitElement {
           html`
             <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
               <group-logo></group-logo>
-              <span>${msg("Home")}</span>
+              <span style="margin-left: 4px">${msg("Home")}</span>
             </group-context>
           `}
         .template=${({ groupDnaHash }, container) => html`
@@ -196,6 +197,7 @@ export class DynamicLayout extends LitElement {
             <applet-title
               .appletHash=${decodeHashFromBase64(appletHash)}
             ></applet-title>
+            <span>: ${block}</span>
           `}
         .template=${({ appletHash, block, context }) => html`
           <applet-block
@@ -209,6 +211,10 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="cross-applet-main"
+        .titleRenderer=${({ appletBundleHash }) =>
+          html`<applet-bundle-title
+            .appletBundleHash=${decodeHashFromBase64(appletBundleHash)}
+          ></applet-bundle-title>`}
         .template=${({ appletBundleHash }) => html` <cross-applet-main
           .appletBundleHash=${decodeHashFromBase64(appletBundleHash)}
           style="flex: 1"
@@ -217,6 +223,11 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="cross-applet-block"
+        .titleRenderer=${({ appletBundleHash, block }) =>
+          html`<applet-bundle-title
+              .appletBundleHash=${encodeHashToBase64(appletBundleHash)}
+            ></applet-bundle-title>
+            <span>: ${block}</span> `}
         .template=${({
           appletBundleHash,
           block,

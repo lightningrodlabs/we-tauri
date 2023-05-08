@@ -1,7 +1,7 @@
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 import { msg } from "@lit/localize";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 
@@ -11,6 +11,7 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 import { groupStoreContext } from "../context";
 import { GroupStore } from "../group-store";
+import { weStyles } from "../../shared-styles";
 
 @customElement("group-logo")
 export class GroupLogo extends LitElement {
@@ -19,21 +20,23 @@ export class GroupLogo extends LitElement {
 
   groupProfile = new StoreSubscriber(
     this,
-    () => this.groupStore.groupProfile,
-    () => []
+    () => this.groupStore?.groupProfile,
+    () => [this.groupStore]
   );
 
   renderLogo(groupProfile: GroupProfile | undefined) {
     if (!groupProfile) return html``;
 
-    return html` <img .src=${groupProfile.logo_src} style="height: 16px; width: 16px;"></img> `;
+    return html` <img .src=${groupProfile.logo_src} style="border-radius: 50%"></img> `;
   }
 
   render() {
+    if (!this.groupProfile.value) return html``;
+
     switch (this.groupProfile.value.status) {
       case "pending":
         return html`<div class="row center-content" style="flex: 1">
-          <sl-spinner style="font-size: 2rem"></sl-spinner>
+          <sl-spinner style="font-size: 16px"></sl-spinner>
         </div>`;
       case "complete":
         return this.renderLogo(this.groupProfile.value.value);
@@ -45,4 +48,21 @@ export class GroupLogo extends LitElement {
         ></display-error>`;
     }
   }
+
+  static styles = [
+    weStyles,
+    css`
+      :host {
+        display: flex;
+        align-items: center;
+      }
+      sl-spinner {
+        font-size: var(--size, 16px);
+      }
+      img {
+        width: var(--size, 16px);
+        height: var(--size, 16px);
+      }
+    `,
+  ];
 }

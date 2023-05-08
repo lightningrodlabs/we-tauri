@@ -29,7 +29,7 @@ export class InstallableApplets extends LitElement {
 
   _installableApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.appletBundlesStore.appletBundles
+    () => this.groupStore.appletBundlesStore.allAppletBundles
   );
 
   @query("#applet-dialog")
@@ -79,7 +79,6 @@ export class InstallableApplets extends LitElement {
                   title: item.app.content.title,
                   subtitle: item.app.content.subtitle,
                   description: item.app.content.description,
-                  icon: undefined, // ADD ICON HERE
                   devhubHappReleaseHash: latestRelease.address,
                   devhubGuiReleaseHash: latestRelease.content.official_gui!,
                 };

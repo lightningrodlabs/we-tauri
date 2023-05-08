@@ -81,7 +81,7 @@ export class GroupStore {
     return this.appletBundlesStore.installApplet(appletHash, applet);
   }
 
-  // Fetches the applet from the devhub, install its in the current conductor, and registers it in the group DNA
+  // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
   async installAppletBundle(
     appletMetadata: AppletBundleMetadata,
     customName: string
@@ -104,11 +104,6 @@ export class GroupStore {
     await this.appletBundlesStore.installApplet(appletHash, applet);
 
     return appletHash;
-  }
-
-  async uninstallApplet(appletHash: EntryHash) {
-    await this.groupClient.unregisterApplet(appletHash);
-    await this.appletBundlesStore.uninstallApplet(appletHash);
   }
 
   federatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>

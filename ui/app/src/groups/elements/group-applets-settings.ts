@@ -1,15 +1,16 @@
 import {
+  asyncDeriveAndJoin,
   AsyncReadable,
   joinAsyncMap,
   pipe,
   StoreSubscriber,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { customElement, state } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
-import { slice } from "@holochain-open-dev/utils";
 import {
   hashState,
   notifyError,
@@ -19,34 +20,45 @@ import { mdiDelete, mdiExportVariant, mdiToyBrickPlus } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 
 import "./federate-applet-dialog.js";
+import "./group-context.js";
+import "./group-logo.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
+import { mapAndJoin, sliceAndJoin } from "../../utils.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
 
 @localized()
 @customElement("group-applets-settings")
 export class GroupAppletsSettings extends LitElement {
+  @consume({ context: weStoreContext, subscribe: true })
+  _weStore!: WeStore;
+
   @consume({ context: groupStoreContext, subscribe: true })
   _groupStore!: GroupStore;
 
   _groupApplets = new StoreSubscriber(
     this,
     () =>
-      pipe(
-        this._groupStore.allApplets,
-        (allApplets) =>
-          joinAsyncMap(
-            slice(this._groupStore.applets, allApplets)
-          ) as AsyncReadable<ReadonlyMap<EntryHash, Applet>>
+      asyncDeriveAndJoin(
+        pipe(this._groupStore.allApplets, (allApplets) =>
+          sliceAndJoin(this._groupStore.applets, allApplets)
+        ),
+        (applets) =>
+          mapAndJoin(applets, (applet, appletHash) =>
+            this._groupStore.federatedGroups.get(appletHash)
+          )
       ),
     () => [this._groupStore]
   );
@@ -63,7 +75,19 @@ export class GroupAppletsSettings extends LitElement {
   async uninstallApplet(appletToUninstall: EntryHash) {
     this.uninstalling = true;
     try {
-      await this._groupStore.uninstallApplet(appletToUninstall);
+      await this._groupStore.groupClient.unregisterApplet(appletToUninstall!);
+
+      const groupsForApplet = await toPromise(
+        this._weStore.groupsForApplet.get(appletToUninstall)
+      );
+      const otherGroupsForApplet = Array.from(groupsForApplet.keys()).filter(
+        (groupDnaHash) =>
+          groupDnaHash.toString() !== this._groupStore.groupDnaHash.toString()
+      );
+
+      if (otherGroupsForApplet.length === 0)
+        this._weStore.appletBundlesStore.uninstallApplet(appletToUninstall);
+
       this.appletToUninstall = undefined;
     } catch (e) {
       notifyError(msg("Error uninstalling applet."));
@@ -110,13 +134,17 @@ export class GroupAppletsSettings extends LitElement {
     if (!this.appletToFederate) return html``;
 
     return html`<federate-applet-dialog
+      .appletHash=${this.appletToFederate}
       @sl-hide=${() => {
         this.appletToFederate = undefined;
       }}
     ></federate-applet-dialog>`;
   }
 
-  renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
+  renderInstalledApplets(
+    applets: ReadonlyMap<EntryHash, Applet>,
+    federatedGroups: ReadonlyMap<EntryHash, Array<DnaHash>>
+  ) {
     if (applets.size === 0)
       return html`
         <div class="row center-content" style="flex: 1">
@@ -124,7 +152,7 @@ export class GroupAppletsSettings extends LitElement {
             >${msg(
               "This group doesn't have any applets installed yet. Go to the applet library (the "
             )} <sl-icon .src=${wrapPathInSvg(mdiToyBrickPlus)}></sl-icon>${msg(
-              " icon above) to install applets to this group."
+              " icon in the group home view) to install applets to this group."
             )}
           </span>
         </div>
@@ -138,7 +166,7 @@ export class GroupAppletsSettings extends LitElement {
           .map(
             ([appletHash, applet]) =>
               html`
-                <sl-card style="width: 600px">
+                <sl-card style="width: 600px; margin-top: 16px">
                   <div class="row" style="flex: 1; align-items: center">
                     <img
                       style="width: 48px; height: 48px; border-radius: 50%; margin-right: 16px"
@@ -146,20 +174,34 @@ export class GroupAppletsSettings extends LitElement {
                     />
                     <span style="flex: 1">${applet.custom_name}</span>
 
-                    <sl-icon-button
-                      .src=${wrapPathInSvg(mdiExportVariant)}
-                      style="font-size: 2rem"
-                      @click=${() => {
-                        this.appletToFederate = appletHash;
-                      }}
-                    ></sl-icon-button>
-                    <sl-icon-button
-                      .src=${wrapPathInSvg(mdiDelete)}
-                      style="font-size: 2rem"
-                      @click=${() => {
-                        this.appletToUninstall = appletHash;
-                      }}
-                    ></sl-icon-button>
+                    ${Array.from(federatedGroups.get(appletHash)!).map(
+                      (groupDnaHash) => html`
+                        <group-context .groupDnaHash=${groupDnaHash}>
+                          <group-logo
+                            style="margin-right: 8px; --size: 32px"
+                          ></group-logo
+                        ></group-context>
+                      `
+                    )}
+
+                    <sl-tooltip .content=${msg("Federate")}>
+                      <sl-icon-button
+                        .src=${wrapPathInSvg(mdiExportVariant)}
+                        style="font-size: 2rem"
+                        @click=${() => {
+                          this.appletToFederate = appletHash;
+                        }}
+                      ></sl-icon-button>
+                    </sl-tooltip>
+                    <sl-tooltip .content=${msg("Uninstall")}>
+                      <sl-icon-button
+                        .src=${wrapPathInSvg(mdiDelete)}
+                        style="font-size: 2rem"
+                        @click=${() => {
+                          this.appletToUninstall = appletHash;
+                        }}
+                      ></sl-icon-button>
+                    </sl-tooltip>
                   </div>
                 </sl-card>
               `
@@ -180,7 +222,10 @@ export class GroupAppletsSettings extends LitElement {
           .error=${this._groupApplets.value.error.data.data}
         ></display-error>`;
       case "complete":
-        return this.renderInstalledApplets(this._groupApplets.value.value);
+        return this.renderInstalledApplets(
+          this._groupApplets.value.value[0],
+          this._groupApplets.value.value[1]
+        );
     }
   }
 

@@ -49,7 +49,7 @@ export class GroupsSidebar extends LitElement {
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+                style="margin-top: 4px; margin-bottom: 4px; border-radius: 50%;"
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
                 @click=${() => {

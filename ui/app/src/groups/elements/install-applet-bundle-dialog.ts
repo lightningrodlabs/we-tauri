@@ -62,7 +62,6 @@ export class InstallAppletBundleDialog extends LitElement {
     description: "",
     devhubHappReleaseHash: new Uint8Array(0),
     devhubGuiReleaseHash: new Uint8Array(0),
-    icon: undefined,
   };
 
   open(appletInfo: AppletBundleMetadata) {

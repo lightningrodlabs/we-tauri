@@ -14,7 +14,14 @@ import { localized, msg } from "@lit/localize";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
+import {
+  AsyncReadable,
+  join,
+  joinAsyncMap,
+  pipe,
+  StoreSubscriber,
+  toPromise,
+} from "@holochain-open-dev/stores";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
@@ -29,6 +36,8 @@ import { WeStore } from "../../we-store";
 import { GroupProfile } from "../../../../libs/we-applet/dist";
 import { GroupStore } from "../group-store";
 import { groupStoreContext } from "../context";
+import { sliceAndJoin } from "../../utils";
+import { mapValues, slice } from "@holochain-open-dev/utils";
 
 @localized()
 @customElement("federate-applet-dialog")
@@ -44,8 +53,35 @@ export class FederateAppletDialog extends LitElement {
 
   _groups = new StoreSubscriber(
     this,
-    () => this._weStore.allGroupsProfiles,
-    () => []
+    () =>
+      pipe(
+        join([
+          this._weStore.allGroups,
+          this._weStore.groupsForApplet.get(this.appletHash),
+        ]) as AsyncReadable<
+          [ReadonlyMap<DnaHash, GroupStore>, ReadonlyMap<DnaHash, GroupStore>]
+        >,
+        ([allGroups, groupsForThisApplet]) => {
+          const groupsToFederate = Array.from(allGroups.keys()).filter(
+            (groupDnaHash) =>
+              groupDnaHash.toString() !==
+                this._groupStore.groupDnaHash.toString() &&
+              !Array.from(groupsForThisApplet.keys()).find(
+                (g) => g.toString() === groupDnaHash.toString()
+              )
+          );
+          return joinAsyncMap(
+            mapValues(
+              slice(allGroups, groupsToFederate) as ReadonlyMap<
+                DnaHash,
+                GroupStore
+              >,
+              (groupStore) => groupStore?.groupProfile
+            )
+          );
+        }
+      ),
+    () => [this.appletHash]
   );
 
   @state()
@@ -56,7 +92,30 @@ export class FederateAppletDialog extends LitElement {
 
     this.federating = true;
     try {
-      // await this._groupStore.uninstallApplet(appletToFederate);
+      const appletStore = await toPromise(
+        this._weStore.applets.get(this.appletHash)
+      );
+      const groupStore = await toPromise(
+        this._weStore.groups.get(groupDnaHash)
+      );
+
+      if (!appletStore) throw new Error("Applet not found");
+
+      const applet = appletStore.applet;
+      await groupStore.groupClient.registerApplet(applet);
+
+      // Two way link from one group to the other
+      // TODO: what to do when the applet is uninstalled
+      await this._groupStore.groupClient.federateApplet(
+        this.appletHash,
+        groupDnaHash
+      );
+      await groupStore.groupClient.federateApplet(
+        this.appletHash,
+        this._groupStore.groupDnaHash
+      );
+      const dialog = this.shadowRoot?.getElementById("dialog") as SlDialog;
+      dialog.hide();
     } catch (e) {
       notifyError(msg("Error federating applet."));
       console.error(e);
@@ -72,11 +131,7 @@ export class FederateAppletDialog extends LitElement {
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
-        const groups = Array.from(this._groups.value.value.entries()).filter(
-          ([groupDnaHash, p]) =>
-            p !== undefined &&
-            groupDnaHash.toString() !== this._groupStore.groupDnaHash.toString()
-        ) as Array<[DnaHash, GroupProfile]>;
+        const groups = Array.from(this._groups.value.value.entries());
 
         return html`
           <form
@@ -100,18 +155,16 @@ export class FederateAppletDialog extends LitElement {
               name="groupDnaHash"
               @sl-hide=${(e) => e.stopPropagation()}
               style="margin-top: 16px"
+              required
             >
               ${groups.map(
                 ([groupDnaHash, groupProfile]) => html`
-                  <sl-option
-                    .value=${encodeHashToBase64(groupDnaHash)}
-                    required
-                  >
+                  <sl-option .value=${encodeHashToBase64(groupDnaHash)}>
                     <img
                       slot="prefix"
-                      .src=${groupProfile.logo_src}
+                      .src=${groupProfile?.logo_src}
                       style="height: 16px; width: 16px"
-                    />${groupProfile.name}</sl-option
+                    />${groupProfile?.name}</sl-option
                   >
                 `
               )}
@@ -129,7 +182,7 @@ export class FederateAppletDialog extends LitElement {
             .loading=${this.federating}
             variant="primary"
             type="submit"
-            for="form"
+            form="form"
             >${msg("Federate")}</sl-button
           >
         `;

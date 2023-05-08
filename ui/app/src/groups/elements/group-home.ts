@@ -1,4 +1,8 @@
-import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
+import {
+  notify,
+  sharedStyles,
+  wrapPathInSvg,
+} from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
@@ -19,6 +23,7 @@ import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/tab-group/tab-group.js";
 import "@shoelace-style/shoelace/dist/components/tab-panel/tab-panel.js";
 import "@shoelace-style/shoelace/dist/components/tab/tab.js";
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
 import "./group-peers-status.js";
@@ -116,15 +121,27 @@ export class GroupHome extends LitElement {
                 )}</span
               >
 
-              <a
-                style="pointer-events: none"
-                href="https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
-                  originalGroupDnaHash
-                )}/${networkSeed}"
-                >https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
-                  originalGroupDnaHash
-                )}/${networkSeed}</a
-              >
+              <div class="row" style="margin-top: 16px">
+                <sl-input
+                  value="https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
+                    originalGroupDnaHash
+                  )}/${networkSeed}"
+                  style="margin-right: 8px; flex: 1"
+                >
+                </sl-input>
+                <sl-button
+                  variant="primary"
+                  @click=${async () => {
+                    await navigator.clipboard.writeText(
+                      `https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
+                        originalGroupDnaHash
+                      )}/${networkSeed}`
+                    );
+                    notify(msg("Invite link copied to clipboard."));
+                  }}
+                  >${msg("Copy")}</sl-button
+                >
+              </div>
             </div>
           </sl-dialog>
 
@@ -153,7 +170,7 @@ export class GroupHome extends LitElement {
             @click=${() => {
               this.view = "main";
             }}
-            style="margin-right: 16px"
+            style="margin-right: 16px; font-size: 1rem"
           ></sl-icon-button>
           <span class="title">${msg("Group Settings")}</span>
         </div>
