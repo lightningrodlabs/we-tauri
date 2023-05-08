@@ -39,6 +39,7 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
+import { openDevhub } from "../../tauri.js";
 
 type View = "main" | "applets-library" | "settings";
 
@@ -218,7 +219,12 @@ export class GroupHome extends LitElement {
                 }}
                 style="margin-right: 16px"
               ></sl-icon-button>
-              <span class="title">${msg("Applets Library")}</span>
+              <span class="title" style="flex: 1"
+                >${msg("Applets Library")}</span
+              >
+              <sl-button @click=${() => openDevhub()}
+                >${msg("Publish an applet")}</sl-button
+              >
             </div>
 
             <installable-applets

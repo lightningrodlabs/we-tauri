@@ -14,6 +14,7 @@ mod launch;
 mod state;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
+    devhub::open_devhub,
     install_applet_bundle::{fetch_icon, install_applet_bundle},
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
@@ -50,6 +51,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
+            open_devhub,
             install_applet_bundle,
             create_password,
             enter_password,

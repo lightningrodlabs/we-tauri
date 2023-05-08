@@ -20,6 +20,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v2
 
       - name: Extend space
         uses: ./.github/actions/extend-space

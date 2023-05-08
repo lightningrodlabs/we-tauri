@@ -42,6 +42,10 @@ export async function createPassword(
   return invoke("create_password", { password, mdns });
 }
 
+export async function openDevhub() {
+  return invoke("open_devhub");
+}
+
 /** Copied from https://github.com/holochain/holochain-client-js/blob/main/src/environments/launcher.ts */
 type TauriByteArray = number[]; // Tauri requires a number array instead of a Uint8Array
 

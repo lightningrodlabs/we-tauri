@@ -36,15 +36,19 @@ export class CreatePassword extends LitElement {
   }
 
   render() {
-    return html` <sl-card>
+    return html` <sl-card style="max-width: 500px">
       <span class="title" slot="header">${msg("Create Password")}</span>
-      <span style="margin-bottom: 16px"
-        >${msg(
-          "We'll use this password to encrypt and protect all your data in We. Note that there is no password recovery mechanism, so be careful not to lose it."
-        )}</span
-      >
 
       <form class="column" ${onSubmit((f) => this.createPassword(f.password))}>
+        <span style="margin-bottom: 16px;"
+          >${msg(
+            "We'll use this password to encrypt and protect all your data in We."
+          )}</span
+        ><span style="margin-bottom: 16px;"
+          >${msg(
+            "Note that there is no password recovery mechanism, so be careful not to lose it."
+          )}</span
+        >
         <sl-input
           id="password-field"
           type="password"
