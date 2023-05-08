@@ -46,8 +46,10 @@ export class GroupApplets extends LitElement {
   renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
     if (applets.size === 0)
       return html`
-        <div class="row center-content" style="flex: 1">
-          <span class="placeholder" style="margin: 24px"
+        <div class="column" style="flex: 1; align-items: center">
+          <span
+            class="placeholder"
+            style="margin: 24px; max-width: 600px; text-align: center;"
             >${msg(
               "This group doesn't have any applets installed yet. Go to the applet library (the "
             )} <sl-icon .src=${wrapPathInSvg(mdiToyBrickPlus)}></sl-icon>${msg(
@@ -109,6 +111,7 @@ export class GroupApplets extends LitElement {
     weStyles,
     css`
       :host {
+        display: flex;
       }
     `,
   ];

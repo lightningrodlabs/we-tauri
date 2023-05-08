@@ -25,6 +25,7 @@ import "@shoelace-style/shoelace/dist/components/tab-panel/tab-panel.js";
 import "@shoelace-style/shoelace/dist/components/tab/tab.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 import "./group-peers-status.js";
 import "./installable-applets.js";
@@ -72,7 +73,7 @@ export class GroupHome extends LitElement {
     return html`
       <div class="row" style="flex: 1">
         <div class="column" style="flex: 1; margin: 16px">
-          <div class="row" style="align-items: center; margin-bottom: 16px">
+          <div class="row" style="align-items: center; margin-bottom: 24px">
             <div class="row" style="align-items: center; flex: 1;">
               <img
                 .src=${groupProfile.logo_src}
@@ -98,17 +99,24 @@ export class GroupHome extends LitElement {
             ></sl-icon-button>
           </div>
 
-          <div class="column">
+          <div class="column" style="flex: 1">
             <span class="title">${msg("Applets")}</span>
-            <group-applets style="margin-top: 16px;"></group-applets>
+            <sl-divider style="--color: grey"></sl-divider>
+            <group-applets style="margin-top: 16px; flex: 1"></group-applets>
           </div>
         </div>
 
         <div
           class="column"
-          style="background-color: var(--sl-color-primary-300); padding: 16px"
+          style="width: 260px; padding: 16px; background-color: var(--sl-color-primary-100)"
         >
-          <group-peers-status style="flex: 1"></group-peers-status>
+          <div class="flex-scrollable-parent">
+            <div class="flex-scrollable-container">
+              <div class="flex-scrollable-y">
+                <group-peers-status></group-peers-status>
+              </div>
+            </div>
+          </div>
 
           <sl-dialog
             id="invite-member-dialog"
@@ -239,7 +247,7 @@ export class GroupHome extends LitElement {
         if (!groupProfile)
           return html`<div class="column center-content" style="flex: 1">
             <h2>${msg("Out of sync")}</h2>
-            <span
+            <span style="max-width: 600px; text-align: center"
               >${msg(
                 "Ask one of the members of this group to launch We so that you can synchronize with this group."
               )}</span

@@ -7,16 +7,51 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 import { weStyles } from "../../shared-styles.js";
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
-import { mdiAccountMultiplePlus, mdiHome } from "@mdi/js";
+import { mdiAccountMultiplePlus } from "@mdi/js";
 
 @localized()
 @customElement("welcome-view")
 export class WelcomeView extends LitElement {
+  renderExplanationCard() {
+    return html`
+      <sl-card style="flex: 1">
+        <span class="title" slot="header">${msg("What is We?")}</span>
+        <div class="column" style="text-align: left; font-size: 1.15em;">
+          <span>${msg("We is a group collaboration OS.")}</span>
+          <br />
+          <span
+            >${msg(
+              "In We, first you create a group, and then you install applets to that group."
+            )}</span
+          >
+          <br />
+          <span
+            >${msg(
+              "You can see all the groups you are part of in the left sidebar."
+            )}</span
+          >
+          <br />
+          <span
+            >${msg(
+              "You can also see all the applets that you have installed in the top sidebar, if you have any."
+            )}</span
+          >
+          <br />
+          <span
+            >${msg(
+              "WARNING! We is in alpha version, which means that is not ready for production use yet. Expect bugs, breaking changes, and to lose all the data for all groups when you upgrade to a new version of We."
+            )}</span
+          >
+        </div>
+      </sl-card>
+    `;
+  }
+
   renderManagingGroupsCard() {
     return html`
-      <sl-card>
-        <span slot="header">${msg("Managing Groups")}</span>
-        <div class="default-font" style="text-align: left; font-size: 1.15em;">
+      <sl-card style="flex: 1; margin-left: 16px">
+        <span class="title" slot="header">${msg("Managing Groups")}</span>
+        <div style="text-align: left; font-size: 1.15em;">
           <ol style="line-height: 180%; margin: 0;">
             <li>
               ${msg('To create a new group, click on the "Add Group"')}
@@ -28,7 +63,7 @@ export class WelcomeView extends LitElement {
             </li>
             <li>
               ${msg(
-                "In we, you have a profile for each group you are in. When you create a group, you will be prompted to create a profile for this group."
+                "After creating a group, create a profile for this group. Only the members of that group are going to be able to see your profile."
               )}
             </li>
             <li>
@@ -53,8 +88,8 @@ export class WelcomeView extends LitElement {
           <div>${msg("Welcome to We!")}</div>
         </div>
 
-        <div class="row" style="margin-top: 48px;">
-          ${this.renderManagingGroupsCard()}
+        <div class="row" style="margin-top: 48px; max-width: 1200px">
+          ${this.renderExplanationCard()} ${this.renderManagingGroupsCard()}
         </div>
       </div>
     `;

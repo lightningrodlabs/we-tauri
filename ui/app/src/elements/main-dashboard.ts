@@ -27,6 +27,7 @@ import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
+import { weLogoIcon } from "../icons/we-logo-icon.js";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
@@ -125,9 +126,15 @@ export class MainDashboard extends LitElement {
           <div class="column top-left-corner">
             <sidebar-button
               style="border-radius: 50%;"
-              logoSrc="/we_logo.png"
-              tooltipText="Home"
-              @click=${() => {}}
+              .logoSrc=${weLogoIcon}
+              .tooltipText=${msg("Welcome")}
+              @click=${() => {
+                this.dynamicLayout.openTab({
+                  type: "component",
+                  componentType: "welcome",
+                  title: msg("Welcome"),
+                });
+              }}
             ></sidebar-button>
           </div>
 
@@ -212,21 +219,19 @@ export class MainDashboard extends LitElement {
         }
 
         .top-left-corner {
+          z-index: 1;
           align-items: center;
           justify-content: center;
           background-color: transparent;
           height: 64px;
-          z-index: 1;
         }
 
         .left-sidebar {
           overflow-y: auto;
-          z-index: 1;
         }
 
         .top-bar {
           overflow-x: auto;
-          z-index: 0.5;
           min-height: 64px;
           align-items: center;
         }
@@ -237,7 +242,7 @@ export class MainDashboard extends LitElement {
         }
 
         applets-sidebar {
-          z-index: 1;
+          z-index: 0;
           background-color: var(--sl-color-primary-600);
         }
       `,
