@@ -1,6 +1,6 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
-import { SensemakerStore, sensemakerStoreContext } from "@lightningrodlabs/we-applet";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -68,20 +68,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
 
-  @state()
-  allAssessments: Array<Assessment> = [];
-
-  async firstUpdated() {
-    try {
-
-      this.allAssessments = await this._sensemakerStore.getAllAssessments()
-    }
-    catch (e) {
-      console.log("Error getting assessments:", e);
-    }
-  }
-
-  
   renderJoinErrorSnackbar() {
     return html`
       <mwc-snackbar
@@ -168,7 +154,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           }
       `
     }
-
     return html`
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
@@ -234,7 +219,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       </div>
                     </div>
 
-                    <sensemaker-dashboard .allAssessments=${this.allAssessments}></sensemaker-dashboard>
+                    <sensemaker-dashboard></sensemaker-dashboard>
                     <we-group-settings
                       @join-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
@@ -318,11 +303,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
             <div class="row" style="flex: 1">
 
               ${this.renderContent()}
-
               <div class="column members-sidebar">
-                  <my-profile style="margin-bottom: 20px;"></my-profile>
-                  ${this.renderMembers()}
-                </div>
+                <my-profile style="margin-bottom: 20px;"></my-profile>
+                ${this.renderMembers()}
+              </div>
             </div>
 
           </profile-prompt>
