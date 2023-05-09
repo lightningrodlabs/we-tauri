@@ -3,13 +3,16 @@ import 'lib/{{dna_role_name}}/{{kebab_case coordinator_zome_manifest.name}}/dist
 {{#merge_scope previous_file_content (concat (snake_case coordinator_zome_manifest.name) "_integrity: {" ) }}
 {{previous_scope_content}},
     {{snake_case entry_type.name}}: {
-      name: async (hash: ActionHash) => '',
-      view: (element, hash: ActionHash, context) =>
+      info: async (hrl: Hrl) => ({
+        name: '',
+        icon_src: ''
+      }),
+      view: (element: HTMLElement, hrl: Hrl, context: any) =>
         render(
-          wrap{{pascal_case coordinator_zome_manifest.name}}GroupView(
+          wrap{{pascal_case coordinator_zome_manifest.name}}AppletView(
             client,
-            groupProfile,
-            groupServices,
+            profilesClient,
+            weServices,
             html` <{{kebab_case entry_type.name}}-detail .{{camel_case entry_type.name}}Hash=${hash}></{{kebab_case entry_type.name}}-detail> `
           ),
         element

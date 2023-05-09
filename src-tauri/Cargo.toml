@@ -1,8 +1,12 @@
 [package]
 name = "we"
-version = "0.0.1"
-description = "An alternative holochain runtime focused"
-authors = ["you"]
+version = "0.0.11"
+description = "An alternative holochain runtime focused on groups"
+authors = [
+  "eric@harris-braun.com",
+  "matthme@protonmail.com",
+  "guillem.cordoba@gmail.com",
+]
 license = ""
 repository = ""
 edition = "2021"
@@ -13,13 +17,7 @@ edition = "2021"
 tauri-build = { version = "1.3", features = [] }
 
 [dependencies]
-tauri = { version = "1.3", features = [
-  "cli",
-  "clipboard-write-text",
-  "http-all",
-  "protocol-all",
-  "shell-open",
-] }
+tauri = { version = "1.3", features = ["cli", "clipboard-write-text", "http-all", "protocol-all", "shell-open"] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"

@@ -5,8 +5,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "we",
-    "version": "0.0.0"
+    "productName": "We",
+    "version": "0.0.11"
   },
   "tauri": {
     "cli": {
@@ -47,7 +47,7 @@
         "icons/icon.ico"
       ],
       "externalBin": ["bins/lair-keystore-v0.2.3"],
-      "identifier": "we",
+      "identifier": "org.lightningrodlabs.we",
       "targets": "all"
     },
     "security": {

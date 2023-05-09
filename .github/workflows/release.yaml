@@ -1,0 +1,89 @@
+name: "publish"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-10.15, ubuntu-18.04, windows-2019]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 10.13
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v2
+
+      - name: Extend space
+        uses: ./.github/actions/extend-space
+        
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v18
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.12.0/install
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v10
+        with:
+          name: holochain-ci
+
+      - name: Install and prepare
+        run: |
+          npm i
+          cargo install holochain_cli --version 0.1.4
+
+      - name: Install and prepare
+        if: matrix.platform == 'windows-2019'
+        run: |
+          mkdir src-tauri/bins
+
+          cargo install --version 0.2.3 lair_keystore
+          $LkPath = Get-Command lair-keystore | Select-Object -ExpandProperty Definition
+          Copy-Item $LkPath -Destination src-tauri/bins/lair-keystore-v0.2.3-x86_64-pc-windows-msvc.exe
+
+      - name: setup binaries (macos only)
+        if: matrix.platform == 'macos-10.15'
+        run: |
+          mkdir src-tauri/bins
+
+          cargo install --version 0.2.3 lair_keystore
+          LAIR_PATH=$(which lair-keystore)
+          cp $LAIR_PATH src-tauri/bins/lair-keystore-v0.2.3-x86_64-apple-darwin
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-18.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libcanberra-gtk-module libcanberra-gtk3-module build-essential curl wget libssl-dev libgtk-3-dev squashfs-tools libgtksourceview-3.0-dev libappindicator3-dev patchelf librsvg2-dev ayatana-indicator-application
+
+      - name: setup binaries (ubuntu only)
+        if: matrix.platform == 'ubuntu-18.04'
+        run: |
+          mkdir src-tauri/bins
+
+          cargo install --version 0.2.3 lair_keystore
+          LAIR_PATH=$(which lair-keystore)
+          cp $LAIR_PATH src-tauri/bins/lair-keystore-v0.2.3-x86_64-unknown-linux-gnu
+
+      - name: build the app (macOS and Linux only)
+        uses: tauri-apps/tauri-action@v0
+
+        with:
+          projectPath: src-tauri # specifying to prevent action from looking for artifacts in crates/hc_launch/src-tauri
+          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
+          releaseName: "We v__VERSION__"
+          releaseBody: "See assets below to download and install this version."
+          releaseDraft: true
+          prerelease: true
+

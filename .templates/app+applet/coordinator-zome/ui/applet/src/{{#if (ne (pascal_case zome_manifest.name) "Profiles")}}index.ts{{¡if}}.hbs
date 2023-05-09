@@ -6,15 +6,20 @@ import 'lib/{{dna_role_name}}/{{kebab_case zome_manifest.name}}/dist/elements/{{
   {{snake_case zome_manifest.name}}_integrity: {},
 {{/merge_scope}}
 
-function wrap{{pascal_case zome_manifest.name}}GroupView(
+function wrap{{pascal_case zome_manifest.name}}AppletView(
   client: AppAgentClient,
-  groupProfile: GroupProfile,
-  groupServices: GroupServices,
+  profilesClient: ProfilesClient,
+  weServices: WeServices,
   innerTemplate: TemplateResult
 ): TemplateResult {
   const {{camel_case zome_manifest.name}}Store = new {{pascal_case zome_manifest.name}}Store(new {{pascal_case zome_manifest.name}}Client(client, '{{snake_case zome_manifest.name}}'));
-  return html`<{{kebab_case zome_manifest.name}}-context .store=${ {{camel_case zome_manifest.name}}Store}>
-      ${innerTemplate}
-    </{{kebab_case zome_manifest.name}}-context>`;
+  return wrapAppletView(
+    client,
+    profilesClient,
+    weServices,
+      html`<{{kebab_case zome_manifest.name}}-context .store=${ {{camel_case zome_manifest.name}}Store}>
+        ${innerTemplate}
+      </{{kebab_case zome_manifest.name}}-context>`
+    );
 }
 

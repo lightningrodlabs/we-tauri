@@ -7,7 +7,7 @@ DIR=$(pwd)
 cd /tmp
 rm -rf forum-applet
 
-hc-scaffold web-app forum-applet --setup-nix true --template applet --templates-path ${DIR}/.templates
+hc-scaffold web-app forum-applet --setup-nix true --template app+applet --templates-path ${DIR}/.templates
 
 cd forum-applet
 

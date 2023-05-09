@@ -22,10 +22,11 @@ Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and d
 
 ### Installing the repository
 
-1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
-2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`
-3. Enter the nix shell: `nix develop`
-4. Run: `npm install`
+1. Install the holochain dev environment: https://developer.holochain.org/docs/install/.
+2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`.
+3. Enter the nix shell: `nix develop`.
+4. Run: `npm install`.
+5. Run: `npm run prepare:lair`.
 
 ### Running the DNA tests
 
@@ -59,7 +60,13 @@ To check whether this has finished, look in the terminal for the log: `Published
 
 ### Building
 
-To build *We*:
+Inside the nix shell run:
+
+```bash
+npm run build:happ
+```
+
+Then, **exit** the nix shell and run:
 
 ``` bash
 npm run build
