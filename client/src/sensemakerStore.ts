@@ -41,7 +41,7 @@ export class SensemakerStore {
   constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker')
   {
     client.on("signal", (signal: AppSignal) => {
-      console.log("received signal: ", signal)
+      console.log("received signal in sensemaker store: ", signal)
       const payload = (signal.payload as SignalPayload);
 
       switch (payload.type) {
