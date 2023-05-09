@@ -30,10 +30,7 @@ export class GroupClient {
   /** Applets */
 
   async getApplets(): Promise<Array<EntryHash>> {
-    console.log("asf1");
-    const r = await this.callZome("get_applets", null);
-    console.log("asdf2");
-    return r;
+    return this.callZome("get_applets", null);
   }
 
   async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {

@@ -129,7 +129,7 @@ export class AppletViewEl extends LitElement {
       appletId: this.appletHash,
       profilesLocation: {
         profilesAppId: this.weStore.conductorInfo.we_app_id,
-        profilesRoleName: groupStore.roleName,
+        profilesRoleName: groupStore?.roleName,
       },
       view: this.view,
     };

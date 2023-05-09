@@ -21,6 +21,7 @@ import {
   WeApplet,
   WeServices,
 } from "@lightningrodlabs/we-applet";
+import { decode } from "@msgpack/msgpack";
 
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
   const appletClient = await AppAgentWebsocket.connect(
@@ -28,12 +29,13 @@ async function setupAppAgentClient(appPort: number, installedAppId: string) {
     installedAppId
   );
 
-  const cz = appletClient.callZome;
-
-  appletClient.callZome = async (request: CallZomeRequest) => {
-    const signedRequest = await signZomeCall(request);
-    return cz(signedRequest);
-  };
+  appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
+    "call_zome",
+    {
+      input: async (request) => signZomeCall(request),
+      output: (o) => decode(o as any),
+    }
+  );
 
   return appletClient;
 }

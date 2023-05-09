@@ -198,7 +198,7 @@ export class GroupAppletsSettings extends LitElement {
                     <sl-tooltip .content=${msg("Uninstall")}>
                       <sl-icon-button
                         .src=${wrapPathInSvg(mdiDelete)}
-                        style="font-size: 2rem"
+                        style="font-size: 2rem; display: none"
                         @click=${() => {
                           this.appletToUninstall = appletHash;
                         }}

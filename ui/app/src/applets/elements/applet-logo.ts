@@ -45,7 +45,7 @@ export class AppletLogo extends LitElement {
     switch (this.appletLogo.value.status) {
       case "pending":
         return html`<sl-skeleton
-          style="width: height: 64px; width: 64px; border-radius: 8px"
+          style="height: 64px; width: 64px; border-radius: 8px"
         ></sl-skeleton> `;
       case "complete":
         return this.renderLogo(this.appletLogo.value.value);

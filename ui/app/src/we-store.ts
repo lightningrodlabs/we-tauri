@@ -317,10 +317,12 @@ export class WeStore {
           for (const [appletHash, groups] of Array.from(
             groupsByApplets.entries()
           )) {
-            appletsB64[encodeHashToBase64(appletHash)] = {
-              profilesAppId: this.conductorInfo.we_app_id,
-              profilesRoleName: Array.from(groups.values())[0].roleName,
-            };
+            if (groups.size > 0) {
+              appletsB64[encodeHashToBase64(appletHash)] = {
+                profilesAppId: this.conductorInfo.we_app_id,
+                profilesRoleName: Array.from(groups.values())[0].roleName,
+              };
+            }
           }
           return completed(appletsB64);
         }
