@@ -1,69 +1,88 @@
 import { ActionHash, AppAgentClient, CellType } from '@holochain/client';
 import { html, render, TemplateResult } from 'lit';
+
+import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
+
 import '@holochain-open-dev/profiles/dist/elements/profiles-context.js';
+import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
+import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
 
 import {
-  CrossGroupViews,
-  GroupProfile,
-  GroupServices,
-  GroupViews,
-  GroupWithApplets,
-  OpenViews,
+  Hrl,
+  AppletViews,
+  CrossAppletViews,
   WeApplet,
+  AppletClients,
   WeServices,
-} from '@lightningrodlabs/we-applet';
-import './main-block';
+} from "@lightningrodlabs/we-applet";
 
-function wrapGroupView(
+import './applet-main';
+import './cross-applet-main';
+
+function wrapAppletView(
   client: AppAgentClient,
-  groupProfile: GroupProfile,
-  groupServices: GroupServices,
+  profilesClient: ProfilesClient,
+  weServices: WeServices,
   innerTemplate: TemplateResult
 ): TemplateResult {
   return html`
-    <profiles-context .store=${groupServices.profilesStore}>
-      ${innerTemplate}
-    </profiles-context>`;
+    <we-services-context .services=${weServices}>
+      <profiles-context .store=${new ProfilesStore(profilesClient)}>
+        ${innerTemplate}
+      </profiles-context>
+    </we-services-context>
+  `;
 }
 
-function groupViews(
+function appletViews(
   client: AppAgentClient,
-  groupProfile: GroupProfile,
-  groupServices: GroupServices,
+  appletId: EntryHash,
+  profilesClient: ProfilesClient,
   weServices: WeServices
-): GroupViews {
+): AppletViews {
   return {
-    blocks: {
-      main: element =>
-        render(
-          wrapGroupView(
-            client,
-            groupProfile,
-            groupServices,
-            html`<main-block></main-block>`
-          ),
-          element
+    main: (element) =>
+      render(
+        wrapAppletView(
+          client,
+          profilesClient,
+          weServices,
+          html`
+            <applet-main></applet-main>
+          `
         ),
-    },
+        element
+      ),
+    blocks: {},
     entries: {},
   };
 }
 
-function crossGroupViews(
-  groupWithApplets: GroupWithApplets[]
-): CrossGroupViews {
+function crossAppletViews(
+  applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletId
+  weServices: WeServices
+): CrossAppletViews {
   return {
-    blocks: {
-      main: element => {},
-    },
+    main: (element) =>
+      render(
+        html`
+          <we-services-context .services=${weServices}>
+            <cross-applet-main .applets=${applets}></cross-applet-main>
+          </we-services-context>
+        `,
+        element
+      ),
+    blocks: {},
   };
 }
 
 const applet: WeApplet = {
-  attachableTypes: [],
-  search: async () => [],
-  groupViews,
-  crossGroupViews,
+  appletViews,
+  crossAppletViews,
+  attachmentTypes: async (appletClient: AppAgentClient) => ({}),
+  search: async (appletClient: AppAgentClient, filter: string) => {
+    return [];
+  },
 };
 
 export default applet;

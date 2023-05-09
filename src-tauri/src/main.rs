@@ -101,6 +101,7 @@ fn main() {
 
             let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .title("We")
+                .inner_size(1000.0, 800.0)
                 .build()?;
 
             if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {

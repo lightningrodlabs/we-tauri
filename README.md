@@ -16,26 +16,24 @@ The details on how to create a *we applet* can be found [here](docs/How-to-creat
 
 ## Installation
 
-### Installation via the Holochain Launcher
+Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and download the latest release for your OS.
 
-*We* can be installed within the Holochain launcher. For instructions on how to install the launcher, see the corresponding [github repository](https://github.com/holochain/launcher).
+## Developer Setup
 
-### Installation for Development
-
-#### Installing the repository
+### Installing the repository
 
 1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`
 3. Enter the nix shell: `nix develop`
 4. Run: `npm install`
 
-#### Running the DNA tests
+### Running the DNA tests
 
 ```bash
 npm test
 ```
 
-#### UI
+### UI
 
 To start only one agent:
 
@@ -49,7 +47,7 @@ To start two agents:
 npm run network
 ```
 
-#### Testing with applets
+### Testing with applets
 
 If you already have applets web-happs to test with, add them in the `testing-applets` folder and run `npm start`.
 
@@ -59,15 +57,15 @@ Note that you need to enter the password in the tauri window before the publishi
 
 To check whether this has finished, look in the terminal for the log: `Published applet: gather`
 
-#### Package
+### Building
 
-To package the web happ:
+To build *We*:
 
 ``` bash
-npm run package
+npm run build
 ```
 
-You'll have the `we.webhapp` file in the `/workdir` folder and it's components `we.happ` and `ui.zip` in `dna/workdir/happ` and `ui/apps/we` respectively.
+Tauri will build the executable for your platform and notify you of its location.
 
 ## License
 [![License: CAL 1.0](https://img.shields.io/badge/License-CAL%201.0-blue.svg)](https://github.com/holochain/cryptographic-autonomy-license)
