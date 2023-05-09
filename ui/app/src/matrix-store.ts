@@ -894,7 +894,7 @@ export class MatrixStore {
     // generate random network seed (maybe use random words instead later, e.g. https://www.npmjs.com/package/generate-passphrase)
     const networkSeed = uuidv4();
 
-    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed); // this line also updates the matrix store
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed, encodeHashToBase64(this.myAgentPubKey)); // this line also updates the matrix store
 
     const appInfo = this.weParentAppInfo;
 
@@ -905,6 +905,7 @@ export class MatrixStore {
       logoSrc: logo,
       name: name,
       networkSeed,
+      caPubKey: encodeHashToBase64(this.myAgentPubKey),
     };
 
     const _recipeActionHash =
@@ -923,8 +924,9 @@ export class MatrixStore {
     name: string,
     logo: string,
     networkSeed: string,
+    caPubKey: string,
   ): Promise<DnaHash> {
-    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed);
+    const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed, caPubKey);
     await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
     return newWeGroupDnaHash;
   }
@@ -932,7 +934,8 @@ export class MatrixStore {
   private async installWeGroup(
     name: string,
     logo: string,
-    networkSeed: string
+    networkSeed: string,
+    caPubKey: string,
   ): Promise<DnaHash> {
     const weParentAppInfo = this.weParentAppInfo;
 
@@ -970,8 +973,8 @@ export class MatrixStore {
       name: cloneName,
     });
 
-    // console.log("CREATED GROUP CELL CLONE: ", clonedCell);
-    // console.log("...with DNA hash: ", encodeHashToBase64(clonedCell.cell_id[0]));
+    console.log("CREATED GROUP CELL CLONE: ", clonedCell);
+    console.log("...with DNA hash: ", encodeHashToBase64(clonedCell.cell_id[0]));
 
     // const dnaDefinition = await this.adminWebsocket.getDnaDefinition(clonedCell.cell_id[0]);
     // console.log("DnaDefinition of created clone: ", dnaDefinition);
@@ -1002,7 +1005,7 @@ export class MatrixStore {
       sensemaker_config: {
         neighbourhood: properties.name,
         wizard_version: "v0.1",
-        community_activator: encodeHashToBase64(clonedCell.cell_id[1])
+        community_activator: caPubKey
       },
       applet_configs: [],
     };
@@ -1016,6 +1019,8 @@ export class MatrixStore {
       name: sensemakerCloneName,
     });
 
+    console.log("CREATED SM GROUP CELL CLONE: ", clonedSensemakerCell);
+    console.log("...with DNA hash: ", encodeHashToBase64(clonedSensemakerCell.cell_id[0]));
     // add signal handler to listen for "NewApplet" events
     // TODO: will probably want to add signal handler for sensemaker-lite as well
     appAgentWebsocket.on("signal", (signal) => {
