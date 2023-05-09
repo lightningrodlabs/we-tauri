@@ -1,4 +1,4 @@
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef, Create, AgentPubKey } from "@holochain/client";
+import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef, Create, AgentPubKey, encodeHashToBase64 } from "@holochain/client";
 import {
   pause,
   runScenario,
@@ -122,7 +122,7 @@ export default () => {
           true
         );
         t.ok(agents);
-        t.equal(agents.length, 1);
+        t.equal(agents.length, 0);
         console.log("agents", agents);
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
@@ -134,7 +134,8 @@ export default () => {
           true
         );
         t.ok(agents);
-        t.equal(agents.length, 2);
+        t.equal(agents.length, 1);
+        t.equal(encodeHashToBase64(agents[0]), encodeHashToBase64(alice_agent_key));
         console.log("agents", agents);
         await pause(pauseDuration);
         
@@ -145,7 +146,8 @@ export default () => {
           true
         );
         t.ok(agents);
-        t.equal(agents.length, 2);
+        t.equal(agents.length, 1);
+        t.equal(encodeHashToBase64(agents[0]), encodeHashToBase64(bob_agent_key));
         console.log("agents", agents);
       } catch (e) {
         console.log(e);
