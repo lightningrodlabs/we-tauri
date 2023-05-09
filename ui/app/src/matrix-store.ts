@@ -740,9 +740,7 @@ export class MatrixStore {
         );
 
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
-        const sensemakerStore = new SensemakerStore(
-          new SensemakerService(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!)
-        );
+        const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
 
 
         // create WeGroupData object
@@ -1063,7 +1061,7 @@ export class MatrixStore {
 
     const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
-    const sensemakerStore = new SensemakerStore(new SensemakerService(appAgentWebsocket, sensemakerCell.clone_id!));
+    const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
