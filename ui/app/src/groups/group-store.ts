@@ -7,6 +7,7 @@ import {
   AsyncReadable,
   lazyLoad,
   lazyLoadAndPoll,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
@@ -86,6 +87,14 @@ export class GroupStore {
     appletMetadata: AppletBundleMetadata,
     customName: string
   ): Promise<EntryHash> {
+    // Trigger the download of the webhapp
+    // TODO: remove this when moving to app store
+    await toPromise(
+      this.appletBundlesStore.appletBundleLogo.get(
+        appletMetadata.devhubHappReleaseHash
+      )
+    );
+
     const networkSeed = uuidv4(); // generate random network seed if not provided
 
     // --- Register hApp in the We DNA ---

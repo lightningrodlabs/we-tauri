@@ -48,7 +48,7 @@ export class GroupPeersStatus extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error displaying the peers of the group")}
-          .error=${this._group.value.error.data.data}
+          .error=${this._group.value.error}
         ></display-error>`;
     }
   }

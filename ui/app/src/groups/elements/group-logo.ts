@@ -44,7 +44,7 @@ export class GroupLogo extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the group profile")}
-          .error=${this.groupProfile.value.error.data.data}
+          .error=${this.groupProfile.value.error}
         ></display-error>`;
     }
   }

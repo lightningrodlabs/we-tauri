@@ -25,7 +25,7 @@ pub async fn open_devhub(
     happ_window_builder(
         &app_handle,
         devhub_app_id,
-        String::from("DevHub"),
+        String::from("devhub"),
         String::from("DevHub"),
         holochain_launcher_utils::window_builder::UISource::Path(assets_path),
         local_storage_path,

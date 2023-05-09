@@ -2,7 +2,8 @@
   "build": {
     "devPath": "http://localhost:1420",
     "distDir": "../ui/app/dist",
-    "withGlobalTauri": false
+    "withGlobalTauri": false,
+    "beforeBuildCommand": "npm run build:ui"
   },
   "package": {
     "productName": "We",
@@ -14,6 +15,11 @@
       "args": [
         {
           "name": "profile",
+          "takesValue": true,
+          "multiple": false
+        },
+        {
+          "name": "network-seed",
           "takesValue": true,
           "multiple": false
         }
@@ -47,7 +53,7 @@
         "icons/icon.ico"
       ],
       "externalBin": ["bins/lair-keystore-v0.2.3"],
-      "identifier": "org.lightningrodlabs.we",
+      "identifier": "we",
       "targets": "all"
     },
     "security": {

@@ -165,6 +165,7 @@ export class AppletHost {
           .filter((h) => !!h);
         return hrls;
       case "get-applet-info":
+        console.log("asfd");
         const applet = await toPromise(
           this.weStore.applets.get(message.appletId)
         );

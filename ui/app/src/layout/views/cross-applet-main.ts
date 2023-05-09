@@ -59,9 +59,8 @@ export class CrossAppletMain extends LitElement {
         </div>`;
       case "error":
         return html`<display-error
-          tooltip
           .headline=${msg("Error initializing the client for this group")}
-          .error=${this.appletsForBundle.value.error.data.data}
+          .error=${this.appletsForBundle.value.error}
         ></display-error>`;
       case "complete":
         return this.renderMain(this.appletsForBundle.value.value);

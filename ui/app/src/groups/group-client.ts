@@ -1,8 +1,4 @@
-import {
-  EntryHashMap,
-  EntryRecord,
-  RecordBag,
-} from "@holochain-open-dev/utils";
+import { EntryRecord } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   DnaHash,
@@ -10,7 +6,7 @@ import {
   AppAgentClient,
   AppAgentCallZomeRequest,
 } from "@holochain/client";
-import { GroupProfile } from "../../../libs/we-applet/dist";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { Applet } from "../applets/types";
 
 export class GroupClient {
@@ -34,7 +30,10 @@ export class GroupClient {
   /** Applets */
 
   async getApplets(): Promise<Array<EntryHash>> {
-    return this.callZome("get_applets", null);
+    console.log("asf1");
+    const r = await this.callZome("get_applets", null);
+    console.log("asdf2");
+    return r;
   }
 
   async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {

@@ -140,7 +140,7 @@ export class MainDashboard extends LitElement {
 
           <groups-sidebar
             class="left-sidebar"
-            style="flex: 1"
+            style="flex: 1; margin-top: 4px"
             .selectedGroupDnaHash=${this.selectedGroupDnaHash}
             @home-selected=${() => {
               this.dynamicLayout.openTab({
@@ -170,6 +170,7 @@ export class MainDashboard extends LitElement {
                 },
               });
             }}
+            style="margin-left: 4px"
           ></applets-sidebar>
 
           <dynamic-layout

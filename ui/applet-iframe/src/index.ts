@@ -8,7 +8,6 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { decode } from "@msgpack/msgpack";
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import {
@@ -29,13 +28,12 @@ async function setupAppAgentClient(appPort: number, installedAppId: string) {
     installedAppId
   );
 
-  appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
-    "call_zome",
-    {
-      input: async (request) => signZomeCall(request),
-      output: (o) => decode(o as any),
-    }
-  );
+  const cz = appletClient.callZome;
+
+  appletClient.callZome = async (request: CallZomeRequest) => {
+    const signedRequest = await signZomeCall(request);
+    return cz(signedRequest);
+  };
 
   return appletClient;
 }

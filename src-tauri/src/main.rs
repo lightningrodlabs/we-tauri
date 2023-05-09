@@ -47,9 +47,13 @@ pub fn iframe() -> String {
 }
 
 fn main() {
-    // Needs to be equal to the identifier in tauri.conf.json
-    tauri_plugin_deep_link::prepare("we");
+    let disable_deep_link = std::env::var("DISABLE_DEEP_LINK").is_ok();
 
+    if !disable_deep_link {
+        // Needs to be equal to the identifier in tauri.conf.json
+        tauri_plugin_deep_link::prepare("we"); 
+    }
+    
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
@@ -62,7 +66,7 @@ fn main() {
             get_conductor_info,
             fetch_icon
         ])
-        .setup(|app| {
+        .setup(move |app| {
             let handle = app.handle();
 
             // reading profile from cli
@@ -89,7 +93,6 @@ fn main() {
             app.manage(fs);
 
             // reading profile from cli
-            let cli_matches = app.get_cli_matches()?;
             let network_seed = match cli_matches.args.get("network-seed") {
                 Some(data) => match data.value.clone() {
                     Value::String(network_seed) => Some(network_seed),
@@ -99,18 +102,27 @@ fn main() {
             };
             app.manage(WeConfig { network_seed });
 
+
+            let title = if profile.as_str() == "default" {
+                String::from("We")
+            } else {
+                format!("We - {}", profile)
+            };
+
             let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
-                .title("We")
+                .title(title)
                 .inner_size(1000.0, 800.0)
                 .build()?;
 
-            if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
-                window.emit("deep-link-received", request).unwrap();
-                window
-                    .request_user_attention(Some(UserAttentionType::Informational))
-                    .unwrap();
-            }) {
-                println!("Error registering the deep link plugin: {:?}", err);
+            if !disable_deep_link {
+                if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
+                    window.emit("deep-link-received", request).unwrap();
+                    window
+                        .request_user_attention(Some(UserAttentionType::Informational))
+                        .unwrap();
+                }) {
+                    println!("Error registering the deep link plugin: {:?}", err);
+                }
             }
 
             Ok(())

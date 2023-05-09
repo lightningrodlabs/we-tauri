@@ -5,7 +5,8 @@ import {
   pipe,
 } from "@holochain-open-dev/stores";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
-import { InternalAttachmentType } from "../../../applet-messages/dist/index.js";
+import { InternalAttachmentType } from "applet-messages";
+
 import { AppletHost } from "../applet-host.js";
 import { WeStore } from "../we-store.js";
 import { Applet } from "./types.js";

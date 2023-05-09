@@ -272,7 +272,7 @@ export class GroupHome extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the group information")}
-          .error=${this.groupProfile.value.error.data.data}
+          .error=${this.groupProfile.value.error}
         ></display-error>`;
     }
   }

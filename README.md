@@ -69,7 +69,7 @@ npm run build:happ
 Then, **exit** the nix shell and run:
 
 ``` bash
-npm run build
+npm run tauri build
 ```
 
 Tauri will build the executable for your platform and notify you of its location.

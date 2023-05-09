@@ -25,6 +25,7 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { Applet } from "../../applets/types.js";
 import { GroupStore } from "../../groups/group-store.js";
+import { AppletStore } from "../../applets/applet-store.js";
 
 @localized()
 @customElement("applet-view")
@@ -49,17 +50,17 @@ export class AppletViewEl extends LitElement {
         this.weStore.groupsForApplet.get(this.appletHash),
         this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
       ]) as AsyncReadable<
-        [Applet | undefined, ReadonlyMap<DnaHash, GroupStore>, boolean]
+        [AppletStore | undefined, ReadonlyMap<DnaHash, GroupStore>, boolean]
       >,
     () => [this.appletHash]
   );
 
-  renderAppletFrame([applet, groupsStores, isInstalled]: [
-    Applet | undefined,
+  renderAppletFrame([appletStore, groupsStores, isInstalled]: [
+    AppletStore | undefined,
     ReadonlyMap<DnaHash, GroupStore>,
     boolean
   ]) {
-    if (!applet)
+    if (!appletStore)
       return html`
         <div class="row center-content" style="flex: 1">
           <sl-card
@@ -104,7 +105,7 @@ export class AppletViewEl extends LitElement {
                   try {
                     await this.weStore.appletBundlesStore.installApplet(
                       this.appletHash,
-                      applet
+                      appletStore.applet
                     );
                   } catch (e) {
                     notifyError(msg("Couldn't install applet"));

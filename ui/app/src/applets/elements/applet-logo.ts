@@ -51,6 +51,7 @@ export class AppletLogo extends LitElement {
         return this.renderLogo(this.appletLogo.value.value);
       case "error":
         return html`<display-error
+          tooltip
           .headline=${msg("Error fetching the applet logo")}
           .error=${this.appletLogo.value.error}
         ></display-error>`;

@@ -98,7 +98,7 @@ export class GroupsSidebar extends LitElement {
         return html`<display-error
           .headline=${msg("Error displaying the groups")}
           tooltip
-          .error=${this._groupsProfiles.value.error.data.data}
+          .error=${this._groupsProfiles.value.error}
         ></display-error>`;
       case "complete":
         return this.renderGroups(this._groupsProfiles.value.value);
