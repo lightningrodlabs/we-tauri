@@ -60,7 +60,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         invitationActionHash,
         properties.name,
         properties.logoSrc,
-        properties.timestamp
+        properties.timestamp,
+        properties.caPubKey
       )
       .then((weGroupId) => {
         this.dispatchEvent(

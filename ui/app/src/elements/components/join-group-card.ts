@@ -48,6 +48,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         properties.name,
         properties.logoSrc,
         properties.networkSeed,
+        properties.caPubKey
       )
       .then((weGroupId) => {
         this.dispatchEvent(
