@@ -81,7 +81,7 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
                 class="row center-content default-font"
                 style="font-size: 3em; color: #2c3888; margin-top: 15px;"
               >
-                <div>Welcome to We!</div>
+                <div>Welcome to Neighbourhoods Launcher!</div>
               </div>
 
               <div class="row" style="margin-top: 70px;">

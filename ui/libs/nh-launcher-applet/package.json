@@ -1,6 +1,6 @@
 {
-  "name": "@neighbourhoods/nh-we-applet",
-  "version": "0.0.6",
+  "name": "@neighbourhoods/nh-launcher-applet",
+  "version": "0.0.10",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -15,9 +15,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@holochain/client": "^0.11.9",
-    "@holochain-open-dev/profiles": "^0.9.3",
-    "@neighbourhoods/sensemaker-lite-types": "0.1.0"
+    "@holochain/client": "0.12.0",
+    "@holochain-open-dev/profiles": "0.11.0",
+    "@neighbourhoods/sensemaker-lite-types": "0.4.0"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.4",

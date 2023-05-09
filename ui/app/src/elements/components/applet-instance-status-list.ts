@@ -60,7 +60,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
         invitationActionHash,
         properties.name,
         properties.logoSrc,
-        properties.timestamp
+        properties.timestamp,
+        properties.caPubKey
       )
       .then((weGroupId) => {
         this.dispatchEvent(
@@ -136,7 +137,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     if (appletInstanceInfos!.length == 0 || !appletInstanceInfos) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
-        <div style="margin-top: 10px;">You have no applet instances installed in this group.</div>
+        <div style="margin-top: 10px;">You have no applet instances installed in this neighbourhood.</div>
         <div class="row center-content">
           <mwc-button
             style="margin-top: 20px; text-align: center;"

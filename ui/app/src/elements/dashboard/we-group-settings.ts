@@ -36,13 +36,6 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
     () => [this._matrixStore, this.weGroupId]
   );
 
-  _allMembers = new TaskSubscriber(
-    this,
-    () => this._profilesStore.fetchAllProfiles(),
-    () => [this._profilesStore]
-  );
-
-
   @state()
   private _showAppletDescription: boolean = false;
 
@@ -125,7 +118,7 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
 
         <div class="row title" style="margin-top: 30px;">
-          <span style="align-self: start" title="applet instances initiated by other group members">Applets to Join</span>
+          <span style="align-self: start" title="applet instances initiated by other neighbourhood members">Applets to Join</span>
         </div>
         <hr style="width: 100%" />
         <joinable-applet-instance-list></joinable-applet-instance-list>
@@ -151,12 +144,12 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
         <hr style="width: 100%" />
 
         <div style="display: flex; align-items: center; margin-top: 20px; margin-bottom: 50px;">
-          <div>Leave group and delete all applets: </div>
+          <div>Leave neighbourhood and delete all applets: </div>
           <span style="flex: 1"></span>
           <mwc-button
             raised
             style="--mdc-theme-primary: #cf0000"
-            label="Leave Group"
+            label="Leave Neighbourhood"
             @click=${() => this._leaveGroupDialog.open()}
           ></mwc-button>
         </div>

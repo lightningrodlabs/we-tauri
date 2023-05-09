@@ -4,7 +4,7 @@ import {
   AppWebsocket,
   AppInfo,
 } from "@holochain/client";
-import { SensemakerStore } from "./sensemaker/sensemakerStore";
+import { SensemakerStore } from "@neighbourhoods/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
@@ -26,10 +26,7 @@ export interface WeServices {
   sensemakerStore?: SensemakerStore;
 }
 
-export { SensemakerStore } from "./sensemaker/sensemakerStore";
-export { SensemakerService } from "./sensemaker/sensemakerService";
-export { sensemakerStoreContext } from "./sensemaker/context";
-export interface WeApplet {
+export interface NhLauncherApplet {
   appletRenderers: (
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,

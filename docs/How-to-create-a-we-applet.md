@@ -16,7 +16,7 @@ This guide assumes that you have the [Holochain Launcher](https://github.com/hol
 
 0. If you don't have a happ or module scaffolded yet, scaffold one by running `npm init @holochain` and complete its instructions.
 1. Go into the happ in which you want to create the applet, and run [the applet scaffolding tool and follow all the instructions to setup the applet](https://www.npmjs.com/package/@lightningrodlabs/create-we-applet).
-2. Develop your UI code in `we-applet/src/index.ts`, complying with the `WeApplet` interface defined in [@lightningrodlabs/we-applet](https://www.npmjs.com/package/@lightningrodlabs/we-applet).
+2. Develop your UI code in `we-applet/src/index.ts`, complying with the `NhLauncherApplet` interface defined in [@neighbourhoods/nh-launcher-applet](https://www.npmjs.com/package/@neighbourhoods/nh-launcher-applet).
 3. Package your `.webhapp` by going into the `we-applet` folder and running `npm run package`.
 4. Publish the applet into the devhub, with this **required tag**: `we-applet`.
 

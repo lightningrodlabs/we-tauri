@@ -4,21 +4,18 @@
   "workspaces": ["ui/app", "ui/libs/*"],
   "scripts": {
     "start": "AGENTS=2 npm run network",
-    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-we-applet && concurrently \"npm run build:watch -w we\" \"npm run launch:happ\"",
-    "start:agent": "cross-env RUST_LOG=warn HC_PORT=$(port) ADMIN_PORT=$(port) concurrently \"npm run playground\" \"sleep 30 && npm run install:devhub\" \"npm run start:happ\" \"npm run start -w we\"",
+    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && concurrently \"npm run build:watch -w nh-launcher\" \"npm run launch:happ\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
-    "launch:happ": "RUST_LOG=warn echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ -w --ui-path ui/app/dist network mdns",
+    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:nh-we-applet": "cd ui/libs/we-applet && npm run build",
-    "install:devhub": "hc s call -r=$ADMIN_PORT install-app-bundle --app-id DevHub ./DevHub/DevHub.happ && npm run devhub:ui",
-    "devhub:ui": "hc launch ./DevHub/DevHub.happ --ui-path ./DevHub/ui",
+    "build:nh-launcher-applet": "cd ui/libs/nh-launcher-applet && npm run build",
     "playground": "run-singleton \"holochain-playground\"",
-    "prepare": "rimraf DevHub && curl -L --output DevHub.webhapp https://drive.switch.ch/index.php/s/bFlG9VjNcjfa1D8/download && hc web-app unpack DevHub.webhapp && extract-zip web_assets.zip ./DevHub/ui && rimraf web_assets.zip DevHub.webhapp",
-    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.3-alpha/sensemaker.dna"
+    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.7-alpha/sensemaker.dna",
+    "postinstall": "npm run download-sensemaker"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",

@@ -356,7 +356,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           `
       )}
 
-      <sl-tooltip placement="right" content="Add Group" hoist>
+      <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
         <mwc-fab
           icon="group_add"
           @click=${() => this._createWeGroupDialog.open()}

@@ -1,23 +1,21 @@
-# @neighbourhoods/nh-we-applet
+# @neighbourhoods/nh-launcher-applet
 
-This package contains the interfaces and contracts that a UI module needs to implement in order to become a We Applet.
+This package contains the interfaces and contracts that a UI module needs to implement in order to become a NH Launcher Applet.
 
-You can use [@lightningrodlabs/create-we-applet](https://npmjs.com/package/@lightningrodlabs/create-we-applet) to easily scaffold the initial structure for a We Applet.
-
-Made for holochain `v0.1.0-beta-rc.2`.
+Made for holochain `v0.1.0`.
 
 ## Implementing the UI for a we applet
 
-You need to import the `WeApplet` type from `@neighbourhoods/nh-we-applet`, and have only a default export in your file:
+You need to import the `NhLauncherApplet` type from `@neighbourhoods/nh-launcher-applet`, and have only a default export in your file:
 
 > index.ts.
 
 ```ts
 import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { WeApplet, WeServices } from "@neighbourhoods/nh-we-applet";
+import { NhLauncherApplet, WeServices } from "@neighbourhoods/nh-launcher-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
-const applet: WeApplet = {
+const applet: NhLauncherApplet = {
   async appletRenderers(
     appWebsocket: AppWebsocket,
     adminWebsocket: AdminWebsocket,
@@ -66,7 +64,7 @@ import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
 import { terser } from "rollup-plugin-terser";
 
 export default {
-  input: "out-tsc/index.js", // This needs to be pointing to the file that has the `WeApplet` default export
+  input: "out-tsc/index.js", // This needs to be pointing to the file that has the `NhLauncherApplet` default export
   output: {
     format: "es",
     dir: 'dist',

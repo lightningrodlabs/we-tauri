@@ -48,6 +48,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         properties.name,
         properties.logoSrc,
         properties.networkSeed,
+        properties.caPubKey
       )
       .then((weGroupId) => {
         this.dispatchEvent(
@@ -234,11 +235,11 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
         <div class="column content-pane">
 
           <div style="font-size: 1.7em;">
-            Joining A Group
+            Joining A Neighbourhood
           </div>
           <div class="center-content">
             <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
-              To join a group, send your public key to a member of the group you would like to join and ask them to invite you.
+              To join a neighbourhood, send your public key to a member of the neighbourhood you would like to join and ask them to invite you.
             </div>
 
             <div class="column center-content">
@@ -256,7 +257,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                   </div>
                 </sl-tooltip>
                 <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
-                send your public key to your friends if they want to invite you to their group
+                send your public key to your friends if they want to invite you to their neighbourhood
                 </div>
               </div>
             </div>

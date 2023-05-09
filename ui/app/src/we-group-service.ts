@@ -1,5 +1,5 @@
 import { AppAgentWebsocket, CellId } from "@holochain/client";
-import { WeInfo } from "@lightningrodlabs/we-applet";
+import { WeInfo } from "@neighbourhoods/nh-launcher-applet";
 
 export class WeGroupService {
   constructor(public client: AppAgentWebsocket, protected cellId: CellId, protected zomeName = "we_coordinator") {}
