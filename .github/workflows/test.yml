@@ -38,5 +38,5 @@ jobs:
 
       - name: Install and test
         run: |
-          nix develop --command bash -c "npm i && npm t"
+          nix develop --command bash -c "npm i && npm run prepare:lair && npm t"
 
