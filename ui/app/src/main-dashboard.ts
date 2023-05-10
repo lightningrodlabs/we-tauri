@@ -36,6 +36,7 @@ import { WeGroupContext } from "./elements/we-group-context";
 import { AppletClassHome } from "./elements/dashboard/applet-class-home";
 import { WeGroupHome } from "./elements/dashboard/we-group-home";
 import { AppletClassRenderer } from "./elements/dashboard/applet-class-renderer";
+import { SensemakerDashboard } from "./elements/dashboard/sensemaker-dashboard";
 import { AppletInstanceRenderer } from "./elements/dashboard/applet-instance-renderer";
 import { AppletNotInstalled } from "./elements/dashboard/applet-not-installed";
 import { NotificationDot } from "./elements/components/notification-dot";
@@ -140,8 +141,17 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               this._selectedAppletInstanceId = undefined;
               this._dashboardMode = DashboardMode.WeGroupHome;
             }}
-          ></mwc-fab>
-        </sl-tooltip>
+            ></mwc-fab>
+            </sl-tooltip>
+            <mwc-fab
+              style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
+              icon="dashboard"
+              class="group-home-button"
+              @click=${() => {
+                this._selectedAppletInstanceId = undefined;
+                this._dashboardMode = DashboardMode.AssessmentsHome;
+              }}
+            ></mwc-fab>
 
         ${appletInstanceInfos
           ? this.renderAppletInstanceList(appletInstanceInfos)
@@ -186,6 +196,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             style="display: flex; flex: 1;"
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           ></we-group-home>
+        </we-group-context>
+      `;
+    } else if (this._dashboardMode === DashboardMode.AssessmentsHome) {
+      return html`
+        <we-group-context .weGroupId=${this._selectedWeGroupId}>
+          <sensemaker-dashboard></sensemaker-dashboard>
         </we-group-context>
       `;
     } else if (
@@ -777,6 +793,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "we-group-context": WeGroupContext,
       "applet-class-home": AppletClassHome,
       "we-group-home": WeGroupHome,
+      "sensemaker-dashboard": SensemakerDashboard,
       "applet-class-renderer": AppletClassRenderer,
       "applet-instance-renderer": AppletInstanceRenderer,
       "applet-not-installed": AppletNotInstalled,
