@@ -15,6 +15,9 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Support longpaths
+        run: git config --system core.longpaths true
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v2
