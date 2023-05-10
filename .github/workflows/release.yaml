@@ -69,7 +69,7 @@ jobs:
           LAIR_PATH=$(which lair-keystore)
           cp $LAIR_PATH src-tauri/bins/lair-keystore-v0.2.3-x86_64-unknown-linux-gnu
 
-      - name: build the app (macOS and Linux only)
+      - name: build the app
         uses: tauri-apps/tauri-action@v0
 
         with:

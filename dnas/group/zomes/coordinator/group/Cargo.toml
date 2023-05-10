@@ -15,6 +15,7 @@ serde = { workspace = true }
 group_integrity = { path = "../../integrity/group" }
 
 [dev-dependencies]
+fixt = "0.1"
 futures = { version = "0.3.1", default-features = false }
 hdk = { workspace = true, features = ["encoding", "test_utils"] }
 holochain = { workspace = true, default-features = false, features = [

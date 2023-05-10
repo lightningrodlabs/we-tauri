@@ -2398,6 +2398,7 @@ dependencies = [
 name = "group_coordinator"
 version = "0.0.1-alpha1"
 dependencies = [
+ "fixt",
  "futures",
  "group_integrity",
  "hdk",
