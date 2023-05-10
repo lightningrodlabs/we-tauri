@@ -30,9 +30,15 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 16
+      - name: install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          toolchain: stable
 
       - name: Install and prepare
         run: |
+          rustup target add wasm32-unknown-unknown
           npm i
           cargo install holochain_cli --version 0.1.4
 
