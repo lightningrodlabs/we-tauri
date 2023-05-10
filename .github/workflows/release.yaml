@@ -16,6 +16,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Support longpaths
+        if: matrix.platform == 'windows-2019'
         run: git config --system core.longpaths true
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
