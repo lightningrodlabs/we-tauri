@@ -3,22 +3,25 @@ import { property } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { Assessment } from '@neighbourhoods/sensemaker-lite-types';
 import { encodeHashToBase64 } from '@holochain/client';
+import { contextProvided } from '@lit-labs/context';
+import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { StoreSubscriber } from 'lit-svelte-stores';
 
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
-  @property()
-  allAssessments!: Array<Assessment>;
-
-  async firstUpdated() {
-  }
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
+  
+  allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
 
   render() {
+    let flatAssessments = Object.values(this.allAssessments.value).flat();
     let assessmentTable = html`
-    ${this.allAssessments.map((assessment) => html`
+    ${flatAssessments.map((assessment) => html`
         <tr>
             <td>${JSON.stringify(assessment.value)}</td>
             <td>${encodeHashToBase64(assessment.dimension_eh)}</td>
-            <td>${encodeHashToBase64(assessment.subject_eh)}</td>
+            <td>${encodeHashToBase64(assessment.resource_eh)}</td>
             <td>${encodeHashToBase64(assessment.author)}</td>
         </tr>
     `)}
