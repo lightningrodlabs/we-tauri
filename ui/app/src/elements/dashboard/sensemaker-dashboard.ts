@@ -7,45 +7,21 @@ import { contextProvided } from '@lit-labs/context';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
+import { TableC } from '../components/table2';
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
-  
-  allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
 
   render() {
-    let flatAssessments = Object.values(this.allAssessments.value).flat();
-    let assessmentTable = html`
-    ${flatAssessments.map((assessment) => html`
-        <tr>
-            <td>${JSON.stringify(assessment.value)}</td>
-            <td>${encodeHashToBase64(assessment.dimension_eh)}</td>
-            <td>${encodeHashToBase64(assessment.resource_eh)}</td>
-            <td>${encodeHashToBase64(assessment.author)}</td>
-        </tr>
-    `)}
-    `
     return html`
-      <main>
-        <div class="home-page">
-            <table>
-                <tr>
-                    <th>Value</th>
-                    <th>Dimension</th>
-                    <th>Resource</th>
-                    <th>Author</th>
-                </tr>
-                ${assessmentTable}
-            </table>
-        </div>
-      </main>
+      <test-table></test-table>
     `;
   }
 
-
   static get scopedElements() {
     return {
+      'test-table': TableC
     };
   }
 

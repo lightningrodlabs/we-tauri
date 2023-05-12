@@ -1,34 +1,42 @@
-import { AgentPubKey } from '@holochain/client';
 import { LitElement, html, css, TemplateResult } from "lit";
-import { property, state, customElement } from "lit/decorators.js";
+import { property, customElement } from "lit/decorators.js";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
+import { Assessment, SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { StoreSubscriber } from '@holochain-open-dev/stores';
 import { FieldDefinitions, FieldDefinition, TableStore } from '@adaburrows/table-web-component';
 import { RowValue } from "@adaburrows/table-web-component/dist/table-store";
-import { Assessment, DimensionEh, ResourceEh, RangeValue } from "@neighbourhoods/client";
 
-type Author = AgentPubKey;
-
-const fieldDefs: FieldDefinitions<any> = {
-    'value': new FieldDefinition<RangeValue>({heading: 'Value'}),
-    'dimension': new FieldDefinition<DimensionEh>({heading: 'Dimension'}),
-    'resource': new FieldDefinition<ResourceEh>({heading: 'Resource'}),
-    'author': new FieldDefinition<Author>({heading: 'Author'})
-  }
-
+const fieldDefs: FieldDefinitions<Assessment> = {
+    'value': new FieldDefinition<Assessment>({heading: 'Value'}),
+    'dimension': new FieldDefinition<Assessment>({heading: 'Dimension'}),
+    'resource': new FieldDefinition<Assessment>({heading: 'Resource'}),
+    'author': new FieldDefinition<Assessment>({heading: 'Author'})
+}
 @customElement('assessments-table')
 export class Table extends ScopedRegistryHost(LitElement) {
+    @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+    _sensemakerStore!: SensemakerStore;
+
     @property({attribute: false})
     public tableStore: TableStore<Assessment>
     
-    @state()
-    table = html``
+    allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
 
-    constructor(store) {
+    constructor() {
         super();
-        
-        this.tableStore = store;
+
+        this.tableStore = new TableStore({
+            // This is the Id used to identify the table in the CSS variables and is the table's HTML id
+            tableId: 'assessments',
+            fieldDefs,
+            records: Object.values(this.allAssessments.value).flat(),
+            showHeader: true
+        });
+        /* eslint-disable no-console */
+        console.log('this.tableStore records :>> ', this.tableStore.records);
+        /* eslint-enable no-console */
     }
     render(): TemplateResult {
         return html`
