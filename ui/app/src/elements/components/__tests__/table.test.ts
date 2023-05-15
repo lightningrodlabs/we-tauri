@@ -1,12 +1,11 @@
-// import { SensemakerStore, SensemakerService } from "@neighbourhoods/client";
-
-import { assert, fixture, html, elementUpdated } from '@open-wc/testing';
-import { it, describe, expect, test, beforeAll, beforeEach } from 'vitest'
+import { expect as expectDom } from '@esm-bundle/chai'
+import { assert, fixture, html } from '@open-wc/testing';
+import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 
 import '../table';
 import './test-harness';
-import { AssessmentDict, TestHarness, mockAssessments, mockStore } from './test-harness';
-import { Writable, get } from '@holochain-open-dev/stores';
+import { mockAssessments, mockStore } from './test-harness';
+import { get } from '@holochain-open-dev/stores';
 /**
 * @vitest-environment jsdom
 */
@@ -16,14 +15,14 @@ export const stateful = async (component) => fixture(html`
   `)
 
 describe('Table', () => {
-  let component, harness;
+  let component, harness, toBeTestedComponent;
   let mockWritable;
 
   beforeAll(async () => {
     component = html`<assessments-table></assessments-table>`;
     harness = await stateful(component);
     
-    const toBeTestedComponent : any = harness.querySelector('assessments-table');
+    toBeTestedComponent = harness.querySelector('assessments-table');
     await toBeTestedComponent.updateComplete;
   });
   
@@ -31,10 +30,12 @@ describe('Table', () => {
     mockWritable = mockStore.resourceAssessments();
   });
 
-  test('Given a SensemakerStore with one resource and two assessments Then state is initialized', async () => {
+  test('Given a SensemakerStore with one resource and two assessments Then state is initialized And it renders a table with two rows', async () => {
       expect(mockStore.resourceAssessments).toHaveBeenCalled();
 
       expect(get(mockWritable.store())!['abc'].length).toEqual(2);
+      
+      expectDom(toBeTestedComponent).shadowDom.to.equal("<div></div>");
   });
     
   test('Given a SensemakerStore with one resource and two assessments Then state can be mutated', async () => {
