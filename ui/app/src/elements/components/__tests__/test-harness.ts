@@ -4,7 +4,7 @@ import { createContext, ContextRoot, contextProvider} from '@lit-labs/context';
 import { vi } from 'vitest'
 import { encodeHashToBase64 } from "@holochain/client";
 import { Assessment, SensemakerStore } from '@neighbourhoods/client';
-import { writable } from '@holochain-open-dev/stores';
+import { StoreSubscriber, get, writable } from '@holochain-open-dev/stores';
 
 export const mockAssessments: AssessmentDict = {'abc' : [
     {
@@ -38,7 +38,7 @@ const mockSensemakerWritable = writable<AssessmentDict>(mockAssessments);
 
 export const mockStore =  {
   resourceAssessments: vi.fn(() => ({ 
-    value: mockAssessments, 
+    store: () => mockSensemakerWritable, 
     subscribe: mockSensemakerWritable.subscribe, 
     unsubscribe: vi.fn(),
     mockSetSubscribeValue: (value: AssessmentDict): void => mockSensemakerWritable.set(value)
