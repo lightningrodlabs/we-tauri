@@ -6,5 +6,5 @@
     "declaration": false,
     "incremental": true
   },
-  "include": ["src/**/*.ts", "src/elements/components/table.test.js"]
+  "include": ["src/**/*.ts", "src/elements/components/__tests__/table.test.ts"]
 }

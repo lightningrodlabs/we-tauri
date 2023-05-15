@@ -1,12 +1,14 @@
 import { LitElement, html, css, TemplateResult } from "lit";
-import { property, customElement } from "lit/decorators.js";
+import { property, customElement, state } from "lit/decorators.js";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
 import { Assessment, SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { StoreSubscriber } from '@holochain-open-dev/stores';
+import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
 import { FieldDefinitions, FieldDefinition, TableStore } from '@adaburrows/table-web-component';
 import { RowValue } from "@adaburrows/table-web-component/dist/table-store";
+import { AssessmentDict, mockAssessments, mockContext } from "./__tests__/test-harness";
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 
 const fieldDefs: FieldDefinitions<Assessment> = {
     'value': new FieldDefinition<Assessment>({heading: 'Value'}),
@@ -15,52 +17,44 @@ const fieldDefs: FieldDefinitions<Assessment> = {
     'author': new FieldDefinition<Assessment>({heading: 'Author'})
 }
 @customElement('assessments-table')
-export class Table extends ScopedRegistryHost(LitElement) {
+export class Table extends ScopedElementsMixin(LitElement) {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
-    _sensemakerStore!: SensemakerStore;
+    @property({type: SensemakerStore, attribute: true})
+    _sensemakerStore;
+
+    @state()
+    allAssessments = new StoreSubscriber<AssessmentDict>(
+        this, () => this._sensemakerStore.resourceAssessments(),
+        () => [this._sensemakerStore.resourceAssessments().value]
+    );
 
     @property({attribute: false})
-    public tableStore: TableStore<Assessment>
-    
-    allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
+    public tableStore!: TableStore<Assessment>
 
     constructor() {
         super();
-
-        this.tableStore = new TableStore({
-            // This is the Id used to identify the table in the CSS variables and is the table's HTML id
-            tableId: 'assessments',
-            fieldDefs,
-            records: Object.values(this.allAssessments.value).flat(),
-            showHeader: true
-        });
-        /* eslint-disable no-console */
-        console.log('this.tableStore records :>> ', this.tableStore.records);
-        /* eslint-enable no-console */
     }
+    
+    connectedCallback() {
+        super.connectedCallback();
+        try {
+            const flatAssessments : Assessment[] = Object.values(this.allAssessments.value).flat();
+            
+            this.tableStore = new TableStore({
+                // This is the Id used to identify the table in the CSS variables and is the table's HTML id
+                tableId: 'assessments',
+                fieldDefs,
+                records: flatAssessments,
+                showHeader: true
+            });
+        } catch (error) {
+            console.log('Problem parsing Sensemaker store results (Assessments table): ', error)
+        }
+    }
+
     render(): TemplateResult {
         return html`
-        <div id="${this.tableStore.tableId}">
-        ${this.tableStore.caption && this.tableStore.caption !== '' && html`<div class="table-caption">${this.tableStore.caption}</div>`}
-        <div class="table-header">
-            ${this.tableStore.getHeadings().map( (rowValue) => {
-            const {field, value} = rowValue;
-            return html`
-            <div class="table-header table-column-${field}">
-                ${value}
-            </div>`
-            })}
-        </div>
-        <div class="table-body">
-            ${this.tableStore.getRows().map( (row) => html`
-            <div class="table-row">
-                ${row.map( (rowValue: RowValue) => {
-                const {field, value} = rowValue;
-                return html`<div class="table-cell table-column-${field}">${value}</div>`
-                })}
-            </div>`
-            )}
-        </div>
+        <div id="abc">
         </div>`;
     }
     // dispatch an event when a context is selected

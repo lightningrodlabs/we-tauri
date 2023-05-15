@@ -20,7 +20,7 @@
     "@msgpack/msgpack": "^2.7.2",
     "@neighbourhoods/client": "^0.0.2",
     "@neighbourhoods/nh-launcher-applet": "file:../libs/nh-launcher-applet",
-    "@open-wc/scoped-elements": "^2.1.1",
+    "@open-wc/scoped-elements": "^2.1.5",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
     "@webcomponents/scoped-custom-element-registry": "^0.0.5",
