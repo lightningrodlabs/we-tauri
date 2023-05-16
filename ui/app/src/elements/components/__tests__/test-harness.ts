@@ -41,9 +41,9 @@ const mockResourceAssessmentsResponse = {
 };
 
 // Helper to make mockResourceAssessmentsResponse like a reactive StoreSubscriber
-function mockUpdate(value) {
-  mockResourceAssessmentsResponse.value = value;
-  mockSensemakerWritable.update((value) => value)
+function mockUpdate(newValue) {
+  mockResourceAssessmentsResponse.value = newValue;
+  mockSensemakerWritable.update((oldValue) => newValue)
 }
 
 export const mockStore =  {
