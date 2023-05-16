@@ -6,10 +6,12 @@ import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { Assessment, SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { StoreSubscriber, get, Readable, derived } from '@holochain-open-dev/stores';
 
-import { FieldDefinitions, FieldDefinition, TableStore } from '@adaburrows/table-web-component';
+import { FieldDefinitions, FieldDefinition, TableStore, Table as AdaTable } from '@adaburrows/table-web-component';
 import { RowValue } from "@adaburrows/table-web-component/dist/table-store";
 
 import { AssessmentDict, mockAssessments, mockContext } from "./__tests__/test-harness";
+
+export const tableId = "assessmentsForResource";
 
 const fieldDefs: FieldDefinitions<Assessment> = {
     'value': new FieldDefinition<Assessment>({heading: 'Value'}),
@@ -49,13 +51,13 @@ export class Table extends ScopedElementsMixin(LitElement) {
             
             this.tableStore = new TableStore({
                 // This is the Id used to identify the table in the CSS variables and is the table's HTML id
-                tableId: 'assessments',
+                tableId,
                 fieldDefs,
                 records: flatAssessments,
                 showHeader: true
             });
         } catch (error) {
-            console.log('Problem parsing Sensemaker store results (Assessments table): ', error)
+            console.log('Problem parsing Sensemaker store results into TableStore', error)
         }
     }
 

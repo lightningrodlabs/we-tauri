@@ -8,6 +8,7 @@
     "test": "vitest --reporter verbose"
   },
   "dependencies": {
+    "@adaburrows/table-web-component": "github:adaburrows/table-web-component",
     "@holochain-open-dev/core-types": "^0.6.3",
     "@holochain-open-dev/elements": "^0.2.3",
     "@holochain-open-dev/membrane-invitations": "^0.0.10",

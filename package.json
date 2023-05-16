@@ -31,7 +31,6 @@
     "run-singleton-cli": "^0.0.7"
   },
   "dependencies": {
-    "@adaburrows/table-web-component": "github:adaburrows/table-web-component",
     "@holochain-open-dev/stores": "^0.5.0"
   }
 }
