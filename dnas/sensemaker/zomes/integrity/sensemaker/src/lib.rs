@@ -45,6 +45,7 @@ pub enum LinkTypes {
     AppletName,
     AppletConfig,
     ResourceDefEhToAppletConfig,
+    AllAgentsPath,
 }
 
 #[hdk_extern]

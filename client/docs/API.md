@@ -1,4 +1,7 @@
 # Sensemaker Store Object
+## Constructor
+`constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker')`
+
 ## Properties
 `myAgentPubKey`: The public key of the agent running the sensemaker-lite instance.
 

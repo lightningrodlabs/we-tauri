@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.7-alpha - 2023-05-09
+- whenever an assessment is generated, the agent sends a remote signal to all other peers with a payload containing the newly generated assessment, which is then emitted to the client.
+- new zome function `get_all_agents(_: ()) -> ExternResult<Vec<AgentPubKey>>` which returns a list of all other agents in the network.
 ## v0.0.6-alpha - 2023-04-18
 - `@neighbourhoods/sensemaker-lite-types` renamed to `@neighbourhoods/client` and now includes the `SensemakerStore` class.
 - renamed `get_assessments_for_resource` to `get_assessments_for_resources`, which now takes an array of resource hashes as well as dimension hashes and returns all the assessments along each dimension for all resources
