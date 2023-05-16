@@ -7,7 +7,7 @@ import { contextProvided } from '@lit-labs/context';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
-import { TableC } from '../components/table2';
+import { Table } from '../components/table';
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -21,7 +21,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      'test-table': TableC
+      'test-table': Table
     };
   }
 

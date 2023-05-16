@@ -6,7 +6,7 @@
     "ui/libs/*"
   ],
   "scripts": {
-    "start": "AGENTS=2 npm run network",
+    "start": "AGENTS=1 npm run network",
     "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && concurrently \"npm run build:watch -w nh-launcher\" \"npm run launch:happ\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
     "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",

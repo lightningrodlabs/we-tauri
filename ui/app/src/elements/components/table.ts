@@ -9,7 +9,9 @@ import { StoreSubscriber, get, Readable, derived } from '@holochain-open-dev/sto
 import { FieldDefinitions, FieldDefinition, TableStore, Table as AdaTable } from '@adaburrows/table-web-component';
 import { RowValue } from "@adaburrows/table-web-component/dist/table-store";
 
-import { AssessmentDict, mockAssessments, mockContext } from "./__tests__/test-harness";
+export type AssessmentDict = {
+    [entryHash: string]: Assessment[];
+};
 
 export const tableId = "assessmentsForResource";
 
@@ -19,6 +21,7 @@ const fieldDefs: FieldDefinitions<Assessment> = {
     'resource': new FieldDefinition<Assessment>({heading: 'Resource'}),
     'author': new FieldDefinition<Assessment>({heading: 'Author'})
 }
+
 @customElement('assessments-table')
 export class Table extends ScopedElementsMixin(LitElement) {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -68,7 +71,29 @@ export class Table extends ScopedElementsMixin(LitElement) {
     }
     
     render(): TemplateResult {
-        return html`<adaburrows-table .tableStore=${this.tableStore}></adaburrows-table>`;
+        return html`
+        <div id="${this.tableStore.tableId}">
+          ${this.tableStore.caption && this.tableStore.caption !== '' && html`<div class="table-caption">${this.tableStore.caption}</div>`}
+          <div class="table-header">
+            ${this.tableStore.getHeadings().map( (rowValue) => {
+              const {field, value} = rowValue;
+              return html`
+              <div class="table-header table-column-${field}">
+                ${value}
+              </div>`
+            })}
+          </div>
+          <div class="table-body">
+            ${this.tableStore.getRows().map( (row) => html`
+              <div class="table-row">
+                ${row.map( (rowValue: RowValue) => {
+                  const {field, value} = rowValue;
+                  return html`<div class="table-cell table-column-${field}">${value}</div>`
+                })}
+              </div>`
+            )}
+          </div>
+        </div>`;
     }
     
     static styles = css`
@@ -77,11 +102,11 @@ export class Table extends ScopedElementsMixin(LitElement) {
       /* SIMPLE TABLE STYLES */
       /* =================== */
     
-      --table-simple-background-color: var(--color-lt-violet);
-      --table-simple-border-style: var(--border-solid);
-      --table-simple-border-width: var(--border-1px);
-    
-      --table-simple-b1-width: 8em;
-      --table-simple-b0-width: 8em;
+    --table-simple-background-color: var(--color-lt-violet);
+    --table-simple-border-style: var(--border-solid);
+    --table-simple-border-width: var(--border-1px);
+
+    --table-simple-b1-width: 8em;
+    --table-simple-b0-width: 8em;
     }`;
 }
