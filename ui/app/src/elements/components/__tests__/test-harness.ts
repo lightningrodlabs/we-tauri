@@ -2,9 +2,9 @@ import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { createContext, ContextRoot, contextProvider} from '@lit-labs/context';
 import { vi } from 'vitest'
-import { encodeHashToBase64 } from "@holochain/client";
-import { Assessment, SensemakerStore } from '@neighbourhoods/client';
-import { StoreSubscriber, get, writable } from '@holochain-open-dev/stores';
+import { SensemakerStore } from '@neighbourhoods/client';
+import { writable } from '@holochain-open-dev/stores';
+import { AssessmentDict } from '../table';
 
 export const mockAssessments: AssessmentDict = {'abc' : [
     {
@@ -27,10 +27,6 @@ export const mockAssessments: AssessmentDict = {'abc' : [
     },
   ]};
 
-export type AssessmentDict = {
-  [entryHash: string]: Assessment[];
-};
-  
 // Create a mock context with the mock store
 export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
