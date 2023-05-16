@@ -36,13 +36,21 @@ export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-s
 
 const mockSensemakerWritable = writable<AssessmentDict>(mockAssessments);
 
+const mockResourceAssessmentsResponse = {
+  value: null,
+  store: () => mockSensemakerWritable, 
+  subscribe: mockSensemakerWritable.subscribe, 
+  unsubscribe: vi.fn(),
+  mockSetSubscribeValue: (value: AssessmentDict): void => mockUpdate(value)
+};
+
+function mockUpdate(value) {
+  mockResourceAssessmentsResponse.value = value;
+  mockSensemakerWritable.set(value)
+}
+
 export const mockStore =  {
-  resourceAssessments: vi.fn(() => ({ 
-    store: () => mockSensemakerWritable, 
-    subscribe: mockSensemakerWritable.subscribe, 
-    unsubscribe: vi.fn(),
-    mockSetSubscribeValue: (value: AssessmentDict): void => mockSensemakerWritable.set(value)
-  })),
+  resourceAssessments: vi.fn(() => mockResourceAssessmentsResponse),
 };
 
 @customElement('test-harness')

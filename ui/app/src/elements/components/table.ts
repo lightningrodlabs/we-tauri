@@ -1,14 +1,15 @@
 import { LitElement, html, css, TemplateResult } from "lit";
 import { property, customElement, state } from "lit/decorators.js";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 
 import { Assessment, SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
+import { StoreSubscriber, get, Readable, derived } from '@holochain-open-dev/stores';
+
 import { FieldDefinitions, FieldDefinition, TableStore } from '@adaburrows/table-web-component';
 import { RowValue } from "@adaburrows/table-web-component/dist/table-store";
+
 import { AssessmentDict, mockAssessments, mockContext } from "./__tests__/test-harness";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 
 const fieldDefs: FieldDefinitions<Assessment> = {
     'value': new FieldDefinition<Assessment>({heading: 'Value'}),
@@ -23,10 +24,10 @@ export class Table extends ScopedElementsMixin(LitElement) {
     _sensemakerStore;
 
     @state()
-    allAssessments = new StoreSubscriber<AssessmentDict>(
-        this, () => this._sensemakerStore.resourceAssessments(),
-        () => [this._sensemakerStore.resourceAssessments().value]
-    );
+    resourceIndex : keyof AssessmentDict = 'abc';
+
+    @property()
+    allAssessments!: Readable<AssessmentDict[]>;
 
     @property({attribute: false})
     public tableStore!: TableStore<Assessment>
@@ -37,8 +38,14 @@ export class Table extends ScopedElementsMixin(LitElement) {
     
     connectedCallback() {
         super.connectedCallback();
+        
+        this.allAssessments =  this._sensemakerStore.resourceAssessments()
+        const results: AssessmentDict[] = get(this.allAssessments);
+
         try {
-            const flatAssessments : Assessment[] = Object.values(this.allAssessments.value).flat();
+            if(!results) return;
+
+            const flatAssessments = Object.values(results[this.resourceIndex]).flat() as Assessment[]; 
             
             this.tableStore = new TableStore({
                 // This is the Id used to identify the table in the CSS variables and is the table's HTML id
@@ -52,15 +59,14 @@ export class Table extends ScopedElementsMixin(LitElement) {
         }
     }
 
-    render(): TemplateResult {
-        return html`
-        <div id="abc">
-        </div>`;
-    }
     // dispatch an event when a context is selected
     dispatchContextSelected() {
         // TODO create page tabs and wire up to this handler
         this.dispatchEvent(new CustomEvent('context-selected'))
+    }
+    
+    render(): TemplateResult {
+        return html`<adaburrows-table .tableStore=${this.tableStore}></adaburrows-table>`;
     }
     
     static styles = css`

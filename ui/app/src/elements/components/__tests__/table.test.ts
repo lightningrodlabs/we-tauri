@@ -1,4 +1,4 @@
-import { expect as expectDom } from '@esm-bundle/chai'
+import { expect as expectDomOf } from '@esm-bundle/chai'
 import { assert, fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 
@@ -28,6 +28,7 @@ describe('Table', () => {
   
   beforeEach(async () => {
     mockWritable = mockStore.resourceAssessments();
+    mockWritable.mockSetSubscribeValue(mockAssessments);
   });
 
   test('Given a SensemakerStore with one resource and two assessments Then state is initialized And it renders a table with two rows', async () => {
@@ -35,7 +36,7 @@ describe('Table', () => {
 
       expect(get(mockWritable.store())!['abc'].length).toEqual(2);
       
-      expectDom(toBeTestedComponent).shadowDom.to.equal("<div></div>");
+      expectDomOf(toBeTestedComponent).shadowDom.to.equal("<div></div>");
   });
     
   test('Given a SensemakerStore with one resource and two assessments Then state can be mutated', async () => {
