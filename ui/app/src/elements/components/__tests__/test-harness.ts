@@ -40,9 +40,10 @@ const mockResourceAssessmentsResponse = {
   mockSetSubscribeValue: (value: AssessmentDict): void => mockUpdate(value)
 };
 
+// Helper to make mockResourceAssessmentsResponse like a reactive StoreSubscriber
 function mockUpdate(value) {
   mockResourceAssessmentsResponse.value = value;
-  mockSensemakerWritable.set(value)
+  mockSensemakerWritable.update((value) => value)
 }
 
 export const mockStore =  {
