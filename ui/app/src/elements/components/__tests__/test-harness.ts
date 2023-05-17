@@ -30,23 +30,23 @@ export const mockAssessments: AssessmentDict = {'abc' : [
 // Create a mock context with the mock store
 export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
-const mockSensemakerWritable = writable<AssessmentDict>(mockAssessments);
+const mockSensemakerWritable = writable<AssessmentDict>({});
 
 const mockResourceAssessmentsResponse = {
   value: null,
   store: () => mockSensemakerWritable, 
   subscribe: mockSensemakerWritable.subscribe, 
   unsubscribe: vi.fn(),
-  mockSetSubscribeValue: (value: AssessmentDict): void => mockUpdate(value)
+  mockSetSubscribeValue: (value: AssessmentDict): void => mockUpdateSensemakerStore(value)
 };
 
 // Helper to make mockResourceAssessmentsResponse like a reactive StoreSubscriber
-function mockUpdate(newValue) {
+function mockUpdateSensemakerStore(newValue) {
   mockResourceAssessmentsResponse.value = newValue;
   mockSensemakerWritable.update((oldValue) => newValue)
 }
 
-export const mockStore =  {
+export const mockSensemakerStore =  {
   resourceAssessments: vi.fn(() => mockResourceAssessmentsResponse),
 };
 
@@ -58,7 +58,7 @@ export class TestHarness extends LitElement {
   @contextProvider({ context: mockContext })
   @property({attribute: false})
   // Create a mock store with the mock data
-  _sensemakerStore: Object = mockStore
+  _sensemakerStore: Object = mockSensemakerStore
   
   render() {
     return html`<slot></slot>`;
