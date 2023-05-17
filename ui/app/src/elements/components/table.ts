@@ -88,7 +88,7 @@ export class Table extends ScopedElementsMixin(LitElement) {
       )}
               </div>
             </div>`
-      : html`<p>No table results</p>`;
+      : html`<div id="${this.tableStore.tableId}"><p>No assessments found</p></div>`;
   }
 
   static styles = css`

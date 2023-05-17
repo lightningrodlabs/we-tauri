@@ -57,6 +57,16 @@ describe('Table', () => {
       expect(componentDom.tableStore).toBeDefined();
       expect(componentDom.tableStore.records.length).toEqual(0);
     });
+
+    test('And it renders no table but gives a message', async () => {
+      const dom = await renderAndReturnDom(component);
+      const elements = dom.window.document.querySelectorAll(`.table-row`);
+      expect(elements.length).toBe(0);
+
+      const p = dom.window.document.querySelectorAll(`p`);
+      expect(p.length).toBe(1);
+      expect(p[0].textContent).toBe('No assessments found');
+    });
   });
 
   describe('Given a SensemakerStore with one resource and two assessments', () => {
