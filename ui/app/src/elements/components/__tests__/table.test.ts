@@ -90,7 +90,7 @@ describe('Table', () => {
       expect(elements.length).toBe(2);
     });
 
-    test(`And state can be mutated by adding an assessment`, async () => {
+    test(`Then state can be mutated by adding an assessment`, async () => {
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore.records.length).toEqual(2);
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
@@ -99,7 +99,7 @@ describe('Table', () => {
       expect(componentDom.tableStore.records.length).toEqual(3);
     });
 
-    test('And Then it renders a table with three rows', async () => {
+    test('And it renders a table with three rows', async () => {
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
       const dom = await renderAndReturnDom(component);
 

@@ -49,8 +49,8 @@ export class Table extends ScopedElementsMixin(LitElement) {
   }
 
   connectedCallback(): void {
-    super.connectedCallback()
-    this.allAssessments!.store()
+    super.connectedCallback();
+    (this.allAssessments.store() as Readable<any>)
       .subscribe(value => {
         this.tableStore.records = value
           ? Object.values(value).flat() as Assessment[]
@@ -65,30 +65,12 @@ export class Table extends ScopedElementsMixin(LitElement) {
 
   render(): TemplateResult {
     return this.tableStore.records.length
-      ? html`
-        <div id="${this.tableStore.tableId}">
-          ${this.tableStore.caption && this.tableStore.caption !== '' && html`<div class="table-caption">${this.tableStore.caption}</div>`}
-          <div class="table-header">
-            ${this.tableStore.getHeadings().map((rowValue) => {
-        const { field, value } = rowValue;
-        return html`
-              <div class="table-header table-column-${field}">
-                ${value}
-              </div>`
-      })}
-          </div>
-          <div class="table-body">
-            ${this.tableStore.getRows().map((row) => html`
-              <div class="table-row">
-                ${row.map((rowValue: RowValue) => {
-        const { field, value } = rowValue;
-        return html`<div class="table-cell table-column-${field}">${value}</div>`
-      })}
-                  </div>`
-      )}
-              </div>
-            </div>`
+      ? html`<adaburrows-table .tableStore=${this.tableStore}></adaburrows-table>`
       : html`<div id="${this.tableStore.tableId}"><p>No assessments found</p></div>`;
+  }
+
+  static elementDefinitions = {
+    'adaburrows-table': AdaTable
   }
 
   static styles = css`
