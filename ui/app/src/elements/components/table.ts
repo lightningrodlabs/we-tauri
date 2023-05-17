@@ -34,9 +34,6 @@ export class Table extends ScopedElementsMixin(LitElement) {
   @property()
   allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
 
-  @property()
-  derivedAssessments;//;(this, () => this._sensemakerStore.resourceAssessments());
-
   @property({ attribute: false })
   public tableStore!: TableStore<Assessment>
 
@@ -53,7 +50,7 @@ export class Table extends ScopedElementsMixin(LitElement) {
 
   connectedCallback(): void {
     super.connectedCallback()
-    this.derivedAssessments = this.allAssessments!.store()
+    this.allAssessments!.store()
       .subscribe(value => {
         this.tableStore.records = value
           ? Object.values(value).flat() as Assessment[]
