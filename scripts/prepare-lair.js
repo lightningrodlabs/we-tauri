@@ -6,7 +6,7 @@ triplet = triplet.slice(0, triplet.length - 1);
 
 const binsPath = `src-tauri/bins`;
 
-const targetPath = `${binsPath}/lair-keystore-${triplet}`;
+const targetPath = `${binsPath}/lair-keystore-v0.2.3-${triplet}`;
 
 if (!fs.existsSync(targetPath)) {
   if (!fs.existsSync(binsPath)) {
