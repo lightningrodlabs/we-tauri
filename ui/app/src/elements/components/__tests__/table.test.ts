@@ -32,7 +32,7 @@ describe('Table', () => {
   }
   const renderAndReturnDom = async (testComponent) => {
     await initialRender(testComponent)
-    toBeTestedWC = componentDom.renderRoot.querySelector("#" + tableId);
+    toBeTestedWC = componentDom.renderRoot.querySelector("adaburrows-table");
     return new JSDOM(toBeTestedWC.innerHTML);
   }
 
@@ -46,7 +46,7 @@ describe('Table', () => {
     beforeEach(async () => {
       mockStore = mockSensemakerStore.resourceAssessments();
       mockStore.mockSetSubscribeValue({ 'abc': [] });
-      toBeTestedWC = componentDom.renderRoot.querySelector("#" + tableId);
+      toBeTestedWC = componentDom.renderRoot.querySelector("adaburrows-table");
     });
 
     test(`Then state is initialized`, async () => {

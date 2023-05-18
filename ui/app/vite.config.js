@@ -26,6 +26,13 @@ const exclude = components.map(
   (c) => `@shoelace-style/shoelace/dist/components/${c}/${c}.js`
 );
 export default defineConfig({
+  test: {
+    /* for example, use global to avoid globals imports (describe, test, expect): */
+    globals: true,
+    deps: {
+        inline: [/@neighbourhoods/]
+      }
+  },
   plugins: [
     // checker({
     //   typescript: true,
@@ -42,17 +49,7 @@ export default defineConfig({
         {
           src: "we_logo.png",
           dest: "dist/assets",
-        },
-        {
-          src: "../applet-worker/dist/index.mjs",
-          dest: "",
-          rename: "applet-worker.js",
-        },
-        {
-          src: "../applet-iframe/dist/index.mjs",
-          dest: "",
-          rename: "applet-iframe.js",
-        },
+        }
       ],
     }),
   ],
