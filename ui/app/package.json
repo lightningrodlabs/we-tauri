@@ -18,6 +18,7 @@
     "@holochain-open-dev/utils": "^0.8.0",
     "@holochain/client": "0.12.0",
     "@lit-labs/context": "^0.1.1",
+    "@lit-labs/scoped-registry-mixin": "^1.0.1",
     "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
     "@neighbourhoods/client": "^0.0.2",
