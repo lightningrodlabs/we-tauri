@@ -22,7 +22,7 @@
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we",
     "prepare:build": "npm run build:happ && npm run build:ui",
-    "prepare:lair": "rimraf src-tauri/bins && mkdir src-tauri/bins && cp $(which lair-keystore) src-tauri/bins/lair-keystore-v0.2.3-x86_64-unknown-linux-gnu && chmod +w src-tauri/bins/lair-keystore-v0.2.3-x86_64-unknown-linux-gnu",
+    "prepare:lair": "node scripts/prepare-lair.js",
     "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp && npm run build:libs"
   },
   "devDependencies": {
@@ -30,6 +30,7 @@
     "@tauri-apps/cli": "^1.2.3",
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
+    "cross-env": "^7.0.3",
     "js-yaml": "^4.1.0",
     "new-port-cli": "^1.0.0",
     "rimraf": "^4.4.0",
