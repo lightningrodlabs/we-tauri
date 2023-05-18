@@ -58,17 +58,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
           : this.tableStore.records
       })
   }
-  // dispatch an event when a context is selected
-  dispatchContextSelected() {
-    // TODO create page tabs and wire up to this handler
-    this.dispatchEvent(new CustomEvent('context-selected'))
-  }
-
+  
   render(): TemplateResult {
-    /* eslint-disable no-console */
-    console.log('this.tableStore records :>> ', this.tableStore.records);
-    /* eslint-enable no-console */
-
     return this.tableStore.records.length
       ? html`<adaburrows-table .tableStore=${this.tableStore}></adaburrows-table>`
       : html`<div id="${this.tableStore.tableId}"><p>No assessments found</p></div>`;

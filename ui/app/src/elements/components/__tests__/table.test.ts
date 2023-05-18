@@ -1,16 +1,15 @@
 const { JSDOM } = require('jsdom');
+import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import { fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 import { expect as expectDomOf } from '@esm-bundle/chai'
 // import { getDiffableHTML  } from '@open-wc/semantic-dom-diff';
 
-import '../table';
 import './test-harness';
 import { mockAssessments, mockSensemakerStore } from './test-harness';
-import { get } from '@holochain-open-dev/stores';
-import { AssessmentDict, tableId } from '../table';
-import { render } from 'lit';
 import { addedAssessment, removedAssessment } from './helpers';
+import '../table';
+import { tableId } from '../table';
 /**
 * @vitest-environment jsdom
 */
@@ -22,7 +21,7 @@ export const stateful = async (component) => fixture(html`
 `)
 
 describe('Table', () => {
-  let component, harness, componentDom, toBeTestedWC;
+  let component, harness, componentDom, toBeTestedSubComponent;
   let mockStore;
 
   const initialRender = async (testComponent) => {
@@ -30,23 +29,25 @@ describe('Table', () => {
     componentDom = harness.querySelector('assessments-table');
     await componentDom.updateComplete;
   }
-  const renderAndReturnDom = async (testComponent) => {
+  const renderAndReturnDom = async (testComponent, subComponent) => {
     await initialRender(testComponent)
-    toBeTestedWC = componentDom.renderRoot.querySelector("adaburrows-table");
-    return new JSDOM(toBeTestedWC.innerHTML);
+    const root = componentDom.renderRoot;
+    if(!!subComponent) {
+      toBeTestedSubComponent = root.querySelector(subComponent);
+      return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
+    }
+    return new JSDOM(root.innerHTML);
   }
 
   beforeAll(async () => {
     component = html`<assessments-table></assessments-table>`;
     await initialRender(component)
-    // toBeTestedWC = componentDom.renderRoot.querySelector("adaburrows-table");
   });
 
   describe('Given a SensemakerStore with no assessments ', () => {
     beforeEach(async () => {
       mockStore = mockSensemakerStore.resourceAssessments();
       mockStore.mockSetSubscribeValue({ 'abc': [] });
-      toBeTestedWC = componentDom.renderRoot.querySelector("adaburrows-table");
     });
 
     test(`Then state is initialized`, async () => {
@@ -59,11 +60,12 @@ describe('Table', () => {
     });
 
     test('And it renders no table but gives a message', async () => {
-      const dom = await renderAndReturnDom(component);
-      const elements = dom.window.document.querySelectorAll(`.table-row`);
+      const dom = await renderAndReturnDom(component, false);
+      const elements = dom.window.document.querySelectorAll(`table`);
       expect(elements.length).toBe(0);
 
       const p = dom.window.document.querySelectorAll(`p`);
+
       expect(p.length).toBe(1);
       expect(p[0].textContent).toBe('No assessments found');
     });
@@ -73,7 +75,7 @@ describe('Table', () => {
     beforeEach(async () => {
       mockStore = mockSensemakerStore.resourceAssessments();
       mockStore.mockSetSubscribeValue(mockAssessments);
-      toBeTestedWC = componentDom.renderRoot.querySelector("#" + tableId);
+      toBeTestedSubComponent = componentDom.renderRoot.querySelector("#" + tableId);
     });
 
     test(`Then state is initialized`, async () => {
@@ -84,9 +86,30 @@ describe('Table', () => {
       expect(componentDom.tableStore.records.length).toEqual(2);
     });
 
-    test('And it renders a table with two rows', async () => {
-      const dom = await renderAndReturnDom(component);
-      const elements = dom.window.document.querySelectorAll(`.table-row`);
+    test('And it renders a header row', async () => {
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const elements = dom.window.document.querySelectorAll(`thead tr`);
+      expect(elements.length).toBe(1);
+    });
+    test('And the header row has the correct number of columns ', async () => {
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const elements = dom.window.document.querySelectorAll(`thead tr th`);
+      expect(elements.length).toBe(4);
+    });
+    test('And the header row has the correct column headings ', async () => {
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const elements = dom.window.document.querySelectorAll(`thead tr th`);
+      expect([...elements].map((node) => node.textContent.trim())).eql([
+        "Value",
+        "Dimension",
+        "Resource",
+        "Author",
+      ]);
+    });
+
+    test('And it renders a table body with two rows', async () => {
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const elements = dom.window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(2);
     });
 
@@ -99,11 +122,11 @@ describe('Table', () => {
       expect(componentDom.tableStore.records.length).toEqual(3);
     });
 
-    test('And it renders a table with three rows', async () => {
+    test('And it renders a table body with three rows', async () => {
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
-      const dom = await renderAndReturnDom(component);
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
 
-      const elements = dom.window.document.querySelectorAll(`.table-row`);
+      const elements = dom.window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(3);
     });
 
@@ -116,11 +139,11 @@ describe('Table', () => {
       expect(componentDom.tableStore.records.length).toEqual(1);
     });
 
-    test('And it renders a table with one row', async () => {
+    test('And it renders a table body with one row', async () => {
       mockStore.mockSetSubscribeValue(removedAssessment(mockAssessments, mockResourceName));
-      const dom = await renderAndReturnDom(component);
+      const dom = await renderAndReturnDom(component, 'adaburrows-table');
 
-      const elements = dom.window.document.querySelectorAll(`.table-row`);
+      const elements = dom.window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(1);
     });
   });
