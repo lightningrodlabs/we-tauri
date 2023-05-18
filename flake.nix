@@ -60,7 +60,7 @@
                   gst_all_1.gst-vaapi
                 ]))
               ++ lib.optionals pkgs.stdenv.isDarwin
-                (with self'.legacyPackages.apple_sdk'.frameworks; [
+                (with self'.legacyPackages.apple_sdk.frameworks; [
                   AppKit
                   CoreFoundation
                   CoreServices
