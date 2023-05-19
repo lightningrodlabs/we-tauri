@@ -82,8 +82,10 @@ jobs:
 
       - name: Install and prepare
         run: |
+          rustup target add wasm32-unknown-unknown
           curl -L --output workdir/we.webhapp https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.happ
-          npm i	
+          npm install
+          npm run build:zomes
 
       - name: setup binaries (windows only)
         if: matrix.platform == 'windows-2019'
