@@ -2,7 +2,9 @@ import {
   asyncDeriveAndJoin,
   AsyncReadable,
   joinAsyncMap,
+  mapAndJoin,
   pipe,
+  sliceAndJoin,
   StoreSubscriber,
   toPromise,
 } from "@holochain-open-dev/stores";
@@ -35,7 +37,6 @@ import { GroupStore } from "../group-store.js";
 import "../../elements/sidebar-button.js";
 import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
-import { mapAndJoin, sliceAndJoin } from "../../utils.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 

@@ -21,7 +21,6 @@
     "tauri": "tauri",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we",
-    "prepare:build": "npm run build:happ && npm run build:ui",
     "prepare:lair": "node scripts/prepare-lair.js",
     "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp && npm run build:libs"
   },

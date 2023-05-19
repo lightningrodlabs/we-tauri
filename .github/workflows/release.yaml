@@ -1,17 +1,53 @@
-name: "publish"
+name: "release"
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
+  publish-happ:
+    permissions:
+      contents: write
+    runs-on: ubuntu-20.04
+    outputs:
+      releaseId: ${{ steps.create-release.outputs.id }}
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v2
+      
+      - name: Install nix
+        uses: cachix/install-nix-action@v18
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.12.0/install
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v10
+        with:
+          name: holochain-ci
+
+      - name: Install and test
+        run: |
+          nix develop --command bash -c "npm i && npm run build:happ"
+
+      - id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "workdir/we.webhapp"
+          body: "See assets below to download and install this version."
+          prerelease: true
+          draft: true
+
   publish-tauri:
+    needs: publish-happ
     strategy:
       fail-fast: false
       matrix:
         platform: [windows-2019, macos-11, ubuntu-20.04]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
+      RELEASE_ID: ${{needs.publish-happ.outputs.releaseId}}
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -46,9 +82,8 @@ jobs:
 
       - name: Install and prepare
         run: |
-          rustup target add wasm32-unknown-unknown
-          cargo install holochain_cli --version 0.1.4
-          npm i
+          curl -L --output workdir/we.webhapp https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.webhapp
+          npm i	
 
       - name: setup binaries (windows only)
         if: matrix.platform == 'windows-2019'
@@ -82,10 +117,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectPath: src-tauri # specifying to prevent action from looking for artifacts in crates/hc_launch/src-tauri
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "We v__VERSION__"
-          releaseBody: "See assets below to download and install this version."
-          releaseDraft: true
-          prerelease: true
+          releaseId: ${{ needs.publish-happ.outputs.releaseId }}
+
 

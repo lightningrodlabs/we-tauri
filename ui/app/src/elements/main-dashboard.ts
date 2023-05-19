@@ -106,6 +106,7 @@ export class MainDashboard extends LitElement {
   async openGroup(groupDnaHash: DnaHash) {
     this.selectedGroupDnaHash = groupDnaHash;
     this.dynamicLayout.openTab({
+      id: `group-home-${encodeHashToBase64(groupDnaHash)}`,
       type: "component",
       componentType: "group-home",
       componentState: {
@@ -130,6 +131,7 @@ export class MainDashboard extends LitElement {
               .tooltipText=${msg("Welcome")}
               @click=${() => {
                 this.dynamicLayout.openTab({
+                  id: "welcome",
                   type: "component",
                   componentType: "welcome",
                   title: msg("Welcome"),
@@ -161,6 +163,9 @@ export class MainDashboard extends LitElement {
             class="top-bar"
             @applet-selected=${(e: CustomEvent) => {
               this.dynamicLayout.openTab({
+                id: `applet-bundle-main-${encodeHashToBase64(
+                  e.detail.appletBundleHash
+                )}`,
                 type: "component",
                 componentType: "cross-applet-main",
                 componentState: {
@@ -179,6 +184,7 @@ export class MainDashboard extends LitElement {
               type: "row",
               content: [
                 {
+                  id: "welcome",
                   type: "component",
                   title: "Welcome",
                   componentType: "welcome",
@@ -188,6 +194,7 @@ export class MainDashboard extends LitElement {
             style="flex: 1; min-width: 0;"
             @applet-selected=${(e: CustomEvent) => {
               this.dynamicLayout.openTab({
+                id: `applet-main-${encodeHashToBase64(e.detail.appletHash)}`,
                 type: "component",
                 componentType: "applet-main",
                 componentState: {

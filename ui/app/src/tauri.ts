@@ -22,6 +22,7 @@ export interface ConductorInfo {
   app_port: number;
   admin_port: number;
   we_app_id: string;
+  devhub_app_id: string;
 }
 
 export async function getConductorInfo(): Promise<ConductorInfo> {

@@ -11,7 +11,7 @@ import { AppOpenViews } from "../types.js";
 import { openViewsContext } from "../context.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { AppletHost } from "../../applet-host.js";
+import { AppletHost } from "../../applets/applet-host.js";
 
 @customElement("view-frame")
 export class ViewFrame extends LitElement {

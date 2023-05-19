@@ -34,7 +34,7 @@ export class AppletBundlesStore {
 
   allAppletBundles = lazyLoadAndPoll(
     async () => getAllAppsWithGui(this.devhubClient),
-    5000
+    30000
   );
 
   appletBundles = new LazyHoloHashMap((appletBundleHash: EntryHash) =>

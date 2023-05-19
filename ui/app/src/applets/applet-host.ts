@@ -15,9 +15,9 @@ import {
   HrlWithContext,
 } from "@lightningrodlabs/we-applet";
 
-import { AppOpenViews } from "./layout/types";
-import { signZomeCallTauri } from "./tauri";
-import { WeStore } from "./we-store";
+import { AppOpenViews } from "../layout/types";
+import { signZomeCallTauri } from "../tauri";
+import { WeStore } from "../we-store";
 
 export class AppletHost {
   constructor(

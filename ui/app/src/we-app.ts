@@ -65,7 +65,7 @@ export class WeApp extends LitElement {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(DEVHUB_APP_ID);
+    const devhubClient = await initAppClient(info.devhub_app_id);
 
     this._weStore = new WeStore(
       adminWebsocket,

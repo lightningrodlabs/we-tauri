@@ -7,7 +7,7 @@ import {
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { InternalAttachmentType } from "applet-messages";
 
-import { AppletHost } from "../applet-host.js";
+import { AppletHost } from "./applet-host.js";
 import { WeStore } from "../we-store.js";
 import { Applet } from "./types.js";
 

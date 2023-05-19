@@ -67,7 +67,7 @@ export class InstallableApplets extends LitElement {
           ? html`
               <div class="column center-content">
                 <span class="placeholder"
-                  >${msg("No applets available yet")}</span
+                  >${msg("No applets available yet.")}</span
                 >
               </div>
             `

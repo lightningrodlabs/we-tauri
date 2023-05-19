@@ -7,6 +7,7 @@ import {
   joinAsyncMap,
   lazyLoad,
   manualReloadStore,
+  mapAndJoin,
   pipe,
   race,
   retryUntilSuccess,
@@ -41,15 +42,8 @@ import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
-import { findAppForDnaHash, mapAndJoin } from "./utils.js";
+import { findAppForDnaHash } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
-
-export function asyncDeriveAndJoin<T, U>(
-  store: AsyncReadable<T>,
-  fn: (arg: T) => AsyncReadable<U>
-): AsyncReadable<[T, U]> {
-  return asyncDeriveStore(store, (v) => asyncDerived(fn(v), (u) => [v, u]));
-}
 
 export function getAll<H extends HoloHash, T>(
   hashes: AsyncReadable<Array<H>>,
@@ -330,7 +324,7 @@ export class WeStore {
   );
 
   allAppletsHosts = pipe(this.allInstalledApplets, (applets) =>
-    joinAsyncMap(mapValues(applets, (appletStore) => appletStore.host))
+    mapAndJoin(applets, (appletStore) => appletStore.host)
   );
 
   allAttachmentTypes: AsyncReadable<

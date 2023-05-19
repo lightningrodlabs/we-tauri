@@ -9,12 +9,16 @@ use crate::{
     state::{WeError, WeResult},
 };
 
+pub fn we_version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
+}
+
 pub fn we_app_id() -> String {
-    format!("we-{}", env!("CARGO_PKG_VERSION"))
+    format!("we-{}", we_version())
 }
 
 pub fn devhub_app_id() -> String {
-    format!("DevHub")
+    format!("DevHub-{}", we_version())
 }
 
 pub async fn install_default_apps_if_necessary(
@@ -26,14 +30,15 @@ pub async fn install_default_apps_if_necessary(
         .await
         .map_err(|err| WeError::WebAppManagerError(err))?;
 
-    let network_seed =         if let Some(network_seed) = &config.network_seed {
-        Some(network_seed.clone())
-    } else         if cfg!(debug_assertions) {
-        Some(format!("we-dev"))
+    let network_seed = if let Some(network_seed) = &config.network_seed {
+        network_seed.clone()
+    } else if cfg!(debug_assertions) {
+        format!("we-dev")
     } else {
-        Some(format!("we"))
-};
-    
+        format!("we")
+    };
+    let network_seed = format!("{}-{}", we_version(), network_seed);
+
     if !apps
         .iter()
         .map(|info| info.installed_app_info.installed_app_id.clone())
@@ -56,7 +61,7 @@ pub async fn install_default_apps_if_necessary(
             .install_web_app(
                 devhub_app_id(),
                 dev_hub_bundle,
-                network_seed.clone(),
+                Some(network_seed.clone()),
                 HashMap::new(),
                 Some(pubkey.clone()),
                 None,
@@ -73,7 +78,7 @@ pub async fn install_default_apps_if_necessary(
             .install_app(
                 we_app_id,
                 we_bundle,
-                network_seed,
+                Some(network_seed),
                 HashMap::new(),
                 Some(pubkey.clone()),
                 None,

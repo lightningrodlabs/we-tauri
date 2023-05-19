@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    default_apps::we_app_id,
+    default_apps::{we_app_id, devhub_app_id},
     state::{LaunchedState, WeResult},
 };
 
@@ -18,6 +18,7 @@ pub struct ConductorInfo {
     app_port: u16,
     admin_port: u16,
     we_app_id: String,
+    devhub_app_id: String,
 }
 
 #[tauri::command]
@@ -30,5 +31,6 @@ pub async fn get_conductor_info(
         app_port: m.web_app_manager.app_interface_port(),
         admin_port: m.web_app_manager.admin_interface_port(),
         we_app_id: we_app_id(),
+        devhub_app_id: devhub_app_id(),
     })
 }

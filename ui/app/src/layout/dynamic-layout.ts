@@ -55,66 +55,56 @@ export class DynamicLayout extends LitElement {
   @property()
   openViews: AppOpenViews = {
     openAppletBlock: (appletHash, block, context) => {
-      this.goldenLayout.addItemAtLocation(
-        {
-          type: "component",
-          componentType: "applet-block",
-          componentState: {
-            appletHash: encodeHashToBase64(appletHash),
-            block,
-            context,
-          },
+      this.openTab({
+        id: `applet-block-${encodeHashToBase64(appletHash)}-${block}`,
+        type: "component",
+        componentType: "applet-block",
+        componentState: {
+          appletHash: encodeHashToBase64(appletHash),
+          block,
+          context,
         },
-        [
-          {
-            typeId: 2,
-          },
-        ]
-      );
+      });
     },
     openCrossAppletBlock: (appletBundleHash, block, context) => {
-      this.goldenLayout.addItemAtLocation(
-        {
-          type: "component",
-          componentType: "cross-applet-block",
-          componentState: {
-            appletBundleHash: encodeHashToBase64(appletBundleHash),
-            block,
-            context,
-          },
+      this.openTab({
+        id: `cross-applet-block-${encodeHashToBase64(
+          appletBundleHash
+        )}-${block}`,
+        type: "component",
+        componentType: "cross-applet-block",
+        componentState: {
+          appletBundleHash: encodeHashToBase64(appletBundleHash),
+          block,
+          context,
         },
-        [
-          {
-            typeId: 2,
-          },
-        ]
-      );
+      });
     },
     openHrl: async (hrl: Hrl, context: any) => {
-      this.goldenLayout.addItemAtLocation(
-        {
-          type: "component",
-          componentType: "entry",
-          componentState: {
-            hrl: [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])],
-            context,
-          },
+      this.openTab({
+        id: `hrl://${encodeHashToBase64(hrl[0])}/${encodeHashToBase64(hrl[1])}`,
+        type: "component",
+        componentType: "entry",
+        componentState: {
+          hrl: [encodeHashToBase64(hrl[0]), encodeHashToBase64(hrl[1])],
+          context,
         },
-        [
-          {
-            typeId: 2,
-          },
-        ]
-      );
+      });
     },
   };
 
   openTab(itemConfig: ComponentItemConfig) {
-    this.goldenLayout.addItemAtLocation(itemConfig, [
-      {
-        typeId: 2,
-      },
-    ]);
+    const item = this.goldenLayout.findFirstComponentItemById(itemConfig.id!);
+
+    if (item) {
+      item.focus();
+    } else {
+      this.goldenLayout.addItemAtLocation(itemConfig, [
+        {
+          typeId: 2,
+        },
+      ]);
+    }
   }
 
   get goldenLayout(): GoldenLayout {

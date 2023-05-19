@@ -3,7 +3,7 @@
     "devPath": "http://localhost:1420",
     "distDir": "../ui/app/dist",
     "withGlobalTauri": false,
-    "beforeBuildCommand": "npm run prepare:build"
+    "beforeBuildCommand": "npm run build:ui"
   },
   "package": {
     "productName": "We",
