@@ -37,7 +37,7 @@ jobs:
           artifacts: "workdir/we.happ"
           body: "See assets below to download and install this version."
           prerelease: true
-          draft: true
+          draft: false
 
   publish-tauri:
     needs: publish-happ
