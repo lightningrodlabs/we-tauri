@@ -34,7 +34,7 @@ jobs:
       - id: create-release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "workdir/we.webhapp"
+          artifacts: "workdir/we.happ"
           body: "See assets below to download and install this version."
           prerelease: true
           draft: true
@@ -82,7 +82,7 @@ jobs:
 
       - name: Install and prepare
         run: |
-          curl -L --output workdir/we.webhapp https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.webhapp
+          curl -L --output workdir/we.webhapp https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.happ
           npm i	
 
       - name: setup binaries (windows only)

@@ -1,7 +1,0 @@
----
-manifest_version: "1"
-name: we
-ui:
-  bundled: "../ui/app/ui.zip"
-happ_manifest:
-  bundled: "./we.happ"
