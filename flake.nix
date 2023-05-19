@@ -60,13 +60,14 @@
                   gst_all_1.gst-vaapi
                 ]))
               ++ lib.optionals pkgs.stdenv.isDarwin
-                (with self'.legacyPackages.apple_sdk.frameworks; [
-                  AppKit
-                  CoreFoundation
-                  CoreServices
-                  Security
-                  IOKit
-                  WebKit
+                (with pkgs; [
+                  darwin.apple_sdk.frameworks.Security
+                  darwin.apple_sdk.frameworks.CoreServices
+                  darwin.apple_sdk.frameworks.CoreFoundation
+                  darwin.apple_sdk.frameworks.Foundation
+                  darwin.apple_sdk.frameworks.AppKit
+                  darwin.apple_sdk.frameworks.WebKit
+                  darwin.apple_sdk.frameworks.Cocoa
                 ])
               ;
 
