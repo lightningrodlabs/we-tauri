@@ -83,7 +83,7 @@ jobs:
       - name: Install and prepare
         run: |
           rustup target add wasm32-unknown-unknown
-          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.happ
+          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${{needs.publish-happ.outputs.releaseId}}/we.happ
           npm install
           npm run build:zomes
 
