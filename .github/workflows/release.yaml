@@ -47,7 +47,6 @@ jobs:
         platform: [windows-2019, macos-11, ubuntu-20.04]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
-      RELEASE_ID: ${{needs.publish-happ.outputs.releaseId}}
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -83,8 +82,7 @@ jobs:
       - name: Install and prepare
         run: |
           rustup target add wasm32-unknown-unknown
-          echo ${RELEASE_ID}
-          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${RELEASE_ID}/we.happ
+          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${{ github.ref_name }}/we.happ
           npm install
           npm run build:zomes
 
