@@ -37,8 +37,10 @@ export class AttachmentsList extends LitElement {
   @property(hashProperty("hash"))
   hash!: AnyDhtHash;
 
-  attachments = new StoreSubscriber(this, () =>
-    this.attachmentsStore.attachments.get(this.hash)
+  attachments = new StoreSubscriber(
+    this,
+    () => this.attachmentsStore.attachments.get(this.hash),
+    () => [this.hash]
   );
 
   @state()

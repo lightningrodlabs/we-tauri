@@ -29,7 +29,8 @@ export class InstallableApplets extends LitElement {
 
   _installableApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.appletBundlesStore.allAppletBundles
+    () => this.groupStore.appletBundlesStore.allAppletBundles,
+    () => []
   );
 
   @query("#applet-dialog")

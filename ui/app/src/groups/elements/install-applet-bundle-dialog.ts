@@ -29,10 +29,13 @@ export class InstallAppletBundleDialog extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
-  _registeredApplets = new StoreSubscriber(this, () =>
-    pipe(this.groupStore.allApplets, (allAppletsHashes) =>
-      joinAsyncMap(slice(this.groupStore.applets, allAppletsHashes))
-    )
+  _registeredApplets = new StoreSubscriber(
+    this,
+    () =>
+      pipe(this.groupStore.allApplets, (allAppletsHashes) =>
+        joinAsyncMap(slice(this.groupStore.applets, allAppletsHashes))
+      ),
+    () => []
   );
 
   @query("#applet-dialog")
