@@ -30,14 +30,12 @@ import "@shoelace-style/shoelace/dist/components/select/select.js";
 import "@shoelace-style/shoelace/dist/components/option/option.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import { mapValues, slice } from "@holochain-open-dev/utils";
 
 import { weStoreContext } from "../../context";
 import { WeStore } from "../../we-store";
-import { GroupProfile } from "../../../../libs/we-applet/dist";
 import { GroupStore } from "../group-store";
 import { groupStoreContext } from "../context";
-import { sliceAndJoin } from "../../utils";
-import { mapValues, slice } from "@holochain-open-dev/utils";
 
 @localized()
 @customElement("federate-applet-dialog")
