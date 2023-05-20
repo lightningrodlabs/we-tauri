@@ -6,7 +6,9 @@ use filesystem::WeFileSystem;
 use futures::lock::Mutex;
 use holochain_launcher_utils::window_builder::read_resource_from_path;
 use serde_json::Value;
-use tauri::{http::ResponseBuilder, Manager, UserAttentionType, WindowBuilder, WindowUrl};
+use tauri::{
+    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
+};
 
 mod commands;
 mod config;
@@ -51,9 +53,9 @@ fn main() {
 
     if !disable_deep_link {
         // Needs to be equal to the identifier in tauri.conf.json
-        tauri_plugin_deep_link::prepare("we"); 
+        tauri_plugin_deep_link::prepare("we");
     }
-    
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
@@ -101,7 +103,6 @@ fn main() {
                 None => None,
             };
             app.manage(WeConfig { network_seed });
-
 
             let title = if profile.as_str() == "default" {
                 String::from("We")
@@ -178,6 +179,13 @@ fn main() {
 
             return Err("Not found")?;
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app_handle, event| {
+            // This event is emitted upon quitting the Launcher via cmq+Q on macOS.
+            // Sidecar binaries need to get explicitly killed in this case (https://github.com/holochain/launcher/issues/141)
+            if let RunEvent::Exit = event {
+                tauri::api::process::kill_children();
+            }
+        });
 }
