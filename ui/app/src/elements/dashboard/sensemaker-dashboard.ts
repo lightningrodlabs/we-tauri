@@ -2,12 +2,11 @@ import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { Assessment } from '@neighbourhoods/sensemaker-lite-types';
-import { encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
-import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { StatefulTable } from '../components/table';
+import { SlMenuItem, SlMenu, SlTabGroup, SlTabPanel, SlSkeleton } from '@scoped-elements/shoelace';
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -21,7 +20,12 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      'test-table': StatefulTable
+      'sl-loading': SlSkeleton,
+      'sl-menu': SlMenu,
+      'sl-menu-item': SlMenuItem,
+      'sl-tab-group': SlTabGroup,
+      'sl-tab-panel': SlTabPanel,
+      'test-table': StatefulTable,
     };
   }
 
