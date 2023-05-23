@@ -4,7 +4,7 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 
 import './test-harness';
-import { mockAssessments, mockMatrixStore } from './test-harness';
+import { mockMatrixStore } from './test-harness';
 import '../sensemaker-dashboard';
 import { SensemakerDashboard } from '../sensemaker-dashboard';
 import { stateful } from './helpers';
@@ -41,17 +41,15 @@ describe('SensemakeDashboard', () => {
 
   describe('Given a MatrixStore with no applets ', () => {
     beforeEach(async () => {
-      mockStore = mockMatrixStore.resourceAssessments();
-      mockStore.mockSetSubscribeValue({ 'abc': [] });
+      mockStore = mockMatrixStore._allAppletClasses;
+      mockStore.mockSetSubscribeValue({_values : {}});
     });
 
     test(`Then state is initialized`, async () => {
-      expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
+      expect(Object.keys(mockStore.value._values).length).toEqual(0);
 
-      expect(mockStore.value[mockResourceName].length).toEqual(0);
-
-      expect(componentDom.tableStore).toBeDefined();
-      expect(componentDom.tableStore.records.length).toEqual(0);
+      expect(componentDom._allAppletsStore).toBeDefined();
+      expect(componentDom._allAppletsStore.value).toEqual(0);
     });
 
     test('And it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu', async () => {

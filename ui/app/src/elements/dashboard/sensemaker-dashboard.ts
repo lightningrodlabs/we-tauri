@@ -7,8 +7,13 @@ import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client'
 
 import { StatefulTable } from '../components/table';
 import { SlMenuItem, SlMenu, SlTabGroup, SlTabPanel, SlSkeleton } from '@scoped-elements/shoelace';
+import { matrixContext } from '../../context';
+import { MatrixStore } from '../../matrix-store';
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
+  @contextProvided({ context: matrixContext, subscribe: true })
+  _matrixStore!: MatrixStore;
+
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 

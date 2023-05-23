@@ -3,8 +3,8 @@ import { customElement, property } from 'lit/decorators.js';
 import { createContext, contextProvider} from '@lit-labs/context';
 import { vi } from 'vitest'
 import { Readable, readable, writable } from '@holochain-open-dev/stores';
-import { EntryHashMap } from '@holochain-open-dev/utils';
 import { AppletClassInfo, MatrixStore } from '../../../matrix-store';
+import { EntryHashMap } from '../../../holo-hash-map-temp';
 
 type AppletDict = Partial<EntryHashMap<AppletClassInfo>>;
 
