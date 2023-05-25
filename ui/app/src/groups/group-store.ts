@@ -24,12 +24,15 @@ import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store";
 import { AppletBundleMetadata } from "../types";
 import { GroupClient } from "./group-client";
 import { Applet } from "../applets/types";
+import { CustomViewsStore } from "../custom-views/custom-views-store";
+import { CustomViewsClient } from "../custom-views/custom-views-client";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
   profilesStore: ProfilesStore;
   peerStatusStore: PeerStatusStore;
   groupClient: GroupClient;
+  customViewsStore: CustomViewsStore;
 
   members: AsyncReadable<Array<AgentPubKey>>;
 
@@ -46,6 +49,9 @@ export class GroupStore {
     );
     this.profilesStore = new ProfilesStore(
       new ProfilesClient(appAgentWebsocket, roleName)
+    );
+    this.customViewsStore = new CustomViewsStore(
+      new CustomViewsClient(appAgentWebsocket, roleName)
     );
     this.members = this.profilesStore.agentsWithProfile;
   }

@@ -1260,6 +1260,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "custom_views"
+version = "0.0.1"
+dependencies = [
+ "custom_views_integrity",
+ "fixt",
+ "futures",
+ "hdk",
+ "holochain",
+ "serde",
+ "tokio",
+]
+
+[[package]]
+name = "custom_views_integrity"
+version = "0.0.1"
+dependencies = [
+ "hdi",
+ "serde",
+]
+
+[[package]]
 name = "cxx"
 version = "1.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -16,6 +16,8 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
+import { customViewsStoreContext } from "../../custom-views/context.js";
+import { CustomViewsStore } from "../../custom-views/custom-views-store.js";
 
 @customElement("group-context")
 export class GroupContext extends LitElement {
@@ -35,6 +37,9 @@ export class GroupContext extends LitElement {
   @provide({ context: peerStatusStoreContext })
   peerStatusStore!: PeerStatusStore;
 
+  @provide({ context: customViewsStoreContext })
+  customViewsStore!: CustomViewsStore;
+
   unsubscribe: Unsubscriber | undefined;
 
   updated(changedValues: PropertyValues) {
@@ -50,6 +55,7 @@ export class GroupContext extends LitElement {
             this.groupStore = v.value;
             this.profilesStore = v.value.profilesStore;
             this.peerStatusStore = v.value.peerStatusStore;
+            this.customViewsStore = v.value.customViewsStore;
           }
         });
     }

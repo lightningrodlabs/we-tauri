@@ -8,6 +8,8 @@ integrity:
   zomes:
   - name: group_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/group_integrity.wasm
+  - name: custom_views_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/custom_views_integrity.wasm
   - name: profiles_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
 
@@ -17,6 +19,10 @@ coordinator:
       bundled: ../../../target/wasm32-unknown-unknown/release/group_coordinator.wasm
       dependencies:
         - name: group_integrity
+    - name: custom_views
+      bundled: ../../../target/wasm32-unknown-unknown/release/custom_views.wasm
+      dependencies:
+        - name: custom_views_integrity
     - name: profiles
       bundled: ../../../target/wasm32-unknown-unknown/release/profiles_coordinator.wasm
       dependencies:

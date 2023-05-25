@@ -16,10 +16,17 @@ async function publishApplets() {
     `ws://localhost:${process.env.ADMIN_PORT}`,
     100000
   );
+
+  const apps = await adminWs.listApps({});
+
+  const devhubAppId = apps.find((app) =>
+    app.installed_app_id.includes("DevHub")
+  ).installed_app_id;
+
   const appPorts = await adminWs.listAppInterfaces();
   const appWs = await AppAgentWebsocket.connect(
     `ws://localhost:${appPorts[0]}`,
-    "DevHub",
+    devhubAppId,
     100000
   );
   const devhubCells = await appWs.appInfo();

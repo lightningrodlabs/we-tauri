@@ -32,6 +32,7 @@ import "./installable-applets.js";
 import "./group-applets.js";
 import "./group-applets-settings.js";
 import "./your-settings.js";
+import "../../custom-views/elements/all-custom-views.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
@@ -100,10 +101,17 @@ export class GroupHome extends LitElement {
             ></sl-icon-button>
           </div>
 
-          <div class="column" style="flex: 1">
-            <span class="title">${msg("Applets")}</span>
-            <sl-divider style="--color: grey"></sl-divider>
-            <group-applets style="margin-top: 16px; flex: 1"></group-applets>
+          <div class="row">
+            <div class="column" style="flex: 1">
+              <span class="title">${msg("Applets")}</span>
+              <sl-divider style="--color: grey"></sl-divider>
+              <group-applets style="margin-top: 16px; flex: 1"></group-applets>
+            </div>
+            <div class="column" style="flex: 1">
+              <span class="title">${msg("Custom Views")}</span>
+              <sl-divider style="--color: grey"></sl-divider>
+              <all-custom-views></all-custom-views>
+            </div>
           </div>
         </div>
 
