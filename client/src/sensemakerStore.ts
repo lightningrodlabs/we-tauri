@@ -1,7 +1,7 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, AppletUIConfig, AssessDimensionWidget, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, DisplayDimensionWidget, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput, SignalPayload, WidgetRegistry } from './index';
-import { derived, get, Writable, writable } from 'svelte/store';
+import { AppletConfig, AppletUIConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput, SignalPayload, WidgetRegistry } from './index';
+import { derived, Writable, writable } from 'svelte/store';
 import { Option } from './utils';
 import { createContext } from '@lit-labs/context';
 
@@ -233,8 +233,8 @@ export class SensemakerStore {
 
   async registerWidget(
     dimensionEh: EntryHashB64, 
-    displayWidget: DisplayDimensionWidget,
-    assessWidget: AssessDimensionWidget
+    displayWidget: typeof ConcreteDisplayDimensionWidget,
+    assessWidget: typeof ConcreteAssessDimensionWidget
   ) {
       this._widgetRegistry.update(widgetRegistry => {
         widgetRegistry[dimensionEh] = {

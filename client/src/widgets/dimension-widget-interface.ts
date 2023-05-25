@@ -5,6 +5,7 @@ import { EntryHash } from '@holochain/client';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { LitElement } from 'lit';
 import { SensemakerStore } from '../sensemakerStore';
+import { html } from 'lit-html';
 
 interface IDimensionWidget {
     render(): TemplateResult
@@ -62,4 +63,23 @@ export abstract class AssessDimensionWidget extends ScopedElementsMixin(LitEleme
 export abstract class DisplayDimensionWidget extends ScopedElementsMixin(LitElement) implements IDisplayDimensionWidget {
     abstract assessment: Assessment | null
     abstract render(): TemplateResult
+}
+
+export class ConcreteAssessDimensionWidget extends AssessDimensionWidget {
+    sensemakerStore!: SensemakerStore
+    resourceEh!: EntryHash
+    resourceDefEh!: EntryHash
+    dimensionEh!: EntryHash
+    methodEh!: EntryHash
+    isAssessedByMe!: boolean
+    render(): TemplateResult {
+        return html``
+    }
+}
+
+export class ConcreteDisplayDimensionWidget extends DisplayDimensionWidget {
+    assessment!: Assessment | null
+    render(): TemplateResult {
+        return html``
+    }
 }
