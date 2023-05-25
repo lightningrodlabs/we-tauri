@@ -58,6 +58,7 @@
                   gst_all_1.gst-libav
                   # Support the Video Audio (Hardware) Acceleration API
                   gst_all_1.gst-vaapi
+                  libsoup_3
                 ]))
               ++ lib.optionals pkgs.stdenv.isDarwin
                 (with pkgs; [

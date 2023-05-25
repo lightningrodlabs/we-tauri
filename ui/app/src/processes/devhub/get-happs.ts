@@ -49,7 +49,6 @@ export function filterByHdkVersion(
 export async function getAllAppsWithGui(
   devhubClient: AppAgentClient
 ): Promise<Array<AppWithReleases>> {
-  console.log("gethapps");
   const allAppsOutput = await devhubClient.callZome({
     role_name: "happs",
     fn_name: "get_happs_by_tags",

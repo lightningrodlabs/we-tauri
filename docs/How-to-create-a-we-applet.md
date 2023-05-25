@@ -22,7 +22,7 @@ This guide assumes you have the [holochain nix environment](https://developer.ho
 1. Run this command: 
 
 ```bash
-nix run github:holochain/holochain#hc-scaffold -- web-app --templates-url https://github.com/lightningrodlabs/we-applet
+nix run github:holochain/holochain#hc-scaffold -- web-app --templates-url https://github.com/lightningrodlabs/we
 ```
 
 And run through the instructions for that command.
