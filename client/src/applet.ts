@@ -4,6 +4,7 @@ import { ConfigDimension, Dimension } from "./dimension";
 import { ConfigMethod } from "./method";
 import { ConfigResourceDef } from "./resourceDef";
 import { Range } from "./range";
+import { AssessDimensionWidget, DisplayDimensionWidget } from "./widgets/dimension-widget-interface";
 
 export interface AppletConfig {
     name: string,
@@ -45,4 +46,11 @@ export interface AppletUIConfig {
       create_assessment_dimension: EntryHash, // the dimension eh
       method_for_created_assessment: EntryHash, // the method eh
   }
+}
+
+export interface WidgetRegistry {
+    [dimensionEh: string]: {
+        display: DisplayDimensionWidget,
+        assess: AssessDimensionWidget,
+    }
 }

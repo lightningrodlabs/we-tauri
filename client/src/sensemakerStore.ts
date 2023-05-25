@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, AppletUIConfig, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput, SignalPayload } from './index';
+import { AppletConfig, AppletConfigInput, AppletUIConfig, AssessDimensionWidget, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, DisplayDimensionWidget, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput, SignalPayload, WidgetRegistry } from './index';
 import { derived, get, Writable, writable } from 'svelte/store';
 import { Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -33,6 +33,7 @@ export class SensemakerStore {
     }
   }
   */
+  _widgetRegistry: Writable<WidgetRegistry> = writable({});
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -89,6 +90,22 @@ export class SensemakerStore {
 
   appletUIConfig() {
     return derived(this._appletUIConfig, appletUIConfig => appletUIConfig)
+  }
+
+  widgetRegistry() {
+    return derived(this._widgetRegistry, widgetRegistry => widgetRegistry)
+  }
+
+  isAssessedByMeAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64) {
+    return derived(this._resourceAssessments, resourceAssessments => {
+      const assessments = resourceAssessments[resource_eh];
+      if (assessments) {
+        return assessments.some(assessment => encodeHashToBase64(assessment.author) === encodeHashToBase64(this.myAgentPubKey) && encodeHashToBase64(assessment.dimension_eh) === dimension_eh);
+      }
+      else {
+        return false;
+      }
+    })
   }
 
   async getAllAgents() {
@@ -211,6 +228,21 @@ export class SensemakerStore {
       } 
       return appletUIConfig;
     }
+    )
+  }
+
+  async registerWidget(
+    dimensionEh: EntryHashB64, 
+    displayWidget: DisplayDimensionWidget,
+    assessWidget: AssessDimensionWidget
+  ) {
+      this._widgetRegistry.update(widgetRegistry => {
+        widgetRegistry[dimensionEh] = {
+          display: displayWidget,
+          assess: assessWidget
+        } 
+        return widgetRegistry;
+      }
     )
   }
 }
