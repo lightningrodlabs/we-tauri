@@ -4,6 +4,7 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   completed,
+  get,
   joinAsyncMap,
   lazyLoad,
   manualReloadStore,
@@ -11,6 +12,7 @@ import {
   pipe,
   race,
   retryUntilSuccess,
+  sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
 import {
@@ -20,7 +22,11 @@ import {
   pickBy,
   slice,
 } from "@holochain-open-dev/utils";
-import { decodeHashFromBase64, HoloHash } from "@holochain/client";
+import {
+  AppStatusFilter,
+  decodeHashFromBase64,
+  HoloHash,
+} from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
@@ -104,6 +110,30 @@ export class WeStore {
             });
 
             await this.groupsRolesByDnaHash.reload();
+
+            const groupStore = await toPromise(
+              this.groups.get(clonedCell.cell_id[0])
+            );
+            const applets = await toPromise(groupStore.allApplets);
+
+            const apps = await this.adminWebsocket.listApps({
+              status_filter: AppStatusFilter.Disabled,
+            });
+
+            for (const app of apps) {
+              if (
+                applets.find(
+                  (appletHash) =>
+                    app.installed_app_id === encodeHashToBase64(appletHash)
+                )
+              ) {
+                await this.adminWebsocket.enableApp({
+                  installed_app_id: app.installed_app_id,
+                });
+              }
+            }
+
+            await this.appletBundlesStore.installedApps.reload();
             return clonedCell;
           }
         }
@@ -127,6 +157,22 @@ export class WeStore {
     await this.appAgentWebsocket.disableCloneCell({
       clone_cell_id: [groupDnaHash, this.appAgentWebsocket.myPubKey],
     });
+
+    const groupStore = await toPromise(this.groups.get(groupDnaHash));
+    const applets = await toPromise(groupStore.allApplets);
+
+    for (const appletHash of applets) {
+      const groupsForApplet = await toPromise(
+        this.groupsForApplet.get(appletHash)
+      );
+      if (groupsForApplet.size === 1) {
+        await this.adminWebsocket.disableApp({
+          installed_app_id: encodeHashToBase64(appletHash),
+        });
+      }
+    }
+
+    await this.appletBundlesStore.installedApps.reload();
     await this.groupsRolesByDnaHash.reload();
   }
 
@@ -176,29 +222,34 @@ export class WeStore {
 
   applets = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(async () => {
+      console.log("hey0");
       const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
+      console.log("hey1");
       const applet = await Promise.race(
-        Array.from(groups.values()).map((groupStore) =>
-          toPromise(groupStore.applets.get(appletHash))
-        )
+        Array.from(groups.values()).map((groupStore) => {
+          setInterval(() => {
+            console.log(get(groupStore.applets.get(appletHash)));
+          }, 1000);
+          return toPromise(groupStore.applets.get(appletHash));
+        })
       );
+      console.log("hey");
       if (!applet) throw new Error("Applet not found yet");
+      console.log("hey2");
 
       return new AppletStore(appletHash, applet, this);
     })
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>
-    joinAsyncMap(
-      mapValues(rolesByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
-    )
+    mapAndJoin(rolesByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
   );
 
   allInstalledApplets = pipe(
     this.appletBundlesStore.installedApplets,
     (appletsIds) =>
-      joinAsyncMap(slice(this.applets, appletsIds)) as AsyncReadable<
+      sliceAndJoin(this.applets, appletsIds) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
       >
   );
@@ -212,6 +263,7 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
+        console.log("hi");
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -219,7 +271,7 @@ export class WeStore {
             )
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
-        return joinAsyncMap(slice(this.groups, groupDnaHashes));
+        return sliceAndJoin(this.groups, groupDnaHashes);
       }
     )
   );

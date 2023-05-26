@@ -10,6 +10,7 @@ import {
   AdminWebsocket,
   AppAgentClient,
   AppInfo,
+  AppStatusFilter,
   decodeHashFromBase64,
   encodeHashToBase64,
   EntryHash,
@@ -125,7 +126,9 @@ export class AppletBundlesStore {
   }
 
   installedApps = manualReloadStore(async () =>
-    this.adminWebsocket.listApps({})
+    this.adminWebsocket.listApps({
+      status_filter: AppStatusFilter.Running,
+    })
   );
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
