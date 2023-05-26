@@ -15,6 +15,8 @@ import {
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -33,16 +35,15 @@ import "./group-applets.js";
 import "./group-applets-settings.js";
 import "./your-settings.js";
 import "../../custom-views/elements/all-custom-views.js";
+import "../../custom-views/elements/create-custom-view.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 import { openDevhub } from "../../tauri.js";
 
-type View = "main" | "applets-library" | "settings";
+type View = "main" | "applets-library" | "settings" | "create-custom-view";
 
 @localized()
 @customElement("group-home")
@@ -108,7 +109,14 @@ export class GroupHome extends LitElement {
               <group-applets style="margin-top: 16px; flex: 1"></group-applets>
             </div>
             <div class="column" style="flex: 1">
-              <span class="title">${msg("Custom Views")}</span>
+              <div class="row" style="align-items: center">
+                <span class="title" style="flex: 1"
+                  >${msg("Custom Views")}</span
+                >
+                <sl-button @click=${() => (this.view = "create-custom-view")}
+                  >${msg("Create Custom View")}</sl-button
+                >
+              </div>
               <sl-divider style="--color: grey"></sl-divider>
               <all-custom-views></all-custom-views>
             </div>
@@ -208,6 +216,16 @@ export class GroupHome extends LitElement {
     `;
   }
 
+  renderCreateCustomView() {
+    return html`<div class="column" style="flex: 1">
+      <create-custom-view
+        style="flex: 1"
+        @create-cancelled=${() => (this.view = "main")}
+        @custom-view-created=${() => (this.view = "main")}
+      ></create-custom-view>
+    </div>`;
+  }
+
   renderContent(
     groupProfile: GroupProfile,
     originalGroupDnaHash: DnaHash,
@@ -244,6 +262,8 @@ export class GroupHome extends LitElement {
         `;
       case "settings":
         return this.renderSettings();
+      case "create-custom-view":
+        return this.renderCreateCustomView();
     }
   }
 

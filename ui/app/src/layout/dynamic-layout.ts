@@ -26,6 +26,7 @@ import "./views/welcome-view.js";
 import "./views/applet-block.js";
 import "./views/applet-main.js";
 import "./views/entry-view.js";
+import "../custom-views/elements/custom-view.js";
 
 import { openViewsContext } from "./context.js";
 import { AppOpenViews } from "./types.js";
@@ -141,7 +142,51 @@ export class DynamicLayout extends LitElement {
               @group-left=${() => {
                 container.close();
               }}
+              @custom-view-selected=${(e) => {
+                this.openTab({
+                  id: `custom-view-${groupDnaHash}-${encodeHashToBase64(
+                    e.detail.customViewHash
+                  )}`,
+                  type: "component",
+                  componentType: "custom-view",
+                  componentState: {
+                    groupDnaHash,
+                    customViewHash: encodeHashToBase64(e.detail.customViewHash),
+                  },
+                });
+              }}
+              @custom-view-created=${(e) => {
+                this.openTab({
+                  id: `custom-view-${groupDnaHash}-${encodeHashToBase64(
+                    e.detail.customViewHash
+                  )}`,
+                  type: "component",
+                  componentType: "custom-view",
+                  componentState: {
+                    groupDnaHash,
+                    customViewHash: encodeHashToBase64(e.detail.customViewHash),
+                  },
+                });
+              }}
             ></group-home>
+          </group-context>
+        `}
+      >
+      </golden-layout-register>
+      <golden-layout-register
+        component-type="custom-view"
+        .titleRenderer=${({ groupDnaHash }) =>
+          html`
+            <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+              <group-logo></group-logo>
+            </group-context>
+          `}
+        .template=${({ groupDnaHash, customViewHash }, container) => html`
+          <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
+            <custom-view
+              style="flex: 1"
+              .customViewHash=${decodeHashFromBase64(customViewHash)}
+            ></custom-view>
           </group-context>
         `}
       >

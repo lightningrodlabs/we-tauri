@@ -15,7 +15,7 @@
     "start:agent": "concurrently \"npm run tauri:dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"npm run publish:applets\"",
     "tauri:dev": "RUST_LOG=info WASM_LOG=warn npm run tauri dev --release -- -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
-    "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe",
+    "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe -w grapes-editor",
     "build:ui": "npm run build:libs && npm run build -w we",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "tauri": "tauri",

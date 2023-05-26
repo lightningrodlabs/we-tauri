@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { state, property, query, customElement } from "lit/decorators.js";
 import {
@@ -28,7 +28,9 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
-import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js";
+
+import "grapes-editor";
+
 import { CustomViewsStore } from "../custom-views-store.js";
 import { customViewsStoreContext } from "../context.js";
 import { CustomView } from "../types.js";
@@ -52,6 +54,9 @@ export class CreateCustomView extends LitElement {
   @property()
   css!: string;
 
+  @query("grapes-editor")
+  editor!: any;
+
   /**
    * @internal
    */
@@ -67,21 +72,25 @@ export class CreateCustomView extends LitElement {
   /**
    * @internal
    */
-  @query("#create-form")
+  @query("form")
   form!: HTMLFormElement;
 
   async createCustomView(fields: any) {
-    if (this.html === undefined)
-      throw new Error("Cannot create a new Custom View without its html field");
-    if (this.js === undefined)
-      throw new Error("Cannot create a new Custom View without its js field");
-    if (this.css === undefined)
-      throw new Error("Cannot create a new Custom View without its css field");
+    if (this.committing) return;
+
+    const editor = this.editor.editor;
+
+    const name = fields.name;
+
+    const css = editor.getCss();
+    const js = editor.getJs();
+    const html = editor.getHtml();
 
     const customView: CustomView = {
-      html: this.html,
-      js: this.js,
-      css: this.css,
+      name,
+      html,
+      js,
+      css: css || "",
     };
 
     try {
@@ -108,20 +117,40 @@ export class CreateCustomView extends LitElement {
   }
 
   render() {
-    return html` <sl-card style="flex: 1;">
-      <span slot="header">${msg("Create Custom View")}</span>
-
-      <form
-        id="create-form"
-        style="display: flex; flex: 1; flex-direction: column;"
-        ${onSubmit((fields) => this.createCustomView(fields))}
-      >
-        <sl-button variant="primary" type="submit" .loading=${this.committing}
-          >${msg("Create Custom View")}</sl-button
+    return html`
+      <div class="column" style="flex: 1">
+        <form
+          class="row"
+          ${onSubmit((f) => this.createCustomView(f))}
+          style="align-items: center; padding: 16px; background-color: white"
         >
-      </form>
-    </sl-card>`;
+          <sl-input
+            name="name"
+            required
+            .placeholder=${msg("Custom View Name")}
+          ></sl-input>
+          <span style="flex:1"> </span>
+          <sl-button
+            style="margin-right: 8px"
+            @click=${() =>
+              this.dispatchEvent(new CustomEvent("create-cancelled"))}
+            >${msg("Cancel")}</sl-button
+          >
+          <sl-button variant="primary" type="submit" .loading=${this.committing}
+            >${msg("Create Custom View")}</sl-button
+          >
+        </form>
+        <grapes-editor style="flex: 1"></grapes-editor>
+      </div>
+    `;
   }
 
-  static styles = [sharedStyles];
+  static styles = [
+    sharedStyles,
+    css`
+      :host {
+        display: flex;
+      }
+    `,
+  ];
 }

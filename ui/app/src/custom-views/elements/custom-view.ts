@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { state, property, customElement } from "lit/decorators.js";
 import { EntryHash, Record, ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
@@ -31,8 +31,8 @@ import { CustomView } from "../types.js";
  * @fires custom-view-deleted: detail will contain { customViewHash }
  */
 @localized()
-@customElement("custom-view-detail")
-export class CustomViewDetail extends LitElement {
+@customElement("custom-view")
+export class CustomViewEl extends LitElement {
   // REQUIRED. The hash of the CustomView to show
   @property(hashProperty("custom-view-hash"))
   customViewHash!: ActionHash;
@@ -76,26 +76,9 @@ export class CustomViewDetail extends LitElement {
   }
 
   renderDetail(entryRecord: EntryRecord<CustomView>) {
-    return html`<sl-card>
-      <div slot="header" style="display: flex; flex-direction: row">
-        <span style="font-size: 18px; flex: 1;">${msg("Custom View")}</span>
-
-        <sl-icon-button
-          style="margin-left: 8px"
-          .src=${wrapPathInSvg(mdiPencil)}
-          @click=${() => {
-            this._editing = true;
-          }}
-        ></sl-icon-button>
-        <sl-icon-button
-          style="margin-left: 8px"
-          .src=${wrapPathInSvg(mdiDelete)}
-          @click=${() => this.deleteCustomView()}
-        ></sl-icon-button>
-      </div>
-
-      <div style="display: flex; flex-direction: column"></div>
-    </sl-card> `;
+    return html`
+      <iframe srcdoc="${entryRecord.entry.html}" style="flex: 1"></iframe>
+    `;
   }
 
   render() {
@@ -140,5 +123,12 @@ export class CustomViewDetail extends LitElement {
     }
   }
 
-  static styles = [sharedStyles];
+  static styles = [
+    sharedStyles,
+    css`
+      :host {
+        display: flex;
+      }
+    `,
+  ];
 }

@@ -40,7 +40,11 @@ export class CustomViewSummary extends LitElement {
   );
 
   renderSummary(entryRecord: EntryRecord<CustomView>) {
-    return html` <div style="display: flex; flex-direction: column"></div> `;
+    return html`
+      <div style="display: flex; flex-direction: column">
+        <span>${entryRecord.entry.name}</span>
+      </div>
+    `;
   }
 
   renderCustomView() {
