@@ -303,10 +303,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
             <div class="row" style="flex: 1">
 
               ${this.renderContent()}
-              <div class="column members-sidebar">
-                <my-profile style="margin-bottom: 20px;"></my-profile>
-                ${this.renderMembers()}
-              </div>
             </div>
 
           </profile-prompt>
