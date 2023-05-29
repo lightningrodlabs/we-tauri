@@ -1,9 +1,4 @@
-import {
-  AsyncReadable,
-  join,
-  StoreSubscriber,
-} from "@holochain-open-dev/stores";
-import { Record } from "@holochain/client";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";

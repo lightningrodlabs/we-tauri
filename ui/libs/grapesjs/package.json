@@ -10,7 +10,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -24,6 +26,8 @@
     "storybook:build": "tsc && build-storybook"
   },
   "dependencies": {
+    "grapesjs-blocks-basic": "^1.0.1",
+    "grapesjs-tabs": "^1.0.6",
     "lit": "^2.0.0"
   },
   "devDependencies": {
@@ -52,11 +56,18 @@
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
-    "extends": ["@open-wc", "prettier"],
-    "plugins": ["@typescript-eslint"],
+    "extends": [
+      "@open-wc",
+      "prettier"
+    ],
+    "plugins": [
+      "@typescript-eslint"
+    ],
     "rules": {
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["error"],
+      "@typescript-eslint/no-unused-vars": [
+        "error"
+      ],
       "import/no-unresolved": "off",
       "import/extensions": [
         "error",
@@ -72,6 +83,9 @@
     "arrowParens": "avoid"
   },
   "lint-staged": {
-    "*.ts": ["eslint --fix", "prettier --write"]
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

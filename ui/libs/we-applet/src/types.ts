@@ -33,13 +33,15 @@ export interface AttachmentType {
 }
 
 export interface OpenViews {
+  openAppletMain(appletId: EntryHash): void;
   openAppletBlock(appletId: EntryHash, block: string, context: any): void;
+  openHrl(hrl: Hrl, context: any): void;
+  openCrossAppletMain(appletBundleId: EntryHash): void;
   openCrossAppletBlock(
     appletBundleId: EntryHash,
     block: string,
     context: any
   ): void;
-  openHrl(hrl: Hrl, context: any): void;
 }
 
 export interface EntryLocationAndInfo {
@@ -64,7 +66,11 @@ export interface WeServices {
 }
 
 export type MainView = (rootElement: HTMLElement) => void;
-export type BlockView = (rootElement: HTMLElement, context: any) => void;
+export interface BlockView {
+  label: string;
+  icon_src: string;
+  view: (rootElement: HTMLElement, context: any) => void;
+}
 export type EntryTypeView = (
   rootElement: HTMLElement,
   hrl: Hrl,
@@ -101,12 +107,12 @@ export interface WeApplet {
     appletId: EntryHash,
     profilesClient: ProfilesClient,
     weServices: WeServices
-  ) => AppletViews;
+  ) => Promise<AppletViews>;
 
   crossAppletViews: (
     applets: ReadonlyMap<EntryHash, AppletClients>,
     weServices: WeServices
-  ) => CrossAppletViews;
+  ) => Promise<CrossAppletViews>;
 
   attachmentTypes: (
     appletClient: AppAgentClient

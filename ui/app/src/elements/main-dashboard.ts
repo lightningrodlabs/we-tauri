@@ -162,18 +162,9 @@ export class MainDashboard extends LitElement {
           <applets-sidebar
             class="top-bar"
             @applet-selected=${(e: CustomEvent) => {
-              this.dynamicLayout.openTab({
-                id: `applet-bundle-main-${encodeHashToBase64(
-                  e.detail.appletBundleHash
-                )}`,
-                type: "component",
-                componentType: "cross-applet-main",
-                componentState: {
-                  appletBundleHash: encodeHashToBase64(
-                    e.detail.appletBundleHash
-                  ),
-                },
-              });
+              this.dynamicLayout.openViews.openCrossAppletMain(
+                e.detail.appletBundleHash
+              );
             }}
             style="margin-left: 4px"
           ></applets-sidebar>
@@ -192,16 +183,6 @@ export class MainDashboard extends LitElement {
               ],
             }}
             style="flex: 1; min-width: 0;"
-            @applet-selected=${(e: CustomEvent) => {
-              this.dynamicLayout.openTab({
-                id: `applet-main-${encodeHashToBase64(e.detail.appletHash)}`,
-                type: "component",
-                componentType: "applet-main",
-                componentState: {
-                  appletHash: encodeHashToBase64(e.detail.appletHash),
-                },
-              });
-            }}
           ></dynamic-layout>
         </div>
       </div>

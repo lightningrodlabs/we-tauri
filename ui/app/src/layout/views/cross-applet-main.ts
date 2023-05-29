@@ -40,7 +40,6 @@ export class CrossAppletMain extends LitElement {
       view: {
         type: "main",
       },
-      applets,
     };
 
     return html`<view-frame

@@ -35,8 +35,10 @@ export class CustomViewSummary extends LitElement {
   /**
    * @internal
    */
-  _customView = new StoreSubscriber(this, () =>
-    this.customViewsStore.customViews.get(this.customViewHash)
+  _customView = new StoreSubscriber(
+    this,
+    () => this.customViewsStore.customViews.get(this.customViewHash),
+    () => [this.customViewHash]
   );
 
   renderSummary(entryRecord: EntryRecord<CustomView>) {

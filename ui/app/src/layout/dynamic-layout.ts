@@ -33,6 +33,7 @@ import { AppOpenViews } from "./types.js";
 import { weStyles } from "../shared-styles.js";
 import { WeStore } from "../we-store.js";
 import { weStoreContext } from "../context.js";
+import { setupAppletMessageHandler } from "../applets/applet-host.js";
 
 @localized()
 @customElement("dynamic-layout")
@@ -55,6 +56,16 @@ export class DynamicLayout extends LitElement {
   @provide({ context: openViewsContext })
   @property()
   openViews: AppOpenViews = {
+    openAppletMain: (appletHash) => {
+      this.openTab({
+        id: `applet-main-${encodeHashToBase64(appletHash)}`,
+        type: "component",
+        componentType: "applet-main",
+        componentState: {
+          appletHash: encodeHashToBase64(appletHash),
+        },
+      });
+    },
     openAppletBlock: (appletHash, block, context) => {
       this.openTab({
         id: `applet-block-${encodeHashToBase64(appletHash)}-${block}`,
@@ -64,6 +75,16 @@ export class DynamicLayout extends LitElement {
           appletHash: encodeHashToBase64(appletHash),
           block,
           context,
+        },
+      });
+    },
+    openCrossAppletMain: (appletBundleHash) => {
+      this.openTab({
+        id: `cross-applet-main-${encodeHashToBase64(appletBundleHash)}`,
+        type: "component",
+        componentType: "cross-applet-main",
+        componentState: {
+          appletBundleHash: encodeHashToBase64(appletBundleHash),
         },
       });
     },
@@ -93,6 +114,10 @@ export class DynamicLayout extends LitElement {
       });
     },
   };
+
+  firstUpdated() {
+    setupAppletMessageHandler(this.weStore, this.openViews);
+  }
 
   openTab(itemConfig: ComponentItemConfig) {
     const item = this.goldenLayout.findFirstComponentItemById(itemConfig.id!);
@@ -141,6 +166,9 @@ export class DynamicLayout extends LitElement {
               style="flex: 1"
               @group-left=${() => {
                 container.close();
+              }}
+              @applet-selected=${(e: CustomEvent) => {
+                this.openViews.openAppletMain(e.detail.appletHash);
               }}
               @custom-view-selected=${(e) => {
                 this.openTab({

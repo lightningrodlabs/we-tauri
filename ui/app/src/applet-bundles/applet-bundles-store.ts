@@ -127,8 +127,10 @@ export class AppletBundlesStore {
 
   installedApps = manualReloadStore(async () =>
     this.adminWebsocket.listApps({
-      status_filter: AppStatusFilter.Running,
-    })
+      status_filter: {
+        Running: null,
+      },
+    } as any)
   );
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
@@ -139,8 +141,7 @@ export class AppletBundlesStore {
       .filter(
         (app) =>
           app.installed_app_id !== weAppInfo.installed_app_id &&
-          app.installed_app_id !== devhubAppInfo.installed_app_id &&
-          "running" in app.status
+          app.installed_app_id !== devhubAppInfo.installed_app_id
       )
       .map((app) => decodeHashFromBase64(app.installed_app_id));
   });

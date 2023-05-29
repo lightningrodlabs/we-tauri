@@ -1,25 +1,13 @@
 import { LitElement, html, css } from "lit";
-import { repeat } from "lit/directives/repeat.js";
 import { state, property, query, customElement } from "lit/decorators.js";
-import {
-  ActionHash,
-  Record,
-  DnaHash,
-  AgentPubKey,
-  EntryHash,
-} from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import {
-  hashProperty,
   notifyError,
-  hashState,
   sharedStyles,
   onSubmit,
-  wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
-import { mdiAlertCircleOutline, mdiDelete } from "@mdi/js";
 
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
@@ -30,6 +18,8 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "grapes-editor";
+import { GrapesEditor } from "grapes-editor";
+import { BlockProperties } from "grapesjs";
 
 import { CustomViewsStore } from "../custom-views-store.js";
 import { customViewsStoreContext } from "../context.js";
@@ -42,20 +32,11 @@ import { CustomView } from "../types.js";
 @localized()
 @customElement("create-custom-view")
 export class CreateCustomView extends LitElement {
-  // REQUIRED. The html for this CustomView
   @property()
-  html!: string;
-
-  // REQUIRED. The js for this CustomView
-  @property()
-  js!: string;
-
-  // REQUIRED. The css for this CustomView
-  @property()
-  css!: string;
+  blocks: Array<BlockProperties> = [];
 
   @query("grapes-editor")
-  editor!: any;
+  editor!: GrapesEditor;
 
   /**
    * @internal
@@ -133,14 +114,19 @@ export class CreateCustomView extends LitElement {
           <sl-button
             style="margin-right: 8px"
             @click=${() =>
-              this.dispatchEvent(new CustomEvent("create-cancelled"))}
+              this.dispatchEvent(
+                new CustomEvent("create-cancelled", {
+                  composed: true,
+                  bubbles: true,
+                })
+              )}
             >${msg("Cancel")}</sl-button
           >
           <sl-button variant="primary" type="submit" .loading=${this.committing}
             >${msg("Create Custom View")}</sl-button
           >
         </form>
-        <grapes-editor style="flex: 1"></grapes-editor>
+        <grapes-editor .blocks=${this.blocks} style="flex: 1"></grapes-editor>
       </div>
     `;
   }

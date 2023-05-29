@@ -14,7 +14,11 @@ import {
   AppletToParentRequest,
   RenderView,
   InternalAttachmentType,
-  ParentToAppletMessage,
+  IframeConfig,
+  BlockType,
+  ParentToAppletRequest,
+  HrlLocation,
+  queryStringToRenderView,
 } from "applet-messages";
 import {
   AttachmentType,
@@ -22,6 +26,34 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
+
+window.onload = async () => {
+  const view = getRenderView();
+  const crossApplet = view ? view.type === "cross-applet-view" : false;
+
+  let iframeConfig: IframeConfig = await postMessage({
+    type: "get-iframe-config",
+    crossApplet,
+  });
+
+  let applet = await fetchApplet();
+
+  if (view) {
+    await renderView(applet, iframeConfig!, view);
+  }
+  window.addEventListener("message", async (m) => {
+    try {
+      const result = await handleMessage(applet, iframeConfig!, m.data);
+      m.ports[0].postMessage({ type: "success", result });
+    } catch (e) {
+      m.ports[0].postMessage({ type: "error", error: e.message });
+    }
+  });
+
+  await postMessage({
+    type: "ready",
+  });
+};
 
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
   const appletClient = await AppAgentWebsocket.connect(
@@ -64,15 +96,18 @@ async function fetchApplet(): Promise<WeApplet> {
   return js.default as WeApplet;
 }
 
-async function handleRenderViewMessage(
+async function renderView(
   applet: WeApplet,
-  appPort: number,
-  message: RenderView,
-  internalAttachmentTypesByGroups: Record<
+  iframeConfig: IframeConfig,
+  view: RenderView
+) {
+  const internalAttachmentTypesByGroups: Record<
     EntryHashB64,
     Record<string, InternalAttachmentType>
-  >
-) {
+  > = await postMessage({
+    type: "get-attachment-types",
+  });
+
   const attachmentTypes = new HoloHashMap<
     EntryHash,
     Record<string, AttachmentType>
@@ -109,6 +144,14 @@ async function handleRenderViewMessage(
   const weServices: WeServices = {
     attachmentTypes,
     openViews: {
+      openAppletMain: (appletId) =>
+        postMessage({
+          type: "open-view",
+          request: {
+            type: "applet-main",
+            appletId,
+          },
+        }),
       openAppletBlock: (appletId, block, context) =>
         postMessage({
           type: "open-view",
@@ -117,6 +160,14 @@ async function handleRenderViewMessage(
             appletId,
             block,
             context,
+          },
+        }),
+      openCrossAppletMain: (appletBundleId) =>
+        postMessage({
+          type: "open-view",
+          request: {
+            type: "cross-applet-main",
+            appletBundleId,
           },
         }),
       openCrossAppletBlock: (appletBundleId, block, context) =>
@@ -161,32 +212,55 @@ async function handleRenderViewMessage(
       }),
   };
 
-  if (message.type === "applet-view") {
-    let profilesClient = await setupProfilesClient(
-      appPort,
-      message.profilesLocation.profilesAppId,
-      message.profilesLocation.profilesRoleName
-    );
-    let client = await setupAppletClient(appPort, message.appletId);
+  if (view.type === "applet-view") {
+    if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
-    switch (message.view.type) {
+    let profilesClient = await setupProfilesClient(
+      iframeConfig.appPort,
+      iframeConfig.profilesLocation.profilesAppId,
+      iframeConfig.profilesLocation.profilesRoleName
+    );
+    let client = await setupAppletClient(
+      iframeConfig.appPort,
+      iframeConfig.appletId
+    );
+    switch (view.view.type) {
       case "main":
-        applet
-          .appletViews(client, message.appletId, profilesClient, weServices)
-          .main(document.body);
+        (
+          await applet.appletViews(
+            client,
+            iframeConfig.appletId,
+            profilesClient,
+            weServices
+          )
+        ).main(document.body);
         break;
       case "block":
-        applet
-          .appletViews(client, message.appletId, profilesClient, weServices)
-          .blocks[message.view.block](document.body, message.view.context);
+        (
+          await applet.appletViews(
+            client,
+            iframeConfig.appletId,
+            profilesClient,
+            weServices
+          )
+        ).blocks[view.view.block].view(document.body, view.view.context);
         break;
 
       case "entry":
-        applet
-          .appletViews(client, message.appletId, profilesClient, weServices)
-          .entries[message.view.role][message.view.zome][
-            message.view.entryType
-          ].view(document.body, message.view.hrl, message.view.context);
+        const hrlLocation: HrlLocation = await postMessage({
+          type: "get-hrl-location",
+          hrl: view.view.hrl,
+        });
+        (
+          await applet.appletViews(
+            client,
+            iframeConfig.appletId,
+            profilesClient,
+            weServices
+          )
+        ).entries[hrlLocation.roleName][hrlLocation.integrityZomeName][
+          hrlLocation.entryType
+        ].view(document.body, view.view.hrl, view.view.context);
         break;
     }
   } else {
@@ -195,65 +269,62 @@ async function handleRenderViewMessage(
       profilesClient: ProfilesClient;
     }> = new HoloHashMap();
 
+    if (iframeConfig.type !== "cross-applet")
+      throw new Error("Bad iframe config");
+
     for (const [
       appletId,
       { profilesAppId, profilesRoleName },
-    ] of Object.entries(message.applets)) {
+    ] of Object.entries(iframeConfig.applets)) {
       applets.set(decodeHashFromBase64(appletId), {
         appletClient: await setupAppletClient(
-          appPort,
+          iframeConfig.appPort,
           decodeHashFromBase64(appletId)
         ),
         profilesClient: await setupProfilesClient(
-          appPort,
+          iframeConfig.appPort,
           profilesAppId,
           profilesRoleName
         ),
       });
     }
 
-    switch (message.view.type) {
+    switch (view.view.type) {
       case "main":
-        applet.crossAppletViews(applets, weServices).main(document.body);
+        (await applet.crossAppletViews(applets, weServices)).main(
+          document.body
+        );
         break;
       case "block":
-        applet
-          .crossAppletViews(applets, weServices)
-          .blocks[message.view.block](document.body, message.view.context);
+        (await applet.crossAppletViews(applets, weServices)).blocks[
+          view.view.block
+        ].view(document.body, view.view.context);
         break;
     }
   }
 }
 
-let applet: WeApplet | undefined = undefined;
-let client: AppAgentClient | undefined;
+async function handleMessage(
+  applet: WeApplet,
+  iframeConfig: IframeConfig,
+  request: ParentToAppletRequest
+) {
+  if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
-async function handleMessage(message: ParentToAppletMessage) {
-  if (!applet) applet = await fetchApplet();
-  if (!client && message.request.type !== "render-view")
-    client = await setupAppletClient(message.appPort, message.appletId);
+  const appletId = iframeConfig.appletId;
 
-  switch (message.request.type) {
-    case "render-view":
-      return handleRenderViewMessage(
-        applet,
-        message.appPort,
-        message.request.message,
-        message.request.attachmentTypes
-      );
+  let client = await setupAppletClient(iframeConfig.appPort, appletId);
+  // let profilesClient = await setupProfilesClient(iframeConfig.appPort, , appletId);
+
+  switch (request.type) {
     case "get-entry-info":
-      return applet!
-        .appletViews(
-          client!,
-          message.request.appletId,
-          null as any,
-          null as any
-        )
-        .entries[message.request.roleName][message.request.integrityZomeName][
-          message.request.entryDefId
-        ].info(message.request.hrl);
+      return (
+        await applet!.appletViews(client!, appletId, null as any, null as any)
+      ).entries[request.roleName][request.integrityZomeName][
+        request.entryDefId
+      ].info(request.hrl);
     case "get-attachment-types":
-      const types = await applet.attachmentTypes(client!);
+      const types = await applet!.attachmentTypes(client!);
 
       const internalAttachmentTypes: Record<string, InternalAttachmentType> =
         {};
@@ -265,12 +336,29 @@ async function handleMessage(message: ParentToAppletMessage) {
       }
 
       return internalAttachmentTypes;
+    case "get-block-types":
+      const views = await applet.appletViews(
+        client!,
+        appletId,
+        null as any,
+        null as any
+      );
+      const blocks: Record<string, BlockType> = {};
+
+      for (const [blockName, block] of Object.entries(views.blocks)) {
+        blocks[blockName] = {
+          label: block.label,
+          icon_src: block.icon_src,
+        };
+      }
+
+      return blocks;
     case "search":
-      return applet!.search(client!, message.request.filter);
+      return applet!.search(client!, request.filter);
     case "create-attachment":
       return (await applet!.attachmentTypes(client!))[
-        message.request.attachmentType
-      ].create(message.request.attachToHrl);
+        request.attachmentType
+      ].create(request.attachToHrl);
   }
 }
 
@@ -280,10 +368,24 @@ async function signZomeCall(
   return postMessage({ type: "sign-zome-call", request });
 }
 
+// <iframe src="applet://asdf" view="applet-main"></iframe>
+// <iframe src="applet://asdf" view="applet-block" block="asdf" ></iframe>
+// <iframe src="applet://asdf" view="hrl" hrl="hrl://[DNAHASH]/[DHTHASH]" ></iframe>
+// <iframe src="applet://asdf" view="applet-main"  ></iframe>
+// <iframe src="applet://asdf" view="applet-block" block="asdf" ></iframe>
+
+function getRenderView(): RenderView | undefined {
+  if (window.location.search.length === 0) return undefined;
+
+  const queryString = window.location.search.slice(1);
+
+  return queryStringToRenderView(queryString);
+}
+
 async function postMessage(m: AppletToParentRequest): Promise<any> {
   return new Promise((resolve, reject) => {
     const channel = new MessageChannel();
-    parent.postMessage(m, "*", [channel.port2]);
+    top.postMessage(m, "*", [channel.port2]);
 
     channel.port1.onmessage = (m) => {
       if (m.data.type === "success") {
@@ -294,12 +396,3 @@ async function postMessage(m: AppletToParentRequest): Promise<any> {
     };
   });
 }
-
-window.addEventListener("message", async (m) => {
-  try {
-    const result = await handleMessage(m.data);
-    m.ports[0].postMessage({ type: "success", result });
-  } catch (e) {
-    m.ports[0].postMessage({ type: "error", error: e.message });
-  }
-});

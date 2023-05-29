@@ -23,7 +23,11 @@ export class GroupPeersStatus extends LitElement {
   @property(hashProperty("group-dna-hash"))
   groupDnaHash!: DnaHash;
 
-  _group = new StoreSubscriber(this, () => this._groupStore?.members);
+  _group = new StoreSubscriber(
+    this,
+    () => this._groupStore?.members,
+    () => [this._groupStore, this.groupDnaHash]
+  );
 
   renderPeersStatus(members: AgentPubKey[]) {
     return html`

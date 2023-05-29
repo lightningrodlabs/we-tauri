@@ -15,7 +15,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
+import { mdiAbacus, mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
@@ -35,7 +35,7 @@ import "./group-applets.js";
 import "./group-applets-settings.js";
 import "./your-settings.js";
 import "../../custom-views/elements/all-custom-views.js";
-import "../../custom-views/elements/create-custom-view.js";
+import "./create-custom-group-view.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
@@ -103,7 +103,7 @@ export class GroupHome extends LitElement {
           </div>
 
           <div class="row">
-            <div class="column" style="flex: 1">
+            <div class="column" style="flex: 1; margin-right: 16px">
               <span class="title">${msg("Applets")}</span>
               <sl-divider style="--color: grey"></sl-divider>
               <group-applets style="margin-top: 16px; flex: 1"></group-applets>
@@ -218,11 +218,11 @@ export class GroupHome extends LitElement {
 
   renderCreateCustomView() {
     return html`<div class="column" style="flex: 1">
-      <create-custom-view
+      <create-custom-group-view
         style="flex: 1"
         @create-cancelled=${() => (this.view = "main")}
         @custom-view-created=${() => (this.view = "main")}
-      ></create-custom-view>
+      ></create-custom-group-view>
     </div>`;
   }
 

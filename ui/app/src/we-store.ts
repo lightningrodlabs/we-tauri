@@ -117,7 +117,7 @@ export class WeStore {
             const applets = await toPromise(groupStore.allApplets);
 
             const apps = await this.adminWebsocket.listApps({
-              status_filter: AppStatusFilter.Disabled,
+              status_filter: { Disabled: null } as any,
             });
 
             for (const app of apps) {
@@ -215,28 +215,21 @@ export class WeStore {
         this.appAgentWebsocket,
         groupDnaHash,
         groupRoleName,
-        this.appletBundlesStore
+        this
       );
     })
   );
 
   applets = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(async () => {
-      console.log("hey0");
       const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-      console.log("hey1");
       const applet = await Promise.race(
-        Array.from(groups.values()).map((groupStore) => {
-          setInterval(() => {
-            console.log(get(groupStore.applets.get(appletHash)));
-          }, 1000);
-          return toPromise(groupStore.applets.get(appletHash));
-        })
+        Array.from(groups.values()).map((groupStore) =>
+          toPromise(groupStore.applets.get(appletHash))
+        )
       );
-      console.log("hey");
       if (!applet) throw new Error("Applet not found yet");
-      console.log("hey2");
 
       return new AppletStore(appletHash, applet, this);
     })
@@ -263,7 +256,6 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
-        console.log("hi");
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -402,7 +394,6 @@ export class WeStore {
             attachments[encodeHashToBase64(appletHash)] = appletAttachments;
           }
         }
-
         return completed(attachments);
       }
     )

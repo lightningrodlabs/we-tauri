@@ -8,7 +8,9 @@ export const weServicesMock: WeServices = {
   entryInfo: async () => undefined,
   groupProfile: async () => undefined,
   openViews: {
+    openAppletMain: () => {},
     openAppletBlock: () => {},
+    openCrossAppletMain: () => {},
     openCrossAppletBlock: () => {},
     openHrl: () => {},
   },

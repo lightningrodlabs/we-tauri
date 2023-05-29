@@ -48,7 +48,6 @@ export class CrossAppletBlock extends LitElement {
         block: this.block,
         context: this.context,
       },
-      applets,
     };
 
     return html`<view-frame

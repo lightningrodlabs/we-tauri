@@ -36,7 +36,8 @@ export class AllCustomViews extends LitElement {
    */
   _allCustomViews = new StoreSubscriber(
     this,
-    () => this.customViewsStore.allCustomViews
+    () => this.customViewsStore.allCustomViews,
+    () => []
   );
 
   renderList(hashes: Array<ActionHash>) {

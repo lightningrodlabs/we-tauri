@@ -23,8 +23,6 @@ import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { Applet } from "../../applets/types.js";
-import { GroupStore } from "../../groups/group-store.js";
 import { AppletStore } from "../../applets/applet-store.js";
 
 @localized()
@@ -47,17 +45,13 @@ export class AppletViewEl extends LitElement {
     () =>
       join([
         this.weStore.applets.get(this.appletHash),
-        this.weStore.groupsForApplet.get(this.appletHash),
         this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
-      ]) as AsyncReadable<
-        [AppletStore | undefined, ReadonlyMap<DnaHash, GroupStore>, boolean]
-      >,
+      ]) as AsyncReadable<[AppletStore | undefined, boolean]>,
     () => [this.appletHash]
   );
 
-  renderAppletFrame([appletStore, groupsStores, isInstalled]: [
+  renderAppletFrame([appletStore, isInstalled]: [
     AppletStore | undefined,
-    ReadonlyMap<DnaHash, GroupStore>,
     boolean
   ]) {
     if (!appletStore)
@@ -121,16 +115,8 @@ export class AppletViewEl extends LitElement {
       `;
     }
 
-    // TODO: change this when personas and profiles is integrated
-    const groupStore = Array.from(groupsStores.values())[0];
-
     const renderView: RenderView = {
       type: "applet-view",
-      appletId: this.appletHash,
-      profilesLocation: {
-        profilesAppId: this.weStore.conductorInfo.we_app_id,
-        profilesRoleName: groupStore?.roleName,
-      },
       view: this.view,
     };
     return html`

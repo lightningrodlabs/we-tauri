@@ -7,6 +7,9 @@ import {
   AsyncReadable,
   lazyLoad,
   lazyLoadAndPoll,
+  mapAndJoin,
+  pipe,
+  sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
@@ -20,12 +23,12 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
 
-import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store";
 import { AppletBundleMetadata } from "../types";
 import { GroupClient } from "./group-client";
 import { Applet } from "../applets/types";
 import { CustomViewsStore } from "../custom-views/custom-views-store";
 import { CustomViewsClient } from "../custom-views/custom-views-client";
+import { WeStore } from "../we-store";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -40,7 +43,7 @@ export class GroupStore {
     public appAgentWebsocket: AppAgentWebsocket,
     public groupDnaHash: DnaHash,
     public roleName: string,
-    public appletBundlesStore: AppletBundlesStore
+    public weStore: WeStore
   ) {
     this.groupClient = new GroupClient(appAgentWebsocket, roleName);
 
@@ -85,7 +88,7 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    return this.appletBundlesStore.installApplet(appletHash, applet);
+    return this.weStore.appletBundlesStore.installApplet(appletHash, applet);
   }
 
   // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
@@ -96,7 +99,7 @@ export class GroupStore {
     // Trigger the download of the webhapp
     // TODO: remove this when moving to app store
     await toPromise(
-      this.appletBundlesStore.appletBundleLogo.get(
+      this.weStore.appletBundlesStore.appletBundleLogo.get(
         appletMetadata.devhubHappReleaseHash
       )
     );
@@ -116,7 +119,7 @@ export class GroupStore {
 
     const appletHash = await this.groupClient.registerApplet(applet);
 
-    await this.appletBundlesStore.installApplet(appletHash, applet);
+    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
 
     return appletHash;
   }
@@ -133,4 +136,10 @@ export class GroupStore {
   );
 
   allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
+
+  allBlocks = pipe(
+    this.allApplets,
+    (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
+    (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
+  );
 }

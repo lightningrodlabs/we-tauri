@@ -1,7 +1,10 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
-import grapesjs, { Editor } from "grapesjs";
+import grapesjs, { BlockProperties, Editor } from "grapesjs";
 import plugin from "grapesjs-preset-webpage";
+import blocksBasic from "grapesjs-blocks-basic";
+// @ts-ignore
+import tabs from "grapesjs-tabs";
 // @ts-ignore
 import grapesCss from "grapesjs/dist/css/grapes.min.css";
 
@@ -15,6 +18,9 @@ export interface RenderTemplate {
 export class GrapesEditor extends LitElement {
   @property()
   template: RenderTemplate | undefined;
+
+  @property()
+  blocks: Array<BlockProperties> = [];
 
   @query("#editor")
   editorEl!: HTMLElement;
@@ -49,13 +55,32 @@ export class GrapesEditor extends LitElement {
     });
     this.editor = grapesjs.init({
       container: this.editorEl,
-      components: this.template?.html,
+      components: this.template ? this.template.html : `<h1>Edit me!</h1>`,
       style: this.template?.css,
       height: "auto",
       jsInHtml: false,
       nativeDnD: false,
       storageManager: false,
-      plugins: [plugin],
+      plugins: [plugin, blocksBasic, tabs],
+      pluginsOpts: {
+        [plugin]: {
+          blocks: [],
+        },
+        [blocksBasic]: {
+          blocks: [
+            "column1",
+            "column2",
+            "column3",
+            "column3-7",
+            "text",
+            "image",
+          ],
+          flexGrid: true,
+        },
+      },
+      blockManager: {
+        blocks: this.blocks,
+      },
     });
   }
 
