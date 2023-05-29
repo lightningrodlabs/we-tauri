@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletUIConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput, SignalPayload, WidgetRegistry } from './index';
+import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
 import { derived, Writable, writable } from 'svelte/store';
 import { Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -24,7 +24,7 @@ export class SensemakerStore {
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
   // TODO: we probably want there to be a default Applet UI Config, specified in the applet config or somewhere.
-  _appletUIConfig: Writable<AppletUIConfig> = writable({});
+  _widgetMappingConfig: Writable<WidgetMappingConfig> = writable({});
   /*
   {
     [resourceDefEh: string]: {
@@ -88,8 +88,8 @@ export class SensemakerStore {
     return derived(this._contextResults, contextResults => contextResults)
   }
 
-  appletUIConfig() {
-    return derived(this._appletUIConfig, appletUIConfig => appletUIConfig)
+  widgetMappingConfig() {
+    return derived(this._widgetMappingConfig, widgetMappingConfig => widgetMappingConfig)
   }
 
   widgetRegistry() {
@@ -214,33 +214,48 @@ export class SensemakerStore {
     return appletConfig;
   }
 
-  async updateAppletUIConfig(
+  async updateActiveDimension(resourceDefEh: EntryHashB64, dimensionEh: EntryHashB64) {
+    this._widgetMappingConfig.update(widgetMappingConfig => {
+      widgetMappingConfig[resourceDefEh] ? widgetMappingConfig[resourceDefEh].activeDimensionEh = dimensionEh : null;
+      return widgetMappingConfig;
+    })
+  }
+
+  async updateWidgetMappingConfig(
     resourceDefEh: EntryHashB64, 
+    currentCreateAssessmentDimensionEh: EntryHashB64,
     currentObjectiveDimensionEh: EntryHash, 
-    currentCreateAssessmentDimensionEh: EntryHash,
     currentMethodEh: EntryHash
   ) {
-    this._appletUIConfig.update(appletUIConfig => {
-      appletUIConfig[resourceDefEh] = {
-        display_objective_dimension: currentObjectiveDimensionEh,
-        create_assessment_dimension: currentCreateAssessmentDimensionEh,
-        method_for_created_assessment: currentMethodEh
-      } 
-      return appletUIConfig;
+    this._widgetMappingConfig.update(widgetMappingConfig => {
+      const inputDimensionMapping: [EntryHash, EntryHash] = [currentObjectiveDimensionEh, currentMethodEh];
+      const mapping = {
+        [currentCreateAssessmentDimensionEh]: inputDimensionMapping,
+      };
+      // if the mapping object doesn't exist, initialize it, otherwise update it
+      widgetMappingConfig[resourceDefEh] ? 
+      widgetMappingConfig[resourceDefEh].inputDimensionMapping[currentCreateAssessmentDimensionEh] = inputDimensionMapping 
+      : widgetMappingConfig[resourceDefEh] = {
+        activeDimensionEh: currentCreateAssessmentDimensionEh,
+        inputDimensionMapping: mapping
+      };
+      return widgetMappingConfig;
     }
     )
   }
 
   async registerWidget(
-    dimensionEh: EntryHashB64, 
+    dimensionEhs: EntryHashB64[], 
     displayWidget: typeof ConcreteDisplayDimensionWidget,
     assessWidget: typeof ConcreteAssessDimensionWidget
   ) {
       this._widgetRegistry.update(widgetRegistry => {
+        dimensionEhs.forEach(dimensionEh => {
         widgetRegistry[dimensionEh] = {
           display: displayWidget,
           assess: assessWidget
         } 
+      })
         return widgetRegistry;
       }
     )

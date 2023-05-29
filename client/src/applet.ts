@@ -40,11 +40,12 @@ export interface CreateAppletConfigInput {
     role_name: string,
 }
 
-export interface AppletUIConfig {
+export interface WidgetMappingConfig {
     [resourceDefEh: string]: {
-      display_objective_dimension: EntryHash, // the dimension eh
-      create_assessment_dimension: EntryHash, // the dimension eh
-      method_for_created_assessment: EntryHash, // the method eh
+        activeDimensionEh: string, // the dimension eh
+        inputDimensionMapping: {
+            [inputDimensionEh: string]: [outputDimensionEh: EntryHash, methodEh: EntryHash], // the dimension eh
+        }
   }
 }
 
