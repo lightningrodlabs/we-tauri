@@ -110,7 +110,7 @@ export class Edit{{pascal_case entry_type.name}} extends LitElement {
       }));
     } catch (e: any) {
       console.error(e);
-      notifyError(msg("Error creating the {{lower_case entry_type.name}}"));
+      notifyError(msg("Error updating the {{lower_case entry_type.name}}"));
     }
     
     this.committing = false;

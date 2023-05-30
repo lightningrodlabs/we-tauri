@@ -19,7 +19,6 @@ import {
   isLaunched,
 } from "./tauri.js";
 import { initAppClient } from "./utils.js";
-import { DEVHUB_APP_ID } from "./processes/devhub/app-id.js";
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 
 type State =

@@ -75,7 +75,7 @@ export class GrapesEditor extends LitElement {
             "text",
             "image",
           ],
-          flexGrid: true,
+          // flexGrid: true,
         },
       },
       blockManager: {

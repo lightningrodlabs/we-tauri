@@ -163,13 +163,13 @@ export class GroupAppletsSettings extends LitElement {
 
     return html`
       ${this.renderUninstallDialog()} ${this.renderFederateDialog()}
-      <div class="column" style="align-items:center">
+      <div class="column" style="flex: 1;">
         ${Array.from(applets.entries())
           .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
           .map(
             ([appletHash, applet]) =>
               html`
-                <sl-card style="width: 600px; margin-top: 16px">
+                <sl-card style="flex: 1; margin-bottom: 16px">
                   <div class="row" style="flex: 1; align-items: center">
                     <img
                       style="width: 48px; height: 48px; border-radius: 50%; margin-right: 16px"
@@ -236,6 +236,7 @@ export class GroupAppletsSettings extends LitElement {
     weStyles,
     css`
       :host {
+        display: flex;
       }
     `,
   ];

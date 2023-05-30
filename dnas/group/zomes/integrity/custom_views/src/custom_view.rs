@@ -3,6 +3,7 @@ use hdi::prelude::*;
 #[derive(Clone, PartialEq)]
 pub struct CustomView {
     pub name: String,
+    pub logo: String,
     pub html: String,
     pub js: String,
     pub css: String,

@@ -52,34 +52,13 @@ export class CustomViewEl extends LitElement {
     () => [this.customViewHash]
   );
 
-  /**
-   * @internal
-   */
-  @state()
-  _editing = false;
-
-  async deleteCustomView() {
-    try {
-      await this.customViewsStore.client.deleteCustomView(this.customViewHash);
-
-      this.dispatchEvent(
-        new CustomEvent("custom-view-deleted", {
-          bubbles: true,
-          composed: true,
-          detail: {
-            customViewHash: this.customViewHash,
-          },
-        })
-      );
-    } catch (e: any) {
-      notifyError(msg("Error deleting the custom view"));
-      console.error(e);
-    }
-  }
-
   renderDetail(entryRecord: EntryRecord<CustomView>) {
     return html`
-      <iframe srcdoc="${entryRecord.entry.html}" style="flex: 1"></iframe>
+      <iframe
+        srcdoc="<head><style>${entryRecord.entry
+          .css}</style></head>${entryRecord.entry.html}"
+        style="flex: 1"
+      ></iframe>
     `;
   }
 
@@ -100,19 +79,6 @@ export class CustomViewEl extends LitElement {
           return html`<span
             >${msg("The requested custom view doesn't exist")}</span
           >`;
-
-        if (this._editing) {
-          return html`<edit-custom-view
-            .currentRecord=${customView}
-            @custom-view-updated=${async () => {
-              this._editing = false;
-            }}
-            @edit-canceled=${() => {
-              this._editing = false;
-            }}
-            style="display: flex; flex: 1;"
-          ></edit-custom-view>`;
-        }
 
         return this.renderDetail(customView);
       case "error":

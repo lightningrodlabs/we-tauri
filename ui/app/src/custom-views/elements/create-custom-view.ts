@@ -9,13 +9,13 @@ import {
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-
-import "@shoelace-style/shoelace/dist/components/alert/alert.js";
-import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@holochain-open-dev/elements/dist/elements/select-avatar.js";
 
 import "grapes-editor";
 import { GrapesEditor } from "grapes-editor";
@@ -61,14 +61,13 @@ export class CreateCustomView extends LitElement {
 
     const editor = this.editor.editor;
 
-    const name = fields.name;
-
     const css = editor.getCss();
     const js = editor.getJs();
     const html = editor.getHtml();
 
     const customView: CustomView = {
-      name,
+      logo: fields.logo,
+      name: fields.name,
       html,
       js,
       css: css || "",
@@ -105,6 +104,13 @@ export class CreateCustomView extends LitElement {
           ${onSubmit((f) => this.createCustomView(f))}
           style="align-items: center; padding: 16px; background-color: white"
         >
+          <select-avatar
+            label=""
+            name="logo"
+            required
+            shape="rounded"
+            style="margin-right: 8px"
+          ></select-avatar>
           <sl-input
             name="name"
             required

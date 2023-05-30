@@ -17,7 +17,7 @@ export default {
   },
   plugins: [
     replace({
-      "this.documentEl()": "this.container",
+      "this.getDocumentEl(),'pointerdown'": "this.container,'pointerdown'",
       delimiters: ["", ""],
     }),
     postcss({

@@ -3,17 +3,28 @@ import { state, property, customElement } from "lit/decorators.js";
 import { EntryHash, Record, ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import { hashProperty, sharedStyles } from "@holochain-open-dev/elements";
+import {
+  hashProperty,
+  notifyError,
+  sharedStyles,
+  wrapPathInSvg,
+} from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
 
 import { localized, msg } from "@lit/localize";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
+import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import { CustomViewsStore } from "../custom-views-store";
 import { customViewsStoreContext } from "../context";
 import { CustomView } from "../types";
+import { mdiDelete, mdiPencil } from "@mdi/js";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 
 /**
  * @element custom-view-summary
@@ -41,10 +52,78 @@ export class CustomViewSummary extends LitElement {
     () => [this.customViewHash]
   );
 
+  async deleteCustomView() {
+    try {
+      await this.customViewsStore.client.deleteCustomView(this.customViewHash);
+
+      this.dispatchEvent(
+        new CustomEvent("custom-view-deleted", {
+          bubbles: true,
+          composed: true,
+          detail: {
+            customViewHash: this.customViewHash,
+          },
+        })
+      );
+    } catch (e: any) {
+      notifyError(msg("Error deleting the custom view"));
+      console.error(e);
+    }
+  }
+
+  renderDeleteDialog() {
+    return html`
+      <sl-dialog .label=${msg("Delete Custom View")} id="delete-dialog">
+        <span>${msg("Are you sure you want to delete this custom view?")}</span>
+        <sl-button
+          slot="footer"
+          variant="primary"
+          @click=${() => this.deleteCustomView()}
+          >${msg("Delete")}</sl-button
+        >
+      </sl-dialog>
+    `;
+  }
+
   renderSummary(entryRecord: EntryRecord<CustomView>) {
     return html`
-      <div style="display: flex; flex-direction: column">
-        <span>${entryRecord.entry.name}</span>
+      ${this.renderDeleteDialog()}
+      <div class="row" style="align-items: center; flex: 1">
+        <img
+          style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px"
+          src="${entryRecord.entry.logo}"
+        />
+        <span style="flex: 1">${entryRecord.entry.name}</span>
+
+        <sl-tooltip .content=${msg("Edit")}>
+          <sl-icon-button
+            .src=${wrapPathInSvg(mdiPencil)}
+            style="font-size: 2rem"
+            @click=${(e) => {
+              this.dispatchEvent(
+                new CustomEvent("edit-custom-view", {
+                  bubbles: true,
+                  composed: true,
+                  detail: {
+                    customViewHash: this.customViewHash,
+                  },
+                })
+              );
+            }}
+          ></sl-icon-button>
+        </sl-tooltip>
+
+        <sl-tooltip .content=${msg("Delete")}>
+          <sl-icon-button
+            .src=${wrapPathInSvg(mdiDelete)}
+            style="font-size: 2rem"
+            @click=${(e) => {
+              (
+                this.shadowRoot?.getElementById("delete-dialog") as SlDialog
+              ).show();
+            }}
+          ></sl-icon-button>
+        </sl-tooltip>
       </div>
     `;
   }
@@ -73,19 +152,7 @@ export class CustomViewSummary extends LitElement {
   }
 
   render() {
-    return html`<sl-card
-      style="flex: 1; cursor: grab;"
-      @click=${() =>
-        this.dispatchEvent(
-          new CustomEvent("custom-view-selected", {
-            composed: true,
-            bubbles: true,
-            detail: {
-              customViewHash: this.customViewHash,
-            },
-          })
-        )}
-    >
+    return html`<sl-card style="flex: 1; ">
       ${this.renderCustomView()}
     </sl-card>`;
   }

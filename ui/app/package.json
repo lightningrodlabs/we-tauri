@@ -7,7 +7,7 @@
     "build:watch": "vite build -w"
   },
   "dependencies": {
-    "@holochain-open-dev/elements": "^0.5.0",
+    "@holochain-open-dev/elements": "^0.5.8",
     "@holochain-open-dev/peer-status": "^0.8.0",
     "@holochain-open-dev/profiles": "^0.14.1",
     "@holochain-open-dev/stores": "^0.5.2",

@@ -45,6 +45,8 @@ export type EntryTypes = { type: "CustomView" } & CustomView;
 export interface CustomView {
   name: string;
 
+  logo: string;
+
   html: string;
 
   js: string;

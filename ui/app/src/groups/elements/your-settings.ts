@@ -84,23 +84,21 @@ export class YourSettings extends LitElement {
   render() {
     return html`
       ${this.renderLeaveGroupDialog()}
-      <div class="column" style="align-items: center">
-        <div class="column" style="width: 400px">
-          <profiles-context .store=${this.groupStore.profilesStore}>
-            <sl-card>
-              <span class="title" slot="header">${msg("Your Profile")}</span>
-              <my-profile style="flex: 1"></my-profile
-            ></sl-card>
-          </profiles-context>
-          <div class="row">
-            <span style="flex: 1"></span>
-            <sl-button
-              variant="danger"
-              @click=${() => this.dialog.show()}
-              style="margin-top: 16px"
-              >${msg("Leave Group")}</sl-button
-            >
-          </div>
+      <div class="column" style="flex: 1">
+        <profiles-context .store=${this.groupStore.profilesStore}>
+          <sl-card>
+            <span class="title" slot="header">${msg("Your Profile")}</span>
+            <my-profile style="flex: 1"></my-profile
+          ></sl-card>
+        </profiles-context>
+        <div class="row">
+          <span style="flex: 1"></span>
+          <sl-button
+            variant="danger"
+            @click=${() => this.dialog.show()}
+            style="margin-top: 16px"
+            >${msg("Leave Group")}</sl-button
+          >
         </div>
       </div>
     `;

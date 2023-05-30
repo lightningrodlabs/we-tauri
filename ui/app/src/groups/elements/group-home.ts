@@ -6,7 +6,7 @@ import {
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { encodeHashToBase64 } from "@holochain/client";
+import { ActionHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import {
   AsyncReadable,
@@ -36,6 +36,7 @@ import "./group-applets-settings.js";
 import "./your-settings.js";
 import "../../custom-views/elements/all-custom-views.js";
 import "./create-custom-group-view.js";
+import "./edit-custom-group-view.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
@@ -43,7 +44,17 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { openDevhub } from "../../tauri.js";
 
-type View = "main" | "applets-library" | "settings" | "create-custom-view";
+type View =
+  | {
+      view: "main";
+    }
+  | { view: "applets-library" }
+  | { view: "settings" }
+  | { view: "create-custom-view" }
+  | {
+      view: "edit-custom-view";
+      customViewHash: ActionHash;
+    };
 
 @localized()
 @customElement("group-home")
@@ -55,7 +66,7 @@ export class GroupHome extends LitElement {
   groupStore!: GroupStore;
 
   @state()
-  view: View = "main";
+  view: View = { view: "main" };
 
   groupProfile = new StoreSubscriber(
     this,
@@ -88,7 +99,7 @@ export class GroupHome extends LitElement {
             <sl-icon-button
               .src=${wrapPathInSvg(mdiToyBrickPlus)}
               @click=${() => {
-                this.view = "applets-library";
+                this.view = { view: "applets-library" };
               }}
               style="font-size: 2rem;"
             ></sl-icon-button>
@@ -96,7 +107,7 @@ export class GroupHome extends LitElement {
             <sl-icon-button
               .src=${wrapPathInSvg(mdiCog)}
               @click=${() => {
-                this.view = "settings";
+                this.view = { view: "settings" };
               }}
               style="font-size: 2rem;"
             ></sl-icon-button>
@@ -113,12 +124,8 @@ export class GroupHome extends LitElement {
                 <span class="title" style="flex: 1"
                   >${msg("Custom Views")}</span
                 >
-                <sl-button @click=${() => (this.view = "create-custom-view")}
-                  >${msg("Create Custom View")}</sl-button
-                >
               </div>
               <sl-divider style="--color: grey"></sl-divider>
-              <all-custom-views></all-custom-views>
             </div>
           </div>
         </div>
@@ -193,7 +200,7 @@ export class GroupHome extends LitElement {
           <sl-icon-button
             .src=${wrapPathInSvg(mdiArrowLeft)}
             @click=${() => {
-              this.view = "main";
+              this.view = { view: "main" };
             }}
             style="margin-right: 16px; font-size: 1rem"
           ></sl-icon-button>
@@ -202,11 +209,32 @@ export class GroupHome extends LitElement {
 
         <sl-tab-group placement="start" style="flex: 1">
           <sl-tab slot="nav" panel="applets">${msg("Applets")}</sl-tab>
+          <sl-tab slot="nav" panel="custom-views"
+            >${msg("Custom Views")}</sl-tab
+          >
           <sl-tab slot="nav" panel="your-settings"
             >${msg("Your Settings")}</sl-tab
           >
           <sl-tab-panel name="applets"
             ><group-applets-settings></group-applets-settings>
+          </sl-tab-panel>
+          <sl-tab-panel name="custom-views">
+            <all-custom-views
+              @edit-custom-view=${(e) => {
+                this.view = {
+                  view: "edit-custom-view",
+                  customViewHash: e.detail.customViewHash,
+                };
+              }}
+            ></all-custom-views>
+            <div class="row" style="flex: 1">
+              <span style="flex: 1"></span>
+              <sl-button
+                variant="primary"
+                @click=${() => (this.view = { view: "create-custom-view" })}
+                >${msg("Create Custom View")}</sl-button
+              >
+            </div>
           </sl-tab-panel>
           <sl-tab-panel name="your-settings">
             <your-settings></your-settings>
@@ -220,9 +248,20 @@ export class GroupHome extends LitElement {
     return html`<div class="column" style="flex: 1">
       <create-custom-group-view
         style="flex: 1"
-        @create-cancelled=${() => (this.view = "main")}
-        @custom-view-created=${() => (this.view = "main")}
+        @create-cancelled=${() => (this.view = { view: "main" })}
+        @custom-view-created=${() => (this.view = { view: "main" })}
       ></create-custom-group-view>
+    </div>`;
+  }
+
+  renderEditCustomView(customViewHash: EntryHash) {
+    return html`<div class="column" style="flex: 1">
+      <edit-custom-group-view
+        .customViewHash=${customViewHash}
+        style="flex: 1"
+        @edit-cancelled=${() => (this.view = { view: "main" })}
+        @custom-view-updated=${() => (this.view = { view: "main" })}
+      ></edit-custom-group-view>
     </div>`;
   }
 
@@ -231,7 +270,7 @@ export class GroupHome extends LitElement {
     originalGroupDnaHash: DnaHash,
     networkSeed: string
   ) {
-    switch (this.view) {
+    switch (this.view.view) {
       case "main":
         return this.renderMain(groupProfile, originalGroupDnaHash, networkSeed);
       case "applets-library":
@@ -241,7 +280,7 @@ export class GroupHome extends LitElement {
               <sl-icon-button
                 .src=${wrapPathInSvg(mdiArrowLeft)}
                 @click=${() => {
-                  this.view = "main";
+                  this.view = { view: "main" };
                 }}
                 style="margin-right: 16px"
               ></sl-icon-button>
@@ -255,7 +294,7 @@ export class GroupHome extends LitElement {
 
             <installable-applets
               @applet-installed=${() => {
-                this.view = "main";
+                this.view = { view: "main" };
               }}
             ></installable-applets>
           </div>
@@ -264,6 +303,8 @@ export class GroupHome extends LitElement {
         return this.renderSettings();
       case "create-custom-view":
         return this.renderCreateCustomView();
+      case "edit-custom-view":
+        return this.renderEditCustomView(this.view.customViewHash);
     }
   }
 
@@ -310,6 +351,13 @@ export class GroupHome extends LitElement {
     css`
       :host {
         display: flex;
+      }
+      sl-tab-panel::part(base) {
+        width: 600px;
+      }
+      sl-tab-panel[active] {
+        display: flex;
+        justify-content: center;
       }
     `,
   ];

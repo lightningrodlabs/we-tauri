@@ -1,36 +1,46 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, css } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import { state, customElement, property } from 'lit/decorators.js';
-import { ActionHash, Record, EntryHash, AgentPubKey } from '@holochain/client';
-import { EntryRecord } from '@holochain-open-dev/utils';
-import { hashState, notifyError, sharedStyles, hashProperty, wrapPathInSvg, onSubmit } from '@holochain-open-dev/elements';
-import { consume } from '@lit-labs/context';
-import { localized, msg } from '@lit/localize';
-import { mdiAlertCircleOutline, mdiDelete } from '@mdi/js';
+import { state, customElement, property, query } from "lit/decorators.js";
+import { ActionHash, Record, EntryHash, AgentPubKey } from "@holochain/client";
+import { EntryRecord } from "@holochain-open-dev/utils";
+import {
+  hashState,
+  notifyError,
+  sharedStyles,
+  hashProperty,
+  wrapPathInSvg,
+  onSubmit,
+} from "@holochain-open-dev/elements";
+import { consume } from "@lit-labs/context";
+import { localized, msg } from "@lit/localize";
+import { BlockProperties } from "grapesjs";
 
-import '@shoelace-style/shoelace/dist/components/card/card.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/alert/alert.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import "@shoelace-style/shoelace/dist/components/card/card.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
-import { CustomViewsStore } from '../custom-views-store';
-import { customViewsStoreContext } from '../context';
-import { CustomView } from '../types';
+import "grapes-editor";
+import { GrapesEditor } from "grapes-editor";
+
+import { CustomViewsStore } from "../custom-views-store";
+import { customViewsStoreContext } from "../context";
+import { CustomView } from "../types";
 
 /**
  * @element edit-custom-view
  * @fires custom-view-updated: detail will contain { previousCustomViewHash, updatedCustomViewHash }
  */
 @localized()
-@customElement('edit-custom-view')
+@customElement("edit-custom-view")
 export class EditCustomView extends LitElement {
+  @property()
+  blocks: Array<BlockProperties> = [];
 
-  
   // REQUIRED. The current CustomView record that should be updated
   @property()
   currentRecord!: EntryRecord<CustomView>;
-  
+
   /**
    * @internal
    */
@@ -42,17 +52,29 @@ export class EditCustomView extends LitElement {
    */
   @state()
   committing = false;
-   
+
+  @query("grapes-editor")
+  editor!: GrapesEditor;
 
   firstUpdated() {
-    this.shadowRoot?.querySelector('form')!.reset();
+    this.shadowRoot?.querySelector("form")!.reset();
   }
 
-  async updateCustomView(fields: any) {  
-    const customView: CustomView = { 
-      html: this.currentRecord.entry.html,
-      js: this.currentRecord.entry.js,
-      css: this.currentRecord.entry.css,
+  async updateCustomView(fields: any) {
+    if (this.committing) return;
+
+    const editor = this.editor.editor;
+
+    const css = editor.getCss();
+    const js = editor.getJs();
+    const html = editor.getHtml();
+
+    const customView: CustomView = {
+      logo: fields.logo,
+      name: fields.name,
+      html,
+      js,
+      css: css || "",
     };
 
     try {
@@ -61,53 +83,78 @@ export class EditCustomView extends LitElement {
         this.currentRecord.actionHash,
         customView
       );
-  
-      this.dispatchEvent(new CustomEvent('custom-view-updated', {
-        composed: true,
-        bubbles: true,
-        detail: {
-          previousCustomViewHash: this.currentRecord.actionHash,
-          updatedCustomViewHash: updateRecord.actionHash
-        }
-      }));
+
+      this.dispatchEvent(
+        new CustomEvent("custom-view-updated", {
+          composed: true,
+          bubbles: true,
+          detail: {
+            previousCustomViewHash: this.currentRecord.actionHash,
+            updatedCustomViewHash: updateRecord.actionHash,
+          },
+        })
+      );
     } catch (e: any) {
       console.error(e);
-      notifyError(msg("Error creating the custom view"));
+      notifyError(msg("Error updating the custom view"));
     }
-    
+
     this.committing = false;
   }
 
   render() {
     return html`
-      <sl-card>
-        <span slot="header">${msg("Edit Custom View")}</span>
-
-        <form 
-          style="display: flex; flex: 1; flex-direction: column;"
-          ${onSubmit(fields => this.updateCustomView(fields))}
-        >  
-
-
-          <div style="display: flex; flex-direction: row">
-            <sl-button
-              @click=${() => this.dispatchEvent(new CustomEvent('edit-canceled', {
-                bubbles: true,
-                composed: true
-              }))}
-              style="flex: 1;"
-            >${msg("Cancel")}</sl-button>
-            <sl-button
-              type="submit"
-              variant="primary"
-              style="flex: 1;"
-              .loading=${this.committing}
-            >${msg("Save")}</sl-button>
-
-          </div>
+      <div class="column" style="flex: 1">
+        <form
+          class="row"
+          ${onSubmit((f) => this.updateCustomView(f))}
+          style="align-items: center; padding: 16px; background-color: white"
+        >
+          <select-avatar
+            name="logo"
+            label=""
+            required
+            shape="rounded"
+            style="margin-right: 8px"
+            .defaultValue=${this.currentRecord.entry.logo}
+          ></select-avatar>
+          <sl-input
+            name="name"
+            required
+            .placeholder=${msg("Custom View Name")}
+            .defaultValue=${this.currentRecord.entry.name}
+          ></sl-input>
+          <span style="flex:1"> </span>
+          <sl-button
+            style="margin-right: 8px"
+            @click=${() =>
+              this.dispatchEvent(
+                new CustomEvent("edit-cancelled", {
+                  composed: true,
+                  bubbles: true,
+                })
+              )}
+            >${msg("Cancel")}</sl-button
+          >
+          <sl-button variant="primary" type="submit" .loading=${this.committing}
+            >${msg("Save")}</sl-button
+          >
         </form>
-      </sl-card>`;
+        <grapes-editor
+          .template=${this.currentRecord.entry}
+          .blocks=${this.blocks}
+          style="flex: 1"
+        ></grapes-editor>
+      </div>
+    `;
   }
 
-  static styles = [sharedStyles];
+  static styles = [
+    sharedStyles,
+    css`
+      :host {
+        display: flex;
+      }
+    `,
+  ];
 }

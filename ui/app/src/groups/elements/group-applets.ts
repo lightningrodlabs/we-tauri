@@ -1,15 +1,17 @@
 import {
   AsyncReadable,
+  join,
   joinAsyncMap,
   pipe,
+  sliceAndJoin,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 import { customElement } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
-import { EntryHash } from "@holochain/client";
-import { slice } from "@holochain-open-dev/utils";
+import { ActionHash, EntryHash } from "@holochain/client";
+import { EntryRecord, slice } from "@holochain-open-dev/utils";
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
 import { mdiToyBrickPlus } from "@mdi/js";
 
@@ -23,6 +25,7 @@ import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
+import { CustomView } from "../../custom-views/types.js";
 
 @localized()
 @customElement("group-applets")
@@ -33,18 +36,32 @@ export class GroupApplets extends LitElement {
   _groupApplets = new StoreSubscriber(
     this,
     () =>
-      pipe(
-        this._groupStore.allApplets,
-        (allApplets) =>
-          joinAsyncMap(
-            slice(this._groupStore.applets, allApplets)
-          ) as AsyncReadable<ReadonlyMap<EntryHash, Applet>>
-      ),
+      join([
+        pipe(
+          this._groupStore.customViewsStore.allCustomViews,
+          (allCustomViews) =>
+            sliceAndJoin(
+              this._groupStore.customViewsStore.customViews,
+              allCustomViews
+            )
+        ),
+        pipe(this._groupStore.allApplets, (allApplets) =>
+          sliceAndJoin(this._groupStore.applets, allApplets)
+        ),
+      ]) as AsyncReadable<
+        [
+          ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
+          ReadonlyMap<EntryHash, Applet>
+        ]
+      >,
     () => [this._groupStore]
   );
 
-  renderInstalledApplets(applets: ReadonlyMap<EntryHash, Applet>) {
-    if (applets.size === 0)
+  renderInstalledApplets(
+    customViews: ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
+    applets: ReadonlyMap<EntryHash, Applet>
+  ) {
+    if (customViews.size === 0 && applets.size === 0)
       return html`
         <div class="column" style="flex: 1; align-items: center">
           <span
@@ -61,6 +78,35 @@ export class GroupApplets extends LitElement {
 
     return html`
       <div class="row">
+        ${Array.from(customViews.entries())
+          .sort(([_, a], [__, b]) => a.entry.name.localeCompare(b.entry.name))
+          .map(
+            ([customViewHash, customView]) =>
+              html`
+                <div
+                  class="column"
+                  style="margin-right: 16px; align-items: center; cursor: pointer"
+                  @click=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("custom-view-selected", {
+                        detail: {
+                          groupDnaHash: this._groupStore.groupDnaHash,
+                          customViewHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
+                >
+                  <img
+                    src="${customView.entry.logo}"
+                    style="height: 64px; width: 64px; border-radius: 8px; margin-bottom: 8px"
+                  />
+                  <span>${customView.entry.name}</span>
+                </div>
+              `
+          )}
         ${Array.from(applets.entries())
           .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
           .map(
@@ -82,7 +128,10 @@ export class GroupApplets extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo .appletHash=${appletHash}></applet-logo>
+                  <applet-logo
+                    .appletHash=${appletHash}
+                    style="margin-bottom: 8px"
+                  ></applet-logo>
                   <span>${applet.custom_name}</span>
                 </div>
               `
@@ -103,7 +152,10 @@ export class GroupApplets extends LitElement {
           .error=${this._groupApplets.value.error}
         ></display-error>`;
       case "complete":
-        return this.renderInstalledApplets(this._groupApplets.value.value);
+        return this.renderInstalledApplets(
+          this._groupApplets.value.value[0],
+          this._groupApplets.value.value[1]
+        );
     }
   }
 
