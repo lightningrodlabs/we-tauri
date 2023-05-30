@@ -109,12 +109,12 @@ export class FederateGroupDialog extends LitElement {
           >
             <span
               >${msg(
-                "Federating this applet will share it with another group you are part of, so that both groups have the same applet installed and their members can access it."
+                "Federating this group with another group will connect both groups, so members of one group can join the other one."
               )}</span
             ><br /><br />
             <span
               >${msg(
-                "With which group do you want to federate this applet?"
+                "With which group do you want to federate your group?"
               )}</span
             >
             <sl-select
@@ -165,7 +165,7 @@ export class FederateGroupDialog extends LitElement {
   render() {
     return html`<sl-dialog
       id="dialog"
-      .label=${msg("Federate Applet")}
+      .label=${msg("Federate Groups")}
       @sl-request-close=${(e) => {
         if (this.federating) {
           e.preventDefault();
