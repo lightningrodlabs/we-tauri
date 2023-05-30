@@ -42,6 +42,7 @@ export class MainDashboard extends LitElement {
   selectedGroupDnaHash: DnaHash | undefined;
 
   async handleOpenGroup(originalDnaHashForLink: DnaHash, networkSeed: string) {
+    console.log("hey");
     const originalDnaHash = await toPromise(this._weStore.originalGroupDnaHash);
 
     if (originalDnaHash.toString() !== originalDnaHashForLink.toString()) {
@@ -183,6 +184,11 @@ export class MainDashboard extends LitElement {
               ],
             }}
             style="flex: 1; min-width: 0;"
+            @open-group=${(e) =>
+              this.handleOpenGroup(
+                e.detail.originalGroupDnaHash,
+                e.detail.networkSeed
+              )}
           ></dynamic-layout>
         </div>
       </div>

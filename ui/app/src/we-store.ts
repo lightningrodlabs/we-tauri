@@ -1,5 +1,6 @@
 import {
   alwaysSubscribed,
+  asyncDeriveAndJoin,
   asyncDerived,
   asyncDeriveStore,
   AsyncReadable,
@@ -50,6 +51,7 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
 import { findAppForDnaHash } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
+import { encode } from "@msgpack/msgpack";
 
 export function getAll<H extends HoloHash, T>(
   hashes: AsyncReadable<Array<H>>,
@@ -174,6 +176,34 @@ export class WeStore {
 
     await this.appletBundlesStore.installedApps.reload();
     await this.groupsRolesByDnaHash.reload();
+  }
+
+  public async federateGroups(groupA: DnaHash, groupB: DnaHash) {
+    const original_dna_hash = await toPromise(this.originalGroupDnaHash);
+
+    const [groupAStore, groupAProfile] = await toPromise(
+      asyncDeriveAndJoin(this.groups.get(groupA), (s) => s.groupProfile)
+    );
+    const [groupBStore, groupBProfile] = await toPromise(
+      asyncDeriveAndJoin(this.groups.get(groupB), (s) => s.groupProfile)
+    );
+    const amodifiers = await groupAStore.groupDnaModifiers();
+    const bmodifiers = await groupBStore.groupDnaModifiers();
+
+    await groupAStore.membraneInvitationsStore.client.createCloneDnaRecipe({
+      custom_content: encode(groupBProfile),
+      network_seed: bmodifiers.network_seed,
+      properties: bmodifiers.properties,
+      original_dna_hash,
+      resulting_dna_hash: groupBStore.groupDnaHash,
+    });
+    await groupBStore.membraneInvitationsStore.client.createCloneDnaRecipe({
+      custom_content: encode(groupAProfile),
+      network_seed: amodifiers.network_seed,
+      properties: amodifiers.properties,
+      original_dna_hash,
+      resulting_dna_hash: groupAStore.groupDnaHash,
+    });
   }
 
   originalGroupDnaHash = lazyLoad<DnaHash>(async () => {

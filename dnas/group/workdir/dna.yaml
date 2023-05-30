@@ -12,6 +12,8 @@ integrity:
     bundled: ../../../target/wasm32-unknown-unknown/release/custom_views_integrity.wasm
   - name: profiles_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
+  - name: membrane_invitations_integrity
+    bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations_integrity.wasm
 
 coordinator:
   zomes:
@@ -27,5 +29,9 @@ coordinator:
       bundled: ../../../target/wasm32-unknown-unknown/release/profiles_coordinator.wasm
       dependencies:
         - name: profiles_integrity
+    - name: membrane_invitations
+      bundled: ../../../target/wasm32-unknown-unknown/release/membrane_invitations.wasm
+      dependencies:
+        - name: membrane_invitations_integrity
     - name: peer_status
       bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_coordinator.wasm

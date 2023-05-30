@@ -19,6 +19,7 @@ import "../groups/elements/group-logo.js";
 import "../groups/elements/applet-name.js";
 import "../groups/elements/entry-title.js";
 import "../applets/elements/applet-title.js";
+import "../groups/elements/custom-view-title.js";
 import "../applet-bundles/elements/applet-bundle-title.js";
 import "./views/cross-applet-main.js";
 import "./views/cross-applet-block.js";
@@ -203,10 +204,12 @@ export class DynamicLayout extends LitElement {
       </golden-layout-register>
       <golden-layout-register
         component-type="custom-view"
-        .titleRenderer=${({ groupDnaHash }) =>
+        .titleRenderer=${({ groupDnaHash, customViewHash }) =>
           html`
             <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-logo></group-logo>
+              <custom-view-title
+                .customViewHash=${decodeHashFromBase64(customViewHash)}
+              ></custom-view-title>
             </group-context>
           `}
         .template=${({ groupDnaHash, customViewHash }, container) => html`

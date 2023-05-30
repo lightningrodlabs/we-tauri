@@ -5,6 +5,7 @@ import {
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   AsyncReadable,
+  completed,
   lazyLoad,
   lazyLoadAndPoll,
   mapAndJoin,
@@ -12,7 +13,12 @@ import {
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import {
+  MembraneInvitationsStore,
+  MembraneInvitationsClient,
+  CloneDnaRecipe,
+} from "@holochain-open-dev/membrane-invitations";
 import {
   AgentPubKey,
   AppAgentWebsocket,
@@ -36,8 +42,11 @@ export class GroupStore {
   peerStatusStore: PeerStatusStore;
   groupClient: GroupClient;
   customViewsStore: CustomViewsStore;
+  membraneInvitationsStore: MembraneInvitationsStore;
 
   members: AsyncReadable<Array<AgentPubKey>>;
+
+  federatedGroups: AsyncReadable<ReadonlyMap<DnaHash, CloneDnaRecipe>>;
 
   constructor(
     public appAgentWebsocket: AppAgentWebsocket,
@@ -56,7 +65,23 @@ export class GroupStore {
     this.customViewsStore = new CustomViewsStore(
       new CustomViewsClient(appAgentWebsocket, roleName)
     );
+    this.membraneInvitationsStore = new MembraneInvitationsStore(
+      new MembraneInvitationsClient(appAgentWebsocket, roleName)
+    );
     this.members = this.profilesStore.agentsWithProfile;
+    this.federatedGroups = pipe(
+      this.weStore.originalGroupDnaHash,
+      (originalDnaHash) =>
+        this.membraneInvitationsStore.cloneDnaRecipes.get(originalDnaHash),
+      (cloneDnaRecipes) => {
+        const groups: HoloHashMap<DnaHash, CloneDnaRecipe> = new HoloHashMap();
+        for (const recipe of cloneDnaRecipes) {
+          groups.set(recipe.entry.resulting_dna_hash, recipe.entry);
+        }
+
+        return completed(groups);
+      }
+    );
   }
 
   async groupDnaModifiers(): Promise<DnaModifiers> {
@@ -124,7 +149,7 @@ export class GroupStore {
     return appletHash;
   }
 
-  federatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>
+  appletFederatedGroups = new LazyHoloHashMap((appletHash: EntryHash) =>
     lazyLoadAndPoll(
       async () => this.groupClient.getFederatedGroups(appletHash),
       5000

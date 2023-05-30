@@ -2593,6 +2593,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_zome_membrane_invitations_coordinator"
+version = "0.1.0"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?branch=main#173e54f63ea9d32ae0f1c08e8b27ee348ea49d43"
+dependencies = [
+ "derive_more",
+ "hc_zome_membrane_invitations_integrity",
+ "hdk",
+ "serde",
+]
+
+[[package]]
+name = "hc_zome_membrane_invitations_integrity"
+version = "0.1.0"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?branch=main#173e54f63ea9d32ae0f1c08e8b27ee348ea49d43"
+dependencies = [
+ "derive_more",
+ "hdi",
+ "serde",
+]
+
+[[package]]
 name = "hc_zome_peer_status_coordinator"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4477,6 +4498,20 @@ dependencies = [
  "futures-util",
  "log",
  "net2",
+]
+
+[[package]]
+name = "membrane_invitations"
+version = "0.0.1"
+dependencies = [
+ "hc_zome_membrane_invitations_coordinator",
+]
+
+[[package]]
+name = "membrane_invitations_integrity"
+version = "0.0.1"
+dependencies = [
+ "hc_zome_membrane_invitations_integrity",
 ]
 
 [[package]]

@@ -15,7 +15,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { mdiAbacus, mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
+import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
@@ -30,6 +30,8 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 import "./group-peers-status.js";
+import "./federated-groups.js";
+import "./federate-group-dialog.js";
 import "./installable-applets.js";
 import "./group-applets.js";
 import "./group-applets-settings.js";
@@ -43,6 +45,7 @@ import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { openDevhub } from "../../tauri.js";
+import { FederateGroupDialog } from "./federate-group-dialog.js";
 
 type View =
   | {
@@ -119,14 +122,8 @@ export class GroupHome extends LitElement {
               <sl-divider style="--color: grey"></sl-divider>
               <group-applets style="margin-top: 16px; flex: 1"></group-applets>
             </div>
-            <div class="column" style="flex: 1">
-              <div class="row" style="align-items: center">
-                <span class="title" style="flex: 1"
-                  >${msg("Custom Views")}</span
-                >
-              </div>
-              <sl-divider style="--color: grey"></sl-divider>
-            </div>
+
+            <federated-groups></federated-groups>
           </div>
         </div>
 
@@ -212,6 +209,9 @@ export class GroupHome extends LitElement {
           <sl-tab slot="nav" panel="custom-views"
             >${msg("Custom Views")}</sl-tab
           >
+          <sl-tab slot="nav" panel="federated-groups"
+            >${msg("Federated Groups")}</sl-tab
+          >
           <sl-tab slot="nav" panel="your-settings"
             >${msg("Your Settings")}</sl-tab
           >
@@ -233,6 +233,25 @@ export class GroupHome extends LitElement {
                 variant="primary"
                 @click=${() => (this.view = { view: "create-custom-view" })}
                 >${msg("Create Custom View")}</sl-button
+              >
+            </div>
+          </sl-tab-panel>
+          <sl-tab-panel name="federated-groups">
+            <federate-group-dialog
+              id="federate-group-dialog"
+            ></federate-group-dialog>
+            <federated-groups></federated-groups>
+            <div class="row">
+              <span style="flex: 1"></span>
+              <sl-button
+                @click=${() => {
+                  (
+                    this.shadowRoot?.getElementById(
+                      "federate-group-dialog"
+                    ) as FederateGroupDialog
+                  ).show();
+                }}
+                >${msg("Federate this group")}</sl-button
               >
             </div>
           </sl-tab-panel>

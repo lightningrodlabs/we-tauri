@@ -58,7 +58,7 @@ export class GroupAppletsSettings extends LitElement {
         ),
         (applets) =>
           mapAndJoin(applets, (applet, appletHash) =>
-            this._groupStore.federatedGroups.get(appletHash)
+            this._groupStore.appletFederatedGroups.get(appletHash)
           )
       ),
     () => [this._groupStore]
