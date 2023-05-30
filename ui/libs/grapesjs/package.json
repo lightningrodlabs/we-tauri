@@ -26,8 +26,7 @@
     "storybook:build": "tsc && build-storybook"
   },
   "dependencies": {
-    "grapesjs-blocks-basic": "^1.0.1",
-    "grapesjs-tabs": "^1.0.6",
+    "@rollup/plugin-replace": "^5.0.2",
     "lit": "^2.0.0"
   },
   "devDependencies": {
@@ -43,7 +42,9 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "grapesjs": "^0.21.1",
+    "grapesjs-blocks-basic": "^1.0.1",
     "grapesjs-preset-webpage": "^1.0.2",
+    "grapesjs-tabs": "^1.0.6",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
     "prettier": "^2.3.2",

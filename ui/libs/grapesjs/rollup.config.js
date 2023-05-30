@@ -1,4 +1,5 @@
 import resolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import postcss from "rollup-plugin-postcss";
@@ -15,6 +16,10 @@ export default {
     clearScreen: false,
   },
   plugins: [
+    replace({
+      "this.documentEl()": "this.container",
+      delimiters: ["", ""],
+    }),
     postcss({
       inject: false,
     }),
