@@ -70,10 +70,8 @@ export class CreateAttachment extends LitElement {
 
   async createAttachment(attachmentType: AttachmentType) {
     try {
-      const hrlWithContext = await attachmentType.create([
-        this.attachmentsStore.client.dnaHash,
-        this.hash,
-      ]);
+      const dnaHash = await this.attachmentsStore.client.getDnaHash();
+      const hrlWithContext = await attachmentType.create([dnaHash, this.hash]);
 
       await this.attachmentsStore.client.addAttachment(
         this.hash,

@@ -34,12 +34,12 @@ function wrapAppletView(
   `;
 }
 
-function appletViews(
+async function appletViews(
   client: AppAgentClient,
   appletId: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
-): AppletViews {
+): Promise<AppletViews> {
   return {
     main: (element) =>
       render(
@@ -58,10 +58,10 @@ function appletViews(
   };
 }
 
-function crossAppletViews(
+async function crossAppletViews(
   applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletId
   weServices: WeServices
-): CrossAppletViews {
+): Promise<CrossAppletViews> {
   return {
     main: (element) =>
       render(

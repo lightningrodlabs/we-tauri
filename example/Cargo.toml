@@ -1,0 +1,22 @@
+[profile.dev]
+opt-level = "z"
+
+[profile.release]
+opt-level = "z"
+
+[workspace]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+resolver = "2"
+
+[workspace.dependencies]
+hdi = "=0.2.3-beta-rc.0"
+hdk = "=0.1.3-beta-rc.1"
+holochain = "0.1.5-beta-rc.1"
+holochain_integrity_types = "=0.1.3-beta-rc.0"
+serde = "1"
+
+[workspace.dependencies.posts]
+path = "dnas/forum/zomes/coordinator/posts"
+
+[workspace.dependencies.posts_integrity]
+path = "dnas/forum/zomes/integrity/posts"

@@ -176,7 +176,7 @@ export class MainDashboard extends LitElement {
             >
               <search-entry
                 field-label=""
-                style="margin-right: 16px"
+                style="margin-right: 8px"
                 @entry-selected=${(e) => {
                   this.dynamicLayout.openViews.openHrl(
                     e.detail.hrlWithContext.hrl,

@@ -24,7 +24,6 @@ module.exports = {
     "consistent-return": "off",
     "no-case-declarations": "off",
     "import/order": "off",
-    "no-console": "off",
-    "arrow-body-style": "off"
+    "no-console": "off"
   }
 };

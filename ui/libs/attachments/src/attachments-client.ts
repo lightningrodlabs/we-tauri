@@ -1,24 +1,22 @@
-import { AnyDhtHash, AppAgentClient } from "@holochain/client";
+import { AnyDhtHash, AppAgentClient, DnaHash } from "@holochain/client";
 import { decode, encode } from "@msgpack/msgpack";
-import { DnaHash } from "@holochain/client";
-import { AppAgentCallZomeRequest } from "@holochain/client";
 import { HrlWithContext } from "@lightningrodlabs/we-applet";
+import { ZomeClient, getCellIdFromRoleName } from "@holochain-open-dev/utils";
 
-export class AttachmentsClient {
+export class AttachmentsClient extends ZomeClient<{}> {
   constructor(
     public client: AppAgentClient,
-    public dnaHash: DnaHash,
+    public roleName: string,
     public zomeName = "attachments"
-  ) {}
+  ) {
+    super(client, roleName, zomeName);
+  }
 
-  protected callZome(fn_name: string, payload: any) {
-    const req: AppAgentCallZomeRequest = {
-      cell_id: [this.dnaHash, this.client.myPubKey],
-      zome_name: this.zomeName,
-      fn_name,
-      payload,
-    };
-    return this.client.callZome(req);
+  async getDnaHash(): Promise<DnaHash> {
+    const appInfo = await this.client.appInfo();
+    const cellId = getCellIdFromRoleName(this.roleName, appInfo);
+
+    return cellId[0];
   }
 
   addAttachment(

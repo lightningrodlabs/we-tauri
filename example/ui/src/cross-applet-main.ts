@@ -1,9 +1,8 @@
-import { LitElement, css, html } from 'lit';
-import { customElement, state, property } from 'lit/decorators.js';
-import { localized, msg } from '@lit/localize';
+import { LitElement, css, html } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { localized, msg } from "@lit/localize";
 
-import { EntryHash } from '@holochain/client';
-import { sharedStyles } from '@holochain-open-dev/elements';
+import { sharedStyles } from "@holochain-open-dev/elements";
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
@@ -12,12 +11,13 @@ import {
   GroupProfile,
   WeServices,
   weServicesContext,
-  AppletClients
+  AppletClients,
 } from "@lightningrodlabs/we-applet";
 import { consume } from "@lit-labs/context";
+import { EntryHash } from "@holochain/client";
 
 @localized()
-@customElement('cross-applet-main')
+@customElement("cross-applet-main")
 export class CrossAppletMain extends LitElement {
   @property()
   applets!: ReadonlyMap<EntryHash, AppletClients>;

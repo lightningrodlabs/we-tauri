@@ -179,7 +179,7 @@ async function publishApplets() {
       fn_name: "create_happ",
       payload: {
         title: appletName,
-        subtitle: happManifest.description,
+        subtitle: happManifest.description || "",
         description: "",
         tags: ["we-applet"],
       },

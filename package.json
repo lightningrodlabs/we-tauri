@@ -6,6 +6,7 @@
     "ui/applet-iframe",
     "ui/libs/*",
     "ui/app",
+    "example/ui",
     "site"
   ],
   "scripts": {
@@ -15,12 +16,13 @@
     "start:agent": "concurrently \"npm run tauri:dev\" \"holochain-playground ws://localhost:${ADMIN_PORT}\" \"npm run publish:applets\"",
     "tauri:dev": "RUST_LOG=info WASM_LOG=warn npm run tauri dev --release -- -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
-    "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe -w grapes-editor",
+    "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe -w grapes-editor -w @lightningrodlabs/attachments",
     "build:ui": "npm run build:libs && npm run build -w we",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "tauri": "tauri",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we",
+    "build:example": "npm run build:libs && npm run build:zomes && npm run package -w example-applet && rimraf testing-applets/example-applet && cp example/workdir/example-applet.webhapp testing-applets ",
     "prepare:lair": "node scripts/prepare-lair.js",
     "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.0/DevHub.webhapp && npm run build:libs"
   },
