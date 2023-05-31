@@ -42,7 +42,7 @@ import { GroupClient } from "./groups/group-client";
 import { GroupStore } from "./groups/group-store";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
-import { findAppForDnaHash } from "./utils.js";
+import { findAppForDnaHash, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
 import { encode } from "@msgpack/msgpack";
 
@@ -101,11 +101,10 @@ export class WeStore {
             );
             const applets = await toPromise(groupStore.allApplets);
 
-            const apps = await this.adminWebsocket.listApps({
-              status_filter: { Disabled: null } as any,
-            });
+            const apps = await this.adminWebsocket.listApps({});
+            const disabledApps = apps.filter((app) => isAppDisabled(app));
 
-            for (const app of apps) {
+            for (const app of disabledApps) {
               if (
                 applets.find(
                   (appletHash) =>

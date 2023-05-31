@@ -14,12 +14,12 @@ async fn create_a_custom_view_and_get_all_custom_views() {
     // Use prebuilt dna file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/t.dna");
+        .join("../../../workdir/group.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("t", &[dna]).await.unwrap();
+    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (bobbo,)) = apps.into_tuples();

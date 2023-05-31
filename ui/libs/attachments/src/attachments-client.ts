@@ -2,7 +2,7 @@ import { AnyDhtHash, AppAgentClient } from "@holochain/client";
 import { decode, encode } from "@msgpack/msgpack";
 import { DnaHash } from "@holochain/client";
 import { AppAgentCallZomeRequest } from "@holochain/client";
-import { HrlWithContext } from "../types";
+import { HrlWithContext } from "@lightningrodlabs/we-applet";
 
 export class AttachmentsClient {
   constructor(

@@ -173,7 +173,7 @@ export class GroupAppletsSettings extends LitElement {
                 <sl-card style="flex: 1; margin-bottom: 16px">
                   <div class="row" style="flex: 1; align-items: center">
                     <img
-                      style="width: 48px; height: 48px; border-radius: 50%; margin-right: 16px"
+                      style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px"
                       src="${appletOrigin(appletHash)}/icon.png"
                     />
                     <span style="flex: 1">${applet.custom_name}</span>

@@ -1,6 +1,6 @@
 {
-  "name": "@lightningrodlabs/we-applet",
-  "version": "0.6.0",
+  "name": "@lightningrodlabs/attachments",
+  "version": "0.1.0",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -21,6 +21,7 @@
     "@holochain/client": "^0.14.1",
     "@lit-labs/context": "^0.2.0",
     "@lit/localize": "^0.11.4",
+    "@lightningrodlabs/we-applet": "^0.6.0",
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@mdi/js": "^7.2.0",
     "@shoelace-style/shoelace": "^2.3.0",

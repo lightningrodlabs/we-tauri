@@ -19,12 +19,15 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
+import {
+  weServicesContext,
+  WeServices,
+  HrlWithContext,
+} from "@lightningrodlabs/we-applet";
+import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
+
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
-import { weServicesContext } from "../../context";
-import { HrlWithContext, WeServices } from "../../types";
-
-import "../../elements/hrl-link.js";
 
 @customElement("attachments-list")
 export class AttachmentsList extends LitElement {

@@ -1,7 +1,7 @@
 import { HoloHashMap, ZomeMock } from "@holochain-open-dev/utils";
 import { AnyDhtHash } from "@holochain/client";
 import { AgentPubKey, AppAgentClient } from "@holochain/client";
-import { HrlWithContext } from "../types";
+import { HrlWithContext } from "@lightningrodlabs/we-applet";
 
 export class AttachmentsZomeMock extends ZomeMock implements AppAgentClient {
   attachments: HoloHashMap<AnyDhtHash, Array<HrlWithContext>> =

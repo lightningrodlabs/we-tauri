@@ -24,11 +24,15 @@ import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
+import {
+  weServicesContext,
+  WeServices,
+  AttachmentType,
+  getAppletsInfosAndGroupsProfiles,
+} from "@lightningrodlabs/we-applet";
+
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
-import { weServicesContext } from "../../context";
-import { AttachmentType, WeServices } from "../../types";
-import { getAppletsInfosAndGroupsProfiles } from "../../utils";
 
 @localized()
 @customElement("create-attachment")

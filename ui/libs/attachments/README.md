@@ -12,29 +12,25 @@ To implement the UI for your applet, import the `WeApplet` type from `@lightning
 
 ```ts
 import { DnaHash, EntryHash, AppAgentClient } from "@holochain/client";
-import { WeApplet, AppletViews, WeServices, Hrl } from "@lightningrodlabs/we-applet";
-import { ProfilesClient } from '@holochain-open-dev/profiles';
+import { WeApplet, GroupServices, WeServices, Hrl } from "@lightningrodlabs/we-applet";
 
-async function appletViews(
+function groupViews(
   client: AppAgentClient,        // The client for this applet, already set up
+  groupId: DnaHash,              // The group id that this applet is installed in, usually used when opening views
   appletId: EntryHash,   // The applet instance id, usually used when opening views
-  profilesClient: ProfilesClient,  // The services that this group offers, like the group's profile or the ProfilesClient for the agents
+  groupServices: GroupServices,  // The services that this group offers, like the group's profile or the ProfilesClient for the agents
   weServices: WeServices         // The services that "we" offers to this applet, to enable attachments, open views, search... 
-): AppletViews {
+): GroupViews {
   return {
     main: (element: HTMLElement) => element.innerHTML = "<span>This is the main view for this applet, which is going to be opened when the user clicks on the applet's icon</span>",
     blocks: {
-      my_block: {
-        label: "My Block",
-        icon_src: "<svg>...</svg>",
-        view: (element: HTMLElement) => element.innerHTML = '<span>This is a block view for this applet, which can be opened from the main view</span>'
-      }
+      my_block: (element: HTMLElement) => element.innerHTML = '<span>This is a block view for this applet, which can be opened from the main view</span>'
     },
     entries: {
       my_role_name: {
         my_integrity_zome_name: {
           my_entry_type_name: {
-            async view(element: HTMLElement, hrl: Hrl, context) {
+            view(element, hrl, context) {
               const myEntry = await client.callZome({
                 cell_id: [hrl[0], client.myPubKey],
                 payload: hrl[1],
@@ -65,9 +61,9 @@ async function appletViews(
 }
 
 const applet: WeApplet = {
-  appletViews,
-  async crossAppletViews: (
-    applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by applet ID
+  groupViews,
+  crossGroupViews: (
+    appletsByGroup: ReadonlyMap<DnaHash, GroupWithApplets>, // Segmented by groupId
     weServices: WeServices
   ) {
     return {

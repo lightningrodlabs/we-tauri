@@ -19,12 +19,12 @@ async fn create_custom_view_test() {
     // Use prebuilt dna file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/t.dna");
+        .join("../../../workdir/group.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("t", &[dna]).await.unwrap();
+    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (_bobbo,)) = apps.into_tuples();
@@ -45,12 +45,12 @@ async fn create_and_read_custom_view() {
     // Use prebuilt dna file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/t.dna");
+        .join("../../../workdir/group.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("t", &[dna]).await.unwrap();
+    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (bobbo,)) = apps.into_tuples();
@@ -77,12 +77,12 @@ async fn create_and_update_custom_view() {
     // Use prebuilt dna file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/t.dna");
+        .join("../../../workdir/group.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("t", &[dna]).await.unwrap();
+    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (bobbo,)) = apps.into_tuples();
@@ -147,12 +147,12 @@ async fn create_and_delete_custom_view() {
     // Use prebuilt dna file
     let dna_path = std::env::current_dir()
         .unwrap()
-        .join("../../../workdir/t.dna");
+        .join("../../../workdir/group.dna");
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
     let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("t", &[dna]).await.unwrap();
+    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
     conductors.exchange_peer_info().await;
 
     let ((alice,), (bobbo,)) = apps.into_tuples();

@@ -34,10 +34,7 @@ export class AppletLogo extends LitElement {
     if (!logo) return html``;
 
     return html`
-      <img
-        style="height: 64px; width: 64px; margin-bottom: 8px; border-radius: 8px"
-        .src=${logo}
-      />
+      <img style="height: 64px; width: 64px; border-radius: 8px" .src=${logo} />
     `;
   }
 

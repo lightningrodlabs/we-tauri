@@ -25,6 +25,7 @@ import {
 } from "../processes/devhub/get-happs.js";
 import { HappReleaseEntry } from "../processes/devhub/types.js";
 import { toSrc } from "../processes/import-logsrc-from-file.js";
+import { isAppRunning } from "../utils.js";
 
 export class AppletBundlesStore {
   constructor(
@@ -125,13 +126,10 @@ export class AppletBundlesStore {
     return appInfo;
   }
 
-  installedApps = manualReloadStore(async () =>
-    this.adminWebsocket.listApps({
-      status_filter: {
-        Running: null,
-      },
-    } as any)
-  );
+  installedApps = manualReloadStore(async () => {
+    const apps = await this.adminWebsocket.listApps({});
+    return apps.filter((app) => isAppRunning(app));
+  });
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
     const weAppInfo = await this.weClient.appInfo();

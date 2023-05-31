@@ -8,7 +8,7 @@
     "@holochain/client": "^0.14.1",
     "@holochain-open-dev/profiles": "^0.14.0",
     "@holochain-open-dev/utils": "^0.14.0",
-    "@lightningrodlabs/we-applet": "^0.6.0-alpha.0",
+    "@lightningrodlabs/we-applet": "^0.6.0",
     "applet-messages": "0.0.1"
   },
   "devDependencies": {
