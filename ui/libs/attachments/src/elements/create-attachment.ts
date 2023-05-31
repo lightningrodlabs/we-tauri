@@ -10,7 +10,7 @@ import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
 import { msg, localized } from "@lit/localize";
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
-import { AnyDhtHash } from "@holochain/client";
+import { AnyDhtHash, EntryHash } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -24,6 +24,15 @@ import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
+// TODO: remove alternative menu when sl-menu includes submenus
+import {
+  provideFASTDesignSystem,
+  fastMenu,
+  fastMenuItem,
+} from "@microsoft/fast-components";
+
+provideFASTDesignSystem().register(fastMenu(), fastMenuItem({}));
+
 import {
   weServicesContext,
   WeServices,
@@ -33,6 +42,7 @@ import {
 
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 
 @localized()
 @customElement("create-attachment")
@@ -83,7 +93,8 @@ export class CreateAttachment extends LitElement {
     switch (this.appletsInfosAndGroupsProfiles.value.status) {
       case "pending":
         return Array(3).map(
-          () => html`<sl-menu-item><sl-skeleton></sl-skeleton></sl-menu-item>`
+          () =>
+            html`<fast-menu-item><sl-skeleton></sl-skeleton></fast-menu-item>`
         );
 
       case "complete":
@@ -94,40 +105,66 @@ export class CreateAttachment extends LitElement {
           this.weServices.attachmentTypes.entries()
         );
         if (attachments.length === 0)
-          return html`<sl-menu-item disabled
-            >${msg("There are no attachment types yet.")}</sl-menu-item
+          return html`<fast-menu-item disabled
+            >${msg("There are no attachment types yet.")}</fast-menu-item
           >`;
 
-        return attachments.map(([appletId, attachmentTypes]) =>
-          Object.entries(attachmentTypes).map(
-            ([name, attachmentType]) => html`
-              <sl-menu-item
-                @click=${() => this.createAttachment(attachmentType)}
-              >
-                <sl-icon
-                  slot="prefix"
-                  .src=${attachmentType.icon_src}
-                ></sl-icon>
-                ${attachmentType.label}
-                <div slot="suffix" class="row" style="align-items: center">
-                  <span style="margin-right: 8px">${msg(" in ")}</span>
-                  ${appletsInfos
-                    .get(appletId)
-                    ?.groupsIds.map(
-                      (groupId) => html`
-                        <img
-                          .src=${groupsProfiles.get(groupId)?.logo_src}
-                          style="height: 16px; width: 16px; margin-right: 4px;"
-                        />
-                      `
-                    )}
-                  <span class="placeholder">
-                    ${appletsInfos.get(appletId)?.appletName}</span
-                  >
-                </div>
-              </sl-menu-item>
-            `
-          )
+        const groupAttachmentTypes: Record<
+          string,
+          HoloHashMap<EntryHash, AttachmentType>
+        > = {};
+
+        for (const [appletId, attachmentTypes] of attachments) {
+          for (const [name, attachmentType] of Object.entries(
+            attachmentTypes
+          )) {
+            const stringifyedAttachmentType = JSON.stringify({
+              label: attachmentType.label,
+              icon_src: attachmentType.icon_src,
+            });
+            if (!groupAttachmentTypes[stringifyedAttachmentType]) {
+              groupAttachmentTypes[stringifyedAttachmentType] =
+                new HoloHashMap();
+            }
+            groupAttachmentTypes[stringifyedAttachmentType].set(
+              appletId,
+              attachmentType
+            );
+          }
+        }
+
+        return Object.entries(groupAttachmentTypes).map(
+          ([stringifiedAttachmentType, attachmentTypesByApplet]) => {
+            const { label, icon_src } = JSON.parse(stringifiedAttachmentType);
+
+            return html`<fast-menu-item>
+              <sl-icon slot="start" .src=${icon_src}></sl-icon>
+              ${label}
+              <fast-menu slot="submenu">
+                ${Array.from(attachmentTypesByApplet.entries()).map(
+                  ([appletId, attachmentType]) => html`
+                    <fast-menu-item
+                      @click=${() => this.createAttachment(attachmentType)}
+                    >
+                      <div class="row" style="align-items: center">
+                        <span> ${appletsInfos.get(appletId)?.appletName}</span>
+                        <span style="margin-right: 8px">${msg(" in ")}</span>
+                        ${appletsInfos.get(appletId)?.groupsIds.map(
+                          (groupId) => html`
+                            <img
+                              .src=${groupsProfiles.get(groupId)?.logo_src}
+                              style="height: 32px; width: 32px; margin-right: 4px;"
+                            />
+                            <span>${groupsProfiles.get(groupId)?.name}</span>
+                          `
+                        )}
+                      </div>
+                    </fast-menu-item>
+                  `
+                )}
+              </fast-menu>
+            </fast-menu-item>`;
+          }
         );
 
       case "error":
@@ -143,7 +180,7 @@ export class CreateAttachment extends LitElement {
         <sl-icon-button slot="trigger" .src=${wrapPathInSvg(mdiAttachmentPlus)}>
         </sl-icon-button>
 
-        <sl-menu> ${this.renderMenuItems()} </sl-menu>
+        <fast-menu> ${this.renderMenuItems()} </fast-menu>
       </sl-dropdown>
     `;
   }
