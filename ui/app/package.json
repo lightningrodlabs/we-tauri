@@ -49,10 +49,11 @@
     "rimraf": "^3.0.2",
     "run-singleton-cli": "^0.0.7",
     "tslib": "^2.3.1",
-    "typescript": "4.3.5",
+    "typescript": "4.5.5",
     "vite": "^4.3.5",
     "vite-plugin-checker": "^0.5.3",
     "vite-plugin-static-copy": "^0.15.0",
     "vitest": "^0.31.0"
-  }
+  },
+  "prettier": { "printWidth": 100, "singleQuote": true, "arrowParens": "avoid", "trailingComma": "all" }
 }
