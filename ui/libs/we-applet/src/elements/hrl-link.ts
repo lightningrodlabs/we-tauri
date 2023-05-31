@@ -68,7 +68,7 @@ export class HrlLink extends LitElement {
                 <span>
                   ${appletsInfos.get(entryInfo.appletId)?.appletName}</span
                 >
-                <span class="placeholder" style="margin-right: 8px"
+                <span style="margin-left: 8px; margin-right: 8px"
                   >${msg(" in ")}</span
                 >
                 ${appletsInfos.get(entryInfo.appletId)?.groupsIds.map(
@@ -84,11 +84,15 @@ export class HrlLink extends LitElement {
             </div>
             <sl-tag
               pill
+              style="cursor: pointer"
               @click=${() =>
                 this.weServices.openViews.openHrl(this.hrl, this.context)}
             >
-              <div class="row">
-                <sl-icon .src=${entryInfo.entryInfo.icon_src}></sl-icon>
+              <div class="row" style="align-items: center">
+                <sl-icon
+                  .src=${entryInfo.entryInfo.icon_src}
+                  style="margin-right: 8px"
+                ></sl-icon>
                 <span>${entryInfo.entryInfo.name}</span>
               </div>
             </sl-tag>

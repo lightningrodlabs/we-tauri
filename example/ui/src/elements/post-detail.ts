@@ -121,7 +121,7 @@ export class PostDetail extends LitElement {
           </div>
         </div>
       </sl-card>
-      <attachments-card></attachments-card>
+      <attachments-card .hash=${this.postHash}></attachments-card>
     `;
   }
 

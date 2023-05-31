@@ -25,13 +25,9 @@ import "@shoelace-style/shoelace/dist/components/menu-label/menu-label.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 // TODO: remove alternative menu when sl-menu includes submenus
-import {
-  provideFASTDesignSystem,
-  fastMenu,
-  fastMenuItem,
-} from "@microsoft/fast-components";
-
-provideFASTDesignSystem().register(fastMenu(), fastMenuItem({}));
+import "@material/web/menu/menu.js";
+import "@material/web/menu/sub-menu-item.js";
+import "@material/web/menu/menu-item.js";
 
 import {
   weServicesContext,
@@ -39,10 +35,10 @@ import {
   AttachmentType,
   getAppletsInfosAndGroupsProfiles,
 } from "@lightningrodlabs/we-applet";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import { AttachmentsStore } from "../attachments-store";
 import { attachmentsStoreContext } from "../context";
-import { HoloHashMap } from "@holochain-open-dev/utils";
 
 @localized()
 @customElement("create-attachment")
@@ -92,7 +88,9 @@ export class CreateAttachment extends LitElement {
       case "pending":
         return Array(3).map(
           () =>
-            html`<fast-menu-item><sl-skeleton></sl-skeleton></fast-menu-item>`
+            html`<md-menu-item disabled
+              ><sl-skeleton></sl-skeleton
+            ></md-menu-item>`
         );
 
       case "complete":
@@ -103,8 +101,8 @@ export class CreateAttachment extends LitElement {
           this.weServices.attachmentTypes.entries()
         );
         if (attachments.length === 0)
-          return html`<fast-menu-item disabled
-            >${msg("There are no attachment types yet.")}</fast-menu-item
+          return html`<md-menu-item disabled
+            >${msg("There are no attachment types yet.")}</md-menu-item
           >`;
 
         const groupAttachmentTypes: Record<
@@ -135,33 +133,35 @@ export class CreateAttachment extends LitElement {
           ([stringifiedAttachmentType, attachmentTypesByApplet]) => {
             const { label, icon_src } = JSON.parse(stringifiedAttachmentType);
 
-            return html`<fast-menu-item>
-              <sl-icon slot="start" .src=${icon_src}></sl-icon>
-              ${label}
-              <fast-menu slot="submenu">
+            return html` <md-sub-menu-item .headline=${label}>
+              <sl-icon
+                slot="start"
+                .src=${icon_src}
+                style="margin-left: 16px"
+              ></sl-icon>
+              <md-menu slot="submenu">
                 ${Array.from(attachmentTypesByApplet.entries()).map(
                   ([appletId, attachmentType]) => html`
-                    <fast-menu-item
+                    <md-menu-item
+                      .headline=${appletsInfos.get(appletId)?.appletName}
                       @click=${() => this.createAttachment(attachmentType)}
                     >
-                      <div class="row" style="align-items: center">
-                        <span> ${appletsInfos.get(appletId)?.appletName}</span>
-                        <span style="margin-right: 8px">${msg(" in ")}</span>
-                        ${appletsInfos.get(appletId)?.groupsIds.map(
+                      ${appletsInfos
+                        .get(appletId)
+                        ?.groupsIds.map(
                           (groupId) => html`
                             <img
+                              slot="start"
                               .src=${groupsProfiles.get(groupId)?.logo_src}
-                              style="height: 32px; width: 32px; margin-right: 4px;"
+                              style="height: 32px; width: 32px; border-radius: 50%; margin-right: 4px; margin-left: 16px"
                             />
-                            <span>${groupsProfiles.get(groupId)?.name}</span>
                           `
                         )}
-                      </div>
-                    </fast-menu-item>
+                    </md-menu-item>
                   `
                 )}
-              </fast-menu>
-            </fast-menu-item>`;
+              </md-menu>
+            </md-sub-menu-item>`;
           }
         );
 
@@ -174,12 +174,21 @@ export class CreateAttachment extends LitElement {
 
   render() {
     return html`
-      <sl-dropdown>
-        <sl-icon-button slot="trigger" .src=${wrapPathInSvg(mdiAttachmentPlus)}>
-        </sl-icon-button>
+      <sl-icon-button
+        .src=${wrapPathInSvg(mdiAttachmentPlus)}
+        @click=${(e) => {
+          const menu = this.shadowRoot?.getElementById("menu") as any;
+          menu.anchor = e.target;
+          setTimeout(() => {
+            menu.show();
+          }, 10);
+        }}
+      >
+      </sl-icon-button>
 
-        <fast-menu> ${this.renderMenuItems()} </fast-menu>
-      </sl-dropdown>
+      <md-menu fixed id="menu" has-overflow>
+        ${this.renderMenuItems()}
+      </md-menu>
     `;
   }
 

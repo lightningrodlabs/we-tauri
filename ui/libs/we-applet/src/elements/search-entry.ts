@@ -128,9 +128,12 @@ export class SearchEntry extends LitElement implements FormField {
     return !invalid;
   }
 
-  async reset() {
-    this.value = this.defaultValue;
-    this._textField.value = "";
+  reset() {
+    setTimeout(() => {
+      this._textField.value = "";
+      this.info = undefined;
+      this.value = this.defaultValue;
+    });
   }
 
   /**

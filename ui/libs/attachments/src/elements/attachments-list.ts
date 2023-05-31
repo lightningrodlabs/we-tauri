@@ -139,7 +139,6 @@ export class AttachmentsList extends LitElement {
         return this.renderAttachments(this.attachments.value.value);
       case "error":
         return html`<display-error
-          tooltip
           .headline=${msg("Error fetching the attachments")}
           .error=${this.attachments.value.error.data.data}
         ></display-error>`;
