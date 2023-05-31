@@ -1,12 +1,12 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { ifDefined } from "lit/directives/if-defined.js";
 import { hashProperty } from "@holochain-open-dev/elements";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 
 import { RenderView, renderViewToQueryString } from "applet-messages";
 
 import { weStyles } from "../../shared-styles.js";
+import { appletOrigin } from "../../utils.js";
 
 @customElement("view-frame")
 export class ViewFrame extends LitElement {
@@ -18,9 +18,9 @@ export class ViewFrame extends LitElement {
 
   render() {
     return html`<iframe
-      src="applet://${encodeHashToBase64(
-        this.appletHash
-      )}?${renderViewToQueryString(this.renderView)}"
+      src="${appletOrigin(this.appletHash)}?${renderViewToQueryString(
+        this.renderView
+      )}"
       style="flex: 1"
     ></iframe>`;
   }

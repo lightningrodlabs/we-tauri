@@ -19,6 +19,7 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
+import { appletOrigin } from "../utils.js";
 
 @localized()
 @customElement("applets-sidebar")
@@ -57,9 +58,7 @@ export class AppletsSidebar extends LitElement {
             html`
               <sidebar-button
                 style="margin-top: 2px; margin-bottom: 2px; --border-radius: 8px; margin-right: 12px"
-                .logoSrc=${`applet://${encodeHashToBase64(
-                  appletStore.appletHash
-                )}/icon.png`}
+                .logoSrc=${`${appletOrigin(appletStore.appletHash)}/icon.png`}
                 .tooltipText=${appletStore.applet.custom_name}
                 @click=${() => {
                   this.dispatchEvent(

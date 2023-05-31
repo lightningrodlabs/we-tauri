@@ -9,16 +9,20 @@ import {
 } from "applet-messages";
 import {
   AppletInfo,
+  AttachmentType,
   EntryInfo,
   EntryLocationAndInfo,
   Hrl,
   HrlWithContext,
+  WeServices,
 } from "@lightningrodlabs/we-applet";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
+import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import { AppOpenViews } from "../layout/types";
 import { signZomeCallTauri } from "../tauri";
 import { WeStore } from "../we-store";
+import { isWindows } from "../utils";
 
 export async function setupAppletMessageHandler(
   weStore: WeStore,
@@ -27,7 +31,12 @@ export async function setupAppletMessageHandler(
   window.addEventListener("message", async (message) => {
     try {
       const origin = message.origin;
-      const lowerCaseAppletId = origin.split("://")[1];
+      let lowerCaseAppletId = origin.split("://")[1];
+
+      if (isWindows()) {
+        // Origin will be of form "https://applet.localhost/[APPLET_ID]"
+        lowerCaseAppletId = origin.split("https://applet.localhost/")[1];
+      }
 
       const installedApplets = await toPromise(
         weStore.appletBundlesStore.installedApplets
@@ -52,6 +61,93 @@ export async function setupAppletMessageHandler(
   });
 }
 
+export function buildHeadlessWeServices(weStore: WeStore): WeServices {
+  return {
+    async entryInfo(hrl: Hrl) {
+      const dnaHash = hrl[0];
+
+      const location = await toPromise(
+        weStore.hrlLocations.get(dnaHash).get(hrl[1])
+      );
+
+      if (!location) return undefined;
+
+      const entryInfo = await toPromise(
+        weStore.entryInfo.get(hrl[0]).get(hrl[1])
+      );
+
+      if (!entryInfo) return undefined;
+
+      const entryAndAppletInfo: EntryLocationAndInfo = {
+        appletId: location.dnaLocation.appletHash,
+        entryInfo,
+      };
+
+      return entryAndAppletInfo;
+    },
+    async groupProfile(groupId: DnaHash) {
+      const groupProfile = await toPromise(
+        pipe(
+          weStore.groups.get(groupId),
+          (groupStore) => groupStore.groupProfile
+        )
+      );
+
+      return groupProfile;
+    },
+    async appletInfo(appletId: EntryHash) {
+      const applet = await toPromise(weStore.applets.get(appletId));
+      if (!applet) return undefined;
+      const groupsForApplet = await toPromise(
+        weStore.groupsForApplet.get(appletId)
+      );
+
+      return {
+        appletBundleId: applet.applet.devhub_happ_release_hash,
+        appletName: applet.applet.custom_name,
+        groupsIds: Array.from(groupsForApplet.keys()),
+      } as AppletInfo;
+    },
+    async search(filter: string) {
+      const hosts = await toPromise(weStore.allAppletsHosts);
+
+      const promises: Array<Promise<Array<HrlWithContext>>> = [];
+
+      for (const host of Array.from(hosts.values())) {
+        promises.push(
+          (async function () {
+            try {
+              const results = await host.search(filter);
+              return results;
+            } catch (e) {
+              console.warn(e);
+              return [];
+            }
+          })()
+        );
+      }
+
+      const hrlsWithApplets = await Promise.all(promises);
+      const hrls = ([] as Array<HrlWithContext>)
+        .concat(
+          ...(hrlsWithApplets.filter((h) => !!h) as Array<
+            Array<HrlWithContext>
+          >)
+        )
+        .filter((h) => !!h);
+      return hrls;
+    },
+    attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
+    openViews: {
+      openAppletMain: () => {},
+      openCrossAppletMain: () => {},
+      openHrl: () => {},
+      openCrossAppletBlock: () => {},
+      openAppletBlock: () => {},
+    },
+  };
+}
+
 export async function handleAppletIframeMessage(
   weStore: WeStore,
   openViews: AppOpenViews,
@@ -59,6 +155,7 @@ export async function handleAppletIframeMessage(
   message: AppletToParentRequest
 ) {
   let host: AppletHost;
+  const services = buildHeadlessWeServices(weStore);
   switch (message.type) {
     case "get-iframe-config":
       const crossApplet = message.crossApplet;
@@ -132,76 +229,15 @@ export async function handleAppletIframeMessage(
       }
 
     case "search":
-      const hosts = await toPromise(weStore.allAppletsHosts);
-
-      const promises: Array<Promise<Array<HrlWithContext>>> = [];
-
-      for (const host of Array.from(hosts.values())) {
-        promises.push(
-          (async function () {
-            try {
-              const results = await host.search(message.filter);
-              return results;
-            } catch (e) {
-              console.warn(e);
-              return [];
-            }
-          })()
-        );
-      }
-
-      const hrlsWithApplets = await Promise.all(promises);
-
-      const hrls = ([] as Array<HrlWithContext>)
-        .concat(
-          ...(hrlsWithApplets.filter((h) => !!h) as Array<
-            Array<HrlWithContext>
-          >)
-        )
-        .filter((h) => !!h);
-      return hrls;
+      return services.search(message.filter);
     case "get-applet-info":
-      const applet = await toPromise(weStore.applets.get(message.appletId));
-      if (!applet) return undefined;
-      const groupsForApplet = await toPromise(
-        weStore.groupsForApplet.get(message.appletId)
-      );
-
-      return {
-        appletBundleId: applet.applet.devhub_happ_release_hash,
-        appletName: applet.applet.custom_name,
-        groupsIds: Array.from(groupsForApplet.keys()),
-      } as AppletInfo;
+      return services.appletInfo(message.appletId);
     case "get-group-profile":
-      const groupProfile = await toPromise(
-        pipe(
-          weStore.groups.get(message.groupId),
-          (groupStore) => groupStore.groupProfile
-        )
-      );
-
-      return groupProfile;
+      return services.groupProfile(message.groupId);
     case "get-entry-info":
-      const dnaHash = message.hrl[0];
-
-      const location = await toPromise(
-        weStore.hrlLocations.get(dnaHash).get(message.hrl[1])
-      );
-
-      if (!location) return undefined;
-
-      const entryInfo = await toPromise(
-        weStore.entryInfo.get(message.hrl[0]).get(message.hrl[1])
-      );
-
-      if (!entryInfo) return undefined;
-
-      const entryAndAppletInfo: EntryLocationAndInfo = {
-        appletId: location.dnaLocation.appletHash,
-        entryInfo,
-      };
-
-      return entryAndAppletInfo;
+      return services.entryInfo(message.hrl);
+    case "get-attachment-types":
+      return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":
       return signZomeCallTauri(message.request);
     case "create-attachment":
@@ -216,8 +252,6 @@ export async function handleAppletIframeMessage(
         message.request.attachmentType,
         message.request.attachToHrl
       );
-    case "get-attachment-types":
-      return toPromise(weStore.allAttachmentTypes);
   }
 }
 

@@ -5,13 +5,11 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   completed,
-  get,
   joinAsyncMap,
   lazyLoad,
   manualReloadStore,
   mapAndJoin,
   pipe,
-  race,
   retryUntilSuccess,
   sliceAndJoin,
   toPromise,
@@ -19,15 +17,10 @@ import {
 import {
   HoloHashMap,
   LazyHoloHashMap,
-  mapValues,
   pickBy,
   slice,
 } from "@holochain-open-dev/utils";
-import {
-  AppStatusFilter,
-  decodeHashFromBase64,
-  HoloHash,
-} from "@holochain/client";
+import { decodeHashFromBase64, HoloHash } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
@@ -52,16 +45,6 @@ import { ConductorInfo } from "./tauri";
 import { findAppForDnaHash } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
 import { encode } from "@msgpack/msgpack";
-
-export function getAll<H extends HoloHash, T>(
-  hashes: AsyncReadable<Array<H>>,
-  values: LazyHoloHashMap<H, AsyncReadable<T | undefined>>
-): AsyncReadable<ReadonlyMap<H, T>> {
-  return asyncDeriveStore(
-    hashes,
-    (h) => joinAsyncMap(slice(values, h)) as AsyncReadable<ReadonlyMap<H, T>>
-  );
-}
 
 export class WeStore {
   constructor(

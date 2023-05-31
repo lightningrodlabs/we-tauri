@@ -16,6 +16,8 @@ import { msg } from "@lit/localize";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
+import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
 
 import "./groups-sidebar.js";
 import "./applets-sidebar.js";
@@ -28,6 +30,7 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
 import { weLogoIcon } from "../icons/we-logo-icon.js";
+import { buildHeadlessWeServices } from "../applets/applet-host.js";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
@@ -42,7 +45,6 @@ export class MainDashboard extends LitElement {
   selectedGroupDnaHash: DnaHash | undefined;
 
   async handleOpenGroup(originalDnaHashForLink: DnaHash, networkSeed: string) {
-    console.log("hey");
     const originalDnaHash = await toPromise(this._weStore.originalGroupDnaHash);
 
     if (originalDnaHash.toString() !== originalDnaHashForLink.toString()) {
@@ -160,15 +162,31 @@ export class MainDashboard extends LitElement {
         </div>
 
         <div class="column" style="flex: 1">
-          <applets-sidebar
-            class="top-bar"
-            @applet-selected=${(e: CustomEvent) => {
-              this.dynamicLayout.openViews.openCrossAppletMain(
-                e.detail.appletBundleHash
-              );
-            }}
-            style="margin-left: 4px"
-          ></applets-sidebar>
+          <div class="top-bar row">
+            <applets-sidebar
+              @applet-selected=${(e: CustomEvent) => {
+                this.dynamicLayout.openViews.openCrossAppletMain(
+                  e.detail.appletBundleHash
+                );
+              }}
+              style="margin-left: 4px; flex: 1"
+            ></applets-sidebar>
+            <we-services-context
+              .services=${buildHeadlessWeServices(this._weStore)}
+            >
+              <search-entry
+                field-label=""
+                style="margin-right: 16px"
+                @entry-selected=${(e) => {
+                  this.dynamicLayout.openViews.openHrl(
+                    e.detail.hrlWithContext.hrl,
+                    e.detail.hrlWithContext.context
+                  );
+                  e.target.reset();
+                }}
+              ></search-entry>
+            </we-services-context>
+          </div>
 
           <dynamic-layout
             id="dynamic-layout"
@@ -227,6 +245,7 @@ export class MainDashboard extends LitElement {
 
         .top-bar {
           overflow-x: auto;
+          background-color: var(--sl-color-primary-600);
           min-height: 64px;
           align-items: center;
         }
@@ -238,7 +257,6 @@ export class MainDashboard extends LitElement {
 
         applets-sidebar {
           z-index: 0;
-          background-color: var(--sl-color-primary-600);
         }
       `,
     ];

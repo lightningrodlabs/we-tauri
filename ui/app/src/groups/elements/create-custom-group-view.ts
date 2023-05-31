@@ -19,6 +19,7 @@ import "../../custom-views/elements/create-custom-view.js";
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { Applet } from "../../applets/types.js";
+import { appletOrigin } from "../../utils.js";
 
 @localized()
 @customElement("create-custom-group-view")
@@ -52,7 +53,7 @@ export class CreateCustomGroupView extends LitElement {
           label: block.label,
           media: block.icon_src,
           category: applets.get(appletHash)?.custom_name,
-          content: `<iframe src="applet://${encodeHashToBase64(
+          content: `<iframe src="${appletOrigin(
             appletHash
           )}?view=applet-view&view-type=block&block=${blockName}"></iframe>`,
         });

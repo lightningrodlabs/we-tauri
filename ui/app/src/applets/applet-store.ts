@@ -10,6 +10,7 @@ import { BlockType, InternalAttachmentType } from "applet-messages";
 import { AppletHost } from "./applet-host.js";
 import { WeStore } from "../we-store.js";
 import { Applet } from "./types.js";
+import { appletOrigin } from "../utils.js";
 
 export class AppletStore {
   constructor(
@@ -28,7 +29,7 @@ export class AppletStore {
       return new AppletHost(iframe);
     }
 
-    const origin = `applet://${appletHashBase64}`;
+    const origin = appletOrigin(this.appletHash);
     iframe = document.createElement("iframe");
     iframe.id = appletHashBase64;
     iframe.src = origin;

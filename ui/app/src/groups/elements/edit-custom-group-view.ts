@@ -23,6 +23,7 @@ import { GroupStore } from "../group-store.js";
 import { Applet } from "../../applets/types.js";
 import { CustomView } from "../../custom-views/types.js";
 import { EntryRecord } from "@holochain-open-dev/utils";
+import { appletOrigin } from "../../utils.js";
 
 @localized()
 @customElement("edit-custom-group-view")
@@ -71,7 +72,7 @@ export class EditCustomGroupView extends LitElement {
           label: block.label,
           media: block.icon_src,
           category: applets.get(appletHash)?.custom_name,
-          content: `<iframe src="applet://${encodeHashToBase64(
+          content: `<iframe src="${appletOrigin(
             appletHash
           )}?view=applet-view&view-type=block&block=${blockName}"></iframe>`,
         });

@@ -8,6 +8,7 @@ import {
   ListAppsResponse,
   DnaHash,
   CellType,
+  encodeHashToBase64,
 } from "@holochain/client";
 
 export async function initAppClient(
@@ -20,6 +21,18 @@ export async function initAppClient(
   client.appWebsocket.overrideInstalledAppId = appId;
   await client.appInfo();
   return client;
+}
+
+export function isWindows(): boolean {
+  return navigator.appVersion.includes("Win");
+}
+
+export function appletOrigin(appletId: EntryHash): string {
+  const windows = isWindows();
+
+  return windows
+    ? `https://${encodeHashToBase64(appletId)}.localhost`
+    : `applet://${encodeHashToBase64(appletId)}`;
 }
 
 export function findAppForDnaHash(

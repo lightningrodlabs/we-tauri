@@ -86,37 +86,44 @@ export class CreateAttachment extends LitElement {
         const { appletsInfos, groupsProfiles } =
           this.appletsInfosAndGroupsProfiles.value.value;
 
-        return Array.from(this.weServices.attachmentTypes.entries()).map(
-          ([appletId, attachmentTypes]) =>
-            Object.entries(attachmentTypes).map(
-              ([name, attachmentType]) => html`
-                <sl-menu-item
-                  @click=${() => this.createAttachment(attachmentType)}
-                >
-                  <sl-icon
-                    slot="prefix"
-                    .src=${attachmentType.icon_src}
-                  ></sl-icon>
-                  ${attachmentType.label}
-                  <div slot="suffix" class="row" style="align-items: center">
-                    <span style="margin-right: 8px">${msg(" in ")}</span>
-                    ${appletsInfos
-                      .get(appletId)
-                      ?.groupsIds.map(
-                        (groupId) => html`
-                          <img
-                            .src=${groupsProfiles.get(groupId)?.logo_src}
-                            style="height: 16px; width: 16px; margin-right: 4px;"
-                          />
-                        `
-                      )}
-                    <span class="placeholder">
-                      ${appletsInfos.get(appletId)?.appletName}</span
-                    >
-                  </div>
-                </sl-menu-item>
-              `
-            )
+        const attachments = Array.from(
+          this.weServices.attachmentTypes.entries()
+        );
+        if (attachments.length === 0)
+          return html`<sl-menu-item disabled
+            >${msg("There are no attachment types yet.")}</sl-menu-item
+          >`;
+
+        return attachments.map(([appletId, attachmentTypes]) =>
+          Object.entries(attachmentTypes).map(
+            ([name, attachmentType]) => html`
+              <sl-menu-item
+                @click=${() => this.createAttachment(attachmentType)}
+              >
+                <sl-icon
+                  slot="prefix"
+                  .src=${attachmentType.icon_src}
+                ></sl-icon>
+                ${attachmentType.label}
+                <div slot="suffix" class="row" style="align-items: center">
+                  <span style="margin-right: 8px">${msg(" in ")}</span>
+                  ${appletsInfos
+                    .get(appletId)
+                    ?.groupsIds.map(
+                      (groupId) => html`
+                        <img
+                          .src=${groupsProfiles.get(groupId)?.logo_src}
+                          style="height: 16px; width: 16px; margin-right: 4px;"
+                        />
+                      `
+                    )}
+                  <span class="placeholder">
+                    ${appletsInfos.get(appletId)?.appletName}</span
+                  >
+                </div>
+              </sl-menu-item>
+            `
+          )
         );
 
       case "error":

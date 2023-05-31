@@ -1,7 +1,7 @@
 import { customElement, property, state, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { consume } from "@lit-labs/context";
-import { localized, msg } from "@lit/localize";
+import { localized, msg, str } from "@lit/localize";
 import {
   AsyncStatus,
   lazyLoad,
@@ -12,6 +12,7 @@ import {
   FormFieldController,
   hashProperty,
   sharedStyles,
+  wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -34,6 +35,7 @@ import { weServicesContext } from "../context";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
+import { mdiMagnify } from "@mdi/js";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -82,7 +84,17 @@ export class SearchEntry extends LitElement implements FormField {
    * @attr field-label
    */
   @property({ type: String, attribute: "field-label" })
-  fieldLabel!: string;
+  fieldLabel: string = "";
+
+  /**
+   * Label for the entry searching field.
+   * @attr field-label
+   */
+  @property({ type: String, attribute: "placeholder" })
+  placeholder: string = msg("Search entry");
+
+  @property({ type: Number, attribute: "min-chars" })
+  minChars: number = 3;
 
   @consume({ context: weServicesContext, subscribe: true })
   @property()
@@ -168,7 +180,7 @@ export class SearchEntry extends LitElement implements FormField {
 
   onFilterChange() {
     const filter = this._textField.value;
-    if (filter.length < 3) {
+    if (filter.length < this.minChars) {
       this._searchEntries = undefined;
       return;
     }
@@ -194,7 +206,10 @@ export class SearchEntry extends LitElement implements FormField {
   }
 
   renderEntryList() {
-    if (this._searchEntries === undefined) return html``;
+    if (this._searchEntries === undefined)
+      return html`<sl-menu-item disabled
+        >${msg(str`Enter ${this.minChars} chars to search...`)}</sl-menu-item
+      >`;
     switch (this._searchEntries.value.status) {
       case "pending":
         return Array(3).map(
@@ -225,7 +240,7 @@ export class SearchEntry extends LitElement implements FormField {
         const searchResult = this._searchEntries.value.value;
 
         if (searchResult.hrlsWithInfo.length === 0)
-          return html`<sl-menu-item>
+          return html`<sl-menu-item disabled>
             ${msg("No entries match the filter")}
           </sl-menu-item>`;
 
@@ -269,7 +284,7 @@ export class SearchEntry extends LitElement implements FormField {
    * @internal
    */
   get _label() {
-    let l = this.fieldLabel ? this.fieldLabel : msg("Search Entry");
+    let l = this.fieldLabel;
 
     if (this.required !== false) l = `${l} *`;
 
@@ -284,7 +299,7 @@ export class SearchEntry extends LitElement implements FormField {
             id="textfield"
             slot="trigger"
             .label=${this._label}
-            .placeholder=${msg("At least 3 chars...")}
+            .placeholder=${this.placeholder}
             @input=${() => this.onFilterChange()}
             .value=${this.info ? this.info.entryInfo.name : ""}
           >
@@ -293,7 +308,10 @@ export class SearchEntry extends LitElement implements FormField {
                   .src=${this.info.entryInfo.icon_src}
                   slot="prefix"
                 ></sl-icon>`
-              : html``}
+              : html`<sl-icon
+                  .src=${wrapPathInSvg(mdiMagnify)}
+                  slot="prefix"
+                ></sl-icon> `}
           </sl-input>
           <sl-menu
             @sl-select=${(e: CustomEvent) => {

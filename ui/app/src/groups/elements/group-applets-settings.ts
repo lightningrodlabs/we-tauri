@@ -39,6 +39,7 @@ import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
+import { appletOrigin } from "../../utils.js";
 
 @localized()
 @customElement("group-applets-settings")
@@ -173,7 +174,7 @@ export class GroupAppletsSettings extends LitElement {
                   <div class="row" style="flex: 1; align-items: center">
                     <img
                       style="width: 48px; height: 48px; border-radius: 50%; margin-right: 16px"
-                      src="applet://${encodeHashToBase64(appletHash)}/icon.png"
+                      src="${appletOrigin(appletHash)}/icon.png"
                     />
                     <span style="flex: 1">${applet.custom_name}</span>
 
