@@ -4,7 +4,7 @@
 use config::WeConfig;
 use filesystem::WeFileSystem;
 use futures::lock::Mutex;
-use holochain_launcher_utils::window_builder::read_resource_from_path;
+use holochain_types::prelude::ffs::read_to_string;
 use serde_json::Value;
 use tauri::{
     http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
@@ -25,7 +25,7 @@ use commands::{
 };
 use state::LaunchedState;
 
-pub fn iframe() -> String {
+pub fn iframe(styles_file: String, js_file: String) -> String {
     format!(
         r#"
         <html>
@@ -37,14 +37,22 @@ pub fn iframe() -> String {
                 width: 100%; 
                 display: flex;
               }}
+              {}
             </style>
-            <link href="/styles.css" rel="stylesheet"></link>
           </head>
           <body>
-            <script src="/applet-iframe.js"></script>
+            <script type="inline-module" id="applet">
+              {}
+            </script>
+            <script type="module" setup="false">
+              {}
+            </script>
           </body>
         </html>
-    "#
+    "#,
+        styles_file,
+        js_file,
+        include_str!("../../ui/applet-iframe/dist/index.mjs")
     )
 }
 
@@ -132,7 +140,11 @@ fn main() {
             // prepare our response
             let response_builder = ResponseBuilder::new();
 
-            let uri = request.uri().strip_prefix("applet://").unwrap();
+            let uri = if request.uri().starts_with("applet://localhost") {
+                request.uri().strip_prefix("applet://localhost").unwrap()
+            } else {
+                request.uri().strip_prefix("applet://").unwrap()
+            };
             let uri_without_querystring: String = uri
                 .split("?")
                 .map(|s| s.to_string())
@@ -147,47 +159,24 @@ fn main() {
 
             let applet_id = uri_components.get(0).unwrap();
 
-            if let Some(mutex) = app_handle.try_state::<Mutex<LaunchedState>>() {
-                match uri_components.get(1).map(|s| s.as_str()) {
-                    None | Some("index.html") | Some("") => {
-                        return response_builder
-                            .mimetype("text/html")
-                            .status(200)
-                            .body(iframe().as_bytes().to_vec());
-                    }
-                    Some("applet-iframe.js") => {
-                        // Redirect
-                        return response_builder
-                            .mimetype("text/javascript")
-                            .status(200)
-                            .body(
-                                include_bytes!("../../ui/applet-iframe/dist/index.mjs").to_vec(),
-                            );
-                    }
-                    _ => {
-                        let r = tauri::async_runtime::block_on(async {
-                            let m = mutex.lock().await;
+            tauri::async_runtime::block_on(async move {
+                let mutex = app_handle.state::<Mutex<LaunchedState>>();
+                let m = mutex.lock().await;
 
-                            let assets_path = m
-                                .web_app_manager
-                                .get_app_assets_dir(&applet_id, &String::from("default"));
-                            let mut path = assets_path;
-                            for i in 1..uri_components.len() {
-                                path = path.join(uri_components[i].clone());
-                            }
+                let assets_path = m
+                    .web_app_manager
+                    .get_app_assets_dir(&applet_id, &String::from("default"));
+                let index_js = read_to_string(assets_path.join("index.js")).await?;
+                let styles_css = read_to_string(assets_path.join("styles.css"))
+                    .await
+                    .ok()
+                    .unwrap_or(String::from(""));
 
-                            let mut response = response_builder.status(200).body(vec![]).unwrap();
-
-                            read_resource_from_path(path, &mut response, true, None);
-
-                            return response;
-                        });
-                        return Ok(r);
-                    }
-                }
-            }
-
-            return Err("Not found")?;
+                return response_builder
+                    .mimetype("text/html")
+                    .status(200)
+                    .body(iframe(styles_css, index_js).as_bytes().to_vec());
+            })
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

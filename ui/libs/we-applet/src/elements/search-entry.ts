@@ -36,6 +36,7 @@ import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
 import { mdiMagnify } from "@mdi/js";
+import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;

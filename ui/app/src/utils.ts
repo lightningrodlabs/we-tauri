@@ -31,7 +31,7 @@ export function appletOrigin(appletId: EntryHash): string {
   const windows = isWindows();
 
   return windows
-    ? `https://${encodeHashToBase64(appletId)}.localhost`
+    ? `https://applet.localhost/${encodeHashToBase64(appletId)}`
     : `applet://${encodeHashToBase64(appletId)}`;
 }
 
