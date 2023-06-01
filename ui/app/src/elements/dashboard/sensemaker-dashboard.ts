@@ -1,10 +1,10 @@
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
-import { Assessment } from '@neighbourhoods/sensemaker-lite-types';
-import { encodeHashToBase64 } from '@holochain/client';
-import { contextProvided } from '@lit-labs/context';
-import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { contextProvided, contextProvider } from '@lit-labs/context';
+import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { MatrixStore } from '../../matrix-store';
+import { matrixContext } from '../../context';
 import {
   SlMenuItem,
   SlMenu,
@@ -15,24 +15,75 @@ import {
   SlMenuLabel,
   SlInput,
 } from '@scoped-elements/shoelace';
+import { Readable, get } from '@holochain-open-dev/stores';
 
 import { StatefulTable } from '../components/table';
 
-import theme from '/src/styles/base.css?inline' assert { type: 'css' };
+import theme from './styles/base.css?inline' assert { type: 'css' };
+// import layout from 'dashboard/layout.css?inline' assert { type: 'css' };
+
+interface AppletRenderInfo {
+  name: string;
+  resourceNames?: string[];
+}
+type AppletDict = {
+  [id: string] : AppletRenderInfo;
+}
+type ContextDict = {
+  [id: string] : string[];
+}
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
-  _sensemakerStore!: SensemakerStore;
-
   @state() loading: boolean = true;
 
-  @state() mockApplets = [
-    { name: 'Todo', resourceNames: ['Task'] },
-    { name: 'Timetracker', resourceNames: ['Hour'] },
-    { name: 'Feed', resourceNames: ['Post'] },
-  ];
+  @contextProvided({ context: matrixContext, subscribe: true })
+  _matrixStore!: MatrixStore;
 
-  @state() mockContexts = ['Popular', 'Older', 'Recent'];
+  @contextProvider({context: sensemakerStoreContext})
+  @property({attribute: false})
+  _sensemakerStore!: SensemakerStore;
+
+  @state() selectedResourceName!: string;
+  @state() applets : AppletDict = {};
+  @state() contexts : ContextDict = {};
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    const selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
+    if (!selectedWeGroupId) return;
+
+    this._sensemakerStore = get(this._matrixStore.sensemakerStore(selectedWeGroupId) as any);
+    (
+      this._matrixStore.getAppletInstanceInfosForGroup(selectedWeGroupId) as Readable<any>
+      ).subscribe(appletsInfo => {
+        appletsInfo.map(appletInfo => {
+        const id = Object.keys(appletInfo.applet.dnaHashes)[0];
+        if(typeof this.applets[id] == 'undefined') {
+          this.applets[id] = {name: appletInfo.applet.title}
+        } 
+      });
+    });
+
+    if(!this._sensemakerStore?.appletConfig) return
+    (
+      this._sensemakerStore.appletConfig() as Readable<AppletConfig>
+    ).subscribe(appletConfig => {
+      const id : string = appletConfig?.role_name;
+      // TODO: fix edge case of repeat install of same applet? make unique id
+      if(!id) return;
+
+      const capitalize = part => part[0].toUpperCase() + part.slice(1)
+      const cleanResourceNameForUI = propertyName => propertyName.split("_").map(capitalize).join(" ")
+      
+      this.applets[id] = { ...this.applets[id], resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI)};
+      this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI)
+
+      console.log("appletConfig:", appletConfig);
+      console.log("renderable applet info:", this.applets);
+      console.log("renderable contexts info:", this.contexts);
+    });
+  }
 
   firstUpdated() {
     setTimeout(() => {
@@ -110,6 +161,12 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
+    const applets = Object.values(this.applets)?.length && Object.values(this.applets) as AppletRenderInfo[] || undefined;
+    if(applets && applets.length && applets[0]?.resourceNames) {
+      this.selectedResourceName = applets[0]?.resourceNames[0]; 
+    }
+    const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0]; // TODO: set applet context control 
+
     return html`
       <div class="container">
         <nav>
@@ -123,13 +180,13 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
           </sl-menu>
           <sl-menu class="dashboard-menu-section">
             <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-            ${this.mockApplets.map(
-              (applet, idx) => html`
+            ${applets && applets.map(
+              (applet) => html`
                 <sl-menu-item class="nav-item" value="${applet.name.toLowerCase()}"
                   >${applet.name}</sl-menu-item
                 >
                 <div role="navigation" class="sub-nav indented">
-                  ${applet.resourceNames.map(
+                  ${applet.resourceNames && applet.resourceNames.map(
                     resource =>
                       html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                         >${resource}</sl-menu-item
@@ -152,11 +209,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
                     <sl-tab
-                      panel="${this.mockApplets[0].resourceNames[0]}s"
+                      panel="${this.selectedResourceName}s"
                       class="dashboard-tab resource"
-                      >${this.mockApplets[0].resourceNames[0]}s</sl-tab
+                      >${this.selectedResourceName}s</sl-tab
                     >
-                    ${this.mockContexts.map(
+                    ${contexts && contexts.map(
                       context =>
                         html`<sl-tab panel="${context.toLowerCase()}" class="dashboard-tab"
                           >${context}</sl-tab
@@ -166,7 +223,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                   ${this.renderIcons()}
                 </div>
 
-                ${this.mockContexts.map(
+                ${contexts && contexts.map(
                   context =>
                     html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><test-table></test-table></sl-tab>`,
                 )}
@@ -193,33 +250,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   static styles = css`
     /** Adaptor Properties **/
     ${unsafeCSS(theme)}
-
-    /** Layout **/
-    :host {
-      --menu-width: 138px;
-    }
-
-    .container {
-      display: flex;
-      width: 100%;
-      height: 100%;
-
-      //
-      border: 1px solid red;
-      background: var(--colorsBlue100);
-    }
-    .container nav {
-      flex-basis: var(--menu-width);
-      padding: 0 calc(1px * var(--spacingSm));
-
-      background: var(--themeBgCanvas);
-      //
-      border: 1px solid blue;
-    }
-    .container main {
-      flex-grow: 1;
-      overflow: hidden;
-    }
 
     /* Side scrolling **/
     .dashboard-tab-group {
