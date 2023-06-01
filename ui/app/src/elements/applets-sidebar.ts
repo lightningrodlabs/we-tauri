@@ -1,9 +1,9 @@
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -12,14 +12,13 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
-import "./sidebar-button.js";
+import "../applets/elements/applet-logo.js";
 import "./create-group-dialog.js";
 
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
-import { appletOrigin } from "../utils.js";
 
 @localized()
 @customElement("applets-sidebar")
@@ -49,38 +48,47 @@ export class AppletsSidebar extends LitElement {
     }
 
     return html`
-      ${Array.from(appletsByBundleHash.entries())
-        .sort((a1, a2) =>
-          a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
-        )
-        .map(
-          ([appletBundleHash, appletStore]) =>
-            html`
-              <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px; --border-radius: 8px; margin-right: 12px"
-                .logoSrc=${`${appletOrigin(appletStore.appletHash)}/icon.png`}
-                .tooltipText=${appletStore.applet.custom_name}
-                @click=${() => {
-                  this.dispatchEvent(
-                    new CustomEvent("applet-selected", {
-                      detail: {
-                        appletBundleHash,
-                      },
-                      bubbles: true,
-                      composed: true,
-                    })
-                  );
-                }}
-              ></sidebar-button>
-            `
-        )}
+      <div class="row" style="align-items:center">
+        ${Array.from(appletsByBundleHash.entries())
+          .sort((a1, a2) =>
+            a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
+          )
+          .map(
+            ([appletBundleHash, appletStore]) =>
+              html`
+                <sl-tooltip
+                  hoist
+                  placement="bottom"
+                  .content=${appletStore.applet.custom_name}
+                >
+                  <applet-logo
+                    .appletHash=${appletStore.appletHash}
+                    @click=${() => {
+                      this.dispatchEvent(
+                        new CustomEvent("applet-selected", {
+                          detail: {
+                            appletBundleHash,
+                          },
+                          bubbles: true,
+                          composed: true,
+                        })
+                      );
+                    }}
+                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 48px"
+                  ></applet-logo>
+                </sl-tooltip>
+              `
+          )}
+      </div>
     `;
   }
 
   renderAppletsLoading() {
     switch (this.applets.value.status) {
       case "pending":
-        return html`<sl-skeleton></sl-skeleton>`;
+        return html`<sl-skeleton
+          style="height: 48px; width: 48px; border-radius: 8px"
+        ></sl-skeleton>`;
       case "error":
         return html`<display-error
           .headline=${msg("Error displaying the applets")}

@@ -128,11 +128,8 @@ export class GroupApplets extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo
-                    .appletHash=${appletHash}
-                    style="margin-bottom: 8px"
-                  ></applet-logo>
-                  <span>${applet.custom_name}</span>
+                  <applet-logo .appletHash=${appletHash}></applet-logo>
+                  <span style="margin-top: 8px">${applet.custom_name}</span>
                 </div>
               `
           )}

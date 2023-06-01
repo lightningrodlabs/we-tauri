@@ -254,10 +254,6 @@ export class MainDashboard extends LitElement {
           background-color: var(--sl-color-primary-900);
           width: 64px;
         }
-
-        applets-sidebar {
-          z-index: 0;
-        }
       `,
     ];
   }

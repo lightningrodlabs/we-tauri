@@ -1,7 +1,5 @@
 import {
   asyncDeriveAndJoin,
-  AsyncReadable,
-  joinAsyncMap,
   mapAndJoin,
   pipe,
   sliceAndJoin,
@@ -12,7 +10,7 @@ import { customElement, state } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
-import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
 import {
   hashState,
   notifyError,
@@ -31,6 +29,7 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "./federate-applet-dialog.js";
 import "./group-context.js";
 import "./group-logo.js";
+import "../../applets/elements/applet-logo.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
@@ -39,7 +38,6 @@ import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { appletOrigin } from "../../utils.js";
 
 @localized()
 @customElement("group-applets-settings")
@@ -172,10 +170,10 @@ export class GroupAppletsSettings extends LitElement {
               html`
                 <sl-card style="flex: 1; margin-bottom: 16px">
                   <div class="row" style="flex: 1; align-items: center">
-                    <img
-                      style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px"
-                      src="${appletOrigin(appletHash)}/icon.png"
-                    />
+                    <applet-logo
+                      .appletHash=${appletHash}
+                      style="margin-right: 16px"
+                    ></applet-logo>
                     <span style="flex: 1">${applet.custom_name}</span>
 
                     ${Array.from(federatedGroups.get(appletHash)!).map(

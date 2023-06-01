@@ -1,6 +1,6 @@
 import { completed, pipe, StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
 
@@ -12,6 +12,7 @@ import { weStoreContext } from "../../context";
 import { WeStore } from "../../we-store";
 import { hashProperty } from "@holochain-open-dev/elements";
 import { EntryHash } from "@holochain/client";
+import { weStyles } from "../../shared-styles";
 
 @customElement("applet-logo")
 export class AppletLogo extends LitElement {
@@ -34,7 +35,10 @@ export class AppletLogo extends LitElement {
     if (!logo) return html``;
 
     return html`
-      <img style="height: 64px; width: 64px; border-radius: 8px" .src=${logo} />
+      <img
+        style="height: var(--size, 64px); width: var(--size, 64px); border-radius: 8px"
+        .src=${logo}
+      />
     `;
   }
 
@@ -42,7 +46,7 @@ export class AppletLogo extends LitElement {
     switch (this.appletLogo.value.status) {
       case "pending":
         return html`<sl-skeleton
-          style="height: 64px; width: 64px; border-radius: 8px"
+          style="height: var(--size, 64px); width: var(--size, 64px); border-radius: 8px"
         ></sl-skeleton> `;
       case "complete":
         return this.renderLogo(this.appletLogo.value.value);
@@ -54,4 +58,15 @@ export class AppletLogo extends LitElement {
         ></display-error>`;
     }
   }
+
+  static styles = [
+    weStyles,
+    css`
+      :host {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    `,
+  ];
 }

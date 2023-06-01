@@ -133,7 +133,8 @@ export class AttachmentsList extends LitElement {
   render() {
     switch (this.attachments.value.status) {
       case "pending":
-        return html`<sl-skeleton></sl-skeleton><sl-skeleton></sl-skeleton
+        return html`<sl-skeleton style="margin-bottom: 16px"></sl-skeleton
+          ><sl-skeleton style="margin-bottom: 16px"></sl-skeleton
           ><sl-skeleton></sl-skeleton>`;
       case "complete":
         return this.renderAttachments(this.attachments.value.value);
