@@ -57,7 +57,7 @@
       "targets": "all"
     },
     "security": {
-      "csp": "frame-src applet: https://applet.localhost/",
+      "csp": "",
       "dangerousDisableAssetCspModification": true
     },
     "updater": {

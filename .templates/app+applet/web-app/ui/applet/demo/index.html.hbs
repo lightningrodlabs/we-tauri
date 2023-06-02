@@ -27,12 +27,13 @@
       async function setup() {
         const appWs = await AppAgentWebsocket.connect(``, '');
 
-        Applet.appletViews(
+        const views = await Applet.appletViews(
           appWs,
           fakeEntryHash(),
           new ProfilesClient(new ProfilesZomeMock()),
           weServicesMock
-        ).main(document.body);
+        );
+        views.main(document.body);
       }
       setup();
     </script>
