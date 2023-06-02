@@ -120,9 +120,7 @@ fn main() {
                 .title(title)
                 .inner_size(1000.0, 800.0)
                 .on_web_resource_request(move |request, mut response| {
-                    println!("hi");
-                    if request.uri().starts_with("https://uhCEk") {
-                    println!("hi2");
+                    if request.uri().starts_with("https://uhcek") {
                         tauri::async_runtime::block_on(async {
                             let mutex = app_handle.state::<Mutex<LaunchedState>>();
                             let m = mutex.lock().await;
