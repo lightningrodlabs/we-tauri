@@ -1,0 +1,23 @@
+:host {
+  --nh-spacing-sm: 8;
+  --nh-theme-bg-canvas: #18151b;
+  --nh-theme-fg-default: #FFFFFF;
+  --nh-theme-bg-surface: #3d3443;
+  --nh-radii-lg: 18;
+  --nh-spacing-lg: 16;
+  --nh-spacing-xs: 4;
+  --nh-font-weights-body-bold: 700;
+  --nh-line-heights-body-default: 1.5;
+  --nh-radii-base: 6;
+  --nh-theme-accent-muted: #6e46cc;
+  --nh-theme-bg-subtle: #312a36;
+  --nh-theme-bg-muted: #645d69;
+  --nh-font-families-headlines: Manrope, sans-serif;
+  --nh-font-size-xs: 11;
+  --nh-spacing-md: 12;
+  --nh-colors-eggplant-950: #0c0a0d;
+  --nh-font-size-sm: 13;
+  --nh-font-weights-body-regular: 400;
+  --nh-spacing-xxs: 2;
+  --nh-spacing-2xl: 24;
+}

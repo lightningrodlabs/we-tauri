@@ -19,8 +19,8 @@ import { Readable, get } from '@holochain-open-dev/stores';
 
 import { StatefulTable } from '../components/table';
 
-import theme from './styles/base.css?inline' assert { type: 'css' };
-// import layout from 'dashboard/layout.css?inline' assert { type: 'css' };
+import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
+import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 interface AppletRenderInfo {
   name: string;
@@ -168,6 +168,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0]; // TODO: set applet context control 
 
     return html`
+    <style>
+
+    /** Theme Properties **/
+    ${unsafeCSS(theme)}
+    </style>
       <div class="container">
         <nav>
           <div>
@@ -248,14 +253,36 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   static styles = css`
-    /** Adaptor Properties **/
+    /** Shoelace Adaptor Properties **/
     ${unsafeCSS(theme)}
+    ${unsafeCSS(adapter)}
+
+    /** Layout **/
+    :host {
+        --menu-width: 138px;
+    }
+
+    .container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+    .container nav {
+        flex-basis: var(--menu-width);
+        padding: 0 calc(1px * var(--nh-spacing-sm));
+        
+        background: var(--nh-theme-bg-canvas);
+    }
+    .container main {
+        flex-grow: 1;
+        overflow: hidden;
+    }
 
     /* Side scrolling **/
     .dashboard-tab-group {
       max-width: calc(100vw - var(--menu-width));
       overflow: hidden;
-      background: var(--themeBgCanvas);
+      background: var(--nh-theme-bg-canvas);
     }
     .dashboard-tab-panel {
       overflow-x: auto;
@@ -268,23 +295,23 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       justify-content: space-between;
       align-items: center;
 
-      margin: calc(1px * var(--spacingSm));
+      margin: calc(1px * var(--nh-spacing-sm));
       margin-bottom: 0;
       padding: 0;
 
-      color: var(--themeFgDefault);
-      background-color: var(--themeBgSurface);
-      border-color: var(--themeBgSurface);
+      color: var(--nh-theme-fg-default);
+      background-color: var(--nh-theme-bg-surface);
+      border-color: var(--nh-theme-bg-surface);
       border-width: 4px;
       border-style: solid;
-      border-radius: calc(1px * var(--radiiLg));
+      border-radius: calc(1px * var(--nh-radii-lg));
     }
     .tab-nav .icon-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: calc(1px * var(--spacingLg));
-      margin-right: calc(1px * var(--spacingSm));
+      gap: calc(1px * var(--nh-spacing-lg));
+      margin-right: calc(1px * var(--nh-spacing-sm));
     }
     .tab-nav .mock-icon {
       width: 1.5rem;
@@ -300,21 +327,21 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     }
     .dashboard-tab::part(base) {
       border-radius: 0;
-      padding: calc(1px * var(--spacingXs)) calc(1px * var(--spacingLg));
+      padding: calc(1px * var(--nh-spacing-xs)) calc(1px * var(--nh-spacing-lg));
 
-      color: var(--themeFgDefault);
+      color: var(--nh-theme-fg-default);
       text-align: center;
       letter-spacing: 0.2px;
-      font-weight: var(--fontWeightsBodyBold);
-      line-height: var(--lineHeightsBodyDefault);
+      font-weight: var(--nh-font-weights-body-bold);
+      line-height: var(--nh-line-heights-body-default);
     }
     .dashboard-tab:first-child::part(base) {
-      border-top-left-radius: calc(1px * var(--radiiBase) - 0px);
-      border-bottom-left-radius: calc(1px * var(--radiiBase) - 0px);
+      border-top-left-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-bottom-left-radius: calc(1px * var(--nh-radii-base) - 0px);
     }
     .dashboard-tab:last-child::part(base) {
-      border-top-right-radius: calc(1px * var(--radiiBase) - 0px);
-      border-bottom-right-radius: calc(1px * var(--radiiBase) - 0px);
+      border-top-right-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-bottom-right-radius: calc(1px * var(--nh-radii-base) - 0px);
     }
 
     /* Resource(active) and Hover */
@@ -322,21 +349,21 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .dashboard-tab.resource::part(base),
     .dashboard-tab:hover,
     .dashboard-tab.active {
-      color: var(--themeAccentMuted);
-      background-color: var(--themeBgSubtle);
+      color: var(--nh-theme-accent-muted);
+      background-color: var(--nh-theme-bg-subtle);
     }
     .dashboard-tab.active {
-      border-color: var(--themeAccentMuted);
-      border-radius: calc(1px * var(--radiiBase) - 0px);
+      border-color: var(--nh-theme-accent-muted);
+      border-radius: calc(1px * var(--nh-radii-base) - 0px);
     }
     .dashboard-tab:hover {
-      background-color: var(--themeBgSubtle);
-      border-top-right-radius: calc(1px * var(--radiiBase) - 0px);
-      border-top-left-radius: calc(1px * var(--radiiBase) - 0px);
+      background-color: var(--nh-theme-bg-subtle);
+      border-top-right-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-top-left-radius: calc(1px * var(--nh-radii-base) - 0px);
     }
     .dashboard-tab.resource:hover,
     .dashboard-tab.active::part(base) {
-      border-radius: calc(1px * var(--radiiBase) - 0px);
+      border-radius: calc(1px * var(--nh-radii-base) - 0px);
     }
     .dashboard-tab.resource:hover::part(base),
     .dashboard-tab.active::part(base):hover {
@@ -346,21 +373,21 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .dashboard-tab:hover::after,
     .dashboard-tab.active::after {
       position: absolute;
-      background-color: var(--themeBgSubtle);
+      background-color: var(--nh-theme-bg-subtle);
       bottom: -5px;
       left: 0px;
       content: '';
       width: 100%;
       height: 8px;
     }
-    .dashboard-tab.active::after,
+    .dashboard-tab.active::after, 
     .dashboard-tab.active::part(base) {
-      background-color: var(--themeBgCanvas);
+      background-color: var(--nh-theme-bg-canvas);
     }
     /* Divider after resource */
     .dashboard-tab.resource::before {
       position: absolute;
-      background-color: var(--themeBgSubtle);
+      background-color: var(--nh-theme-bg-subtle);
       bottom: 1px;
       right: -4px;
       content: '';
@@ -384,23 +411,23 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     /* Search input */
     .search-input::part(input),
     .nav-label::part(base) {
-      color: var(--themeBgMuted);
+      color: var(--nh-theme-bg-muted);
       text-transform: uppercase;
-      font-family: var(--fontFamiliesHeadlines);
-      font-size: calc(1px * var(--fontSizeXs));
-      font-weight: var(--fontWeightsBodyBold);
+      font-family: var(--nh-font-families-headlines);
+      font-size: calc(1px * var(--nh-font-size-xs));
+      font-weight: var(--nh-font-weights-body-bold);
     }
 
     .search-input::part(form-control) {
-      margin-top: calc(1px * var(--spacingMd));
+      margin-top: calc(1px * var(--nh-spacing-md));
     }
     .search-input::part(base) {
       border: 1px solid transparent;
-      border-radius: calc(1px * var(--radiiBase) - 0px);
-      background-color: var(--colorsEggplant950);
+      border-radius: calc(1px * var(--nh-radii-base) - 0px);
+      background-color: var(--nh-colors-eggplant-950);
     }
     .search-input:hover::part(base) {
-      border-color: var(--themeAccentMuted);
+      border-color: var(--nh-theme-accent-muted);
     }
 
     .nav-label::part(base) {
@@ -408,26 +435,26 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     }
     .nav-label::part(base),
     .nav-item::part(base) {
-      padding: 0 calc(1px * var(--spacingSm));
+      padding: 0 calc(1px * var(--nh-spacing-sm));
     }
 
     .nav-item {
-      border-radius: calc(1px * var(--radiiBase) - 0px);
+      border-radius: calc(1px * var(--nh-radii-base) - 0px);
       overflow: hidden;
-      margin-bottom: calc(1px * var(--spacingXs));
+      margin-bottom: calc(1px * var(--nh-spacing-xs));
     }
     .nav-item::part(base) {
-      color: var(--themeFgDefault);
-      font-size: calc(1px * var(--fontSizeSm));
-      font-weight: var(--fontWeightsBodyRegular);
-      padding: calc(1px * var(--spacingXxs));
-      padding-left: calc(1px * var(--spacingSm));
+      color: var(--nh-theme-fg-default);
+      font-size: calc(1px * var(--nh-font-size-sm));
+      font-weight: var(--nh-font-weights-body-regular);
+      padding: calc(1px * var(--nh-spacing-xxs));
+      padding-left: calc(1px * var(--nh-spacing-sm));
     }
     .indented .nav-item::part(base) {
-      padding-left: calc(1px * var(--spacing2xl));
+      padding-left: calc(1px * var(--nh-spacing-2xl));
     }
     .nav-item:hover::part(base) {
-      background: var(--themeBgSurface);
+      background: var(--nh-theme-bg-surface);
     }
 
     /* Left Nav Subsections */
@@ -437,16 +464,16 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .dashboard-menu-section:not(:last-child)::part(base) {
       border-bottom-width: 2px;
       border-bottom-style: solid;
-      border-bottom-color: var(--themeBgSurface);
+      border-bottom-color: var(--nh-theme-bg-surface);
     }
 
     /**  Skeleton **/
     .skeleton-overview {
-      background-color: var(--themeBgCanvas);
+      background-color: var(--nh-theme-bg-canvas);
     }
     .skeleton-part::part(indicator) {
-      background-color: var(--themeBgMuted);
-      border-radius: calc(1px * var(--radiiBase));
+      background-color: var(--nh-theme-bg-muted);
+      border-radius: calc(1px * var(--nh-radii-base));
       opacity: 0.2;
     }
     .skeleton-tabs {
@@ -462,31 +489,31 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       display: flex;
       flex-direction: column;
       width: 95%;
-      column-gap: calc(1px * var(--spacingMd));
+      column-gap: calc(1px * var(--nh-spacing-md));
       align-items: start;
       margin-bottom: 1rem;
       width: 100%;
     }
     .skeleton-nav-container {
       flex-direction: row;
-      margin: calc(1px * var(--spacingMd)) 12px calc(1px * var(--spacingMd)) 0;
+      margin: calc(1px * var(--nh-spacing-md)) 12px calc(1px * var(--nh-spacing-md)) 0;
       width: 100%;
     }
     .skeleton-nav-container .skeleton-part::part(indicator) {
-      border-radius: calc(1px * var(--radiiLg));
+      border-radius: calc(1px * var(--nh-radii-lg));
     }
     .skeleton-main-container {
       display: grid;
-      gap: calc(1px * var(--spacingMd));
+      gap: calc(1px * var(--nh-spacing-md));
       grid-template-rows: 50px repeat(5, 100px);
       grid-template-columns: repeat(5, 100px);
-      gap: calc(1px * var(--spacingSm));
+      gap: calc(1px * var(--nh-spacing-sm));
     }
     .skeleton-overview nav {
       width: var(--menu-width: 238px);
-      padding: calc(1px * var(--spacingSm));
-      margin: calc(1px * var(--spacingSm));
-      margin-top: calc(1px * var(--spacingXl));
+      padding: calc(1px * var(--nh-spacing-sm));
+      margin: calc(1px * var(--nh-spacing-sm));
+      margin-top: calc(1px * var(--nh-spacing-xl));
     }
   `;
 }

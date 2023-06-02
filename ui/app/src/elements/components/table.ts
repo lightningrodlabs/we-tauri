@@ -1,4 +1,4 @@
-import { LitElement, html, css, TemplateResult } from "lit";
+import { LitElement, html, css, TemplateResult, unsafeCSS } from "lit";
 import { property, customElement, state } from "lit/decorators.js";
 import { contextProvided } from "@lit-labs/context";
 
@@ -8,6 +8,9 @@ import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
 import { FieldDefinitions, FieldDefinition, TableStore, Table } from '@adaburrows/table-web-component';
 import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin";
 import { encodeHashToBase64 } from "@holochain/client";
+
+import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
+import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 export type AssessmentDict = {
   [entryHash: string]: Assessment[];
@@ -70,16 +73,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   }
 
   static styles = css`
-    :host {
-      /* =================== */
-      /* SIMPLE TABLE STYLES */
-      /* =================== */
-    
-    --table-simple-background-color: var(--color-lt-violet);
-    --table-simple-border-style: var(--border-solid);
-    --table-simple-border-width: var(--border-1px);
-
-    --table-simple-b1-width: 8em;
-    --table-simple-b0-width: 8em;
-    }`;
+    /** Theme Properties **/
+    ${unsafeCSS(theme)}
+  `;
 }
