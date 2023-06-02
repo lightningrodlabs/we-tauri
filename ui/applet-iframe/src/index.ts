@@ -1,4 +1,3 @@
-import "inline-module";
 import {
   AppAgentClient,
   AppAgentWebsocket,
@@ -92,7 +91,7 @@ async function setupProfilesClient(
 
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
-  const js = await window.inlineImport(`#applet`);
+  const js = await import(`/index.js`);
 
   return js.default as WeApplet;
 }

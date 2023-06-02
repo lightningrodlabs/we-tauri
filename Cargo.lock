@@ -8878,6 +8878,7 @@ dependencies = [
  "holochain_web_app_manager",
  "lair_keystore_manager",
  "log",
+ "mime_guess",
  "portpicker",
  "serde",
  "serde_json",

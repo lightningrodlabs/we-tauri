@@ -22,7 +22,6 @@ import { HoloHashMap } from "@holochain-open-dev/utils";
 import { AppOpenViews } from "../layout/types";
 import { signZomeCallTauri } from "../tauri";
 import { WeStore } from "../we-store";
-import { isWindows } from "../utils";
 
 export async function setupAppletMessageHandler(
   weStore: WeStore,
@@ -32,11 +31,6 @@ export async function setupAppletMessageHandler(
     try {
       const origin = message.origin;
       let lowerCaseAppletId = origin.split("://")[1];
-
-      if (isWindows()) {
-        // Origin will be of form "https://applet.localhost/[APPLET_ID]"
-        lowerCaseAppletId = origin.split("https://applet.localhost/")[1];
-      }
 
       const installedApplets = await toPromise(
         weStore.appletBundlesStore.installedApplets

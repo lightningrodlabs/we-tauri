@@ -9,8 +9,7 @@
     "@holochain-open-dev/utils": "^0.14.0",
     "@holochain/client": "^0.14.1",
     "@lightningrodlabs/we-applet": "^0.6.0",
-    "applet-messages": "0.0.1",
-    "inline-module": "^0.6.1"
+    "applet-messages": "0.0.1"
   },
   "devDependencies": {
     "tslib": "^2.3.1",

@@ -23,16 +23,11 @@ export async function initAppClient(
   return client;
 }
 
-export function isWindows(): boolean {
-  return navigator.appVersion.includes("Win");
-}
-
 export function appletOrigin(appletId: EntryHash): string {
-  const windows = isWindows();
-
-  return windows
-    ? `https://applet.localhost/${encodeHashToBase64(appletId)}`
-    : `applet://${encodeHashToBase64(appletId)}`;
+  //@ts-ignore
+  return import.meta.env.DEV
+    ? `applet://${encodeHashToBase64(appletId)}`
+    : `https://${encodeHashToBase64(appletId)}`;
 }
 
 export function findAppForDnaHash(
