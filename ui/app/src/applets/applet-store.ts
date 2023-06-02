@@ -5,7 +5,11 @@ import {
   pipe,
 } from "@holochain-open-dev/stores";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
-import { BlockType, InternalAttachmentType } from "applet-messages";
+import {
+  AppletToParentMessage,
+  BlockType,
+  InternalAttachmentType,
+} from "applet-messages";
 
 import { AppletHost } from "./applet-host.js";
 import { WeStore } from "../we-store.js";
@@ -39,7 +43,9 @@ export class AppletStore {
     return new Promise<AppletHost>((resolve) => {
       window.addEventListener("message", (message) => {
         if (message.source === iframe?.contentWindow) {
-          if (message.data.type === "ready") {
+          if (
+            (message.data as AppletToParentMessage).request.type === "ready"
+          ) {
             resolve(new AppletHost(iframe!));
           }
         }

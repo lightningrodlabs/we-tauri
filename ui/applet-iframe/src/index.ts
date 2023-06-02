@@ -19,6 +19,7 @@ import {
   ParentToAppletRequest,
   HrlLocation,
   queryStringToRenderView,
+  AppletToParentMessage,
 } from "applet-messages";
 import {
   AttachmentType,
@@ -91,9 +92,7 @@ async function setupProfilesClient(
 
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
-  const js = await import(`/index.js`);
-
-  return js.default as WeApplet;
+  return window.importApplet();
 }
 
 async function renderView(
@@ -382,10 +381,30 @@ function getRenderView(): RenderView | undefined {
   return queryStringToRenderView(queryString);
 }
 
-async function postMessage(m: AppletToParentRequest): Promise<any> {
+function appletId(): EntryHash {
+  if (window.location.href.startsWith("applet://")) {
+    const urlWithoutProtocol = window.location.href.split("applet://")[1];
+    const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
+    return decodeHashFromBase64(appletIdBase64);
+  } else {
+    const urlWithoutProtocol = window.location.href.split(
+      "https://applet.localhost/"
+    )[1];
+    const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
+    return decodeHashFromBase64(appletIdBase64);
+  }
+}
+
+async function postMessage(request: AppletToParentRequest): Promise<any> {
   return new Promise((resolve, reject) => {
     const channel = new MessageChannel();
-    top.postMessage(m, "*", [channel.port2]);
+
+    const message: AppletToParentMessage = {
+      request,
+      appletId: appletId(),
+    };
+
+    top.postMessage(message, "*", [channel.port2]);
 
     channel.port1.onmessage = (m) => {
       if (m.data.type === "success") {

@@ -79,6 +79,11 @@ export type IframeConfig =
       applets: Record<EntryHashB64, ProfilesLocation>;
     };
 
+export interface AppletToParentMessage {
+  appletId: EntryHash;
+  request: AppletToParentRequest;
+}
+
 export type AppletToParentRequest =
   | {
       type: "ready";

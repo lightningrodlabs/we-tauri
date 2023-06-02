@@ -1,5 +1,6 @@
 import { pipe, toPromise } from "@holochain-open-dev/stores";
 import {
+  AppletToParentMessage,
   AppletToParentRequest,
   BlockType,
   HrlLocation,
@@ -16,7 +17,7 @@ import {
   HrlWithContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import { AppOpenViews } from "../layout/types";
@@ -29,24 +30,14 @@ export async function setupAppletMessageHandler(
 ) {
   window.addEventListener("message", async (message) => {
     try {
-      const origin = message.origin;
-      let lowerCaseAppletId = origin.split("://")[1];
+      const appletMessage: AppletToParentMessage = message.data;
+      const appletId = appletMessage.appletId;
 
-      const installedApplets = await toPromise(
-        weStore.appletBundlesStore.installedApplets
-      );
-      const appletId = installedApplets.find(
-        (appletId) =>
-          encodeHashToBase64(appletId).toLowerCase() === lowerCaseAppletId
-      );
-
-      if (!appletId)
-        throw new Error(`Applet ${lowerCaseAppletId} is not installed`);
       const result = await handleAppletIframeMessage(
         weStore,
         openViews,
         appletId,
-        message.data
+        appletMessage.request
       );
       message.ports[0].postMessage({ type: "success", result });
     } catch (e) {

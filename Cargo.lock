@@ -8866,6 +8866,7 @@ name = "we"
 version = "0.0.13"
 dependencies = [
  "anyhow",
+ "base64 0.21.0",
  "devhub_types",
  "essence_payloads",
  "futures",
