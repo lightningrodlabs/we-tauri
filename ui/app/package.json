@@ -52,8 +52,14 @@
     "typescript": "4.5.5",
     "vite": "^4.3.5",
     "vite-plugin-checker": "^0.5.3",
+    "vite-plugin-fonts": "^0.7.0",
     "vite-plugin-static-copy": "^0.15.0",
     "vitest": "^0.31.0"
   },
-  "prettier": { "printWidth": 100, "singleQuote": true, "arrowParens": "avoid", "trailingComma": "all" }
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "arrowParens": "avoid",
+    "trailingComma": "all"
+  }
 }

@@ -14,6 +14,8 @@ import {
   SlTab,
   SlMenuLabel,
   SlInput,
+  SlAlert,
+  SlIcon,
 } from '@scoped-elements/shoelace';
 import { Readable, get } from '@holochain-open-dev/stores';
 
@@ -32,6 +34,11 @@ type AppletDict = {
 type ContextDict = {
   [id: string] : string[];
 }
+enum LoadingContext {
+  FirstRender = 'first-render',
+  NoAppletSensemakerData = 'no-applet-sensemaker-data'
+}
+
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @state() loading: boolean = true;
@@ -44,52 +51,52 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   _sensemakerStore!: SensemakerStore;
 
   @state() selectedResourceName!: string;
+  @state() loadingContext: LoadingContext = LoadingContext.FirstRender;
   @state() applets : AppletDict = {};
   @state() contexts : ContextDict = {};
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
 
     const selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
     if (!selectedWeGroupId) return;
+    console.log('selected weGroupId :>> ', selectedWeGroupId);
 
-    this._sensemakerStore = get(this._matrixStore.sensemakerStore(selectedWeGroupId) as any);
-    (
-      this._matrixStore.getAppletInstanceInfosForGroup(selectedWeGroupId) as Readable<any>
-      ).subscribe(appletsInfo => {
-        appletsInfo.map(appletInfo => {
-        const id = Object.keys(appletInfo.applet.dnaHashes)[0];
-        if(typeof this.applets[id] == 'undefined') {
-          this.applets[id] = {name: appletInfo.applet.title}
-        } 
-      });
-    });
+    this._sensemakerStore = get(this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>);
+    this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe((store) => {
+      console.log('store :>> ', store);
+      (store?.appletConfig() as Readable<AppletConfig>)
+        .subscribe(appletConfig => {
+          const id : string = appletConfig?.role_name;
+          // TODO: fix edge case of repeat install of same applet? make unique id
+          if(!id) return this.setLoadingContext(LoadingContext.NoAppletSensemakerData)            
+    
+          const capitalize = part => part[0].toUpperCase() + part.slice(1)
+          const cleanResourceNameForUI = propertyName => propertyName.split("_").map(capitalize).join(" ")
+          
+          console.log("appletConfig:", appletConfig);
+          console.log("renderable applet info:", this.applets);
+          console.log("renderable contexts info:", this.contexts, this.contexts?.length);
+          this.applets[id] = { ...this.applets[id], resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI)};
+          this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI)
 
-    if(!this._sensemakerStore?.appletConfig) return
-    (
-      this._sensemakerStore.appletConfig() as Readable<AppletConfig>
-    ).subscribe(appletConfig => {
-      const id : string = appletConfig?.role_name;
-      // TODO: fix edge case of repeat install of same applet? make unique id
-      if(!id) return;
-
-      const capitalize = part => part[0].toUpperCase() + part.slice(1)
-      const cleanResourceNameForUI = propertyName => propertyName.split("_").map(capitalize).join(" ")
-      
-      this.applets[id] = { ...this.applets[id], resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI)};
-      this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI)
-
-      console.log("appletConfig:", appletConfig);
-      console.log("renderable applet info:", this.applets);
-      console.log("renderable contexts info:", this.contexts);
+          this.loading = false;
+        });
     });
   }
 
-  firstUpdated() {
-    setTimeout(() => {
-      this.loading = false;
-      // for viewing skeleton
-    }, 100);
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
+  }
+
+  setLoadingContext(contextValue: LoadingContext) {
+    this.loadingContext = contextValue;
+  }
+  handleSubcomponentFinishedLoading(event: Event) {
+    this.loading = false;
+    console.log('table finished loading! :>> ');
   }
 
   renderIcons() {
@@ -150,11 +157,19 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          <div class="skeleton-main-container">
-            ${Array(25).map(
-              () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
-            )}
-          </div>
+          ${this.loadingContext == LoadingContext.NoAppletSensemakerData
+            ? html`<div class="alert-wrapper" style="width: 80%;">
+              <sl-alert open class="alert">
+                <sl-icon slot="icon" name="info-circle"></sl-icon>
+                  Please visit your applet screen to generate some data for the dashboard.
+              </sl-alert>
+            </div>`
+            : html`<div class="skeleton-main-container">
+              ${Array.from(Array(25)).map(
+                () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
+              )}
+            </div>`
+          }
         </main>
       </div>
     `;
@@ -168,11 +183,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0]; // TODO: set applet context control 
 
     return html`
-    <style>
-
-    /** Theme Properties **/
-    ${unsafeCSS(theme)}
-    </style>
       <div class="container">
         <nav>
           <div>
@@ -187,7 +197,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
             <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
             ${applets && applets.map(
               (applet) => html`
-                <sl-menu-item class="nav-item" value="${applet.name.toLowerCase()}"
+                <sl-menu-item class="nav-item" value="${applet.name?.toLowerCase()}"
                   >${applet.name}</sl-menu-item
                 >
                 <div role="navigation" class="sub-nav indented">
@@ -230,7 +240,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
                 ${contexts && contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><test-table></test-table></sl-tab>`,
+                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><dashboard-table></dashboard-table></sl-tab>`,
                 )}
               </sl-tab-group>`}
         </main>
@@ -248,18 +258,36 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       'sl-tab': SlTab,
       'sl-tab-group': SlTabGroup,
       'sl-tab-panel': SlTabPanel,
-      'test-table': StatefulTable,
+      'sl-icon': SlIcon,
+      'sl-alert': SlAlert,
+      'dashboard-table': StatefulTable,
     };
   }
 
   static styles = css`
-    /** Shoelace Adaptor Properties **/
+    @font-face {
+      font-family: 'Manrope;
+      font-weight: 400;
+      font-style: normal;
+      font-display: auto;
+      src: local('Manrope'), url(Manrope-Regular.ttf) format('truetype');
+    }
+    @font-face {
+      font-family: 'ManropeBold;
+      font-weight: 700;
+      font-style: normal;
+      font-display: auto;
+      src: local('Manrope'), url(Manrope-Bold.ttf) format('truetype');
+    }
+    /** Imported Properties **/
     ${unsafeCSS(theme)}
     ${unsafeCSS(adapter)}
 
     /** Layout **/
     :host {
-        --menu-width: 138px;
+      --menu-width: 138px;
+      --sl-font-sans: Manrope;
+      width: 100% !important;
     }
 
     .container {
@@ -270,12 +298,24 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .container nav {
         flex-basis: var(--menu-width);
         padding: 0 calc(1px * var(--nh-spacing-sm));
-        
         background: var(--nh-theme-bg-canvas);
     }
     .container main {
-        flex-grow: 1;
-        overflow: hidden;
+      flex-grow: 1;
+      overflow: hidden;
+      background: var(--nh-theme-bg-canvas);
+      background: var(--nh-theme-bg-canvas);
+    }
+    .alert-wrapper {
+      height: 100%;
+      display: grid;
+      place-content: center;
+      align-content: start;
+      padding: 4rem calc(1px * var(--nh-spacing-lg));
+    }
+    .alert::part(base) {
+      height: 8rem;
+      width: 100%
     }
 
     /* Side scrolling **/
@@ -413,7 +453,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .nav-label::part(base) {
       color: var(--nh-theme-bg-muted);
       text-transform: uppercase;
-      font-family: var(--nh-font-families-headlines);
+      font-family: Georgia;
       font-size: calc(1px * var(--nh-font-size-xs));
       font-weight: var(--nh-font-weights-body-bold);
     }
@@ -441,6 +481,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .nav-item {
       border-radius: calc(1px * var(--nh-radii-base) - 0px);
       overflow: hidden;
+      font-family: var(--nh-font-families-headlines);
       margin-bottom: calc(1px * var(--nh-spacing-xs));
     }
     .nav-item::part(base) {
