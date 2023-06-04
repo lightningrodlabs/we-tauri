@@ -5,7 +5,7 @@ import {
   EntryHash,
 } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, unsafeCSS } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
   CircularProgress,
@@ -47,6 +47,9 @@ import { weLogoIcon } from "./icons/we-logo-icon";
 import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
+
+import theme from './styles/css/variables.css?inline' assert { type: 'css' };
+import adapter from './styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 export class MainDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -810,8 +813,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     return [
       sharedStyles,
       css`
+      /** Theme Properties **/
+      ${unsafeCSS(theme)}
+      ${unsafeCSS(adapter)}
+
         :host {
           display: flex;
+          overflow: hidden;
+        }
+
+        .column:last-child {
         }
 
         .top-left-corner {
@@ -830,11 +841,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         }
 
         .tlcbgGroupCentric {
-          border-color: #9ca5e3 #9ca5e3 #9ca5e3 #303f9f;
+          border-color: #7d7087;
         }
 
         .tlcbgAppletCentric {
-          border-color: #303f9f #303f9f #303f9f #9ca5e3;
+          border-color: #7d7087;
         }
 
         .left-sidebar {
@@ -851,12 +862,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           align-items: center;
         }
 
-        .navBarGroupCentric {
-          background-color: #303f9f;
+        .navBarGroupCentric, .dashboard-content {
+          background-color:  var(--nh-theme-bg-canvas);
         }
 
         .navBarAppletCentric {
-          background-color: #9ca5e3;
+          background-color:  var(--nh-theme-bg-canvas);
         }
 
         @media (min-width: 640px) {

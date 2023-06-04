@@ -35,51 +35,20 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore;
+  
+  @property({ type: String })
+  resourceName;
 
   @state()
   resourceIndex: keyof AssessmentDict = 'abc';
   @state()
-  fieldDefs: FieldDefinitions<AssessmentTableRecord>;
+  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
 
   @property()
   allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
 
   @property({ attribute: false })
   public tableStore!: TableStore<AssessmentTableRecord>;
-
-  constructor() {
-    super();
-
-    this.fieldDefs = {
-  'resource': new FieldDefinition<AssessmentTableRecord>({
-    heading: generateHeaderHTML('Resource'),
-    decorator: (resource: any) => html` <div
-      style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-    >
-      ${generateHashHTML(resource.eh)} ${generateMockValue(Math.floor(Math.random() * 3) + 1)}
-    </div>`,
-  }),
-  'neighbour': new FieldDefinition<AssessmentTableRecord>({
-    heading: generateHeaderHTML('Neighbour'),
-    decorator: (agentPublicKeyB64: any) => html` <div
-      style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-    >
-      ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
-    </div>`,
-  }),
-  'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Like') }),
-  // 'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
-};
-    this.tableStore = new TableStore({
-      // This is the Id used to identify the table in the CSS variables and is the table's HTML id
-      tableId,
-      fieldDefs: this.fieldDefs,
-      colGroups: [
-        { span: 2, class: 'fixedcols' }
-      ],
-      showHeader: true,
-    });
-  }
 
   emitFinishedLoadingEvent() {
     const event = new CustomEvent('sub-component-loaded', {
@@ -91,20 +60,52 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    this.fieldDefs = this.generateFieldDefs(this.resourceName);
+    this.tableStore = new TableStore({
+      // This is the Id used to identify the table in the CSS variables and is the table's HTML id
+      tableId,
+      fieldDefs: this.fieldDefs,
+      colGroups: [
+        { span: 2, class: 'fixedcols' }
+      ],
+      showHeader: true,
+    });
+
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
-        console.log('resourceAssessments :>> ', resourceAssessments);
-        // this.emitFinishedLoadingEvent();
         this.tableStore.records = Object.values(resourceAssessments).flat().map((assessment: any) => {
           return ({
             neighbour: encodeHashToBase64(assessment.author),
             resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.keys(assessment.value)[0]},
           } as AssessmentTableRecord)
         });
-      } else {
-        return;
+        this.emitFinishedLoadingEvent();
       }
     });
+  }
+
+  generateFieldDefs(resourceName: string = '') : FieldDefinitions<AssessmentTableRecord> {
+    return {
+      'resource': new FieldDefinition<AssessmentTableRecord>({
+        heading: generateHeaderHTML('Resource', resourceName),
+        decorator: (resource: any) => html` <div
+          style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+        >
+          ${generateHashHTML(resource.eh)} ${generateMockValue(Math.floor(Math.random() * 3) + 1)}
+        </div>`,
+      }),
+      'neighbour': new FieldDefinition<AssessmentTableRecord>({
+        heading: generateHeaderHTML('Neighbour', resourceName),
+        decorator: (agentPublicKeyB64: any) => html` <div
+          style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+        >
+          ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
+        </div>`,
+      }),
+      'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension1', resourceName) }),
+      // 'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
+    }
   }
 
   render(): TemplateResult {
@@ -116,7 +117,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
               <sl-icon slot="icon" name="info-circle"></sl-icon>
               No assessment data was found. Please visit your applet and create some assessments.
             </sl-alert>
-          </div>
+            </div>
         </div>`;
   }
 
@@ -145,15 +146,18 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
         font-display: auto;
         src: local('Manrope'), url('Manrope-Bold.ttf') format('truetype');
       }
-      
+
       /** Global Table **/
       color: var(--nh-theme-fg-default);
       --table-assessmentsForResource-height: 100%;
-      --table-assessmentsForResource-width: 100vw;
+      --table-assessmentsForResource-overflow-x: auto;
+      --table-assessmentsForResource-overflow-y: auto;
+      --table-assessmentsForResource-max-height: calc(100vh - 101px - calc(1px * var(--nh-spacing-lg)));
 
       --table-assessmentsForResource-border-spacing: calc(1px * var(--nh-spacing-sm));
       --cell-radius: calc(1px * var(--nh-radii-base));
 
+      --table-assessmentsForResource-display : block;
       --border-color: #7d7087;
       --menuSubTitle: #a89cb0;
       --column-max-width: calc(1rem * var(--nh-spacing-lg));
@@ -251,12 +255,12 @@ function generateMockValue(number: number) {
       </p>`;
   }
 }
-function generateHeaderHTML(headerTitle: string) {
+function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
   return html` <div style="font-family: 'Open Sans'; margin: var(--header-title-margin-y) 0">
     <h2
       style="margin: 0; font-size: calc(1px * var(--nh-font-size-sm)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
     >
-      Post
+      ${resourceName}
     </h2>
     <h4
       style="margin: 0; font-size: calc(1px * var(--nh-font-size-xxs));font-weight: var(--nh-font-weights-headlines-regular)"

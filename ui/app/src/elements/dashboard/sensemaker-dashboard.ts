@@ -240,7 +240,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
                 ${contexts && contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><dashboard-table></dashboard-table></sl-tab>`,
+                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><dashboard-table .resourceName=${this.selectedResourceName}></dashboard-table></sl-tab>`,
                 )}
               </sl-tab-group>`}
         </main>
@@ -287,12 +287,12 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     :host {
       --menu-width: 138px;
       --sl-font-sans: Manrope;
-      width: 100% !important;
+      width: calc(100% - 138px);
     }
 
     .container {
         display: flex;
-        width: 100%;
+        width: calc(100vw - 144px);
         height: 100%;
     }
     .container nav {
@@ -302,7 +302,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     }
     .container main {
       flex-grow: 1;
-      overflow: hidden;
+      overflow-x: hidden;
       background: var(--nh-theme-bg-canvas);
       background: var(--nh-theme-bg-canvas);
     }
@@ -320,12 +320,12 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
     /* Side scrolling **/
     .dashboard-tab-group {
-      max-width: calc(100vw - var(--menu-width));
+      max-width: calc(100vw - calc(1px * var(--nh-spacing-sm)));
       overflow: hidden;
       background: var(--nh-theme-bg-canvas);
     }
     .dashboard-tab-panel {
-      overflow-x: auto;
+      overflow: auto;
     }
 
     /** Tab Nav **/
@@ -551,7 +551,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       gap: calc(1px * var(--nh-spacing-sm));
     }
     .skeleton-overview nav {
-      width: var(--menu-width: 238px);
+      width: var(--menu-width);
       padding: calc(1px * var(--nh-spacing-sm));
       margin: calc(1px * var(--nh-spacing-sm));
       margin-top: calc(1px * var(--nh-spacing-xl));
