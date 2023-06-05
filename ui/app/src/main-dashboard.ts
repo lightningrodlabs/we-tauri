@@ -44,7 +44,7 @@ import { NotificationDot } from "./elements/components/notification-dot";
 import { InactiveOverlay } from "./elements/components/inactive-overlay";
 import { AppletIconBadge } from "./elements/components/applet-icon-badge";
 import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
-import { weLogoIcon } from "./icons/we-logo-icon";
+import { nhLogoIcon } from "./icons/nh-logo-icon";
 import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
@@ -361,7 +361,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           (weGroupInfo) =>
             html`
               <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+                style="margin-top: 2px; margin-bottom: 2px;"
                 .logoSrc=${weGroupInfo.info.logoSrc}
                 .tooltipText=${weGroupInfo.info.name}
                 @click=${() => {
@@ -723,8 +723,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           </div>
           <div class="column top-left-corner">
               <sidebar-button
-                style="border-radius: 50%;"
-                logoSrc="${weLogoIcon}"
+                id="nh-logo"
+                style="border-color: transparent;"
+                logoSrc="${nhLogoIcon}"
                 tooltipText="Home"
                 @click=${() => {
                   this._selectedWeGroupId = undefined;
@@ -747,7 +748,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               navBarGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
               navBarAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
             })}"
-            style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: center; justify-items: center; overflow:hidden;"
+            style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center; overflow:hidden;"
           >
 
             ${this.renderPrimaryNavigation()}
@@ -756,8 +757,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               placement="bottom"
               .content="${encodeHashToBase64(this._matrixStore.myAgentPubKey).slice(0,15) + '...'}"
             >
-            <button class="user-profile">
-            </button>
+              <button class="user-profile">
+              </button>
             </sl-tooltip>
           </div>
         </div>
@@ -833,21 +834,22 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           margin: 7px 7px;
           height: 54 px;
           z-index: 1;
+          
         }
-
+        
         .top-left-corner-bg {
           border-style: solid;
           border-width: 72px 0 0 72px;
           position: absolute;
           z-index: 0;
         }
-
+        
         .tlcbgGroupCentric {
-          border-color: #7d7087;
+          border-color: var(--nh-colors-eggplant-800);
         }
 
         .tlcbgAppletCentric {
-          border-color: #7d7087;
+          border-color: var(--nh-colors-eggplant-800);
         }
 
         .left-sidebar {
@@ -894,12 +896,17 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           align-items: center;
         }
 
-        .navBarGroupCentric, .dashboard-content {
+        .dashboard-content {
           background-color:  var(--nh-theme-bg-canvas);
+          color:  var(--nh-theme-fg-on-dark);
         }
 
-        .navBarAppletCentric {
-          background-color:  var(--nh-theme-bg-canvas);
+        .navBarGroupCentric, .navBarAppletCentric {
+          background-color:  var(--nh-theme-bg-surface);
+        }
+
+        .left-sidebar {
+          background-color:  var(--nh-theme-bg-canvas) !important;
         }
 
         @media (min-width: 640px) {
@@ -914,11 +921,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
         .highlightedAppletCentric {
-          border: #303f9f 4px solid;
+          border: var(--nh-theme-bg-subtle) 4px solid;
         }
 
         .highlightedGroupCentric {
-          border: #9ca5e3 4px solid;
+          border: var(--nh-theme-bg-surface) 4px solid;
+          border-radius: calc(1px * var(--nh-radii-base));
+        }
+        .highlightedGroupCentric .icon {
+          height: 5rem;
         }
 
         .highlightedHome {
@@ -935,10 +946,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         .groupCentricIconHover {
           border: transparent 4px solid;
+          border-radius: 50%;
         }
 
         .groupCentricIconHover:hover {
-          border: #9ca5e3 4px solid;
+          border: var(--nh-theme-accent-muted) 4px solid;
         }
 
         .appletCentricIconHover {
@@ -946,7 +958,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         }
 
         .appletCentricIconHover:hover {
-          border: #303f9f 4px solid;
+          border: var(--nh-theme-accent-muted) 4px solid;
         }
 
 
