@@ -39,13 +39,14 @@ type ContextDict = {
   //resource: context names
   [id: string]: string[];
 };
-enum LoadingContext {
+enum LoadingState {
   FirstRender = 'first-render',
   NoAppletSensemakerData = 'no-applet-sensemaker-data',
 }
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @state() loading: boolean = true;
+  @state() loadingState: LoadingState = LoadingState.FirstRender;
 
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -54,10 +55,9 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @property({ attribute: false })
   _sensemakerStore!: SensemakerStore;
 
-  @state() loadingContext: LoadingContext = LoadingContext.FirstRender;
-
   @state() selectedResourceName!: string;
   @state() selectedContext!: string;
+
   @state() applets: AppletDict = {};
   @state() contexts: ContextDict = {};
   @state() context_ehs: any = {};
@@ -68,25 +68,23 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
     const selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
     if (!selectedWeGroupId) return;
-    console.log('selected weGroupId :>> ', selectedWeGroupId);
 
     this._sensemakerStore = get(
       this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>,
     );
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
-      console.log('store :>> ', store);
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
         // TODO: fix edge case of repeat install of same applet? make unique id
-        if (!id) return this.setLoadingContext(LoadingContext.NoAppletSensemakerData);
+        if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
         const capitalize = part => part[0].toUpperCase() + part.slice(1);
         const cleanResourceNameForUI = propertyName =>
           propertyName.split('_').map(capitalize).join(' ');
 
-        console.log('appletConfig:', appletConfig);
-        console.log('renderable applet info:', this.applets);
-        console.log('renderable contexts info:', this.contexts, this.contexts?.length);
+        // console.log('appletConfig:', appletConfig);
+        // console.log('renderable applet info:', this.applets);
+        // console.log('renderable contexts info:', this.contexts, this.contexts?.length);
         this.applets[id] = {
           ...this.applets[id],
           resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
@@ -107,11 +105,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     this.removeEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
   }
 
-  setLoadingContext(contextValue: LoadingContext) {
-    this.loadingContext = contextValue;
+  setLoadingState(state: LoadingState) {
+    this.loadingState = state;
   }
 
-  handleSubcomponentFinishedLoading(event: Event) {
+  handleSubcomponentFinishedLoading(_: Event) {
     this.loading = false;
   }
 
@@ -173,11 +171,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingContext == LoadingContext.NoAppletSensemakerData
+          ${this.loadingState == LoadingState.NoAppletSensemakerData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
                   <sl-icon slot="icon" name="info-circle"></sl-icon>
-                  Please visit your applet screen to generate some data for the dashboard.
+                  There is no sensemaking data for this tab; go to your applet to generate some.
                 </sl-alert>
               </div>`
             : html`<div class="skeleton-main-container">
@@ -264,7 +262,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                   <dashboard-table
                     .resourceName=${this.selectedResourceName}
                     .tableType=${AssessmentTableType.Resource}
-                    .selectedContext=${this.selectedContext}
+                    .selectedContext=${'none'}
                   ></dashboard-table>
                 </sl-tab-panel>
                 ${contexts &&

@@ -27,8 +27,8 @@ interface AssessmentTableRecord {
 }
 
 export enum AssessmentTableType {
-  Resource,
-  Context
+  Resource = 'resource',
+  Context = 'context',
 }
 
 export type AssessmentDict = {
@@ -37,7 +37,7 @@ export type AssessmentDict = {
 
 export const tableId = 'assessmentsForResource';
 
-const assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
+const assessmentToAssessmentTableRecord = (assessment: Assessment, i:any) : AssessmentTableRecord => {
   return { 
     neighbour: encodeHashToBase64(assessment.author),
     resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0]}, } as AssessmentTableRecord
@@ -56,11 +56,10 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   tableType;
   @property({ type: String })
   selectedContext;
-
-  @state()
-  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
   @state()
   contextEntry!: CulturalContext;
+  @state()
+  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
 
   @property()
   allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
@@ -91,6 +90,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
+
+        console.log('Total assessments :>> ', Object.values(resourceAssessments).flat().length);
         this.tableStore.records = (Object.values(resourceAssessments).flat() as Assessment[]).map(assessmentToAssessmentTableRecord);
         this.emitFinishedLoadingEvent();
       }
@@ -111,8 +112,6 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       const resourceAssessments = (Object.values(this.allAssessments.value as AssessmentDict))[0];
       const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
       this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
-
-      console.log('this.tableStore.records :>> ', this.tableStore.records);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }
   }
@@ -157,6 +156,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   }
 
   render(): TemplateResult {
+    console.log('this.selectedContext, this.tableType :>> ', this.selectedContext, this.tableType);
     // TODO: figure out why this re-renders 3 times on tab change
     return this.tableStore.records.length
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
