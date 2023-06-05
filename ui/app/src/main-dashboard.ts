@@ -3,6 +3,7 @@ import { state, query } from "lit/decorators.js";
 import {
   DnaHash,
   EntryHash,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { LitElement, html, css, unsafeCSS } from "lit";
@@ -353,8 +354,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    * @returns
    */
   renderWeGroupIconsPrimary(weGroups: WeGroupInfo[]) {
-    return html`
-      ${weGroups
+    return html`${weGroups.length > 0 ? html`
+    ${weGroups
         .sort((a,b) => a.info.name.localeCompare(b.info.name))
         .map(
           (weGroupInfo) =>
@@ -374,13 +375,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               ></sidebar-button>
           `
       )}
+      `: html`<div id="placeholder"></div>`}
 
       <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
-        <mwc-fab
-          icon="group_add"
+        <button
+          class="group-add"
           @click=${() => this._createWeGroupDialog.open()}
-          style="margin-top: 4px; --mdc-theme-secondary: #9ca5e3;"
-        ></mwc-fab>
+        ></button>
       </sl-tooltip>
     `;
   }
@@ -746,17 +747,18 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               navBarGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
               navBarAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
             })}"
-            style="flex: 1; align-items: center;"
+            style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: center; justify-items: center; overflow:hidden;"
           >
 
             ${this.renderPrimaryNavigation()}
-
-            <span style="flex: 1"></span>
-
-            <holo-identicon
-              .hash=${this._matrixStore.myAgentPubKey}
-              style="margin-top: 30px;"
-            ></holo-identicon>
+            <sl-tooltip
+              hoist
+              placement="bottom"
+              .content="${encodeHashToBase64(this._matrixStore.myAgentPubKey).slice(0,15) + '...'}"
+            >
+            <button class="user-profile">
+            </button>
+            </sl-tooltip>
           </div>
         </div>
 
@@ -849,10 +851,40 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         }
 
         .left-sidebar {
-          overflow-y: auto;
+          overflow: hidden;
           width: 72px;
           padding-top: 16px;
           z-index: 1;
+        }
+
+        .group-add, .user-profile {
+          width: 50px;
+          height: 50px; 
+          margin-top: calc(2px * var(--nh-spacing-lg)); 
+          margin-bottom: calc(2px * var(--nh-spacing-sm)); 
+          cursor: pointer;
+          border: none;
+          position: relative;
+        }
+        .group-add::before, .user-profile::before {
+          content: '';
+          width: 50px;
+          height: 2px;
+          background-image: url(user-menu-divider.png);
+          margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+          position: absolute;
+          display: flex;
+          justify-content: center;
+          left: -10px;
+          top: calc(-1px * var(--nh-spacing-lg) - 2px);;
+        }
+        .group-add {
+          background: url(./icons/add-nh-icon.png);
+          background-size: contain;
+        }
+        .user-profile {
+          background: url(./icons/user-icon.png);
+          background-size: contain;
         }
 
         .top-bar {

@@ -23,6 +23,7 @@ import { StatefulTable } from '../components/table';
 
 import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
 import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
+import adapterShoelaceUI from '../../styles/css/shoelace-adapter.css?inline' assert { type: 'css' };
 
 interface AppletRenderInfo {
   name: string;
@@ -38,7 +39,6 @@ enum LoadingContext {
   FirstRender = 'first-render',
   NoAppletSensemakerData = 'no-applet-sensemaker-data'
 }
-
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @state() loading: boolean = true;
@@ -265,31 +265,16 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   static styles = css`
-    @font-face {
-      font-family: 'Manrope;
-      font-weight: 400;
-      font-style: normal;
-      font-display: auto;
-      src: local('Manrope'), url(Manrope-Regular.ttf) format('truetype');
-    }
-    @font-face {
-      font-family: 'ManropeBold;
-      font-weight: 700;
-      font-style: normal;
-      font-display: auto;
-      src: local('Manrope'), url(Manrope-Bold.ttf) format('truetype');
-    }
     /** Imported Properties **/
     ${unsafeCSS(theme)}
     ${unsafeCSS(adapter)}
+    ${unsafeCSS(adapterShoelaceUI)}
 
     /** Layout **/
     :host {
       --menu-width: 138px;
-      --sl-font-sans: Manrope;
       width: calc(100% - 138px);
     }
-
     .container {
         display: flex;
         width: calc(100vw - 144px);
@@ -374,6 +359,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       letter-spacing: 0.2px;
       font-weight: var(--nh-font-weights-body-bold);
       line-height: var(--nh-line-heights-body-default);
+      letter-spacing: 0.5px !important
     }
     .dashboard-tab:first-child::part(base) {
       border-top-left-radius: calc(1px * var(--nh-radii-base) - 0px);
@@ -453,7 +439,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .nav-label::part(base) {
       color: var(--nh-theme-bg-muted);
       text-transform: uppercase;
-      font-family: Georgia;
       font-size: calc(1px * var(--nh-font-size-xs));
       font-weight: var(--nh-font-weights-body-bold);
     }
@@ -491,6 +476,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       padding: calc(1px * var(--nh-spacing-xxs));
       padding-left: calc(1px * var(--nh-spacing-sm));
     }
+
     .indented .nav-item::part(base) {
       padding-left: calc(1px * var(--nh-spacing-2xl));
     }

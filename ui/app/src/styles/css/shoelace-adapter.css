@@ -1,0 +1,14 @@
+/* Catch-all for shoelace base part styles */
+*::part(base) {
+  --sl-font-sans: ManropeBold;
+  --sl-font-weight-semibold: 700;
+  --sl-font-size-small: calc(1px * var(--nh-font-size-md));
+  --sl-font-size-medium: calc(1px * var(--nh-font-size-lg));
+  --sl-font-size-large: calc(1px * var(--nh-font-size-xl));
+}
+/* More specefic shoelace base part styles */
+.nav-item::part(base) {
+  --sl-font-sans: Manrope;
+  --sl-font-weight-semibold: 700;
+  --sl-font-size-medium : calc(1px * var(--nh-font-size-xl)) !important;
+}

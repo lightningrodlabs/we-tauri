@@ -132,20 +132,6 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     ${unsafeCSS(theme)}
     ${unsafeCSS(adapter)}
     :host {
-      @font-face {
-        font-family: 'Manrope;
-        font-weight: 400;
-        font-style: normal;
-        font-display: auto;
-        src: local('Manrope'), url('Manrope-Regular.ttf') format('truetype');
-      }
-      @font-face {
-        font-family: 'ManropeBold;
-        font-weight: 700;
-        font-style: normal;
-        font-display: auto;
-        src: local('Manrope'), url('Manrope-Bold.ttf') format('truetype');
-      }
 
       /** Global Table **/
       color: var(--nh-theme-fg-default);
