@@ -867,6 +867,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           cursor: pointer;
           border: none;
           position: relative;
+          border: transparent 4px solid;
         }
         .group-add::before, .user-profile::before {
           content: '';
@@ -883,10 +884,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         .group-add {
           background: url(./icons/add-nh-icon.png);
           background-size: contain;
+          background-repeat: no-repeat;
         }
         .user-profile {
           background: url(./icons/user-icon.png);
           background-size: contain;
+          background-repeat: no-repeat;
         }
 
         .top-bar {
@@ -926,7 +929,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         .highlightedGroupCentric {
           border: var(--nh-theme-bg-surface) 4px solid;
-          border-radius: calc(1px * var(--nh-radii-base));
+          border-radius: calc(1px * var(--nh-radii-xl));
         }
         .highlightedGroupCentric .icon {
           height: 5rem;
@@ -949,8 +952,11 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           border-radius: 50%;
         }
 
-        .groupCentricIconHover:hover {
+        .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover {
           border: var(--nh-theme-accent-muted) 4px solid;
+        }
+        .user-profile:hover, .group-add:hover {
+          border-radius: 50%;
         }
 
         .appletCentricIconHover {
