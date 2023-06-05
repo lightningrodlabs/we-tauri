@@ -28,6 +28,15 @@ import {
 } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
 
+function renderNotInstalled(appletName: string) {
+  document.body.innerHTML = `<div 
+    style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center"
+  >
+    <span>You don't have the applet ${appletName} installed.</span>
+    <span>Install it from the group's home, and refresh this view.</span>
+  </div>`;
+}
+
 window.onload = async () => {
   const view = getRenderView();
   const crossApplet = view ? view.type === "cross-applet-view" : false;
@@ -36,6 +45,11 @@ window.onload = async () => {
     type: "get-iframe-config",
     crossApplet,
   });
+
+  if (iframeConfig.type === "not-installed") {
+    renderNotInstalled(iframeConfig.type);
+    return;
+  }
 
   let applet = await fetchApplet();
 
@@ -95,11 +109,7 @@ async function fetchApplet(): Promise<WeApplet> {
   return window.importApplet();
 }
 
-async function renderView(
-  applet: WeApplet,
-  iframeConfig: IframeConfig,
-  view: RenderView
-) {
+async function buildWeServices(): Promise<WeServices> {
   const internalAttachmentTypesByGroups: Record<
     EntryHashB64,
     Record<string, InternalAttachmentType>
@@ -140,7 +150,7 @@ async function renderView(
     );
   }
 
-  const weServices: WeServices = {
+  return {
     attachmentTypes,
     openViews: {
       openAppletMain: (appletId) =>
@@ -210,6 +220,14 @@ async function renderView(
         filter,
       }),
   };
+}
+
+async function renderView(
+  applet: WeApplet,
+  iframeConfig: IframeConfig,
+  view: RenderView
+) {
+  const weServices = await buildWeServices();
 
   if (view.type === "applet-view") {
     if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
@@ -313,7 +331,7 @@ async function handleMessage(
   const appletId = iframeConfig.appletId;
 
   let client = await setupAppletClient(iframeConfig.appPort, appletId);
-  // let profilesClient = await setupProfilesClient(iframeConfig.appPort, , appletId);
+  const weServices = await buildWeServices();
 
   switch (request.type) {
     case "get-entry-info":
@@ -323,7 +341,11 @@ async function handleMessage(
         request.entryDefId
       ].info(request.hrl);
     case "get-attachment-types":
-      const types = await applet!.attachmentTypes(client!);
+      const types = await applet!.attachmentTypes(
+        client!,
+        appletId,
+        weServices
+      );
 
       const internalAttachmentTypes: Record<string, InternalAttachmentType> =
         {};
@@ -353,9 +375,9 @@ async function handleMessage(
 
       return blocks;
     case "search":
-      return applet!.search(client!, request.filter);
+      return applet!.search(client!, appletId, weServices, request.filter);
     case "create-attachment":
-      return (await applet!.attachmentTypes(client!))[
+      return (await applet!.attachmentTypes(client!, appletId, weServices))[
         request.attachmentType
       ].create(request.attachToHrl);
   }

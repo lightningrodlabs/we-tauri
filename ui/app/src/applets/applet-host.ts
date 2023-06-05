@@ -143,10 +143,21 @@ export async function handleAppletIframeMessage(
   const services = buildHeadlessWeServices(weStore);
   switch (message.type) {
     case "get-iframe-config":
+      const isInstalled = await toPromise(
+        weStore.appletBundlesStore.isInstalled.get(appletId)
+      );
+      const applet = await toPromise(weStore.applets.get(appletId));
+
+      if (!isInstalled) {
+        const iframeConfig: IframeConfig = {
+          type: "not-installed",
+          appletName: applet.applet.custom_name,
+        };
+        return iframeConfig;
+      }
+
       const crossApplet = message.crossApplet;
       if (crossApplet) {
-        const applet = await toPromise(weStore.applets.get(appletId));
-
         const applets = await toPromise(
           weStore.appletsForBundleHash.get(
             applet.applet.devhub_happ_release_hash

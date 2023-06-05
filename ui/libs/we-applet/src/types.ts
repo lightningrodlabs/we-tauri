@@ -115,11 +115,15 @@ export interface WeApplet {
   ) => Promise<CrossAppletViews>;
 
   attachmentTypes: (
-    appletClient: AppAgentClient
+    appletClient: AppAgentClient,
+    appletId: EntryHash,
+    weServices: WeServices
   ) => Promise<Record<string, AttachmentType>>;
 
   search: (
     appletClient: AppAgentClient,
+    appletId: EntryHash,
+    weServices: WeServices,
     searchFilter: string
   ) => Promise<Array<HrlWithContext>>;
 }

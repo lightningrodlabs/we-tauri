@@ -5,7 +5,6 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   completed,
-  joinAsyncMap,
   lazyLoad,
   manualReloadStore,
   mapAndJoin,
@@ -18,9 +17,8 @@ import {
   HoloHashMap,
   LazyHoloHashMap,
   pickBy,
-  slice,
 } from "@holochain-open-dev/utils";
-import { decodeHashFromBase64, HoloHash } from "@holochain/client";
+import { decodeHashFromBase64 } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
@@ -233,18 +231,22 @@ export class WeStore {
   );
 
   applets = new LazyHoloHashMap((appletHash: EntryHash) =>
-    retryUntilSuccess(async () => {
-      const groups = await toPromise(this.groupsForApplet.get(appletHash));
+    retryUntilSuccess(
+      async () => {
+        const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-      const applet = await Promise.race(
-        Array.from(groups.values()).map((groupStore) =>
-          toPromise(groupStore.applets.get(appletHash))
-        )
-      );
-      if (!applet) throw new Error("Applet not found yet");
+        const applet = await Promise.race(
+          Array.from(groups.values()).map((groupStore) =>
+            toPromise(groupStore.applets.get(appletHash))
+          )
+        );
+        if (!applet) throw new Error("Applet not found yet");
 
-      return new AppletStore(appletHash, applet, this);
-    })
+        return new AppletStore(appletHash, applet, this);
+      },
+      3000,
+      4
+    )
   );
 
   allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>

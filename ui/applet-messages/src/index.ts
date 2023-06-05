@@ -77,6 +77,10 @@ export type IframeConfig =
       type: "cross-applet";
       appPort: number;
       applets: Record<EntryHashB64, ProfilesLocation>;
+    }
+  | {
+      type: "not-installed";
+      appletName: string;
     };
 
 export interface AppletToParentMessage {
