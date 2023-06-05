@@ -67,7 +67,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   @property()
   selectedDimensions!: DimensionDict;
   @property()
-  dimensionEntries!: Dimension[];
+  dimensionEntries!: any[];
 
   @property({ attribute: false })
   public tableStore!: TableStore<AssessmentTableRecord>;
@@ -107,14 +107,21 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   }
 
   async updated(changedProperties) {
-    const resourceAssessments = (Object.values(this.allAssessments.value as AssessmentDict));
+    let resourceAssessments: Assessment[] = (Object.values(this.allAssessments.value as AssessmentDict))[0];
 
     if(this.tableType === AssessmentTableType.Resource) {
-      console.log('this.tableType :>> ', this.tableType, this.tableStore.records);
-      this.tableStore.records = resourceAssessments[0].map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
-      return;
+      // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
+      resourceAssessments = this.filterByMethodNames(resourceAssessments, ['importance', 'perceived_heat']);
+      // console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
+      this.tableStore.records = resourceAssessments.map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
       return;
     }
+    
+    // else we are dealing with a context, filter accordingly
+    // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
+    this.filterByMethodNames(resourceAssessments, ['total_importance', 'average_heat']);
+    // console.log('resourceAssessments (objective) :>> ', resourceAssessments);
+
     for(let[propName, _] of changedProperties) {
       if(propName != 'selectedContext') return
 
@@ -124,9 +131,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       } catch (error) {
         console.log('No context entry exists for that context entry hash!')  
       }
-      console.log('this.contextEntry :>> ', this.dimensions);
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
-      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments[0], encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
       this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }
@@ -169,6 +175,15 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
     return resourceAssessments.filter((assessment: Assessment) => {
       return encodeHashToBase64(assessment.dimension_eh) === filteringHash
+    })
+  }
+
+  filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]) {
+    return resourceAssessments.filter((assessment: Assessment) => {
+      for(let method of filteringMethods) {
+        if(encodeHashToBase64(this.selectedDimensions[method]) == encodeHashToBase64(assessment.dimension_eh)) return false
+      }
+      return true
     })
   }
 
