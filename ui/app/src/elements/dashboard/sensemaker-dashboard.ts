@@ -19,25 +19,29 @@ import {
 } from '@scoped-elements/shoelace';
 import { Readable, get } from '@holochain-open-dev/stores';
 
-import { StatefulTable } from '../components/table';
+import { AssessmentTableType, StatefulTable } from '../components/table';
 
 import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
 import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 import adapterShoelaceUI from '../../styles/css/shoelace-adapter.css?inline' assert { type: 'css' };
+import { encodeHashToBase64 } from '@holochain/client';
+
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
 interface AppletRenderInfo {
   name: string;
   resourceNames?: string[];
 }
 type AppletDict = {
-  [id: string] : AppletRenderInfo;
-}
+  [id: string]: AppletRenderInfo;
+};
 type ContextDict = {
-  [id: string] : string[];
-}
+  //resource: context names
+  [id: string]: string[];
+};
 enum LoadingContext {
   FirstRender = 'first-render',
-  NoAppletSensemakerData = 'no-applet-sensemaker-data'
+  NoAppletSensemakerData = 'no-applet-sensemaker-data',
 }
 
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
@@ -46,14 +50,17 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
-  @contextProvider({context: sensemakerStoreContext})
-  @property({attribute: false})
+  @contextProvider({ context: sensemakerStoreContext })
+  @property({ attribute: false })
   _sensemakerStore!: SensemakerStore;
 
-  @state() selectedResourceName!: string;
   @state() loadingContext: LoadingContext = LoadingContext.FirstRender;
-  @state() applets : AppletDict = {};
-  @state() contexts : ContextDict = {};
+
+  @state() selectedResourceName!: string;
+  @state() selectedContext!: string;
+  @state() applets: AppletDict = {};
+  @state() contexts: ContextDict = {};
+  @state() context_ehs: any = {};
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -63,26 +70,35 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     if (!selectedWeGroupId) return;
     console.log('selected weGroupId :>> ', selectedWeGroupId);
 
-    this._sensemakerStore = get(this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>);
-    this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe((store) => {
+    this._sensemakerStore = get(
+      this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>,
+    );
+    this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       console.log('store :>> ', store);
-      (store?.appletConfig() as Readable<AppletConfig>)
-        .subscribe(appletConfig => {
-          const id : string = appletConfig?.role_name;
-          // TODO: fix edge case of repeat install of same applet? make unique id
-          if(!id) return this.setLoadingContext(LoadingContext.NoAppletSensemakerData)            
-    
-          const capitalize = part => part[0].toUpperCase() + part.slice(1)
-          const cleanResourceNameForUI = propertyName => propertyName.split("_").map(capitalize).join(" ")
-          
-          console.log("appletConfig:", appletConfig);
-          console.log("renderable applet info:", this.applets);
-          console.log("renderable contexts info:", this.contexts, this.contexts?.length);
-          this.applets[id] = { ...this.applets[id], resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI)};
-          this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI)
+      (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
+        const id: string = appletConfig?.role_name;
+        // TODO: fix edge case of repeat install of same applet? make unique id
+        if (!id) return this.setLoadingContext(LoadingContext.NoAppletSensemakerData);
 
-          this.loading = false;
-        });
+        const capitalize = part => part[0].toUpperCase() + part.slice(1);
+        const cleanResourceNameForUI = propertyName =>
+          propertyName.split('_').map(capitalize).join(' ');
+
+        console.log('appletConfig:', appletConfig);
+        console.log('renderable applet info:', this.applets);
+        console.log('renderable contexts info:', this.contexts, this.contexts?.length);
+        this.applets[id] = {
+          ...this.applets[id],
+          resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
+        };
+
+        //Keep context names for display
+        this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
+        // Keep context entry hashes for filtering
+        this.context_ehs = Object.fromEntries(zip(this.contexts[id], Object.values(appletConfig.cultural_contexts)));
+
+        this.loading = false;
+      });
     });
   }
 
@@ -94,9 +110,9 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   setLoadingContext(contextValue: LoadingContext) {
     this.loadingContext = contextValue;
   }
+
   handleSubcomponentFinishedLoading(event: Event) {
     this.loading = false;
-    console.log('table finished loading! :>> ');
   }
 
   renderIcons() {
@@ -159,28 +175,30 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
           </div>
           ${this.loadingContext == LoadingContext.NoAppletSensemakerData
             ? html`<div class="alert-wrapper" style="width: 80%;">
-              <sl-alert open class="alert">
-                <sl-icon slot="icon" name="info-circle"></sl-icon>
+                <sl-alert open class="alert">
+                  <sl-icon slot="icon" name="info-circle"></sl-icon>
                   Please visit your applet screen to generate some data for the dashboard.
-              </sl-alert>
-            </div>`
+                </sl-alert>
+              </div>`
             : html`<div class="skeleton-main-container">
-              ${Array.from(Array(25)).map(
-                () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
-              )}
-            </div>`
-          }
+                ${Array.from(Array(24)).map(
+                  () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
+                )}
+              </div>`}
         </main>
       </div>
     `;
   }
 
   render() {
-    const applets = Object.values(this.applets)?.length && Object.values(this.applets) as AppletRenderInfo[] || undefined;
-    if(applets && applets.length && applets[0]?.resourceNames) {
-      this.selectedResourceName = applets[0]?.resourceNames[0]; 
+    const applets =
+      (Object.values(this.applets)?.length &&
+        (Object.values(this.applets) as AppletRenderInfo[])) ||
+      undefined;
+    if (applets && applets.length && applets[0]?.resourceNames) {
+      this.selectedResourceName = applets[0]?.resourceNames[0];
     }
-    const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0]; // TODO: set applet context control 
+    const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0];
 
     return html`
       <div class="container">
@@ -195,13 +213,15 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
           </sl-menu>
           <sl-menu class="dashboard-menu-section">
             <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-            ${applets && applets.map(
-              (applet) => html`
+            ${applets &&
+            applets.map(
+              applet => html`
                 <sl-menu-item class="nav-item" value="${applet.name?.toLowerCase()}"
                   >${applet.name}</sl-menu-item
                 >
                 <div role="navigation" class="sub-nav indented">
-                  ${applet.resourceNames && applet.resourceNames.map(
+                  ${applet.resourceNames &&
+                  applet.resourceNames.map(
                     resource =>
                       html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                         >${resource}</sl-menu-item
@@ -223,24 +243,40 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
-                    <sl-tab
-                      panel="${this.selectedResourceName}s"
-                      class="dashboard-tab resource"
+                    <sl-tab panel="resource" class="dashboard-tab resource"
                       >${this.selectedResourceName}s</sl-tab
                     >
-                    ${contexts && contexts.map(
+                    ${contexts &&
+                    contexts.map(
                       context =>
-                        html`<sl-tab panel="${context.toLowerCase()}" class="dashboard-tab"
-                          >${context}</sl-tab
+                        html`<sl-tab 
+                                panel="${context.toLowerCase()}" 
+                                class="dashboard-tab"
+                                @click=${() => { this.selectedContext = encodeHashToBase64(this.context_ehs[context]); }}
+                          >${context}</sl-tab-panel
                         >`,
                     )}
                   </div>
                   ${this.renderIcons()}
                 </div>
 
-                ${contexts && contexts.map(
+                <sl-tab-panel active class="dashboard-tab-panel" name="resource">
+                  <dashboard-table
+                    .resourceName=${this.selectedResourceName}
+                    .tableType=${AssessmentTableType.Resource}
+                    .selectedContext=${this.selectedContext}
+                  ></dashboard-table>
+                </sl-tab-panel>
+                ${contexts &&
+                contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}"><dashboard-table .resourceName=${this.selectedResourceName}></dashboard-table></sl-tab>`,
+                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}" .contextEh="${context.toLowerCase()}">
+                      <dashboard-table
+                        .resourceName=${this.selectedResourceName}
+                        .tableType=${AssessmentTableType.Context}
+                        .selectedContext=${this.selectedContext}
+                      ></dashboard-table>
+                    </sl-tab-panel>`,
                 )}
               </sl-tab-group>`}
         </main>
@@ -276,14 +312,14 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       width: calc(100% - 138px);
     }
     .container {
-        display: flex;
-        width: calc(100vw - 144px);
-        height: 100%;
+      display: flex;
+      width: calc(100vw - 144px);
+      height: 100%;
     }
     .container nav {
-        flex-basis: var(--menu-width);
-        padding: 0 calc(1px * var(--nh-spacing-sm));
-        background: var(--nh-theme-bg-canvas);
+      flex-basis: var(--menu-width);
+      padding: 0 calc(1px * var(--nh-spacing-sm));
+      background: var(--nh-theme-bg-canvas);
     }
     .container main {
       flex-grow: 1;
@@ -300,7 +336,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     }
     .alert::part(base) {
       height: 8rem;
-      width: 100%
+      width: 100%;
     }
 
     /* Side scrolling **/
@@ -322,7 +358,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
       margin: calc(1px * var(--nh-spacing-sm));
       margin-bottom: 0;
-      padding: 0;
+      padding: calc(1px * var(--nh-spacing-xs));
 
       color: var(--nh-theme-fg-default);
       background-color: var(--nh-theme-bg-surface);
@@ -349,6 +385,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
     .dashboard-tab {
       position: relative;
+      margin-left: calc(1px * var(--nh-spacing-xxs));
     }
     .dashboard-tab::part(base) {
       border-radius: 0;
@@ -359,21 +396,25 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       letter-spacing: 0.2px;
       font-weight: var(--nh-font-weights-body-bold);
       line-height: var(--nh-line-heights-body-default);
-      letter-spacing: 0.5px !important
+      letter-spacing: 0.5px !important;
     }
-    .dashboard-tab:first-child::part(base) {
-      border-top-left-radius: calc(1px * var(--nh-radii-base) - 0px);
-      border-bottom-left-radius: calc(1px * var(--nh-radii-base) - 0px);
+    .dashboard-tab:first-child::part(base),
+    .dashboard-tab:hover::part(base) {
+      border-top-left-radius: calc(2px * var(--nh-radii-md));
+      border-bottom-left-radius: calc(2px * var(--nh-radii-md));
     }
     .dashboard-tab:last-child::part(base) {
-      border-top-right-radius: calc(1px * var(--nh-radii-base) - 0px);
-      border-bottom-right-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-top-right-radius: calc(2px * var(--nh-radii-md));
+      border-bottom-right-radius: calc(2px * var(--nh-radii-md));
     }
 
     /* Resource(active) and Hover */
 
     .dashboard-tab.resource::part(base),
-    .dashboard-tab:hover,
+    .dashboard-tab:hover {
+      color: var(--nh-theme-accent-muted);
+      background-color: var(--nh-theme-bg-subtle);
+    }
     .dashboard-tab.active {
       color: var(--nh-theme-accent-muted);
       background-color: var(--nh-theme-bg-subtle);
@@ -384,12 +425,12 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     }
     .dashboard-tab:hover {
       background-color: var(--nh-theme-bg-subtle);
-      border-top-right-radius: calc(1px * var(--nh-radii-base) - 0px);
-      border-top-left-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-top-right-radius: calc(2px * var(--nh-radii-md) - 0px);
+      border-top-left-radius: calc(2px * var(--nh-radii-md) - 0px);
     }
-    .dashboard-tab.resource:hover,
+    .dashboard-tab.resource:hover::part(base),
     .dashboard-tab.active::part(base) {
-      border-radius: calc(1px * var(--nh-radii-base) - 0px);
+      border-radius: calc(2px * var(--nh-radii-md) - 0px);
     }
     .dashboard-tab.resource:hover::part(base),
     .dashboard-tab.active::part(base):hover {
@@ -400,13 +441,13 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .dashboard-tab.active::after {
       position: absolute;
       background-color: var(--nh-theme-bg-subtle);
-      bottom: -5px;
+      bottom: -10px;
       left: 0px;
       content: '';
       width: 100%;
-      height: 8px;
+      height: 10px;
     }
-    .dashboard-tab.active::after, 
+    .dashboard-tab.active::after,
     .dashboard-tab.active::part(base) {
       background-color: var(--nh-theme-bg-canvas);
     }
@@ -417,12 +458,8 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       bottom: 1px;
       right: -4px;
       content: '';
-      height: calc(100% - 4px);
+      height: calc(100% - 2px);
       width: 2px;
-    }
-    .dashboard-tab.resource:hover::after {
-      width: 0;
-      height: 0;
     }
 
     /** Tab Panels **/
@@ -532,8 +569,8 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     .skeleton-main-container {
       display: grid;
       gap: calc(1px * var(--nh-spacing-md));
-      grid-template-rows: 50px repeat(5, 100px);
-      grid-template-columns: repeat(5, 100px);
+      grid-template-rows: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr ;
       gap: calc(1px * var(--nh-spacing-sm));
     }
     .skeleton-overview nav {

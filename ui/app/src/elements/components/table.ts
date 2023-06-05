@@ -2,8 +2,9 @@ import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { contextProvided } from '@lit-labs/context';
 
-import { Assessment, Dimension, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { Assessment, CulturalContext, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
+import { decode } from '@msgpack/msgpack';
 
 import {
   FieldDefinitions,
@@ -22,13 +23,25 @@ import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 interface AssessmentTableRecord {
   resource: object,
   neighbour: string,
-  [key: string]: DimensionEh | object | string, // Dimensions
+  [key: string]: DimensionEh | object | string, // Dimensions or Assessments
 }
+
+export enum AssessmentTableType {
+  Resource,
+  Context
+}
+
 export type AssessmentDict = {
   [entryHash: string]: Assessment[];
 };
 
 export const tableId = 'assessmentsForResource';
+
+const assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
+  return { 
+    neighbour: encodeHashToBase64(assessment.author),
+    resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0]}, } as AssessmentTableRecord
+}
 
 @customElement('dashboard-table')
 export class StatefulTable extends ScopedRegistryHost(LitElement) {
@@ -38,11 +51,16 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   
   @property({ type: String })
   resourceName;
+  
+  @property({ type: AssessmentTableType })
+  tableType;
+  @property({ type: String })
+  selectedContext;
 
   @state()
-  resourceIndex: keyof AssessmentDict = 'abc';
-  @state()
   fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
+  @state()
+  contextEntry!: CulturalContext;
 
   @property()
   allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
@@ -61,9 +79,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   connectedCallback(): void {
     super.connectedCallback();
 
-    this.fieldDefs = this.generateFieldDefs(this.resourceName);
+    this.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     this.tableStore = new TableStore({
-      // This is the Id used to identify the table in the CSS variables and is the table's HTML id
       tableId,
       fieldDefs: this.fieldDefs,
       colGroups: [
@@ -74,25 +91,40 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
-        this.tableStore.records = Object.values(resourceAssessments).flat().map((assessment: any) => {
-          return ({
-            neighbour: encodeHashToBase64(assessment.author),
-            resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.keys(assessment.value)[0]},
-          } as AssessmentTableRecord)
-        });
+        this.tableStore.records = (Object.values(resourceAssessments).flat() as Assessment[]).map(assessmentToAssessmentTableRecord);
         this.emitFinishedLoadingEvent();
       }
     });
   }
 
-  generateFieldDefs(resourceName: string = '') : FieldDefinitions<AssessmentTableRecord> {
-    return {
+  async updated(changedProperties) {
+    for(let[propName, _] of changedProperties) {
+      if(propName != 'selectedContext') return
+
+      const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
+      try {
+        this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
+      } catch (error) {
+        console.log('No context entry exists for that context entry hash!')  
+      }
+      // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
+      const resourceAssessments = (Object.values(this.allAssessments.value as AssessmentDict))[0];
+      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+      this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
+
+      console.log('this.tableStore.records :>> ', this.tableStore.records);
+      this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+    }
+  }
+
+  generateFieldDefs(resourceName: string, tabType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
+    const fixedFields = {
       'resource': new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
-          ${generateHashHTML(resource.eh)} ${generateMockValue(Math.floor(Math.random() * 3) + 1)}
+          ${generateHashHTML(resource.eh)} ${resource.value}
         </div>`,
       }),
       'neighbour': new FieldDefinition<AssessmentTableRecord>({
@@ -102,13 +134,30 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
         >
           ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
         </div>`,
-      }),
-      'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension1', resourceName) }),
-      // 'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
+    })}
+    switch (tabType) {
+      case AssessmentTableType.Resource:
+        return fixedFields
+      case AssessmentTableType.Context:
+        const contextFields = {
+          'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension1', resourceName) }),
+          'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
+        };
+        return {
+        ...fixedFields,
+        ...contextFields
+      }
     }
+  }
+  
+  filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
+    return resourceAssessments.filter((assessment: Assessment) => {
+      return encodeHashToBase64(assessment.dimension_eh) === filteringHash
+    })
   }
 
   render(): TemplateResult {
+    // TODO: figure out why this re-renders 3 times on tab change
     return this.tableStore.records.length
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
       : html`<div id="${this.tableStore.tableId}">
@@ -146,7 +195,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       --table-assessmentsForResource-display : block;
       --border-color: #7d7087;
       --menuSubTitle: #a89cb0;
-      --column-max-width: calc(1rem * var(--nh-spacing-lg));
+      --column-max-width: calc(2rem * var(--nh-spacing-lg));
       
       /** Header Cells **/
       --table-assessmentsForResource-heading-background-color: var(--nh-theme-bg-surface);
@@ -174,10 +223,10 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       --table-assessmentsForResource-body-cell-background-color: var(--nh-theme-bg-surface);
       --cell-hash-border-radius: calc(1px * var(--nh-radii-sm));
       --cell-hash-padding: calc(1px * var(--nh-spacing-sm));
-      --cell-hash-font-size: calc(1px * var(--nh-font-size-xs));
+      --cell-hash-font-size: calc(1px * var(--nh-font-size-sm));
 
       /* Values */
-      --cell-value-font-size: calc(1px * var(--nh-font-size-xs));
+      --cell-value-font-size: calc(1px * var(--nh-font-size-md));
 
       /** First Two Columns **/
       --table-assessmentsForResource-resource-width: var(--column-max-width);
@@ -244,12 +293,12 @@ function generateMockValue(number: number) {
 function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
   return html` <div style="font-family: 'Open Sans'; margin: var(--header-title-margin-y) 0">
     <h2
-      style="margin: 0; font-size: calc(1px * var(--nh-font-size-sm)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
+      style="margin: 0; font-size: calc(1px * var(--nh-font-size-md)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
     >
       ${resourceName}
     </h2>
     <h4
-      style="margin: 0; font-size: calc(1px * var(--nh-font-size-xxs));font-weight: var(--nh-font-weights-headlines-regular)"
+      style="margin: 0; font-size: calc(1px * var(--nh-font-size-sm));font-weight: var(--nh-font-weights-headlines-regular)"
     >
       ${headerTitle}
     </h4>
