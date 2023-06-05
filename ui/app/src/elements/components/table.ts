@@ -90,15 +90,21 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
-
-        console.log('Total assessments :>> ', Object.values(resourceAssessments).flat().length);
-        this.tableStore.records = (Object.values(resourceAssessments).flat() as Assessment[]).map(assessmentToAssessmentTableRecord);
+        // console.log('Total assessments :>> ', Object.values(resourceAssessments).flat().length);
+        this.tableStore.records = (Object.values(resourceAssessments) as Assessment[]).map(assessmentToAssessmentTableRecord);
         this.emitFinishedLoadingEvent();
       }
     });
   }
 
   async updated(changedProperties) {
+    const resourceAssessments = (Object.values(this.allAssessments.value as AssessmentDict));
+
+    if(this.tableType === AssessmentTableType.Resource) {
+      console.log('this.tableType :>> ', this.tableType, this.tableStore.records);
+      this.tableStore.records = resourceAssessments[0].map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+      return;
+    }
     for(let[propName, _] of changedProperties) {
       if(propName != 'selectedContext') return
 
@@ -108,9 +114,9 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       } catch (error) {
         console.log('No context entry exists for that context entry hash!')  
       }
+      console.log('this.contextEntry :>> ', this.contextEntry);
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
-      const resourceAssessments = (Object.values(this.allAssessments.value as AssessmentDict))[0];
-      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments[0], encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
       this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }

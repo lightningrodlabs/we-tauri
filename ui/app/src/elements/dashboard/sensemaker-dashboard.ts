@@ -56,7 +56,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   _sensemakerStore!: SensemakerStore;
 
   @state() selectedResourceName!: string;
-  @state() selectedContext!: string;
+  @state() selectedContext: string = 'none';
 
   @state() applets: AppletDict = {};
   @state() contexts: ContextDict = {};
@@ -111,6 +111,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   handleSubcomponentFinishedLoading(_: Event) {
     this.loading = false;
+    console.log('loaded! :>> ');
   }
 
   renderIcons() {
@@ -197,7 +198,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       this.selectedResourceName = applets[0]?.resourceNames[0];
     }
     const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0];
-
+console.log('this.loading????? :>> ', this.loading);
     return html`
       <div class="container">
         <nav>
@@ -242,6 +243,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
                     <sl-tab panel="resource" class="dashboard-tab resource"
+                    @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = 'none' }}
                       >${this.selectedResourceName}s</sl-tab
                     >
                     ${contexts &&
@@ -250,7 +252,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                         html`<sl-tab 
                                 panel="${context.toLowerCase()}" 
                                 class="dashboard-tab"
-                                @click=${() => { this.selectedContext = encodeHashToBase64(this.context_ehs[context]); }}
+                                @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
                           >${context}</sl-tab-panel
                         >`,
                     )}
@@ -262,7 +264,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                   <dashboard-table
                     .resourceName=${this.selectedResourceName}
                     .tableType=${AssessmentTableType.Resource}
-                    .selectedContext=${'none'}
+                    .selectedContext=${this.selectedContext}
                   ></dashboard-table>
                 </sl-tab-panel>
                 ${contexts &&
@@ -532,6 +534,10 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     /**  Skeleton **/
     .skeleton-overview {
       background-color: var(--nh-theme-bg-canvas);
+    }
+    .skeleton-part {
+      --color: var(--nh-theme-bg-subtle);
+      --sheen-color: var(--nh-theme-bg-surface);
     }
     .skeleton-part::part(indicator) {
       background-color: var(--nh-theme-bg-muted);
