@@ -39,6 +39,10 @@ type ContextDict = {
   //resource: context names
   [id: string]: string[];
 };
+export type DimensionDict = {
+  [id: string]: Uint8Array;
+};
+type ContextEhDict = DimensionDict;
 enum LoadingState {
   FirstRender = 'first-render',
   NoAppletSensemakerData = 'no-applet-sensemaker-data',
@@ -60,7 +64,8 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   @state() applets: AppletDict = {};
   @state() contexts: ContextDict = {};
-  @state() context_ehs: any = {};
+  @state() dimensions: DimensionDict = {};
+  @state() context_ehs: ContextEhDict = {};
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -82,7 +87,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
         const cleanResourceNameForUI = propertyName =>
           propertyName.split('_').map(capitalize).join(' ');
 
-        // console.log('appletConfig:', appletConfig);
+        console.log('appletConfig:', appletConfig);
         // console.log('renderable applet info:', this.applets);
         // console.log('renderable contexts info:', this.contexts, this.contexts?.length);
         this.applets[id] = {
@@ -90,6 +95,8 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
           resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
         };
 
+        // Keep dimensions for dashboard table prop        
+        this.dimensions = appletConfig.dimensions;
         //Keep context names for display
         this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
         // Keep context entry hashes for filtering
@@ -265,6 +272,7 @@ console.log('this.loading????? :>> ', this.loading);
                     .resourceName=${this.selectedResourceName}
                     .tableType=${AssessmentTableType.Resource}
                     .selectedContext=${this.selectedContext}
+                    .selectedDimensions=${this.dimensions}
                   ></dashboard-table>
                 </sl-tab-panel>
                 ${contexts &&
@@ -275,6 +283,7 @@ console.log('this.loading????? :>> ', this.loading);
                         .resourceName=${this.selectedResourceName}
                         .tableType=${AssessmentTableType.Context}
                         .selectedContext=${this.selectedContext}
+                        .selectedDimensions=${this.dimensions}
                       ></dashboard-table>
                     </sl-tab-panel>`,
                 )}

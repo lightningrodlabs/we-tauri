@@ -2,7 +2,7 @@ import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { contextProvided } from '@lit-labs/context';
 
-import { Assessment, CulturalContext, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { Assessment, CulturalContext, Dimension, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
 import { decode } from '@msgpack/msgpack';
 
@@ -19,6 +19,7 @@ import theme from '../../styles/css/variables.css?inline' assert { type: 'css' }
 import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
+import { DimensionDict } from '../dashboard/sensemaker-dashboard';
 
 interface AssessmentTableRecord {
   resource: object,
@@ -49,20 +50,24 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore;
   
-  @property({ type: String })
-  resourceName;
-  
   @property({ type: AssessmentTableType })
   tableType;
+  @state()
+  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
+
+  @property({ type: String })
+  resourceName;
+  @property()
+  allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
+
   @property({ type: String })
   selectedContext;
   @state()
   contextEntry!: CulturalContext;
-  @state()
-  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
-
   @property()
-  allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
+  selectedDimensions!: DimensionDict;
+  @property()
+  dimensionEntries!: Dimension[];
 
   @property({ attribute: false })
   public tableStore!: TableStore<AssessmentTableRecord>;
@@ -75,7 +80,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     this.dispatchEvent(event);
   }
 
-  connectedCallback(): void {
+  async connectedCallback() {
     super.connectedCallback();
 
     this.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
@@ -87,6 +92,10 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       ],
       showHeader: true,
     });
+
+    // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective. 
+    // Is it from AppletUIConfig?
+    // const dimensionsEntries =  
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
@@ -104,6 +113,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       console.log('this.tableType :>> ', this.tableType, this.tableStore.records);
       this.tableStore.records = resourceAssessments[0].map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
       return;
+      return;
     }
     for(let[propName, _] of changedProperties) {
       if(propName != 'selectedContext') return
@@ -114,7 +124,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       } catch (error) {
         console.log('No context entry exists for that context entry hash!')  
       }
-      console.log('this.contextEntry :>> ', this.contextEntry);
+      console.log('this.contextEntry :>> ', this.dimensions);
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
       const filteredAssessments =  this.filterByDimensionEh(resourceAssessments[0], encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
       this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
@@ -144,6 +154,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       case AssessmentTableType.Resource:
         return fixedFields
       case AssessmentTableType.Context:
+        
         const contextFields = {
           'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension1', resourceName) }),
           'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
@@ -162,7 +173,6 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   }
 
   render(): TemplateResult {
-    console.log('this.selectedContext, this.tableType :>> ', this.selectedContext, this.tableType);
     // TODO: figure out why this re-renders 3 times on tab change
     return this.tableStore.records.length
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
