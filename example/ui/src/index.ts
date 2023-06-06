@@ -163,7 +163,12 @@ const applet: WeApplet = {
       label: msg("Post"),
     },
   }),
-  search: async (appletClient: AppAgentClient, filter: string) => {
+  search: async (
+    appletClient: AppAgentClient,
+    _appletId,
+    _weServices,
+    filter: string
+  ) => {
     const appInfo = await appletClient.appInfo();
     const dnaHash = (appInfo.cell_info.forum[0] as any)[CellType.Provisioned]
       .cell_id[0];

@@ -30,6 +30,9 @@ export class HrlLink extends LitElement {
   @consume({ context: weServicesContext, subscribe: true })
   weServices!: WeServices;
 
+  @property()
+  onlyIcon = false;
+
   info = new StoreSubscriber(
     this,
     () =>
@@ -64,12 +67,13 @@ export class HrlLink extends LitElement {
         return html`
           <sl-tooltip
             ><div slot="content">
-              <div slot="suffix" class="row" style="align-items: center">
+              <div class="row" style="align-items: center">
+                ${this.onlyIcon
+                  ? html` <span>${entryInfo.entryInfo.name},&nbsp;</span> `
+                  : html``}
                 <span>
-                  ${appletsInfos.get(entryInfo.appletId)?.appletName}</span
-                >
-                <span style="margin-left: 8px; margin-right: 8px"
-                  >${msg(" in ")}</span
+                  ${appletsInfos.get(entryInfo.appletId)?.appletName}
+                  ${msg("in")}</span
                 >
                 ${appletsInfos.get(entryInfo.appletId)?.groupsIds.map(
                   (groupId) => html`
@@ -89,11 +93,14 @@ export class HrlLink extends LitElement {
                 this.weServices.openViews.openHrl(this.hrl, this.context)}
             >
               <div class="row" style="align-items: center">
-                <sl-icon
-                  .src=${entryInfo.entryInfo.icon_src}
-                  style="margin-right: 8px"
-                ></sl-icon>
-                <span>${entryInfo.entryInfo.name}</span>
+                <sl-icon .src=${entryInfo.entryInfo.icon_src}></sl-icon>
+                ${this.onlyIcon
+                  ? html``
+                  : html`
+                      <span style="margin-left: 8px"
+                        >${entryInfo.entryInfo.name}</span
+                      >
+                    `}
               </div>
             </sl-tag>
           </sl-tooltip>

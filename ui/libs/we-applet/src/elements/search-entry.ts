@@ -36,7 +36,6 @@ import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
 import { mdiMagnify } from "@mdi/js";
-import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -259,7 +258,7 @@ export class SearchEntry extends LitElement implements FormField {
                 ></sl-icon>
                 ${info.entryInfo.name}
                 <div slot="suffix" class="row" style="align-items: center">
-                  <span class="placeholder">${msg(" in ")}</span>
+                  <span class="placeholder">&nbsp;${msg("in")}&nbsp;</span>
                   ${searchResult.appletsInfos
                     .get(info.appletId)
                     ?.groupsIds.map(
@@ -267,7 +266,7 @@ export class SearchEntry extends LitElement implements FormField {
                         <img
                           .src=${searchResult.groupsProfiles.get(groupId)
                             ?.logo_src}
-                          style="height: 16px; width: 16px; margin-right: 4px;"
+                          style="height: 16px; width: 16px; margin-right: 4px; border-radius: 50%"
                         />
                       `
                     )}

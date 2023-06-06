@@ -109,47 +109,47 @@ async function fetchApplet(): Promise<WeApplet> {
   return window.importApplet();
 }
 
-async function buildWeServices(): Promise<WeServices> {
-  const internalAttachmentTypesByGroups: Record<
-    EntryHashB64,
-    Record<string, InternalAttachmentType>
-  > = await postMessage({
-    type: "get-attachment-types",
-  });
-
+async function buildWeServices(requestAttachments = true): Promise<WeServices> {
   const attachmentTypes = new HoloHashMap<
     EntryHash,
     Record<string, AttachmentType>
   >();
+  if (requestAttachments) {
+    const internalAttachmentTypesByGroups: Record<
+      EntryHashB64,
+      Record<string, InternalAttachmentType>
+    > = await postMessage({
+      type: "get-attachment-types",
+    });
 
-  for (const [appletId, appletAttachmentTypes] of Object.entries(
-    internalAttachmentTypesByGroups
-  )) {
-    const attachmentTypesForThisApplet: Record<string, AttachmentType> = {};
-    for (const [name, attachmentType] of Object.entries(
-      appletAttachmentTypes
+    for (const [appletId, appletAttachmentTypes] of Object.entries(
+      internalAttachmentTypesByGroups
     )) {
-      attachmentTypesForThisApplet[name] = {
-        label: attachmentType.label,
-        icon_src: attachmentType.icon_src,
-        create: (attachToHrl) =>
-          postMessage({
-            type: "create-attachment",
-            request: {
-              appletId: decodeHashFromBase64(appletId),
-              attachmentType: name,
-              attachToHrl,
-            },
-          }),
-      };
+      const attachmentTypesForThisApplet: Record<string, AttachmentType> = {};
+      for (const [name, attachmentType] of Object.entries(
+        appletAttachmentTypes
+      )) {
+        attachmentTypesForThisApplet[name] = {
+          label: attachmentType.label,
+          icon_src: attachmentType.icon_src,
+          create: (attachToHrl) =>
+            postMessage({
+              type: "create-attachment",
+              request: {
+                appletId: decodeHashFromBase64(appletId),
+                attachmentType: name,
+                attachToHrl,
+              },
+            }),
+        };
+      }
+
+      attachmentTypes.set(
+        decodeHashFromBase64(appletId),
+        attachmentTypesForThisApplet
+      );
     }
-
-    attachmentTypes.set(
-      decodeHashFromBase64(appletId),
-      attachmentTypesForThisApplet
-    );
   }
-
   return {
     attachmentTypes,
     openViews: {
@@ -331,7 +331,7 @@ async function handleMessage(
   const appletId = iframeConfig.appletId;
 
   let client = await setupAppletClient(iframeConfig.appPort, appletId);
-  const weServices = await buildWeServices();
+  let weServices: WeServices;
 
   switch (request.type) {
     case "get-entry-info":
@@ -341,6 +341,7 @@ async function handleMessage(
         request.entryDefId
       ].info(request.hrl);
     case "get-attachment-types":
+      weServices = await buildWeServices(false);
       const types = await applet!.attachmentTypes(
         client!,
         appletId,
@@ -375,8 +376,10 @@ async function handleMessage(
 
       return blocks;
     case "search":
+      weServices = await buildWeServices();
       return applet!.search(client!, appletId, weServices, request.filter);
     case "create-attachment":
+      weServices = await buildWeServices();
       return (await applet!.attachmentTypes(client!, appletId, weServices))[
         request.attachmentType
       ].create(request.attachToHrl);

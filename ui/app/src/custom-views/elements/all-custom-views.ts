@@ -41,14 +41,7 @@ export class AllCustomViews extends LitElement {
   );
 
   renderList(hashes: Array<ActionHash>) {
-    if (hashes.length === 0)
-      return html` <div class="column center-content" style="margin: 24px;">
-        <sl-icon
-          .src=${wrapPathInSvg(mdiInformationOutline)}
-          style="color: grey; height: 64px; width: 64px; margin-bottom: 16px"
-        ></sl-icon>
-        <span class="placeholder">${msg("No custom views found")}</span>
-      </div>`;
+    if (hashes.length === 0) return html``;
 
     return html`
       <div style="display: flex; flex-direction: column; flex: 1">

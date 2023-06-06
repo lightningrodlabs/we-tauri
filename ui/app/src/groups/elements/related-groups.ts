@@ -16,28 +16,28 @@ import { GroupStore } from "../group-store";
 import { weStyles } from "../../shared-styles";
 
 @localized()
-@customElement("federated-groups")
-export class FederatedGroups extends LitElement {
+@customElement("related-groups")
+export class RelatedGroups extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   _groupStore!: GroupStore;
 
-  _federatedGroups = new StoreSubscriber(
+  _relatedGroups = new StoreSubscriber(
     this,
-    () => this._groupStore.federatedGroups,
+    () => this._groupStore.relatedGroups,
     () => [this._groupStore]
   );
 
-  renderGroups(federatedGroups: ReadonlyMap<DnaHash, CloneDnaRecipe>) {
-    if (federatedGroups.size === 0) return html``;
+  renderGroups(relatedGroups: ReadonlyMap<DnaHash, CloneDnaRecipe>) {
+    if (relatedGroups.size === 0) return html``;
 
     const groupsProfiles = mapValues(
-      federatedGroups,
+      relatedGroups,
       (recipe) => decode(recipe.custom_content) as GroupProfile
     );
 
     return html` <div class="column" style="flex: 1">
       <div class="row" style="align-items: center">
-        <span class="title" style="flex: 1">${msg("Federated Groups")}</span>
+        <span class="title" style="flex: 1">${msg("Related Groups")}</span>
       </div>
       <sl-divider style="--color: grey"></sl-divider>
       <div class="row">
@@ -52,9 +52,8 @@ export class FederatedGroups extends LitElement {
                   composed: true,
                   detail: {
                     originalGroupDnaHash:
-                      federatedGroups.get(groupDnaHash)?.original_dna_hash,
-                    networkSeed:
-                      federatedGroups.get(groupDnaHash)?.network_seed,
+                      relatedGroups.get(groupDnaHash)?.original_dna_hash,
+                    networkSeed: relatedGroups.get(groupDnaHash)?.network_seed,
                   },
                 })
               )}
@@ -70,7 +69,7 @@ export class FederatedGroups extends LitElement {
   }
 
   render() {
-    switch (this._federatedGroups.value?.status) {
+    switch (this._relatedGroups.value?.status) {
       case "pending":
         return html`<sl-skeleton
           style="height: 48px; width: 48px;"
@@ -78,10 +77,10 @@ export class FederatedGroups extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the applets installed in this group")}
-          .error=${this._federatedGroups.value.error}
+          .error=${this._relatedGroups.value.error}
         ></display-error>`;
       case "complete":
-        return this.renderGroups(this._federatedGroups.value.value);
+        return this.renderGroups(this._relatedGroups.value.value);
     }
   }
 

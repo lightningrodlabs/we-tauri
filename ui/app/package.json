@@ -14,7 +14,7 @@
     "@holochain-open-dev/stores": "^0.5.3",
     "@holochain-open-dev/utils": "^0.14.0",
     "@holochain/client": "^0.14.1",
-    "@lightningrodlabs/we-applet": "^0.6.0",
+    "@lightningrodlabs/we-applet": "file:../libs/we-applet",
     "@lit-labs/context": "^0.2.0",
     "@lit-labs/task": "^1.1.2",
     "@lit/localize": "^0.11.4",

@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { state, property, customElement } from "lit/decorators.js";
-import { Record, ActionHash } from "@holochain/client";
+import { ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import {
@@ -21,6 +21,7 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 
 import "@lightningrodlabs/attachments/dist/elements/attachments-card.js";
+import "@lightningrodlabs/attachments/dist/elements/attachments-bar.js";
 
 import "./edit-post.js";
 
@@ -48,8 +49,10 @@ export class PostDetail extends LitElement {
   /**
    * @internal
    */
-  _post = new StoreSubscriber(this, () =>
-    this.postsStore.posts.get(this.postHash)
+  _post = new StoreSubscriber(
+    this,
+    () => this.postsStore.posts.get(this.postHash),
+    () => [this.postHash]
   );
 
   /**
@@ -96,6 +99,8 @@ export class PostDetail extends LitElement {
             @click=${() => this.deletePost()}
           ></sl-icon-button>
         </div>
+
+        <attachments-bar .hash=${this.postHash}></attachments-bar>
 
         <div style="display: flex; flex-direction: column">
           <div

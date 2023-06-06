@@ -34,11 +34,11 @@ export class CustomViewTitle extends LitElement {
 
   renderTitle(customView: EntryRecord<CustomView> | undefined) {
     if (!customView) return html``;
-
-    return html` <sl-icon
+    console.log(customView.entry);
+    return html` <img
         .src=${customView.entry.logo}
-        style="display: flex; margin-top: 2px; margin-right: 4px"
-      ></sl-icon>
+        style="height: 16px; width: 16px; border-radius: 2px; margin-right: 4px"
+      ></img>
       <span style="color: rgb(119,119,119)">${customView.entry.name}</span>`;
   }
 

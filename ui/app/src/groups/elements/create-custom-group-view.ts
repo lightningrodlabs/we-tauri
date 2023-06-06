@@ -55,7 +55,7 @@ export class CreateCustomGroupView extends LitElement {
           category: applets.get(appletHash)?.custom_name,
           content: `<iframe src="${appletOrigin(
             appletHash
-          )}?view=applet-view&view-type=block&block=${blockName}"></iframe>`,
+          )}?view=applet-view&view-type=block&block=${blockName}" style="width: 100%"></iframe>`,
         });
       }
     }

@@ -34,7 +34,11 @@ export class AllPosts extends LitElement {
   /**
    * @internal
    */
-  _allPosts = new StoreSubscriber(this, () => this.postsStore.allPosts);
+  _allPosts = new StoreSubscriber(
+    this,
+    () => this.postsStore.allPosts,
+    () => []
+  );
 
   renderList(hashes: Array<ActionHash>) {
     if (hashes.length === 0)

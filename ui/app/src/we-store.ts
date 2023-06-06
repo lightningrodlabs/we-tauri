@@ -158,34 +158,6 @@ export class WeStore {
     await this.groupsRolesByDnaHash.reload();
   }
 
-  public async federateGroups(groupA: DnaHash, groupB: DnaHash) {
-    const original_dna_hash = await toPromise(this.originalGroupDnaHash);
-
-    const [groupAStore, groupAProfile] = await toPromise(
-      asyncDeriveAndJoin(this.groups.get(groupA), (s) => s.groupProfile)
-    );
-    const [groupBStore, groupBProfile] = await toPromise(
-      asyncDeriveAndJoin(this.groups.get(groupB), (s) => s.groupProfile)
-    );
-    const amodifiers = await groupAStore.groupDnaModifiers();
-    const bmodifiers = await groupBStore.groupDnaModifiers();
-
-    await groupAStore.membraneInvitationsStore.client.createCloneDnaRecipe({
-      custom_content: encode(groupBProfile),
-      network_seed: bmodifiers.network_seed,
-      properties: bmodifiers.properties,
-      original_dna_hash,
-      resulting_dna_hash: groupBStore.groupDnaHash,
-    });
-    await groupBStore.membraneInvitationsStore.client.createCloneDnaRecipe({
-      custom_content: encode(groupAProfile),
-      network_seed: amodifiers.network_seed,
-      properties: amodifiers.properties,
-      original_dna_hash,
-      resulting_dna_hash: groupAStore.groupDnaHash,
-    });
-  }
-
   originalGroupDnaHash = lazyLoad<DnaHash>(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();
 

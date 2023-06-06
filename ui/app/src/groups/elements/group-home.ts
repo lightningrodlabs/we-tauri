@@ -30,8 +30,8 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 import "./group-peers-status.js";
-import "./federated-groups.js";
-import "./federate-group-dialog.js";
+import "./related-groups.js";
+import "./add-related-group-dialog.js";
 import "./installable-applets.js";
 import "./group-applets.js";
 import "./group-applets-settings.js";
@@ -39,13 +39,14 @@ import "./your-settings.js";
 import "../../custom-views/elements/all-custom-views.js";
 import "./create-custom-group-view.js";
 import "./edit-custom-group-view.js";
+import { AddRelatedGroupDialog } from "./add-related-group-dialog.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { openDevhub } from "../../tauri.js";
-import { FederateGroupDialog } from "./federate-group-dialog.js";
+import { weStyles } from "../../shared-styles.js";
 
 type View =
   | {
@@ -123,7 +124,7 @@ export class GroupHome extends LitElement {
               <group-applets style="flex: 1"></group-applets>
             </div>
 
-            <federated-groups></federated-groups>
+            <related-groups></related-groups>
           </div>
         </div>
 
@@ -209,8 +210,8 @@ export class GroupHome extends LitElement {
           <sl-tab slot="nav" panel="custom-views"
             >${msg("Custom Views")}</sl-tab
           >
-          <sl-tab slot="nav" panel="federated-groups"
-            >${msg("Federated Groups")}</sl-tab
+          <sl-tab slot="nav" panel="related-groups"
+            >${msg("Related Groups")}</sl-tab
           >
           <sl-tab slot="nav" panel="your-settings"
             >${msg("Your Settings")}</sl-tab
@@ -219,40 +220,56 @@ export class GroupHome extends LitElement {
             ><group-applets-settings></group-applets-settings>
           </sl-tab-panel>
           <sl-tab-panel name="custom-views">
-            <all-custom-views
-              @edit-custom-view=${(e) => {
-                this.view = {
-                  view: "edit-custom-view",
-                  customViewHash: e.detail.customViewHash,
-                };
-              }}
-            ></all-custom-views>
-            <div class="row" style="flex: 1">
-              <span style="flex: 1"></span>
-              <sl-button
-                variant="primary"
-                @click=${() => (this.view = { view: "create-custom-view" })}
-                >${msg("Create Custom View")}</sl-button
+            <div class="column">
+              <span class="placeholder"
+                >${msg(
+                  "You can add custom views to this group, combining the relevant blocks from each applet."
+                )}</span
               >
+              <all-custom-views
+                style="margin-top: 8px"
+                @edit-custom-view=${(e) => {
+                  this.view = {
+                    view: "edit-custom-view",
+                    customViewHash: e.detail.customViewHash,
+                  };
+                }}
+              ></all-custom-views>
+              <div class="row" style="flex: 1">
+                <span style="flex: 1"></span>
+                <sl-button
+                  variant="primary"
+                  @click=${() => (this.view = { view: "create-custom-view" })}
+                  >${msg("Create Custom View")}</sl-button
+                >
+              </div>
             </div>
           </sl-tab-panel>
-          <sl-tab-panel name="federated-groups">
-            <federate-group-dialog
-              id="federate-group-dialog"
-            ></federate-group-dialog>
-            <federated-groups></federated-groups>
-            <div class="row">
-              <span style="flex: 1"></span>
-              <sl-button
-                @click=${() => {
-                  (
-                    this.shadowRoot?.getElementById(
-                      "federate-group-dialog"
-                    ) as FederateGroupDialog
-                  ).show();
-                }}
-                >${msg("Federate this group")}</sl-button
+          <sl-tab-panel name="related-groups">
+            <add-related-group-dialog
+              id="add-related-group-dialog"
+            ></add-related-group-dialog>
+            <div class="column">
+              <span style="margin-bottom: 8px" class="placeholder"
+                >${msg(
+                  "You can add related groups to this group so that members of this group can see and join the related groups."
+                )}</span
               >
+              <related-groups></related-groups>
+              <div class="row">
+                <span style="flex: 1"></span>
+                <sl-button
+                  variant="primary"
+                  @click=${() => {
+                    (
+                      this.shadowRoot?.getElementById(
+                        "add-related-group-dialog"
+                      ) as AddRelatedGroupDialog
+                    ).show();
+                  }}
+                  >${msg("Add a related group")}</sl-button
+                >
+              </div>
             </div>
           </sl-tab-panel>
           <sl-tab-panel name="your-settings">
@@ -349,7 +366,15 @@ export class GroupHome extends LitElement {
           </div>`;
 
         return html`
-          <profile-prompt>
+          <profile-prompt
+            ><span
+              slot="hero"
+              style="max-width: 500px; margin-bottom: 32px"
+              class="placeholder"
+              >${msg(
+                "Create your personal profile for this group. Only members of this group will be able to see your profile."
+              )}</span
+            >
             ${this.renderContent(
               groupProfile,
               originalGroupDnaHash,
@@ -366,7 +391,7 @@ export class GroupHome extends LitElement {
   }
 
   static styles = [
-    sharedStyles,
+    weStyles,
     css`
       :host {
         display: flex;

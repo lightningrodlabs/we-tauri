@@ -5,7 +5,7 @@ import {
   encodeHashToBase64,
 } from "@holochain/client";
 import { consume } from "@lit-labs/context";
-import { localized, msg } from "@lit/localize";
+import { localized, msg, str } from "@lit/localize";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
@@ -31,8 +31,8 @@ import { GroupStore } from "../group-store";
 import { groupStoreContext } from "../context";
 
 @localized()
-@customElement("federate-group-dialog")
-export class FederateGroupDialog extends LitElement {
+@customElement("add-related-group-dialog")
+export class AddRelatedGroupDialog extends LitElement {
   @consume({ context: weStoreContext })
   _weStore!: WeStore;
 
@@ -44,7 +44,7 @@ export class FederateGroupDialog extends LitElement {
     () =>
       join([
         this._weStore.allGroupsProfiles,
-        this._groupStore.federatedGroups,
+        this._groupStore.relatedGroups,
       ]) as AsyncReadable<
         [
           ReadonlyMap<DnaHash, GroupProfile>,
@@ -55,31 +55,28 @@ export class FederateGroupDialog extends LitElement {
   );
 
   @state()
-  federating = false;
+  committing = false;
 
   show() {
     (this.shadowRoot?.getElementById("dialog") as SlDialog).show();
     (this.shadowRoot?.getElementById("form") as HTMLFormElement).reset();
   }
 
-  async federateWithGroup(groupDnaHash: DnaHash) {
-    if (this.federating) return;
+  async addRelatedGroup(groupDnaHash: DnaHash, groupProfile: GroupProfile) {
+    if (this.committing) return;
 
-    this.federating = true;
+    this.committing = true;
     try {
-      await this._weStore.federateGroups(
-        groupDnaHash,
-        this._groupStore.groupDnaHash
-      );
+      await this._groupStore.addRelatedGroup(groupDnaHash, groupProfile);
 
       const dialog = this.shadowRoot?.getElementById("dialog") as SlDialog;
       dialog.hide();
     } catch (e) {
-      notifyError(msg("Error federating group."));
+      notifyError(msg("Error adding a related group."));
       console.error(e);
     }
 
-    this.federating = false;
+    this.committing = false;
   }
 
   renderDialogContent() {
@@ -89,14 +86,15 @@ export class FederateGroupDialog extends LitElement {
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
-        const federatedGroups = Array.from(this._groups.value.value[1].keys());
-        const groups = Array.from(this._groups.value.value[0].entries()).filter(
+        const relatedGroups = Array.from(this._groups.value.value[1].keys());
+        const groupsProfiles = this._groups.value.value[0];
+        const groups = Array.from(groupsProfiles.entries()).filter(
           ([groupDnaHash, _]) =>
             groupDnaHash.toString() !==
               this._groupStore.groupDnaHash.toString() &&
-            !federatedGroups.find(
-              (federatedGroupHash) =>
-                federatedGroupHash.toString() === groupDnaHash.toString()
+            !relatedGroups.find(
+              (relatedGroupHash) =>
+                relatedGroupHash.toString() === groupDnaHash.toString()
             )
         );
 
@@ -104,19 +102,20 @@ export class FederateGroupDialog extends LitElement {
           <form
             id="form"
             ${onSubmit((f) =>
-              this.federateWithGroup(decodeHashFromBase64(f.groupDnaHash))
+              this.addRelatedGroup(
+                decodeHashFromBase64(f.groupDnaHash),
+                groupsProfiles.get(decodeHashFromBase64(f.groupDnaHash))!
+              )
             )}
           >
             <span
               >${msg(
-                "Federating this group with another group will connect both groups, so members of one group can join the other one."
+                str`Adding a related group will share it with all the members of this group (${
+                  groupsProfiles.get(this._groupStore.groupDnaHash)?.name
+                }), so all its members can join it.`
               )}</span
             ><br /><br />
-            <span
-              >${msg(
-                "With which group do you want to federate your group?"
-              )}</span
-            >
+            <span>${msg("Which group do you want to add as related?")}</span>
             <sl-select
               .placeholder=${msg("Select Group")}
               name="groupDnaHash"
@@ -146,11 +145,11 @@ export class FederateGroupDialog extends LitElement {
           >
           <sl-button
             slot="footer"
-            .loading=${this.federating}
+            .loading=${this.committing}
             variant="primary"
             type="submit"
             form="form"
-            >${msg("Federate")}</sl-button
+            >${msg("Add Related Group")}</sl-button
           >
         `;
 
@@ -165,9 +164,9 @@ export class FederateGroupDialog extends LitElement {
   render() {
     return html`<sl-dialog
       id="dialog"
-      .label=${msg("Federate Groups")}
+      .label=${msg("Add Related Group")}
       @sl-request-close=${(e) => {
-        if (this.federating) {
+        if (this.committing) {
           e.preventDefault();
         }
       }}

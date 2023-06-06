@@ -35,6 +35,8 @@ import { Applet } from "../applets/types";
 import { CustomViewsStore } from "../custom-views/custom-views-store";
 import { CustomViewsClient } from "../custom-views/custom-views-client";
 import { WeStore } from "../we-store";
+import { GroupProfile } from "../../../libs/we-applet/dist";
+import { encode } from "@msgpack/msgpack";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -46,7 +48,7 @@ export class GroupStore {
 
   members: AsyncReadable<Array<AgentPubKey>>;
 
-  federatedGroups: AsyncReadable<ReadonlyMap<DnaHash, CloneDnaRecipe>>;
+  relatedGroups: AsyncReadable<ReadonlyMap<DnaHash, CloneDnaRecipe>>;
 
   constructor(
     public appAgentWebsocket: AppAgentWebsocket,
@@ -69,7 +71,7 @@ export class GroupStore {
       new MembraneInvitationsClient(appAgentWebsocket, roleName)
     );
     this.members = this.profilesStore.agentsWithProfile;
-    this.federatedGroups = pipe(
+    this.relatedGroups = pipe(
       this.weStore.originalGroupDnaHash,
       (originalDnaHash) =>
         this.membraneInvitationsStore.cloneDnaRecipes.get(originalDnaHash),
@@ -82,6 +84,27 @@ export class GroupStore {
         return completed(groups);
       }
     );
+  }
+
+  public async addRelatedGroup(
+    groupDnaHash: DnaHash,
+    groupProfile: GroupProfile
+  ) {
+    const original_dna_hash = await toPromise(
+      this.weStore.originalGroupDnaHash
+    );
+
+    const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
+
+    const modifiers = await groupStore.groupDnaModifiers();
+
+    await this.membraneInvitationsStore.client.createCloneDnaRecipe({
+      custom_content: encode(groupProfile),
+      network_seed: modifiers.network_seed,
+      properties: modifiers.properties,
+      original_dna_hash,
+      resulting_dna_hash: groupStore.groupDnaHash,
+    });
   }
 
   async groupDnaModifiers(): Promise<DnaModifiers> {
