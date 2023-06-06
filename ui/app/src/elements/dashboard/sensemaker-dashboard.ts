@@ -49,6 +49,13 @@ enum LoadingState {
 }
 
 const capitalize = part => part[0].toUpperCase() + part.slice(1);
+const snakeCase = str =>
+  str &&
+  str
+    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    .map(x => x.toLowerCase())
+    .join('_');
+
 export const cleanResourceNameForUI = propertyName =>
   propertyName.split('_').map(capitalize).join(' ');
 
@@ -65,6 +72,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   @state() selectedResourceName!: string;
   @state() selectedContext: string = 'none';
+  @state() selectedResourceDefEh!: string;
 
   @state() applets: AppletDict = {};
   @state() contexts: ContextDict = {};
@@ -87,7 +95,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
         // TODO: fix edge case of repeat install of same applet? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
-        console.log('appletConfig:', appletConfig);
+        // console.log('appletConfig:', appletConfig);
         // console.log('renderable applet info:', this.applets);
         // console.log('renderable contexts info:', this.contexts, this.contexts?.length);
         this.applets[id] = {
@@ -99,8 +107,10 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
         this.dimensions = appletConfig.dimensions;
         //Keep context names for display
         this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
-        // Keep context entry hashes for filtering
+        // Keep context entry hashes and resource_def_eh for filtering in subcomponent
         this.context_ehs = Object.fromEntries(zip(this.contexts[id], Object.values(appletConfig.cultural_contexts)));
+        const resourceName : string = snakeCase((Object.values(this.applets) as AppletRenderInfo[])![0].resourceNames![0]);
+        this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
 
         this.loading = false;
       });
@@ -205,7 +215,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
       this.selectedResourceName = applets[0]?.resourceNames[0];
     }
     const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0];
-console.log('this.loading????? :>> ', this.loading);
     return html`
       <div class="container">
         <nav>
@@ -270,6 +279,7 @@ console.log('this.loading????? :>> ', this.loading);
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
                   <dashboard-table
                     .resourceName=${this.selectedResourceName}
+                    .resourceDefEh=${this.selectedResourceDefEh}
                     .tableType=${AssessmentTableType.Resource}
                     .selectedContext=${this.selectedContext}
                     .selectedDimensions=${this.dimensions}
@@ -281,6 +291,7 @@ console.log('this.loading????? :>> ', this.loading);
                     html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}" .contextEh="${context.toLowerCase()}">
                       <dashboard-table
                         .resourceName=${this.selectedResourceName}
+                        .resourceDefEh=${this.selectedResourceDefEh}
                         .tableType=${AssessmentTableType.Context}
                         .selectedContext=${this.selectedContext}
                         .selectedDimensions=${this.dimensions}

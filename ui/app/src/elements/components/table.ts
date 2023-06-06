@@ -51,9 +51,13 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
   @property({ type: String })
   resourceName;
+  @property({ type: String })
+  resourceDefEh;
   @property()
   allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
-
+  @state()
+  filteredAssessments!: Assessment[];
+  
   @property({ type: String })
   selectedContext;
   @state()
@@ -92,22 +96,26 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     // const dimensionsEntries =  
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
-      if (Object.values(resourceAssessments).length) {
-        this.tableStore.records = (Object.values(resourceAssessments) as Assessment[]).map(this.assessmentToAssessmentTableRecord);
+      if (Object.values(resourceAssessments) && Object.values(resourceAssessments)?.length !== undefined) {
+        const allAssessments = Object.values(resourceAssessments) as Assessment[][];
+        try {
+          this.filteredAssessments = this.filterByResourceDefEh(allAssessments, this.resourceDefEh).flat() as Assessment[];
+        } catch (error) {
+          console.log('Error filtering by resource def entry hash :>> ', error);
+        }
+        this.tableStore.records = (this.filteredAssessments).map(this.assessmentToAssessmentTableRecord);
         this.emitFinishedLoadingEvent();
       }
     });
   }
-
+  
   async updated(changedProperties) {
-    let resourceAssessments: Assessment[] = (Object.values(this.allAssessments.value as AssessmentDict))[0];
-
+    let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
     if(this.tableType === AssessmentTableType.Resource) {
       // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
       // resourceAssessments = this.filterByMethodNames(resourceAssessments, ['importance', 'perceived_heat']);
       // console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
       this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
-      console.log('this.tableStore.records :>> ', this.tableStore.records);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
       return;
     }
@@ -127,9 +135,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
         console.log('No context entry exists for that context entry hash!')  
       }
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
-      const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
-      console.log('this.selectedDimensions :>> ', this.selectedDimensions);
-      this.tableStore.records = filteredAssessments.map(this.assessmentToAssessmentTableRecord);
+      this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+      this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }
   }
@@ -198,7 +205,13 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     })
   }
 
-  filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]) {
+  filterByResourceDefEh(resourceAssessments: Assessment[][], filteringHash: string) {
+    return Object.values(resourceAssessments.filter((assessments: Assessment[]) => {
+      return assessments.every(assessment => encodeHashToBase64(assessment.resource_def_eh) === filteringHash)
+    }))
+  }
+
+  filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]) : Assessment[] {
     return resourceAssessments.filter((assessment: Assessment) => {
       for(let method of filteringMethods) {
         if(encodeHashToBase64(this.selectedDimensions[method]) == encodeHashToBase64(assessment.dimension_eh)) return false
