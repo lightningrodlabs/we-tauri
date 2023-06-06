@@ -25,6 +25,7 @@ import theme from '../../styles/css/variables.css?inline' assert { type: 'css' }
 import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 import adapterShoelaceUI from '../../styles/css/shoelace-adapter.css?inline' assert { type: 'css' };
 import { encodeHashToBase64 } from '@holochain/client';
+import { classMap } from 'lit/directives/class-map.js';
 
 const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
@@ -32,13 +33,6 @@ interface AppletRenderInfo {
   name: string;
   resourceNames?: string[];
 }
-type AppletDict = {
-  [id: string]: AppletRenderInfo;
-};
-type ContextDict = {
-  //resource: context names
-  [id: string]: string[];
-};
 export type DimensionDict = {
   [id: string]: Uint8Array;
 };
@@ -70,16 +64,16 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @property({ attribute: false })
   _sensemakerStore!: SensemakerStore;
 
+  @state() selectedAppletIndex: number = 1;
   @state() selectedResourceName!: string;
   @state() selectedContext: string = 'none';
   @state() selectedResourceDefEh!: string;
 
-  @state() applets: AppletDict = {};
-  @state() contexts: ContextDict = {};
+  @state() appletDetails!: object;
   @state() dimensions: DimensionDict = {};
   @state() context_ehs: ContextEhDict = {};
 
-  connectedCallback(): void {
+  async connectedCallback() {
     super.connectedCallback();
     this.addEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
 
@@ -89,29 +83,43 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
     this._sensemakerStore = get(
       this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>,
     );
+
+    const appletStream = await this._matrixStore.fetchAllApplets(selectedWeGroupId);
+    appletStream.subscribe(applets => {
+      this.appletDetails = applets.reduce((applets, a) => {
+        const roleName = Object.keys(a[1].dnaHashes)[0];
+        
+        return {
+          ...applets,
+          [roleName]: {
+            customName: a[1].customName
+          }
+        }
+      }, {});
+    });
+console.log('this.appletDetails :>> ', this.appletDetails);
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
         // TODO: fix edge case of repeat install of same applet? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
-        // console.log('appletConfig:', appletConfig);
-        // console.log('renderable applet info:', this.applets);
-        // console.log('renderable contexts info:', this.contexts, this.contexts?.length);
-        this.applets[id] = {
-          ...this.applets[id],
+        console.log('appletConfig:', appletConfig);
+        this.appletDetails[id].appletRenderInfo = {
           resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
         };
-
+        
         // Keep dimensions for dashboard table prop        
         this.dimensions = appletConfig.dimensions;
         //Keep context names for display
-        this.contexts[id] = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
-        // Keep context entry hashes and resource_def_eh for filtering in subcomponent
-        this.context_ehs = Object.fromEntries(zip(this.contexts[id], Object.values(appletConfig.cultural_contexts)));
-        const resourceName : string = snakeCase((Object.values(this.applets) as AppletRenderInfo[])![0].resourceNames![0]);
-        this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
+        this.appletDetails[id].contexts = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
 
+        // Keep context entry hashes and resource_def_eh for filtering in subcomponent
+        this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
+        const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
+        const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![0]);
+        this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
+console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
         this.loading = false;
       });
     });
@@ -128,7 +136,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
 
   handleSubcomponentFinishedLoading(_: Event) {
     this.loading = false;
-    console.log('loaded! :>> ');
   }
 
   renderIcons() {
@@ -207,14 +214,18 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   }
 
   render() {
-    const applets =
-      (Object.values(this.applets)?.length &&
-        (Object.values(this.applets) as AppletRenderInfo[])) ||
-      undefined;
-    if (applets && applets.length && applets[0]?.resourceNames) {
-      this.selectedResourceName = applets[0]?.resourceNames[0];
+    const roleNames = Object.keys(this.appletDetails);
+    const appletDetails = Object.values(this.appletDetails);
+    
+    const appletConfig = (appletDetails?.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
+    
+    if (appletConfig && appletDetails[this.selectedAppletIndex]?.customName) {
+      this.selectedResourceName = appletDetails[this.selectedAppletIndex]?.customName;
     }
-    const contexts = Object.values(this.contexts)?.length && Object.values(this.contexts)[0];
+    const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
+    if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.NoAppletSensemakerData };
+// console.log('this.selectedAppletIndex :>> ', this.selectedAppletIndex);
+// console.log('this.appletDetails from render function:>> ', this.appletDetails, appletConfig, contexts);
     return html`
       <div class="container">
         <nav>
@@ -228,15 +239,18 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
           </sl-menu>
           <sl-menu class="dashboard-menu-section">
             <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-            ${applets &&
-            applets.map(
-              applet => html`
-                <sl-menu-item class="nav-item" value="${applet.name?.toLowerCase()}"
-                  >${applet.name}</sl-menu-item
+            ${roleNames.map(
+              (roleName, i) => html`
+                <sl-menu-item 
+                  class="nav-item ${classMap({
+                  active: this.selectedAppletIndex === i})}"
+                  value="${this.appletDetails[roleName].customName.toLowerCase()}"
+                  @click=${() => {this.selectedAppletIndex = i}}
+                  >${this.appletDetails[roleName].customName}</sl-menu-item
                 >
                 <div role="navigation" class="sub-nav indented">
-                  ${applet.resourceNames &&
-                  applet.resourceNames.map(
+                  ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
+                    this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
                     resource =>
                       html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                         >${resource}</sl-menu-item
@@ -260,7 +274,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
                   <div class="tabs">
                     <sl-tab panel="resource" class="dashboard-tab resource"
                     @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = 'none' }}
-                      >${this.selectedResourceName}s</sl-tab
+                      >${this.selectedResourceName}</sl-tab
                     >
                     ${contexts &&
                     contexts.map(

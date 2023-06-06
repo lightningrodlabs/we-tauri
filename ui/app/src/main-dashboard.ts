@@ -511,7 +511,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
     return html`
-      ${appletClasses
+      <div style="display:flex">${appletClasses
         .sort((a, b) => a.title.localeCompare(b.title))
         .map(
           (appletClassInfo) =>
@@ -547,13 +547,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               </sidebar-button>
           `
       // add special modes here
-    )}
+    )}</div>
   `;
   }
 
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
     return appletInstances.length > 0 
-      ? html`<div>${appletInstances
+      ? html`<div style="display: flex;">${appletInstances
         .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
         .map(
         (appletInstanceInfo) => {
@@ -603,7 +603,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     );
 
     if (relevantNewAppletInstances) {
-      return relevantNewAppletInstances.map(
+      return html`<div style="display: flex;">${relevantNewAppletInstances.map(
         (newAppletInstanceInfo) =>
           html`
             <icon-dot icon="share" invisible=${newAppletInstanceInfo.federatedGroups.length === 0}>
@@ -633,7 +633,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               </notification-dot>
             </icon-dot>
           `
-      );
+      )}</div>`;
     }
   }
 
