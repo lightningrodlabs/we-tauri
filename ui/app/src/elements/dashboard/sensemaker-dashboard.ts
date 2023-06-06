@@ -48,6 +48,10 @@ enum LoadingState {
   NoAppletSensemakerData = 'no-applet-sensemaker-data',
 }
 
+const capitalize = part => part[0].toUpperCase() + part.slice(1);
+export const cleanResourceNameForUI = propertyName =>
+  propertyName.split('_').map(capitalize).join(' ');
+
 export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
@@ -82,10 +86,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
         const id: string = appletConfig?.role_name;
         // TODO: fix edge case of repeat install of same applet? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
-
-        const capitalize = part => part[0].toUpperCase() + part.slice(1);
-        const cleanResourceNameForUI = propertyName =>
-          propertyName.split('_').map(capitalize).join(' ');
 
         console.log('appletConfig:', appletConfig);
         // console.log('renderable applet info:', this.applets);

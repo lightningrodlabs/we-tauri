@@ -19,7 +19,7 @@ import theme from '../../styles/css/variables.css?inline' assert { type: 'css' }
 import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
-import { DimensionDict } from '../dashboard/sensemaker-dashboard';
+import { DimensionDict, cleanResourceNameForUI } from '../dashboard/sensemaker-dashboard';
 
 interface AssessmentTableRecord {
   resource: object,
@@ -37,12 +37,6 @@ export type AssessmentDict = {
 };
 
 export const tableId = 'assessmentsForResource';
-
-const assessmentToAssessmentTableRecord = (assessment: Assessment, i:any) : AssessmentTableRecord => {
-  return { 
-    neighbour: encodeHashToBase64(assessment.author),
-    resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0]}, } as AssessmentTableRecord
-}
 
 @customElement('dashboard-table')
 export class StatefulTable extends ScopedRegistryHost(LitElement) {
@@ -99,8 +93,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
     (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (Object.values(resourceAssessments).length) {
-        // console.log('Total assessments :>> ', Object.values(resourceAssessments).flat().length);
-        this.tableStore.records = (Object.values(resourceAssessments) as Assessment[]).map(assessmentToAssessmentTableRecord);
+        this.tableStore.records = (Object.values(resourceAssessments) as Assessment[]).map(this.assessmentToAssessmentTableRecord);
         this.emitFinishedLoadingEvent();
       }
     });
@@ -111,9 +104,11 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
 
     if(this.tableType === AssessmentTableType.Resource) {
       // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
-      resourceAssessments = this.filterByMethodNames(resourceAssessments, ['importance', 'perceived_heat']);
+      // resourceAssessments = this.filterByMethodNames(resourceAssessments, ['importance', 'perceived_heat']);
       // console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
-      this.tableStore.records = resourceAssessments.map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+      this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+      console.log('this.tableStore.records :>> ', this.tableStore.records);
+      this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
       return;
     }
     
@@ -133,12 +128,12 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       }
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
       const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
-      this.tableStore.records = filteredAssessments.map(assessmentToAssessmentTableRecord);
+      this.tableStore.records = filteredAssessments.map(this.assessmentToAssessmentTableRecord);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }
   }
 
-  generateFieldDefs(resourceName: string, tabType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
+  generateFieldDefs(resourceName: string, tableType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
     const fixedFields = {
       'resource': new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
@@ -149,27 +144,32 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
         </div>`,
       }),
       'neighbour': new FieldDefinition<AssessmentTableRecord>({
-        heading: generateHeaderHTML('Neighbour', resourceName),
+        heading: generateHeaderHTML('Neighbour', 'Member'),
         decorator: (agentPublicKeyB64: any) => html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
           ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
         </div>`,
     })}
-    switch (tabType) {
+    switch (tableType) {
       case AssessmentTableType.Resource:
         return fixedFields
       case AssessmentTableType.Context:
-        
-        const contextFields = {
-          'dimension1': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension1', resourceName) }),
-          'flag': new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Flag') }),
-        };
+        const fieldEntries = Object.entries(this.selectedDimensions).map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
+          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)) })
+        }))
+        const contextFields = fieldEntries.reduce((field, fields) => ({...fields, ...field}) , {}) 
         return {
         ...fixedFields,
         ...contextFields
       }
     }
+  }
+  
+  assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
+    return { 
+      neighbour: encodeHashToBase64(assessment.author),
+      resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0]}, } as AssessmentTableRecord
   }
   
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
