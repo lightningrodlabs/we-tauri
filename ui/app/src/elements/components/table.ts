@@ -115,7 +115,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     // else we are dealing with a context, filter accordingly
     // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
     this.filterByMethodNames(resourceAssessments, ['total_importance', 'average_heat']);
-    // console.log('resourceAssessments (objective) :>> ', resourceAssessments);
+    console.log('resourceAssessments (objective) :>> ', resourceAssessments);
 
     for(let[propName, _] of changedProperties) {
       if(propName != 'selectedContext') return
@@ -128,6 +128,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       }
       // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
       const filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+      console.log('this.selectedDimensions :>> ', this.selectedDimensions);
       this.tableStore.records = filteredAssessments.map(this.assessmentToAssessmentTableRecord);
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     }
@@ -167,11 +168,30 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   }
   
   assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
-    return { 
+      // Base record with basic fields
+    const baseRecord = { 
       neighbour: encodeHashToBase64(assessment.author),
-      resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0]}, } as AssessmentTableRecord
+      resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0] },
+    } as AssessmentTableRecord;
+    
+    if (this.tableType === 'context') {
+      // Iterate over dimensions dictionary and add each dimension as a field to the base record with an empty default value
+      for (let dimensionName of Object.keys(this.selectedDimensions)) {
+        baseRecord[dimensionName] = "";
+      }
+
+      // If dimension_eh in assessment matches a dimensionUint8 in the dictionary
+      // populate the corresponding dimension field in the base record with the assessment value
+      for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
+        if (encodeHashToBase64(assessment.dimension_eh) === encodeHashToBase64(dimensionUint8)) {
+          baseRecord[dimensionName] = Object.values(assessment.value)[0];
+        }
+      }
+    }
+    
+    return baseRecord;
   }
-  
+    
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
     return resourceAssessments.filter((assessment: Assessment) => {
       return encodeHashToBase64(assessment.dimension_eh) === filteringHash
