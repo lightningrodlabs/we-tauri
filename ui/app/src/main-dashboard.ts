@@ -196,7 +196,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         <div class="navigation-switch-container ${classMap({
           invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
-        ">
+        " style="position: initial">
           <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
             <button class="navigation-switch" @click=${this.handleNavigationSwitch}>Group Centric</button>
           </sl-tooltip>
@@ -269,7 +269,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo) === "RUNNING"
       ? html`
         <applet-instance-renderer
-          style="display: flex; flex: 1;"
+          style="display: flex; flex: 1; background: var(--nh-theme-fg-muted)"
           .appletInstanceId=${this._selectedAppletInstanceId}
         >
         </applet-instance-renderer>
@@ -878,6 +878,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           z-index: 1;
         }
 
+        .navigation-switch-container {
+          position: absolute;
+          right: 0;
+          top: 5rem;
+        }
+        
         .group-add, .user-profile, .dashboard-icon, .applet-add {
           width: 58px;
           height: 58px; 
