@@ -160,10 +160,17 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           </sl-tooltip>
         </div>
 
+
+      <sl-tooltip placement="bottom" content="Add Applet" hoist>
+        <button
+          class="applet-add"
+          @click=${() => console.log("TODO: wire up to new applet dialog")}
+        ></button>
+      </sl-tooltip>
         <sl-tooltip
           hoist
           placement="bottom"
-          .content="Applet Dashboard"
+          content="Dashboard"
         >
           <button class="dashboard-icon"
           @click=${() => {
@@ -372,7 +379,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    */
   renderWeGroupIconsPrimary(weGroups: WeGroupInfo[]) {
     return html`${weGroups.length > 0 ? html`
-    <div>${weGroups
+    <div style="display:flex; flex-direction: column; gap: calc(1px * var(--nh-spacing-sm))">${weGroups
         .sort((a,b) => a.info.name.localeCompare(b.info.name))
         .map(
           (weGroupInfo) =>
@@ -728,7 +735,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           <div class="column top-left-corner">
               <sidebar-button
                 id="nh-logo"
-                style="border-color: transparent;"
                 logoSrc="${nhLogoIcon}"
                 tooltipText="Home"
                 @click=${() => {
@@ -758,7 +764,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             ${this.renderPrimaryNavigation()}
             <sl-tooltip
               hoist
-              placement="bottom"
+              placement="right"
               .content="${encodeHashToBase64(this._matrixStore.myAgentPubKey).slice(0,15) + '...'}"
             >
               <button class="user-profile">
@@ -835,10 +841,9 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         .top-left-corner {
           align-items: center;
           background-color: transparent;
-          margin: 7px 7px;
-          height: 54 px;
+          height: 72px;
+          width: 72px;
           z-index: 1;
-          
         }
         
         .top-left-corner-bg {
@@ -846,6 +851,16 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           border-width: 72px 0 0 72px;
           position: absolute;
           z-index: 0;
+        }
+
+        #nh-logo {
+          border-width: 0 !important; 
+          display: grid;
+          place-content: center;
+          height: 72px;
+          width: 72px;
+          position: relative;
+          overflow: initial;
         }
         
         .tlcbgGroupCentric {
@@ -863,7 +878,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           z-index: 1;
         }
 
-        .group-add, .user-profile, .dashboard-icon {
+        .group-add, .user-profile, .dashboard-icon, .applet-add {
           width: 58px;
           height: 58px; 
           margin-top: calc(2px * var(--nh-spacing-lg)); 
@@ -871,31 +886,45 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           cursor: pointer;
           border: none;
           position: relative;
-          border: transparent 4px solid;
+          border: transparent 1px solid;
         }
 
-        .dashboard-icon {
+        #nh-logo::after, .group-add::before, .user-profile::before, .applet-add::before, .dashboard-icon::before {
+          content: '';
+          background-image: url(user-menu-divider.png);
+          position: absolute;
+          display: flex;
+          justify-content: center;
+          width: 50px;
+          height: 2px;
+        }
+        .group-add::before, .user-profile::before {
+          margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+          left: -4px;
+          top: calc(-1px * var(--nh-spacing-lg) - 1px);
+        }
+        #nh-logo::after {
+          margin-top: calc(1px * var(--nh-spacing-lg)); 
+          left: 4px;
+          bottom: calc(-1px * var(--nh-spacing-xs));
+          z-index: 50;
+        }
+        .applet-add::before, .dashboard-icon::before {
+          transform: rotate(-90deg);
+          left: calc(-2px * var(--nh-spacing-lg) - 7px);
+          bottom: 16px;
+          margin: 0;
+        }
+        .group-add, .applet-add {
+          background: url(./icons/add-nh-icon.png);
+          background-size: contain;
+          background-repeat: no-repeat;
+        }
+        .dashboard-icon, .applet-add {
           margin-left: calc(1px * var(--nh-spacing-lg)); 
           margin-right: calc(1px * var(--nh-spacing-md));
           margin-top: 0; 
           margin-bottom: 0; 
-        }
-        .group-add::before, .user-profile::before {
-          content: '';
-          width: 50px;
-          height: 2px;
-          background-image: url(user-menu-divider.png);
-          margin-bottom: calc(1px * var(--nh-spacing-lg)); 
-          position: absolute;
-          display: flex;
-          justify-content: center;
-          left: -10px;
-          top: calc(-1px * var(--nh-spacing-lg) - 2px);;
-        }
-        .group-add {
-          background: url(./icons/add-nh-icon.png);
-          background-size: contain;
-          background-repeat: no-repeat;
         }
         .user-profile {
           background: url(./icons/user-icon.png);
@@ -928,8 +957,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           height: 72px;
         }
 
-        .left-sidebar {
-          background-color:  var(--nh-theme-bg-canvas) !important;
+        .left-sidebar, #nh-logo {
+          background-color: var(--nh-colors-eggplant-950);
         }
 
         @media (min-width: 640px) {
@@ -944,35 +973,40 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
         .highlightedAppletCentric {
-          border: var(--nh-theme-bg-subtle) 4px solid;
+          border: var(--nh-theme-bg-subtle) 1px solid;
         }
 
         .highlightedGroupCentric {
-          border: var(--nh-theme-bg-surface) 4px solid;
+          border: var(--nh-theme-bg-surface) 1px solid;
           border-radius: calc(1px * var(--nh-radii-xl));
         }
-
+        
         .highlightedHome {
-          border: white 4px solid;
+          border: transparent 1px solid;
         }
 
         .homeIconHover {
-          border: transparent 4px solid;
+          border: transparent 1px solid;
         }
-
+        
         .homeIconHover:hover {
-          border: white 4px solid;
+          border: transparent 1px solid;
         }
-
+        
         .groupCentricIconHover {
-          border: transparent 4px solid;
+          border: transparent 1px solid;
           border-radius: 50%;
+          transition: border-radius 0.1s ease-in;
+        }
+        .groupCentricIconHover:hover {
+          border-radius: calc(1px * var(--nh-radii-xl));
         }
 
-        .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover {
-          border: var(--nh-theme-accent-muted) 4px solid;
+        .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover, .applet-add:hover, .dashboard-icon:hover {
+          box-shadow: 0px 0px 20px #6e46cc;
+          border: 1px solid var(--nh-theme-bg-surface) !important;
         }
-        .dashboard-icon:hover, .user-profile:hover, .group-add:hover {
+        .dashboard-icon:hover, .user-profile:hover, .group-add:hover, .applet-add:hover {
           border-radius: 50%;
         }
 
@@ -983,7 +1017,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         .appletCentricIconHover:hover {
           border: var(--nh-theme-accent-muted) 4px solid;
         }
-
 
         .navigation-switch {
           color: white;
