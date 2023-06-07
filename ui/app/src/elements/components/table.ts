@@ -288,6 +288,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       --table-assessmentsForResource-heading-background-color: var(--nh-theme-bg-surface);
       --header-cell-border-width: 1px;
       --header-title-margin-y: 6px;
+      --table-assessmentsForResource-importance-heading-vertical-align: bottom;
 
       /* Border color, width */
       --table-assessmentsForResource-header-first-heading-border-color: var(--border-color);
@@ -317,8 +318,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       /** First Two Columns **/
       --table-assessmentsForResource-resource-width: var(--column-max-width);
       --table-assessmentsForResource-neighbour-width: var(--column-max-width);
-      --table-resource-vertical-align: top;
-      --table-neighbour-vertical-align: top;
+      --table-assessmentsForResource-resource-vertical-align: top;
+      --table-assessmentsForResource-neighbour-vertical-align: top;
       
       --table-assessmentsForResource-row-even-background-color: var(---nh-theme-bg-surface);
       --table-assessmentsForResource-row-odd-background-color: var(---nh-theme-bg-surface);
@@ -349,39 +350,19 @@ function generateMockProfile(number: number) {
     style="height: 2rem; object-fit: cover;"
   />`;
 }
-function generateMockValue(number: number) {
-  switch (number) {
-    case 1:
-      return html`<p
-        style="font-size: var(--cell-value-font-size);
-        line-height: var(----nh-line-heights-headlines-small);"
-      >
-        What are some easy-to-grow veggies for beginners? I'm new to urban gardening and need some
-        advice! 🌱👀 #gardeningtips #beginnergardener
-      </p>`;
-    case 2:
-      return html`<p
-        style="font-size: var(--cell-value-font-size);
-        line-height: var(----nh-line-heights-headlines-small);"
-      >
-        Just harvested my first batch of tomatoes! So excited to cook with them tonight 🍅😋
-        #urbangardening #homegrown
-      </p>`;
-    default:
-      return html`<p
-        style="font-size: var(--cell-value-font-size);
-        font-size: var(--cell-hash-font-size);
-        line-height: var(--nh-line-heights-headlines-small);"
-      >
-        Anyone have recommendations for natural pest control methods? My kale plants are getting
-        eaten alive! 🐛🌿 #pestcontrol #organiccrops
-      </p>`;
-  }
-}
 function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
-  return html`<div style="font-family: 'Open Sans'; margin: var(--header-title-margin-y) 0">
+  return html`<div style="font-family: 'Open Sans';
+      margin: var(--header-title-margin-y) 0;
+      height: 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;">
     <h2
-      style="min-width: var(--column-min-width); margin: 0; font-size: calc(1px * var(--nh-font-size-md)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
+      style="min-width: var(--column-min-width);
+      margin: 0;
+      font-size: calc(1px * var(--nh-font-size-md));
+      margin-bottom: var(--header-title-margin-y);
+      font-weight: var(--nh-font-weights-headlines-bold);"
     >
       ${resourceName}
     </h2>
@@ -395,8 +376,7 @@ function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resour
 function generateHashHTML(hash: string) {
   return html`
     <div
-      style="
-      color: var(--menuSubTitle);
+      style="color: var(--menuSubTitle);
       border: 1px solid var(--menuSubTitle);
       border-radius: var(--cell-hash-border-radius);
       font-size: var(--cell-hash-font-size);
@@ -406,8 +386,7 @@ function generateHashHTML(hash: string) {
       padding: var(--cell-hash-padding);
       height: 1rem;
       width: calc(var(--column-max-width) - (2 * var(--cell-hash-padding)));
-      text-overflow: ellipsis;
-    "
+      text-overflow: ellipsis;"
     >
       ${hash}
     </div>

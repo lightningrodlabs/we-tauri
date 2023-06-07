@@ -264,7 +264,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
       this.selectedResourceName = appletDetails[this.selectedAppletIndex]?.customName;
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
-    if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.NoAppletSensemakerData };
+    if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
 console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`
@@ -284,10 +284,10 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                     contexts.map(
                       context =>
                         html`<sl-tab 
-                                panel="${context.toLowerCase()}" 
-                                class="dashboard-tab ${classMap({
-                                  active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
-                                @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
+                            panel="${context.toLowerCase()}" 
+                            class="dashboard-tab ${classMap({
+                              active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
+                            @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
                           >${context}</sl-tab-panel
                         >`,
                     )}
