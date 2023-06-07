@@ -27,8 +27,6 @@ import adapterShoelaceUI from '../../styles/css/shoelace-adapter.css?inline' ass
 import { encodeHashToBase64 } from '@holochain/client';
 import { classMap } from 'lit/directives/class-map.js';
 
-const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-
 interface AppletRenderInfo {
   name: string;
   resourceNames?: string[];
@@ -37,11 +35,13 @@ export type DimensionDict = {
   [id: string]: Uint8Array;
 };
 type ContextEhDict = DimensionDict;
+
 enum LoadingState {
   FirstRender = 'first-render',
   NoAppletSensemakerData = 'no-applet-sensemaker-data',
 }
 
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 const capitalize = part => part[0].toUpperCase() + part.slice(1);
 const snakeCase = str =>
   str &&
@@ -104,7 +104,7 @@ console.log('this.appletDetails :>> ', this.appletDetails);
         // TODO: fix edge case of repeat install of same applet? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
-        console.log('appletConfig:', appletConfig);
+console.log('appletConfig:', appletConfig);
         this.appletDetails[id].appletRenderInfo = {
           resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
         };
@@ -114,7 +114,7 @@ console.log('this.appletDetails :>> ', this.appletDetails);
         //Keep context names for display
         this.appletDetails[id].contexts = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
 
-        // Keep context entry hashes and resource_def_eh for filtering in subcomponent
+        // Keep context entry hashes and resource_def_eh for filtering in dashboard table
         this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![0]);
@@ -130,14 +130,15 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     this.removeEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
   }
 
+  // Handlers
+  handleSubcomponentFinishedLoading(_: Event) {
+    this.loading = false;
+  }
   setLoadingState(state: LoadingState) {
     this.loadingState = state;
   }
 
-  handleSubcomponentFinishedLoading(_: Event) {
-    this.loading = false;
-  }
-
+  // Render helpers
   renderIcons() {
     return html`
       <div class="icon-container">
@@ -176,7 +177,48 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
       </div>
     `;
   }
-
+  renderSidebar(appletRoleNames: string[]) {
+    return html`
+      <nav>
+      <div>
+        <sl-input class="search-input" placeholder="SEARCH" size="small"></sl-input>
+      </div>
+      <sl-menu class="dashboard-menu-section">
+        <sl-menu-label class="nav-label">NH NAME</sl-menu-label>
+        <sl-menu-item class="nav-item" value="overview">Overview</sl-menu-item>
+        <sl-menu-item class="nav-item" value="roles">Roles</sl-menu-item>
+      </sl-menu>
+      <sl-menu class="dashboard-menu-section">
+        <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
+        ${appletRoleNames.map(
+          (roleName, i) => html`
+            <sl-menu-item 
+              class="nav-item ${classMap({
+              active: this.selectedAppletIndex === i})}"
+              value="${this.appletDetails[roleName].customName.toLowerCase()}"
+              @click=${() => {this.selectedAppletIndex = i}}
+              >${this.appletDetails[roleName].customName}</sl-menu-item
+            >
+            <div role="navigation" class="sub-nav indented">
+              ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
+                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
+                resource =>
+                  html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
+                    >${resource}</sl-menu-item
+                  >`,
+              )}
+            </div>
+          `,
+        )}
+      </sl-menu>
+      <sl-menu class="dashboard-menu-section">
+        <sl-menu-label class="nav-label">Member Management</sl-menu-label>
+        <sl-menu-item class="nav-item" value="overview">Members</sl-menu-item>
+        <sl-menu-item class="nav-item" value="roles">Invitees</sl-menu-item>
+      </sl-menu>
+    </nav>
+    `;
+  }
   renderMainSkeleton() {
     return html`
       <div class="container skeleton-overview">
@@ -226,46 +268,10 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.NoAppletSensemakerData };
 // console.log('this.selectedAppletIndex :>> ', this.selectedAppletIndex);
 // console.log('this.appletDetails from render function:>> ', this.appletDetails, appletConfig, contexts);
+console.log('contexts :>> ', contexts);
     return html`
       <div class="container">
-        <nav>
-          <div>
-            <sl-input class="search-input" placeholder="SEARCH" size="small"></sl-input>
-          </div>
-          <sl-menu class="dashboard-menu-section">
-            <sl-menu-label class="nav-label">NH NAME</sl-menu-label>
-            <sl-menu-item class="nav-item" value="overview">Overview</sl-menu-item>
-            <sl-menu-item class="nav-item" value="roles">Roles</sl-menu-item>
-          </sl-menu>
-          <sl-menu class="dashboard-menu-section">
-            <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-            ${roleNames.map(
-              (roleName, i) => html`
-                <sl-menu-item 
-                  class="nav-item ${classMap({
-                  active: this.selectedAppletIndex === i})}"
-                  value="${this.appletDetails[roleName].customName.toLowerCase()}"
-                  @click=${() => {this.selectedAppletIndex = i}}
-                  >${this.appletDetails[roleName].customName}</sl-menu-item
-                >
-                <div role="navigation" class="sub-nav indented">
-                  ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
-                    this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                    resource =>
-                      html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
-                        >${resource}</sl-menu-item
-                      >`,
-                  )}
-                </div>
-              `,
-            )}
-          </sl-menu>
-          <sl-menu class="dashboard-menu-section">
-            <sl-menu-label class="nav-label">Member Management</sl-menu-label>
-            <sl-menu-item class="nav-item" value="overview">Members</sl-menu-item>
-            <sl-menu-item class="nav-item" value="roles">Invitees</sl-menu-item>
-          </sl-menu>
-        </nav>
+        ${this.renderSidebar(roleNames)}
         <main>
           ${this.loading
             ? this.renderMainSkeleton()
