@@ -385,7 +385,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           (weGroupInfo) =>
             html`
               <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px;"
+                style="overflow: hidden; margin-top: 2px; margin-bottom: 2px;"
                 .logoSrc=${weGroupInfo.info.logoSrc}
                 .tooltipText=${weGroupInfo.info.name}
                 @click=${() => {
@@ -435,7 +435,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                       <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
                         <sidebar-button
                           placement="bottom"
-                          style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                          style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                           .logoSrc=${weGroupInfo.info.logoSrc}
                           .tooltipText=${weGroupInfo.info.name +
                           " - " +
@@ -460,7 +460,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                     <inactive-overlay>
                       <sidebar-button
                         placement="bottom"
-                        style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                        style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                         .logoSrc=${weGroupInfo.info.logoSrc}
                         .tooltipText=${weGroupInfo.info.name +
                         " - " +
@@ -494,7 +494,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         (appletClassInfo) =>
           html`
             <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
+              style="overflow: hidden; margin-top: 2px; margin-bottom: 2px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
               .logoSrc=${appletClassInfo.logoSrc}
               .tooltipText=${appletClassInfo.title}
               @click=${() => {
@@ -525,7 +525,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             html`
               <sidebar-button
                 placement="bottom"
-                style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                 .logoSrc=${appletClassInfo.logoSrc}
                 .tooltipText=${appletClassInfo.title}
                 @click=${() => {
@@ -569,7 +569,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               <icon-dot icon="share" invisible=${appletInstanceInfo.federatedGroups.length === 0}>
                 <sidebar-button
                   placement="bottom"
-                  style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                  style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                   .logoSrc=${appletInstanceInfo.applet.logoSrc}
                   .tooltipText=${appletInstanceInfo.applet.customName}
                   @click=${() => {
@@ -618,7 +618,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 <sidebar-button
                   notificationDot
                   placement="bottom"
-                  style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                  style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                   .logoSrc=${newAppletInstanceInfo.applet.logoSrc}
                   .tooltipText=${newAppletInstanceInfo.applet.customName}
                   @click=${() => {
@@ -656,7 +656,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     return html`
       <sidebar-button
         placement="bottom"
-        style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+        style="overflow: hidden; margin-left: 2px; margin-right: 2px; border-radius: 50%;"
         logoSrc="${mergeEyeViewIcon}"
         tooltipText="Merge Eye View"
         @click=${() => {
@@ -980,6 +980,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         .highlightedAppletCentric {
           border: var(--nh-theme-bg-subtle) 1px solid;
+          border-radius: calc(1px * var(--nh-radii-xl)) !important;
         }
 
         .highlightedGroupCentric {
@@ -1017,11 +1018,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         }
 
         .appletCentricIconHover {
-          border: transparent 4px solid;
+          border: transparent 1px solid;
+          overflow:auto;
         }
 
         .appletCentricIconHover:hover {
-          border: var(--nh-theme-accent-muted) 4px solid;
+          border: var(--nh-theme-accent-muted) 1px solid;
+          box-shadow: 0px 0px 20px #6e46cc;
         }
 
         .navigation-switch {

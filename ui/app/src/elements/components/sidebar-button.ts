@@ -65,6 +65,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
         width: 50px;
         height: 50px;
         object-fit: cover;
+        transform: scale(1.2);
       }
     `;
   }
