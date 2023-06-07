@@ -78,6 +78,7 @@ import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import { PeerStatusStore } from "@holochain-open-dev/peer-status";
 import md5 from "md5";
 import { getCellId } from "./utils";
+import { defaultAppletConfig } from "./defaultAppletConfig";
 
 /**Data of a group */
 export interface WeGroupData {
@@ -741,6 +742,7 @@ export class MatrixStore {
 
         const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
+        await sensemakerStore.registerApplet(defaultAppletConfig);
 
 
         // create WeGroupData object
@@ -1062,6 +1064,7 @@ export class MatrixStore {
     const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
     const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
+    await sensemakerStore.registerApplet(defaultAppletConfig);
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {
