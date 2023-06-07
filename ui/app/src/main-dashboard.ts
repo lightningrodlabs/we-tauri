@@ -291,10 +291,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
-      this._dashboardMode = DashboardMode.WeGroupHome;
       this._selectedAppletInstanceId = undefined;
       this._selectedAppletClassId = undefined;
     }
+    this._dashboardMode = DashboardMode.WeGroupHome;
     this._selectedWeGroupId = weGroupId;
   }
 
