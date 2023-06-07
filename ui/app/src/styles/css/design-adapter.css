@@ -12,7 +12,8 @@
   --nh-theme-accent-muted: #6e46cc;
   --nh-theme-bg-subtle: #312a36;
   --nh-theme-bg-muted: #645d69;
-  --nh-font-families-headlines: Manrope, sans-serif;
+  --nh-font-families-body: 'Work Sans', Manrope, sans-serif; 
+  --nh-font-families-headlines: 'Open Sans', Manrope, sans-serif;
   --nh-font-size-xs: 11;
   --nh-spacing-md: 12;
   --nh-colors-eggplant-950: #0c0a0d;

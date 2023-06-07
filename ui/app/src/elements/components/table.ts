@@ -351,23 +351,26 @@ function generateMockProfile(number: number) {
   />`;
 }
 function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
-  return html`<div style="font-family: 'Open Sans';
+  return html`<div style="
       margin: var(--header-title-margin-y) 0;
       height: 4rem;
       display: flex;
       flex-direction: column;
       justify-content: space-around;">
-    <h2
-      style="min-width: var(--column-min-width);
+    <h2 style="font-family: var(--nh-font-families-headlines);
+      font-weight: var(--sl-font-weight-semibold);
+      min-width: var(--column-min-width);
       margin: 0;
       font-size: calc(1px * var(--nh-font-size-md));
-      margin-bottom: var(--header-title-margin-y);
-      font-weight: var(--nh-font-weights-headlines-bold);"
+      margin-bottom: var(--header-title-margin-y);;"
     >
       ${resourceName}
     </h2>
     <h4
-      style="margin: 0; font-size: calc(1px * var(--nh-font-size-sm));font-weight: var(--nh-font-weights-headlines-regular)"
+      style="font-family: var(--nh-font-families-body);
+      margin: 0; 
+      font-size: calc(1px * var(--nh-font-size-sm));
+      font-weight: var(--nh-font-weights-headlines-regular)"
     >
       ${headerTitle}
     </h4>
@@ -379,6 +382,7 @@ function generateHashHTML(hash: string) {
       style="color: var(--menuSubTitle);
       border: 1px solid var(--menuSubTitle);
       border-radius: var(--cell-hash-border-radius);
+      font-family: var(--nh-font-families-body);
       font-size: var(--cell-hash-font-size);
       line-height: var(--nh-line-heights-headlines-bold);
       overflow: hidden;

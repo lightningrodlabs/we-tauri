@@ -435,7 +435,8 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       color: var(--nh-theme-fg-default);
       text-align: center;
       letter-spacing: 0.2px;
-      font-weight: var(--nh-font-weights-body-bold);
+      font-family: var(--nh-font-families-headlines);
+      font-weight: var(--sl-font-weight-semibold);
       line-height: var(--nh-line-heights-body-default);
       letter-spacing: 0.5px !important;
     }
@@ -551,13 +552,12 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
     .nav-item {
       border-radius: calc(1px * var(--nh-radii-base) - 0px);
       overflow: hidden;
-      font-family: var(--nh-font-families-headlines);
+      font-family: var(--nh-font-families-body);
       margin-bottom: calc(1px * var(--nh-spacing-xs));
     }
     .nav-item::part(base) {
       color: var(--nh-theme-fg-default);
       font-size: calc(1px * var(--nh-font-size-sm));
-      font-weight: var(--nh-font-weights-body-regular);
       padding: calc(1px * var(--nh-spacing-xxs));
       padding-left: calc(1px * var(--nh-spacing-sm));
     }
