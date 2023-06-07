@@ -95,7 +95,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
             customName: a[1].customName
           }
         }
-      }, {});
+      }, {})
+      setTimeout(() => {
+        console.log('Mimicking load times')
+        this.loading = false
+      }, 1500);        
     });
 console.log('this.appletDetails :>> ', this.appletDetails);
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
@@ -105,9 +109,10 @@ console.log('this.appletDetails :>> ', this.appletDetails);
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
 console.log('appletConfig:', appletConfig);
-        this.appletDetails[id].appletRenderInfo = {
-          resourceNames: Object.keys(appletConfig.resource_defs).map(cleanResourceNameForUI),
-        };
+this.appletDetails[id].appletRenderInfo = {
+  resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+};
+// debugger;
         
         // Keep dimensions for dashboard table prop        
         this.dimensions = appletConfig.dimensions;
@@ -219,7 +224,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     </nav>
     `;
   }
-  renderMainSkeleton() {
+  renderMainSkeleton(awaitingData: boolean) {
     return html`
       <div class="container skeleton-overview">
         <main>
@@ -238,7 +243,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingState == LoadingState.NoAppletSensemakerData
+          ${this.loadingState == LoadingState.NoAppletSensemakerData && !awaitingData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
                   <sl-icon slot="icon" name="info-circle"></sl-icon>
@@ -256,7 +261,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
   }
 
   render() {
-    const roleNames = Object.keys(this.appletDetails);
+    const roleNames = this?.appletDetails && Object.keys(this.appletDetails);
     const appletDetails = Object.values(this.appletDetails);
     
     const appletConfig = (appletDetails?.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
@@ -274,7 +279,7 @@ console.log('contexts :>> ', contexts);
         ${this.renderSidebar(roleNames)}
         <main>
           ${this.loading
-            ? this.renderMainSkeleton()
+            ? this.renderMainSkeleton(!!roleNames)
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
