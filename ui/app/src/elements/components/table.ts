@@ -38,6 +38,11 @@ export type AssessmentDict = {
 
 export const tableId = 'assessmentsForResource';
 
+
+    // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line and finish implementation on line 99
+const objectiveDimensionNames = ['total_importance', 'average_heat'];
+const subjectiveDimensionNames = ['importance', 'perceived_heat'];
+
 @customElement('dashboard-table')
 export class StatefulTable extends ScopedRegistryHost(LitElement) {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -112,17 +117,15 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   async updated(changedProperties) {
     let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
     if(this.tableType === AssessmentTableType.Resource) {
-      // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
-      // resourceAssessments = this.filterByMethodNames(resourceAssessments, ['importance', 'perceived_heat']);
-      // console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
+      resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
+      console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
       this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
       this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
       return;
     }
     
     // else we are dealing with a context, filter accordingly
-    // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line
-    this.filterByMethodNames(resourceAssessments, ['total_importance', 'average_heat']);
+    this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
     console.log('resourceAssessments (objective) :>> ', resourceAssessments);
 
     for(let[propName, _] of changedProperties) {
@@ -148,7 +151,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
         decorator: (resource: any) => html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
-          ${generateHashHTML(resource.eh)} ${resource.value}
+          ${generateHashHTML(resource.eh)}
         </div>`,
       }),
       'neighbour': new FieldDefinition<AssessmentTableRecord>({
@@ -161,12 +164,28 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
     })}
     switch (tableType) {
       case AssessmentTableType.Resource:
-        return fixedFields
+        const fieldEntriesResource = Object.entries(this.selectedDimensions)
+        .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
+          subjectiveDimensionNames.includes(dimensionName)
+        )
+        .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
+          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)) })
+        }))
+        const resourceFields = fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
+        return {
+          ...fixedFields,
+          ...resourceFields
+        }
       case AssessmentTableType.Context:
-        const fieldEntries = Object.entries(this.selectedDimensions).map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
+        const fieldEntries = Object.entries(this.selectedDimensions)
+        const fieldEntriesContext = Object.entries(this.selectedDimensions)
+        .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
+          objectiveDimensionNames.includes(dimensionName)
+        )
+        .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
           [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)) })
         }))
-        const contextFields = fieldEntries.reduce((field, fields) => ({...fields, ...field}) , {}) 
+        const contextFields = fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
         return {
         ...fixedFields,
         ...contextFields

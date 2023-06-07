@@ -64,7 +64,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
   @property({ attribute: false })
   _sensemakerStore!: SensemakerStore;
 
-  @state() selectedAppletIndex: number = 1;
+  @state() selectedAppletIndex: number = 0;
   @state() selectedResourceName!: string;
   @state() selectedContext: string = 'none';
   @state() selectedResourceDefEh!: string;
