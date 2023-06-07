@@ -980,12 +980,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
         .highlightedAppletCentric {
           border: var(--nh-theme-bg-subtle) 1px solid;
-          border-radius: calc(1px * var(--nh-radii-xl)) !important;
+          border-radius: calc(1px * var(--nh-radii-2xl)) !important;
         }
 
         .highlightedGroupCentric {
           border: var(--nh-theme-bg-surface) 1px solid;
-          border-radius: calc(1px * var(--nh-radii-xl));
+          border-radius: calc(1px * var(--nh-radii-2xl));
         }
         
         .highlightedHome {

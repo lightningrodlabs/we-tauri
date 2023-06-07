@@ -273,7 +273,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.NoAppletSensemakerData };
 // console.log('this.selectedAppletIndex :>> ', this.selectedAppletIndex);
 // console.log('this.appletDetails from render function:>> ', this.appletDetails, appletConfig, contexts);
-console.log('contexts :>> ', contexts);
+// console.log('contexts :>> ', contexts);
     return html`
       <div class="container">
         ${this.renderSidebar(roleNames)}
