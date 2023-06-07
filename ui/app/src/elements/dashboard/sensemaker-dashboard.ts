@@ -95,13 +95,8 @@ export class SensemakerDashboard extends ScopedElementsMixin(LitElement) {
             customName: a[1].customName
           }
         }
-      }, {})
-      setTimeout(() => {
-        console.log('Mimicking load times')
-        this.loading = false
-      }, 1500);        
+      }, {})        
     });
-console.log('this.appletDetails :>> ', this.appletDetails);
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
@@ -109,10 +104,9 @@ console.log('this.appletDetails :>> ', this.appletDetails);
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
 console.log('appletConfig:', appletConfig);
-this.appletDetails[id].appletRenderInfo = {
-  resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
-};
-// debugger;
+        this.appletDetails[id].appletRenderInfo = {
+          resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+        };
         
         // Keep dimensions for dashboard table prop        
         this.dimensions = appletConfig.dimensions;
@@ -271,9 +265,8 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.NoAppletSensemakerData };
-// console.log('this.selectedAppletIndex :>> ', this.selectedAppletIndex);
-// console.log('this.appletDetails from render function:>> ', this.appletDetails, appletConfig, contexts);
-// console.log('contexts :>> ', contexts);
+console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
+
     return html`
       <div class="container">
         ${this.renderSidebar(roleNames)}
@@ -283,16 +276,17 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
-                    <sl-tab panel="resource" class="dashboard-tab resource"
-                    @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = 'none' }}
-                      >${this.selectedResourceName}</sl-tab
-                    >
+                    <sl-tab panel="resource" class="dashboard-tab resource ${classMap({
+                      active: this.selectedContext === 'none'})}"
+                      @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = 'none' }}
+                        >${this.selectedResourceName}</sl-tab>
                     ${contexts &&
                     contexts.map(
                       context =>
                         html`<sl-tab 
                                 panel="${context.toLowerCase()}" 
-                                class="dashboard-tab"
+                                class="dashboard-tab ${classMap({
+                                  active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
                                 @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
                           >${context}</sl-tab-panel
                         >`,
@@ -313,7 +307,8 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
                 ${contexts &&
                 contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel" name="${context.toLowerCase()}" .contextEh="${context.toLowerCase()}">
+                    html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
+                      active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
                       <dashboard-table
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
@@ -354,6 +349,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     /** Layout **/
     :host {
       --menu-width: 138px;
+      --tab-nav-tab-radius: calc(1px * var(--nh-radii-xl));
       width: calc(100% - 138px);
     }
     .container {
@@ -410,7 +406,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
       border-color: var(--nh-theme-bg-surface);
       border-width: 4px;
       border-style: solid;
-      border-radius: calc(1px * var(--nh-radii-lg));
+      border-radius: var(--tab-nav-tab-radius);
     }
     .tab-nav .icon-container {
       display: flex;
@@ -445,12 +441,12 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     }
     .dashboard-tab:first-child::part(base),
     .dashboard-tab:hover::part(base) {
-      border-top-left-radius: calc(2px * var(--nh-radii-md));
-      border-bottom-left-radius: calc(2px * var(--nh-radii-md));
+      border-top-left-radius: var(--tab-nav-tab-radius);
+      border-bottom-left-radius: var(--tab-nav-tab-radius);
     }
     .dashboard-tab:last-child::part(base) {
-      border-top-right-radius: calc(2px * var(--nh-radii-md));
-      border-bottom-right-radius: calc(2px * var(--nh-radii-md));
+      border-top-right-radius: var(--tab-nav-tab-radius);
+      border-bottom-right-radius: var(--tab-nav-tab-radius);
     }
 
     /* Resource(active) and Hover */
@@ -460,22 +456,29 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
       color: var(--nh-theme-accent-muted);
       background-color: var(--nh-theme-bg-subtle);
     }
-    .dashboard-tab.active {
-      color: var(--nh-theme-accent-muted);
-      background-color: var(--nh-theme-bg-subtle);
+
+    .dashboard-tab.resource.active {
+      background-color: var(--nh-colors-eggplant-950);
     }
     .dashboard-tab.active {
-      border-color: var(--nh-theme-accent-muted);
-      border-radius: calc(1px * var(--nh-radii-base) - 0px);
+      color: var(--nh-theme-accent-muted);
+      background-color: var(--nh-colors-eggplant-950);
+      border-top-left-radius: var(--tab-nav-tab-radius);
+      border-top-right-radius: var(--tab-nav-tab-radius);
+    }
+    .dashboard-tab.active::part(base) {
+      border-top-left-radius: var(--tab-nav-tab-radius);
+      border-top-right-radius: var(--tab-nav-tab-radius);
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
     }
     .dashboard-tab:hover {
       background-color: var(--nh-theme-bg-subtle);
       border-top-right-radius: calc(2px * var(--nh-radii-md) - 0px);
       border-top-left-radius: calc(2px * var(--nh-radii-md) - 0px);
     }
-    .dashboard-tab.resource:hover::part(base),
-    .dashboard-tab.active::part(base) {
-      border-radius: calc(2px * var(--nh-radii-md) - 0px);
+    .dashboard-tab.resource:hover::part(base) {
+      border-radius: var(--tab-nav-tab-radius);
     }
     .dashboard-tab.resource:hover::part(base),
     .dashboard-tab.active::part(base):hover {
@@ -496,12 +499,12 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     .dashboard-tab.active::part(base) {
       background-color: var(--nh-theme-bg-canvas);
     }
-    /* Divider after resource */
+    /* Divider after resource name */
     .dashboard-tab.resource::before {
       position: absolute;
       background-color: var(--nh-theme-bg-subtle);
       bottom: 1px;
-      right: -4px;
+      right: -3px;
       content: '';
       height: calc(100% - 2px);
       width: 2px;
@@ -558,9 +561,11 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
       padding: calc(1px * var(--nh-spacing-xxs));
       padding-left: calc(1px * var(--nh-spacing-sm));
     }
-
     .indented .nav-item::part(base) {
       padding-left: calc(1px * var(--nh-spacing-2xl));
+    }
+    .nav-item.active::part(base) {
+      background: var(--nh-colors-eggplant-950);
     }
     .nav-item:hover::part(base) {
       background: var(--nh-theme-bg-surface);

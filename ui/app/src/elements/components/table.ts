@@ -169,7 +169,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
           subjectiveDimensionNames.includes(dimensionName)
         )
         .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)) })
+          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)), 
+          decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
         }))
         const resourceFields = fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
         return {
@@ -183,7 +184,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
           objectiveDimensionNames.includes(dimensionName)
         )
         .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)) })
+          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)), 
+              decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
         }))
         const contextFields = fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
         return {
@@ -276,15 +278,16 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       --cell-radius: calc(1px * var(--nh-radii-base));
 
       --table-assessmentsForResource-display : block;
+      --table-vertical-align: middle;
       --border-color: #7d7087;
       --menuSubTitle: #a89cb0;
-      --column-max-width: calc(2rem * var(--nh-spacing-lg));
+      --column-min-width: calc(1rem * var(--nh-spacing-sm));
+      --column-max-width: calc(2rem * var(--nh-spacing-md));
       
       /** Header Cells **/
       --table-assessmentsForResource-heading-background-color: var(--nh-theme-bg-surface);
       --header-cell-border-width: 1px;
       --header-title-margin-y: 6px;
-      --header-cell-border-width: 1px;
 
       /* Border color, width */
       --table-assessmentsForResource-header-first-heading-border-color: var(--border-color);
@@ -314,6 +317,8 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
       /** First Two Columns **/
       --table-assessmentsForResource-resource-width: var(--column-max-width);
       --table-assessmentsForResource-neighbour-width: var(--column-max-width);
+      --table-resource-vertical-align: top;
+      --table-neighbour-vertical-align: top;
       
       --table-assessmentsForResource-row-even-background-color: var(---nh-theme-bg-surface);
       --table-assessmentsForResource-row-odd-background-color: var(---nh-theme-bg-surface);
@@ -374,9 +379,9 @@ function generateMockValue(number: number) {
   }
 }
 function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
-  return html` <div style="font-family: 'Open Sans'; margin: var(--header-title-margin-y) 0">
+  return html`<div style="font-family: 'Open Sans'; margin: var(--header-title-margin-y) 0">
     <h2
-      style="margin: 0; font-size: calc(1px * var(--nh-font-size-md)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
+      style="min-width: var(--column-min-width); margin: 0; font-size: calc(1px * var(--nh-font-size-md)); margin-bottom: var(--header-title-margin-y); font-weight: var(--nh-font-weights-headlines-bold)"
     >
       ${resourceName}
     </h2>
