@@ -335,9 +335,31 @@ async function handleMessage(
 
   switch (request.type) {
     case "get-entry-info":
-      return (
-        await applet!.appletViews(client!, appletId, null as any, null as any)
-      ).entries[request.roleName][request.integrityZomeName][
+      const appletViews = await applet!.appletViews(
+        client!,
+        appletId,
+        null as any,
+        null as any
+      );
+
+      if (!appletViews.entries[request.roleName])
+        throw new Error(
+          `The requested applet doesn't implement entry views for role ${request.roleName}`
+        );
+      if (!appletViews.entries[request.roleName][request.integrityZomeName])
+        throw new Error(
+          `The requested applet doesn't implement entry views for integrity zome ${request.integrityZomeName} in role ${request.roleName}`
+        );
+      if (
+        !appletViews.entries[request.roleName][request.integrityZomeName][
+          request.entryDefId
+        ]
+      )
+        throw new Error(
+          `The requested applet doesn't implement entry views for entry type ${request.entryDefId} in integrity zome ${request.integrityZomeName} and role ${request.roleName}`
+        );
+
+      return appletViews.entries[request.roleName][request.integrityZomeName][
         request.entryDefId
       ].info(request.hrl);
     case "get-attachment-types":

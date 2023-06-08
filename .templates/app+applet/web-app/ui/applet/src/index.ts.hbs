@@ -1,4 +1,4 @@
-import { ActionHash, AppAgentClient, CellType } from '@holochain/client';
+import { ActionHash, AppAgentClient, CellType, EntryHash } from '@holochain/client';
 import { html, render, TemplateResult } from 'lit';
 
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
@@ -79,8 +79,8 @@ async function crossAppletViews(
 const applet: WeApplet = {
   appletViews,
   crossAppletViews,
-  attachmentTypes: async (appletClient: AppAgentClient) => ({}),
-  search: async (appletClient: AppAgentClient, filter: string) => {
+  attachmentTypes: async (appletClient: AppAgentClient, _appletId: EntryHash, _weServices: WeServices) => ({}),
+  search: async (appletClient: AppAgentClient, _appletId: EntryHash, _weServices: WeServices, filter: string) => {
     return [];
   },
 };

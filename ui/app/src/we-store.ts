@@ -42,7 +42,6 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo } from "./tauri";
 import { findAppForDnaHash, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store";
-import { encode } from "@msgpack/msgpack";
 
 export class WeStore {
   constructor(

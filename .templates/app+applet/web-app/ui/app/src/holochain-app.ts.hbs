@@ -29,7 +29,7 @@ type View = { view: 'main' };
 export class HolochainApp extends LitElement {
   @state() _loading = true;
 
-  @state() _view = { view: 'main' };
+  @state() _view: View = { view: 'main' };
 
   @provide({ context: profilesStoreContext })
   @property()

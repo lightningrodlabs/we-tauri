@@ -69,7 +69,6 @@ export class AppletBundlesStore {
         const bytes: any = await invoke("fetch_icon", {
           happReleaseHashB64: encodeHashToBase64(appletBundleHash),
           guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
-          pubKeyB64: encodeHashToBase64(this.devhubClient.myPubKey),
         });
         return toSrc(new Uint8Array(bytes));
       }
