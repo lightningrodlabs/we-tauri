@@ -1,11 +1,11 @@
 import { css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { EntryHash } from '@holochain/client';
-import { AssessDimensionWidget, RangeValue, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { AssessDimensionWidget, Assessment, RangeValue, RangeValueFloat, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { contextProvided } from '@lit-labs/context';
 
-@customElement('heat-dimension-assessment')
-export class HeatDimensionAssessment extends AssessDimensionWidget {
+@customElement('average-star-dimension')
+export class AverageStarDimension extends AssessDimensionWidget {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
@@ -23,11 +23,16 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
     methodEh!: EntryHash
 
     @property()
-    isAssessedByMe = false;
+    latestAssessment!: Assessment | null;
 
     @state()
     rating = 0;
-    
+   
+    async firstUpdated() {
+        if(this.latestAssessment) {
+            this.rating = (this.latestAssessment.value as RangeValueFloat).Float;
+        }
+    }
     render() {
         
         return html`
@@ -37,9 +42,9 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
                             name="myCheckbox" 
                             value="important" 
                             ?checked=${this.rating > 0}
-                            ?disabled=${this.isAssessedByMe} 
+                            ?disabled=${this.latestAssessment} 
                             @click=${() => {
-                                if(!this.isAssessedByMe) {
+                                if(!this.latestAssessment) {
                                     this.rating = 1;
                                     this.assessResource({
                                         Float: 0
@@ -52,9 +57,9 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
                             name="myCheckbox" 
                             value="important" 
                             ?checked=${this.rating > 1}
-                            ?disabled=${this.isAssessedByMe} 
+                            ?disabled=${this.latestAssessment} 
                             @click=${() => {
-                                if(!this.isAssessedByMe) {
+                                if(!this.latestAssessment) {
                                     this.rating = 2;
                                     this.assessResource({
                                         Float: 1
@@ -67,9 +72,9 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
                             name="myCheckbox" 
                             value="important" 
                             ?checked=${this.rating > 2}
-                            ?disabled=${this.isAssessedByMe} 
+                            ?disabled=${this.latestAssessment} 
                             @click=${() => {
-                                if(!this.isAssessedByMe) {
+                                if(!this.latestAssessment) {
                                     this.rating = 3;
                                     this.assessResource({
                                         Float: 2
@@ -82,9 +87,9 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
                             name="myCheckbox" 
                             value="important" 
                             ?checked=${this.rating > 3}
-                            ?disabled=${this.isAssessedByMe} 
+                            ?disabled=${this.latestAssessment} 
                             @click=${() => {
-                                if(!this.isAssessedByMe) {
+                                if(!this.latestAssessment) {
                                     this.rating = 4;
                                     this.assessResource({
                                         Float: 3
@@ -97,9 +102,9 @@ export class HeatDimensionAssessment extends AssessDimensionWidget {
                             name="myCheckbox" 
                             value="important" 
                             ?checked=${this.rating > 4}
-                            ?disabled=${this.isAssessedByMe} 
+                            ?disabled=${this.latestAssessment} 
                             @click=${() => {
-                                if(!this.isAssessedByMe) {
+                                if(!this.latestAssessment) {
                                     this.rating = 5;
                                     this.assessResource({
                                         Float: 4

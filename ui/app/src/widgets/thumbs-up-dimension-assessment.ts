@@ -2,11 +2,11 @@ import { css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { EntryHash } from '@holochain/client';
 import { Checkbox } from '@scoped-elements/material-web'
-import { AssessDimensionWidget, RangeValue, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { AssessDimensionWidget, Assessment, RangeValue, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { contextProvided } from '@lit-labs/context';
 
-@customElement('importance-dimension-assessment')
-export class ImportanceDimensionAssessment extends AssessDimensionWidget {
+@customElement('thumbs-up-dimension-assessment')
+export class ThumbsUpDimenionAssessment extends AssessDimensionWidget {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
@@ -24,7 +24,7 @@ export class ImportanceDimensionAssessment extends AssessDimensionWidget {
     methodEh!: EntryHash
 
     @property()
-    isAssessedByMe = false;
+    latestAssessment!: Assessment | null;
 
     render() {
         return html`
