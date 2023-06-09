@@ -50,14 +50,14 @@ export interface WidgetMappingConfig {
 }
 
 export interface WidgetRegistry {
-    [methodEh: string]: {
+    [dimensionEh: string]: {
         display: typeof ConcreteDisplayDimensionWidget,
         assess: typeof ConcreteAssessDimensionWidget,
     }
 }
 
 export interface MethodDimensionMap {
-    [method: string]: { // the method name
+    [methodEh: string]: { 
         inputDimensionEh: EntryHash,
         outputDimensionEh: EntryHash,
     },

@@ -126,6 +126,9 @@ export class SensemakerStore {
   myLatestAssessmentAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64): Readable<Assessment | null> {
     return derived(this._resourceAssessments, resourceAssessments => {
       const assessments = resourceAssessments[resource_eh];
+      if (!assessments) {
+        return null;
+      }
       const myAssessments = assessments.filter(assessment => encodeHashToBase64(assessment.author) === encodeHashToBase64(this.myAgentPubKey));
       if (myAssessments.length > 0) { 
         return getLatestAssessment(myAssessments, dimension_eh);
@@ -249,7 +252,7 @@ export class SensemakerStore {
 
     this._methodDimensionMapping.update(methodDimensionMapping => {
       appletConfigInput.applet_config_input.methods.forEach(method => {
-        methodDimensionMapping[method.name] = {
+        methodDimensionMapping[encodeHashToBase64(appletConfig.methods[method.name])] = {
           inputDimensionEh: get(this.appletConfig()).dimensions[method.input_dimensions[0].name],
           outputDimensionEh: get(this.appletConfig()).dimensions[method.output_dimension.name],
         };
