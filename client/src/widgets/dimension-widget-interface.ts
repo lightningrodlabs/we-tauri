@@ -16,7 +16,7 @@ type IAssessDimensionWidget = IDimensionWidget & {
     resourceDefEh: EntryHash
     dimensionEh: EntryHash
     methodEh: EntryHash
-    isAssessedByMe: boolean
+    latestAssessment: Assessment | null
     assessResource(value: RangeValue): Promise<void>
 }
 
@@ -30,7 +30,7 @@ export abstract class AssessDimensionWidget extends ScopedElementsMixin(LitEleme
     abstract resourceDefEh: EntryHash
     abstract dimensionEh: EntryHash
     abstract methodEh: EntryHash
-    abstract isAssessedByMe: boolean
+    abstract latestAssessment: Assessment | null
     abstract render(): TemplateResult
     async assessResource(value: RangeValue): Promise<void> {
         const assessment: CreateAssessmentInput = {
@@ -71,7 +71,7 @@ export class ConcreteAssessDimensionWidget extends AssessDimensionWidget {
     resourceDefEh!: EntryHash
     dimensionEh!: EntryHash
     methodEh!: EntryHash
-    isAssessedByMe!: boolean
+    latestAssessment!: Assessment | null
     render(): TemplateResult {
         return html``
     }
