@@ -209,8 +209,15 @@ export class SensemakerStore {
   }
 
   async registerApplet(appletConfigInput: CreateAppletConfigInput): Promise<AppletConfig> {
-    const appletConfig = await this.service.registerApplet(appletConfigInput);
-    this._appletConfig.update(() => appletConfig);
+    const appletConfig: AppletConfig = await this.service.registerApplet(appletConfigInput);
+    this._appletConfig.update((appletConfigs) => {
+      appletConfigs.ranges = {...appletConfigs.ranges, ...appletConfig.ranges};
+      appletConfigs.dimensions = {...appletConfigs.dimensions, ...appletConfig.dimensions};
+      appletConfigs.resource_defs = {...appletConfigs.resource_defs, ...appletConfig.resource_defs};
+      appletConfigs.methods = {...appletConfigs.methods, ...appletConfig.methods};
+      appletConfigs.cultural_contexts = {...appletConfigs.cultural_contexts, ...appletConfig.cultural_contexts};
+      return appletConfigs;
+    });
     return appletConfig;
   }
 
