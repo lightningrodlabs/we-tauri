@@ -1,9 +1,10 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
+import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
 import { derived, Writable, writable } from 'svelte/store';
 import { Option } from './utils';
 import { createContext } from '@lit-labs/context';
+import { get } from "svelte/store";
 
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
@@ -34,6 +35,13 @@ export class SensemakerStore {
   }
   */
   _widgetRegistry: Writable<WidgetRegistry> = writable({});
+
+  _activeMethod: Writable<{
+    [resourceDefEh: string]: EntryHashB64 // mapping from resourceDefEh to active methodEh
+  }> = writable({});
+
+  _methodDimensionMapping: Writable<MethodDimensionMap> = writable({});
+
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -94,6 +102,13 @@ export class SensemakerStore {
 
   widgetRegistry() {
     return derived(this._widgetRegistry, widgetRegistry => widgetRegistry)
+  }
+  
+  activeMethod() {
+    return derived(this._activeMethod, activeMethod => activeMethod)
+  }
+  methodDimensionMapping() {
+    return derived(this._methodDimensionMapping, methodDimensionMapping => methodDimensionMapping)
   }
 
   isAssessedByMeAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64) {
@@ -218,14 +233,29 @@ export class SensemakerStore {
       appletConfigs.cultural_contexts = {...appletConfigs.cultural_contexts, ...appletConfig.cultural_contexts};
       return appletConfigs;
     });
+
+    this._methodDimensionMapping.update(methodDimensionMapping => {
+      appletConfigInput.applet_config_input.methods.forEach(method => {
+        methodDimensionMapping[method.name] = {
+          inputDimensionEh: get(this.appletConfig()).dimensions[method.input_dimensions[0].name],
+          outputDimensionEh: get(this.appletConfig()).dimensions[method.output_dimension.name],
+        };
+      });
+      return methodDimensionMapping;
+    });
+
+    // initialize the active method to the first method for each resource def
+    Object.values(appletConfig.resource_defs).forEach(resourceDef => {
+      this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
+    });
     return appletConfig;
   }
 
-  async updateActiveDimension(resourceDefEh: EntryHashB64, dimensionEh: EntryHashB64) {
-    this._widgetMappingConfig.update(widgetMappingConfig => {
-      widgetMappingConfig[resourceDefEh] ? widgetMappingConfig[resourceDefEh].activeDimensionEh = dimensionEh : null;
-      return widgetMappingConfig;
-    })
+  updateActiveMethod(resourceDefEh: EntryHashB64, methodEh: EntryHashB64) {
+    this._activeMethod.update((activeMethods) => {
+      activeMethods[resourceDefEh] = methodEh;
+      return activeMethods;
+    });
   }
 
   async updateWidgetMappingConfig(
@@ -251,7 +281,7 @@ export class SensemakerStore {
     )
   }
 
-  async registerWidget(
+  registerWidget(
     dimensionEhs: EntryHashB64[], 
     displayWidget: typeof ConcreteDisplayDimensionWidget,
     assessWidget: typeof ConcreteAssessDimensionWidget
