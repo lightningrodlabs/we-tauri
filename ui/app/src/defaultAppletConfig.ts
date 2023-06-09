@@ -10,7 +10,7 @@ const thumbsUpRange: Range = {
 const fiveStarRange: Range = {
     "name": "five-star-range",
     "kind": {
-        "Integer": { "min": 0, "max": 4 }
+        "Float": { "min": 0, "max": 4 }
     }
 }
 const totalThumbsUpRange: Range = {
@@ -84,7 +84,7 @@ const wellRatedThreshold: ConfigThreshold = {
 const highStarThreshold: ConfigThreshold = {
     "dimension": averageStarDimension,
     "kind": { "GreaterThan": null },
-    "value": { "Integer": 2 }
+    "value": { "Float": 2 }
 }
 
 // ==========CULTURAL CONTEXTS==========
