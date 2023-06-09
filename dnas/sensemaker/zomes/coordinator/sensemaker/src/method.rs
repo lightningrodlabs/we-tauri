@@ -76,16 +76,30 @@ fn compute_objective_assessment(
     match method.program {
         Program::Sum => {
             // collapse into vec for easy computation - will have to be more careful if of different types
+            let mut is_int: bool = true;
             let flat_assessments = flatten_btree_map(assessments);
             let mut sum: u32 = 0;
+            let mut sum_float: f32 = 0.0;
             for assessment in flat_assessments {
                 match assessment.value {
-                    RangeValue::Integer(value) => sum = sum + value,
-                    RangeValue::Float(_) => (), // TODO: complete this
+                    RangeValue::Integer(value) => {
+                        sum = sum + value;
+                    },
+                    RangeValue::Float(value) => {
+                        sum_float = sum_float + value;
+                        is_int = false;
+                    }
                 }
             }
+            let assessment_value: RangeValue;
+            if is_int {
+                assessment_value = RangeValue::Integer(sum);
+            }
+            else {
+                assessment_value = RangeValue::Float(sum_float);
+            }
             let assessment = CreateAssessmentInput {
-                value: RangeValue::Integer(sum),
+                value: assessment_value,
                 dimension_eh: method.output_dimension_eh,
                 resource_eh,
                 resource_def_eh: method.target_resource_def_eh,
@@ -95,18 +109,32 @@ fn compute_objective_assessment(
         }
         Program::Average => {
             // collapse into vec for easy computation - will have to be more careful if of different types
+            let mut is_int: bool = true;
             let flat_assessments = flatten_btree_map(assessments);
             let mut sum: u32 = 0;
+            let mut sum_float: f32 = 0.0;
 
             for assessment in flat_assessments.clone() {
                 match assessment.value {
                     RangeValue::Integer(value) => sum = sum + value,
-                    RangeValue::Float(_) => (), // TODO: complete this
+                    RangeValue::Float(value) => {
+                        sum_float = sum_float + value;
+                        is_int = false;
+                    }, // TODO: complete this
                 }
             }
-            let average = sum / flat_assessments.len() as u32;
+            let assessment_value: RangeValue;
+
+            if is_int {
+                let average = sum / flat_assessments.len() as u32;
+                assessment_value = RangeValue::Integer(average);
+            }
+            else {
+                let average = sum_float / flat_assessments.len() as f32;
+                assessment_value = RangeValue::Float(average);
+            }
             let assessment = CreateAssessmentInput {
-                value: RangeValue::Integer(average),
+                value: assessment_value,
                 dimension_eh: method.output_dimension_eh,
                 resource_eh,
                 resource_def_eh: method.target_resource_def_eh,
