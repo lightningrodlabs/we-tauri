@@ -32,12 +32,12 @@ export class SensemakeResource extends ScopedElementsMixin(LitElement) {
         const displayDimensionWidget = new displayDimensionWidgetType();
         assessDimensionWidget.resourceEh = this.resourceEh;
         assessDimensionWidget.resourceDefEh = this.resourceDefEh
-        assessDimensionWidget.dimensionEh = get(this.sensemakerStore.methodDimensionMapping())[activeMethodEh].inputDimensionEh;
+        assessDimensionWidget.dimensionEh = inputDimensionEh;
         assessDimensionWidget.methodEh = decodeHashFromBase64(activeMethodEh);
         assessDimensionWidget.sensemakerStore = this.sensemakerStore;
 
-        const byMe = get(this.sensemakerStore.isAssessedByMeAlongDimension(encodeHashToBase64(this.resourceEh), encodeHashToBase64(inputDimensionEh)))
-        assessDimensionWidget.isAssessedByMe = byMe;
+        const latestAssessment = get(this.sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(this.resourceEh), encodeHashToBase64(inputDimensionEh)))
+        assessDimensionWidget.latestAssessment = latestAssessment;
 
         displayDimensionWidget.assessment = getLatestAssessment(
             this.resourceAssessments.value[encodeHashToBase64(this.resourceEh)] ? this.resourceAssessments.value[encodeHashToBase64(this.resourceEh)] : [], 
