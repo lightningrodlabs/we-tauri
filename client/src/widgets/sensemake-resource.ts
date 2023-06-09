@@ -20,28 +20,28 @@ export class SensemakeResource extends ScopedElementsMixin(LitElement) {
     @property()
     resourceDefEh!: EntryHash
 
-    listTasksAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
-    widgetMappingConfig = new StoreSubscriber(this, () => this.sensemakerStore.widgetMappingConfig());
+    resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
+    activeMethod = new StoreSubscriber(this, () => this.sensemakerStore.activeMethod());
 
     render() {
-        // const { create_assessment_dimension, display_objective_dimension, method_for_created_assessment } = this.widgetMappingConfig.value[encodeHashToBase64(this.resourceDefEh)]
-        const { activeDimensionEh, inputDimensionMapping } = this.widgetMappingConfig.value[encodeHashToBase64(this.resourceDefEh)]
-        const assessDimensionWidgetType = (get(this.sensemakerStore.widgetRegistry()))[activeDimensionEh].assess
-        const displayDimensionWidgetType = (get(this.sensemakerStore.widgetRegistry()))[activeDimensionEh].display
+        const activeMethodEh = this.activeMethod.value[encodeHashToBase64(this.resourceDefEh)]
+        const { inputDimensionEh, outputDimensionEh } = get(this.sensemakerStore.methodDimensionMapping())[activeMethodEh];
+        const assessDimensionWidgetType = (get(this.sensemakerStore.widgetRegistry()))[encodeHashToBase64(inputDimensionEh)].assess
+        const displayDimensionWidgetType = (get(this.sensemakerStore.widgetRegistry()))[encodeHashToBase64(inputDimensionEh)].display
         const assessDimensionWidget = new assessDimensionWidgetType();
         const displayDimensionWidget = new displayDimensionWidgetType();
         assessDimensionWidget.resourceEh = this.resourceEh;
         assessDimensionWidget.resourceDefEh = this.resourceDefEh
-        assessDimensionWidget.dimensionEh = decodeHashFromBase64(activeDimensionEh);
-        assessDimensionWidget.methodEh = inputDimensionMapping[activeDimensionEh][1];
+        assessDimensionWidget.dimensionEh = get(this.sensemakerStore.methodDimensionMapping())[activeMethodEh].inputDimensionEh;
+        assessDimensionWidget.methodEh = decodeHashFromBase64(activeMethodEh);
         assessDimensionWidget.sensemakerStore = this.sensemakerStore;
 
-        const byMe = get(this.sensemakerStore.isAssessedByMeAlongDimension(encodeHashToBase64(this.resourceEh), activeDimensionEh))
+        const byMe = get(this.sensemakerStore.isAssessedByMeAlongDimension(encodeHashToBase64(this.resourceEh), encodeHashToBase64(inputDimensionEh)))
         assessDimensionWidget.isAssessedByMe = byMe;
 
         displayDimensionWidget.assessment = getLatestAssessment(
-            this.listTasksAssessments.value[encodeHashToBase64(this.resourceEh)] ? this.listTasksAssessments.value[encodeHashToBase64(this.resourceEh)] : [], 
-            encodeHashToBase64(inputDimensionMapping[activeDimensionEh][0])
+            this.resourceAssessments.value[encodeHashToBase64(this.resourceEh)] ? this.resourceAssessments.value[encodeHashToBase64(this.resourceEh)] : [], 
+            encodeHashToBase64(outputDimensionEh)
         );
         return html`
             <div class="sensemake-resource">
