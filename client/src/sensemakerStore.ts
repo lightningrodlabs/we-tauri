@@ -1,8 +1,8 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
 import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
-import { derived, Writable, writable } from 'svelte/store';
-import { Option } from './utils';
+import { derived, Readable, Writable, writable } from 'svelte/store';
+import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
 import { get } from "svelte/store";
 
@@ -119,6 +119,19 @@ export class SensemakerStore {
       }
       else {
         return false;
+      }
+    })
+  }
+
+  myLatestAssessmentAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64): Readable<Assessment | null> {
+    return derived(this._resourceAssessments, resourceAssessments => {
+      const assessments = resourceAssessments[resource_eh];
+      const myAssessments = assessments.filter(assessment => encodeHashToBase64(assessment.author) === encodeHashToBase64(this.myAgentPubKey));
+      if (myAssessments.length > 0) { 
+        return getLatestAssessment(myAssessments, dimension_eh);
+      }
+      else {
+        return null;
       }
     })
   }
