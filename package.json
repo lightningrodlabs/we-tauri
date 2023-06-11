@@ -9,7 +9,7 @@
     "start": "AGENTS=1 npm run network",
     "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && concurrently \"npm run build:watch -w nh-launcher\" \"npm run launch:happ\"",
     "test": "npm run build:happ && cargo test -- --nocapture",
-    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",
+    "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --watch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
@@ -29,5 +29,8 @@
     "new-port-cli": "^1.0.0",
     "rimraf": "^3.0.2",
     "run-singleton-cli": "^0.0.7"
+  },
+  "dependencies": {
+    "@adaburrows/table-web-component": "github:adaburrows/table-web-component"
   }
 }

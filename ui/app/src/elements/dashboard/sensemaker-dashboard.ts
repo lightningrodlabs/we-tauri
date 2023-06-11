@@ -356,6 +356,7 @@ console.log('contexts :>> ', contexts);
       --menu-width: 138px;
       width: calc(100% - 138px);
     }
+
     .container {
       display: flex;
       width: calc(100vw - 144px);

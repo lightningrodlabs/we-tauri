@@ -2,7 +2,7 @@
   --nh-spacing-sm: 8;
   --nh-theme-bg-canvas: #18151b;
   --nh-theme-fg-default: #FFFFFF;
-  --nh-theme-bg-surface: #3d3443;
+  --nh-theme-bg-surface: #3D3443;
   --nh-radii-lg: 18;
   --nh-spacing-lg: 16;
   --nh-spacing-xs: 4;
@@ -11,6 +11,7 @@
   --nh-radii-base: 6;
   --nh-theme-accent-muted: #6e46cc;
   --nh-theme-bg-subtle: #312a36;
+  --nh-theme-bg-subtle-50: rgba(61,52,67,0.3);
   --nh-theme-bg-muted: #645d69;
   --nh-font-families-headlines: Manrope, sans-serif;
   --nh-font-size-xs: 11;
