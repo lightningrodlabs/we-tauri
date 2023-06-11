@@ -1,5 +1,5 @@
-import { html, css, LitElement, PropertyValueMap, unsafeCSS } from "lit";
-import { state, query, property } from "lit/decorators.js";
+import { html, css, LitElement, CSSResult} from "lit";
+import { state, query } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -12,15 +12,12 @@ import { SelectAvatar } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
-
-import theme from '/src/styles/css/variables.css?inline' assert { type: 'css' };
-import adapter from '/src/styles/css/design-adapter.css?inline' assert { type: 'css' };
+import { NHComponent } from "../components/nh/base";
 
 /**
  * @element we-applet
  */
-export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
+export class CreateWeGroupDialog extends NHComponent {
   /** Dependencies */
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -118,14 +115,9 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
       "sl-input": SlInput,
     };
   }
-  static get styles() {
-    return [
-      sharedStyles,
+  static styles : CSSResult[] = [
+      super.styles as CSSResult,
       css`
-        /** Theme Properties **/
-        ${unsafeCSS(theme)}
-        ${unsafeCSS(adapter)}
-
         .body-container, .button-container {
           display: flex;
           justify-content: center;
@@ -137,9 +129,9 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
         }
         #primary-action-button::part(base), #secondary-action-button::part(base) {
           border-radius: calc(1px * var(--nh-radii-md));
-          background-color: var(--nh-theme-bg-subtle);
+          background-color: var(--nh-theme-bg-surface);
           color: var(--nh-theme-fg-default);
-          font-weight: var(--nh-font-weights-body-bold);
+          font-weight: 500;
           font-family: var(--nh-font-families-headlines);
           width: calc(1rem * var(--nh-spacing-sm));
           border: none;
@@ -151,7 +143,6 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
         #primary-action-button::part(base) {
           background-color: var(--nh-theme-bg-muted);
         }
-        
 
         #name-field::part(base) {
           border: none;
@@ -162,6 +153,11 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
         #name-field::part(input) {
           color: var(--nh-theme-fg-default);
           height: auto !important;
+          font-weight: 500;
+        }
+        #name-field::part(input)::placeholder {
+          color: var(--nh-theme-input-placeholder);
+          opacity: 1;
         }
 
         #dialog::part(panel) {
@@ -189,10 +185,11 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
           font-weight: var(--nh-font-weights-body-bold);
           font-family: var(--nh-font-families-headlines);
           padding: calc(1px * var(--nh-spacing-sm));
-          color: var(--nh-theme-fg-default);
+          color: var(--nh-theme-fg-muted);
         }
         #dialog::part(title) {
-          font-size: calc(1px * var(--nh-font-size-md));
+          font-size: calc(1px * var(--nh-font-size-sm));
+          letter-spacing:.5px;
         }
         #dialog::part(close-button):hover {
           color: var(--nh-theme-bg-canvas);
@@ -204,5 +201,4 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(LitElement) {
         }
       `,
     ];
-  }
 }

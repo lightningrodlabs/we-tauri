@@ -7,8 +7,9 @@
   --nh-spacing-lg: 16;
   --nh-spacing-xs: 4;
   --nh-font-weights-body-bold: 700;
-  --nh-line-heights-body-default: 1.5;
+  --nh-line-heights-body-default: 27px;
   --nh-radii-base: 6;
+  --nh-theme-menu-sub-title: #A89CB0;
   --nh-theme-accent-muted: #6e46cc;
   --nh-theme-bg-subtle: #312a36;
   --nh-theme-bg-subtle-50: rgba(61,52,67,0.3);
