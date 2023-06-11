@@ -5,8 +5,7 @@ import {
   EntryHash,
   encodeHashToBase64,
 } from "@holochain/client";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { LitElement, html, css, unsafeCSS } from "lit";
+import { html, css, CSSResult } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
   CircularProgress,
@@ -49,10 +48,9 @@ import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
 
-import theme from './styles/css/variables.css?inline' assert { type: 'css' };
-import adapter from './styles/css/design-adapter.css?inline' assert { type: 'css' };
+import { NHComponent } from "./elements/components/nh/base";
 
-export class MainDashboard extends ScopedElementsMixin(LitElement) {
+export class MainDashboard extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
@@ -822,230 +820,225 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     };
   }
 
-  static get styles() {
-    return [
-      sharedStyles,
-      css`
-      /** Theme Properties **/
-      ${unsafeCSS(theme)}
-      ${unsafeCSS(adapter)}
+  static styles : CSSResult[] = [
+    sharedStyles,
+    super.styles as CSSResult,
+    css`
+      :host {
+        display: flex;
+        overflow: hidden;
+      }
 
-        :host {
-          display: flex;
-          overflow: hidden;
-        }
+      .column:last-child {
+      }
 
-        .column:last-child {
-        }
+      .top-left-corner {
+        align-items: center;
+        background-color: transparent;
+        height: 72px;
+        width: 72px;
+        z-index: 1;
+      }
+      
+      .top-left-corner-bg {
+        border-style: solid;
+        border-width: 72px 0 0 72px;
+        position: absolute;
+        z-index: 0;
+      }
 
-        .top-left-corner {
-          align-items: center;
-          background-color: transparent;
-          height: 72px;
-          width: 72px;
-          z-index: 1;
-        }
-        
-        .top-left-corner-bg {
-          border-style: solid;
-          border-width: 72px 0 0 72px;
-          position: absolute;
-          z-index: 0;
-        }
+      #nh-logo {
+        border-width: 0 !important; 
+        display: grid;
+        place-content: center;
+        height: 72px;
+        width: 72px;
+        position: relative;
+        overflow: initial;
+      }
+      
+      .tlcbgGroupCentric {
+        border-color: var(--nh-colors-eggplant-800);
+      }
 
-        #nh-logo {
-          border-width: 0 !important; 
-          display: grid;
-          place-content: center;
-          height: 72px;
-          width: 72px;
-          position: relative;
-          overflow: initial;
-        }
-        
-        .tlcbgGroupCentric {
-          border-color: var(--nh-colors-eggplant-800);
-        }
+      .tlcbgAppletCentric {
+        border-color: var(--nh-colors-eggplant-800);
+      }
 
-        .tlcbgAppletCentric {
-          border-color: var(--nh-colors-eggplant-800);
-        }
+      .left-sidebar {
+        overflow: hidden;
+        width: 72px;
+        padding-top: 16px;
+        z-index: 1;
+      }
 
-        .left-sidebar {
-          overflow: hidden;
-          width: 72px;
-          padding-top: 16px;
-          z-index: 1;
-        }
+      .navigation-switch-container {
+        position: absolute;
+        right: 0;
+        top: 5rem;
+      }
+      
+      .group-add, .user-profile, .dashboard-icon, .applet-add {
+        width: 58px;
+        height: 58px; 
+        margin-top: calc(2px * var(--nh-spacing-lg)); 
+        margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+        cursor: pointer;
+        border: none;
+        position: relative;
+        border: transparent 1px solid;
+      }
 
-        .navigation-switch-container {
-          position: absolute;
-          right: 0;
-          top: 5rem;
-        }
-        
-        .group-add, .user-profile, .dashboard-icon, .applet-add {
-          width: 58px;
-          height: 58px; 
-          margin-top: calc(2px * var(--nh-spacing-lg)); 
-          margin-bottom: calc(1px * var(--nh-spacing-lg)); 
-          cursor: pointer;
-          border: none;
-          position: relative;
-          border: transparent 1px solid;
-        }
+      #nh-logo::after, .group-add::before, .user-profile::before, .applet-add::before, .dashboard-icon::before {
+        content: '';
+        background-image: url(user-menu-divider.png);
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        width: 50px;
+        height: 2px;
+      }
+      .group-add::before, .user-profile::before {
+        margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+        left: -4px;
+        top: calc(-1px * var(--nh-spacing-lg) - 1px);
+      }
+      #nh-logo::after {
+        margin-top: calc(1px * var(--nh-spacing-lg)); 
+        left: 4px;
+        bottom: calc(-1px * var(--nh-spacing-xs));
+        z-index: 50;
+      }
+      .applet-add::before, .dashboard-icon::before {
+        transform: rotate(-90deg);
+        left: calc(-2px * var(--nh-spacing-lg) - 7px);
+        bottom: 16px;
+        margin: 0;
+      }
+      .group-add, .applet-add {
+        background: url(./icons/add-nh-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+      .dashboard-icon, .applet-add {
+        margin-left: calc(1px * var(--nh-spacing-lg)); 
+        margin-right: calc(1px * var(--nh-spacing-md));
+        margin-top: 0; 
+        margin-bottom: 0; 
+      }
+      .user-profile {
+        background: url(./icons/user-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+      .dashboard-icon {
+        background: url(./icons/dashboard-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
 
-        #nh-logo::after, .group-add::before, .user-profile::before, .applet-add::before, .dashboard-icon::before {
-          content: '';
-          background-image: url(user-menu-divider.png);
-          position: absolute;
-          display: flex;
-          justify-content: center;
-          width: 50px;
-          height: 2px;
-        }
-        .group-add::before, .user-profile::before {
-          margin-bottom: calc(1px * var(--nh-spacing-lg)); 
-          left: -4px;
-          top: calc(-1px * var(--nh-spacing-lg) - 1px);
-        }
-        #nh-logo::after {
-          margin-top: calc(1px * var(--nh-spacing-lg)); 
-          left: 4px;
-          bottom: calc(-1px * var(--nh-spacing-xs));
-          z-index: 50;
-        }
-        .applet-add::before, .dashboard-icon::before {
-          transform: rotate(-90deg);
-          left: calc(-2px * var(--nh-spacing-lg) - 7px);
-          bottom: 16px;
-          margin: 0;
-        }
-        .group-add, .applet-add {
-          background: url(./icons/add-nh-icon.png);
-          background-size: contain;
-          background-repeat: no-repeat;
-        }
-        .dashboard-icon, .applet-add {
-          margin-left: calc(1px * var(--nh-spacing-lg)); 
-          margin-right: calc(1px * var(--nh-spacing-md));
-          margin-top: 0; 
-          margin-bottom: 0; 
-        }
-        .user-profile {
-          background: url(./icons/user-icon.png);
-          background-size: contain;
-          background-repeat: no-repeat;
-        }
-        .dashboard-icon {
-          background: url(./icons/dashboard-icon.png);
-          background-size: contain;
-          background-repeat: no-repeat;
-        }
+      .top-bar {
+        overflow: hidden;
+        z-index: 0.5;
+        display: grid;
+        justify-items: start;
+        align-items: center;
+        grid-template-columns: 1fr 80px 80px;
+      }
 
-        .top-bar {
-          overflow: hidden;
-          z-index: 0.5;
-          display: grid;
-          justify-items: start;
-          align-items: center;
-          grid-template-columns: 1fr 80px 80px;
-        }
+      .dashboard-content {
+        background-color:  var(--nh-theme-bg-canvas);
+        color:  var(--nh-theme-fg-on-dark);
+      }
 
-        .dashboard-content {
-          background-color:  var(--nh-theme-bg-canvas);
-          color:  var(--nh-theme-fg-on-dark);
-        }
+      .navBarGroupCentric, .navBarAppletCentric {
+        background-color:  var(--nh-theme-bg-surface);
+        min-height: 72px;
+        height: 72px;
+      }
 
-        .navBarGroupCentric, .navBarAppletCentric {
-          background-color:  var(--nh-theme-bg-surface);
-          min-height: 72px;
-          height: 72px;
-        }
+      .left-sidebar, #nh-logo {
+        background-color: var(--nh-colors-eggplant-950);
+      }
 
-        .left-sidebar, #nh-logo {
-          background-color: var(--nh-colors-eggplant-950);
+      @media (min-width: 640px) {
+        main {
+          max-width: none;
         }
+      }
 
-        @media (min-width: 640px) {
-          main {
-            max-width: none;
-          }
-        }
-
-        .invisible {
-          display: none;
-        }
+      .invisible {
+        display: none;
+      }
 
 
-        .highlightedAppletCentric {
-          border: var(--nh-theme-bg-subtle) 1px solid;
-          border-radius: calc(1px * var(--nh-radii-2xl)) !important;
-        }
+      .highlightedAppletCentric {
+        border: var(--nh-theme-bg-subtle) 1px solid;
+        border-radius: calc(1px * var(--nh-radii-2xl)) !important;
+      }
 
-        .highlightedGroupCentric {
-          border: var(--nh-theme-bg-surface) 1px solid;
-          border-radius: calc(1px * var(--nh-radii-2xl));
-        }
-        
-        .highlightedHome {
-          border: transparent 1px solid;
-        }
+      .highlightedGroupCentric {
+        border: var(--nh-theme-bg-surface) 1px solid;
+        border-radius: calc(1px * var(--nh-radii-2xl));
+      }
+      
+      .highlightedHome {
+        border: transparent 1px solid;
+      }
 
-        .homeIconHover {
-          border: transparent 1px solid;
-        }
-        
-        .homeIconHover:hover {
-          border: transparent 1px solid;
-        }
-        
-        .groupCentricIconHover {
-          border: transparent 1px solid;
-          border-radius: 50%;
-          transition: border-radius 0.1s ease-in;
-        }
-        .groupCentricIconHover:hover {
-          border-radius: calc(1px * var(--nh-radii-xl));
-        }
+      .homeIconHover {
+        border: transparent 1px solid;
+      }
+      
+      .homeIconHover:hover {
+        border: transparent 1px solid;
+      }
+      
+      .groupCentricIconHover {
+        border: transparent 1px solid;
+        border-radius: 50%;
+        transition: border-radius 0.1s ease-in;
+      }
+      .groupCentricIconHover:hover {
+        border-radius: calc(1px * var(--nh-radii-xl));
+      }
 
-        .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover, .applet-add:hover, .dashboard-icon:hover {
-          box-shadow: 0px 0px 20px #6e46cc;
-          border: 1px solid var(--nh-theme-bg-surface) !important;
-        }
-        .dashboard-icon:hover, .user-profile:hover, .group-add:hover, .applet-add:hover {
-          border-radius: 50%;
-        }
+      .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover, .applet-add:hover, .dashboard-icon:hover {
+        box-shadow: 0px 0px 20px #6e46cc;
+        border: 1px solid var(--nh-theme-bg-surface) !important;
+      }
+      .dashboard-icon:hover, .user-profile:hover, .group-add:hover, .applet-add:hover {
+        border-radius: 50%;
+      }
 
-        .appletCentricIconHover {
-          border: transparent 1px solid;
-          overflow:auto;
-        }
+      .appletCentricIconHover {
+        border: transparent 1px solid;
+        overflow:auto;
+      }
 
-        .appletCentricIconHover:hover {
-          border: var(--nh-theme-accent-muted) 1px solid;
-          box-shadow: 0px 0px 20px #6e46cc;
-        }
+      .appletCentricIconHover:hover {
+        border: var(--nh-theme-accent-muted) 1px solid;
+        box-shadow: 0px 0px 20px #6e46cc;
+      }
 
-        .navigation-switch {
-          color: white;
-          cursor: pointer;
-          z-index: 2;
-          background: url(./user-icon.png);
-        }
+      .navigation-switch {
+        color: white;
+        cursor: pointer;
+        z-index: 2;
+        background: url(./user-icon.png);
+      }
 
-        .group-home-button {
-          --mdc-theme-secondary: #303f9f;
-          --mdc-fab-focus-outline-color: white;
-        }
+      .group-home-button {
+        --mdc-theme-secondary: #303f9f;
+        --mdc-fab-focus-outline-color: white;
+      }
 
-        .applet-home-button {
-          margin-bottom: 4px;
-          --mdc-theme-secondary: #9ca5e3;
-          --mdc-fab-focus-outline-color: white;
-          --mdc-fab-focus-outline-width: 4px;
-        }
-      `,
-    ];
-  }
+      .applet-home-button {
+        margin-bottom: 4px;
+        --mdc-theme-secondary: #9ca5e3;
+        --mdc-fab-focus-outline-color: white;
+        --mdc-fab-focus-outline-width: 4px;
+      }
+    `,
+  ];
 }
