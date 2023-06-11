@@ -352,6 +352,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       --tab-nav-tab-radius: calc(1px * var(--nh-radii-xl));
       width: calc(100% - 138px);
     }
+
     .container {
       display: flex;
       width: calc(100vw - 144px);
