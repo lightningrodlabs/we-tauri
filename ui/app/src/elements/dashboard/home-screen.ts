@@ -2,15 +2,9 @@ import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { html, LitElement, css } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
+import { html, LitElement, css, CSSResult } from "lit";
 import {
-  Button,
-  List,
-  ListItem,
-  Card,
   Snackbar,
-  Icon,
   Dialog,
 } from "@scoped-elements/material-web";
 
@@ -18,16 +12,14 @@ import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
-import { SlTooltip } from "@scoped-elements/shoelace";
 import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
+import { NHComponent } from "../components/nh/base";
 
-export class HomeScreen extends ScopedElementsMixin(LitElement) {
+export class HomeScreen extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
-
 
   @query("#we-dialog")
   _weGroupDialog!: CreateWeGroupDialog;
@@ -38,7 +30,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
 
-
   weName(invitation: JoinMembraneInvitation) {
     return (decode(invitation.cloneDnaRecipe.properties) as any).name;
   }
@@ -46,20 +37,6 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
   weImg(invitation: JoinMembraneInvitation) {
     return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
   }
-
-
-
-  renderErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        style="text-align: center;"
-        id="error-snackbar"
-        labelText="You are already part of this Group!"
-      >
-      </mwc-snackbar>
-    `;
-  }
-
 
   render() {
     return html`
@@ -77,19 +54,8 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
             ></mwc-snackbar>
 
             <div class="column content-pane center-content">
-              <div
-                class="row center-content default-font"
-                style="font-size: 3em; color: #2c3888; margin-top: 15px;"
-              >
-                <div>Welcome to Neighbourhoods Launcher!</div>
-              </div>
-
-              <div class="row" style="margin-top: 70px;">
-                <managing-groups-card
-                  style="width: 40%; margin-right: 30px;"
-                ></managing-groups-card>
-                <join-group-card style="width: 60%;"></join-group-card>
-              </div>
+                <managing-groups-card></managing-groups-card>
+                <join-group-card ></join-group-card>
             </div>
           </div>
         </div>
@@ -99,34 +65,23 @@ export class HomeScreen extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "mwc-button": Button,
-      "mwc-list": List,
-      "mwc-list-item": ListItem,
-      "mwc-card": Card,
-      "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
-      "holo-identicon": HoloIdenticon,
       "create-we-group-dialog": CreateWeGroupDialog,
-      "sl-tooltip": SlTooltip,
-      "mwc-dialog": Dialog,
       "join-group-card": JoinGroupCard,
       "managing-groups-card": ManagingGroupsCard,
     };
   }
 
-  static get styles() {
-    let localStyles = css`
+  static styles : CSSResult[] = [
+    super.styles as CSSResult,
+      css`
       .content-pane {
-        padding: 30px;
+        display: flex;
+        gap:  calc(1px * var(--nh-spacing-3xl));
+        margin:  calc(1px * var(--nh-spacing-3xl));
+        flex-direction: row;
+        align-items: flex-start;
       }
-
-      .default-font {
-        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
-      }
-
-
-    `;
-
-    return [sharedStyles, localStyles];
-  }
+    `
+  ];
 }
