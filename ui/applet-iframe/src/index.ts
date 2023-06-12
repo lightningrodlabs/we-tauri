@@ -106,7 +106,9 @@ async function setupProfilesClient(
 
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
-  return window.importApplet();
+  const m = await import("/index.js");
+
+  return m.default;
 }
 
 async function buildWeServices(requestAttachments = true): Promise<WeServices> {
@@ -429,17 +431,9 @@ function getRenderView(): RenderView | undefined {
 }
 
 function appletId(): EntryHash {
-  if (window.location.href.startsWith("applet://")) {
-    const urlWithoutProtocol = window.location.href.split("applet://")[1];
-    const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
-    return decodeHashFromBase64(appletIdBase64);
-  } else {
-    const urlWithoutProtocol = window.location.href.split(
-      "https://applet.localhost/"
-    )[1];
-    const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
-    return decodeHashFromBase64(appletIdBase64);
-  }
+  const urlWithoutProtocol = window.location.href.split("://")[1];
+  const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
+  return decodeHashFromBase64(appletIdBase64);
 }
 
 async function postMessage(request: AppletToParentRequest): Promise<any> {
