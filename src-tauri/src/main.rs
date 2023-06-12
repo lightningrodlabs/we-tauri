@@ -122,7 +122,8 @@ fn main() {
 
             let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
                 .title(title)
-                .inner_size(1000.0, 800.0)
+                .disable_file_drop_handler()
+                .inner_size(1000.0, 700.0)
                 .build()?;
 
             if !disable_deep_link {
