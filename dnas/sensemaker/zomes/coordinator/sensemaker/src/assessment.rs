@@ -10,6 +10,7 @@ use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::RangeValue;
 
 use crate::agent::get_all_agents;
+use crate::dimensions_typed_path;
 use crate::get_dimension;
 use crate::signals::Signal;
 use crate::utils::entry_from_record;
@@ -27,7 +28,7 @@ pub fn get_assessment(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetAssessmentsForResourceInput {
     resource_ehs: Vec<EntryHash>,
-    dimension_ehs: Vec<EntryHash>,
+    dimension_ehs: Option<Vec<EntryHash>>,
 }
 
 
@@ -46,8 +47,22 @@ pub fn get_assessments_for_resources(
     }: GetAssessmentsForResourceInput,
 ) -> ExternResult<BTreeMap<EntryHashB64, Vec<Assessment>>> {
     let mut resource_assessments = BTreeMap::<EntryHashB64, Vec<Assessment>>::new();
+    let all_or_some_dimension_ehs: Vec<EntryHash>;
+    match dimension_ehs {
+        Some(dimension_ehs) => all_or_some_dimension_ehs = dimension_ehs,
+        None => {
+            all_or_some_dimension_ehs = get_links(
+                dimensions_typed_path()?.path_entry_hash()?,
+                LinkTypes::Dimensions,
+                None,
+            )?
+            .into_iter()
+            .map(|link| EntryHash::from(link.target))
+            .collect();
+        }
+    }
     for resource_eh in resource_ehs {
-        let assessments = get_assessments_for_resource_inner(resource_eh.clone(), dimension_ehs.clone())?;
+        let assessments = get_assessments_for_resource_inner(resource_eh.clone(), all_or_some_dimension_ehs.clone())?;
         resource_assessments.insert(resource_eh.into(), flatten_btree_map(assessments));
     }
     Ok(resource_assessments)

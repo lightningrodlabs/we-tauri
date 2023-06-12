@@ -20,7 +20,7 @@ export type Assessment = CreateAssessmentInput & {
 
 export interface GetAssessmentsForResourceInput {
     resource_ehs: ResourceEh[],
-    dimension_ehs: DimensionEh[],
+    dimension_ehs: Option<DimensionEh[]>,
 }
 
 export interface AssessmentWithDimensionAndResource {
