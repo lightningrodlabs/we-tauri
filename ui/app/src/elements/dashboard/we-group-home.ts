@@ -20,6 +20,7 @@ import { WeGroupSettings } from "./we-group-settings";
 import { SensemakerDashboard } from "./sensemaker-dashboard";
 import { get } from "svelte/store";
 import { Assessment } from "@neighbourhoods/sensemaker-lite-types";
+import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 
 
 
@@ -219,7 +220,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       </div>
                     </div>
 
-                    <sensemaker-dashboard></sensemaker-dashboard>
+                    <nh-sensemaker-settings></nh-sensemaker-settings>
                     <we-group-settings
                       @join-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
@@ -330,6 +331,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "we-group-settings": WeGroupSettings,
       "applet-not-installed": AppletNotInstalled,
       "sensemaker-dashboard": SensemakerDashboard,
+      "nh-sensemaker-settings": NHSensemakerSettings,
     };
   }
 
