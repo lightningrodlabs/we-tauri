@@ -4,7 +4,7 @@ import { DisplayDimensionWidget, RangeValueFloat } from '@neighbourhoods/client'
 import { Assessment, RangeValueInteger } from '@neighbourhoods/client';
 
 @customElement('total-importance-dimension-display')
-export class TotalImportanceDimensionDisplay extends DisplayDimensionWidget {
+export class TotalThumbsUpDimensionDisplay extends DisplayDimensionWidget {
 
     @property()
     assessment!: Assessment | null

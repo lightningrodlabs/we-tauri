@@ -5,7 +5,7 @@ import { AssessDimensionWidget, Assessment, RangeValue, RangeValueFloat, Sensema
 import { contextProvided } from '@lit-labs/context';
 
 @customElement('average-star-dimension')
-export class AverageStarDimension extends AssessDimensionWidget {
+export class StarDimensionAssessment extends AssessDimensionWidget {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
