@@ -1,5 +1,6 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -16,6 +17,10 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
+import { SensemakerDashboard } from "./sensemaker-dashboard";
+import { get } from "svelte/store";
+import { Assessment } from "@neighbourhoods/sensemaker-lite-types";
+import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 
 
 
@@ -26,6 +31,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: profilesStoreContext, subscribe: true })
   _profilesStore!: ProfilesStore;
+
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
 
   @contextProvided({ context: peerStatusStoreContext, subscribe: true })
   _peerStatusStore!: PeerStatusStore;
@@ -60,7 +68,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
   @query("#install-from-fs-dialog")
   _installFromFsDialog!: InstallFromFsDialog;
-
 
   renderJoinErrorSnackbar() {
     return html`
@@ -148,7 +155,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           }
       `
     }
-
     return html`
       <div class="flex-scrollable-parent">
         <div class="flex-scrollable-container">
@@ -214,6 +220,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       </div>
                     </div>
 
+                    <nh-sensemaker-settings></nh-sensemaker-settings>
                     <we-group-settings
                       @join-applet=${(e: CustomEvent) => {
                         this._installAppletId = e.detail;
@@ -297,11 +304,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
             <div class="row" style="flex: 1">
 
               ${this.renderContent()}
-
-              <div class="column members-sidebar">
-                  <my-profile style="margin-bottom: 20px;"></my-profile>
-                  ${this.renderMembers()}
-                </div>
             </div>
 
           </profile-prompt>
@@ -328,6 +330,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,
       "applet-not-installed": AppletNotInstalled,
+      "sensemaker-dashboard": SensemakerDashboard,
+      "nh-sensemaker-settings": NHSensemakerSettings,
     };
   }
 
