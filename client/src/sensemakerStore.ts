@@ -262,7 +262,10 @@ export class SensemakerStore {
 
     // initialize the active method to the first method for each resource def
     Object.values(appletConfig.resource_defs).forEach(resourceDef => {
-      this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
+      // if the active method hasn't been set yet, set it.
+      if (!get(this._activeMethod)[encodeHashToBase64(resourceDef)]) {
+        this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
+      }
     });
     return appletConfig;
   }
