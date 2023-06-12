@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { DisplayDimensionWidget, RangeValueFloat } from '@neighbourhoods/client';
 import { Assessment, RangeValueInteger } from '@neighbourhoods/client';
 
-@customElement('total-importance-dimension-display')
+@customElement('total-thumbs-up-dimension-display')
 export class TotalThumbsUpDimensionDisplay extends DisplayDimensionWidget {
 
     @property()
