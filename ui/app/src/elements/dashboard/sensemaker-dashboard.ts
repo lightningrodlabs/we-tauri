@@ -238,7 +238,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingState == LoadingState.NoAppletSensemakerData && !awaitingData
+          ${this.loadingState == LoadingState.NoAppletSensemakerData || awaitingData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
                   <sl-icon slot="icon" name="info-circle"></sl-icon>
