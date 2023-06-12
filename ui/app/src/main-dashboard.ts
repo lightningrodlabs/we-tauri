@@ -48,9 +48,9 @@ import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
 
-import { NHComponent } from "./elements/components/nh/base";
+import { NHComponent, NHComponentShoelace } from "./elements/components/nh/base";
 
-export class MainDashboard extends NHComponent {
+export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;

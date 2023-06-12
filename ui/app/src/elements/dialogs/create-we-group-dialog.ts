@@ -12,12 +12,12 @@ import { SelectAvatar } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { NHComponent } from "../components/nh/base";
+import { NHComponent, NHComponentShoelace } from "../components/nh/base";
 
 /**
  * @element we-applet
  */
-export class CreateWeGroupDialog extends NHComponent {
+export class CreateWeGroupDialog extends NHComponentShoelace {
   /** Dependencies */
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -44,7 +44,6 @@ export class CreateWeGroupDialog extends NHComponent {
     const dialog = this.renderRoot.querySelector('#dialog');
     const closeButton = dialog!.querySelector('#secondary-action-button'); 
     closeButton!.addEventListener('click', () => this._dialog.hide());
-    
   }
   private async handleOk(e: any) {
     // if statement is required to prevent ENTER key to close the dialog while the button is disabled
@@ -132,7 +131,6 @@ export class CreateWeGroupDialog extends NHComponent {
           background-color: var(--nh-theme-bg-surface);
           color: var(--nh-theme-fg-default);
           font-weight: 500;
-          font-family: var(--nh-font-families-headlines);
           width: calc(1rem * var(--nh-spacing-sm));
           border: none;
 
