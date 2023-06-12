@@ -20,9 +20,6 @@ import { Readable, get } from '@holochain-open-dev/stores';
 
 import { AssessmentTableType, StatefulTable } from '../components/table';
 
-import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
-import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
-import adapterShoelaceUI from '../../styles/css/shoelace-adapter.css?inline' assert { type: 'css' };
 import { encodeHashToBase64 } from '@holochain/client';
 import { classMap } from 'lit/directives/class-map.js';
 import { NHTableHeader } from '../components/nh/typo/table-header';
@@ -101,7 +98,7 @@ export class SensemakerDashboard extends NHComponent {
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
-        // TODO: fix edge case of repeat install of same applet? make unique id
+        // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
 console.log('appletConfig:', appletConfig);
