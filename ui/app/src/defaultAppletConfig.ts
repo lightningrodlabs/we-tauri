@@ -38,7 +38,7 @@ const totalThumbsUpDimension = {
     "computed": true
 }
 const averageStarDimension = {
-    "name": "average_heat",
+    "name": "average_star",
     "range": fiveStarRange,
     "computed": true
 }
@@ -61,7 +61,7 @@ const totalThumbsUpMethod: ConfigMethod = {
     "requires_validation": false
 }
 const averageStarMethod: ConfigMethod = {
-    "name": "average_heat_method",
+    "name": "average_star_method",
     "target_resource_def": genericResourceDef,
     "input_dimensions": [fiveStarDimension],
     "output_dimension": averageStarDimension,
