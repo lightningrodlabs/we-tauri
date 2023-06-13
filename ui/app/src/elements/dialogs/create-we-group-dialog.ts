@@ -1,9 +1,7 @@
-import { html, css, LitElement, CSSResult} from "lit";
+import { html, css, CSSResult} from "lit";
 import { state, query } from "lit/decorators.js";
 
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-// import { Dialog, TextField, Button } from "@scoped-elements/material-web";
 import {
   SlDialog, SlInput, SlButton, SlButtonGroup
 } from '@scoped-elements/shoelace';
@@ -12,12 +10,13 @@ import { SelectAvatar } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { NHComponent, NHComponentShoelace } from "../components/nh/base";
+import { NHComponentShoelace } from "neighbourhoods-design-system-components";
+import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 
 /**
  * @element we-applet
  */
-export class CreateWeGroupDialog extends NHComponentShoelace {
+export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace) {
   /** Dependencies */
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;

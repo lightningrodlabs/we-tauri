@@ -10,14 +10,15 @@ import {
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
+
 import { query } from "lit/decorators.js";
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
-import { NHComponent } from "../components/nh/base";
 
-export class HomeScreen extends NHComponent {
+
+export class HomeScreen extends ScopedElementsMixin(NHComponentShoelace) {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 

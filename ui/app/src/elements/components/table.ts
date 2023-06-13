@@ -1,8 +1,8 @@
-import { LitElement, html, css, TemplateResult, unsafeCSS } from 'lit';
+import {  html, css, TemplateResult } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { contextProvided } from '@lit-labs/context';
 
-import { Assessment, CulturalContext, Dimension, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { Assessment, CulturalContext, DimensionEh, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
 import { decode } from '@msgpack/msgpack';
 
@@ -12,14 +12,11 @@ import {
   TableStore,
   Table,
 } from '@adaburrows/table-web-component';
-import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 import { encodeHashToBase64 } from '@holochain/client';
-
-import theme from '../../styles/css/variables.css?inline' assert { type: 'css' };
-import adapter from '../../styles/css/design-adapter.css?inline' assert { type: 'css' };
 
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { DimensionDict, cleanResourceNameForUI } from '../dashboard/sensemaker-dashboard';
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 
 interface AssessmentTableRecord {
   resource: object,
@@ -38,13 +35,12 @@ export type AssessmentDict = {
 
 export const tableId = 'assessmentsForResource';
 
-
     // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line and finish implementation on line 99
 const objectiveDimensionNames = ['total_importance', 'average_heat'];
 const subjectiveDimensionNames = ['importance', 'perceived_heat'];
 
 @customElement('dashboard-table')
-export class StatefulTable extends ScopedRegistryHost(LitElement) {
+export class StatefulTable extends NHComponentShoelace {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore;
@@ -262,11 +258,7 @@ export class StatefulTable extends ScopedRegistryHost(LitElement) {
   };
 
   static styles = css`
-    /** Theme Properties **/
-    ${unsafeCSS(theme)}
-    ${unsafeCSS(adapter)}
     :host {
-
       /** Global Table **/
       color: var(--nh-theme-fg-default);
       --table-assessmentsForResource-height: 100%;

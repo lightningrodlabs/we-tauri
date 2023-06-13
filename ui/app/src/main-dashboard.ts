@@ -47,10 +47,10 @@ import { nhLogoIcon } from "./icons/nh-logo-icon";
 import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
+import { NHComponentShoelace } from "neighbourhoods-design-system-components";
+import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
-import { NHComponent, NHComponentShoelace } from "./elements/components/nh/base";
-
-export class MainDashboard extends NHComponentShoelace {
+export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;

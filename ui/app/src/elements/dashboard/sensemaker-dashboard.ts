@@ -22,8 +22,8 @@ import { AssessmentTableType, StatefulTable } from '../components/table';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { classMap } from 'lit/directives/class-map.js';
-import { NHTableHeader } from '../components/nh/typo/table-header';
-import { NHComponent } from '../components/nh/base';
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
 interface AppletRenderInfo {
   name: string;
@@ -51,7 +51,7 @@ const snakeCase = str =>
 export const cleanResourceNameForUI = propertyName =>
   propertyName.split('_').map(capitalize).join(' ');
 
-export class SensemakerDashboard extends NHComponent {
+export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
@@ -286,7 +286,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                             class="dashboard-tab ${classMap({
                               active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
                             @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
-                          ><nh-table-header>${context}</nh-table-header></sl-tab-panel
+                          ><span>${context}</span></sl-tab-panel
                         >`,
                     )}
                   </div>
@@ -334,7 +334,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       'sl-tab-panel': SlTabPanel,
       'sl-icon': SlIcon,
       'sl-alert': SlAlert,
-      'nh-table-header': NHTableHeader,
+      // 'nh-table-header': NHTableHeader,
       'dashboard-table': StatefulTable,
     };
   }

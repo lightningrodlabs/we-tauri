@@ -1,8 +1,9 @@
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
-import { html, LitElement, css } from 'lit';
+import { html, css } from 'lit';
 import { NHCard } from './nh/layout/card';
 
-export class ManagingGroupsCard extends ScopedElementsMixin(LitElement) {
+export class ManagingGroupsCard extends ScopedElementsMixin(NHComponentShoelace) {
   render() {
     return html`
       <nh-card heading="Managing Neighbourhoods">
