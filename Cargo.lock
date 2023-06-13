@@ -3473,6 +3473,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-body"
+version = "1.0.0-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "951dfc2e32ac02d67c90c0d65bd27009a635dc9b381a2cc7d284ab01e3a0150d"
+dependencies = [
+ "bytes",
+ "http",
+]
+
+[[package]]
+name = "http-body-util"
+version = "0.1.0-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92445bc9cc14bfa0a3ce56817dc3b5bcc227a168781a356b702410789cec0d10"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body 1.0.0-rc.2",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "http-range"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3518,7 +3541,7 @@ dependencies = [
  "futures-util",
  "h2",
  "http",
- "http-body",
+ "http-body 0.4.5",
  "httparse",
  "httpdate",
  "itoa 1.0.6",
@@ -3531,13 +3554,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "hyper"
+version = "1.0.0-rc.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b75264b2003a3913f118d35c586e535293b3e22e41f074930762929d071e092"
+dependencies = [
+ "bytes",
+ "futures-channel",
+ "futures-core",
+ "futures-util",
+ "h2",
+ "http",
+ "http-body 1.0.0-rc.2",
+ "httparse",
+ "httpdate",
+ "itoa 1.0.6",
+ "pin-project-lite",
+ "tokio",
+ "tracing",
+ "want",
+]
+
+[[package]]
 name = "hyper-tls"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
 dependencies = [
  "bytes",
- "hyper",
+ "hyper 0.14.25",
  "native-tls",
  "tokio",
  "tokio-native-tls",
@@ -6283,8 +6328,8 @@ dependencies = [
  "futures-util",
  "h2",
  "http",
- "http-body",
- "hyper",
+ "http-body 0.4.5",
+ "hyper 0.14.25",
  "hyper-tls",
  "ipnet",
  "js-sys",
@@ -8867,6 +8912,7 @@ version = "0.0.15"
 dependencies = [
  "anyhow",
  "base64 0.21.0",
+ "bytes",
  "devhub_types",
  "essence_payloads",
  "futures",
@@ -8878,6 +8924,8 @@ dependencies = [
  "holochain_types",
  "holochain_web_app_manager",
  "holochain_websocket",
+ "http-body-util",
+ "hyper 1.0.0-rc.3",
  "lair_keystore_manager",
  "log",
  "mime_guess",
@@ -8890,6 +8938,7 @@ dependencies = [
  "tauri-plugin-deep-link",
  "tempdir",
  "thiserror",
+ "tokio",
  "zip 0.5.13",
 ]
 

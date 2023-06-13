@@ -20,10 +20,16 @@ import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { Applet } from "../../applets/types.js";
 import { appletOrigin } from "../../utils.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
 
 @localized()
 @customElement("create-custom-group-view")
 export class CreateCustomGroupView extends LitElement {
+  @consume({ context: weStoreContext })
+  @state()
+  weStore!: WeStore;
+
   @consume({ context: groupStoreContext, subscribe: true })
   @state()
   groupStore!: GroupStore;
@@ -54,6 +60,7 @@ export class CreateCustomGroupView extends LitElement {
           media: block.icon_src,
           category: applets.get(appletHash)?.custom_name,
           content: `<iframe src="${appletOrigin(
+            this.weStore.conductorInfo,
             appletHash
           )}?view=applet-view&view-type=block&block=${blockName}" style="width: 100%"></iframe>`,
         });

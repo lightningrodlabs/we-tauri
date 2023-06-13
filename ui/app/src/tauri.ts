@@ -5,6 +5,7 @@ import { getNonceExpiration } from "@holochain/client";
 import { CallZomeRequestSigned } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
+import { isWindows } from "./utils";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
   return invoke("is_keystore_initialized");
@@ -14,19 +15,76 @@ export async function isLaunched(): Promise<boolean> {
   return invoke("is_launched");
 }
 
-export async function sign_cal(): Promise<boolean> {
-  return invoke("is_launched");
+// Here we are trying to cover all platforms in different ways
+// Windows doesn't support requests of type applet://APPLETID
+// MacOs doesn't support requests of type http://APPLETID.localhost:4040
+export enum AppletIframeProtocol {
+  Assets,
+  LocalhostSubdomain,
+  LocaltestMe,
 }
 
 export interface ConductorInfo {
   app_port: number;
   admin_port: number;
+  applets_ui_port: number;
   we_app_id: string;
   devhub_app_id: string;
+  applet_iframe_protocol: AppletIframeProtocol;
+}
+
+async function fetchPing(origin: string) {
+  const iframe = document.createElement("iframe");
+  iframe.src = origin;
+  iframe.style.display = "none";
+  document.body.appendChild(iframe);
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+
+    const listener = (message) => {
+      if (message.source === iframe.contentWindow) {
+        resolved = true;
+        document.body.removeChild(iframe);
+        window.removeEventListener("message", listener);
+        resolve(null);
+      }
+    };
+    setTimeout(() => {
+      if (resolved) return;
+      document.body.removeChild(iframe);
+      window.removeEventListener("message", listener);
+      reject(null);
+    }, 1000);
+
+    window.addEventListener("message", listener);
+  });
 }
 
 export async function getConductorInfo(): Promise<ConductorInfo> {
-  return invoke("get_conductor_info");
+  const conductor_info: any = await invoke("get_conductor_info");
+
+  let applet_iframe_protocol = AppletIframeProtocol.LocaltestMe;
+  try {
+    if (!isWindows()) {
+      await fetchPing("applet://ping");
+      applet_iframe_protocol = AppletIframeProtocol.Assets;
+    }
+  } catch (e) {
+    try {
+      await fetchPing(
+        `http://ping.localhost:${conductor_info.applets_ui_port}`
+      );
+      applet_iframe_protocol = AppletIframeProtocol.LocalhostSubdomain;
+    } catch (e) {
+      applet_iframe_protocol = AppletIframeProtocol.LocaltestMe;
+    }
+  }
+
+  return {
+    ...conductor_info,
+    applet_iframe_protocol,
+  };
 }
 
 export async function enterPassword(

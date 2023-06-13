@@ -79,7 +79,7 @@ export class HrlLink extends LitElement {
                   (groupId) => html`
                     <img
                       .src=${groupsProfiles.get(groupId)?.logo_src}
-                      style="height: 16px; width: 16px; margin-right: 4px;"
+                      style="height: 16px; width: 16px; margin-right: 4px; border-radius: 50%"
                     />
                     <span>${groupsProfiles.get(groupId)?.name}</span>
                   `

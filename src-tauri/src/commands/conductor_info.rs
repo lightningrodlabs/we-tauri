@@ -3,7 +3,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use crate::{
-    default_apps::{we_app_id, devhub_app_id},
+    config::WeConfig,
+    default_apps::{devhub_app_id, we_app_id},
     state::{LaunchedState, WeResult},
 };
 
@@ -17,6 +18,7 @@ pub fn is_launched(app_handle: AppHandle) -> WeResult<bool> {
 pub struct ConductorInfo {
     app_port: u16,
     admin_port: u16,
+    applets_ui_port: u16,
     we_app_id: String,
     devhub_app_id: String,
 }
@@ -24,12 +26,14 @@ pub struct ConductorInfo {
 #[tauri::command]
 pub async fn get_conductor_info(
     state: tauri::State<'_, Mutex<LaunchedState>>,
+    config: tauri::State<'_, WeConfig>,
 ) -> WeResult<ConductorInfo> {
     let mut m = state.lock().await;
 
     Ok(ConductorInfo {
         app_port: m.web_app_manager.app_interface_port(),
         admin_port: m.web_app_manager.admin_interface_port(),
+        applets_ui_port: config.applets_ui_port,
         we_app_id: we_app_id(),
         devhub_app_id: devhub_app_id(),
     })

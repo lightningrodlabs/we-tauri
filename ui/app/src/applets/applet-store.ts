@@ -33,7 +33,7 @@ export class AppletStore {
       return new AppletHost(iframe);
     }
 
-    const origin = appletOrigin(this.appletHash);
+    const origin = appletOrigin(this.weStore.conductorInfo, this.appletHash);
     iframe = document.createElement("iframe");
     iframe.id = appletHashBase64;
     iframe.src = origin;

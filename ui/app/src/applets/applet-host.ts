@@ -17,12 +17,23 @@ import {
   HrlWithContext,
   WeServices,
 } from "@lightningrodlabs/we-applet";
-import { DnaHash, EntryHash } from "@holochain/client";
+import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import { AppOpenViews } from "../layout/types";
-import { signZomeCallTauri } from "../tauri";
+import { AppletIframeProtocol, signZomeCallTauri } from "../tauri";
 import { WeStore } from "../we-store";
+
+function getAppletIdFromOrigin(
+  appletIframeProtocol: AppletIframeProtocol,
+  origin: string
+): String {
+  if (appletIframeProtocol === AppletIframeProtocol.Assets) {
+    return origin.split("://")[1].split("?")[0].split("/")[0];
+  } else {
+    return origin.split("://")[1].split("?")[0].split(".")[0];
+  }
+}
 
 export async function setupAppletMessageHandler(
   weStore: WeStore,
@@ -30,18 +41,29 @@ export async function setupAppletMessageHandler(
 ) {
   window.addEventListener("message", async (message) => {
     try {
-      const appletMessage: AppletToParentMessage = message.data;
-      const appletId = appletMessage.appletId;
+      const lowerCaseAppletId = getAppletIdFromOrigin(
+        weStore.conductorInfo.applet_iframe_protocol,
+        message.origin
+      );
+
+      const installedApplets = await toPromise(
+        weStore.appletBundlesStore.installedApplets
+      );
+      const appletId = installedApplets.find(
+        (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
+      );
+
+      if (!appletId) throw new Error(`Requested applet is not installed`);
 
       const result = await handleAppletIframeMessage(
         weStore,
         openViews,
         appletId,
-        appletMessage.request
+        message.data.request
       );
       message.ports[0].postMessage({ type: "success", result });
     } catch (e) {
-      message.ports[0].postMessage({ type: "error", error: e });
+      message.ports[0].postMessage({ type: "error", error: e.message });
     }
   });
 }

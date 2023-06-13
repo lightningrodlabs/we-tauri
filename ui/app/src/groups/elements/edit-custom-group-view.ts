@@ -24,10 +24,16 @@ import { Applet } from "../../applets/types.js";
 import { CustomView } from "../../custom-views/types.js";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { appletOrigin } from "../../utils.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
 
 @localized()
 @customElement("edit-custom-group-view")
 export class EditCustomGroupView extends LitElement {
+  @consume({ context: weStoreContext })
+  @state()
+  weStore!: WeStore;
+
   @property(hashProperty("custom-view-hash"))
   customViewHash!: ActionHash;
 
@@ -63,7 +69,6 @@ export class EditCustomGroupView extends LitElement {
     applets: ReadonlyMap<EntryHash, Applet | undefined>
   ) {
     const blocks: Array<BlockProperties> = [];
-
     for (const [appletHash, blockTypes] of Array.from(
       blocksByApplet.entries()
     )) {
@@ -73,6 +78,7 @@ export class EditCustomGroupView extends LitElement {
           media: block.icon_src,
           category: applets.get(appletHash)?.custom_name,
           content: `<iframe src="${appletOrigin(
+            this.weStore.conductorInfo,
             appletHash
           )}?view=applet-view&view-type=block&block=${blockName}" style="width: 100%"></iframe>`,
         });

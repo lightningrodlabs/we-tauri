@@ -32,6 +32,9 @@ pub enum WeError {
     #[error("Filesystem error: `{0}`")]
     FileSystemError(String),
 
+    #[error("Applets UI server error: `{0}`")]
+    AppletsUIServerError(String),
+
     #[error("Holochain is not running")]
     NotRunning,
 

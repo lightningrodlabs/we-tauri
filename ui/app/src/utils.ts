@@ -10,6 +10,7 @@ import {
   CellType,
   encodeHashToBase64,
 } from "@holochain/client";
+import { AppletIframeProtocol, ConductorInfo } from "./tauri";
 
 export async function initAppClient(
   appId: string,
@@ -27,12 +28,24 @@ export function isWindows(): boolean {
   return navigator.appVersion.includes("Win");
 }
 
-export function appletOrigin(appletId: EntryHash): string {
-  const windows = isWindows();
-
-  return windows
-    ? `https://${encodeHashToBase64(appletId)}`
-    : `applet://${encodeHashToBase64(appletId)}`;
+export function appletOrigin(
+  conductorInfo: ConductorInfo,
+  appletId: EntryHash
+): string {
+  if (conductorInfo.applet_iframe_protocol === AppletIframeProtocol.Assets) {
+    return `applet://${encodeHashToBase64(appletId)}`;
+  } else if (
+    conductorInfo.applet_iframe_protocol ===
+    AppletIframeProtocol.LocalhostSubdomain
+  ) {
+    return `http://${encodeHashToBase64(appletId)}.localhost:${
+      conductorInfo.applets_ui_port
+    }`;
+  } else {
+    return `http://${encodeHashToBase64(appletId)}.localtest.me:${
+      conductorInfo.applets_ui_port
+    }`;
+  }
 }
 
 export function findAppForDnaHash(
