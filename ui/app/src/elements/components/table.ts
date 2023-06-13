@@ -13,21 +13,6 @@ import {
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 
-export interface AssessmentTableRecord {
-  resource: object;
-  neighbour: string;
-  [key: string]: DimensionEh | object | string; // Dimensions or Assessments
-}
-
-export enum AssessmentTableType {
-  Resource = 'resource',
-  Context = 'context',
-}
-
-export type AssessmentDict = {
-  [entryHash: string]: Assessment[];
-};
-
 export const tableId = 'assessmentsForResource';
 
 @customElement('dashboard-table')
@@ -211,99 +196,12 @@ export class StatefulTable extends NHComponentShoelace {
   `;
 }
 
-export function generateMockProfile(number: number) {
-  return html` <img
-    alt="profile"
-    src="profile${number}.png"
-    style="height: 2rem; object-fit: cover;"
-  />`;
-}
-export function generateHeaderHTML(headerTitle: string, resourceName: string = 'Resource') {
-  return html`<div
-    style="
-      margin: var(--header-title-margin-y) 0;
-      height: 4rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;"
-  >
-    <h2
-      style="font-family: var(--nh-font-families-headlines);
-      font-weight: var(--sl-font-weight-semibold);
-      min-width: var(--column-min-width);
-      margin: 0;
-      font-size: calc(1px * var(--nh-font-size-md));
-      margin-bottom: var(--header-title-margin-y);;"
-    >
-      ${resourceName}
-    </h2>
-    <h4
-      style="font-family: var(--nh-font-families-body);
-      margin: 0; 
-      font-size: calc(1px * var(--nh-font-size-sm));
-      font-weight: var(--nh-font-weights-headlines-regular)"
-    >
-      ${headerTitle}
-    </h4>
-  </div>`;
-}
-export function generateHashHTML(hash: string) {
-  return html`
-    <div
-      style="color: var(--menuSubTitle);
-      border: 1px solid var(--menuSubTitle);
-      border-radius: var(--cell-hash-border-radius);
-      font-family: var(--nh-font-families-body);
-      font-size: var(--cell-hash-font-size);
-      line-height: var(--nh-line-heights-headlines-bold);
-      overflow: hidden;
-      white-space: nowrap;
-      padding: var(--cell-hash-padding);
-      height: 1rem;
-      width: calc(var(--column-max-width) - (2 * var(--cell-hash-padding)));
-      text-overflow: ellipsis;"
-    >
-      ${hash}
-    </div>
-  `;
-}
-
 // @state()
 // fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
 // @state()
 // contextEntry!: CulturalContext;
 // @property()
 // dimensionEntries!: any[];
-//   // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective.
-//   // Is it from AppletUIConfig?
-//   // const dimensionsEntries =
-
-// async updated(changedProperties) {
-//   let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
-//   if(this.tableType === AssessmentTableType.Resource) {
-//     resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
-//     console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
-// this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
-// this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-//     return;
-//   }
-
-//   // else we are dealing with a context, filter accordingly
-//   this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
-//   console.log('resourceAssessments (objective) :>> ', resourceAssessments);
-
-//   for(let[propName, _] of changedProperties) {
-//     if(propName != 'selectedContext') return
-
-//     const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
-//     try {
-//       this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
-//     } catch (error) {
-//       console.log('No context entry exists for that context entry hash!')
-//     }
-//     // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering
-//     this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
-//     this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
-//     this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-//   }
-// }
+  // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective.
+  // Is it from AppletUIConfig?
+  // const dimensionsEntries =

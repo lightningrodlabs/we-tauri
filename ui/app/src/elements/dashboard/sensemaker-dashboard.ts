@@ -16,41 +16,18 @@ import {
   SlAlert,
   SlIcon,
 } from '@scoped-elements/shoelace';
-import { Readable, get } from '@holochain-open-dev/stores';
-
-import { AssessmentTableType, StatefulTable } from '../components/table';
-
-import { encodeHashToBase64 } from '@holochain/client';
-import { classMap } from 'lit/directives/class-map.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { StatefulTable } from '../components/table';
 import { FetchAssessment } from '../components/fetch-table-data';
 
-interface AppletRenderInfo {
-  name: string;
-  resourceNames?: string[];
-}
-export type DimensionDict = {
-  [id: string]: Uint8Array;
-};
-type ContextEhDict = DimensionDict;
+import { Readable, get } from '@holochain-open-dev/stores';
+import { encodeHashToBase64 } from '@holochain/client';
 
-enum LoadingState {
-  FirstRender = 'first-render',
-  NoAppletSensemakerData = 'no-applet-sensemaker-data',
-}
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
-const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-const capitalize = part => part[0].toUpperCase() + part.slice(1);
-const snakeCase = str =>
-  str &&
-  str
-    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
-    .map(x => x.toLowerCase())
-    .join('_');
-
-export const cleanResourceNameForUI = propertyName =>
-  propertyName.split('_').map(capitalize).join(' ');
+import { classMap } from 'lit/directives/class-map.js';
+import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
+import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
 export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @state() loading: boolean = true;

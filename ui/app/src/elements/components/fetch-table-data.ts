@@ -1,9 +1,5 @@
 import { Readable } from '@holochain-open-dev/stores';
-import {
-  Assessment,
-  SensemakerStore,
-  sensemakerStoreContext,
-} from '@neighbourhoods/client';
+import { Assessment, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { AssessmentTableRecord, AssessmentTableType, generateHeaderHTML } from './table';
@@ -27,29 +23,29 @@ export class FetchAssessment extends LitElement {
   _allAssessments;
 
   @property({ type: String })
-  resourceName!: string;
-  @property({ type: Object })
-  resourceDefEh!: string;
+  resourceName;
   @property({ type: String })
-  tableType!: AssessmentTableType;
-  @property({ type: Object })
-  selectedContext!: object;
-  @property({ type: Array })
+  resourceDefEh;
+  @property({ type: AssessmentTableType })
+  tableType;
+  @property({ type: String })
+  selectedContext;
+  @property()
   selectedDimensions!: DimensionDict;
 
   // To be fed as a prop to the dashboard table component
   @property({ type: Array })
   filteredAssessments: Assessment[] = [];
-  
+
   async connectedCallback() {
     super.connectedCallback();
-    
+
     this._allAssessments = new StoreSubscriber(this, () =>
-    this._sensemakerStore.resourceAssessments(),
+      this._sensemakerStore.resourceAssessments(),
     );
     this.setupAssessmentFilteringSubscription();
   }
-  
+
   disconnectedCallback() {
     super.disconnectedCallback();
     this._allAssessments.unsubscribe();
@@ -60,13 +56,14 @@ export class FetchAssessment extends LitElement {
     (this._allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (
         Object.values(resourceAssessments) &&
-        Object.values(resourceAssessments)?.length !== undefined && this.tableType
+        Object.values(resourceAssessments)?.length !== undefined &&
+        this.tableType
       ) {
         let allAssessments = Object.values(resourceAssessments) as Assessment[][];
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          assessmentTableRecords = filteredAssessments.map( (a) =>
+          assessmentTableRecords = filteredAssessments.map(a =>
             this.mapAssessmentToAssessmentTableRecord(a, this.tableType),
           );
         } catch (error) {
@@ -76,7 +73,7 @@ export class FetchAssessment extends LitElement {
       }
     });
   }
-  
+
   flatFiltered(assessments: Assessment[][]): Assessment[] {
     // By ResourceDefEH
     let filteredByResourceDef = this.filterByResourceDefEh(
@@ -103,7 +100,6 @@ export class FetchAssessment extends LitElement {
     return filteredByDimension;
   }
 
-
   filterByResourceDefEh(resourceAssessments: Assessment[][], filteringHash: string) {
     return Object.values(
       resourceAssessments.filter((assessments: Assessment[]) => {
@@ -127,7 +123,10 @@ export class FetchAssessment extends LitElement {
     });
   }
 
-  mapAssessmentToAssessmentTableRecord(assessment: Assessment, type: AssessmentTableType): AssessmentTableRecord {
+  mapAssessmentToAssessmentTableRecord(
+    assessment: Assessment,
+    type: AssessmentTableType,
+  ): AssessmentTableRecord {
     // Base record with basic fields
     const baseRecord = {
       neighbour: encodeHashToBase64(assessment.author),
@@ -141,7 +140,7 @@ export class FetchAssessment extends LitElement {
     for (let dimensionName of Object.keys(this.selectedDimensions)) {
       baseRecord[dimensionName] = '';
     }
-    
+
     // If dimension_eh in assessment matches a dimensionUint8 in the dictionary
     // populate the corresponding dimension field in the base record with the assessment value
     for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
@@ -153,25 +152,36 @@ export class FetchAssessment extends LitElement {
     return baseRecord;
   }
 
-  generateContextFieldDefs() : { [x: string]: FieldDefinition<AssessmentTableRecord> } {
-    const contextFieldEntries = Object.entries(this.selectedDimensions)
-      .filter(([dimensionName, _] : [string, Uint8Array]) => 
-      (this.tableType === AssessmentTableType.Resource ? subjectiveDimensionNames : objectiveDimensionNames).includes(dimensionName)
-    )
+  generateContextFieldDefs(): { [x: string]: FieldDefinition<AssessmentTableRecord> } {
+    const contextFieldEntries = Object.entries(this.selectedDimensions).filter(
+      ([dimensionName, _]: [string, Uint8Array]) =>
+        (this.tableType === AssessmentTableType.Resource
+          ? subjectiveDimensionNames
+          : objectiveDimensionNames
+        ).includes(dimensionName),
+    );
     switch (this.tableType) {
       case AssessmentTableType.Resource:
-        const fieldEntriesResource = contextFieldEntries.map(([dimensionName, _] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)), 
-          decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        }))
-        return fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
+        const fieldEntriesResource = contextFieldEntries.map(
+          ([dimensionName, _]: [string, Uint8Array]) => ({
+            [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
+              heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)),
+              decorator: (value: any) => html` <div>${value}</div>`,
+            }), // TODO: Add widget renderer here
+          }),
+        );
+        return fieldEntriesResource.reduce((fields, field) => ({ ...fields, ...field }), {});
       case AssessmentTableType.Context:
-        const fieldEntriesContext = contextFieldEntries.map(([dimensionName, _] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)), 
-              decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        }))
-        return fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
-      }
+        const fieldEntriesContext = contextFieldEntries.map(
+          ([dimensionName, _]: [string, Uint8Array]) => ({
+            [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
+              heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)),
+              decorator: (value: any) => html` <div>${value}</div>`,
+            }), // TODO: Add widget renderer here
+          }),
+        );
+        return fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {});
+    }
   }
 
   static get scopedElements() {
@@ -181,12 +191,18 @@ export class FetchAssessment extends LitElement {
   }
 
   render() {
-    console.log('this.tableType, filtered Assessments, contextFieldDefs :>> ', this.tableType, this.filteredAssessments, this.generateContextFieldDefs());
+    console.log(
+      'this.tableType, filtered Assessments, contextFieldDefs :>> ',
+      this.tableType,
+      this.filteredAssessments,
+      this.generateContextFieldDefs(),
+    );
     return html`
       <dashboard-table
+        .resourceName=${this.resourceName}
         .assessments=${this.filteredAssessments}
         .tableType=${this.tableType}
-        .resourceName=${this.resourceName}
+        .contextFieldDefs=${this.generateContextFieldDefs()}
       ></dashboard-table>
     `;
   }
