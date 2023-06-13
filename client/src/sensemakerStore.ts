@@ -24,16 +24,6 @@ export class SensemakerStore {
   */
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
-  // TODO: we probably want there to be a default Applet UI Config, specified in the applet config or somewhere.
-  _widgetMappingConfig: Writable<WidgetMappingConfig> = writable({});
-  /*
-  {
-    [resourceDefEh: string]: {
-      display_objective_dimension: EntryHash, // the dimension eh
-      create_assessment_dimension: EntryHash, // the dimension eh
-    }
-  }
-  */
   _widgetRegistry: Writable<WidgetRegistry> = writable({});
 
   _activeMethod: Writable<{
@@ -94,10 +84,6 @@ export class SensemakerStore {
 
   contextResults() {
     return derived(this._contextResults, contextResults => contextResults)
-  }
-
-  widgetMappingConfig() {
-    return derived(this._widgetMappingConfig, widgetMappingConfig => widgetMappingConfig)
   }
 
   widgetRegistry() {
@@ -275,29 +261,6 @@ export class SensemakerStore {
       activeMethods[resourceDefEh] = methodEh;
       return activeMethods;
     });
-  }
-
-  async updateWidgetMappingConfig(
-    resourceDefEh: EntryHashB64, 
-    currentCreateAssessmentDimensionEh: EntryHashB64,
-    currentObjectiveDimensionEh: EntryHash, 
-    currentMethodEh: EntryHash
-  ) {
-    this._widgetMappingConfig.update(widgetMappingConfig => {
-      const inputDimensionMapping: [EntryHash, EntryHash] = [currentObjectiveDimensionEh, currentMethodEh];
-      const mapping = {
-        [currentCreateAssessmentDimensionEh]: inputDimensionMapping,
-      };
-      // if the mapping object doesn't exist, initialize it, otherwise update it
-      widgetMappingConfig[resourceDefEh] ? 
-      widgetMappingConfig[resourceDefEh].inputDimensionMapping[currentCreateAssessmentDimensionEh] = inputDimensionMapping 
-      : widgetMappingConfig[resourceDefEh] = {
-        activeDimensionEh: currentCreateAssessmentDimensionEh,
-        inputDimensionMapping: mapping
-      };
-      return widgetMappingConfig;
-    }
-    )
   }
 
   registerWidget(
