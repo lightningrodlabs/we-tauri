@@ -3,6 +3,7 @@ This package provides an API for interacting with a sensemaker-lite instance alo
 
 Currently compatible with holochain `v0.1`.
 
+## Sensemaker Store API
 The main way to interact with the API is by spawning an instance of [`SensemakerStore`](./src/sensemakerStore.ts):
 
 ```typescript
@@ -42,3 +43,40 @@ export class ContextSelector extends ScopedElementsMixin(LitElement) {
 }
 ```
 In this example, if `this.contexts.value` changes, the component will re-render. For example, if `this.sensemakerStore.createCulturalContext(...)` is called, it updates the applet config store, which triggers a re-render of the component with the new value.
+
+
+## Widget Registration
+Part of the NH framework is being able to define your own *widgets* which are used to assess resources and display dimensions. This is the core of enabling the full configurability of your NH applets and exploring various forms of assessing and the cascading feedback-loop effects of those assessments.
+
+There are two main types of widgets:
+- create assessment widgets: used to create an assessment along a specific dimension for a resource
+- display assessment widgets: used to display the value of an assessment along an output dimension of a method (for example, the total "likes" on a resource)
+
+To define your own custom component for each type of widget, there are two abstract classes which you will extend respectively, `AssessDimensionWidget` and `DisplayDimensionWidget`. For example,
+```typescript
+export class ImportanceDimensionAssessment extends AssessDimensionWidget {
+```
+and
+```typescript
+export class ImportanceDimensionDisplay extends DisplayDimensionWidget {
+```
+
+Then you would implement the `render()` function to return the HTML template for your widget.
+
+You can then register these widgets in the widget registry using the `registerWidget` function, which is used to register a pair of widgets (assessment and display) for a list of dimensions.
+
+## Assessing resources
+There is a wrapper component `sensemake-resource` that you can use to wrap your resource components, which will handle rendering dimension and assessment widgets based on the current sensemaker store state. To use it, you can include it in your html code and wrap the resource component, like so:
+```typescript
+<sensemake-resource 
+    .resourceEh=${task.entry_hash} 
+    .resourceDefEh=${get(this.sensemakerStore.appletConfig()).resource_defs["task_item"]}
+>
+    <task-item 
+        .task=${task} 
+        .completed=${('Complete' in task.entry.status)} 
+    ></task-item>
+</sensemake-resource> 
+```
+
+All you need to do is provide the component with the resource entry hash and the resource def entry hash.

@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.8-alpha - 2023-06-13
+- `dimension_ehs` property of `GetAssessmentsForResourceInput` changed from `DimensionEh[]` to `Option<DimensionEh[]>`. If nothing is provided, then all dimensions are used when calling `get_assessments_for_resources()`.
+- Both `Sum` and `Average` method types now support `Float`.
 ## v0.0.7-alpha - 2023-05-09
 - whenever an assessment is generated, the agent sends a remote signal to all other peers with a payload containing the newly generated assessment, which is then emitted to the client.
 - new zome function `get_all_agents(_: ()) -> ExternResult<Vec<AgentPubKey>>` which returns a list of all other agents in the network.
