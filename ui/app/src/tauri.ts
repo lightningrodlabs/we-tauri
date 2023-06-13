@@ -65,12 +65,7 @@ export async function getConductorInfo(): Promise<ConductorInfo> {
   const conductor_info: any = await invoke("get_conductor_info");
 
   let applet_iframe_protocol = AppletIframeProtocol.LocaltestMe;
-  try {
-    if (!isWindows()) {
-      await fetchPing("applet://ping");
-      applet_iframe_protocol = AppletIframeProtocol.Assets;
-    }
-  } catch (e) {
+  if (isWindows()) {
     try {
       await fetchPing(
         `http://ping.localhost:${conductor_info.applets_ui_port}`
@@ -78,6 +73,20 @@ export async function getConductorInfo(): Promise<ConductorInfo> {
       applet_iframe_protocol = AppletIframeProtocol.LocalhostSubdomain;
     } catch (e) {
       applet_iframe_protocol = AppletIframeProtocol.LocaltestMe;
+    }
+  } else {
+    try {
+      await fetchPing("applet://ping");
+      applet_iframe_protocol = AppletIframeProtocol.Assets;
+    } catch (e) {
+      try {
+        await fetchPing(
+          `http://ping.localhost:${conductor_info.applets_ui_port}`
+        );
+        applet_iframe_protocol = AppletIframeProtocol.LocalhostSubdomain;
+      } catch (e) {
+        applet_iframe_protocol = AppletIframeProtocol.LocaltestMe;
+      }
     }
   }
 
