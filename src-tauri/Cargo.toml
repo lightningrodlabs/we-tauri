@@ -1,6 +1,6 @@
 [package]
 name = "we"
-version = "0.0.15"
+version = "0.0.16"
 description = "An alternative holochain runtime focused on groups"
 authors = [
   "eric@harris-braun.com",
@@ -17,7 +17,13 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "protocol-all", "shell-open"] }
+tauri = { version = "1.2", features = [
+  "cli",
+  "clipboard-write-text",
+  "http-all",
+  "protocol-all",
+  "shell-open",
+] }
 tauri-plugin-deep-link = "0.1"
 
 base64 = "0.21"
