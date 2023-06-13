@@ -1,8 +1,6 @@
 import { html, css, TemplateResult } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
-import { Assessment, DimensionEh } from '@neighbourhoods/client';
-
 import {
   FieldDefinitions,
   FieldDefinition,
@@ -12,6 +10,8 @@ import {
 
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
+import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 
 export const tableId = 'assessmentsForResource';
 
@@ -195,13 +195,3 @@ export class StatefulTable extends NHComponentShoelace {
     }
   `;
 }
-
-// @state()
-// fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
-// @state()
-// contextEntry!: CulturalContext;
-// @property()
-// dimensionEntries!: any[];
-  // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective.
-  // Is it from AppletUIConfig?
-  // const dimensionsEntries =
