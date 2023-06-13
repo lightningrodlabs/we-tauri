@@ -19,12 +19,12 @@ import {
 import { Readable, get } from '@holochain-open-dev/stores';
 
 import { AssessmentTableType, StatefulTable } from '../components/table';
-import '../components/fetch-table-data';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { classMap } from 'lit/directives/class-map.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { FetchAssessment } from '../components/fetch-table-data';
 
 interface AppletRenderInfo {
   name: string;
@@ -99,6 +99,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
+        console.log('id :>> ', id);
         // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
@@ -295,14 +296,13 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                  <fetch-assessment
-                  .resourceName=${this.selectedResourceName}
-                  .resourceDefEh=${this.selectedResourceDefEh}
-                  .tableType=${AssessmentTableType.Resource} 
-                  .selectedContext=${this.selectedContext}
-                  .selectedDimensions=${this.dimensions}>
-                  <dashboard-table></dashboard-table>
-              </fetch-assessment>
+                <fetch-assessment
+                    .resourceName=${this.selectedResourceName}
+                    .resourceDefEh=${this.selectedResourceDefEh}
+                    .tableType=${AssessmentTableType.Resource} 
+                    .selectedContext=${this.selectedContext}
+                    .selectedDimensions=${this.dimensions}>
+                </fetch-assessment>
               
                 </sl-tab-panel>
                 ${contexts &&
@@ -316,7 +316,6 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                         .tableType=${AssessmentTableType.Context} 
                         .selectedContext=${this.selectedContext}
                         .selectedDimensions=${this.dimensions}>
-                        <dashboard-table></dashboard-table>
                       </fetch-assessment>
 
                     </sl-tab-panel>`,
@@ -341,6 +340,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       'sl-alert': SlAlert,
       // 'nh-table-header': NHTableHeader,
       'dashboard-table': StatefulTable,
+      'fetch-assessment': FetchAssessment,
     };
   }
 

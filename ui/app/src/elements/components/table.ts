@@ -1,4 +1,4 @@
-import {  html, css, TemplateResult } from 'lit';
+import { html, css, TemplateResult } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
 import { Assessment, DimensionEh } from '@neighbourhoods/client';
@@ -14,9 +14,9 @@ import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 
 export interface AssessmentTableRecord {
-  resource: object,
-  neighbour: string,
-  [key: string]: DimensionEh | object | string, // Dimensions or Assessments
+  resource: object;
+  neighbour: string;
+  [key: string]: DimensionEh | object | string; // Dimensions or Assessments
 }
 
 export enum AssessmentTableType {
@@ -32,40 +32,39 @@ export const tableId = 'assessmentsForResource';
 
 @customElement('dashboard-table')
 export class StatefulTable extends NHComponentShoelace {
-
   @property({ type: Array })
   assessments: AssessmentTableRecord[] = [];
 
   @property({ type: Object })
   tableStore!: TableStore<AssessmentTableRecord>;
 
-  @property({ type: String })
+  @property()
   resourceName!: string;
-  @property({ type: String })
+  @property()
+  contextFieldDefs!: { [x: string]: FieldDefinition<AssessmentTableRecord> };
+  @property()
   tableType!: AssessmentTableType;
 
-  
-  updateTable() { 
+  updateTable() {
+    this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.contextFieldDefs);
+
     // Check if we have the necessary data to create the table
     if (!this.assessments || !this.tableStore.fieldDefs) {
-      console.warn('No data to create table.');
+      console.warn('No data or field definitions to create table.');
       return;
     }
-    
-    this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-    this.tableStore.records = this.assessments; //.map(assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+
+    this.tableStore.records = this.assessments;
   }
-  
+
   async connectedCallback() {
     super.connectedCallback();
 
-    let fieldDefs = this.generateFieldDefs("Task Item", AssessmentTableType.Resource) // (this.resourceName, this.tableType);
+    let fieldDefs = this.generateFieldDefs(this.resourceName, this.contextFieldDefs);
     this.tableStore = new TableStore({
       tableId,
       fieldDefs,
-      colGroups: [
-        { span: 2, class: 'fixedcols' }
-      ],
+      colGroups: [{ span: 2, class: 'fixedcols' }],
       showHeader: true,
     });
   }
@@ -74,9 +73,12 @@ export class StatefulTable extends NHComponentShoelace {
     if (changedProps.has('assessments')) this.updateTable();
   }
 
-  generateFieldDefs(resourceName: string, tableType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
-    const fixedFields = {
-      'resource': new FieldDefinition<AssessmentTableRecord>({
+  generateFieldDefs(
+    resourceName: string,
+    contextFieldDefs: { [x: string]: FieldDefinition<AssessmentTableRecord> },
+  ): FieldDefinitions<AssessmentTableRecord> {
+    const fixedFieldDefs = {
+      resource: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
@@ -84,45 +86,20 @@ export class StatefulTable extends NHComponentShoelace {
           ${generateHashHTML(resource.eh)}
         </div>`,
       }),
-      'neighbour': new FieldDefinition<AssessmentTableRecord>({
+      neighbour: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Neighbour', 'Member'),
         decorator: (agentPublicKeyB64: any) => html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
-          ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
+          ${generateHashHTML(agentPublicKeyB64)}
+          ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
         </div>`,
-    })}
-    switch (tableType) {
-      case AssessmentTableType.Resource:
-        // const fieldEntriesResource = Object.entries(this.selectedDimensions)
-        // .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
-        //   subjectiveDimensionNames.includes(dimensionName)
-        // )
-        // .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-        //   [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)), 
-        //   decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        // }))
-        // const resourceFields = fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
-        return {
-          ...fixedFields,
-          // ...resourceFields
-        }
-      case AssessmentTableType.Context:
-        // const fieldEntries = Object.entries(this.selectedDimensions)
-        // const fieldEntriesContext = Object.entries(this.selectedDimensions)
-        // .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
-        //   objectiveDimensionNames.includes(dimensionName)
-        // )
-        // .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-        //   [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)), 
-        //       decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        // }))
-        // const contextFields = fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
-        return {
-        ...fixedFields,
-        // ...contextFields
-      }
-    }
+      }),
+    };
+    return {
+      ...fixedFieldDefs,
+      ...contextFieldDefs,
+    };
   }
 
   render(): TemplateResult {
@@ -134,7 +111,7 @@ export class StatefulTable extends NHComponentShoelace {
               <sl-icon slot="icon" name="info-circle"></sl-icon>
               No assessment data was found. Please visit your applet and create some assessments.
             </sl-alert>
-            </div>
+          </div>
         </div>`;
   }
 
@@ -151,18 +128,20 @@ export class StatefulTable extends NHComponentShoelace {
       --table-assessmentsForResource-height: 100%;
       --table-assessmentsForResource-overflow-x: auto;
       --table-assessmentsForResource-overflow-y: auto;
-      --table-assessmentsForResource-max-height: calc(100vh - 101px - calc(1px * var(--nh-spacing-lg)));
+      --table-assessmentsForResource-max-height: calc(
+        100vh - 101px - calc(1px * var(--nh-spacing-lg))
+      );
 
       --table-assessmentsForResource-border-spacing: calc(1px * var(--nh-spacing-sm));
       --cell-radius: calc(1px * var(--nh-radii-base));
 
-      --table-assessmentsForResource-display : block;
+      --table-assessmentsForResource-display: block;
       --table-vertical-align: middle;
       --border-color: #7d7087;
       --menuSubTitle: #a89cb0;
       --column-min-width: calc(1rem * var(--nh-spacing-sm));
       --column-max-width: calc(2rem * var(--nh-spacing-md));
-      
+
       /** Header Cells **/
       --table-assessmentsForResource-heading-background-color: var(--nh-theme-bg-surface);
       --header-cell-border-width: 1px;
@@ -173,8 +152,12 @@ export class StatefulTable extends NHComponentShoelace {
       --table-assessmentsForResource-header-first-heading-border-color: var(--border-color);
       --table-assessmentsForResource-header-last-heading-border-color: var(--border-color);
       --table-assessmentsForResource-header-heading-border-color: var(--border-color);
-      --table-assessmentsForResource-header-first-heading-border-width: var(--header-cell-border-width);
-      --table-assessmentsForResource-header-last-heading-border-width: var(--header-cell-border-width);
+      --table-assessmentsForResource-header-first-heading-border-width: var(
+        --header-cell-border-width
+      );
+      --table-assessmentsForResource-header-last-heading-border-width: var(
+        --header-cell-border-width
+      );
       --table-assessmentsForResource-header-heading-border-width: var(--header-cell-border-width);
       /* Border radius */
       --table-assessmentsForResource-header-first-heading-border-radius: var(--cell-radius);
@@ -199,12 +182,18 @@ export class StatefulTable extends NHComponentShoelace {
       --table-assessmentsForResource-neighbour-width: var(--column-max-width);
       --table-assessmentsForResource-resource-vertical-align: top;
       --table-assessmentsForResource-neighbour-vertical-align: top;
-      
+
       --table-assessmentsForResource-row-even-background-color: var(---nh-theme-bg-surface);
       --table-assessmentsForResource-row-odd-background-color: var(---nh-theme-bg-surface);
-      --table-assessmentsForResource-resource-row-even-background-color: var(--nh-colors-eggplant-800) !important;
-      --table-assessmentsForResource-resource-heading-background-color: var(--nh-colors-eggplant-800) !important;
-      --table-assessmentsForResource-neighbour-heading-background-color: var(--nh-colors-eggplant-800) !important;
+      --table-assessmentsForResource-resource-row-even-background-color: var(
+        --nh-colors-eggplant-800
+      ) !important;
+      --table-assessmentsForResource-resource-heading-background-color: var(
+        --nh-colors-eggplant-800
+      ) !important;
+      --table-assessmentsForResource-neighbour-heading-background-color: var(
+        --nh-colors-eggplant-800
+      ) !important;
       --table-assessmentsForResource-row-even-background-color: var(--nh-theme-bg-surface);
       --table-assessmentsForResource-row-odd-background-color: var(--nh-theme-bg-surface);
     }
@@ -222,21 +211,24 @@ export class StatefulTable extends NHComponentShoelace {
   `;
 }
 
-function generateMockProfile(number: number) {
+export function generateMockProfile(number: number) {
   return html` <img
     alt="profile"
     src="profile${number}.png"
     style="height: 2rem; object-fit: cover;"
   />`;
 }
-function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resource') {
-  return html`<div style="
+export function generateHeaderHTML(headerTitle: string, resourceName: string = 'Resource') {
+  return html`<div
+    style="
       margin: var(--header-title-margin-y) 0;
       height: 4rem;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;">
-    <h2 style="font-family: var(--nh-font-families-headlines);
+      justify-content: space-around;"
+  >
+    <h2
+      style="font-family: var(--nh-font-families-headlines);
       font-weight: var(--sl-font-weight-semibold);
       min-width: var(--column-min-width);
       margin: 0;
@@ -255,7 +247,7 @@ function generateHeaderHTML(headerTitle: string, resourceName : string = 'Resour
     </h4>
   </div>`;
 }
-function generateHashHTML(hash: string) {
+export function generateHashHTML(hash: string) {
   return html`
     <div
       style="color: var(--menuSubTitle);
@@ -276,43 +268,42 @@ function generateHashHTML(hash: string) {
   `;
 }
 
+// @state()
+// fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
+// @state()
+// contextEntry!: CulturalContext;
+// @property()
+// dimensionEntries!: any[];
+//   // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective.
+//   // Is it from AppletUIConfig?
+//   // const dimensionsEntries =
 
-  // @state()
-  // fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
-  // @state()
-  // contextEntry!: CulturalContext;
-  // @property()
-  // dimensionEntries!: any[];
-  //   // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective. 
-  //   // Is it from AppletUIConfig?
-  //   // const dimensionsEntries =  
-  
-  // async updated(changedProperties) {
-  //   let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
-  //   if(this.tableType === AssessmentTableType.Resource) {
-  //     resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
-  //     console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
-      // this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
-      // this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-  //     return;
-  //   }
-    
-  //   // else we are dealing with a context, filter accordingly
-  //   this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
-  //   console.log('resourceAssessments (objective) :>> ', resourceAssessments);
+// async updated(changedProperties) {
+//   let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
+//   if(this.tableType === AssessmentTableType.Resource) {
+//     resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
+//     console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
+// this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+// this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+//     return;
+//   }
 
-  //   for(let[propName, _] of changedProperties) {
-  //     if(propName != 'selectedContext') return
+//   // else we are dealing with a context, filter accordingly
+//   this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
+//   console.log('resourceAssessments (objective) :>> ', resourceAssessments);
 
-  //     const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
-  //     try {
-  //       this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
-  //     } catch (error) {
-  //       console.log('No context entry exists for that context entry hash!')  
-  //     }
-  //     // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
-  //     this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
-  //     this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
-  //     this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-  //   }
-  // }
+//   for(let[propName, _] of changedProperties) {
+//     if(propName != 'selectedContext') return
+
+//     const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
+//     try {
+//       this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
+//     } catch (error) {
+//       console.log('No context entry exists for that context entry hash!')
+//     }
+//     // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering
+//     this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+//     this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
+//     this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+//   }
+// }
