@@ -2,7 +2,11 @@ import { html, LitElement, css } from "lit";
 import { consume } from "@lit-labs/context";
 import { customElement, query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { StoreSubscriber } from "@holochain-open-dev/stores";
+import {
+  asyncDeriveAndJoin,
+  join,
+  StoreSubscriber,
+} from "@holochain-open-dev/stores";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
@@ -20,16 +24,33 @@ import {
   AppWithReleases,
   getLatestRelease,
 } from "../../processes/devhub/get-happs.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { IconSrcOption } from "../../applet-bundles/types.js";
 
 @localized()
 @customElement("installable-applets")
 export class InstallableApplets extends LitElement {
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
+
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
   _installableApplets = new StoreSubscriber(
     this,
-    () => this.groupStore.weStore.appletBundlesStore.allAppletBundles,
+    () =>
+      asyncDeriveAndJoin(
+        this.groupStore.weStore.appletBundlesStore.allAppletBundles,
+        (allAppletBundles) =>
+          join(
+            allAppletBundles.map((b) =>
+              this.weStore.appletBundlesStore.appletBundleLogo.get(
+                getLatestRelease(b).address
+              )
+            )
+          )
+      ),
     () => []
   );
 
@@ -57,7 +78,9 @@ export class InstallableApplets extends LitElement {
     `;
   }
 
-  renderApplets(applets: Array<AppWithReleases>) {
+  renderApplets(allApplets: [Array<AppWithReleases>, Array<IconSrcOption>]) {
+    const applets = allApplets[0].filter((_, i) => !!allApplets[1][i]);
+
     return html`
       <install-applet-bundle-dialog
         id="applet-dialog"

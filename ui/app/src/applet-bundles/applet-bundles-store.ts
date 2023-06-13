@@ -3,6 +3,7 @@ import {
   lazyLoad,
   lazyLoadAndPoll,
   manualReloadStore,
+  pipe,
   toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
@@ -55,9 +56,8 @@ export class AppletBundlesStore {
   );
 
   appletBundleLogo = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
-    asyncDerived(
-      this.appletBundles.get(appletBundleHash),
-      async (bundleWithName) => {
+    pipe(this.appletBundles.get(appletBundleHash), (bundleWithName) =>
+      lazyLoadAndPoll(async () => {
         if (!bundleWithName) throw new Error("Can't find app bundle");
         const appletBundle = bundleWithName[1];
 
@@ -66,12 +66,17 @@ export class AppletBundlesStore {
         if (!guiReleaseHash)
           throw new Error("This app doesn't have a UI release");
 
-        const bytes: any = await invoke("fetch_icon", {
-          happReleaseHashB64: encodeHashToBase64(appletBundleHash),
-          guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
+        return new Promise((resolve, reject) => {
+          invoke("fetch_icon", {
+            happReleaseHashB64: encodeHashToBase64(appletBundleHash),
+            guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
+          })
+            .then((bytes: any) => resolve(toSrc(new Uint8Array(bytes))))
+            .catch(reject);
+
+          setTimeout(() => resolve(undefined), 1000);
         });
-        return toSrc(new Uint8Array(bytes));
-      }
+      }, 5000)
     )
   );
 

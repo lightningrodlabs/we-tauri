@@ -1,7 +1,9 @@
 import {
+  asyncDeriveAndJoin,
   AsyncReadable,
+  completed,
   join,
-  joinAsyncMap,
+  mapAndJoin,
   pipe,
   sliceAndJoin,
   StoreSubscriber,
@@ -11,7 +13,7 @@ import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
 import { ActionHash, EntryHash } from "@holochain/client";
-import { EntryRecord, slice } from "@holochain-open-dev/utils";
+import { EntryRecord, pickBy, slice } from "@holochain-open-dev/utils";
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
 import { mdiToyBrickPlus } from "@mdi/js";
 
@@ -24,12 +26,18 @@ import "../../applets/elements/applet-logo.js";
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { weStyles } from "../../shared-styles.js";
-import { Applet } from "../../applets/types.js";
 import { CustomView } from "../../custom-views/types.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { IconSrcOption } from "../../applet-bundles/types.js";
+import { AppletStore } from "../../applets/applet-store.js";
 
 @localized()
 @customElement("group-applets")
 export class GroupApplets extends LitElement {
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
+
   @consume({ context: groupStoreContext, subscribe: true })
   _groupStore!: GroupStore;
 
@@ -45,13 +53,18 @@ export class GroupApplets extends LitElement {
               allCustomViews
             )
         ),
-        pipe(this._groupStore.allApplets, (allApplets) =>
-          sliceAndJoin(this._groupStore.applets, allApplets)
+        pipe(
+          this._groupStore.allApplets,
+          (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
+          (appletStores) =>
+            mapAndJoin(appletStores, (appletStore) =>
+              asyncDeriveAndJoin(completed(appletStore), (store) => store.logo)
+            )
         ),
       ]) as AsyncReadable<
         [
           ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
-          ReadonlyMap<EntryHash, Applet>
+          ReadonlyMap<EntryHash, [AppletStore, IconSrcOption]>
         ]
       >,
     () => [this._groupStore]
@@ -59,8 +72,9 @@ export class GroupApplets extends LitElement {
 
   renderInstalledApplets(
     customViews: ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
-    applets: ReadonlyMap<EntryHash, Applet>
+    allApplets: ReadonlyMap<EntryHash, [AppletStore, IconSrcOption]>
   ) {
+    let applets = pickBy(allApplets, ([_store, icon_src]) => !!icon_src);
     if (customViews.size === 0 && applets.size === 0)
       return html`
         <div class="column" style="flex: 1; align-items: center">
@@ -108,7 +122,9 @@ export class GroupApplets extends LitElement {
               `
           )}
         ${Array.from(applets.entries())
-          .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
+          .sort(([_, a], [__, b]) =>
+            a[0].applet.custom_name.localeCompare(b[0].applet.custom_name)
+          )
           .map(
             ([appletHash, applet]) =>
               html`
@@ -129,7 +145,9 @@ export class GroupApplets extends LitElement {
                   }}
                 >
                   <applet-logo .appletHash=${appletHash}></applet-logo>
-                  <span style="margin-top: 8px">${applet.custom_name}</span>
+                  <span style="margin-top: 8px"
+                    >${applet[0].applet.custom_name}</span
+                  >
                 </div>
               `
           )}
