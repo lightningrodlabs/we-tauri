@@ -3,9 +3,9 @@ import { state, query } from "lit/decorators.js";
 import {
   DnaHash,
   EntryHash,
+  encodeHashToBase64,
 } from "@holochain/client";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { LitElement, html, css } from "lit";
+import { html, css, CSSResult } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
   CircularProgress,
@@ -36,18 +36,21 @@ import { WeGroupContext } from "./elements/we-group-context";
 import { AppletClassHome } from "./elements/dashboard/applet-class-home";
 import { WeGroupHome } from "./elements/dashboard/we-group-home";
 import { AppletClassRenderer } from "./elements/dashboard/applet-class-renderer";
+import { SensemakerDashboard } from "./elements/dashboard/sensemaker-dashboard";
 import { AppletInstanceRenderer } from "./elements/dashboard/applet-instance-renderer";
 import { AppletNotInstalled } from "./elements/dashboard/applet-not-installed";
 import { NotificationDot } from "./elements/components/notification-dot";
 import { InactiveOverlay } from "./elements/components/inactive-overlay";
 import { AppletIconBadge } from "./elements/components/applet-icon-badge";
 import { mergeEyeViewIcon } from "./icons/merge-eye-view-icon";
-import { weLogoIcon } from "./icons/we-logo-icon";
+import { nhLogoIcon } from "./icons/nh-logo-icon";
 import { getStatus } from "./utils";
 import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
 
-export class MainDashboard extends ScopedElementsMixin(LitElement) {
+import { NHComponent, NHComponentShoelace } from "./elements/components/nh/base";
+
+export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
@@ -113,7 +116,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       );
       // show all applet classes in appletClass mode
     } else if (this._navigationMode === NavigationMode.AppletCentric) {
-      return this.renderAppletClassListPrimary(this._allAppletClasses.value.values());
+      return html`${this.renderAppletClassListPrimary(this._allAppletClasses.value.values())}<div id="placeholder"></div>`;
       // show all we groups in mainHome mode
     } else {
       return this.renderWeGroupIconsPrimary(
@@ -124,29 +127,56 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
   renderSecondaryNavigation() {
     // show all applet instances of the selected group in weGroup mode
+    // <sl-tooltip
+    //       hoist
+    //       placement="bottom"
+    //       .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!)?.name} Home"
+    //     >
+    //       <mwc-fab
+    //         style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
+    //         icon="home"
+    //         class="group-home-button"
+    //         @click=${() => {
+    //           this._selectedAppletInstanceId = undefined;
+    //           this._dashboardMode = DashboardMode.WeGroupHome;
+    //         }}
+    //       ></mwc-fab>
+    //     </sl-tooltip>
     if (this._navigationMode === NavigationMode.GroupCentric) {
       const appletInstanceInfos = get(this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId!));
       return html`
-        <sl-tooltip
-          hoist
-          placement="bottom"
-          .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!)?.name} Home"
-        >
-          <mwc-fab
-            style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
-            icon="home"
-            class="group-home-button"
-            @click=${() => {
-              this._selectedAppletInstanceId = undefined;
-              this._dashboardMode = DashboardMode.WeGroupHome;
-            }}
-          ></mwc-fab>
-        </sl-tooltip>
-
         ${appletInstanceInfos
           ? this.renderAppletInstanceList(appletInstanceInfos)
           : html``
         }
+
+        <div class="navigation-switch-container ${classMap({
+          invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
+        ">
+          <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
+            <button class="navigation-switch" @click=${this.handleNavigationSwitch}>Applet Centric</button>
+          </sl-tooltip>
+        </div>
+
+
+      <sl-tooltip placement="bottom" content="Add Applet" hoist>
+        <button
+          class="applet-add"
+          @click=${() => console.log("TODO: wire up to new applet dialog")}
+        ></button>
+      </sl-tooltip>
+        <sl-tooltip
+          hoist
+          placement="bottom"
+          content="Dashboard"
+        >
+          <button class="dashboard-icon"
+          @click=${() => {
+            this._selectedAppletInstanceId = undefined;
+            this._dashboardMode = DashboardMode.AssessmentsHome;
+          }}>
+          </button>
+        </sl-tooltip>
       `;
 
       // show all groups that have the currently selected applet class installed in NavigationMode.AppletCentric
@@ -162,7 +192,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           )
         )}
 
-        <span style="flex: 1"></span>
+        <div class="navigation-switch-container ${classMap({
+          invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
+        " style="position: initial">
+          <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
+            <button class="navigation-switch" @click=${this.handleNavigationSwitch}>Group Centric</button>
+          </sl-tooltip>
+        </div>
 
         ${this.renderSpecialAppletModeIcons()}
       `;
@@ -186,6 +222,12 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
             style="display: flex; flex: 1;"
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           ></we-group-home>
+        </we-group-context>
+      `;
+    } else if (this._dashboardMode === DashboardMode.AssessmentsHome) {
+      return html`
+        <we-group-context .weGroupId=${this._selectedWeGroupId}>
+          <sensemaker-dashboard></sensemaker-dashboard>
         </we-group-context>
       `;
     } else if (
@@ -225,7 +267,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo) === "RUNNING"
       ? html`
         <applet-instance-renderer
-          style="display: flex; flex: 1;"
+          style="display: flex; flex: 1; background: var(--nh-theme-fg-muted)"
           .appletInstanceId=${this._selectedAppletInstanceId}
         >
         </applet-instance-renderer>
@@ -247,10 +289,10 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
-      this._dashboardMode = DashboardMode.WeGroupHome;
       this._selectedAppletInstanceId = undefined;
       this._selectedAppletClassId = undefined;
     }
+    this._dashboardMode = DashboardMode.WeGroupHome;
     this._selectedWeGroupId = weGroupId;
   }
 
@@ -334,14 +376,14 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    * @returns
    */
   renderWeGroupIconsPrimary(weGroups: WeGroupInfo[]) {
-    return html`
-      ${weGroups
+    return html`${weGroups.length > 0 ? html`
+    <div style="display:flex; flex-direction: column; gap: calc(1px * var(--nh-spacing-sm))">${weGroups
         .sort((a,b) => a.info.name.localeCompare(b.info.name))
         .map(
           (weGroupInfo) =>
             html`
               <sidebar-button
-                style="margin-top: 2px; margin-bottom: 2px; border-radius: 50%;"
+                style="overflow: hidden; margin-top: 2px; margin-bottom: 2px;"
                 .logoSrc=${weGroupInfo.info.logoSrc}
                 .tooltipText=${weGroupInfo.info.name}
                 @click=${() => {
@@ -355,13 +397,13 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               ></sidebar-button>
           `
       )}
+      </div>`: html`<div id="placeholder"></div>`}
 
       <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
-        <mwc-fab
-          icon="group_add"
+        <button
+          class="group-add"
           @click=${() => this._createWeGroupDialog.open()}
-          style="margin-top: 4px; --mdc-theme-secondary: #9ca5e3;"
-        ></mwc-fab>
+        ></button>
       </sl-tooltip>
     `;
   }
@@ -373,7 +415,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
    */
   renderWeGroupIconsSecondary(info: [WeGroupInfo, AppletInstanceInfo][]) {
     return html`
-    <span style="width: 18px;"></span>
       ${info
         .sort(([weGroupInfo_a, appletInstanceInfo_a], [weGroupInfo_b, appletInstanceInfo_b]) => {
           // sort by group name and applet instance name
@@ -392,7 +433,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                       <applet-icon-badge .logoSrc=${appletInstanceInfo.applet.logoSrc}>
                         <sidebar-button
                           placement="bottom"
-                          style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+                          style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                           .logoSrc=${weGroupInfo.info.logoSrc}
                           .tooltipText=${weGroupInfo.info.name +
                           " - " +
@@ -417,7 +458,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                     <inactive-overlay>
                       <sidebar-button
                         placement="bottom"
-                        style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+                        style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                         .logoSrc=${weGroupInfo.info.logoSrc}
                         .tooltipText=${weGroupInfo.info.name +
                         " - " +
@@ -451,7 +492,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
         (appletClassInfo) =>
           html`
             <sidebar-button
-              style="margin-top: 2px; margin-bottom: 2px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
+              style="overflow: hidden; margin-top: 2px; margin-bottom: 2px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
               .logoSrc=${appletClassInfo.logoSrc}
               .tooltipText=${appletClassInfo.title}
               @click=${() => {
@@ -474,18 +515,15 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
 
 
   renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
-    // do stuff
     return html`
-      <span style="width: 18px;"></span>
-
-      ${appletClasses
+      <div style="display:flex">${appletClasses
         .sort((a, b) => a.title.localeCompare(b.title))
         .map(
           (appletClassInfo) =>
             html`
               <sidebar-button
                 placement="bottom"
-                style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+                style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                 .logoSrc=${appletClassInfo.logoSrc}
                 .tooltipText=${appletClassInfo.title}
                 @click=${() => {
@@ -514,45 +552,44 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               </sidebar-button>
           `
       // add special modes here
-    )}
+    )}</div>
   `;
   }
 
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
-    // do stuff
-    return appletInstances
-      .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
-      .map(
-      (appletInstanceInfo) => {
-        return getStatus(appletInstanceInfo.appInfo) === "RUNNING"
-        ? html`
-            <icon-dot icon="share" invisible=${appletInstanceInfo.federatedGroups.length === 0}>
-              <sidebar-button
-                placement="bottom"
-                style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
-                .logoSrc=${appletInstanceInfo.applet.logoSrc}
-                .tooltipText=${appletInstanceInfo.applet.customName}
-                @click=${() => {
-                  this._selectedAppletInstanceId = appletInstanceInfo.appletId;
-                  this._selectedAppletClassId =
-                    appletInstanceInfo.applet.devhubHappReleaseHash;
-                  this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-                  this.requestUpdate();
-                }}
-                class=${classMap({
-                  highlightedAppletCentric:
-                  JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
-                  appletCentricIconHover:
-                  JSON.stringify(appletInstanceInfo.appletId) != JSON.stringify(this._selectedAppletInstanceId),
-                })}
-              >
-              </sidebar-button>
-            </icon-dot>
-          `
-        : html``
-      }
-
-    );
+    return appletInstances.length > 0 
+      ? html`<div style="display: flex;">${appletInstances
+        .sort((a, b) => a.applet.customName.localeCompare(b.applet.customName))
+        .map(
+        (appletInstanceInfo) => {
+          return getStatus(appletInstanceInfo.appInfo) === "RUNNING"
+          ? html`
+              <icon-dot icon="share" invisible=${appletInstanceInfo.federatedGroups.length === 0}>
+                <sidebar-button
+                  placement="bottom"
+                  style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                  .logoSrc=${appletInstanceInfo.applet.logoSrc}
+                  .tooltipText=${appletInstanceInfo.applet.customName}
+                  @click=${() => {
+                    this._selectedAppletInstanceId = appletInstanceInfo.appletId;
+                    this._selectedAppletClassId =
+                      appletInstanceInfo.applet.devhubHappReleaseHash;
+                    this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
+                    this.requestUpdate();
+                  }}
+                  class=${classMap({
+                    highlightedAppletCentric:
+                    JSON.stringify(appletInstanceInfo.appletId) === JSON.stringify(this._selectedAppletInstanceId),
+                    appletCentricIconHover:
+                    JSON.stringify(appletInstanceInfo.appletId) != JSON.stringify(this._selectedAppletInstanceId),
+                  })}
+                >
+                </sidebar-button>
+              </icon-dot>
+            `
+          : html``
+        })}</div>`
+      : html`<span id="placeholder"></div>`;
   }
 
   /**
@@ -571,7 +608,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     );
 
     if (relevantNewAppletInstances) {
-      return relevantNewAppletInstances.map(
+      return html`<div style="display: flex;">${relevantNewAppletInstances.map(
         (newAppletInstanceInfo) =>
           html`
             <icon-dot icon="share" invisible=${newAppletInstanceInfo.federatedGroups.length === 0}>
@@ -579,7 +616,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
                 <sidebar-button
                   notificationDot
                   placement="bottom"
-                  style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+                  style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                   .logoSrc=${newAppletInstanceInfo.applet.logoSrc}
                   .tooltipText=${newAppletInstanceInfo.applet.customName}
                   @click=${() => {
@@ -601,7 +638,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               </notification-dot>
             </icon-dot>
           `
-      );
+      )}</div>`;
     }
   }
 
@@ -617,7 +654,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     return html`
       <sidebar-button
         placement="bottom"
-        style="margin-left: 2px; margin-right: 2px; border-radius: 50%;"
+        style="overflow: hidden; margin-left: 2px; margin-right: 2px; border-radius: 50%;"
         logoSrc="${mergeEyeViewIcon}"
         tooltipText="Merge Eye View"
         @click=${() => {
@@ -681,14 +718,6 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar id="group-centric-snackbar" labelText="Group-Centric Navigation" style="text-align: center;"></mwc-snackbar>
       <mwc-snackbar id="group-left-snackbar" labelText="Group left." style="text-align: center;"></mwc-snackbar>
 
-      <div class="navigation-switch-container ${classMap({
-          invisible: this._dashboardMode == DashboardMode.MainHome || this._allAppletClasses.value.keys().length == 0 })}
-      ">
-        <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
-          <mwc-icon class="navigation-switch" @click=${this.handleNavigationSwitch}>open_in_full</mwc-icon>
-        </sl-tooltip>
-      </div>
-
       <div
         class="row"
         style="flex: 1"
@@ -703,8 +732,8 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
           </div>
           <div class="column top-left-corner">
               <sidebar-button
-                style="border-radius: 50%;"
-                logoSrc="${weLogoIcon}"
+                id="nh-logo"
+                logoSrc="${nhLogoIcon}"
                 tooltipText="Home"
                 @click=${() => {
                   this._selectedWeGroupId = undefined;
@@ -727,17 +756,18 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
               navBarGroupCentric: this._navigationMode === NavigationMode.GroupCentric || this._navigationMode == NavigationMode.Agnostic,
               navBarAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
             })}"
-            style="flex: 1; align-items: center;"
+            style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center; overflow:hidden;"
           >
 
             ${this.renderPrimaryNavigation()}
-
-            <span style="flex: 1"></span>
-
-            <holo-identicon
-              .hash=${this._matrixStore.myAgentPubKey}
-              style="margin-top: 30px;"
-            ></holo-identicon>
+            <sl-tooltip
+              hoist
+              placement="right"
+              .content="${encodeHashToBase64(this._matrixStore.myAgentPubKey).slice(0,15) + '...'}"
+            >
+              <button class="user-profile">
+              </button>
+            </sl-tooltip>
           </div>
         </div>
 
@@ -777,6 +807,7 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
       "we-group-context": WeGroupContext,
       "applet-class-home": AppletClassHome,
       "we-group-home": WeGroupHome,
+      "sensemaker-dashboard": SensemakerDashboard,
       "applet-class-renderer": AppletClassRenderer,
       "applet-instance-renderer": AppletInstanceRenderer,
       "applet-not-installed": AppletNotInstalled,
@@ -789,137 +820,225 @@ export class MainDashboard extends ScopedElementsMixin(LitElement) {
     };
   }
 
-  static get styles() {
-    return [
-      sharedStyles,
-      css`
-        :host {
-          display: flex;
+  static styles : CSSResult[] = [
+    sharedStyles,
+    super.styles as CSSResult,
+    css`
+      :host {
+        display: flex;
+        overflow: hidden;
+      }
+
+      .column:last-child {
+      }
+
+      .top-left-corner {
+        align-items: center;
+        background-color: transparent;
+        height: 72px;
+        width: 72px;
+        z-index: 1;
+      }
+      
+      .top-left-corner-bg {
+        border-style: solid;
+        border-width: 72px 0 0 72px;
+        position: absolute;
+        z-index: 0;
+      }
+
+      #nh-logo {
+        border-width: 0 !important; 
+        display: grid;
+        place-content: center;
+        height: 72px;
+        width: 72px;
+        position: relative;
+        overflow: initial;
+      }
+      
+      .tlcbgGroupCentric {
+        border-color: var(--nh-colors-eggplant-800);
+      }
+
+      .tlcbgAppletCentric {
+        border-color: var(--nh-colors-eggplant-800);
+      }
+
+      .left-sidebar {
+        overflow: hidden;
+        width: 72px;
+        padding-top: 16px;
+        z-index: 1;
+      }
+
+      .navigation-switch-container {
+        position: absolute;
+        right: 0;
+        top: 5rem;
+      }
+      
+      .group-add, .user-profile, .dashboard-icon, .applet-add {
+        width: 58px;
+        height: 58px; 
+        margin-top: calc(2px * var(--nh-spacing-lg)); 
+        margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+        cursor: pointer;
+        border: none;
+        position: relative;
+        border: transparent 1px solid;
+      }
+
+      #nh-logo::after, .group-add::before, .user-profile::before, .applet-add::before, .dashboard-icon::before {
+        content: '';
+        background-image: url(user-menu-divider.png);
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        width: 50px;
+        height: 2px;
+      }
+      .group-add::before, .user-profile::before {
+        margin-bottom: calc(1px * var(--nh-spacing-lg)); 
+        left: -4px;
+        top: calc(-1px * var(--nh-spacing-lg) - 1px);
+      }
+      #nh-logo::after {
+        margin-top: calc(1px * var(--nh-spacing-lg)); 
+        left: 4px;
+        bottom: calc(-1px * var(--nh-spacing-xs));
+        z-index: 50;
+      }
+      .applet-add::before, .dashboard-icon::before {
+        transform: rotate(-90deg);
+        left: calc(-2px * var(--nh-spacing-lg) - 7px);
+        bottom: 16px;
+        margin: 0;
+      }
+      .group-add, .applet-add {
+        background: url(./icons/add-nh-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+      .dashboard-icon, .applet-add {
+        margin-left: calc(1px * var(--nh-spacing-lg)); 
+        margin-right: calc(1px * var(--nh-spacing-md));
+        margin-top: 0; 
+        margin-bottom: 0; 
+      }
+      .user-profile {
+        background: url(./icons/user-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+      .dashboard-icon {
+        background: url(./icons/dashboard-icon.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .top-bar {
+        overflow: hidden;
+        z-index: 0.5;
+        display: grid;
+        justify-items: start;
+        align-items: center;
+        grid-template-columns: 1fr 80px 80px;
+      }
+
+      .dashboard-content {
+        background-color:  var(--nh-theme-bg-canvas);
+        color:  var(--nh-theme-fg-on-dark);
+      }
+
+      .navBarGroupCentric, .navBarAppletCentric {
+        background-color:  var(--nh-theme-bg-surface);
+        min-height: 72px;
+        height: 72px;
+      }
+
+      .left-sidebar, #nh-logo {
+        background-color: var(--nh-colors-eggplant-950);
+      }
+
+      @media (min-width: 640px) {
+        main {
+          max-width: none;
         }
+      }
 
-        .top-left-corner {
-          align-items: center;
-          background-color: transparent;
-          margin: 7px 7px;
-          height: 54 px;
-          z-index: 1;
-        }
-
-        .top-left-corner-bg {
-          border-style: solid;
-          border-width: 72px 0 0 72px;
-          position: absolute;
-          z-index: 0;
-        }
-
-        .tlcbgGroupCentric {
-          border-color: #9ca5e3 #9ca5e3 #9ca5e3 #303f9f;
-        }
-
-        .tlcbgAppletCentric {
-          border-color: #303f9f #303f9f #303f9f #9ca5e3;
-        }
-
-        .left-sidebar {
-          overflow-y: auto;
-          width: 72px;
-          padding-top: 16px;
-          z-index: 1;
-        }
-
-        .top-bar {
-          overflow-x: auto;
-          z-index: 0.5;
-          min-height: 72px;
-          align-items: center;
-        }
-
-        .navBarGroupCentric {
-          background-color: #303f9f;
-        }
-
-        .navBarAppletCentric {
-          background-color: #9ca5e3;
-        }
-
-        @media (min-width: 640px) {
-          main {
-            max-width: none;
-          }
-        }
-
-        .invisible {
-          display: none;
-        }
+      .invisible {
+        display: none;
+      }
 
 
-        .highlightedAppletCentric {
-          border: #303f9f 4px solid;
-        }
+      .highlightedAppletCentric {
+        border: var(--nh-theme-bg-subtle) 1px solid;
+        border-radius: calc(1px * var(--nh-radii-2xl)) !important;
+      }
 
-        .highlightedGroupCentric {
-          border: #9ca5e3 4px solid;
-        }
+      .highlightedGroupCentric {
+        border: var(--nh-theme-bg-surface) 1px solid;
+        border-radius: calc(1px * var(--nh-radii-2xl));
+      }
+      
+      .highlightedHome {
+        border: transparent 1px solid;
+      }
 
-        .highlightedHome {
-          border: white 4px solid;
-        }
+      .homeIconHover {
+        border: transparent 1px solid;
+      }
+      
+      .homeIconHover:hover {
+        border: transparent 1px solid;
+      }
+      
+      .groupCentricIconHover {
+        border: transparent 1px solid;
+        border-radius: 50%;
+        transition: border-radius 0.1s ease-in;
+      }
+      .groupCentricIconHover:hover {
+        border-radius: calc(1px * var(--nh-radii-xl));
+      }
 
-        .homeIconHover {
-          border: transparent 4px solid;
-        }
+      .groupCentricIconHover:hover, .user-profile:hover, .group-add:hover, .applet-add:hover, .dashboard-icon:hover {
+        box-shadow: 0px 0px 20px #6e46cc;
+        border: 1px solid var(--nh-theme-bg-surface) !important;
+      }
+      .dashboard-icon:hover, .user-profile:hover, .group-add:hover, .applet-add:hover {
+        border-radius: 50%;
+      }
 
-        .homeIconHover:hover {
-          border: white 4px solid;
-        }
+      .appletCentricIconHover {
+        border: transparent 1px solid;
+        overflow:auto;
+      }
 
-        .groupCentricIconHover {
-          border: transparent 4px solid;
-        }
+      .appletCentricIconHover:hover {
+        border: var(--nh-theme-accent-muted) 1px solid;
+        box-shadow: 0px 0px 20px #6e46cc;
+      }
 
-        .groupCentricIconHover:hover {
-          border: #9ca5e3 4px solid;
-        }
+      .navigation-switch {
+        color: white;
+        cursor: pointer;
+        z-index: 2;
+        background: url(./user-icon.png);
+      }
 
-        .appletCentricIconHover {
-          border: transparent 4px solid;
-        }
+      .group-home-button {
+        --mdc-theme-secondary: #303f9f;
+        --mdc-fab-focus-outline-color: white;
+      }
 
-        .appletCentricIconHover:hover {
-          border: #303f9f 4px solid;
-        }
-
-
-        .navigation-switch {
-          color: white;
-          cursor: pointer;
-          position: absolute;
-          top: 46px;
-          left: 46px;
-          z-index: 2;
-          --mdc-icon-size: 36px;
-        }
-
-        .navigation-switch:hover {
-          --mdc-icon-size: 44px;
-          top: 42px;
-          left: 42px;
-        }
-
-        .group-home-button {
-          margin-bottom: 4px;
-          --mdc-theme-secondary: #303f9f;
-          --mdc-fab-focus-outline-color: white;
-          --mdc-fab-focus-outline-width: 4px;
-        }
-
-        .applet-home-button {
-          margin-bottom: 4px;
-          --mdc-theme-secondary: #9ca5e3;
-          --mdc-fab-focus-outline-color: white;
-          --mdc-fab-focus-outline-width: 4px;
-        }
-      `,
-    ];
-  }
+      .applet-home-button {
+        margin-bottom: 4px;
+        --mdc-theme-secondary: #9ca5e3;
+        --mdc-fab-focus-outline-color: white;
+        --mdc-fab-focus-outline-width: 4px;
+      }
+    `,
+  ];
 }

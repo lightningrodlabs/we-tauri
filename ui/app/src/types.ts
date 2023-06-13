@@ -4,6 +4,7 @@ import { AgentPubKey, DnaHash, EntryHash, InstalledAppId, EntryHashB64 } from "@
 export enum DashboardMode {
   MainHome,
   WeGroupHome,
+  AssessmentsHome,
   AppletGroupInstanceRendering,
   AppletClassHome,
   AppletClassRendering,

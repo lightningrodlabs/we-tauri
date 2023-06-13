@@ -58,13 +58,14 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     return css`
       :host {
         display: flex;
+        overflow: hidden;
       }
       .icon {
         cursor: pointer;
-        border-radius: 50%;
         width: 50px;
         height: 50px;
         object-fit: cover;
+        transform: scale(1.2);
       }
     `;
   }

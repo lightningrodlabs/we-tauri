@@ -18,7 +18,7 @@ export class IconDot extends ScopedElementsMixin(LitElement) {
 
   render() {
     return html`
-      <div style="position: relative; display: inline-block;">
+      <div style="position: relative; display: flex; align-items: center;">
         <slot></slot>
         <div class="column center-content icon-dot ${classMap({invisible: this.invisible})}">
           <mwc-icon style="color: white; --mdc-icon-size: 12px;">${this.icon}</mwc-icon>

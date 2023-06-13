@@ -362,6 +362,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       }
 
       .members-sidebar {
+        display:none;
+        
         width: 224px;
         background-color: #ecebff;
         padding: 24px;
