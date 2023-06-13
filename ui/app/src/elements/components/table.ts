@@ -41,204 +41,226 @@ const subjectiveDimensionNames = ['importance', 'perceived_heat'];
 
 @customElement('dashboard-table')
 export class StatefulTable extends NHComponentShoelace {
-  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
-  @property({ type: SensemakerStore, attribute: true })
-  _sensemakerStore;
-  
-  @property({ type: AssessmentTableType })
-  tableType;
-  @state()
-  fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
 
-  @property({ type: String })
-  resourceName;
-  @property({ type: String })
-  resourceDefEh;
-  @property()
-  allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
-  @state()
-  filteredAssessments!: Assessment[];
-  
-  @property({ type: String })
-  selectedContext;
-  @state()
-  contextEntry!: CulturalContext;
-  @property()
-  selectedDimensions!: DimensionDict;
-  @property()
-  dimensionEntries!: any[];
+  @property({ type: Array })
+  assessments: AssessmentTableRecord[] = [];
 
-  @property({ attribute: false })
-  public tableStore!: TableStore<AssessmentTableRecord>;
+  @property({ type: Object })
+  tableStore!: TableStore<AssessmentTableRecord>;
 
-  emitFinishedLoadingEvent() {
-    const event = new CustomEvent('sub-component-loaded', {
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+  updated(changedProps) {
+    if (changedProps.has('assessments') || changedProps.has('tableStore')) {
+      this.updateTable();
+    }
   }
+
+  // TODO: Implement updateTable method
+  updateTable() { 
+    // Check if we have the necessary data to create the table
+    if (!this.assessments || !this.tableStore.fieldDefs) {
+      console.warn('No data to create table.');
+      return;
+    }
+  }
+
+  // @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  // @property({ type: SensemakerStore, attribute: true })
+  // _sensemakerStore;
+  
+  // @property({ type: AssessmentTableType })
+  // tableType;
+  // @state()
+  // fieldDefs!: FieldDefinitions<AssessmentTableRecord>;
+
+  // @property({ type: String })
+  // resourceName;
+  // @property({ type: String })
+  // resourceDefEh;
+  // @property()
+  // allAssessments = new StoreSubscriber(this, () => this._sensemakerStore.resourceAssessments());
+  // @state()
+  // filteredAssessments!: Assessment[];
+  
+  // @property({ type: String })
+  // selectedContext;
+  // @state()
+  // contextEntry!: CulturalContext;
+  // @property()
+  // selectedDimensions!: DimensionDict;
+  // @property()
+  // dimensionEntries!: any[];
+
+  // @property({ attribute: false })
+  // public tableStore!: TableStore<AssessmentTableRecord>;
+
+  // emitFinishedLoadingEvent() {
+  //   const event = new CustomEvent('sub-component-loaded', {
+  //     bubbles: true,
+  //     composed: true,
+  //   });
+  //   this.dispatchEvent(event);
+  // }
 
   async connectedCallback() {
     super.connectedCallback();
 
-    this.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+    // let fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
     this.tableStore = new TableStore({
       tableId,
-      fieldDefs: this.fieldDefs,
+      fieldDefs: {},
       colGroups: [
         { span: 2, class: 'fixedcols' }
       ],
       showHeader: true,
     });
-
-    // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective. 
-    // Is it from AppletUIConfig?
-    // const dimensionsEntries =  
-
-    (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
-      if (Object.values(resourceAssessments) && Object.values(resourceAssessments)?.length !== undefined) {
-        const allAssessments = Object.values(resourceAssessments) as Assessment[][];
-        try {
-          this.filteredAssessments = this.filterByResourceDefEh(allAssessments, this.resourceDefEh).flat() as Assessment[];
-        } catch (error) {
-          console.log('Error filtering by resource def entry hash :>> ', error);
-        }
-        this.tableStore.records = (this.filteredAssessments).map(this.assessmentToAssessmentTableRecord);
-        this.emitFinishedLoadingEvent();
-      }
-    });
   }
+
+  //   // TODO: Find a way of getting properties for 'Dimensions' entry hashes so that I know which are objective/subjective. 
+  //   // Is it from AppletUIConfig?
+  //   // const dimensionsEntries =  
+
+  //   (this.allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
+  //     if (Object.values(resourceAssessments) && Object.values(resourceAssessments)?.length !== undefined) {
+  //       const allAssessments = Object.values(resourceAssessments) as Assessment[][];
+  //       try {
+  //         this.filteredAssessments = this.filterByResourceDefEh(allAssessments, this.resourceDefEh).flat() as Assessment[];
+  //       } catch (error) {
+  //         console.log('Error filtering by resource def entry hash :>> ', error);
+  //       }
+  //       this.tableStore.records = (this.filteredAssessments).map(this.assessmentToAssessmentTableRecord);
+  //       this.emitFinishedLoadingEvent();
+  //     }
+  //   });
+  // }
   
-  async updated(changedProperties) {
-    let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
-    if(this.tableType === AssessmentTableType.Resource) {
-      resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
-      console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
-      this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
-      this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-      return;
-    }
+  // async updated(changedProperties) {
+  //   let resourceAssessments: Assessment[] = this.filteredAssessments?.length ? this.filteredAssessments : (Object.values(this.allAssessments.value as AssessmentDict))[0];
+  //   if(this.tableType === AssessmentTableType.Resource) {
+  //     resourceAssessments = this.filterByMethodNames(resourceAssessments, subjectiveDimensionNames);
+  //     console.log('resourceAssessments (subjective) :>> ', resourceAssessments);
+  //     this.tableStore.records = resourceAssessments.map(this.assessmentToAssessmentTableRecord) as AssessmentTableRecord[];
+  //     this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+  //     return;
+  //   }
     
-    // else we are dealing with a context, filter accordingly
-    this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
-    console.log('resourceAssessments (objective) :>> ', resourceAssessments);
+  //   // else we are dealing with a context, filter accordingly
+  //   this.filterByMethodNames(resourceAssessments, objectiveDimensionNames);
+  //   console.log('resourceAssessments (objective) :>> ', resourceAssessments);
 
-    for(let[propName, _] of changedProperties) {
-      if(propName != 'selectedContext') return
+  //   for(let[propName, _] of changedProperties) {
+  //     if(propName != 'selectedContext') return
 
-      const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
-      try {
-        this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
-      } catch (error) {
-        console.log('No context entry exists for that context entry hash!')  
-      }
-      // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
-      this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
-      this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
-      this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
-    }
-  }
+  //     const contexts = await this._sensemakerStore.getCulturalContext(this[propName]);
+  //     try {
+  //       this.contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
+  //     } catch (error) {
+  //       console.log('No context entry exists for that context entry hash!')  
+  //     }
+  //     // Take the first dimension_eh in the first threshold of the context and use to filter TODO: review this way of filtering 
+  //     this.filteredAssessments =  this.filterByDimensionEh(resourceAssessments, encodeHashToBase64(this.contextEntry.thresholds[0].dimension_eh));
+  //     this.tableStore.records = this.filteredAssessments.map(this.assessmentToAssessmentTableRecord);
+  //     this.tableStore.fieldDefs = this.generateFieldDefs(this.resourceName, this.tableType);
+  //   }
+  // }
 
-  generateFieldDefs(resourceName: string, tableType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
-    const fixedFields = {
-      'resource': new FieldDefinition<AssessmentTableRecord>({
-        heading: generateHeaderHTML('Resource', resourceName),
-        decorator: (resource: any) => html` <div
-          style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-        >
-          ${generateHashHTML(resource.eh)}
-        </div>`,
-      }),
-      'neighbour': new FieldDefinition<AssessmentTableRecord>({
-        heading: generateHeaderHTML('Neighbour', 'Member'),
-        decorator: (agentPublicKeyB64: any) => html` <div
-          style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-        >
-          ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
-        </div>`,
-    })}
-    switch (tableType) {
-      case AssessmentTableType.Resource:
-        const fieldEntriesResource = Object.entries(this.selectedDimensions)
-        .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
-          subjectiveDimensionNames.includes(dimensionName)
-        )
-        .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)), 
-          decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        }))
-        const resourceFields = fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
-        return {
-          ...fixedFields,
-          ...resourceFields
-        }
-      case AssessmentTableType.Context:
-        const fieldEntries = Object.entries(this.selectedDimensions)
-        const fieldEntriesContext = Object.entries(this.selectedDimensions)
-        .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
-          objectiveDimensionNames.includes(dimensionName)
-        )
-        .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
-          [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)), 
-              decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
-        }))
-        const contextFields = fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
-        return {
-        ...fixedFields,
-        ...contextFields
-      }
-    }
-  }
+  // generateFieldDefs(resourceName: string, tableType: AssessmentTableType) : FieldDefinitions<AssessmentTableRecord> {
+  //   const fixedFields = {
+  //     'resource': new FieldDefinition<AssessmentTableRecord>({
+  //       heading: generateHeaderHTML('Resource', resourceName),
+  //       decorator: (resource: any) => html` <div
+  //         style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+  //       >
+  //         ${generateHashHTML(resource.eh)}
+  //       </div>`,
+  //     }),
+  //     'neighbour': new FieldDefinition<AssessmentTableRecord>({
+  //       heading: generateHeaderHTML('Neighbour', 'Member'),
+  //       decorator: (agentPublicKeyB64: any) => html` <div
+  //         style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+  //       >
+  //         ${generateHashHTML(agentPublicKeyB64)} ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
+  //       </div>`,
+  //   })}
+  //   switch (tableType) {
+  //     case AssessmentTableType.Resource:
+  //       const fieldEntriesResource = Object.entries(this.selectedDimensions)
+  //       .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
+  //         subjectiveDimensionNames.includes(dimensionName)
+  //       )
+  //       .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
+  //         [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)), 
+  //         decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
+  //       }))
+  //       const resourceFields = fieldEntriesResource.reduce((fields, field) => ({...fields, ...field}) , {});
+  //       return {
+  //         ...fixedFields,
+  //         ...resourceFields
+  //       }
+  //     case AssessmentTableType.Context:
+  //       const fieldEntries = Object.entries(this.selectedDimensions)
+  //       const fieldEntriesContext = Object.entries(this.selectedDimensions)
+  //       .filter(([dimensionName, dimensionHash] : [string, Uint8Array]) => 
+  //         objectiveDimensionNames.includes(dimensionName)
+  //       )
+  //       .map(([dimensionName, dimensionHash] : [string, Uint8Array]) => ({
+  //         [dimensionName]: new FieldDefinition<AssessmentTableRecord>({ heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)), 
+  //             decorator: (value: any) => html` <div> ${value} </div>`, }) // TODO: Add widget renderer here
+  //       }))
+  //       const contextFields = fieldEntriesContext.reduce((field, fields) => ({...fields, ...field}) , {}) 
+  //       return {
+  //       ...fixedFields,
+  //       ...contextFields
+  //     }
+  //   }
+  // }
   
-  assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
-      // Base record with basic fields
-    const baseRecord = { 
-      neighbour: encodeHashToBase64(assessment.author),
-      resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0] },
-    } as AssessmentTableRecord;
+  // assessmentToAssessmentTableRecord = (assessment: Assessment) : AssessmentTableRecord => {
+  //     // Base record with basic fields
+  //   const baseRecord = { 
+  //     neighbour: encodeHashToBase64(assessment.author),
+  //     resource: { eh: encodeHashToBase64(assessment.resource_eh), value: Object.values(assessment.value)[0] },
+  //   } as AssessmentTableRecord;
     
-    if (this.tableType === 'context') {
-      // Iterate over dimensions dictionary and add each dimension as a field to the base record with an empty default value
-      for (let dimensionName of Object.keys(this.selectedDimensions)) {
-        baseRecord[dimensionName] = "";
-      }
+  //   if (this.tableType === 'context') {
+  //     // Iterate over dimensions dictionary and add each dimension as a field to the base record with an empty default value
+  //     for (let dimensionName of Object.keys(this.selectedDimensions)) {
+  //       baseRecord[dimensionName] = "";
+  //     }
 
-      // If dimension_eh in assessment matches a dimensionUint8 in the dictionary
-      // populate the corresponding dimension field in the base record with the assessment value
-      for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
-        if (encodeHashToBase64(assessment.dimension_eh) === encodeHashToBase64(dimensionUint8)) {
-          baseRecord[dimensionName] = Object.values(assessment.value)[0];
-        }
-      }
-    }
+  //     // If dimension_eh in assessment matches a dimensionUint8 in the dictionary
+  //     // populate the corresponding dimension field in the base record with the assessment value
+  //     for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
+  //       if (encodeHashToBase64(assessment.dimension_eh) === encodeHashToBase64(dimensionUint8)) {
+  //         baseRecord[dimensionName] = Object.values(assessment.value)[0];
+  //       }
+  //     }
+  //   }
     
-    return baseRecord;
-  }
+  //   return baseRecord;
+  // }
     
-  filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
-    return resourceAssessments.filter((assessment: Assessment) => {
-      return encodeHashToBase64(assessment.dimension_eh) === filteringHash
-    })
-  }
+  // filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
+  //   return resourceAssessments.filter((assessment: Assessment) => {
+  //     return encodeHashToBase64(assessment.dimension_eh) === filteringHash
+  //   })
+  // }
 
-  filterByResourceDefEh(resourceAssessments: Assessment[][], filteringHash: string) {
-    return Object.values(resourceAssessments.filter((assessments: Assessment[]) => {
-      return assessments.every(assessment => encodeHashToBase64(assessment.resource_def_eh) === filteringHash)
-    }))
-  }
+  // filterByResourceDefEh(resourceAssessments: Assessment[][], filteringHash: string) {
+  //   return Object.values(resourceAssessments.filter((assessments: Assessment[]) => {
+  //     return assessments.every(assessment => encodeHashToBase64(assessment.resource_def_eh) === filteringHash)
+  //   }))
+  // }
 
-  filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]) : Assessment[] {
-    return resourceAssessments.filter((assessment: Assessment) => {
-      for(let method of filteringMethods) {
-        if(encodeHashToBase64(this.selectedDimensions[method]) == encodeHashToBase64(assessment.dimension_eh)) return false
-      }
-      return true
-    })
-  }
+  // filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]) : Assessment[] {
+  //   return resourceAssessments.filter((assessment: Assessment) => {
+  //     for(let method of filteringMethods) {
+  //       if(encodeHashToBase64(this.selectedDimensions[method]) == encodeHashToBase64(assessment.dimension_eh)) return false
+  //     }
+  //     return true
+  //   })
+  // }
 
   render(): TemplateResult {
-    // TODO: figure out why this re-renders 3 times on tab change
     return this.tableStore.records.length
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
       : html`<div id="${this.tableStore.tableId}">

@@ -19,6 +19,7 @@ import {
 import { Readable, get } from '@holochain-open-dev/stores';
 
 import { AssessmentTableType, StatefulTable } from '../components/table';
+import '../components/fetch-table-data';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { classMap } from 'lit/directives/class-map.js';
@@ -294,26 +295,30 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                  <dashboard-table
-                    .resourceName=${this.selectedResourceName}
-                    .resourceDefEh=${this.selectedResourceDefEh}
-                    .tableType=${AssessmentTableType.Resource}
-                    .selectedContext=${this.selectedContext}
-                    .selectedDimensions=${this.dimensions}
-                  ></dashboard-table>
+                  <fetch-assessment
+                  .resourceName=${this.selectedResourceName}
+                  .resourceDefEh=${this.selectedResourceDefEh}
+                  .tableType=${AssessmentTableType.Resource} 
+                  .selectedContext=${this.selectedContext}
+                  .selectedDimensions=${this.dimensions}>
+                  <dashboard-table></dashboard-table>
+              </fetch-assessment>
+              
                 </sl-tab-panel>
                 ${contexts &&
                 contexts.map(
                   context =>
                     html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
                       active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
-                      <dashboard-table
+                      <fetch-assessment
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
-                        .tableType=${AssessmentTableType.Context}
+                        .tableType=${AssessmentTableType.Context} 
                         .selectedContext=${this.selectedContext}
-                        .selectedDimensions=${this.dimensions}
-                      ></dashboard-table>
+                        .selectedDimensions=${this.dimensions}>
+                        <dashboard-table></dashboard-table>
+                      </fetch-assessment>
+
                     </sl-tab-panel>`,
                 )}
               </sl-tab-group>`}
