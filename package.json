@@ -14,7 +14,7 @@
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:nh-launcher-applet": "cd ui/libs/nh-launcher-applet && npm run build",
     "playground": "run-singleton \"holochain-playground\"",
-    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.7-alpha/sensemaker.dna",
+    "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.8-alpha/sensemaker.dna",
     "postinstall": "npm run download-sensemaker"
   },
   "devDependencies": {
