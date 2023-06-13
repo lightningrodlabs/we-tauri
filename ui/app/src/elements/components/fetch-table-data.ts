@@ -1,14 +1,15 @@
 import { Readable } from '@holochain-open-dev/stores';
-import { Assessment, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { Assessment, CulturalContext, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { AssessmentTableRecord, AssessmentTableType, generateHeaderHTML } from './table';
+import { customElement, property, state } from 'lit/decorators.js';
 import { encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
-import { DimensionDict, cleanResourceNameForUI } from '../dashboard/sensemaker-dashboard';
 import { FieldDefinition } from '@adaburrows/table-web-component';
+import { AssessmentTableRecord, AssessmentTableType, DimensionDict } from './helpers/types';
+import { generateHeaderHTML, cleanResourceNameForUI } from './helpers/functions';
+import { decode } from '@msgpack/msgpack';
 
 // Hard coded until I can separate obj/subj dimensions. TODO: Remove this line and finish implementation on line 99
 const objectiveDimensionNames = ['total_importance', 'average_heat'];
@@ -20,7 +21,7 @@ export class FetchAssessment extends LitElement {
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore;
   @property()
-  _allAssessments;
+  private _allAssessments;
 
   @property({ type: String })
   resourceName;
@@ -32,6 +33,10 @@ export class FetchAssessment extends LitElement {
   selectedContext;
   @property()
   selectedDimensions!: DimensionDict;
+  @state()
+  private _dimensionEntries!: any[];
+  @state()
+  private _contextEntry!: CulturalContext;
 
   // To be fed as a prop to the dashboard table component
   @property({ type: Array })
@@ -43,6 +48,7 @@ export class FetchAssessment extends LitElement {
     this._allAssessments = new StoreSubscriber(this, () =>
       this._sensemakerStore.resourceAssessments(),
     );
+
     this.setupAssessmentFilteringSubscription();
   }
 
@@ -50,8 +56,16 @@ export class FetchAssessment extends LitElement {
     super.disconnectedCallback();
     this._allAssessments.unsubscribe();
   }
+  
+  async updated(changedProps) {
+    if (changedProps.has('selectedContext')) {
+      await this.fetchCurrentContextEntry();
+      this._allAssessments.unsubscribe();
+      this.setupAssessmentFilteringSubscription();
+    }
+  }
 
-  async setupAssessmentFilteringSubscription() {
+  setupAssessmentFilteringSubscription() {
     // Subscribe to resourceAssessments, filtering using this component's props when a new value is emitted
     (this._allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
       if (
@@ -63,9 +77,8 @@ export class FetchAssessment extends LitElement {
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          assessmentTableRecords = filteredAssessments.map(a =>
-            this.mapAssessmentToAssessmentTableRecord(a, this.tableType),
-          );
+          console.log('filteredAssessments ready to be mapped :>> ', filteredAssessments, this.selectedDimensions);
+          assessmentTableRecords = filteredAssessments.map(this.mapAssessmentToAssessmentTableRecord.bind(this));
         } catch (error) {
           console.log('Error filtering assessments :>> ', error);
         }
@@ -74,30 +87,54 @@ export class FetchAssessment extends LitElement {
     });
   }
 
+  async fetchCurrentContextEntry() {
+    if(this.selectedContext == 'none') return
+    
+    const contexts = await this._sensemakerStore.getCulturalContext(this.selectedContext);
+    try {
+      this._contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
+    } catch (error) {
+      console.log('No context entry exists for that context entry hash!')
+    }
+  }
+
+  // Filtering
   flatFiltered(assessments: Assessment[][]): Assessment[] {
     // By ResourceDefEH
     let filteredByResourceDef = this.filterByResourceDefEh(
       assessments,
       this.resourceDefEh,
     ).flat() as Assessment[];
-
+    console.warn('FILTERED 1 :>> tabletype ', filteredByResourceDef, this.tableType);
     // By objective/subjective dimension names
-    let filteredByDimension;
+    let filteredByMethodType;
 
-    if (this.tableType === AssessmentTableType.Context) {
-      filteredByDimension = this.filterByMethodNames(
-        filteredByResourceDef,
-        subjectiveDimensionNames,
-      );
-    } else {
-      // else we are dealing with a context, filter accordingly
-      filteredByDimension = this.filterByMethodNames(
+    if (this.tableType === AssessmentTableType.Resource) {
+      filteredByMethodType = this.filterByMethodNames(
         filteredByResourceDef,
         objectiveDimensionNames,
       );
+      console.log('this.filterByMethodNames( :>> ', this.filterByMethodNames(
+        filteredByResourceDef,
+        objectiveDimensionNames,
+      ));
+    } else {
+      // else we are dealing with a Resource table, filter accordingly
+      filteredByMethodType = this.filterByMethodNames(
+        filteredByResourceDef,
+        subjectiveDimensionNames,
+      );
+    }
+    
+    // console.warn('FILTERED 2 :>> ', filteredByMethodType);
+    // console.warn('FILTERED pre 3 :>> ', filteredByMethodType.map(r => r?.dimension_eh && encodeHashToBase64(r.dimension_eh)));
+    // By context
+    let tripleFiltered;
+    if (this.tableType === AssessmentTableType.Context && !!this._contextEntry?.thresholds && !!this.selectedDimensions) {
+      tripleFiltered = this.filterByDimensionEh(filteredByMethodType, encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh));
     }
 
-    return filteredByDimension;
+    return tripleFiltered || filteredByMethodType;
   }
 
   filterByResourceDefEh(resourceAssessments: Assessment[][], filteringHash: string) {
@@ -108,6 +145,13 @@ export class FetchAssessment extends LitElement {
         );
       }),
     );
+  }
+
+  filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
+    return resourceAssessments.filter((assessment: Assessment) => {
+      console.log('filtering by dimension :>> ',  encodeHashToBase64(assessment.dimension_eh) === filteringHash, filteringHash);
+      return encodeHashToBase64(assessment.dimension_eh) === filteringHash
+    })
   }
 
   filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]): Assessment[] {
@@ -123,9 +167,9 @@ export class FetchAssessment extends LitElement {
     });
   }
 
+  // Mapping
   mapAssessmentToAssessmentTableRecord(
-    assessment: Assessment,
-    type: AssessmentTableType,
+    assessment: Assessment
   ): AssessmentTableRecord {
     // Base record with basic fields
     const baseRecord = {
@@ -135,7 +179,8 @@ export class FetchAssessment extends LitElement {
         value: Object.values(assessment.value)[0],
       },
     } as AssessmentTableRecord;
-
+    
+    if(!this.selectedDimensions) return baseRecord;
     // Iterate over dimensions dictionary and add each dimension as a field to the base record with an empty default value
     for (let dimensionName of Object.keys(this.selectedDimensions)) {
       baseRecord[dimensionName] = '';
@@ -181,7 +226,8 @@ export class FetchAssessment extends LitElement {
           }),
         );
         return fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {});
-    }
+      }
+      return {}
   }
 
   static get scopedElements() {

@@ -55,7 +55,10 @@ export class StatefulTable extends NHComponentShoelace {
   }
 
   updated(changedProps) {
-    if (changedProps.has('assessments')) this.updateTable();
+    if (changedProps.has('assessments')) {
+
+      console.log('changedProps :>> ', changedProps);
+    } this.updateTable();
   }
 
   generateFieldDefs(
