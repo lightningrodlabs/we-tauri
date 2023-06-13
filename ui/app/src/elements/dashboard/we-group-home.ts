@@ -17,9 +17,7 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
-import { SensemakerDashboard } from "./sensemaker-dashboard";
 import { get } from "svelte/store";
-import { Assessment } from "@neighbourhoods/sensemaker-lite-types";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 
 
@@ -330,7 +328,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,
       "applet-not-installed": AppletNotInstalled,
-      "sensemaker-dashboard": SensemakerDashboard,
       "nh-sensemaker-settings": NHSensemakerSettings,
     };
   }
