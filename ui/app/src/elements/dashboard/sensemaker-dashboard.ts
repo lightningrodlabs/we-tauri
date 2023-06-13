@@ -214,7 +214,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingState == LoadingState.NoAppletSensemakerData || awaitingData
+          ${this.loadingState == LoadingState.NoAppletSensemakerData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
                   <sl-icon slot="icon" name="info-circle"></sl-icon>
@@ -273,19 +273,19 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                <fetch-assessment
+                ${this.selectedContext !== 'none' ? '' : html`<fetch-assessment
                     .resourceName=${this.selectedResourceName}
                     .resourceDefEh=${this.selectedResourceDefEh}
                     .tableType=${AssessmentTableType.Resource} 
                     .selectedContext=${this.selectedContext}
                     .selectedDimensions=${this.dimensions}>
-                </fetch-assessment>
+                </fetch-assessment>`}
               
                 </sl-tab-panel>
                 ${contexts &&
                 contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
+                    encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext ? '' : html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
                       active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
                       <fetch-assessment
                         .resourceName=${this.selectedResourceName}

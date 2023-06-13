@@ -74,6 +74,7 @@ export class FetchAssessment extends LitElement {
         this.tableType
       ) {
         let allAssessments = Object.values(resourceAssessments) as Assessment[][];
+        console.log('allAssessments :>> ', allAssessments);
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
@@ -149,7 +150,6 @@ export class FetchAssessment extends LitElement {
 
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
     return resourceAssessments.filter((assessment: Assessment) => {
-      console.log('filtering by dimension :>> ',  encodeHashToBase64(assessment.dimension_eh) === filteringHash, filteringHash);
       return encodeHashToBase64(assessment.dimension_eh) === filteringHash
     })
   }

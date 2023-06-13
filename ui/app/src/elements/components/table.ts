@@ -56,9 +56,8 @@ export class StatefulTable extends NHComponentShoelace {
 
   updated(changedProps) {
     if (changedProps.has('assessments')) {
-
-      console.log('changedProps :>> ', changedProps);
-    } this.updateTable();
+      this.updateTable();
+    }
   }
 
   generateFieldDefs(
@@ -93,14 +92,11 @@ export class StatefulTable extends NHComponentShoelace {
   render(): TemplateResult {
     return this.tableStore.records.length
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
-      : html`<div id="${this.tableStore.tableId}">
-          <div class="alert-wrapper">
-            <sl-alert open class="alert">
-              <sl-icon slot="icon" name="info-circle"></sl-icon>
-              No assessment data was found. Please visit your applet and create some assessments.
-            </sl-alert>
-          </div>
-        </div>`;
+      : html`<div class="skeleton-main-container">
+      ${Array.from(Array(24)).map(
+        () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
+      )}
+    </div>`;
   }
 
   static elementDefinitions = {
