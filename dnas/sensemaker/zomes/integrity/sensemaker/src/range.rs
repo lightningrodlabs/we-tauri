@@ -48,7 +48,23 @@ impl RangeValue {
                     ))))
                 }
             }
-            RangeValue::Float(_) => Ok(false),
+            RangeValue::Float(self_value) => {
+                let other_range_value = threshold.value;
+                if let RangeValue::Float(other_value) = other_range_value {
+                    match threshold.kind {
+                        ThresholdKind::GreaterThan => Ok(*self_value > other_value),
+                        ThresholdKind::LessThan => Ok(*self_value < other_value),
+                        ThresholdKind::Equal => Ok(*self_value == other_value),
+                    }
+                }
+                // could put `if else` here for compatible range types that are not the same
+                else {
+                    Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                        "incompatible range types for threshold comparison"
+                    ))))
+                }
+
+            },
         }
     }
 
