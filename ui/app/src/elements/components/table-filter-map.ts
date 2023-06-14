@@ -77,6 +77,8 @@ export class DashboardFilterMap extends LitElement {
     }
     if (changedProps.has('_subjectiveDimensionNames') && typeof changedProps.get('_objectiveDimensionNames') !== 'undefined') {
       this.fieldDefs = this.generateContextFieldDefs();
+      this._allAssessments.unsubscribe();
+      this.setupAssessmentFilteringSubscription();
     }
   }
 
@@ -290,7 +292,6 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
-    console.log('this.fieldDefs :>> ', this.fieldDefs, this.filteredAssessments);
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}
