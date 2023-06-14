@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { NHComponent } from '../base';
+import { NHComponent } from 'neighbourhoods-design-system-components';
 
 @customElement('nh-card')
 export class NHCard extends NHComponent {

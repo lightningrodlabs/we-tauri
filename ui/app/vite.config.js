@@ -42,18 +42,13 @@ export default defineConfig({
     //     lintCommand: "eslint --ext .ts,.html src",
     //   },
     // }),
-    VitePluginFonts({
-      google: {
-        families: ['Manrope'],
-      },
-    }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: "../../node_modules/@shoelace-style/shoelace/dist/assets",
-          dest: "shoelace",
-        }
-      ],
-    }),
+    // viteStaticCopy({
+    //   targets: [
+    //     {
+    //       src: "node_modules/@shoelace-style/shoelace/dist/assets",
+    //       dest: "shoelace",
+    //     }
+    //   ],
+    // }),
   ],
 });

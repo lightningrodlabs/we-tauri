@@ -9,6 +9,7 @@
     "test": "vitest --reporter verbose"
   },
   "dependencies": {
+    "@adaburrows/table-web-component": "github:adaburrows/table-web-component",
     "@holochain-open-dev/core-types": "^0.6.3",
     "@holochain-open-dev/elements": "^0.2.3",
     "@holochain-open-dev/membrane-invitations": "^0.0.10",
@@ -26,12 +27,12 @@
     "@open-wc/scoped-elements": "^2.1.5",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
-    "@webcomponents/scoped-custom-element-registry": "^0.0.5",
     "fflate": "^0.7.3",
     "js-base64": "^3.7.2",
     "lit": "^2.2.0",
     "lit-svelte-stores": "^0.2.1",
     "md5": "^2.3.0",
+    "neighbourhoods-design-system-components": "0.0.12",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

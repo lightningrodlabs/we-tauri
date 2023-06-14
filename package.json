@@ -6,9 +6,8 @@
     "ui/libs/*"
   ],
   "scripts": {
-    "start": "AGENTS=1 npm run network",
+    "start": "AGENTS=2 npm run network",
     "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && UI_PORT=8888 concurrently \"cd ui/app && npm start\" \"npm run launch:happ\"",
-    "test": "npm run build:zomes && hc app pack workdir && cd tests && npm t",
     "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
     "start:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc s --piped -f=$ADMIN_PORT generate ./workdir/we.happ --run=$HC_PORT -a we  --ui-port $UI_PORT network mdns",
     "package": "npm run build:happ && npm run package -w we && hc web-app pack workdir",
@@ -18,7 +17,8 @@
     "build:nh-launcher-applet": "cd ui/libs/nh-launcher-applet && npm run build",
     "playground": "run-singleton \"holochain-playground\"",
     "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.8-alpha/sensemaker.dna",
-    "postinstall": "npm run download-sensemaker"
+    "postinstall": "npm run download-sensemaker",
+    "test": "npm run build:zomes && hc app pack workdir && cd tests && npm t"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",
@@ -30,9 +30,5 @@
     "new-port-cli": "^1.0.0",
     "rimraf": "^3.0.2",
     "run-singleton-cli": "^0.0.7"
-  },
-  "dependencies": {
-    "@adaburrows/table-web-component": "github:adaburrows/table-web-component",
-    "@webcomponents/scoped-custom-element-registry": "^0.0.9"
   }
 }

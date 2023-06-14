@@ -16,42 +16,20 @@ import {
   SlAlert,
   SlIcon,
 } from '@scoped-elements/shoelace';
+import { StatefulTable } from '../components/table';
+import { DashboardFilterMap } from '../components/table-filter-map';
+
 import { Readable, get } from '@holochain-open-dev/stores';
-
-import { AssessmentTableType, StatefulTable } from '../components/table';
-
 import { encodeHashToBase64 } from '@holochain/client';
+
+import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+
 import { classMap } from 'lit/directives/class-map.js';
-import { NHTableHeader } from '../components/nh/typo/table-header';
-import { NHComponent } from '../components/nh/base';
+import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
+import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
-interface AppletRenderInfo {
-  name: string;
-  resourceNames?: string[];
-}
-export type DimensionDict = {
-  [id: string]: Uint8Array;
-};
-type ContextEhDict = DimensionDict;
-
-enum LoadingState {
-  FirstRender = 'first-render',
-  NoAppletSensemakerData = 'no-applet-sensemaker-data',
-}
-
-const zip = (a, b) => a.map((k, i) => [k, b[i]]);
-const capitalize = part => part[0].toUpperCase() + part.slice(1);
-const snakeCase = str =>
-  str &&
-  str
-    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
-    .map(x => x.toLowerCase())
-    .join('_');
-
-export const cleanResourceNameForUI = propertyName =>
-  propertyName.split('_').map(capitalize).join(' ');
-
-export class SensemakerDashboard extends NHComponent {
+export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
@@ -98,6 +76,7 @@ export class SensemakerDashboard extends NHComponent {
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         const id: string = appletConfig?.role_name;
+        console.log('id :>> ', id);
         // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
@@ -116,7 +95,7 @@ console.log('appletConfig:', appletConfig);
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![0]);
         this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
-console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
+        console.log('context_ehs :>> ', Object.values(this.context_ehs).map(e => encodeHashToBase64(e)));
         this.loading = false;
       });
     });
@@ -216,7 +195,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     </nav>
     `;
   }
-  renderMainSkeleton(awaitingData: boolean) {
+  renderMainSkeleton() {
     return html`
       <div class="container skeleton-overview">
         <main>
@@ -235,7 +214,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingState == LoadingState.NoAppletSensemakerData || awaitingData
+          ${this.loadingState == LoadingState.NoAppletSensemakerData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
                   <sl-icon slot="icon" name="info-circle"></sl-icon>
@@ -267,10 +246,10 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
 
     return html`
       <div class="container">
-        ${this.renderSidebar(roleNames)}
+        ${this.renderSidebar(roleNames as string[])}
         <main>
           ${this.loading
-            ? this.renderMainSkeleton(!!roleNames)
+            ? this.renderMainSkeleton()
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
@@ -286,7 +265,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                             class="dashboard-tab ${classMap({
                               active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
                             @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
-                          ><nh-table-header>${context}</nh-table-header></sl-tab-panel
+                          ><span>${context}</span></sl-tab-panel
                         >`,
                     )}
                   </div>
@@ -294,26 +273,28 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                  <dashboard-table
+                ${this.selectedContext !== 'none' ? '' : html`<dashboard-filter-map
                     .resourceName=${this.selectedResourceName}
                     .resourceDefEh=${this.selectedResourceDefEh}
-                    .tableType=${AssessmentTableType.Resource}
+                    .tableType=${AssessmentTableType.Resource} 
                     .selectedContext=${this.selectedContext}
-                    .selectedDimensions=${this.dimensions}
-                  ></dashboard-table>
+                    .selectedDimensions=${this.dimensions}>
+                </dashboard-filter-map>`}
+              
                 </sl-tab-panel>
                 ${contexts &&
                 contexts.map(
                   context =>
-                    html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
+                    encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext ? '' : html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
                       active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
-                      <dashboard-table
+                      <dashboard-filter-map
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
-                        .tableType=${AssessmentTableType.Context}
+                        .tableType=${AssessmentTableType.Context} 
                         .selectedContext=${this.selectedContext}
-                        .selectedDimensions=${this.dimensions}
-                      ></dashboard-table>
+                        .selectedDimensions=${this.dimensions}>
+                      </dashboard-filter-map>
+
                     </sl-tab-panel>`,
                 )}
               </sl-tab-group>`}
@@ -334,8 +315,9 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       'sl-tab-panel': SlTabPanel,
       'sl-icon': SlIcon,
       'sl-alert': SlAlert,
-      'nh-table-header': NHTableHeader,
+      // 'nh-table-header': NHTableHeader,
       'dashboard-table': StatefulTable,
+      'dashboard-filter-map': DashboardFilterMap,
     };
   }
 
