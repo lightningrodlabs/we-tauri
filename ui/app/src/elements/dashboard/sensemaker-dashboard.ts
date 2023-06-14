@@ -62,6 +62,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
 
     const appletStream = await this._matrixStore.fetchAllApplets(selectedWeGroupId);
     appletStream.subscribe(applets => {
+      console.log('applets in stream', applets)
       this.appletDetails = applets.reduce((applets, a) => {
         const roleName = Object.keys(a[1].dnaHashes)[0];
         
@@ -75,8 +76,10 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
     });
     this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
-        const id: string = appletConfig?.role_name;
+        // const id: string = appletConfig?.role_name;
+        const id = "todo_lists"
         console.log('id :>> ', id);
+
         // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
@@ -93,7 +96,7 @@ console.log('appletConfig:', appletConfig);
         // Keep context entry hashes and resource_def_eh for filtering in dashboard table
         this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
-        const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![0]);
+        const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![1]);
         this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
         console.log('context_ehs :>> ', Object.values(this.context_ehs).map(e => encodeHashToBase64(e)));
         this.loading = false;
