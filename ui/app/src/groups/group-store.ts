@@ -4,8 +4,10 @@ import {
 } from "@holochain-open-dev/peer-status";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
+  asyncDerived,
   AsyncReadable,
   completed,
+  join,
   lazyLoad,
   lazyLoadAndPoll,
   mapAndJoin,
@@ -13,7 +15,7 @@ import {
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, LazyHoloHashMap, pick } from "@holochain-open-dev/utils";
 import {
   MembraneInvitationsStore,
   MembraneInvitationsClient,
@@ -185,8 +187,19 @@ export class GroupStore {
 
   allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
 
+  installedApplets = asyncDerived(
+    join([this.allApplets, this.weStore.appletBundlesStore.installedApplets]),
+    ([allApplets, installedApplets]) =>
+      allApplets.filter((appletHash) =>
+        installedApplets.find(
+          (installedAppletHash) =>
+            installedAppletHash.toString() === appletHash.toString()
+        )
+      )
+  );
+
   allBlocks = pipe(
-    this.allApplets,
+    this.installedApplets,
     (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
     (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
   );
