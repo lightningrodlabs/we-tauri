@@ -195,7 +195,7 @@ console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
     </nav>
     `;
   }
-  renderMainSkeleton(awaitingData: boolean) {
+  renderMainSkeleton() {
     return html`
       <div class="container skeleton-overview">
         <main>
@@ -246,10 +246,10 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
 
     return html`
       <div class="container">
-        ${this.renderSidebar(roleNames)}
+        ${this.renderSidebar(roleNames as string[])}
         <main>
           ${this.loading
-            ? this.renderMainSkeleton(!!roleNames)
+            ? this.renderMainSkeleton()
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">

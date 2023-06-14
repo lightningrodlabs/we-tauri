@@ -1,10 +1,10 @@
+import { AssessmentDict } from './../helpers/types';
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { createContext, ContextRoot, contextProvider} from '@lit-labs/context';
 import { vi } from 'vitest'
 import { SensemakerStore } from '@neighbourhoods/client';
 import { writable } from '@holochain-open-dev/stores';
-import { AssessmentDict } from '../table';
 
 export const mockAssessments: AssessmentDict = {'abc' : [
     {
