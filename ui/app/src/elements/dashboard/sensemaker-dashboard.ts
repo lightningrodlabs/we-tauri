@@ -17,7 +17,7 @@ import {
   SlIcon,
 } from '@scoped-elements/shoelace';
 import { StatefulTable } from '../components/table';
-import { FetchAssessment } from '../components/fetch-table-data';
+import { DashboardFilterMap } from '../components/fetch-table-data';
 
 import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
@@ -273,13 +273,13 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                ${this.selectedContext !== 'none' ? '' : html`<fetch-assessment
+                ${this.selectedContext !== 'none' ? '' : html`<dashboard-filter-map
                     .resourceName=${this.selectedResourceName}
                     .resourceDefEh=${this.selectedResourceDefEh}
                     .tableType=${AssessmentTableType.Resource} 
                     .selectedContext=${this.selectedContext}
                     .selectedDimensions=${this.dimensions}>
-                </fetch-assessment>`}
+                </dashboard-filter-map>`}
               
                 </sl-tab-panel>
                 ${contexts &&
@@ -287,13 +287,13 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
                   context =>
                     encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext ? '' : html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
                       active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
-                      <fetch-assessment
+                      <dashboard-filter-map
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
                         .tableType=${AssessmentTableType.Context} 
                         .selectedContext=${this.selectedContext}
                         .selectedDimensions=${this.dimensions}>
-                      </fetch-assessment>
+                      </dashboard-filter-map>
 
                     </sl-tab-panel>`,
                 )}
@@ -317,7 +317,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       'sl-alert': SlAlert,
       // 'nh-table-header': NHTableHeader,
       'dashboard-table': StatefulTable,
-      'fetch-assessment': FetchAssessment,
+      'dashboard-filter-map': DashboardFilterMap,
     };
   }
 

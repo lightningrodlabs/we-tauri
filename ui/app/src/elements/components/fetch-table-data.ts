@@ -15,8 +15,8 @@ import { decode } from '@msgpack/msgpack';
 const objectiveDimensionNames = ['total_importance', 'average_heat'];
 const subjectiveDimensionNames = ['importance', 'perceived_heat'];
 
-@customElement('fetch-assessment')
-export class FetchAssessment extends LitElement {
+@customElement('dashboard-filter-map')
+export class DashboardFilterMap extends LitElement {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore;
@@ -74,11 +74,9 @@ export class FetchAssessment extends LitElement {
         this.tableType
       ) {
         let allAssessments = Object.values(resourceAssessments) as Assessment[][];
-        console.log('allAssessments :>> ', allAssessments);
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          console.log('filteredAssessments ready to be mapped :>> ', filteredAssessments, this.selectedDimensions);
           assessmentTableRecords = filteredAssessments.map(this.mapAssessmentToAssessmentTableRecord.bind(this));
         } catch (error) {
           console.log('Error filtering assessments :>> ', error);
@@ -106,7 +104,6 @@ export class FetchAssessment extends LitElement {
       assessments,
       this.resourceDefEh,
     ).flat() as Assessment[];
-    console.warn('FILTERED 1 :>> tabletype ', filteredByResourceDef, this.tableType);
     // By objective/subjective dimension names
     let filteredByMethodType;
 
@@ -127,8 +124,6 @@ export class FetchAssessment extends LitElement {
       );
     }
     
-    // console.warn('FILTERED 2 :>> ', filteredByMethodType);
-    // console.warn('FILTERED pre 3 :>> ', filteredByMethodType.map(r => r?.dimension_eh && encodeHashToBase64(r.dimension_eh)));
     // By context
     let tripleFiltered;
     if (this.tableType === AssessmentTableType.Context && !!this._contextEntry?.thresholds && !!this.selectedDimensions) {
@@ -237,12 +232,6 @@ export class FetchAssessment extends LitElement {
   }
 
   render() {
-    console.log(
-      'this.tableType, filtered Assessments, contextFieldDefs :>> ',
-      this.tableType,
-      this.filteredAssessments,
-      this.generateContextFieldDefs(),
-    );
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}
