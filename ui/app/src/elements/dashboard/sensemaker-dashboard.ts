@@ -95,7 +95,7 @@ console.log('appletConfig:', appletConfig);
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![0]);
         this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
-console.log('selectedResourceDefEh :>> ', this.selectedResourceDefEh);
+        console.log('context_ehs :>> ', Object.values(this.context_ehs).map(e => encodeHashToBase64(e)));
         this.loading = false;
       });
     });

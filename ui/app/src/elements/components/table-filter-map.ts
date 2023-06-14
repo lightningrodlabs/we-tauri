@@ -44,7 +44,9 @@ export class DashboardFilterMap extends LitElement {
   @state()
   private _contextEntry!: CulturalContext;
 
-  // To be fed as a prop to the dashboard table component
+  // To be fed as props to the dashboard table component
+  @property()
+  fieldDefs;
   @property({ type: Array })
   filteredAssessments: Assessment[] = [];
 
@@ -72,6 +74,9 @@ export class DashboardFilterMap extends LitElement {
     if (changedProps.has('selectedDimensions')) {
       await this.fetchSelectedDimensionEntries();
       this.filterSelectedDimensionsByComputedMethod()
+    }
+    if (changedProps.has('_subjectiveDimensionNames') && typeof changedProps.get('_objectiveDimensionNames') !== 'undefined') {
+      this.fieldDefs = this.generateContextFieldDefs();
     }
   }
 
@@ -108,7 +113,6 @@ export class DashboardFilterMap extends LitElement {
       },
       [[], []] as any,
     );
-    
     this._objectiveDimensionNames = objective;
     this._subjectiveDimensionNames = subjective;
   }
@@ -249,12 +253,11 @@ export class DashboardFilterMap extends LitElement {
 
   generateContextFieldDefs(): { [x: string]: FieldDefinition<AssessmentTableRecord> } {
     const contextFieldEntries = Object.entries(this.selectedDimensions).filter(
-      ([dimensionName, _]: [string, Uint8Array]) =>
-        (this.tableType === AssessmentTableType.Resource
-          ? this._subjectiveDimensionNames
-          : this._objectiveDimensionNames
-        ).includes(dimensionName),
+      ([dimensionName, _]: [string, Uint8Array]) => this.tableType === AssessmentTableType.Resource
+          ? (this._subjectiveDimensionNames).includes(dimensionName) 
+          : (this._objectiveDimensionNames).includes(dimensionName) && this.filteredAssessments.every(a => a[dimensionName] !== '')
     );
+
     switch (this.tableType) {
       case AssessmentTableType.Resource:
         const fieldEntriesResource = contextFieldEntries.map(
@@ -287,12 +290,13 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
+    console.log('this.fieldDefs :>> ', this.fieldDefs, this.filteredAssessments);
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}
         .assessments=${this.filteredAssessments}
         .tableType=${this.tableType}
-        .contextFieldDefs=${this.generateContextFieldDefs()}
+        .contextFieldDefs=${this.fieldDefs}
       ></dashboard-table>
     `;
   }
