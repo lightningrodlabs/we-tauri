@@ -17,7 +17,7 @@ import {
   SlIcon,
 } from '@scoped-elements/shoelace';
 import { StatefulTable } from '../components/table';
-import { DashboardFilterMap } from '../components/fetch-table-data';
+import { DashboardFilterMap } from '../components/table-filter-map';
 
 import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';

@@ -1,5 +1,11 @@
 import { Readable } from '@holochain-open-dev/stores';
-import { Assessment, CulturalContext, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import {
+  Assessment,
+  CulturalContext,
+  Dimension,
+  SensemakerStore,
+  sensemakerStoreContext,
+} from '@neighbourhoods/client';
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { encodeHashToBase64 } from '@holochain/client';
@@ -10,10 +16,6 @@ import { FieldDefinition } from '@adaburrows/table-web-component';
 import { AssessmentTableRecord, AssessmentTableType, DimensionDict } from './helpers/types';
 import { generateHeaderHTML, cleanResourceNameForUI } from './helpers/functions';
 import { decode } from '@msgpack/msgpack';
-
-// Hard coded until I can separate obj/subj dimensions. TODO: Remove this line and finish implementation on line 99
-const objectiveDimensionNames = ['total_importance', 'average_heat'];
-const subjectiveDimensionNames = ['importance', 'perceived_heat'];
 
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
@@ -34,7 +36,11 @@ export class DashboardFilterMap extends LitElement {
   @property()
   selectedDimensions!: DimensionDict;
   @state()
-  private _dimensionEntries!: any[];
+  private _dimensionEntries!: Dimension[];
+  @state()
+  private _objectiveDimensionNames: string[] = [];
+  @state()
+  private _subjectiveDimensionNames: string[] = [];
   @state()
   private _contextEntry!: CulturalContext;
 
@@ -56,12 +62,16 @@ export class DashboardFilterMap extends LitElement {
     super.disconnectedCallback();
     this._allAssessments.unsubscribe();
   }
-  
+
   async updated(changedProps) {
     if (changedProps.has('selectedContext')) {
       await this.fetchCurrentContextEntry();
       this._allAssessments.unsubscribe();
       this.setupAssessmentFilteringSubscription();
+    }
+    if (changedProps.has('selectedDimensions')) {
+      await this.fetchSelectedDimensionEntries();
+      this.filterSelectedDimensionsByComputedMethod()
     }
   }
 
@@ -77,7 +87,9 @@ export class DashboardFilterMap extends LitElement {
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          assessmentTableRecords = filteredAssessments.map(this.mapAssessmentToAssessmentTableRecord.bind(this));
+          assessmentTableRecords = filteredAssessments.map(
+            this.mapAssessmentToAssessmentTableRecord.bind(this),
+          );
         } catch (error) {
           console.log('Error filtering assessments :>> ', error);
         }
@@ -86,14 +98,56 @@ export class DashboardFilterMap extends LitElement {
     });
   }
 
-  async fetchCurrentContextEntry() {
-    if(this.selectedContext == 'none') return
+  filterSelectedDimensionsByComputedMethod() {
+    if (!this._dimensionEntries) return;
+
+    let [subjective, objective] = this._dimensionEntries.reduce(
+      (partitioned, dimension) => {
+        partitioned[dimension.computed ? 1 : 0].push(dimension.name);
+        return partitioned;
+      },
+      [[], []] as any,
+    );
     
+    this._objectiveDimensionNames = objective;
+    this._subjectiveDimensionNames = subjective;
+  }
+  
+  async fetchCurrentContextEntry() {
+    if (this.selectedContext == 'none') return;
+
     const contexts = await this._sensemakerStore.getCulturalContext(this.selectedContext);
     try {
       this._contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
     } catch (error) {
-      console.log('No context entry exists for that context entry hash!')
+      console.log('No context entry exists for that context entry hash!');
+    }
+  }
+
+  async fetchSelectedDimensionEntries() {
+    if (!this.selectedDimensions) return;
+
+    try {
+      const appInfo = await this._sensemakerStore.client.appWebsocket.appInfo({
+        installed_app_id: 'we',
+      });
+      const cell_id = appInfo.cell_info.sensemaker[1].cloned.cell_id;
+      const response = await this._sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'get_dimensions',
+        payload: null,
+      });
+      this._dimensionEntries = response.map(payload => {
+        try {
+          let dimension = decode(payload.entry.Present.entry) as any;
+          return dimension;
+        } catch (error) {
+          console.log('Error decoding dimension payload: ', error);
+        }
+      }) as Dimension[];
+    } catch (error) {
+      console.log('Error fetching dimension details: ', error);
     }
   }
 
@@ -110,24 +164,27 @@ export class DashboardFilterMap extends LitElement {
     if (this.tableType === AssessmentTableType.Resource) {
       filteredByMethodType = this.filterByMethodNames(
         filteredByResourceDef,
-        objectiveDimensionNames,
+        this._objectiveDimensionNames
       );
-      console.log('this.filterByMethodNames( :>> ', this.filterByMethodNames(
-        filteredByResourceDef,
-        objectiveDimensionNames,
-      ));
     } else {
-      // else we are dealing with a Resource table, filter accordingly
+      // else we are dealing with a Context table, filter accordingly
       filteredByMethodType = this.filterByMethodNames(
         filteredByResourceDef,
-        subjectiveDimensionNames,
+        this._subjectiveDimensionNames
       );
     }
-    
+
     // By context
     let tripleFiltered;
-    if (this.tableType === AssessmentTableType.Context && !!this._contextEntry?.thresholds && !!this.selectedDimensions) {
-      tripleFiltered = this.filterByDimensionEh(filteredByMethodType, encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh));
+    if (
+      this.tableType === AssessmentTableType.Context &&
+      !!this._contextEntry?.thresholds &&
+      !!this.selectedDimensions
+    ) {
+      tripleFiltered = this.filterByDimensionEh(
+        filteredByMethodType,
+        encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh),
+      );
     }
 
     return tripleFiltered || filteredByMethodType;
@@ -145,8 +202,8 @@ export class DashboardFilterMap extends LitElement {
 
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
     return resourceAssessments.filter((assessment: Assessment) => {
-      return encodeHashToBase64(assessment.dimension_eh) === filteringHash
-    })
+      return encodeHashToBase64(assessment.dimension_eh) === filteringHash;
+    });
   }
 
   filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]): Assessment[] {
@@ -163,9 +220,7 @@ export class DashboardFilterMap extends LitElement {
   }
 
   // Mapping
-  mapAssessmentToAssessmentTableRecord(
-    assessment: Assessment
-  ): AssessmentTableRecord {
+  mapAssessmentToAssessmentTableRecord(assessment: Assessment): AssessmentTableRecord {
     // Base record with basic fields
     const baseRecord = {
       neighbour: encodeHashToBase64(assessment.author),
@@ -174,8 +229,8 @@ export class DashboardFilterMap extends LitElement {
         value: Object.values(assessment.value)[0],
       },
     } as AssessmentTableRecord;
-    
-    if(!this.selectedDimensions) return baseRecord;
+
+    if (!this.selectedDimensions) return baseRecord;
     // Iterate over dimensions dictionary and add each dimension as a field to the base record with an empty default value
     for (let dimensionName of Object.keys(this.selectedDimensions)) {
       baseRecord[dimensionName] = '';
@@ -196,8 +251,8 @@ export class DashboardFilterMap extends LitElement {
     const contextFieldEntries = Object.entries(this.selectedDimensions).filter(
       ([dimensionName, _]: [string, Uint8Array]) =>
         (this.tableType === AssessmentTableType.Resource
-          ? subjectiveDimensionNames
-          : objectiveDimensionNames
+          ? this._subjectiveDimensionNames
+          : this._objectiveDimensionNames
         ).includes(dimensionName),
     );
     switch (this.tableType) {
@@ -221,8 +276,8 @@ export class DashboardFilterMap extends LitElement {
           }),
         );
         return fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {});
-      }
-      return {}
+    }
+    return {};
   }
 
   static get scopedElements() {
