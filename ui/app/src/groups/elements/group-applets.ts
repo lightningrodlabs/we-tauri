@@ -74,7 +74,7 @@ export class GroupApplets extends LitElement {
     customViews: ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
     allApplets: ReadonlyMap<EntryHash, [AppletStore, IconSrcOption]>
   ) {
-    let applets = pickBy(allApplets, ([_store, icon_src]) => !!icon_src);
+    const applets = pickBy(allApplets, ([_store, icon_src]) => !!icon_src);
     if (customViews.size === 0 && applets.size === 0)
       return html`
         <div class="column" style="flex: 1; align-items: center">

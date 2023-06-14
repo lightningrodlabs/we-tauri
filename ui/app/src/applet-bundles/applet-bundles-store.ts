@@ -71,7 +71,9 @@ export class AppletBundlesStore {
             happReleaseHashB64: encodeHashToBase64(appletBundleHash),
             guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
           })
-            .then((bytes: any) => resolve(toSrc(new Uint8Array(bytes))))
+            .then((bytes: any) =>
+              resolve(bytes ? toSrc(new Uint8Array(bytes)) : bytes)
+            )
             .catch(reject);
 
           setTimeout(() => resolve(undefined), 1000);
