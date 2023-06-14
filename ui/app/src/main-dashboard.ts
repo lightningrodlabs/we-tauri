@@ -529,7 +529,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
                 @click=${() => {
                   this._selectedAppletClassId =
                     appletClassInfo.devhubHappReleaseHash;
-                  this._navigationMode = NavigationMode.AppletCentric;
+                  this._navigationMode = NavigationMode.GroupCentric;
                   //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
                   const [weGroupInfo, appletInstanceInfo] = get(
                     this._matrixStore.getInstanceInfosForAppletClass(
