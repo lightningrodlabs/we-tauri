@@ -292,7 +292,17 @@ export class DashboardFilterMap extends LitElement {
                   assessWidget.methodEh = decodeHashFromBase64(methodEh!);
                   assessWidget.sensemakerStore = this._sensemakerStore;
                   assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
-                  return html`${assessWidget.render()}`;
+
+                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWigetType();
+                  displayWidget.assessment = assessment;
+
+                  return html`
+                    <div>
+                      ${displayWidget.render()}
+                      ${assessWidget.render()}
+                    </div>
+                  `;
                 }
                 else {
                   return html`<div></div>`;
@@ -322,7 +332,17 @@ export class DashboardFilterMap extends LitElement {
                   assessWidget.methodEh = decodeHashFromBase64(methodEh!);
                   assessWidget.sensemakerStore = this._sensemakerStore;
                   assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
-                  return html`${assessWidget.render()}`;
+
+                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWigetType();
+                  displayWidget.assessment = assessment;
+
+                  return html`
+                    <div>
+                      ${displayWidget.render()}
+                      ${assessWidget.render()}
+                    </div>
+                  `;
                 }
                 else {
                   return html`<div></div>`;
