@@ -1,6 +1,8 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.9-alpha - 2023-06-15
+- context computations now support `Float` when checking against the threshold
 ## v0.0.8-alpha - 2023-06-13
 - `dimension_ehs` property of `GetAssessmentsForResourceInput` changed from `DimensionEh[]` to `Option<DimensionEh[]>`. If nothing is provided, then all dimensions are used when calling `get_assessments_for_resources()`.
 - Both `Sum` and `Average` method types now support `Float`.
