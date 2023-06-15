@@ -1,6 +1,6 @@
 import { html, LitElement, css } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { ListProfiles } from "@holochain-open-dev/profiles";
+import "@holochain-open-dev/profiles/dist/elements/list-profiles";
 import {
   Button,
   TextField,
@@ -116,7 +116,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "list-profiles": ListProfiles,
+      // "list-profiles": ListProfiles,
       "mwc-button": Button,
       "mwc-textfield": TextField,
       "mwc-circular-progress": CircularProgress,

@@ -1,5 +1,7 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
-import { MyProfile, ProfilePrompt, ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
+import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
+import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
+import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
@@ -272,7 +274,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
         `,
-      complete: (info) => html`
+      complete: (info) => {html`
           <profile-prompt style="flex: 1; display: flex;">
             <div slot="hero">
               <div>
@@ -305,14 +307,14 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
             </div>
 
           </profile-prompt>
-        `
+        `}
     })
   }
 
   static get scopedElements() {
     return {
       "profile-prompt": ProfilePrompt,
-      "my-profile": MyProfile,
+      // "my-profile": MyProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
