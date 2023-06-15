@@ -1,8 +1,8 @@
 import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
-import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
-import "@holochain-open-dev/profiles/dist/elements/my-profile.js";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { NHProfile } from "../components/nh/profile/nh-profile";
+import { NHProfilePrompt } from "../components/nh/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -274,8 +274,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
         `,
-      complete: (info) => {html`
-          <profile-prompt style="flex: 1; display: flex;">
+      complete: (info) => { return html`
+          <nh-profile-prompt>
             <div slot="hero">
               <div>
                 <div class="column center-content">
@@ -298,23 +298,24 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               </div>
             </div>
 
-            ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-            ${this.renderSuccessSnackbar()}
+            <div slot="info">
+              ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+              ${this.renderSuccessSnackbar()}
+            </div>
 
-            <div class="row" style="flex: 1">
-
+            <div slot="content" class="profile-prompt-content">
               ${this.renderContent()}
             </div>
 
-          </profile-prompt>
+          </nh-profile-prompt>
         `}
     })
   }
 
   static get scopedElements() {
     return {
-      "profile-prompt": ProfilePrompt,
-      // "my-profile": MyProfile,
+      "nh-profile-prompt": NHProfilePrompt,
+      "nh-profile": NHProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,

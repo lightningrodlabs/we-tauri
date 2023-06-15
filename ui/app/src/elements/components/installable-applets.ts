@@ -1,6 +1,5 @@
 import { html, LitElement, css } from "lit";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import "@holochain-open-dev/profiles/dist/elements/list-profiles";
 import {
   Button,
   TextField,
@@ -23,6 +22,7 @@ import { CreateAppletDialog } from "../dialogs/create-applet-dialog";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { DnaHash, AgentPubKeyB64, EntryHashB64 } from "@holochain/client";
+import { NHProfileList } from "./nh/profile/nh-profile-list";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -116,7 +116,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      // "list-profiles": ListProfiles,
+      "nh-list-profiles": NHProfileList,
       "mwc-button": Button,
       "mwc-textfield": TextField,
       "mwc-circular-progress": CircularProgress,
