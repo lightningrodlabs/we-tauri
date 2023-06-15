@@ -1090,7 +1090,7 @@ export class MatrixStore {
         AverageStarDimensionDisplay,
         StarDimensionAssessment,
         );
-      }, 500);
+      }, 1500);
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {

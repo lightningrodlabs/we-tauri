@@ -71,6 +71,10 @@ export class DashboardFilterMap extends LitElement {
       this._allAssessments.unsubscribe();
       this.setupAssessmentFilteringSubscription();
     }
+    if (changedProps.has('resourceDefEh')) {
+      this._allAssessments.unsubscribe();
+      this.setupAssessmentFilteringSubscription();
+    }
     if (changedProps.has('selectedDimensions')) {
       await this.fetchSelectedDimensionEntries();
       // TODO: get the widgets from the store as well and put them in selected dimension state to be available to the 
@@ -96,6 +100,7 @@ export class DashboardFilterMap extends LitElement {
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
+          console.log('allAssessments, filteredAssessments :>> ',allAssessments,  filteredAssessments);
           assessmentTableRecords = filteredAssessments.map(
             this.mapAssessmentToAssessmentTableRecord.bind(this),
           );
@@ -162,10 +167,11 @@ export class DashboardFilterMap extends LitElement {
   // Filtering
   flatFiltered(assessments: Assessment[][]): Assessment[] {
     // By ResourceDefEH
-    let filteredByResourceDef = this.filterByResourceDefEh(
+    let filteredByResourceDef = (this.resourceDefEh == 'none' ? Object.values(assessments) :this.filterByResourceDefEh(
       assessments,
       this.resourceDefEh,
-    ).flat() as Assessment[];
+    )).flat() as Assessment[];
+
     console.log('comparing resource def', this.resourceDefEh, encodeHashToBase64(assessments[0][0].resource_def_eh))
     // By objective/subjective dimension names
     let filteredByMethodType;
@@ -183,7 +189,7 @@ export class DashboardFilterMap extends LitElement {
         this._subjectiveDimensionNames
       );
     }
-    console.log('filteredByMethodType', filteredByMethodType)
+    console.log('filteredByMethodType', filteredByMethodType, this._subjectiveDimensionNames, this._objectiveDimensionNames)
 
     // By context
     let tripleFiltered;
@@ -273,7 +279,7 @@ export class DashboardFilterMap extends LitElement {
               heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)),
               decorator: (...value: any) => {
                 console.log('decorator value', value)
-                html` <div>${value}</div>`},
+                return html` <div>${value}</div>`},
             }), // TODO: Add widget renderer here
           }),
         );
@@ -299,7 +305,7 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
-    console.log('filtered assessments in table render', this.filteredAssessments)
+    console.log('filtered assessments, fieldDefs in table render', this.filteredAssessments, this.fieldDefs)
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}

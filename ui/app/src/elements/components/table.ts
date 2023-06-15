@@ -55,7 +55,7 @@ export class StatefulTable extends NHComponentShoelace {
   }
 
   updated(changedProps) {
-    if (changedProps.has('assessments') || changedProps.has('contextFieldDefs')) {
+    if (changedProps.has('assessments') || changedProps.has('contextFieldDefs') || changedProps.has('resourceName')) {
       this.updateTable();
     }
   }
@@ -90,7 +90,7 @@ export class StatefulTable extends NHComponentShoelace {
   }
 
   render(): TemplateResult {
-    return this.tableStore.records.length && this.contextFieldDefs
+    return this.contextFieldDefs
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
       : html`<div class="skeleton-main-container">
       ${Array.from(Array(24)).map(

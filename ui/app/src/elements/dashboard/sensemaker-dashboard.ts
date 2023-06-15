@@ -41,9 +41,11 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
   _sensemakerStore!: SensemakerStore;
 
   @state() selectedAppletIndex: number = 0;
+  @state() selectedResourceDefIndex: number = -1; // No resource definition selected
   @state() selectedResourceName!: string;
   @state() selectedContext: string = 'none';
   @state() selectedResourceDefEh!: string;
+  @state() selectedWeGroupId!: Uint8Array;
 
   @state() appletDetails!: object;
   @state() dimensions: DimensionDict = {};
@@ -51,16 +53,15 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
 
   async connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
 
-    const selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
-    if (!selectedWeGroupId) return;
+    this.selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
+    if (!this.selectedWeGroupId) return;
 
     this._sensemakerStore = get(
-      this._matrixStore.sensemakerStore(selectedWeGroupId) as Readable<SensemakerStore>,
+      this._matrixStore.sensemakerStore(this.selectedWeGroupId) as Readable<SensemakerStore>,
     );
 
-    const appletStream = await this._matrixStore.fetchAllApplets(selectedWeGroupId);
+    const appletStream = await this._matrixStore.fetchAllApplets(this.selectedWeGroupId);
     appletStream.subscribe(applets => {
       console.log('applets in stream', applets)
       this.appletDetails = applets.reduce((applets, a) => {
@@ -74,16 +75,20 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
         }
       }, {})        
     });
-    this._matrixStore.sensemakerStore(selectedWeGroupId).subscribe(store => {
+    this.setupAssessmentsSubscription()
+  }
+
+  setupAssessmentsSubscription() {
+    let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
+    store.subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         // const id: string = appletConfig?.role_name;
         const id = "todo_lists"
         console.log('id :>> ', id);
-
         // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
-console.log('appletConfig:', appletConfig);
+        console.log('appletConfig:', appletConfig);
         this.appletDetails[id].appletRenderInfo = {
           resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
         };
@@ -96,23 +101,13 @@ console.log('appletConfig:', appletConfig);
         // Keep context entry hashes and resource_def_eh for filtering in dashboard table
         this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
-        const resourceName : string = snakeCase(currentAppletRenderInfo.resourceNames![1]);
-        this.selectedResourceDefEh = encodeHashToBase64(appletConfig.resource_defs[resourceName]);
-        console.log('context_ehs :>> ', Object.values(this.context_ehs).map(e => encodeHashToBase64(e)));
+        const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
+        this.selectedResourceDefEh = this.selectedResourceDefIndex >= 0 ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
         this.loading = false;
       });
     });
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener('sub-component-loaded', this.handleSubcomponentFinishedLoading);
-  }
-
-  // Handlers
-  handleSubcomponentFinishedLoading(_: Event) {
-    this.loading = false;
-  }
   setLoadingState(state: LoadingState) {
     this.loadingState = state;
   }
@@ -175,14 +170,19 @@ console.log('appletConfig:', appletConfig);
               class="nav-item ${classMap({
               active: this.selectedAppletIndex === i})}"
               value="${this.appletDetails[roleName].customName.toLowerCase()}"
-              @click=${() => {this.selectedAppletIndex = i}}
+              @click=${() => {
+                this.selectedAppletIndex = i; 
+                this.selectedResourceDefIndex = -1;
+                this.setupAssessmentsSubscription()
+              }}
               >${this.appletDetails[roleName].customName}</sl-menu-item
-            >
-            <div role="navigation" class="sub-nav indented">
+              >
+              <div role="navigation" class="sub-nav indented">
               ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
                 this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                resource =>
+                  (resource, i) =>
                   html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
+                    @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
                     >${resource}</sl-menu-item
                   >`,
               )}
@@ -240,8 +240,8 @@ console.log('appletConfig:', appletConfig);
     
     const appletConfig = (appletDetails?.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
     
-    if (appletConfig && appletDetails[this.selectedAppletIndex]?.customName) {
-      this.selectedResourceName = appletDetails[this.selectedAppletIndex]?.customName;
+    if (appletConfig && appletDetails[this.selectedAppletIndex]) {
+      this.selectedResourceName = this.selectedResourceDefIndex < 0 ? "All Resources" : appletDetails[this.selectedAppletIndex].appletRenderInfo.resourceNames[this.selectedResourceDefIndex];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
