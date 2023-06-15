@@ -1,6 +1,5 @@
 import {
   alwaysSubscribed,
-  asyncDeriveAndJoin,
   asyncDerived,
   asyncDeriveStore,
   AsyncReadable,
@@ -70,9 +69,16 @@ export class WeStore {
       name: name,
     };
 
-    await groupClient.setGroupProfile(groupProfile);
+    try {
+      await groupClient.setGroupProfile(groupProfile);
 
-    await this.groupsRolesByDnaHash.reload();
+      await this.groupsRolesByDnaHash.reload();
+    } catch (e) {
+      // If we can't set profile, disable the group and bubble the error
+      await this.leaveGroup(groupClonedCell.cell_id[0]);
+
+      throw e;
+    }
 
     return groupClonedCell;
   }

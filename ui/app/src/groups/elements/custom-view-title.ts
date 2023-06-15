@@ -34,7 +34,6 @@ export class CustomViewTitle extends LitElement {
 
   renderTitle(customView: EntryRecord<CustomView> | undefined) {
     if (!customView) return html``;
-    console.log(customView.entry);
     return html` <img
         .src=${customView.entry.logo}
         style="height: 16px; width: 16px; border-radius: 2px; margin-right: 4px"

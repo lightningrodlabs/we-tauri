@@ -8908,7 +8908,7 @@ dependencies = [
 
 [[package]]
 name = "we"
-version = "0.0.16"
+version = "0.0.18"
 dependencies = [
  "anyhow",
  "base64 0.21.0",

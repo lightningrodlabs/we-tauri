@@ -169,7 +169,12 @@ export class GroupStore {
 
     const appletHash = await this.groupClient.registerApplet(applet);
 
-    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    try {
+      await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    } catch (e) {
+      await this.groupClient.unregisterApplet(appletHash);
+      throw e;
+    }
 
     return appletHash;
   }

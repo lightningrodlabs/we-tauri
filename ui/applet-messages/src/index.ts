@@ -7,6 +7,8 @@ import {
   EntryHashB64,
 } from "@holochain/client";
 import { Hrl } from "@lightningrodlabs/we-applet";
+import { encode, decode } from "@msgpack/msgpack";
+import { fromUint8Array, toUint8Array } from "js-base64";
 
 export type OpenViewRequest =
   | {
@@ -192,7 +194,8 @@ export function renderViewToQueryString(renderView: RenderView): string {
     base = `${base}&hrl=${stringifyHrl(renderView.view.hrl)}`;
   }
   if ("context" in renderView.view) {
-    base = `${base}&context=${JSON.stringify(renderView.view.context)}`;
+    const b64context = fromUint8Array(encode(renderView.view.context), true);
+    base = `${base}&context=${b64context}`;
   }
 
   return base;
@@ -214,7 +217,7 @@ export function queryStringToRenderView(s: string): RenderView {
     hrl = parseHrl(args[2].split("=")[1]);
   }
   if (args[3] && args[3].split("=")[0] === "context") {
-    context = JSON.parse(args[3].split("=")[1]);
+    context = decode(toUint8Array(args[3].split("=")[1]));
   }
 
   return {

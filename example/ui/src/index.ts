@@ -80,7 +80,9 @@ async function appletViews(
                 const dnaHash = (appInfo.cell_info.forum[0] as any)[
                   CellType.Provisioned
                 ].cell_id[0];
-                weServices.openViews.openHrl([dnaHash, e.detail.postHash], {});
+                weServices.openViews.openHrl([dnaHash, e.detail.postHash], {
+                  detail: "asdf",
+                });
               }}
             ></applet-main>
           `

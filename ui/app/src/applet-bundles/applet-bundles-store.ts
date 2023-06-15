@@ -76,9 +76,9 @@ export class AppletBundlesStore {
             )
             .catch(reject);
 
-          setTimeout(() => resolve(undefined), 1000);
+          setTimeout(() => resolve(undefined), 5000);
         });
-      }, 5000)
+      }, 30000)
     )
   );
 
