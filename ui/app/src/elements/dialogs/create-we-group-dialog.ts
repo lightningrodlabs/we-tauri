@@ -77,7 +77,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
             id="name-field"
             size="medium"
             placeholder="Name"
-            @sl-input=${(e) => {(this._name = e.target.value); console.log('hi', !this._name || !this._logoSrc)}}
+            @sl-input=${(e) => {(this._name = e.target.value)}}
             style="margin-left: 16px"
             required
           ></sl-input>
