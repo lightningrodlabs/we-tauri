@@ -273,7 +273,7 @@ export class DashboardFilterMap extends LitElement {
               heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)),
               decorator: (...value: any) => {
                 console.log('decorator value', value)
-                html` <div>${value}</div>`},
+                return html` <div>${value}</div>`},
             }), // TODO: Add widget renderer here
           }),
         );
