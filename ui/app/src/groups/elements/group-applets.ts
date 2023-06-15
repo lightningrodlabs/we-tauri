@@ -93,6 +93,7 @@ export class GroupApplets extends LitElement {
     return html`
       <div class="row">
         ${Array.from(customViews.entries())
+          .filter(([_, b]) => !!b)
           .sort(([_, a], [__, b]) => a.entry.name.localeCompare(b.entry.name))
           .map(
             ([customViewHash, customView]) =>
@@ -158,7 +159,7 @@ export class GroupApplets extends LitElement {
   render() {
     switch (this._groupApplets.value?.status) {
       case "pending":
-        return html`<sl-skeleton
+        return html` <sl-skeleton
           style="height: 48px; width: 48px;"
         ></sl-skeleton>`;
       case "error":

@@ -56,11 +56,17 @@ export async function getAllAppsWithGui(
     payload: ["we-applet"],
   });
   const allApps: Array<ContentAddress<HappEntry>> = allAppsOutput.payload;
-  const promises = allApps.map((app) =>
-    getAppsReleasesWithGui(devhubClient, app)
-  );
+  const promises = allApps.map(async (app) => {
+    try {
+      const r = await getAppsReleasesWithGui(devhubClient, app);
+      return r;
+    } catch (e) {
+      return undefined;
+    }
+  });
 
-  return Promise.all(promises);
+  const r = await Promise.all(promises);
+  return r.filter((p) => !!p) as AppWithReleases[];
 }
 
 export async function getAppsReleasesWithGui(
@@ -102,7 +108,7 @@ export async function getAppsReleasesWithGui(
 
 export function getLatestRelease(
   apps: AppWithReleases
-): ContentAddress<HappReleaseEntry> {
+): ContentAddress<HappReleaseEntry> | undefined {
   return apps.releases.sort(
     (r1, r2) => r2.content.last_updated - r1.content.last_updated
   )[0];

@@ -201,7 +201,7 @@ export class MainDashboard extends LitElement {
                 },
               ],
             }}
-            style="flex: 1; min-width: 0;"
+            style="flex: 1; min-width: 0; height: calc(100% - 64px)"
             @open-group=${(e) =>
               this.handleOpenGroup(
                 e.detail.originalGroupDnaHash,

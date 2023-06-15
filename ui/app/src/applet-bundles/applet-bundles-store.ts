@@ -27,6 +27,7 @@ import {
 import { HappReleaseEntry } from "../processes/devhub/types.js";
 import { toSrc } from "../processes/import-logsrc-from-file.js";
 import { isAppRunning } from "../utils.js";
+import { IconSrcOption } from "./types.js";
 
 export class AppletBundlesStore {
   constructor(
@@ -47,10 +48,10 @@ export class AppletBundlesStore {
           (b) =>
             [b.app.content.title, getLatestRelease(b)] as [
               string,
-              ContentAddress<HappReleaseEntry>
+              ContentAddress<HappReleaseEntry> | undefined
             ]
         )
-        .find(([name, b]) => b.id.toString() === appletBundleHash.toString());
+        .find(([name, b]) => b?.id.toString() === appletBundleHash.toString());
       return appletBundle;
     })
   );
@@ -66,15 +67,15 @@ export class AppletBundlesStore {
         if (!guiReleaseHash)
           throw new Error("This app doesn't have a UI release");
 
-        return new Promise((resolve, reject) => {
+        return new Promise<IconSrcOption | undefined>((resolve, reject) => {
           invoke("fetch_icon", {
             happReleaseHashB64: encodeHashToBase64(appletBundleHash),
             guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
           })
             .then((bytes: any) =>
-              resolve(bytes ? toSrc(new Uint8Array(bytes)) : bytes)
+              resolve(bytes ? toSrc(new Uint8Array(bytes)) : undefined)
             )
-            .catch(reject);
+            .catch(() => resolve(undefined));
 
           setTimeout(() => resolve(undefined), 5000);
         });

@@ -44,11 +44,13 @@ export class InstallableApplets extends LitElement {
         this.groupStore.weStore.appletBundlesStore.allAppletBundles,
         (allAppletBundles) =>
           join(
-            allAppletBundles.map((b) =>
-              this.weStore.appletBundlesStore.appletBundleLogo.get(
-                getLatestRelease(b).address
+            allAppletBundles
+              .filter((b) => !!getLatestRelease(b))
+              .map((b) =>
+                this.weStore.appletBundlesStore.appletBundleLogo.get(
+                  getLatestRelease(b)!.address
+                )
               )
-            )
           )
       ),
     () => []

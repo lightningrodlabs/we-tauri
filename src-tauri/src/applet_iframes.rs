@@ -153,8 +153,6 @@ pub async fn read_asset(
     applet_id: &String,
     mut asset_name: String,
 ) -> WeResult<Option<(Vec<u8>, Option<String>)>> {
-    let applet_id = get_applet_id_from_lowercase(applet_id, web_app_manager).await?;
-
     if asset_name.starts_with("/") {
         asset_name = asset_name.strip_prefix("/").unwrap().to_string();
     }
@@ -165,6 +163,8 @@ pub async fn read_asset(
             Some(String::from("text/html")),
         )));
     }
+
+    let applet_id = get_applet_id_from_lowercase(applet_id, web_app_manager).await?;
 
     let assets_path = web_app_manager.get_app_assets_dir(&applet_id, &String::from("default"));
     let asset_file = assets_path.join(asset_name);
