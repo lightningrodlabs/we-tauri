@@ -19,15 +19,10 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
   /** Dependencies */
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
-
-  reset() {
-    this._name = "";
-    this._logoSrc = "";
-  }
-
+  
   @property()
   button!: HTMLElement;
-
+  
   /** Private properties */
   @query("#name-field")
   _nameField!: HTMLInputElement;
@@ -37,7 +32,14 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
   _name: string | undefined;
   @state()
   _logoSrc: string | undefined;
+  @property()
+  _primaryButtonDisabled: boolean = false;
 
+  reset() {
+    this._name = "";
+    this._logoSrc = "";
+  }
+  
   private async handleOk(e: any) {
     if (this._name && this._logoSrc) {
       this.dispatchEvent(new CustomEvent("creating-we", {})); // required to display loading screen in the dashboard
@@ -59,15 +61,16 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
     return html`
       <nh-dialog
         id="dialog"
-        dialogType="profileCreate"
+        dialogType="create-neighbourhood"
         title="Create Neighbourhood"
         handleOK=${this.handleOk.bind(this)} 
         openButtonRef=${this.button}
+        .primaryButtonDisabled=${this._primaryButtonDisabled}
       >
         <div slot="content" class="row">
           <select-avatar
             id="select-avatar"
-            @avatar-selected=${(e) => (this._logoSrc = e.detail.avatar)}
+            @avatar-selected=${(e) => {this._logoSrc = e.detail.avatar; this._primaryButtonDisabled = (!this._logoSrc || !this._name ); this.requestUpdate(); }}
           ></select-avatar>
 
           <sl-input
@@ -75,7 +78,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
             id="name-field"
             size="medium"
             placeholder="Name"
-            @sl-input=${(e) => {(this._name = e.target.value)}}
+            @sl-input=${(e) => {this._name = e.target.value; this._primaryButtonDisabled = (!this._logoSrc || !this._name ); this.requestUpdate(); }}
             style="margin-left: 16px"
             required
           ></sl-input>

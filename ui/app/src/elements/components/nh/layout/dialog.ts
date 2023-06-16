@@ -4,8 +4,8 @@ import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
-export type DialogType = 'profileCreate' | 'widgetConfig' | 'confirmation' | 'appletInstall';
-export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
+type DialogType = 'create-neighbourhood' | 'widgetConfig' | 'confirmation' | 'appletInstall';
+type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
 @customElement('nh-dialog')
 export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
@@ -15,7 +15,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   @property()
   dialogType!: DialogType;
 
-  @property({ attribute: true })
+  @property()
   handleOk!: () => void;
 
   @property({ attribute: false })
@@ -23,6 +23,9 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
 
   @property({ type: Boolean })
   isOpen = false;
+
+  @property({ type: Boolean})
+  primaryButtonDisabled = false;
 
   @property()
   alertMessage: string | null = null;
@@ -50,6 +53,33 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
     }
   }
 
+  renderActions() {
+    switch (this.dialogType) {
+      case 'create-neighbourhood':
+        return html`<sl-button-group id="buttons">
+          <sl-button
+            id="secondary-action-button"
+            size="large"
+            variant="neutral"
+            @click=${this.hideDialog}
+          >
+            Cancel
+          </sl-button>
+          <sl-button
+            id="primary-action-button"
+            size="large"
+            variant="primary"
+            @click=${this.onOkClicked}
+            .disabled=${this.primaryButtonDisabled}
+          >
+            Save
+          </sl-button>
+        </sl-button-group>`;
+      default:
+        return html``;
+    }
+  }
+
   render() {
     return html`
       ${this.alertMessage
@@ -62,14 +92,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         @sl-after-hide=${this.onDialogClosed}
       >
         <slot name="content"></slot>
-        <div name="actions">
-          <div class="actions" slot="footer">
-            <sl-button-group id="buttons">
-              <sl-button id="secondary-action-button" size="large" variant="neutral" @click=${this.hideDialog}> Cancel </sl-button>
-              <sl-button id="primary-action-button" size="large" variant="primary" @click=${this.onOkClicked}> Save </sl-button>
-            </sl-button-group>
-          </div>
-        </div>
+        <div class="actions" slot="footer">${this.renderActions()}</div>
       </sl-dialog>
     `;
   }
