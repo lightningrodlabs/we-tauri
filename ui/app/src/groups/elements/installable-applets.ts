@@ -89,7 +89,7 @@ export class InstallableApplets extends LitElement {
       ></install-applet-bundle-dialog>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-        ${applets.length == 0
+        ${applets.filter((item) => !!getLatestRelease(item)).length == 0
           ? html`
               <div class="column center-content">
                 <span class="placeholder"

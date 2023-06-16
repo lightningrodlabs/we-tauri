@@ -27,7 +27,7 @@ import { WeStore } from "../we-store";
 function getAppletIdFromOrigin(
   appletIframeProtocol: AppletIframeProtocol,
   origin: string
-): String {
+): string {
   if (appletIframeProtocol === AppletIframeProtocol.Assets) {
     return origin.split("://")[1].split("?")[0].split("/")[0];
   } else {
@@ -53,7 +53,14 @@ export async function setupAppletMessageHandler(
         (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
       );
 
-      if (!appletId) throw new Error(`Requested applet is not installed`);
+      if (!appletId) {
+        const iframeConfig: IframeConfig = {
+          type: "not-installed",
+          appletName: lowerCaseAppletId,
+        };
+        message.ports[0].postMessage({ type: "success", result: iframeConfig });
+        throw new Error(`Requested applet is not installed`);
+      }
 
       const result = await handleAppletIframeMessage(
         weStore,
