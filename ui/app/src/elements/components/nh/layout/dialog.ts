@@ -1,10 +1,17 @@
 import { css, CSSResult, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
-type DialogType = 'create-neighbourhood' | 'widget-config' | 'confirmation' | 'applet-install'| 'applet-uninstall';
+enum DialogType {
+  createNeighbourhood = 'create-neighbourhood',
+  widgetConfig = 'widget-config',
+  confirmation = 'confirmation',
+  appletInstall = 'applet-install',
+  appletUninstall = 'applet-uninstall',
+} 
+
 type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
 @customElement('nh-dialog')
@@ -52,10 +59,38 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
       }
     }
   }
+    
+  chooseButtonText() {
+    switch (this.dialogType) {
+      case DialogType.createNeighbourhood:
+      return {
+        primary: 'Save',
+        secondary: 'Cancel',
+      }
+    
+      case DialogType.widgetConfig:
+      return {
+        primary: 'Save',
+        secondary: 'Cancel',
+      }
+
+      case DialogType.appletInstall:
+      return {
+        primary: 'Install',
+        secondary: 'Cancel',
+      }
+    
+      default:
+        return {
+          primary: 'OK',
+          secondary: 'Cancel',
+        }
+    }
+  }
 
   renderActions() {
-    switch (this.dialogType) {
-      case 'create-neighbourhood':
+    switch (true) {
+      case ['applet-install', 'create-neighbourhood'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
           <sl-button
             id="secondary-action-button"
@@ -63,7 +98,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
             variant="neutral"
             @click=${this.hideDialog}
           >
-            Cancel
+            ${this.chooseButtonText().secondary}
           </sl-button>
           <sl-button
             id="primary-action-button"
@@ -72,7 +107,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
             @click=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
           >
-            Save
+          ${this.chooseButtonText().primary}
           </sl-button>
         </sl-button-group>`;
       default:
