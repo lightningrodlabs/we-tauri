@@ -4,7 +4,7 @@ import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
-type DialogType = 'create-neighbourhood' | 'widgetConfig' | 'confirmation' | 'appletInstall';
+type DialogType = 'create-neighbourhood' | 'widget-config' | 'confirmation' | 'applet-install'| 'applet-uninstall';
 type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
 @customElement('nh-dialog')
@@ -70,7 +70,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
             size="large"
             variant="primary"
             @click=${this.onOkClicked}
-            .disabled=${this.primaryButtonDisabled}
+            ?disabled=${this.primaryButtonDisabled}
           >
             Save
           </sl-button>
