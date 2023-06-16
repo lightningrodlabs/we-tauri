@@ -49,6 +49,8 @@ import { AppletNotRunning } from "./elements/dashboard/applet-not-running";
 import { IconDot } from "./elements/components/icon-dot";
 import { NHComponentShoelace } from "neighbourhoods-design-system-components";
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { NHDialog } from "./elements/components/nh/layout/dialog";
+import { NHSensemakerSettings } from "./elements/dashboard/nh-sensemaker-settings";
 
 export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -104,6 +106,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
 
   @state()
   private _specialAppletMode: boolean = false;
+  @state()
+  private _widgetConfigDialogActivated: boolean = false;
 
   @query("#open-create-we-group-dialog")
   _createWeGroupDialogButton!: HTMLElement;
@@ -697,6 +701,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
     this._newAppletInstances.run();
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
+
+    this._widgetConfigDialogActivated = true;
     this.requestUpdate();
   }
 
@@ -714,6 +720,22 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
         id="create-we-group-dialog"
         button=${this._createWeGroupDialogButton}
       ></create-we-group-dialog>
+      ${this._widgetConfigDialogActivated && html`
+        <nh-dialog
+          id="applet-widget-config"
+          size="large"
+          dialogType="widget-config"
+          handleOk=${() => {}}
+          isOpen=${true}
+          title="Configure Applet Widgets"
+          .primaryButtonDisabled=${false}
+        >
+          <div slot="content">
+            <nh-sensemaker-settings></nh-sensemaker-settings>
+          </div>
+        </nh-dialog>
+        `
+      }
 
       <mwc-snackbar id="applet-centric-snackbar" labelText="Applet-Centric Navigation" style="text-align: center;"></mwc-snackbar>
       <mwc-snackbar id="group-centric-snackbar" labelText="Group-Centric Navigation" style="text-align: center;"></mwc-snackbar>
@@ -808,7 +830,9 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
       "we-group-context": WeGroupContext,
       "applet-class-home": AppletClassHome,
       "we-group-home": WeGroupHome,
+      "nh-dialog": NHDialog,
       "sensemaker-dashboard": SensemakerDashboard,
+      "nh-sensemaker-settings": NHSensemakerSettings,
       "applet-class-renderer": AppletClassRenderer,
       "applet-instance-renderer": AppletInstanceRenderer,
       "applet-not-installed": AppletNotInstalled,
