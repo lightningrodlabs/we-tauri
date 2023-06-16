@@ -10,7 +10,7 @@ export class NHProfilePrompt extends NHComponentShoelace {
   @contextProvided({ context: profilesStoreContext, subscribe: true })
   _profilesStore!: ProfilesStore;
 
-  @state({})
+  @state()
   private _hasCreatedProfile: boolean = false;
 
   connectedCallback(): void {

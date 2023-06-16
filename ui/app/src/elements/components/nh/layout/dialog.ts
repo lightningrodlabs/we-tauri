@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { classMap } from "lit/directives/class-map.js";
 
 enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
@@ -17,7 +18,9 @@ type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 @customElement('nh-dialog')
 export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   @property()
-  title!: string;
+  title!: string
+  @property()
+  size: string = 'small';
 
   @property()
   dialogType!: DialogType;
@@ -35,12 +38,12 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   primaryButtonDisabled = false;
 
   @property()
-  alertMessage: string | null = null;
+  alertMessage?: string;
 
   @property()
   alertType: AlertType = 'neutral';
 
-  @property({ attribute: true })
+  @property()
   openButtonRef!: HTMLElement;
 
   connectedCallback() {
@@ -116,17 +119,23 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   }
 
   render() {
+    console.log('this.alertMessage :>> ', this.alertMessage);
     return html`
-      ${this.alertMessage
-        ? html`<sl-alert variant="${this.alertType}">${this.alertMessage}</sl-alert>`
-        : null}
       <sl-dialog
         id="main"
+        class=${classMap({
+          large: this.size == 'large',
+          medium: this.size == 'medium',
+        })}
         ?open=${this.isOpen}
         label="${this.title}"
         @sl-after-hide=${this.onDialogClosed}
       >
-        <slot name="content"></slot>
+      <slot name="content">
+      ${this.alertMessage
+        ? html`<sl-alert slot="label" variant="${this.alertType}" open closable>${this.alertMessage}</sl-alert>`
+        : null}
+        </slot>
         <div class="actions" slot="footer">${this.renderActions()}</div>
       </sl-dialog>
     `;
@@ -167,6 +176,16 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         background-color: var(--nh-theme-bg-surface);
         max-height: 16rem;
       }
+
+      #main.medium::part(panel) {
+        min-height: 60vh;
+        min-width: 60vw;
+      }
+      #main.large::part(panel) {
+        min-height: 90vh;
+        min-width: 80vw;
+      }
+
       #main::part(overlay),
       #main::part(base) {
         background-color: var(--nh-theme-bg-subtle-50);

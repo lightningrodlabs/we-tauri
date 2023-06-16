@@ -290,7 +290,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     ${info.name}
                   </div>
                   <div
-                    style="margin-bottom: 45px; margin-top: 55px; font-size: 1.3em;"
+                    style="margin: calc(1px * var(--nh-spacing-md)); margin-top: calc(1px * var(--nh-spacing-sm)); font-size: calc(1px * var(--nh-font-size-lg))"
                   >
                     How would you like to appear in this neighbourhood?
                   </div>

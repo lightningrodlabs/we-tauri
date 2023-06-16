@@ -63,7 +63,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
         id="dialog"
         dialogType="create-neighbourhood"
         title="Create Neighbourhood"
-        handleOK=${this.handleOk.bind(this)} 
+        handleOk=${this.handleOk.bind(this)} 
         openButtonRef=${this.button}
         .primaryButtonDisabled=${this._primaryButtonDisabled}
       >

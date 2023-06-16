@@ -181,18 +181,17 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       <button id="open-applet-dialog-button" style="opacity:0" type="button"></button>
       <nh-dialog
         id="applet-dialog"
-        dialogType="create-neighbourhood"
-        handleOk="${this.createApplet.bind(this)}}"
+        size="medium"
+        dialogType="applet-install"
+        handleOk=${this.createApplet.bind(this)}
         title="Install Applet"
         .openButtonRef=${this._openAppletDialogButton}
         .primaryButtonDisabled=${this.publishDisabled}
+        alertMessage="Note: It is recommended to download and install Applets from the
+          Applets Library if available. This guarantees compatibility between Applets of the same
+          type and version across neighbourhoods and it allows features like federation."
       >
         <div slot="content" class="column" style="padding: 16px; margin-bottom: 24px;">
-          <div style="margin-bottom: 30px;">
-            <strong>Note: </strong>It is recommended to download and install Applets from the
-            Applets Library if available. This guarantees compatibility between Applets of the same
-            type and version across neighbourhoods and it allows features like federation.
-          </div>
           <mwc-textfield
             id="installed-app-id"
             label="Applet Name"
