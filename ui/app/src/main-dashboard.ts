@@ -720,7 +720,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
         id="create-we-group-dialog"
         button=${this._createWeGroupDialogButton}
       ></create-we-group-dialog>
-      ${this._widgetConfigDialogActivated && html`
+      ${this._widgetConfigDialogActivated ? html`
         <nh-dialog
           id="applet-widget-config"
           size="large"
@@ -734,7 +734,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
             <nh-sensemaker-settings></nh-sensemaker-settings>
           </div>
         </nh-dialog>
-        `
+        ` : html``
       }
 
       <mwc-snackbar id="applet-centric-snackbar" labelText="Applet-Centric Navigation" style="text-align: center;"></mwc-snackbar>
