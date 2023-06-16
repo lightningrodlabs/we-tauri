@@ -105,8 +105,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @state()
   private _specialAppletMode: boolean = false;
 
-  @query("#create-we-group-dialog")
-  _createWeGroupDialog!: CreateWeGroupDialog;
+  @query("#open-create-we-group-dialog")
+  _createWeGroupDialogButton!: HTMLElement;
 
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
@@ -401,8 +401,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
 
       <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
         <button
+          id="open-create-we-group-dialog"
           class="group-add"
-          @click=${() => this._createWeGroupDialog.open()}
         ></button>
       </sl-tooltip>
     `;
@@ -712,6 +712,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
         @we-added=${(e) => this.handleWeGroupAdded(e)}
         @creating-we=${(e) => this.showLoading()}
         id="create-we-group-dialog"
+        button=${this._createWeGroupDialogButton}
       ></create-we-group-dialog>
 
       <mwc-snackbar id="applet-centric-snackbar" labelText="Applet-Centric Navigation" style="text-align: center;"></mwc-snackbar>
