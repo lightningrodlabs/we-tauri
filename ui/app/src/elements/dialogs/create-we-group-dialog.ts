@@ -67,7 +67,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
         openButtonRef=${this.button}
         .primaryButtonDisabled=${this._primaryButtonDisabled}
       >
-        <div slot="content" class="row">
+        <div slot="inner-content" class="row">
           <select-avatar
             id="select-avatar"
             @avatar-selected=${(e) => {this._logoSrc = e.detail.avatar; this._primaryButtonDisabled = (!this._logoSrc || !this._name ); this.requestUpdate(); }}

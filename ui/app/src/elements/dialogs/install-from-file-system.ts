@@ -21,6 +21,7 @@ import { matrixContext, weGroupContext } from '../../context';
 import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
 import { fakeMd5SeededEntryHash } from '../../utils';
 import { NHDialog } from '../components/nh/layout/dialog';
+import { SlButton, SlInput, SlTextarea } from '@scoped-elements/shoelace';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -191,19 +192,18 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
           Applets Library if available. This guarantees compatibility between Applets of the same
           type and version across neighbourhoods and it allows features like federation."
       >
-        <div slot="content" class="column" style="padding: 16px; margin-bottom: 24px;">
-          <mwc-textfield
-            id="installed-app-id"
-            label="Applet Name"
-            required
-            outlined
-            autoValidate
-            @input=${() => this.requestUpdate()}
-            validateOnInitialRender
-            dialogInitialFocus
-            .validityTransform=${(newValue, nativeValidity) =>
-              this.checkValidity(newValue, nativeValidity)}
-          ></mwc-textfield>
+        <div slot="inner-content" class="column">
+        <sl-input
+          id="installed-app-id"
+          label="Applet Name"
+          type="text"
+          size="medium"
+          @sl-input=${(e) => this.requestUpdate()}
+          required
+          autofocus
+          .validityTransform=${(newValue, nativeValidity) =>
+            this.checkValidity(newValue, nativeValidity)}
+        ></sl-input>
           ${this._duplicateName
             ? html`<div
                 class="default-font"
@@ -213,17 +213,14 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
               </div>`
             : html``}
 
-          <mwc-textarea
-            style="margin-top: 7px;"
+          <sl-textarea
             id="description-field"
-            label="description"
-            outlined
+            label="Description"
           >
-          </mwc-textarea>
+          </sl-textarea>
 
-          <span style="margin-top: 7px;">Select file:</span>
+          <span>Select file:</span>
           <input
-            style="margin-top: 7px;"
             type="file"
             id="filepicker"
             accept=".webhapp"
@@ -238,21 +235,14 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                 No file selected.
               </div>`}
         </div>
-
-        <mwc-button
-          id="primary-action-button"
-          .disabled=${this.publishDisabled}
-          slot="primaryAction"
-          dialogAction="close"
-          label="INSTALL"
-          @click=${() => this.createApplet()}
-        ></mwc-button>
       </nh-dialog>
     `;
   }
 
   static get scopedElements() {
     return {
+      "sl-textarea": SlTextarea,
+      "sl-input": SlInput,
       'mwc-textfield': TextField,
       'mwc-button': Button,
       'mwc-dialog': Dialog,
@@ -260,10 +250,45 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       'mwc-snackbar': Snackbar,
       'mwc-circular-progress': CircularProgress,
       'mwc-textarea': TextArea,
+      'sl-button': SlButton,
     };
   }
 
   static get styles() {
-    return sharedStyles;
+    return css`
+      
+    .column {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      justify-content: space-between;
+      gap: calc(1px * var(--nh-spacing-md));
+      width: fit-content;
+      margin: 0 auto;
+      overflow: auto !important;
+    }
+    sl-input::part(base), sl-textarea::part(base) {
+      border: none;
+      background-color: var(--nh-theme-bg-subtle);
+      padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+    }
+    sl-input::part(base) {
+      height: calc(1rem * var(--nh-spacing-xs));
+    }
+    sl-input::part(input), sl-textarea::part(textarea) {
+      color: var(--nh-theme-fg-default);
+      height: auto !important;
+      font-weight: 500;
+      margin: 0 calc(1px * var(--nh-spacing-xs));
+      padding: calc(1px * var(--nh-spacing-xs));
+    }
+    *::part(label) {
+      --sl-spacing-3x-small: calc(1px * var(--nh-spacing-xl));
+    }
+    sl-input::part(input)::placeholder {
+      color: var(--nh-theme-input-placeholder);
+      opacity: 1;
+    }
+    `
   }
 }

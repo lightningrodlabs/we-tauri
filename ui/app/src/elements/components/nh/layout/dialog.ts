@@ -1,9 +1,10 @@
 import { css, CSSResult, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { classMap } from "lit/directives/class-map.js";
+import { AlertType, NHAlert } from './alert';
 
 enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
@@ -12,8 +13,6 @@ enum DialogType {
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
 } 
-
-type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
 @customElement('nh-dialog')
 export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
@@ -131,11 +130,13 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         label="${this.title}"
         @sl-after-hide=${this.onDialogClosed}
       >
-      <slot name="content">
-      ${this.alertMessage
-        ? html`<sl-alert slot="label" variant="${this.alertType}" open closable>${this.alertMessage}</sl-alert>`
-        : null}
-        </slot>
+        <div>
+          ${this.alertMessage
+          ? html`<nh-alert><span>${this.alertMessage}</span></nh-alert>`
+          : null}
+          <slot name="inner-content">
+          </slot>
+        </div>
         <div class="actions" slot="footer">${this.renderActions()}</div>
       </sl-dialog>
     `;
@@ -159,7 +160,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   static get scopedElements() {
     return {
       'sl-dialog': SlDialog,
-      'sl-alert': SlAlert,
+      'nh-alert': NHAlert,
       'sl-button-group': SlButtonGroup,
       'sl-button': SlButton,
     };
@@ -175,11 +176,12 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         border-radius: calc(1px * var(--nh-radii-xl));
         background-color: var(--nh-theme-bg-surface);
         max-height: 16rem;
+        --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-subtle);
       }
 
       #main.medium::part(panel) {
-        min-height: 60vh;
-        min-width: 60vw;
+        min-height: 90vh;
+        min-width: 50vw;
       }
       #main.large::part(panel) {
         min-height: 90vh;
