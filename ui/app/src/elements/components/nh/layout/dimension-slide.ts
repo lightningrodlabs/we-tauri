@@ -10,8 +10,9 @@ export class NHDimensionSlide extends NHComponentShoelace {
   render() {
     return html`
       <div class="container">
-        <h2>Dimension: ${this.heading}</h2>
+        <h2>${this.heading}</h2>
         <slot class="content"></slot>
+        <slot class="footer"></slot>
       </div>
     `;
   }
@@ -33,6 +34,7 @@ export class NHDimensionSlide extends NHComponentShoelace {
       .container {
         width: 100%;
       }
+      
       h2,
       *::slotted(*) {
         margin: 0;
@@ -41,6 +43,8 @@ export class NHDimensionSlide extends NHComponentShoelace {
       h2 {
         font-weight: var(--nh-font-weights-body-regular);
         margin-bottom: calc(1px * var(--nh-spacing-xl));
+        font-size: calc(1px * var(--nh-font-size-lg));
+        line-height: var(--nh-line-heights-body-relaxed);
       }
     `,
   ];

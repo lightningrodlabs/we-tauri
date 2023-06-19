@@ -1,5 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 
 @customElement('nh-card')
@@ -13,7 +14,10 @@ export class NHCard extends NHComponentShoelace {
     return html`
     <div class="container">
     ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
-        <div class="content">
+        <div class="content"
+        class=${classMap({
+          noheading: !this.heading,
+        })}>
         ${this.title ? html`<h1>${this.heading}</h1>` : html``}
           <slot></slot>
         </div>
@@ -40,6 +44,9 @@ export class NHCard extends NHComponentShoelace {
 
       .content {
         padding: calc(1px * var(--nh-spacing-xl));
+      }
+      .content.noheading {
+        padding: 0;
       }
       h2.title {
         flex-grow: 1;

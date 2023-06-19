@@ -44,7 +44,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
               return dict;
             },
             new Map(),
-          );
+            );
+            debugger;
       });
   }
 
@@ -58,23 +59,38 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     this.requestUpdate();
   }
 
-  renderDimensionSlides(slideSubtitle: string, dimensionNames: string[]) {
+  renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], activeMethod: any) {
     return html` <div class="container">
-      <nh-card title="Preview" heading=${'Resource: ' + slideSubtitle}>
-        <img src="post-example.png" style="width: 100%; object-fit: cover">
+      <nh-card title=${'PREVIEW ' + slideSubtitle}>
+        <img src="post-example.png" style="width: 100%; object-fit: cover" />
       </nh-card>
       ${dimensionNames.map(
         (dimension, i) => html`
-          <nh-card title="Assessment" heading=${'Dimension: ' + dimension}
-          class="widget-card ${classMap({
-            active: i == this.selectedDimensionIndex,
-          })}">
+          <nh-card
+            title="Assessment"
+            heading=${'Dimension: ' + dimension}
+            class="widget-card ${classMap({
+              active: i == this.selectedDimensionIndex,
+            })}"
+          >
             <nh-dimension-slide
-              heading=${slideSubtitle}
+              heading=${'This is a brief description of the dimension so that it is clear what dimension the assessment is being applied to.'}
               class="slide ${classMap({
                 active: i == this.selectedDimensionIndex,
               })}"
             >
+              <div class="choose-assessment-widget">
+                <h3>1. Select an assessment type: (MOCK)</h3>
+                <h3>2. Choose an emoji:</h3>
+                <div><img src="assessment-type-example.png" style="width: 100%; object-fit: cover" /></div>
+                <div>${activeMethod && activeMethod[0]}
+                
+
+          <sl-tooltip content="Settings">
+          <sl-icon-button @click=${() => this.handleUpdateActiveMethod('methodName', 'resourceDefEh')} name="gear" label="Settings"></sl-icon-button>
+        </sl-tooltip>
+                </div>
+              </div>
               ${this.renderPagination(i, dimensionNames)}
             </nh-dimension-slide>
           </nh-card>
@@ -102,6 +118,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       case dimensionIndex > 0 && dimensionIndex < dimensionNames.length - 1:
         return html`<ul
           id="pagination"
+          slot="footer"
           class=${classMap({
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
@@ -146,15 +163,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
           const resourceDefEh = encodeHashToBase64(eH);
           const activeMethod = this.activeMethodsDict.get(resourceDefEh);
           return html`
-            ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods))}
+            ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods), activeMethod)}
           `;
         })}
     `;
   }
 
-  updateActiveMethod(event, resourceDefEh) {
-    console.log('selected method', event.target.value);
-    const selectedMethodName = event.target.value;
+  handleUpdateActiveMethod(selectedMethodName, resourceDefEh) {
+    console.log('selectedMethodName', selectedMethodName);
     const activeMethod = this.activeMethodsDict.get(resourceDefEh);
 
     if (activeMethod !== selectedMethodName)
@@ -180,7 +196,6 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       width: 100%;
       height: 100%;
       border-radius: calc(1px * var(--nh-radii-xl));
-      padding: calc(1px * var(--nh-spacing-xl));
       overflow: hidden;
       position: relative;
       color: var(--nh-theme-fg-default);
@@ -194,6 +209,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       gap: calc(1px * var(--nh-spacing-xl));
     }
 
+    @media (max-width: 640px) {
+      .container {
+        height: 250vh;
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
     .slide {
       left: calc(-1000px);
       position: absolute;
@@ -205,76 +228,116 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       width: 100%;
       gap: 4px;
     }
+        
+    .choose-assessment-widget  {
+      display: flex;
+    }
+
+    .choose-assessment-widget > div:first-of-type {
+      cursor: pointer;
+      display: flex;
+      
+      background-color: var(--nh-theme-bg-surface);
+      border-radius: calc(1px * var(--nh-radii-base));
+      color: var(--nh-theme-fg-default);
+    }
     
 
-        #pagination {
-          margin: 0 auto;
-          display: flex;
-          padding: 0;
-          text-align: center
-          width: 100%;
-          align-items: center;
-          position: absolute;
-          left: -1000px;
-        }
+  #pagination {
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center
+    width: 100%;
+    position: absolute;
+    left: -1000px;
+  }
+  #pagination li {
+    display: inline-block;
+  }
+  a, span {
+    cursor: pointer;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-content: center;
+    background-color: var(--nh-theme-bg-surface);
+    border-radius: calc(1px * var(--nh-radii-base));
+    color: var(--nh-theme-fg-default);
+    border: 2px solid var(--nh-theme-bg-muted);
+    
+    text-decoration: none;
+    -webkit-transition: background-color 0.4s;
+    transition: background-color 0.4s
+  }
+  a {
+    background-repeat: no-repeat;
+    background-size: cover;
+    border: none;
+    background-color: transparent;
+  }
+  a:hover {
+    background-color: var(--nh-theme-bg-surface);
+  }
+  a:not(.hidden) {
+    background-image: url(icons/next-arrow.png);
+  }
+  a.hidden {
+    background-image: url(icons/back-arrow.png);
+  }
+  li:first-child a:not(.hidden) {
+    transform: rotate(180deg);
+  }
+  li:last-child a.hidden {
+    transform: rotate(180deg);
+  }
+  .pagination-number.active {
+--nh-theme-accent-default: #A179FF;
+    background-color: var(--nh-theme-accent-default);
+  }
 
-        #pagination li {
-          display: inline-block;
-        }
-        
-        a, span {
-          cursor: pointer;
-          display: grid;
-          width: 32px;
-          height: 32px;
-          place-content: center;
-          background-color: var(--nh-theme-bg-surface);
-          border-radius: calc(1px * var(--nh-radii-base));
-          color: var(--nh-theme-fg-default);
-          border: 2px solid var(--nh-theme-bg-muted);
-          
-          text-decoration: none;
-          -webkit-transition: background-color 0.4s;
-          transition: background-color 0.4s
-        }
-        a {
-          background-repeat: no-repeat;
-          background-size: cover;
-          border: none;
-          background-color: transparent;
-        }
-        a:hover {
-          background-color: var(--nh-theme-bg-surface);
-        }
-        a:not(.hidden) {
-          background-image: url(icons/next-arrow.png);
-        }
-        a.hidden {
-          background-image: url(icons/back-arrow.png);
-        }
-        li:first-child a:not(.hidden) {
-          transform: rotate(180deg);
-        }
-        li:last-child a.hidden {
-          transform: rotate(180deg);
-        }
+  .pagination-number:hover:not(.active) {
+    background-color: var(--nh-theme-bg-subtle);
+  }
 
-        .pagination-number.active {
+  .widget-card {
+    display:none;
+  } 
+  .widget-card.active {
+    display:block;
+  } 
 
-  --nh-theme-accent-default: #A179FF;
 
-          background-color: var(--nh-theme-accent-default);
-        }
-        .pagination-number:hover:not(.active) {
-          background-color: var(--nh-theme-bg-subtle);
-        }
+h3 {
+  font-weight: var(--nh-font-weights-body-regular);
+  margin-bottom: calc(1px * var(--nh-spacing-xl));
+  font-size: calc(1px * var(--nh-font-size-lg));
+  line-height: var(--nh-line-heights-body-relaxed);
+}
 
-        .widget-card {
-          display:none;
-        } 
-        .widget-card.active {
-          display:block;
-        } 
+.choose-assessment-widget {
+  gap: calc(1px * var(--nh-spacing-xl));;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 4rem 1fr;
+  grid-template-areas: "h1 h2"
+                      "c1 c2";
+  margin-bottom: calc(1rem * var(--nh-spacing-sm));
+}
+.choose-assessment-widget h3:first-of-type {
+  grid-area: h1;
+}
+.choose-assessment-widget h3:last-of-type {
+  grid-area: h2;
+}
+.choose-assessment-widget div:first-of-type {
+  grid-area: c1;
+}
+.choose-assessment-widget div:last-of-type {
+  grid-area: c2;
+}
     `,
   ];
 }
