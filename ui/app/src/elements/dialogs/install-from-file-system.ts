@@ -193,47 +193,38 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
           type and version across neighbourhoods and it allows features like federation."
       >
         <div slot="inner-content" class="column">
-        <sl-input
-          id="installed-app-id"
-          label="Applet Name"
-          type="text"
-          size="medium"
-          @sl-input=${(e) => this.requestUpdate()}
-          required
-          autofocus
-          .validityTransform=${(newValue, nativeValidity) =>
-            this.checkValidity(newValue, nativeValidity)}
-        ></sl-input>
-          ${this._duplicateName
-            ? html`<div
-                class="default-font"
-                style="color: #b10323; font-size: 12px; margin-left: 4px;"
-              >
-                Name already exists.
-              </div>`
-            : html``}
-
-          <sl-textarea
-            id="description-field"
-            label="Description"
-          >
-          </sl-textarea>
-
-          <span>Select file:</span>
-          <input
-            type="file"
-            id="filepicker"
-            accept=".webhapp"
-            @change=${this.loadFileBytes}
-          />
-          ${this._fileBytes
-            ? html``
-            : html`<div
-                class="default-font"
-                style="color: #b10323; font-size: 12px; margin-left: 4px;"
-              >
-                No file selected.
-              </div>`}
+          <div style="width: 100%;">
+            <sl-input
+              id="installed-app-id"
+              label="Applet Name"
+              type="text"
+              size="medium"
+              @sl-input=${e => this.requestUpdate()}
+              required
+              autofocus
+              .validityTransform=${(newValue, nativeValidity) =>
+                this.checkValidity(newValue, nativeValidity)}
+            ></sl-input>
+            ${this._duplicateName
+              ? html`<div
+                  class="default-font"
+                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
+                >
+                  Name already exists.
+                </div>`
+              : html``}
+            <sl-textarea id="description-field" label="Description"> </sl-textarea>
+            <span>Select file:</span>
+            <input type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes} />
+            ${this._fileBytes
+              ? html``
+              : html`<div
+                  class="default-font"
+                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
+                >
+                  No file selected.
+                </div>`}
+          </div>
         </div>
       </nh-dialog>
     `;
@@ -241,8 +232,8 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "sl-textarea": SlTextarea,
-      "sl-input": SlInput,
+      'sl-textarea': SlTextarea,
+      'sl-input': SlInput,
       'mwc-textfield': TextField,
       'mwc-button': Button,
       'mwc-dialog': Dialog,
@@ -256,39 +247,46 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   static get styles() {
     return css`
-      
-    .column {
-      display: flex;
-      flex-direction: column;
-      align-items: start;
-      justify-content: space-between;
-      gap: calc(1px * var(--nh-spacing-md));
-      width: fit-content;
-      margin: 0 auto;
-      overflow: auto !important;
-    }
-    sl-input::part(base), sl-textarea::part(base) {
-      border: none;
-      background-color: var(--nh-theme-bg-subtle);
-      padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
-    }
-    sl-input::part(base) {
-      height: calc(1px * var(--nh-spacing-xxl));
-    }
-    sl-input::part(input), sl-textarea::part(textarea) {
-      color: var(--nh-theme-fg-default);
-      height: auto !important;
-      font-weight: 500;
-      margin: 0 calc(1px * var(--nh-spacing-xs));
-      padding: calc(1px * var(--nh-spacing-xs));
-    }
-    *::part(label) {
-      --sl-spacing-3x-small: calc(1px * var(--nh-spacing-xl));
-    }
-    sl-input::part(input)::placeholder {
-      color: var(--nh-theme-input-placeholder);
-      opacity: 1;
-    }
-    `
+      .column {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: space-between;
+        gap: calc(1px * var(--nh-spacing-md));
+        width: fit-content;
+        margin: 0 auto;
+        overflow: auto !important;
+      }
+      @media (max-height: 767px) {
+        .column {
+          flex-basis: 400%;
+          padding-left: calc(1px * var(--nh-spacing-xl));
+        }
+      }
+      sl-input::part(base),
+      sl-textarea::part(base) {
+        border: none;
+        background-color: var(--nh-theme-bg-subtle);
+        padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+      }
+      sl-input::part(base) {
+        height: calc(1px * var(--nh-spacing-xxl));
+      }
+      sl-input::part(input),
+      sl-textarea::part(textarea) {
+        color: var(--nh-theme-fg-default);
+        height: auto !important;
+        font-weight: 500;
+        margin: 0 calc(1px * var(--nh-spacing-xs));
+        padding: calc(1px * var(--nh-spacing-xs));
+      }
+      *::part(label) {
+        --sl-spacing-3x-small: calc(1px * var(--nh-spacing-xl));
+      }
+      sl-input::part(input)::placeholder {
+        color: var(--nh-theme-input-placeholder);
+        opacity: 1;
+      }
+    `;
   }
 }

@@ -17,6 +17,7 @@ export class NHProfilePrompt extends NHComponentShoelace {
     super.connectedCallback();
     this._profilesStore.myProfile.subscribe(emittedValue => {
       this._hasCreatedProfile = typeof (emittedValue as any).value !== 'undefined';
+      
       typeof (emittedValue as any).value !== 'undefined' && this.requestUpdate();
     });
   }

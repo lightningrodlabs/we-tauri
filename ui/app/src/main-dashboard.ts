@@ -676,7 +676,11 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   }
 
 
+
+
   handleWeGroupAdded(e: CustomEvent) {
+    !this._selectedWeGroupId && location.reload() // TEMP DWEB WORKAROUND
+
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
@@ -716,7 +720,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   render() {
     return html`
       <create-we-group-dialog
-        @we-added=${(e) => this.handleWeGroupAdded(e)}
+        @we-added=${(e) => {this.handleWeGroupAdded(e)}}
         @creating-we=${(e) => this.showLoading()}
         id="create-we-group-dialog"
         button=${this._createWeGroupDialogButton}
@@ -809,7 +813,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
           <div
             class="dashboard-content"
             style="flex: 1; width: 100%; display: flex;"
-            @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
+            @applet-installed=${(e: CustomEvent) => {this.handleAppletInstalled(e)}}
           >
             ${this.renderDashboardContent()}
           </div>

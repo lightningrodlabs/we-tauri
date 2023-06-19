@@ -129,7 +129,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         label="${this.title}"
         @sl-after-hide=${this.onDialogClosed}
       >
-        <div>
+        <div class="container">
           ${this.alertMessage
           ? html`<nh-alert><span>${this.alertMessage}</span></nh-alert>`
           : null}
@@ -177,9 +177,14 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         max-height: 16rem;
         --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-subtle);
       }
+      @media (max-height: 767px) {
+        .container {
+          display: flex;
+        }
+      }
 
       #main.medium::part(panel) {
-        min-height: 90vh;
+        max-height: 90vh;
         min-width: 50vw;
       }
       #main.large::part(panel) {
