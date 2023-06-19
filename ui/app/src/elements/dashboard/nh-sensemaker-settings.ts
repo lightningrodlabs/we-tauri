@@ -9,6 +9,7 @@ import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip } from '@scoped-elements/shoelace';
 import { NHDimensionSlide } from '../components/nh/layout/dimension-slide';
 import { classMap } from 'lit/directives/class-map.js';
+import { NHCard } from '../components/nh/layout/card';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
   @property()
@@ -58,20 +59,28 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   }
 
   renderDimensionSlides(slideSubtitle: string, dimensionNames: string[]) {
-    return html`
-    <h1>Dimension: </h1>
-    ${dimensionNames.map(
-      (dimension, i) => html`
-        <nh-dimension-slide
-          heading=${slideSubtitle}
-          class="slide ${classMap({
+    return html` <div class="container">
+      <nh-card title="Preview" heading=${'Resource: ' + slideSubtitle}>
+        <img src="post-example.png" style="width: 100%; object-fit: cover">
+      </nh-card>
+      ${dimensionNames.map(
+        (dimension, i) => html`
+          <nh-card title="Assessment" heading=${'Dimension: ' + dimension}
+          class="widget-card ${classMap({
             active: i == this.selectedDimensionIndex,
-          })}"
-        >
-          ${this.renderPagination(i, dimensionNames)}
-        </nh-dimension-slide>
-      `,
-    )}`;
+          })}">
+            <nh-dimension-slide
+              heading=${slideSubtitle}
+              class="slide ${classMap({
+                active: i == this.selectedDimensionIndex,
+              })}"
+            >
+              ${this.renderPagination(i, dimensionNames)}
+            </nh-dimension-slide>
+          </nh-card>
+        `,
+      )}
+    </div>`;
   }
   renderPagination(dimensionIndex: number, dimensionNames: string[]) {
     const renderRestOfPagination = (currentIndex: number) => html`
@@ -131,14 +140,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     // for each resource def, have a dropdown, which is all the dimensions available
 
     return html`
-    ${Object.entries(this.appletDetails.resource_defs)
-      .slice(1)
-      .map(([key, eH]: any) => {
-        const resourceDefEh = encodeHashToBase64(eH);
-        const activeMethod = this.activeMethodsDict.get(resourceDefEh);
-        return html`
-          ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods))}
-        `;
+      ${Object.entries(this.appletDetails.resource_defs)
+        .slice(1)
+        .map(([key, eH]: any) => {
+          const resourceDefEh = encodeHashToBase64(eH);
+          const activeMethod = this.activeMethodsDict.get(resourceDefEh);
+          return html`
+            ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods))}
+          `;
         })}
     `;
   }
@@ -160,6 +169,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       'sl-tooltip': SlTooltip,
       'sl-icon-button': SlIconButton,
       'nh-dimension-slide': NHDimensionSlide,
+      'nh-card': NHCard,
     };
   }
 
@@ -170,10 +180,18 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       width: 100%;
       height: 100%;
       border-radius: calc(1px * var(--nh-radii-xl));
-      background-color: var(--nh-theme-bg-subtle);
       padding: calc(1px * var(--nh-spacing-xl));
       overflow: hidden;
       position: relative;
+      color: var(--nh-theme-fg-default);
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      grid-template-rows: 1fr;
+      width: 100%;
+      gap: calc(1px * var(--nh-spacing-xl));
     }
 
     .slide {
@@ -187,10 +205,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       width: 100%;
       gap: 4px;
     }
-    #pagination.active {
-      justify-content: center;
-    }
-
+    
 
         #pagination {
           margin: 0 auto;
@@ -253,6 +268,13 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         .pagination-number:hover:not(.active) {
           background-color: var(--nh-theme-bg-subtle);
         }
+
+        .widget-card {
+          display:none;
+        } 
+        .widget-card.active {
+          display:block;
+        } 
     `,
   ];
 }
