@@ -190,6 +190,14 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         min-height: 80vh;
         overflow-y: auto;
       }
+      
+      #main.medium::slotted(div) {
+        min-height: 90vh;
+      }
+      #main.large::slotted(div) {
+        min-height: 80vh;
+      }
+
 
       #main::part(overlay),
       #main::part(base) {
@@ -225,7 +233,6 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
         right: 0;
         top: 0;
       }
-
       ::slotted(div), #buttons {
         display: flex;
         justify-content: center;

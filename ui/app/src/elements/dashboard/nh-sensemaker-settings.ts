@@ -57,11 +57,13 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     this.requestUpdate();
   }
 
-  renderDimensionSlides(dimensionNames: string[]) {
-    return dimensionNames.map(
+  renderDimensionSlides(slideSubtitle: string, dimensionNames: string[]) {
+    return html`
+    <h1>Dimension: </h1>
+    ${dimensionNames.map(
       (dimension, i) => html`
         <nh-dimension-slide
-          heading=${dimension}
+          heading=${slideSubtitle}
           class="slide ${classMap({
             active: i == this.selectedDimensionIndex,
           })}"
@@ -69,7 +71,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
           ${this.renderPagination(i, dimensionNames)}
         </nh-dimension-slide>
       `,
-    );
+    )}`;
   }
   renderPagination(dimensionIndex: number, dimensionNames: string[]) {
     const renderRestOfPagination = (currentIndex: number) => html`
@@ -79,7 +81,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             class="pagination-number ${classMap({
               active: i == this.selectedDimensionIndex,
             })}"
-            @click=${() => this.selectedDimensionIndex = i }
+            @click=${() => (this.selectedDimensionIndex = i)}
           >
             ${i + 1}</span
           >
@@ -88,25 +90,27 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     `;
 
     switch (true) {
-      case dimensionIndex > 0:
+      case dimensionIndex > 0 && dimensionIndex < dimensionNames.length - 1:
         return html`<ul
           id="pagination"
           class=${classMap({
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
-          <li><a @click=${this.decrementSelectedDimensionIndex}>«</a></li>
+          <li><a class="pagination-number" @click=${this.decrementSelectedDimensionIndex}></a></li>
           ${renderRestOfPagination(dimensionIndex)}
+          <li><a class="pagination-number" @click=${this.incrementSelectedDimensionIndex}></a></li>
         </ul>`;
-      case dimensionIndex < dimensionNames.length - 1:
+      case dimensionIndex == dimensionNames.length - 1:
         return html`<ul
           id="pagination"
           class=${classMap({
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
+          <li><a class="pagination-number" @click=${this.decrementSelectedDimensionIndex}></a></li>
           ${renderRestOfPagination(dimensionIndex)}
-          <li><a @click=${this.incrementSelectedDimensionIndex}>»</a></li>
+          <li><a class="pagination-number hidden"></a></li>
         </ul>`;
 
       default:
@@ -116,7 +120,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
+          <li><a class="pagination-number hidden"></a></li>
           ${renderRestOfPagination(dimensionIndex)}
+          <li><a class="pagination-number" @click=${this.incrementSelectedDimensionIndex}></a></li>
         </ul>`;
     }
   }
@@ -125,23 +131,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     // for each resource def, have a dropdown, which is all the dimensions available
 
     return html`
-      ${this.renderDimensionSlides(Object.keys(this.appletDetails.methods))}
-      ${Object.entries(this.appletDetails.resource_defs)
-        .slice(1)
-        .map(([key, eH]: any) => {
-          const resourceDefEh = encodeHashToBase64(eH);
-          const activeMethod = this.activeMethodsDict.get(resourceDefEh);
-          return html`
-            <mwc-select
-              value=${activeMethod ? activeMethod[0] : null}
-              @change=${e => this.updateActiveMethod(e, resourceDefEh)}
-            >
-            </mwc-select>
-            <sl-tooltip content="Settings">
-              <span>${key}</span>
-              <sl-icon-button name="gear" label="Settings"></sl-icon-button>
-            </sl-tooltip>
-          `;
+    ${Object.entries(this.appletDetails.resource_defs)
+      .slice(1)
+      .map(([key, eH]: any) => {
+        const resourceDefEh = encodeHashToBase64(eH);
+        const activeMethod = this.activeMethodsDict.get(resourceDefEh);
+        return html`
+          ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods))}
+        `;
         })}
     `;
   }
@@ -171,23 +168,30 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     css`
     :host {
       width: 100%;
+      height: 100%;
       border-radius: calc(1px * var(--nh-radii-xl));
       background-color: var(--nh-theme-bg-subtle);
       padding: calc(1px * var(--nh-spacing-xl));
       overflow: hidden;
-      height: 80vh
       position: relative;
     }
 
     .slide {
       left: calc(-1000px);
-
-      position: relative;
+      position: absolute;
 
     }
-    .slide.active {
-      left: 0;
+    .slide.active, #pagination.active {
+      position: static;
+      display: flex;
+      width: 100%;
+      gap: 4px;
     }
+    #pagination.active {
+      justify-content: center;
+    }
+
+
         #pagination {
           margin: 0 auto;
           display: flex;
@@ -198,33 +202,56 @@ export class NHSensemakerSettings extends NHComponentShoelace {
           position: absolute;
           left: -1000px;
         }
-        #pagination.active {
-          left: 0;
-        }
 
         #pagination li {
-          display: inline;
-        
+          display: inline-block;
         }
-        .pagination-number {
-          display: block;
+        
+        a, span {
+          cursor: pointer;
+          display: grid;
+          width: 32px;
+          height: 32px;
+          place-content: center;
+          background-color: var(--nh-theme-bg-surface);
+          border-radius: calc(1px * var(--nh-radii-base));
+          color: var(--nh-theme-fg-default);
+          border: 2px solid var(--nh-theme-bg-muted);
+          
           text-decoration: none;
-          color: #000;
-          padding: 5px 10px;
-          border: 1px solid #ddd;
-          float: left;
-        
-        }
-        .pagination-number {
           -webkit-transition: background-color 0.4s;
           transition: background-color 0.4s
         }
+        a {
+          background-repeat: no-repeat;
+          background-size: cover;
+          border: none;
+          background-color: transparent;
+        }
+        a:hover {
+          background-color: var(--nh-theme-bg-surface);
+        }
+        a:not(.hidden) {
+          background-image: url(icons/next-arrow.png);
+        }
+        a.hidden {
+          background-image: url(icons/back-arrow.png);
+        }
+        li:first-child a:not(.hidden) {
+          transform: rotate(180deg);
+        }
+        li:last-child a.hidden {
+          transform: rotate(180deg);
+        }
+
         .pagination-number.active {
-          background-color: #4caf50;
-          color: #fff;
+
+  --nh-theme-accent-default: #A179FF;
+
+          background-color: var(--nh-theme-accent-default);
         }
         .pagination-number:hover:not(.active) {
-          background: #ddd;
+          background-color: var(--nh-theme-bg-subtle);
         }
     `,
   ];
