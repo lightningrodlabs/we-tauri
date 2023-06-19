@@ -78,6 +78,9 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
     () => [this._selectedWeGroupId, this._matrixStore]
   );
 
+  @query('#widget-config-button')
+  _configureWidgetsButton!: HTMLElement;
+
   /**
    * Defines the content of the dashboard
    */
@@ -232,7 +235,20 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
     } else if (this._dashboardMode === DashboardMode.AssessmentsHome) {
       return html`
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
-          <sensemaker-dashboard></sensemaker-dashboard>
+          <sensemaker-dashboard>
+          <sl-tooltip
+            slot="configure-widget-button"
+            style="position: absolute;
+              height: 2rem;
+              width: 2rem;
+              right: .5rem;
+              top: 4.5rem;"
+            hoist
+            placement="right"
+            .content="Configure Applet Widgets"
+          >
+            <button id="widget-config-button" type="button"></button>
+          </sl-tooltip></sensemaker-dashboard>
         </we-group-context>
       `;
     } else if (
@@ -733,7 +749,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
           handleOk=${() => {}}
           isOpen=${true}
           title="Configure Applet Widgets"
-          .primaryButtonDisabled=${false}
+          openButtonRef=${this._configureWidgetsButton}
+          .primaryButtonDisabled=${true}
         >
           <div slot="inner-content">
             <nh-sensemaker-settings .sensemakerStore=${get(this._matrixStore.sensemakerStore(this._selectedWeGroupId as Uint8Array))}></nh-sensemaker-settings>

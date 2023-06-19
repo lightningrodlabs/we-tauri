@@ -248,6 +248,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
 
     return html`
       <div class="container">
+      <slot name="configure-widget-button"></slot>
         ${this.renderSidebar(roleNames as string[])}
         <main>
           ${this.loading

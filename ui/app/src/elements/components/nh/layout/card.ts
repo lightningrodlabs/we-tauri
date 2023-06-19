@@ -20,7 +20,8 @@ export class NHCard extends NHComponentShoelace {
         })}>
         ${this.title ? html`<h1>${this.heading}</h1>` : html``}
           <slot></slot>
-        </div>
+          </div>
+          <slot name="footer"></slot>
       </div>
     `;
   }

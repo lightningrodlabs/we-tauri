@@ -73,7 +73,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
       case DialogType.widgetConfig:
       return {
         primary: 'Save',
-        secondary: 'Cancel',
+        secondary: '',
       }
 
       case DialogType.appletInstall:
@@ -112,6 +112,19 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
           ${this.chooseButtonText().primary}
           </sl-button>
         </sl-button-group>`;
+      case 'widget-config' === this.dialogType:
+        return html`<sl-button-group id="buttons">
+          <sl-button
+            id="primary-action-button"
+            size="large"
+            variant="primary"
+            @click=${this.onOkClicked}
+            ?disabled=${this.primaryButtonDisabled}
+          >
+          ${this.chooseButtonText().primary}
+          </sl-button>
+        </sl-button-group>`;
+
       default:
         return html``;
     }
@@ -147,6 +160,10 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
 
   hideDialog = () => {
     this.isOpen = false;
+  };
+
+  setPrimaryActionEnabled = (value: boolean) => {
+    this.primaryButtonDisabled = !value;
   };
 
   onOkClicked = () => {

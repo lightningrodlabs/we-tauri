@@ -6,7 +6,7 @@ import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';
 import { get } from 'svelte/store';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
-import { SlIconButton, SlTooltip } from '@scoped-elements/shoelace';
+import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
 import { NHDimensionSlide } from '../components/nh/layout/dimension-slide';
 import { classMap } from 'lit/directives/class-map.js';
 import { NHCard } from '../components/nh/layout/card';
@@ -20,6 +20,12 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   selectedDimensionIndex: number = 0;
   @state()
   activeMethodsDict = new Map();
+  @state()
+  selectedMethod : boolean = false;
+  @state()
+  selectedMethodIndex!: number;
+  @property()
+  currentVisibleDimensionIndex!: number;
 
   connectedCallback() {
     super.connectedCallback();
@@ -45,24 +51,26 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             },
             new Map(),
             );
-            debugger;
       });
   }
 
-  decrementSelectedDimensionIndex() {
+  decrementSelectedDimensionIndex(i: number) {
     this.selectedDimensionIndex -= 1;
     this.requestUpdate();
   }
 
-  incrementSelectedDimensionIndex() {
+  incrementSelectedDimensionIndex(i: number) {
     this.selectedDimensionIndex += 1;
     this.requestUpdate();
   }
 
-  renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], activeMethod: any) {
-    return html` <div class="container">
+  renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], currentResourceDefEh: any) {
+    return html`<div class="container">
       <nh-card title=${'PREVIEW ' + slideSubtitle}>
-        <img src="post-example.png" style="width: 100%; object-fit: cover" />
+        <div class="preview-container">
+          <img src="post-example.png" style="width: 100%; object-fit: cover" />
+          ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
+        </div>
       </nh-card>
       ${dimensionNames.map(
         (dimension, i) => html`
@@ -80,23 +88,46 @@ export class NHSensemakerSettings extends NHComponentShoelace {
               })}"
             >
               <div class="choose-assessment-widget">
-                <h3>1. Select an assessment type: (MOCK)</h3>
-                <h3>2. Choose an emoji:</h3>
+                <h3>Assessment Type:</h3>
+                <h3>Emoji:</h3>
                 <div><img src="assessment-type-example.png" style="width: 100%; object-fit: cover" /></div>
-                <div>${activeMethod && activeMethod[0]}
-                
-
-          <sl-tooltip content="Settings">
-          <sl-icon-button @click=${() => this.handleUpdateActiveMethod('methodName', 'resourceDefEh')} name="gear" label="Settings"></sl-icon-button>
-        </sl-tooltip>
+                <div class="widget-choice">
+                  <a class="${classMap({
+                    selected: i == this.selectedMethodIndex,
+                  })} select-widget-link" @click=${() => {this.selectedMethodIndex = i; this.handleUpdateActiveMethod(dimension,  currentResourceDefEh)}}>
+                    <span class="widget-display">${this.renderAssessmentEmoji(dimension)}</span>
+                    <sl-button size="large" class="choose-widget-button" label=${this.selectedMethodIndex == i ? "Widget Chosen" : "Choose Me"}>
+                      ${this.selectedMethodIndex == i ? "Widget Chosen" : "Choose Me"}   
+                    </sl-button>
+                  </a>
                 </div>
+
               </div>
-              ${this.renderPagination(i, dimensionNames)}
             </nh-dimension-slide>
+            ${this.renderPagination(i, dimensionNames)}
           </nh-card>
         `,
       )}
     </div>`;
+  }
+  renderAssessmentEmoji(method) {
+    let emojis;
+
+    switch (method) {
+        case ('average_star_method'):
+            emojis = "⭐";
+            break;
+        case ('average_heat_method'):
+            emojis = "🧊❄️💧🌶️🔥";
+            break;
+        case ('total_importance_method'):
+            emojis = "✅";
+            break;
+        case ('total_thumbs_up'):
+            emojis = "👍 👎";
+            break;
+    }
+    return emojis;
   }
   renderPagination(dimensionIndex: number, dimensionNames: string[]) {
     const renderRestOfPagination = (currentIndex: number) => html`
@@ -123,9 +154,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
-          <li><a class="pagination-number" @click=${this.decrementSelectedDimensionIndex}></a></li>
+          <li><a class="arrow-link pagination-number" @click=${() => this.decrementSelectedDimensionIndex(dimensionIndex)}></a></li>
           ${renderRestOfPagination(dimensionIndex)}
-          <li><a class="pagination-number" @click=${this.incrementSelectedDimensionIndex}></a></li>
+          <li><a class="arrow-link pagination-number" @click=${() => this.incrementSelectedDimensionIndex(dimensionIndex)}></a></li>
         </ul>`;
       case dimensionIndex == dimensionNames.length - 1:
         return html`<ul
@@ -134,9 +165,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
-          <li><a class="pagination-number" @click=${this.decrementSelectedDimensionIndex}></a></li>
+          <li><a class="arrow-link pagination-number" @click=${() => this.decrementSelectedDimensionIndex(dimensionIndex)}></a></li>
           ${renderRestOfPagination(dimensionIndex)}
-          <li><a class="pagination-number hidden"></a></li>
+          <li><a class="arrow-link pagination-number hidden"></a></li>
         </ul>`;
 
       default:
@@ -146,9 +177,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             active: dimensionIndex == this.selectedDimensionIndex,
           })}
         >
-          <li><a class="pagination-number hidden"></a></li>
+          <li><a class="arrow-link pagination-number hidden"></a></li>
           ${renderRestOfPagination(dimensionIndex)}
-          <li><a class="pagination-number" @click=${this.incrementSelectedDimensionIndex}></a></li>
+          <li><a class="arrow-link pagination-number" @click=${() => this.incrementSelectedDimensionIndex(dimensionIndex)}></a></li>
         </ul>`;
     }
   }
@@ -163,27 +194,32 @@ export class NHSensemakerSettings extends NHComponentShoelace {
           const resourceDefEh = encodeHashToBase64(eH);
           const activeMethod = this.activeMethodsDict.get(resourceDefEh);
           return html`
-            ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods), activeMethod)}
+            ${this.renderDimensionSlides(key, Object.keys(this.appletDetails.methods), resourceDefEh)}
           `;
         })}
     `;
   }
 
   handleUpdateActiveMethod(selectedMethodName, resourceDefEh) {
-    console.log('selectedMethodName', selectedMethodName);
     const activeMethod = this.activeMethodsDict.get(resourceDefEh);
 
-    if (activeMethod !== selectedMethodName)
-      this.sensemakerStore.updateActiveMethod(
+    this.currentVisibleDimensionIndex = this.selectedDimensionIndex;
+    try {
+      if (activeMethod !== selectedMethodName) this.sensemakerStore.updateActiveMethod(
         resourceDefEh,
         encodeHashToBase64(this.appletDetails.methods[selectedMethodName]),
-      );
+        );
+        this.selectedMethod = !!selectedMethodName;
+      } catch (error) {
+        console.warn("Error updating active method: ", error)
+      }
+      (this.parentElement!.parentElement as any).setPrimaryActionEnabled(!!this.selectedMethod) // TODO: Make this not a hacky shortcut for DWEB!
   }
 
   static get scopedElements() {
     return {
       'sl-tooltip': SlTooltip,
-      'sl-icon-button': SlIconButton,
+      'sl-button': SlButton,
       'nh-dimension-slide': NHDimensionSlide,
       'nh-card': NHCard,
     };
@@ -209,6 +245,10 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       gap: calc(1px * var(--nh-spacing-xl));
     }
 
+    .preview-container {
+      position: relative;
+    }
+
     @media (max-width: 640px) {
       .container {
         height: 250vh;
@@ -228,10 +268,6 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       width: 100%;
       gap: 4px;
     }
-        
-    .choose-assessment-widget  {
-      display: flex;
-    }
 
     .choose-assessment-widget > div:first-of-type {
       cursor: pointer;
@@ -242,6 +278,17 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       color: var(--nh-theme-fg-default);
     }
     
+    .choose-widget-button::part(base){
+      border-radius: calc(1px * var(--nh-radii-md));
+      background-color: var(--nh-theme-bg-surface);
+      color: var(--nh-theme-fg-default);
+      font-weight: 500;
+      width: calc(1rem * var(--nh-spacing-sm));
+      border: none;
+    }
+    .choose-widget-button::part(base) {
+      background-color: var(--nh-theme-bg-muted);
+    }
 
   #pagination {
     margin: 0 auto;
@@ -257,7 +304,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   #pagination li {
     display: inline-block;
   }
-  a, span {
+  a.arrow-link, span {
     cursor: pointer;
     display: grid;
     width: 32px;
@@ -272,34 +319,84 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     -webkit-transition: background-color 0.4s;
     transition: background-color 0.4s
   }
-  a {
+  a.arrow-link {
     background-repeat: no-repeat;
     background-size: cover;
     border: none;
     background-color: transparent;
   }
-  a:hover {
+  a.arrow-link:hover {
     background-color: var(--nh-theme-bg-surface);
   }
-  a:not(.hidden) {
+  a.arrow-link:not(.hidden) {
     background-image: url(icons/next-arrow.png);
   }
-  a.hidden {
+  a.arrow-link.hidden {
     background-image: url(icons/back-arrow.png);
   }
-  li:first-child a:not(.hidden) {
+  li:first-child a.arrow-link:not(.hidden) {
     transform: rotate(180deg);
   }
-  li:last-child a.hidden {
+  li:last-child a.arrow-link.hidden {
     transform: rotate(180deg);
   }
   .pagination-number.active {
---nh-theme-accent-default: #A179FF;
+
+    --nh-theme-accent-default: #A179FF;
     background-color: var(--nh-theme-accent-default);
   }
 
   .pagination-number:hover:not(.active) {
     background-color: var(--nh-theme-bg-subtle);
+  }
+
+  .widget-display, .widget-choice, .choose-assessment-widget {
+    display: flex;
+  }
+  .widget-choice {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .select-widget-link:hover .widget-display {
+    transition: 0.4s all ease-in;
+    cursor: pointer;
+    font-family: var(--nh-font-families-headlines);
+  } 
+  .select-widget-link:hover .widget-display {
+    --nh-theme-accent-default: #A179FF;
+    border-color: var(--nh-theme-accent-default);
+  }
+  .select-widget-link.selected .widget-display {
+    border-color: var(--nh-theme-accent-muted);
+  }
+  .select-widget-link:hover sl-button::part(base) {
+    --nh-theme-accent-default: #A179FF;
+    background-color: var(--nh-theme-accent-default);
+  }
+  .select-widget-link.selected sl-button::part(base), .select-widget-link.selected:hover sl-button::part(base) {
+    color: var(--nh-theme-bg-canvas);
+    background-color: var(--nh-theme-accent-muted);
+  }
+  .select-widget-link sl-button::part(base) {
+    padding-top: calc(1px * var(--nh-spacing-md));
+    padding-bottom: calc(1px * var(--nh-spacing-md));
+    --sl-input-height-large: 50px;
+    --sl-input-border-width: 10px;
+  }
+
+  .widget-display {
+    padding: 0 0 16px 0;
+    margin-top: 84px;
+    display: flex;
+    transform: scale(2);
+    width: auto;
+    flex-wrap: nowrap;
+    display: grid;
+    place-items: center;
+    padding: 0 0 calc(1px * var(--nh-spacing-md)) 0;
+    margin-top: calc(1px * var(--nh-spacing-xl));
   }
 
   .widget-card {
@@ -308,6 +405,16 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   .widget-card.active {
     display:block;
   } 
+
+  .preview-container span {
+    position: absolute;
+    bottom: 2.5rem;
+    right: 3.5rem;
+    display: block;
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
 
 
 h3 {
@@ -318,7 +425,7 @@ h3 {
 }
 
 .choose-assessment-widget {
-  gap: calc(1px * var(--nh-spacing-xl));;
+  gap: calc(1px * var(--nh-spacing-xl));
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 4rem 1fr;
