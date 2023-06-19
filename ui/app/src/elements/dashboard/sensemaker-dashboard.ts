@@ -220,7 +220,6 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
           ${this.loadingState == LoadingState.NoAppletSensemakerData
             ? html`<div class="alert-wrapper" style="width: 80%;">
                 <sl-alert open class="alert">
-                  <sl-icon slot="icon" name="info-circle"></sl-icon>
                   There is no sensemaking data for this tab; go to your applet to generate some.
                 </sl-alert>
               </div>`
@@ -316,7 +315,6 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
       'sl-tab': SlTab,
       'sl-tab-group': SlTabGroup,
       'sl-tab-panel': SlTabPanel,
-      'sl-icon': SlIcon,
       'sl-alert': SlAlert,
       // 'nh-table-header': NHTableHeader,
       'dashboard-table': StatefulTable,

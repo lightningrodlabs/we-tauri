@@ -1,5 +1,5 @@
-import { contextProvided } from "@lit-labs/context";
-import { state, query } from "lit/decorators.js";
+import { contextProvided, contextProvider } from "@lit-labs/context";
+import { state, query, property } from "lit/decorators.js";
 import {
   DnaHash,
   EntryHash,
@@ -51,6 +51,7 @@ import { NHComponentShoelace } from "neighbourhoods-design-system-components";
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { NHDialog } from "./elements/components/nh/layout/dialog";
 import { NHSensemakerSettings } from "./elements/dashboard/nh-sensemaker-settings";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 
 export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -702,8 +703,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
-    this._widgetConfigDialogActivated = true;
     this.requestUpdate();
+    this._widgetConfigDialogActivated = true;
   }
 
   showLoading() {
@@ -730,8 +731,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
           title="Configure Applet Widgets"
           .primaryButtonDisabled=${false}
         >
-          <div slot="content">
-            <nh-sensemaker-settings></nh-sensemaker-settings>
+          <div slot="inner-content">
+            <nh-sensemaker-settings .sensemakerStore=${get(this._matrixStore.sensemakerStore(this._selectedWeGroupId as Uint8Array))}></nh-sensemaker-settings>
           </div>
         </nh-dialog>
         ` : html``

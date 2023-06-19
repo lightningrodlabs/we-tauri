@@ -101,7 +101,6 @@ export class StatefulTable extends NHComponentShoelace {
 
   static elementDefinitions = {
     'wc-table': Table,
-    'sl-icon': SlIcon,
     'sl-alert': SlAlert,
   };
 

@@ -273,7 +273,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
     }
     sl-input::part(base) {
-      height: calc(1rem * var(--nh-spacing-xs));
+      height: calc(1px * var(--nh-spacing-xxl));
     }
     sl-input::part(input), sl-textarea::part(textarea) {
       color: var(--nh-theme-fg-default);

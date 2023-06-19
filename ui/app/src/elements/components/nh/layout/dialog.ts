@@ -118,7 +118,6 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
   }
 
   render() {
-    console.log('this.alertMessage :>> ', this.alertMessage);
     return html`
       <sl-dialog
         id="main"
@@ -186,6 +185,10 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
       #main.large::part(panel) {
         min-height: 90vh;
         min-width: 80vw;
+      }
+      #main.large::slotted(*) {
+        min-height: 80vh;
+        overflow-y: auto;
       }
 
       #main::part(overlay),
