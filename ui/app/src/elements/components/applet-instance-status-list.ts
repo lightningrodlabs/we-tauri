@@ -164,7 +164,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                 <mwc-card style="margin: 5px;">
                   <div
                     class="row"
-                    style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                    style="background: #645d69; color: white; align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
                   >
                     <img
                         style="margin-right: 10px;"

@@ -179,9 +179,10 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
               >
               <div role="navigation" class="sub-nav indented">
               ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
-                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.slice(1).map( // TODO: unhardcode this
+                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
                   (resource, i) =>
-                  html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
+                  i == 0 ? html``  // TODO: unhardcode this 
+                  : html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                     @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
                     >${resource}</sl-menu-item
                   >`,

@@ -155,7 +155,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
         "
         >
           <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
-            <button class="navigation-switch" @click=${this.handleNavigationSwitch}>
+            <button class="navigation-switch" style="display:none" @click=${this.handleNavigationSwitch}>
               Applet Centric
             </button>
           </sl-tooltip>
@@ -168,7 +168,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
           : html`<span></span>`}
           ${this._dashboardMode == DashboardMode.AssessmentsHome
             ? html`<sl-tooltip placement="bottom" content="Configure Applet" hoist>
-                <button class="dashboard-icon applet-config" @click=${() => {
+                <button class="dashboard-icon applet-config with-emoji"
+                @click=${() => {
                   const currentDashboardAppletId = get(
                     this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId as Uint8Array))![this._sensemakerDashboard.selectedAppletIndex].appletId
                   this._selectedAppletInstanceId = currentDashboardAppletId;
@@ -968,6 +969,16 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
         border: none;
         position: relative;
         border: transparent 1px solid;
+      }
+      .dashboard-icon.with-emoji {
+        position: relative;
+      }
+      .dashboard-icon.with-emoji::after {
+        position: absolute;
+        content: '⚙️';
+        bottom: -2px;
+        right: -2px;
+        font-size: 1rem;
       }
 
       #nh-logo::after,

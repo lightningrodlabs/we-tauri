@@ -300,7 +300,6 @@ export class DashboardFilterMap extends LitElement {
                   return html`
                     <div>
                       ${displayWidget.render()}
-                      ${assessWidget.render()}
                     </div>
                   `;
                 }
@@ -340,7 +339,6 @@ export class DashboardFilterMap extends LitElement {
                   return html`
                     <div>
                       ${displayWidget.render()}
-                      ${assessWidget.render()}
                     </div>
                   `;
                 }
