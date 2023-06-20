@@ -65,12 +65,20 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], currentResourceDefEh: any) {
     return html`<div class="container">
-      <nh-card title=${'PREVIEW WITH POST'}>
-        <div class="preview-container">
-          <img src="post-example.png" style="width: 100%; object-fit: cover" />
-          ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
-        </div>
-      </nh-card>
+      <div style="display:flex; gap: 8px; flex-direction: column;">
+        <nh-card title=${'PREVIEW WITH POST'}>
+          <div class="preview-container">
+            <img src="post-example.png" style="width: 100%; object-fit: cover" />
+            ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
+          </div>
+        </nh-card>
+        <nh-card title=${'PREVIEW WITH TODO'}>
+          <div class="preview-container todo">
+            <img src="todo-example.png" style="width: 100%; object-fit: cover" />
+            ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
+          </div>
+        </nh-card>
+      </div>
       ${dimensionNames.map(
         (dimension, i) => html`
           <nh-card
@@ -89,14 +97,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
               <div class="choose-assessment-widget">
                 <h3>Assessment Type:</h3>
                 <h3>Emoji:</h3>
-                <div><img src="assessment-type-example.png" style="width: 100%; object-fit: cover" /></div>
+                <div>${generateAssessmentTypeImg(this.selectedDimensionIndex)}</div>
                 <div class="widget-choice">
                   <a class="${classMap({
                     selected: i == this.selectedMethodIndex,
                   })} select-widget-link" @click=${() => {this.selectedMethodIndex = i; this.handleUpdateActiveMethod(dimension,  currentResourceDefEh)}}>
                     <span class="widget-display">${this.renderAssessmentEmoji(dimension)}</span>
-                    <sl-button size="large" class="choose-widget-button" label=${this.selectedMethodIndex == i ? "Widget Chosen" : "Choose Me"}>
-                      ${this.selectedMethodIndex == i ? "Widget Chosen" : "Choose Me"}   
+                    <sl-button size="large" class="choose-widget-button" label=${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}>
+                      ${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}   
                     </sl-button>
                   </a>
                 </div>
@@ -375,7 +383,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     background-color: var(--nh-theme-accent-default);
   }
   .select-widget-link.selected sl-button::part(base), .select-widget-link.selected:hover sl-button::part(base) {
-    color: var(--nh-theme-bg-canvas);
+    color: var(--nh-theme-fg-default);
+    font-weight: 400;
     background-color: var(--nh-theme-accent-muted);
   }
   .select-widget-link sl-button::part(base) {
@@ -396,8 +405,11 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     place-items: center;
     padding: 0 0 calc(1px * var(--nh-spacing-md)) 0;
     margin-top: calc(1px * var(--nh-spacing-xl));
+    font-size: 80%;
   }
-
+  .todo .widget-display {
+    top: 20%;
+  }
   .widget-card {
     display:none;
   } 
@@ -407,8 +419,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   .preview-container span {
     position: absolute;
-    bottom: 2.5rem;
-    right: 3.5rem;
+    bottom: 6%;
+    right: 10%;
     display: block;
     background: transparent;
     border: 0;
@@ -447,3 +459,14 @@ h3 {
     `,
   ];
 }
+function generateAssessmentTypeImg(selectedDimensionIndex: number) {
+  switch (true) {
+    case [0,3].includes(selectedDimensionIndex):
+      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
+    case 1 == selectedDimensionIndex:
+      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
+    case 2 == selectedDimensionIndex:
+      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
+  }
+}
+
