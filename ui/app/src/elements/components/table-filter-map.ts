@@ -1,4 +1,4 @@
-import { Readable } from '@holochain-open-dev/stores';
+import { Readable, get } from '@holochain-open-dev/stores';
 import {
   Assessment,
   CulturalContext,
@@ -8,7 +8,7 @@ import {
 } from '@neighbourhoods/client';
 import { LitElement, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { encodeHashToBase64 } from '@holochain/client';
+import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
@@ -21,7 +21,7 @@ import { decode } from '@msgpack/msgpack';
 export class DashboardFilterMap extends LitElement {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
-  _sensemakerStore;
+  _sensemakerStore!: SensemakerStore;
   @property()
   private _allAssessments;
 
@@ -243,7 +243,7 @@ export class DashboardFilterMap extends LitElement {
       neighbour: encodeHashToBase64(assessment.author),
       resource: {
         eh: encodeHashToBase64(assessment.resource_eh),
-        value: Object.values(assessment.value)[0],
+        value: [Object.values(assessment.value)[0], assessment],
       },
     } as AssessmentTableRecord;
 
@@ -257,7 +257,7 @@ export class DashboardFilterMap extends LitElement {
     // populate the corresponding dimension field in the base record with the assessment value
     for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
       if (encodeHashToBase64(assessment.dimension_eh) === encodeHashToBase64(dimensionUint8)) {
-        baseRecord[dimensionName] = Object.values(assessment.value)[0];
+        baseRecord[dimensionName] = [Object.values(assessment.value)[0], assessment];
       }
     }
 
@@ -277,9 +277,37 @@ export class DashboardFilterMap extends LitElement {
           ([dimensionName, _]: [string, Uint8Array]) => ({
             [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
               heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)),
-              decorator: (...value: any) => {
-                console.log('decorator value', value)
-                return html` <div>${value}</div>`},
+              decorator: (value: any) => {
+                const assessment = value[1] as Assessment;
+                const isAssessment = !!assessment;
+                if (isAssessment) {
+                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].assess
+                  const assessWidget = new assessWidgetType();
+                  assessWidget.resourceEh = assessment.resource_eh;
+                  assessWidget.dimensionEh = assessment.dimension_eh;
+                  assessWidget.resourceDefEh = assessment.resource_def_eh;
+                  const methodMap = get(this._sensemakerStore.methodDimensionMapping());
+                  // given the assessment.dimension_eh, find the method eh that maps to it
+                  const methodEh = Object.keys(methodMap).find(key => encodeHashToBase64(methodMap[key].inputDimensionEh) === encodeHashToBase64(assessment.dimension_eh));
+                  assessWidget.methodEh = decodeHashFromBase64(methodEh!);
+                  assessWidget.sensemakerStore = this._sensemakerStore;
+                  assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
+
+                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWigetType();
+                  displayWidget.assessment = assessment;
+
+                  return html`
+                    <div>
+                      ${displayWidget.render()}
+                      ${assessWidget.render()}
+                    </div>
+                  `;
+                }
+                else {
+                  return html`<div></div>`;
+                }
+              },
             }), // TODO: Add widget renderer here
           }),
         );
@@ -289,7 +317,37 @@ export class DashboardFilterMap extends LitElement {
           ([dimensionName, _]: [string, Uint8Array]) => ({
             [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
               heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)),
-              decorator: (value: any) => html` <div>${value}</div>`,
+              decorator: (value: any) => {
+                const assessment = value[1] as Assessment;
+                const isAssessment = !!assessment;
+                if (isAssessment) {
+                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].assess
+                  const assessWidget = new assessWidgetType();
+                  assessWidget.resourceEh = assessment.resource_eh;
+                  assessWidget.dimensionEh = assessment.dimension_eh;
+                  assessWidget.resourceDefEh = assessment.resource_def_eh;
+                  const methodMap = get(this._sensemakerStore.methodDimensionMapping());
+                  // given the assessment.dimension_eh, find the method eh that maps to it
+                  const methodEh = Object.keys(methodMap).find(key => encodeHashToBase64(methodMap[key].outputDimensionEh) === encodeHashToBase64(assessment.dimension_eh));
+                  assessWidget.methodEh = decodeHashFromBase64(methodEh!);
+                  assessWidget.sensemakerStore = this._sensemakerStore;
+                  assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
+
+                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWigetType();
+                  displayWidget.assessment = assessment;
+
+                  return html`
+                    <div>
+                      ${displayWidget.render()}
+                      ${assessWidget.render()}
+                    </div>
+                  `;
+                }
+                else {
+                  return html`<div></div>`;
+                }
+              },
             }), // TODO: Add widget renderer here
           }),
         );
