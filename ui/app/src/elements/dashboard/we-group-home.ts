@@ -19,6 +19,7 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
+import { NHCard } from "../components/nh/layout/card";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -153,6 +154,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     }
     return html`
       <div class="flex-scrollable-parent">
+      <slot name="applet-config"></slot>
         <div class="flex-scrollable-container">
           <div class="flex-scrollable-y" style="display: flex; height: 100%;">
             ${this._showLibrary
@@ -193,16 +195,11 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         </div>
                       </div>
 
-                      <div class="column center-content" style="margin-left: 30px; width: 50%;">
-                        <invitations-block style="margin: 10px;"></invitations-block>
+                      <div class="column center-content" style="margin-left: 30px; width: 50%; display:flex; flex-direction: column;">
+                        <invitations-block style="margin: 10px; display:flex;"></invitations-block>
 
-                        <mwc-card style="width: 440px; margin: 10px;">
+                        <nh-card heading="Initiate New Applet Instance" style="width: 440px;">
                           <div style="margin: 20px;">
-                            <div class="row">
-                              <span class="title"
-                                >Initiate New Applet Instance</span
-                              >
-                            </div>
                             <div style="margin-top: 10px;">
                               Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
                             </div>
@@ -210,7 +207,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                               <mwc-button raised style="width: 250px;" label="Applet Library" @click=${() => this._showLibrary = true}></mwc-button>
                             </div>
                           </div>
-                        </mwc-card>
+                        </nh-card>
 
 
                       </div>
@@ -261,12 +258,15 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     }
   }
 
+  public appletAdd() {
+    this._showLibrary = true
+  }
 
   render() {
     return this._info.render({
       pending: () => html`
         <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress>
+          <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
         </div>
         `,
       complete: (info) => { return html`
@@ -297,12 +297,11 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
               ${this.renderSuccessSnackbar()}
             </div>
-
             <div slot="content" class="profile-prompt-content">
               ${this.renderContent()}
             </div>
-
-          </nh-profile-prompt>
+            
+            </nh-profile-prompt>
         `}
     })
   }
@@ -315,6 +314,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-button": Button,
       "mwc-fab": Fab,
       "mwc-card": Card,
+      "nh-card": NHCard,
       "mwc-icon-button": IconButton,
       "mwc-circular-progress": CircularProgress,
       "sl-tooltip": SlTooltip,

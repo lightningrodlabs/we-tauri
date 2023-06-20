@@ -6,7 +6,7 @@ import { NHCard } from './nh/layout/card';
 export class ManagingGroupsCard extends ScopedElementsMixin(NHComponentShoelace) {
   render() {
     return html`
-      <nh-card title="My lovely title"   heading="Managing Neighbourhoods">
+      <nh-card heading="Managing Neighbourhoods">
         <ul>
           <li>
             To create a <b>new neighbourhood</b>, click on the "Add Neighbourhood"

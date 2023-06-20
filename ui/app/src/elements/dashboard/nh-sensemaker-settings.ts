@@ -35,7 +35,6 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         this.appletDetails = appletConfig;
         if (Object.values(appletConfig.resource_defs).length <= 1)
           return console.log("Didn't register the applet's resource defs yet");
-
         this.activeMethodsDict = Object.entries(appletConfig.resource_defs)
           .slice(1)
           .reduce(

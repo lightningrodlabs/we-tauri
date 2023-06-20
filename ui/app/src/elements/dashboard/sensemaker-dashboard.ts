@@ -83,7 +83,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
     store.subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         // const id: string = appletConfig?.role_name;
-        const id = "todo_lists"
+        const id = "todo_lists" // TODO: unhardcode this
         console.log('id :>> ', id);
         // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
         if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
@@ -179,7 +179,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
               >
               <div role="navigation" class="sub-nav indented">
               ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
-                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
+                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.slice(1).map( // TODO: unhardcode this
                   (resource, i) =>
                   html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                     @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}

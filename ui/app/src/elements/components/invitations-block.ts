@@ -15,6 +15,7 @@ import { sharedStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
+import { NHCard } from "./nh/layout/card";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -64,23 +65,18 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
         labelText="Error. Public key may be invalid."
       ></mwc-snackbar>
 
-      <mwc-card style="width: 440px;">
+      <nh-card heading=${"Invite New Member"} style="width: 440px;">
         <div style="margin: 20px;">
-          <div class="row">
-            <span class="title"
-              >Invite New Member</span
-            >
-          </div>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
               label="Public Key"
               id="pubkey-field"
               autoValidate
               @input=${(e) => (this._inviteePubKey = e.target.value)}
-              outlined
+              style="background: white"
             ></mwc-textfield>
             <mwc-button
-              style="margin: 10px;"
+              style="margin: 10px; background-color: var(--mdc-theme-primary, #6200ee); height: 56px; display: grid; place-content:center; color: white;"
               raised
               icon="send"
               label="INVITE"
@@ -95,7 +91,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
             ask a friend to send you their public key
           </div>
         </div>
-      </mwc-card>
+      </nh-card>
     `;
   }
 
@@ -106,7 +102,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
       "mwc-snackbar": Snackbar,
       "mwc-icon": Icon,
       "mwc-dialog": Dialog,
-      "mwc-card": Card,
+      "nh-card": NHCard,
     };
   }
 

@@ -18,7 +18,7 @@ export class NHCard extends NHComponentShoelace {
         class=${classMap({
           noheading: !this.heading,
         })}>
-        ${this.title ? html`<h1>${this.heading}</h1>` : html``}
+        ${this.heading ? html`<h1>${this.heading}</h1>` : html``}
           <slot></slot>
           </div>
           <slot name="footer"></slot>
