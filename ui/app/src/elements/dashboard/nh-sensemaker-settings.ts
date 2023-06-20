@@ -461,12 +461,12 @@ h3 {
 }
 function generateAssessmentTypeImg(selectedDimensionIndex: number) {
   switch (true) {
-    case [0,3].includes(selectedDimensionIndex):
-      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
-    case 1 == selectedDimensionIndex:
-      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
-    case 2 == selectedDimensionIndex:
-      return html`<img src="assessment-type-example.png" style="width: 100%; object-fit: cover" />`
+    case 3 == selectedDimensionIndex:
+    return html`<img src="assessment-type-example-1.png" style="width: 100%; object-fit: cover" />`
+    case [1].includes(selectedDimensionIndex):
+      return html`<img src="assessment-type-example-2.png" style="width: 100%; object-fit: cover" />`
+    case [0,2].includes(selectedDimensionIndex):
+      return html`<img src="assessment-type-example-3.png" style="width: 100%; object-fit: cover" />`
   }
 }
 
