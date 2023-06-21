@@ -43,7 +43,6 @@
     "@open-wc/semantic-dom-diff": "^0.19.9",
     "@open-wc/testing": "^3.1.8",
     "@types/md5": "^2.3.2",
-    "@web/dev-server": "^0.1.21",
     "bestzip": "^2.2.0",
     "concurrently": "^5.3.0",
     "deepmerge": "^4.2.2",
