@@ -274,17 +274,15 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
   renderAppletInstanceContent() {
     // 1. check whether the selected applet instance is already installed
     if (this._matrixStore.isInstalled(this._selectedAppletInstanceId!)) {
-      return getStatus(
-        this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo,
-      ) === 'RUNNING'
-        ? html`
-            <applet-instance-renderer
-              style="display: flex; flex: 1; background: var(--nh-theme-fg-muted)"
-              .appletInstanceId=${this._selectedAppletInstanceId}
-            >
-            </applet-instance-renderer>
-          `
-        : html`<applet-not-running style="display: flex; flex: 1;"></applet-not-running>`;
+      return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo) === "RUNNING"
+      ? html`
+        <applet-instance-renderer
+          style="display: flex; flex: 1; background: var(--nh-theme-fg-muted); height: 0;"
+          .appletInstanceId=${this._selectedAppletInstanceId}
+        >
+        </applet-instance-renderer>
+      `
+      : html`<applet-not-running style="display: flex; flex: 1;"></applet-not-running>`
     } else {
       return html`
         <applet-not-installed
