@@ -267,7 +267,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
       return getStatus(this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId!)!.appInfo) === "RUNNING"
       ? html`
         <applet-instance-renderer
-          style="display: flex; flex: 1; background: var(--nh-theme-fg-muted)"
+          style="display: flex; flex: 1; background: var(--nh-theme-fg-muted); height: 0;"
           .appletInstanceId=${this._selectedAppletInstanceId}
         >
         </applet-instance-renderer>

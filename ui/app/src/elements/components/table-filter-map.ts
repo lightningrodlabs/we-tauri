@@ -6,7 +6,7 @@ import {
   SensemakerStore,
   sensemakerStoreContext,
 } from '@neighbourhoods/client';
-import { LitElement, html } from 'lit';
+import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
@@ -293,13 +293,18 @@ export class DashboardFilterMap extends LitElement {
                   assessWidget.sensemakerStore = this._sensemakerStore;
                   assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
 
-                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
-                  const displayWidget = new displayWigetType();
+                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
+                  const assessWidgetStyles = assessWidgetType.styles as any;
+                  const displayWidgetStyles = displayWidgetType.styles as any;
 
                   return html`
-                    <div>
-                      ${displayWidget.render()}
+                    <style>
+                      ${unsafeCSS(assessWidgetStyles[1])}
+                      ${unsafeCSS(displayWidgetStyles[1])}
+                    </style>
+                    <div class="widget-wrapper">
                       ${assessWidget.render()}
                     </div>
                   `;
@@ -333,13 +338,17 @@ export class DashboardFilterMap extends LitElement {
                   assessWidget.sensemakerStore = this._sensemakerStore;
                   assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
 
-                  const displayWigetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
-                  const displayWidget = new displayWigetType();
+                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
-
+                  const assessWidgetStyles = assessWidgetType.styles as any;
+                  const displayWidgetStyles = displayWidgetType.styles as any;
                   return html`
-                    <div>
-                      ${displayWidget.render()}
+                    <style>
+                      ${unsafeCSS(assessWidgetStyles[1])}
+                      ${unsafeCSS(displayWidgetStyles[1])}
+                    </style>
+                    <div class="widget-wrapper">
                       ${assessWidget.render()}
                     </div>
                   `;
@@ -360,6 +369,20 @@ export class DashboardFilterMap extends LitElement {
     return {
       'dashboard-table': StatefulTable,
     };
+  }
+
+  static get styles() {
+    return [
+      css`
+        .widget-wrapper {
+          display: flex;
+          flex-direction: row;
+        }
+        .widget-wrapper > * {
+          flex: 1;
+        }
+      `,
+    ];
   }
 
   render() {
