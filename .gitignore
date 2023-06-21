@@ -1,5 +1,6 @@
 node_modules/
 /dist/
+/tests/dist/
 /target/
 /.cargo/
 *.happ
