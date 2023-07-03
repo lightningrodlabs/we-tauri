@@ -8,7 +8,7 @@ import {
 } from '@neighbourhoods/client';
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
@@ -131,7 +131,7 @@ export class DashboardFilterMap extends LitElement {
 
     const contexts = await this._sensemakerStore.getCulturalContext(this.selectedContext);
     try {
-      this._contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
+      this._contextEntry = decode((contexts.entry as any).Present.entry) as CulturalContext;
     } catch (error) {
       console.log('No context entry exists for that context entry hash!');
     }
@@ -141,24 +141,27 @@ export class DashboardFilterMap extends LitElement {
     if (!this.selectedDimensions) return;
 
     try {
-      const appInfo = await this._sensemakerStore.client.appWebsocket.appInfo({
-        installed_app_id: 'we',
-      });
-      const cell_id = appInfo.cell_info.sensemaker[1].cloned.cell_id;
-      const response = await this._sensemakerStore.client.callZome({
-        cell_id,
-        zome_name: 'sensemaker',
-        fn_name: 'get_dimensions',
-        payload: null,
-      });
-      this._dimensionEntries = response.map(payload => {
-        try {
-          let dimension = decode(payload.entry.Present.entry) as any;
-          return dimension;
-        } catch (error) {
-          console.log('Error decoding dimension payload: ', error);
-        }
-      }) as Dimension[];
+      // const appInfo = await this._sensemakerStore.client.appWebsocket.appInfo({
+      //   installed_app_id: 'we',
+      // });
+      const appInfo : AppInfo = await this._sensemakerStore.client.appInfo();
+      const cell_id = appInfo.cell_info['we'];
+      // TODO: wire this back up
+      // sensemaker[1].cloned.cell_id;
+      // const response = await this._sensemakerStore.client.callZome({
+      //   cell_id,
+      //   zome_name: 'sensemaker',
+      //   fn_name: 'get_dimensions',
+      //   payload: null,
+      // });
+      // this._dimensionEntries = response.map(payload => {
+      //   try {
+      //     let dimension = decode(payload.entry.Present.entry) as any;
+      //     return dimension;
+      //   } catch (error) {
+      //     console.log('Error decoding dimension payload: ', error);
+      //   }
+      // }) as Dimension[];
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
     }

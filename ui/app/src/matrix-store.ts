@@ -75,7 +75,7 @@ import { decompressSync, unzipSync } from "fflate";
 import { toSrc } from "./processes/import-logsrc-from-file";
 import { GlobalAppletsService } from "./global-applets-service";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
-import { PeerStatusStore } from "@holochain-open-dev/peer-status";
+import { PeerStatusStore, PeerStatusClient } from "@holochain-open-dev/peer-status";
 import md5 from "md5";
 import { getCellId } from "./utils";
 import { defaultAppletConfig } from "./defaultAppletConfig";
@@ -741,7 +741,7 @@ export class MatrixStore {
           new ProfilesClient(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
 
-        const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
+        const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
         const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
         sensemakerStore.registerWidget(
@@ -1074,7 +1074,7 @@ export class MatrixStore {
     const sensemakerCell = (sensemakerCellInfo as { [CellType.Cloned]: ClonedCell }).cloned!;
 
     const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
-    const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
+    const peerStatusStore = new PeerStatusStore(new PeerStatusClient(appAgentWebsocket, 'we'));
     const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
 
     // Delay widget registration until new Sensemaker cell is cached.

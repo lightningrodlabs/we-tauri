@@ -1,4 +1,4 @@
-import { ListAgentsByStatus, PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
+import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHProfile } from "../components/nh/profile/nh-profile";
@@ -321,7 +321,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "invitations-block": InvitationsBlock,
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-linear-progress": LinearProgress,
-      "list-agents-by-status": ListAgentsByStatus,
+      // "list-agents-by-status": ListAgentsByStatus,
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,
