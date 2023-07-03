@@ -23,13 +23,12 @@ import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
 import { classMap } from 'lit/directives/class-map.js';
 import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
-export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace) {
+export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
@@ -307,7 +306,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-skeleton': SlSkeleton,
       'sl-input': SlInput,

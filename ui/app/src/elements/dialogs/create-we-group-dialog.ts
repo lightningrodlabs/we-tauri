@@ -9,13 +9,12 @@ import { SelectAvatar } from "@holochain-open-dev/elements";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { NHComponentShoelace } from "neighbourhoods-design-system-components";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { NHDialog } from "../components/nh/layout/dialog";
 
 /**
  * @element we-applet
  */
-export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace) {
+export class CreateWeGroupDialog extends NHComponentShoelace {
   /** Dependencies */
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -87,7 +86,7 @@ export class CreateWeGroupDialog extends ScopedElementsMixin(NHComponentShoelace
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "select-avatar": SelectAvatar,
       "sl-input": SlInput,
