@@ -22,6 +22,7 @@ import { AppletBundleMetadata } from "../../types.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
+import { AppEntry, Entity } from "../../processes/appstore/types.js";
 
 @localized()
 @customElement("install-applet-bundle-dialog")
@@ -59,15 +60,9 @@ export class InstallAppletBundleDialog extends LitElement {
   _installing: boolean = false;
 
   @state()
-  _appletInfo: AppletBundleMetadata = {
-    title: "",
-    subtitle: "",
-    description: "",
-    devhubHappReleaseHash: new Uint8Array(0),
-    devhubGuiReleaseHash: new Uint8Array(0),
-  };
+  _appletInfo: Entity<AppEntry> | undefined;
 
-  open(appletInfo: AppletBundleMetadata) {
+  open(appletInfo: Entity<AppEntry>) {
     this._appletInfo = appletInfo;
     setTimeout(() => {
       this.form.reset();
@@ -84,7 +79,7 @@ export class InstallAppletBundleDialog extends LitElement {
     this._installing = true;
     try {
       const appletEntryHash = await this.groupStore.installAppletBundle(
-        this._appletInfo,
+        this._appletInfo!,
         customName
       );
       notify("Installation successful");
@@ -108,6 +103,8 @@ export class InstallAppletBundleDialog extends LitElement {
   }
 
   renderForm() {
+    if (!this._appletInfo) return html``;
+
     switch (this._registeredApplets.value.status) {
       case "pending":
         return html`<div class="row center-content">
@@ -127,7 +124,7 @@ export class InstallAppletBundleDialog extends LitElement {
             ${ref((input) => {
               if (!input) return;
               setTimeout(() => {
-                if (allAppletsNames.includes(this._appletInfo.title)) {
+                if (allAppletsNames.includes(this._appletInfo!.content.title)) {
                   (input as HTMLInputElement).setCustomValidity(
                     "Name already exists"
                   );
@@ -143,7 +140,7 @@ export class InstallAppletBundleDialog extends LitElement {
                 e.target.setCustomValidity("");
               }
             }}
-            .defaultValue=${this._appletInfo.title}
+            .defaultValue=${this._appletInfo!.content.title}
           ></sl-input>
 
           <sl-button
@@ -153,7 +150,7 @@ export class InstallAppletBundleDialog extends LitElement {
           >
             ${msg("Install")}
           </sl-button>
-        </form>`;
+        `;
 
       case "error":
         return html`<display-error

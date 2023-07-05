@@ -29,7 +29,7 @@ export interface ConductorInfo {
   admin_port: number;
   applets_ui_port: number;
   we_app_id: string;
-  devhub_app_id: string;
+  appstore_app_id: string;
   applet_iframe_protocol: AppletIframeProtocol;
 }
 

@@ -418,7 +418,7 @@ async function signZomeCall(
 
 // <iframe src="applet://asdf" view="applet-main"></iframe>
 // <iframe src="applet://asdf" view="applet-block" block="asdf" ></iframe>
-// <iframe src="applet://asdf" view="hrl" hrl="hrl://[DNAHASH]/[DHTHASH]" ></iframe>
+// <iframe src="applet://asdf?view=hrl&hrl=hrl://[DNAHASH]/[DHTHASH]" ></iframe>
 // <iframe src="applet://asdf" view="applet-main"  ></iframe>
 // <iframe src="applet://asdf" view="applet-block" block="asdf" ></iframe>
 

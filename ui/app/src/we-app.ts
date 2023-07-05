@@ -64,13 +64,13 @@ export class WeApp extends LitElement {
       info.we_app_id
     );
 
-    const devhubClient = await initAppClient(info.devhub_app_id);
+    const appStoreClient = await initAppClient(info.appstore_app_id);
 
     this._weStore = new WeStore(
       adminWebsocket,
       appAgentWebsocket,
       info,
-      new AppletBundlesStore(devhubClient, appAgentWebsocket, adminWebsocket)
+      new AppletBundlesStore(appStoreClient, appAgentWebsocket, adminWebsocket)
     );
 
     this.state = { state: "running" };

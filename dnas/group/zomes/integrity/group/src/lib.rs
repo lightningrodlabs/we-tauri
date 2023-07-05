@@ -26,8 +26,7 @@ pub struct Applet {
     pub custom_name: String,
     pub description: String,
 
-    pub devhub_happ_release_hash: EntryHash,
-    pub devhub_gui_release_hash: EntryHash,
+    pub app_entry_hash: EntryHash,
 
     pub network_seed: Option<String>,
 

@@ -39,6 +39,7 @@ import { CustomViewsClient } from "../custom-views/custom-views-client";
 import { WeStore } from "../we-store";
 import { GroupProfile } from "../../../libs/we-applet/dist";
 import { encode } from "@msgpack/msgpack";
+import { AppEntry, Entity } from "../processes/appstore/types";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -143,14 +144,14 @@ export class GroupStore {
 
   // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
   async installAppletBundle(
-    appletMetadata: AppletBundleMetadata,
+    appEntry: Entity<AppEntry>,
     customName: string
   ): Promise<EntryHash> {
     // Trigger the download of the webhapp
     // TODO: remove this when moving to app store
     await toPromise(
       this.weStore.appletBundlesStore.appletBundleLogo.get(
-        appletMetadata.devhubHappReleaseHash
+        appEntry.content.devhub_address.happ
       )
     );
 
@@ -160,9 +161,8 @@ export class GroupStore {
 
     const applet: Applet = {
       custom_name: customName,
-      description: appletMetadata.description,
-      devhub_gui_release_hash: appletMetadata.devhubGuiReleaseHash,
-      devhub_happ_release_hash: appletMetadata.devhubHappReleaseHash,
+      description: appEntry.content.description,
+      app_entry_hash: appEntry.id,
       network_seed: networkSeed,
       properties: {},
     };

@@ -20,13 +20,10 @@ import { AppletBundleMetadata } from "../../types.js";
 import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
-import {
-  AppWithReleases,
-  getLatestRelease,
-} from "../../processes/devhub/get-happs.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { IconSrcOption } from "../../applet-bundles/types.js";
+import { AppEntry, Entity } from "../../processes/appstore/types.js";
 
 @localized()
 @customElement("installable-applets")
@@ -44,13 +41,9 @@ export class InstallableApplets extends LitElement {
         this.groupStore.weStore.appletBundlesStore.allAppletBundles,
         (allAppletBundles) =>
           join(
-            allAppletBundles
-              .filter((b) => !!getLatestRelease(b))
-              .map((b) =>
-                this.weStore.appletBundlesStore.appletBundleLogo.get(
-                  getLatestRelease(b)!.address
-                )
-              )
+            allAppletBundles.map((b) =>
+              this.weStore.appletBundlesStore.appletBundleLogo.get(b.id)
+            )
           )
       ),
     () => []
@@ -59,18 +52,21 @@ export class InstallableApplets extends LitElement {
   @query("#applet-dialog")
   _appletDialog!: InstallAppletBundleDialog;
 
-  renderInstallableApplet(appletInfo: AppletBundleMetadata) {
+  renderInstallableApplet(
+    appEntry: Entity<AppEntry>,
+    iconSrc: string | undefined
+  ) {
     return html`
       <sl-card class="applet-card" style="height: 200px">
-        <span slot="header">${appletInfo.title}</span>
+        <span slot="header">${appEntry.content.title}</span>
         <div class="column" style="flex: 1">
-          <span>${appletInfo.subtitle}</span>
+          <span>${appEntry.content.subtitle}</span>
           <span class="placeholder" style="flex: 1; overflow-y: auto;">
-            ${appletInfo.description}
+            ${appEntry.content.description}
           </span>
           <sl-button
             @click=${() => {
-              this._appletDialog.open(appletInfo);
+              this._appletDialog.open(appEntry);
             }}
           >
             ${msg("Add to group")}
@@ -80,16 +76,14 @@ export class InstallableApplets extends LitElement {
     `;
   }
 
-  renderApplets(allApplets: [Array<AppWithReleases>, Array<IconSrcOption>]) {
-    const applets = allApplets[0].filter((_, i) => !!allApplets[1][i]);
-
+  renderApplets(allApplets: [Array<Entity<AppEntry>>, Array<IconSrcOption>]) {
     return html`
       <install-applet-bundle-dialog
         id="applet-dialog"
       ></install-applet-bundle-dialog>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-        ${applets.filter((item) => !!getLatestRelease(item)).length == 0
+        ${allApplets[0].length == 0
           ? html`
               <div class="column center-content">
                 <span class="placeholder"
@@ -97,20 +91,9 @@ export class InstallableApplets extends LitElement {
                 >
               </div>
             `
-          : applets.map((item) => {
-              let latestRelease = getLatestRelease(item);
-
-              if (latestRelease) {
-                let appletInfo: AppletBundleMetadata = {
-                  title: item.app.content.title,
-                  subtitle: item.app.content.subtitle,
-                  description: item.app.content.description,
-                  devhubHappReleaseHash: latestRelease.address,
-                  devhubGuiReleaseHash: latestRelease.content.official_gui!,
-                };
-                return this.renderInstallableApplet(appletInfo);
-              }
-            })}
+          : allApplets.map((item, i) =>
+              this.renderInstallableApplet(allApplets[0][i], allApplets[1][i])
+            )}
       </div>
     `;
   }

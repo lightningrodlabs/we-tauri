@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use holochain_client::AdminWebsocket;
+use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
-use holochain_web_app_manager::WebAppManager;
 
 use crate::{
     config::WeConfig,
+    filesystem::WeFileSystem,
     state::{WeError, WeResult},
 };
 
@@ -21,15 +21,11 @@ pub fn devhub_app_id() -> String {
     format!("DevHub-{}", we_version())
 }
 
-pub async fn install_default_apps_if_necessary(
-    config: &WeConfig,
-    manager: &mut WebAppManager,
-) -> WeResult<()> {
-    let apps = manager
-        .list_apps()
-        .await
-        .map_err(|err| WeError::WebAppManagerError(err))?;
+pub fn appstore_app_id() -> String {
+    format!("appstore-{}", we_version())
+}
 
+pub fn network_seed(config: &WeConfig) -> String {
     let network_seed = if let Some(network_seed) = &config.network_seed {
         network_seed.clone()
     } else if cfg!(debug_assertions) {
@@ -37,54 +33,54 @@ pub async fn install_default_apps_if_necessary(
     } else {
         format!("we")
     };
-    let network_seed = format!("{}-{}", we_version(), network_seed);
+
+    format!("{}-{}", we_version(), network_seed)
+}
+
+pub async fn install_default_apps_if_necessary(
+    config: &WeConfig,
+    we_fs: &WeFileSystem,
+    admin_ws: &mut AdminWebsocket,
+) -> WeResult<()> {
+    let apps = admin_ws.list_apps(None).await?;
+
+    let network_seed = network_seed(&config);
 
     if !apps
         .iter()
         .map(|info| info.installed_app_info.installed_app_id.clone())
         .collect::<Vec<String>>()
-        .contains(&devhub_app_id())
+        .contains(&appstore_app_id())
     {
-        let mut admin_ws =
-            AdminWebsocket::connect(format!("ws://localhost:{}", manager.admin_interface_port()))
-                .await
-                .map_err(|err| WeError::AdminWebsocketError(format!("{:?}", err)))?;
+        let agent_key = admin_ws.generate_agent_pub_key().await?;
+        let appstore_hub_bundle = WebAppBundle::decode(include_bytes!("../../appstore.webhapp"))?;
 
-        let pubkey = admin_ws
-            .generate_agent_pub_key()
-            .await
-            .map_err(|err| WeError::AdminWebsocketError(format!("{:?}", err)))?;
-        let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../DevHub.webhapp"))
-            .map_err(|err| WeError::MrBundleError(format!("{:?}", err)))?;
+        admin_ws
+            .install_app(InstallAppPayload {
+                source: holochain_types::prelude::AppBundleSource::Bundle(
+                    appstore_hub_bundle.happ_bundle()?,
+                ),
+                agent_key,
+                network_seed: Some(network_seed),
+                installed_app_id: Some(appstore_app_id()),
+                membrane_proofs: HashMap::new(),
+            })
+            .await?;
 
-        manager
-            .install_web_app(
-                devhub_app_id(),
-                dev_hub_bundle,
-                Some(network_seed.clone()),
-                HashMap::new(),
-                Some(pubkey.clone()),
-                None,
-                None,
-            )
-            .await
-            .map_err(|err| WeError::WebAppManagerError(err))?;
+        we_fs.store_webapp(&appstore_app_id(), &appstore_hub_bundle)?;
 
         let we_app_id = we_app_id();
-        let we_bundle = AppBundle::decode(include_bytes!("../../workdir/we.happ"))
-            .map_err(|err| WeError::MrBundleError(format!("{:?}", err)))?;
+        let we_bundle = AppBundle::decode(include_bytes!("../../workdir/we.happ"))?;
 
-        manager
-            .install_app(
-                we_app_id,
-                we_bundle,
-                Some(network_seed),
-                HashMap::new(),
-                Some(pubkey.clone()),
-                None,
-            )
-            .await
-            .map_err(|err| WeError::WebAppManagerError(err))?;
+        admin_ws
+            .install_app(InstallAppPayload {
+                source: holochain_types::prelude::AppBundleSource::Bundle(we_bundle),
+                agent_key,
+                network_seed: Some(network_seed),
+                installed_app_id: Some(we_app_id),
+                membrane_proofs: HashMap::new(),
+            })
+            .await?;
     }
 
     Ok(())

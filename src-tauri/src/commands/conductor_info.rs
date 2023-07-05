@@ -1,10 +1,11 @@
 use futures::lock::Mutex;
+use holochain::conductor::Conductor;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
-    default_apps::{devhub_app_id, we_app_id},
+    default_apps::{appstore_app_id, devhub_app_id, we_app_id},
     state::{LaunchedState, WeResult},
 };
 
@@ -20,21 +21,23 @@ pub struct ConductorInfo {
     admin_port: u16,
     applets_ui_port: u16,
     we_app_id: String,
-    devhub_app_id: String,
+    appstore_app_id: String,
 }
 
 #[tauri::command]
 pub async fn get_conductor_info(
-    state: tauri::State<'_, Mutex<LaunchedState>>,
+    conductor: tauri::State<'_, Mutex<Conductor>>,
     config: tauri::State<'_, WeConfig>,
 ) -> WeResult<ConductorInfo> {
-    let mut m = state.lock().await;
+    let conductor = conductor.lock().await;
 
     Ok(ConductorInfo {
-        app_port: m.web_app_manager.app_interface_port(),
-        admin_port: m.web_app_manager.admin_interface_port(),
+        app_port: conductor.list_app_interfaces()?[0],
+        admin_port: conductor
+            .get_arbitrary_admin_websocket_port()
+            .expect("Couldn't get admin port"),
         applets_ui_port: config.applets_ui_port,
         we_app_id: we_app_id(),
-        devhub_app_id: devhub_app_id(),
+        appstore_app_id: appstore_app_id(),
     })
 }

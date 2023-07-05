@@ -4,6 +4,7 @@ import {
   lazyLoadAndPoll,
   manualReloadStore,
   pipe,
+  retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
@@ -19,74 +20,49 @@ import {
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
-import {
-  ContentAddress,
-  getAllAppsWithGui,
-  getLatestRelease,
-} from "../processes/devhub/get-happs.js";
-import { HappReleaseEntry } from "../processes/devhub/types.js";
-import { toSrc } from "../processes/import-logsrc-from-file.js";
+import { getAllApps } from "../processes/appstore/get-happs.js";
 import { isAppRunning } from "../utils.js";
-import { IconSrcOption } from "./types.js";
 
 export class AppletBundlesStore {
   constructor(
-    public devhubClient: AppAgentClient,
+    public appstoreClient: AppAgentClient,
     public weClient: AppAgentClient,
     public adminWebsocket: AdminWebsocket
   ) {}
 
   allAppletBundles = lazyLoadAndPoll(
-    async () => getAllAppsWithGui(this.devhubClient),
+    async () => getAllApps(this.appstoreClient),
     30000
   );
 
   appletBundles = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
     asyncDerived(this.allAppletBundles, async (appletBundles) => {
-      const appletBundle = appletBundles
-        .map(
-          (b) =>
-            [b.app.content.title, getLatestRelease(b)] as [
-              string,
-              ContentAddress<HappReleaseEntry> | undefined
-            ]
-        )
-        .find(([name, b]) => b?.id.toString() === appletBundleHash.toString());
+      const appletBundle = appletBundles.find(
+        (app) => app.id.toString() === appletBundleHash.toString()
+      );
       return appletBundle;
     })
   );
 
   appletBundleLogo = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
-    pipe(this.appletBundles.get(appletBundleHash), (bundleWithName) =>
-      lazyLoadAndPoll(async () => {
-        if (!bundleWithName) throw new Error("Can't find app bundle");
-        const appletBundle = bundleWithName[1];
+    pipe(this.appletBundles.get(appletBundleHash), (appEntry) =>
+      retryUntilSuccess(async () => {
+        if (!appEntry) throw new Error("Can't find app bundle");
 
-        const guiReleaseHash = appletBundle?.content.official_gui;
-
-        if (!guiReleaseHash)
-          throw new Error("This app doesn't have a UI release");
-
-        return new Promise<IconSrcOption | undefined>((resolve, reject) => {
-          invoke("fetch_icon", {
-            happReleaseHashB64: encodeHashToBase64(appletBundleHash),
-            guiReleaseHashB64: encodeHashToBase64(guiReleaseHash),
-          })
-            .then((bytes: any) =>
-              resolve(bytes ? toSrc(new Uint8Array(bytes)) : undefined)
-            )
-            .catch(() => resolve(undefined));
-
-          setTimeout(() => resolve(undefined), 5000);
+        const icon: string = await invoke("fetch_icon", {
+          appEntryHashB64: encodeHashToBase64(appEntry.id),
         });
-      }, 30000)
+
+        if (!icon) throw new Error("Icon was not found");
+
+        return icon;
+      })
     )
   );
 
   async installApplet(appletHash: EntryHash, applet: Applet) {
     return this.installAppletBundle(
-      applet.devhub_happ_release_hash,
-      applet.devhub_gui_release_hash,
+      applet.app_entry_hash,
       encodeHashToBase64(appletHash),
       applet.network_seed
     );
@@ -101,11 +77,14 @@ export class AppletBundlesStore {
   }
 
   async installAppletBundle(
-    devhubHappReleaseHash: EntryHash,
-    devhubGuiReleaseHash: EntryHash,
+    appEntryHash: EntryHash,
     appId: InstalledAppId,
     networkSeed: string | undefined
   ): Promise<AppInfo> {
+    const appEntry = await toPromise(this.appletBundles.get(appEntryHash));
+
+    if (!appEntry) throw new Error("Couldn't find app entry");
+
     const installedApps = await toPromise(this.installedApps);
 
     const appletInfo = installedApps.find(
@@ -123,9 +102,10 @@ export class AppletBundlesStore {
       appId,
       networkSeed,
       membraneProofs: {},
-      happReleaseHash: encodeHashToBase64(devhubHappReleaseHash),
-      guiReleaseHash: encodeHashToBase64(devhubGuiReleaseHash),
-      agentPubKey: encodeHashToBase64(this.devhubClient.myPubKey),
+      happReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.happ),
+      guiReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.gui!),
+      devhubDnaHash: encodeHashToBase64(appEntry.content.devhub_address.dna),
+      agentPubKey: encodeHashToBase64(this.appstoreClient.myPubKey),
     });
 
     await this.installedApps.reload();
@@ -140,7 +120,7 @@ export class AppletBundlesStore {
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
     const weAppInfo = await this.weClient.appInfo();
-    const devhubAppInfo = await this.devhubClient.appInfo();
+    const devhubAppInfo = await this.appstoreClient.appInfo();
 
     return apps
       .filter(
