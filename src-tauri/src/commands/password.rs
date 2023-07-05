@@ -1,13 +1,15 @@
 use futures::lock::Mutex;
-use lair_keystore_manager::{versions::v0_2::LairKeystoreManagerV0_2, LairKeystoreManager};
 use tauri::{AppHandle, Manager};
 
 use crate::{config::WeConfig, filesystem::WeFileSystem, launch::launch, state::WeResult};
 
 #[tauri::command]
 pub async fn is_keystore_initialized(fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
-    let initialized = LairKeystoreManagerV0_2::is_initialized(fs.keystore_path());
-    Ok(initialized)
+    let exists = fs
+        .keystore_path()
+        .join("lair-keystore-config.yaml")
+        .exists();
+    Ok(exists)
 }
 
 #[tauri::command]
@@ -18,8 +20,6 @@ pub async fn create_password(
     password: String,
     mdns: bool,
 ) -> WeResult<()> {
-    LairKeystoreManagerV0_2::initialize(fs.keystore_path(), password.clone()).await?;
-
     let conductor = launch(&config, &fs, password, mdns).await?;
 
     app_handle.manage(Mutex::new(conductor));

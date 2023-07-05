@@ -1,15 +1,16 @@
 use futures::lock::Mutex;
-use holochain::conductor::Conductor;
+use holochain::conductor::ConductorHandle;
+use holochain_client::ZomeCall;
 use holochain_launcher_utils::zome_call_signing::{
     sign_zome_call_with_client, ZomeCallUnsignedTauri,
 };
 use holochain_types::prelude::ZomeCallUnsigned;
 
-use crate::state::WeResult;
+use crate::state::{WeError, WeResult};
 
 #[tauri::command]
 pub async fn sign_zome_call(
-    conductor: tauri::State<'_, Mutex<Conductor>>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     zome_call_unsigned: ZomeCallUnsignedTauri,
 ) -> WeResult<ZomeCall> {
     let zome_call_unsigned_converted: ZomeCallUnsigned = zome_call_unsigned.into();

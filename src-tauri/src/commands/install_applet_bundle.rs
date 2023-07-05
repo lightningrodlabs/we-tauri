@@ -1,61 +1,65 @@
 use std::{
     collections::{BTreeMap, HashMap},
-    fs,
-    fs::File,
-    io::Write,
-    path::PathBuf,
     sync::Arc,
 };
 
+use appstore_types::AppEntry;
 use devhub_types::{
     dnarepo_entry_types::DnaVersionPackage,
     encode_bundle,
-    happ_entry_types::{GUIReleaseEntry, HappManifest, ResourceRef, WebHappManifest},
-    web_asset_entry_types::FilePackage,
+    happ_entry_types::{HappManifest, WebHappManifest},
     DevHubResponse, DnaEntry, DnaVersionEntry, Entity, EntityResponse, EntityType, GetEntityInput,
-    HappReleaseEntry,
 };
 use essence::EssenceResponse;
 use futures::lock::Mutex;
-use hc_portal_types::HostEntry;
 use hdk::prelude::{
     CellId, EntryHash, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName, Serialize,
     SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
 };
 use holochain::{
-    conductor::Conductor,
+    conductor::{
+        api::{CellInfo, ClonedCell, ProvisionedCell},
+        Conductor, ConductorHandle,
+    },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        AppBundleSource,
+        AgentPubKeyB64, AppBundleSource, DnaHash, DnaHashB64, EntryHashB64,
     },
 };
-use holochain_client::{AgentPubKey, AppInfo, AppWebsocket, ConductorApiResult, InstallAppPayload};
+use holochain_client::{AgentPubKey, AppInfo, AppWebsocket, InstallAppPayload};
+use holochain_launcher_utils::zome_call_signing::sign_zome_call_with_client;
+use holochain_state::nonce::fresh_nonce;
+use holochain_types::web_app::WebAppBundle;
+use portal_types::{DnaZomeFunction, HostEntry, RemoteCallDetails};
 use serde::Deserialize;
 
 use crate::{
-    default_apps::{appstore_app_id, devhub_app_id},
+    default_apps::appstore_app_id,
     filesystem::WeFileSystem,
     launch::get_admin_ws,
-    state::{LaunchedState, WeError, WeResult},
+    state::{WeError, WeResult},
 };
 
 #[tauri::command]
 pub async fn fetch_icon(
-    conductor: tauri::State<'_, Mutex<Conductor>>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
     app_entry_hash_b64: String,
 ) -> WeResult<String> {
     let app_entry_hash =
         EntryHash::from(EntryHashB64::from_b64_str(app_entry_hash_b64.as_str()).unwrap());
 
-    if let Some(icon) = we_fs.icon_store().get_icon(&app_entry_hash) {
+    if let Some(icon) = we_fs.icon_store().get_icon(&app_entry_hash)? {
         return Ok(icon);
     }
 
-    let mut conductor = conductor.lock().await;
+    let conductor = conductor.lock().await;
 
     let mut client = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", conductor.list_app_interfaces()?[0]),
+        format!(
+            "ws://localhost:{}",
+            conductor.list_app_interfaces().await?[0]
+        ),
         appstore_app_id(),
         conductor.keystore().lair_client(),
     )
@@ -65,10 +69,13 @@ pub async fn fetch_icon(
         .call_zome_fn(
             RoleName::from("appstore"),
             ZomeName::from("appstore_api"),
-            FnName::from("get_app"),
-            ExternIO::encode(GetEntityInput { id: app_entry_hash }),
+            FunctionName::from("get_app"),
+            ExternIO::encode(GetEntityInput {
+                id: app_entry_hash.clone(),
+            })?,
         )
-        .await?;
+        .await?
+        .decode()?;
     let app_entry = response.as_result()?;
 
     let result = client
@@ -76,16 +83,18 @@ pub async fn fetch_icon(
             RoleName::from("appstore"),
             ZomeName::from("mere_memore_api"),
             FunctionName::from("retrieve_bytes"),
-            ExternIO::encode(response.icon.clone())?,
+            ExternIO::encode(app_entry.content.icon.clone())?,
         )
         .await?;
     let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
     let bytes = bytes.as_result()?;
-    let icon_src = String::from_utf8(bytes);
+    let icon_src = String::from_utf8(bytes)?;
 
-    we_fs.icon_store().store_icon(&app_entry_hash, icon_src)?;
+    we_fs
+        .icon_store()
+        .store_icon(&app_entry_hash, icon_src.clone())?;
 
-    Ok(bytes)
+    Ok(icon_src)
 }
 
 pub async fn internal_fetch_applet_bundle(
@@ -97,12 +106,12 @@ pub async fn internal_fetch_applet_bundle(
 ) -> WeResult<WebAppBundle> {
     let happ_release_hash_b64 = EntryHashB64::from(happ_release_hash.clone()).to_string();
 
-    if let Some(web_app) = we_fs.webapp_store().get_webapp(&happ_release_hash_b64) {
+    if let Some(web_app) = we_fs.webapp_store().get_webapp(&happ_release_hash_b64)? {
         return Ok(web_app);
     }
 
     let bytes = fetch_web_happ(
-        conductor.list_app_interfaces()?[0],
+        conductor.list_app_interfaces().await?[0],
         conductor.keystore().lair_client(),
         devhub_dna,
         happ_release_hash,
@@ -118,14 +127,15 @@ pub async fn internal_fetch_applet_bundle(
 
     we_fs
         .webapp_store()
-        .store_webapp(&happ_release_hash_b64, &web_app_bundle)?;
+        .store_webapp(&happ_release_hash_b64, &web_app_bundle)
+        .await?;
 
     Ok(web_app_bundle)
 }
 
 #[tauri::command]
 pub async fn install_applet_bundle(
-    conductor: tauri::State<'_, Mutex<Conductor>>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     fs: tauri::State<'_, WeFileSystem>,
     app_id: String,
     network_seed: Option<String>,
@@ -146,7 +156,6 @@ pub async fn install_applet_bundle(
     }
 
     let pub_key = AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_pub_key.as_str()).unwrap());
-    let host_pub_key = AgentPubKey::from(AgentPubKeyB64::from_b64_str(host.as_str()).unwrap());
     let devhub_dna_hash =
         DnaHash::from(DnaHashB64::from_b64_str(devhub_dna_hash.as_str()).unwrap());
     let happ_release_entry_hash =
@@ -156,7 +165,7 @@ pub async fn install_applet_bundle(
 
     let conductor = conductor.lock().await;
 
-    let web_app_bundle = internal_fetch_applet_bundle(
+    let web_app_bundle: WebAppBundle = internal_fetch_applet_bundle(
         &conductor,
         &fs,
         devhub_dna_hash,
@@ -165,15 +174,22 @@ pub async fn install_applet_bundle(
     )
     .await?;
 
-    let admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut converted_membrane_proofs: HashMap<String, MembraneProof> = HashMap::new();
+    for (dna_slot, proof) in membrane_proofs.iter() {
+        converted_membrane_proofs.insert(
+            dna_slot.clone(),
+            Arc::new(SerializedBytes::from(UnsafeBytes::from(proof.clone()))),
+        );
+    }
 
     let app_info = admin_ws
         .install_app(InstallAppPayload {
-            source: AppBundleSource::Bundle(web_app_bundle),
+            source: AppBundleSource::Bundle(web_app_bundle.happ_bundle().await?),
             agent_key: pub_key,
             installed_app_id: Some(happ_release_hash),
             network_seed,
-            membrane_proofs,
+            membrane_proofs: converted_membrane_proofs,
         })
         .await?;
 
@@ -181,20 +197,7 @@ pub async fn install_applet_bundle(
 
     Ok(app_info)
 }
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RemoteCallDetails<Z, F, I>
-where
-    Z: Into<ZomeName>,
-    F: Into<FunctionName>,
-    I: Serialize + core::fmt::Debug,
-{
-    pub dna: DnaHash,
-    pub zome: Z,
-    pub function: F,
-    pub payload: I,
-}
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct FetchWebHappRemoteCallInput {
     host: AgentPubKey,
     call: RemoteCallDetails<String, String, GetWebHappPackageInput>,
@@ -230,15 +233,17 @@ async fn fetch_web_happ(
     .await?;
 
     let payload = GetWebHappPackageInput {
-        name,
+        name: String::from("app"),
         happ_release_id: happ_release_entry_hash,
         gui_release_id: gui_release_entry_hash,
     };
 
-    let hosts = get_available_hosts(&mut client, devhub_dna).await?;
+    let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
 
     for host in hosts {
-        if let Ok(web_app_bytes) = get_webhapp_from_host(&mut client, &devhub_dna, host).await {
+        if let Ok(web_app_bytes) =
+            get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await
+        {
             return Ok(web_app_bytes);
         }
     }
@@ -248,21 +253,26 @@ async fn fetch_web_happ(
     )));
 }
 
-fn get_webhapp_from_host(
+async fn get_webhapp_from_host(
     app_store_client: &mut AppAgentWebsocket,
     devhub_dna: &DnaHash,
     host: &AgentPubKey,
+    payload: &GetWebHappPackageInput,
 ) -> WeResult<Vec<u8>> {
     let input = FetchWebHappRemoteCallInput {
-        host,
+        host: host.clone(),
         call: RemoteCallDetails {
             dna: devhub_dna.clone(),
             zome: String::from("happ_library"),
             function: String::from("get_webhapp_package"),
-            payload,
+            payload: GetWebHappPackageInput {
+                name: payload.name.clone(),
+                happ_release_id: payload.happ_release_id.clone(),
+                gui_release_id: payload.gui_release_id.clone(),
+            },
         },
     };
-    let result = client
+    let result = app_store_client
         .call_zome_fn(
             RoleName::from("portal"),
             ZomeName::from("portal_api"),
@@ -283,69 +293,76 @@ fn get_webhapp_from_host(
         }
     };
 
-    let bytes = inner_response
-        .as_result()
-        .map_err(|err| WeError::AppWebsocketError(format!("{:?}", err)))?;
+    let bytes = inner_response.as_result()?;
 
     Ok(bytes)
 }
 
-fn get_available_hosts(
+async fn get_available_hosts(
     app_store_client: &mut AppAgentWebsocket,
-    devhub_dna: DnaHash,
+    devhub_dna: &DnaHash,
 ) -> WeResult<Vec<AgentPubKey>> {
     let hosts: DevHubResponse<Vec<Entity<HostEntry>>> = app_store_client
         .call_zome_fn(
             RoleName::from("portal"),
             ZomeName::from("portal_api"),
-            FnName::from("get_hosts_for_zome_function"),
+            FunctionName::from("get_hosts_for_zome_function"),
             ExternIO::encode(DnaZomeFunction {
-                dna: devhub_dna,
+                dna: devhub_dna.clone(),
                 zome: ZomeName::from("happ_library"),
-                function: FnName::from("get_webhapp_package"),
+                function: FunctionName::from("get_webhapp_package"),
             })?,
         )
-        .await?;
+        .await?
+        .decode()?;
 
     let hosts = hosts.as_result()?;
-    let hosts = hosts.into_iter().map(|e| e.content.author).collect();
+    let hosts: Vec<AgentPubKey> = hosts.into_iter().map(|e| e.content.author).collect();
 
     let mut handles = Vec::new();
 
-    for host in hosts {
-        let client = app_store_client.clone();
-        handles.push(tauri::async_runtime::spawn(|| {
-            is_host_available(&mut client, devhub_dna, host)
+    for host in hosts.iter() {
+        let mut client = app_store_client.clone();
+        let host = host.clone();
+        let devhub_dna = devhub_dna.clone();
+        handles.push(tauri::async_runtime::spawn(async move {
+            is_host_available(&mut client, &devhub_dna, &host).await
         }));
     }
 
     let mut available_hosts = Vec::new();
 
     for (i, handle) in handles.into_iter().enumerate() {
-        if let Ok(true) = handle.await {
-            available_hosts.push(hosts[i]);
+        if let Ok(Ok(true)) = handle.await {
+            available_hosts.push(hosts[i].clone());
         }
     }
 
     Ok(available_hosts)
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Metadata {
+    pub composition: String,
+}
 async fn is_host_available(
     app_store_client: &mut AppAgentWebsocket,
     devhub_dna: &DnaHash,
     host: &AgentPubKey,
 ) -> WeResult<bool> {
-    let response: EssenceResponse<_> = app_store_client
+    let response: EssenceResponse<bool, Metadata, ()> = app_store_client
         .call_zome_fn(
             RoleName::from("portal"),
             ZomeName::from("portal_api"),
-            FnName::from("ping"),
+            FunctionName::from("ping"),
             ExternIO::encode(host.clone())?,
         )
         .await?
         .decode()?;
 
-    response.as_result().map(|| true)
+    let r: bool = response.as_result()?;
+
+    Ok(r)
 }
 
 // ------------------------------
@@ -568,16 +585,11 @@ impl AppAgentWebsocket {
             nonce,
         };
 
-        let signed_zome_call =
-            sign_zome_call_with_client(zome_call_unsigned_converted, &self.lair_client)
-                .await
-                .map_err(|err| WeError::SignZomeCallError(err))?;
-
-        let result = self
-            .app_ws
-            .call_zome(signed_zome_call)
+        let signed_zome_call = sign_zome_call_with_client(zome_call_unsigned, &self.lair_client)
             .await
-            .map_err(|err| WeError::AppWebsocketError(format!("{:?}", err)))?;
+            .map_err(|err| WeError::SignZomeCallError(err))?;
+
+        let result = self.app_ws.call_zome(signed_zome_call).await?;
 
         Ok(result)
     }

@@ -1,8 +1,12 @@
+use std::string::FromUtf8Error;
+
+use essence::EssenceError;
 use hdk::prelude::SerializedBytesError;
-use holochain::conductor::error::ConductorError;
+use holochain::{conductor::error::ConductorError, prelude::AppBundleError};
 use holochain_client::ConductorApiError;
 use log::Level;
 use serde::{Deserialize, Serialize};
+use zip::result::ZipError;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SetupState {
@@ -38,6 +42,18 @@ pub enum WeError {
     SerializationError(#[from] SerializedBytesError),
 
     #[error(transparent)]
+    AppBundleError(#[from] AppBundleError),
+
+    #[error(transparent)]
+    EssenceError(#[from] EssenceError),
+
+    #[error(transparent)]
+    ZipError(#[from] ZipError),
+
+    #[error(transparent)]
+    FromUtf8Error(#[from] FromUtf8Error),
+
+    #[error(transparent)]
     IoError(#[from] std::io::Error),
 
     #[error(transparent)]
@@ -46,8 +62,8 @@ pub enum WeError {
     #[error(transparent)]
     ConductorError(#[from] ConductorError),
 
-    #[error("Tauri error: `{0}`")]
-    TauriError(String),
+    #[error(transparent)]
+    TauriError(#[from] tauri::Error),
 
     #[error("Admin Websocket Error: `{0}`")]
     AdminWebsocketError(String),

@@ -17,7 +17,7 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "protocol-all", "shell-open"] }
+tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
@@ -31,8 +31,10 @@ tempdir = "0.3.7"
 thiserror = "1"
 
 holochain_client = "0.3.1"
+holochain_state = "0.1.5"
 holochain_websocket = "0.1"
-holochain = { workspace = true }
+holochain = "0.1.5"
+holochain_types = "0.1.5"
 hdk = "0.1"
 mr_bundle = "0.1"
 sodoken = "0.0.9"
@@ -51,6 +53,8 @@ devhub_types = { git = "https://github.com/holochain/devhub-dnas", branch = "mas
 appstore_types = { git = "https://github.com/holochain/app-store-dnas", branch = "holochain-v0.1.x-support" }
 hc_portal_types = { git = "https://github.com/holochain/portal-dna", branch = "holochain-v0.1.x-support" }
 essence_payloads = "0.1"
+
+holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "develop-0.1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

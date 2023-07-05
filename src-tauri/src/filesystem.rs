@@ -1,9 +1,9 @@
-use std::fs;
 use std::path::PathBuf;
+use std::{fs, io::Write};
 
 use hdk::prelude::EntryHash;
+use holochain::prelude::EntryHashB64;
 use holochain_client::InstalledAppId;
-use holochain_manager::versions::HolochainVersion;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
 
@@ -45,10 +45,12 @@ impl WeFileSystem {
         })
     }
 
-    pub fn conductor_path(&self, holochain_version: &HolochainVersion) -> PathBuf {
-        self.app_data_dir
-            .join("conductor")
-            .join(holochain_version.to_string())
+    pub fn keystore_path(&self) -> PathBuf {
+        self.app_data_dir.join("keystore")
+    }
+
+    pub fn conductor_path(&self) -> PathBuf {
+        self.app_data_dir.join("conductor")
     }
 
     pub fn webapp_store(&self) -> WebAppStore {
@@ -85,7 +87,7 @@ impl WebAppStore {
         let path = self.webhapp_path(installed_app_id);
 
         if path.exists() {
-            let bytes = fs::read(we_fs.webhapp_package_path(&happ_release_hash_b64))?;
+            let bytes = fs::read(self.webhapp_package_path(&installed_app_id))?;
             let web_app = WebAppBundle::decode(bytes.as_slice())?;
 
             return Ok(Some(web_app));
@@ -94,7 +96,7 @@ impl WebAppStore {
         }
     }
 
-    pub fn store_webapp(
+    pub async fn store_webapp(
         &self,
         installed_app_id: &InstalledAppId,
         web_app: &WebAppBundle,
@@ -103,22 +105,22 @@ impl WebAppStore {
 
         let path = self.webhapp_path(installed_app_id);
 
-        fs::create_dir_all(path)?;
+        fs::create_dir_all(path.clone())?;
 
-        let mut file = File::create(self.webhapp_package_path(installed_app_id))?;
+        let mut file = std::fs::File::create(self.webhapp_package_path(installed_app_id))?;
         file.write_all(bytes.as_slice())?;
 
-        let ui_bytes = web_app.web_ui_zip_bytes()?;
+        let ui_bytes = web_app.web_ui_zip_bytes().await?;
 
         let ui_folder_path = self.webhapp_ui_path(installed_app_id);
 
-        fs::create_dir_all(ui_path)?;
+        fs::create_dir_all(&ui_folder_path)?;
 
         let ui_zip_path = path.join("ui.zip");
 
-        fs::write(ui_zip_path.clone(), ui_bytes.into_inner())?;
+        fs::write(ui_zip_path.clone(), ui_bytes.into_owned().into_inner())?;
 
-        let file = File::open(ui_zip_path.clone())?;
+        let file = std::fs::File::open(ui_zip_path.clone())?;
         unzip_file(file, ui_folder_path)?;
 
         fs::remove_file(ui_zip_path)?;
@@ -133,7 +135,8 @@ pub struct IconStore {
 
 impl IconStore {
     fn icon_path(&self, app_entry_hash: &EntryHash) -> PathBuf {
-        self.path.join(EntryHashB64::from(app_entry_hash.clone()))
+        self.path
+            .join(EntryHashB64::from(app_entry_hash.clone()).to_string())
     }
 
     pub fn store_icon(&self, app_entry_hash: &EntryHash, icon_src: String) -> WeResult<()> {
@@ -153,16 +156,8 @@ impl IconStore {
     }
 }
 
-pub fn unzip_file(reader: File, outpath: PathBuf) -> WeResult<()> {
-    let mut archive = match zip::ZipArchive::new(reader) {
-        Ok(a) => a,
-        Err(e) => {
-            return Err(WeError::IoError(format!(
-                "Failed to unpack zip archive: {}",
-                e
-            )))
-        }
-    };
+pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> WeResult<()> {
+    let mut archive = zip::ZipArchive::new(reader)?;
 
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).unwrap();

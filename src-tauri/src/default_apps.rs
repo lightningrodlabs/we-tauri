@@ -3,11 +3,7 @@ use std::collections::HashMap;
 use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
 
-use crate::{
-    config::WeConfig,
-    filesystem::WeFileSystem,
-    state::{WeError, WeResult},
-};
+use crate::{config::WeConfig, filesystem::WeFileSystem, state::WeResult};
 
 pub fn we_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
@@ -48,26 +44,29 @@ pub async fn install_default_apps_if_necessary(
 
     if !apps
         .iter()
-        .map(|info| info.installed_app_info.installed_app_id.clone())
+        .map(|info| info.installed_app_id.clone())
         .collect::<Vec<String>>()
         .contains(&appstore_app_id())
     {
         let agent_key = admin_ws.generate_agent_pub_key().await?;
-        let appstore_hub_bundle = WebAppBundle::decode(include_bytes!("../../appstore.webhapp"))?;
+        let appstore_hub_bundle = WebAppBundle::decode(include_bytes!("../../AppStore.webhapp"))?;
 
         admin_ws
             .install_app(InstallAppPayload {
                 source: holochain_types::prelude::AppBundleSource::Bundle(
-                    appstore_hub_bundle.happ_bundle()?,
+                    appstore_hub_bundle.happ_bundle().await?,
                 ),
-                agent_key,
-                network_seed: Some(network_seed),
+                agent_key: agent_key.clone(),
+                network_seed: Some(network_seed.clone()),
                 installed_app_id: Some(appstore_app_id()),
                 membrane_proofs: HashMap::new(),
             })
             .await?;
 
-        we_fs.store_webapp(&appstore_app_id(), &appstore_hub_bundle)?;
+        we_fs
+            .webapp_store()
+            .store_webapp(&appstore_app_id(), &appstore_hub_bundle)
+            .await?;
 
         let we_app_id = we_app_id();
         let we_bundle = AppBundle::decode(include_bytes!("../../workdir/we.happ"))?;

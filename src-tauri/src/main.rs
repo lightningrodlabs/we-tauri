@@ -7,9 +7,10 @@ use applet_iframes::{pong_iframe, read_asset, start_applet_uis_server};
 use config::WeConfig;
 use filesystem::WeFileSystem;
 use futures::lock::Mutex;
+use holochain::conductor::ConductorHandle;
 use hyper::StatusCode;
+use launch::get_admin_ws;
 use serde_json::Value;
-use state::LaunchedState;
 use tauri::{
     http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
 };
@@ -128,8 +129,9 @@ fn main() {
             }
             // prepare our response
             tauri::async_runtime::block_on(async move {
-                let mutex = app_handle.state::<Mutex<LaunchedState>>();
-                let mut m = mutex.lock().await;
+                let we_fs = app_handle.state::<WeFileSystem>();
+                let mutex = app_handle.state::<Mutex<ConductorHandle>>();
+                let mut conductor = mutex.lock().await;
 
                 let uri_without_protocol = request
                     .uri()
@@ -155,9 +157,11 @@ fn main() {
                 for i in 1..uri_components.len() {
                     asset_file = asset_file.join(uri_components[i].clone());
                 }
+                let mut admin_ws = get_admin_ws(&conductor).await?;
 
                 match read_asset(
-                    &mut m.web_app_manager,
+                    &we_fs,
+                    &mut admin_ws,
                     lowercase_applet_id,
                     asset_file.as_os_str().to_str().unwrap().to_string(),
                 )

@@ -1,12 +1,14 @@
-use holochain::conductor::Conductor;
+use holochain::conductor::{
+    config::{ConductorConfig, KeystoreConfig},
+    Conductor, ConductorHandle,
+};
 use holochain_client::AdminWebsocket;
-use holochain_conductor_api::conductor::{ConductorConfig, KeystoreConfig};
 
 use crate::{
     config::WeConfig,
     default_apps::install_default_apps_if_necessary,
     filesystem::WeFileSystem,
-    state::{log_level, WeError, WeResult},
+    state::{WeError, WeResult},
 };
 
 fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<sodoken::BufRead> {
@@ -27,17 +29,21 @@ fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<sodoken::BufRead> {
 }
 
 pub async fn launch(
-    config: &WeConfig,
+    we_config: &WeConfig,
     fs: &WeFileSystem,
     password: String,
     mdns: bool,
-) -> WeResult<Conductor> {
+) -> WeResult<ConductorHandle> {
     let admin_port: u16 = match option_env!("ADMIN_PORT") {
         Some(port) => port.parse().unwrap(),
         None => portpicker::pick_unused_port().expect("No ports free"),
     };
 
     let mut config = ConductorConfig::default();
+    config.environment_path = fs.conductor_path().into();
+    config.keystore = KeystoreConfig::LairServerInProc {
+        lair_root: Some(fs.keystore_path()),
+    };
 
     // TODO: set the DHT arc depending on whether this is mobile
 
@@ -48,22 +54,27 @@ pub async fn launch(
         .await?;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
+    conductor
+        .clone()
+        .add_app_interface(either::Either::Left(0))
+        .await?;
 
-    conductor.add_app_interface(either::Either::Left(0)).await?;
-
-    install_default_apps_if_necessary(config, &fs, &mut admin_ws).await?;
+    install_default_apps_if_necessary(we_config, &fs, &mut admin_ws).await?;
 
     Ok(conductor)
 }
 
-pub async fn get_admin_ws(conductor: &Conductor) -> WeResult<AdminWebsocket> {
+pub async fn get_admin_ws(conductor: &ConductorHandle) -> WeResult<AdminWebsocket> {
     let admin_ws = AdminWebsocket::connect(format!(
         "ws://localhost:{}",
         conductor
             .get_arbitrary_admin_websocket_port()
             .expect("Can't find admin ports")
     ))
-    .await?;
+    .await
+    .map_err(|err| {
+        WeError::AdminWebsocketError(format!("Could not connect to the admin interface: {}", err))
+    })?;
 
     Ok(admin_ws)
 }

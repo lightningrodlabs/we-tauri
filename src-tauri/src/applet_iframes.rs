@@ -2,13 +2,18 @@ use std::net::SocketAddr;
 
 use bytes::Bytes;
 use futures::lock::Mutex;
-use holochain_web_app_manager::WebAppManager;
+use holochain::conductor::ConductorHandle;
+use holochain_client::AdminWebsocket;
 use http_body_util::Full;
 use hyper::{server::conn::http1, service::service_fn, Response};
 use tauri::{AppHandle, Manager};
 use tokio::net::TcpListener;
 
-use crate::state::{LaunchedState, WeError, WeResult};
+use crate::{
+    filesystem::WeFileSystem,
+    launch::get_admin_ws,
+    state::{WeError, WeResult},
+};
 
 pub fn pong_iframe() -> String {
     format!("<html><head></head><body><script>window.onload = () => window.parent.postMessage('pong', '*') </script></body></html>")
@@ -49,17 +54,20 @@ pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> ()
                         return r;
                     }
 
-                    let mutex = app_handle.state::<Mutex<LaunchedState>>();
-                    let mut m = mutex.lock().await;
-
                     let split_host: Vec<String> =
                         host.split(".").into_iter().map(|s| s.to_string()).collect();
                     let lowercase_applet_id = split_host.get(0).unwrap();
 
                     let file_name = request.uri().path();
 
+                    let fs = app_handle.state::<WeFileSystem>();
+                    let mutex = app_handle.state::<Mutex<ConductorHandle>>();
+                    let conductor = mutex.lock().await;
+                    let mut admin_ws = get_admin_ws(&conductor).await?;
+
                     let r: WeResult<Response<Full<Bytes>>> = match read_asset(
-                        &mut m.web_app_manager,
+                        &fs,
+                        &mut admin_ws,
                         &lowercase_applet_id,
                         file_name.to_string(),
                     )
@@ -123,33 +131,25 @@ pub fn iframe() -> String {
 
 async fn get_applet_id_from_lowercase(
     lowercase_applet_id: &String,
-    web_app_manager: &mut WebAppManager,
+    admin_ws: &mut AdminWebsocket,
 ) -> WeResult<String> {
-    let apps = web_app_manager
-        .list_apps()
-        .await
-        .map_err(|err| WeError::AdminWebsocketError(format!("{:?}", err)))?;
+    let apps = admin_ws.list_apps(None).await?;
 
     let app = apps
         .into_iter()
         .find(|app| {
-            app.installed_app_info
-                .installed_app_id
-                .eq(lowercase_applet_id)
-                || app
-                    .installed_app_info
-                    .installed_app_id
-                    .to_lowercase()
-                    .eq(lowercase_applet_id)
+            app.installed_app_id.eq(lowercase_applet_id)
+                || app.installed_app_id.to_lowercase().eq(lowercase_applet_id)
         })
         .ok_or(WeError::AdminWebsocketError(String::from(
             "Applet is not installed",
         )))?;
-    Ok(app.installed_app_info.installed_app_id.clone())
+    Ok(app.installed_app_id.clone())
 }
 
 pub async fn read_asset(
-    web_app_manager: &mut WebAppManager,
+    we_fs: &WeFileSystem,
+    admin_ws: &mut AdminWebsocket,
     applet_id: &String,
     mut asset_name: String,
 ) -> WeResult<Option<(Vec<u8>, Option<String>)>> {
@@ -164,9 +164,9 @@ pub async fn read_asset(
         )));
     }
 
-    let applet_id = get_applet_id_from_lowercase(applet_id, web_app_manager).await?;
+    let applet_id = get_applet_id_from_lowercase(applet_id, admin_ws).await?;
 
-    let assets_path = web_app_manager.get_app_assets_dir(&applet_id, &String::from("default"));
+    let assets_path = we_fs.webapp_store().webhapp_ui_path(&applet_id);
     let asset_file = assets_path.join(asset_name);
 
     let mime_guess = mime_guess::from_path(asset_file.clone());

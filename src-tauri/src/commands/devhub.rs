@@ -1,28 +1,40 @@
-use futures::lock::Mutex;
-use holochain::conductor::Conductor;
-use holochain_launcher_utils::window_builder::happ_window_builder;
+use std::collections::HashMap;
 
+use futures::lock::Mutex;
+use holochain::conductor::ConductorHandle;
+use holochain::prelude::AgentPubKeyB64;
+use holochain_client::AgentPubKey;
+use holochain_client::InstallAppPayload;
+use holochain_launcher_utils::window_builder::happ_window_builder;
+use holochain_types::web_app::WebAppBundle;
+
+use crate::config::WeConfig;
 use crate::default_apps::devhub_app_id;
+use crate::default_apps::network_seed;
+use crate::filesystem::WeFileSystem;
 use crate::launch::get_admin_ws;
-use crate::state::WeError;
-use crate::state::{LaunchedState, WeResult};
+use crate::state::WeResult;
 
 #[tauri::command]
 pub async fn enable_dev_mode(
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
-    conductor: tauri::State<'_, Mutex<Conductor>>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    agent_key_b64: String,
 ) -> WeResult<()> {
-    let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../DevHub.webhapp"))?;
+    let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
 
+    let agent_key =
+        AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_key_b64.as_str()).unwrap());
+
     admin_ws
         .install_app(InstallAppPayload {
             source: holochain_types::prelude::AppBundleSource::Bundle(
-                dev_hub_bundle.happ_bundle()?,
+                dev_hub_bundle.happ_bundle().await?,
             ),
             agent_key,
             network_seed: Some(network_seed(&config)),
@@ -32,7 +44,8 @@ pub async fn enable_dev_mode(
         .await?;
 
     fs.webapp_store()
-        .store_webhapp(&devhub_app_id(), dev_hub_bundle)?;
+        .store_webapp(&devhub_app_id(), &dev_hub_bundle)
+        .await?;
 
     Ok(())
 }
@@ -41,11 +54,11 @@ pub async fn enable_dev_mode(
 pub async fn open_devhub(
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
-    conductor: tauri::State<'_, Mutex<Conductor>>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
     let devhub_app_id = devhub_app_id();
 
-    let ui_path = fs.webhapp_ui_path(&devhub_app_id);
+    let ui_path = fs.webapp_store().webhapp_ui_path(&devhub_app_id);
 
     let conductor = conductor.lock().await;
 
@@ -54,9 +67,9 @@ pub async fn open_devhub(
         devhub_app_id,
         String::from("devhub"),
         String::from("DevHub"),
-        holochain_launcher_utils::window_builder::UISource::Path(ui_path),
-        local_storage_path,
-        conductor.list_app_interfaces()?[0],
+        holochain_launcher_utils::window_builder::UISource::Path(ui_path.clone()),
+        ui_path.join(".localstorage"),
+        conductor.list_app_interfaces().await?[0],
         conductor
             .get_arbitrary_admin_websocket_port()
             .expect("Cannot get admin_port"),
