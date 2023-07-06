@@ -216,7 +216,7 @@ export class MatrixStore {
     adminWebsocket: AdminWebsocket,
     weParentAppInfo: AppInfo,
   ) {
-    const appAgentWebsocket = await AppAgentWebsocket.connect("", "we");
+    const appAgentWebsocket = await AppAgentWebsocket.connect("ws://localhost:9001", "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(

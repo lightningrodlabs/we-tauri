@@ -17,9 +17,8 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   loading = true;
 
   async firstUpdated() {
-    const adminWebsocket = await AdminWebsocket.connect(``);
-
-    const appWebsocket = await AppWebsocket.connect(``);
+    const adminWebsocket = await AdminWebsocket.connect(`ws://localhost:9000`);
+    const appWebsocket = await AppWebsocket.connect(`ws://localhost:9001`);
     console.log("Hello World!");
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
