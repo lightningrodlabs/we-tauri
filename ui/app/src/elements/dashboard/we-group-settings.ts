@@ -16,6 +16,9 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { NHSensemakerSettings } from "./nh-sensemaker-settings";
+import { NHDialog } from "../components/nh/layout/dialog";
 
 
 
@@ -29,6 +32,9 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
+  
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
 
   _info = new TaskSubscriber(
     this,
@@ -185,6 +191,8 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
       "applet-instance-status-list": AppletInstanceStatusList,
       "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
       "joinable-applet-instance-list": JoinableAppletInstanceList,
+      "nh-sensemaker-settings": NHSensemakerSettings,
+      'nh-dialog': NHDialog,
     };
   }
 
