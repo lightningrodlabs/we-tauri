@@ -313,7 +313,6 @@ export class DashboardFilterMap extends LitElement {
                   return html`
                     <style>
                       ${unsafeCSS(assessWidgetStyles[1])}
-                      ${unsafeCSS(displayWidgetStyles[1])}
                     </style>
                     <div class="widget-wrapper">${assessWidget.render()}</div>
                   `;
