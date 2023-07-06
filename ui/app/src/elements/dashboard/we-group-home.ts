@@ -20,6 +20,8 @@ import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
 import { NHCard } from "../components/nh/layout/card";
+import { NHSensemakerSettings } from "./nh-sensemaker-settings";
+import { NHDialog } from "../components/nh/layout/dialog";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -326,6 +328,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,
       "applet-not-installed": AppletNotInstalled,
+      "nh-sensemaker-settings": NHSensemakerSettings,
+      'nh-dialog': NHDialog,
     };
   }
 

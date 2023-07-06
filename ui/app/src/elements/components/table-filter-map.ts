@@ -131,6 +131,7 @@ export class DashboardFilterMap extends LitElement {
 
     const contexts = await this._sensemakerStore.getCulturalContext(this.selectedContext);
     try {
+      //@ts-ignore
       this._contextEntry = decode(contexts.entry.Present.entry) as CulturalContext;
     } catch (error) {
       console.log('No context entry exists for that context entry hash!');
@@ -141,6 +142,7 @@ export class DashboardFilterMap extends LitElement {
     if (!this.selectedDimensions) return;
 
     try {
+      //@ts-ignore
       const appInfo = await this._sensemakerStore.client.appWebsocket.appInfo({
         installed_app_id: 'we',
       });
@@ -302,9 +304,9 @@ export class DashboardFilterMap extends LitElement {
                   return html`
                     <style>
                       ${unsafeCSS(assessWidgetStyles[1])}
-                      ${unsafeCSS(displayWidgetStyles[1])}
                     </style>
                     <div class="widget-wrapper">
+                      ${displayWidget.render()}
                       ${assessWidget.render()}
                     </div>
                   `;
