@@ -1,5 +1,6 @@
 use holochain::conductor::{
-    config::{ConductorConfig, KeystoreConfig},
+    config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
+    interface::InterfaceDriver,
     Conductor, ConductorHandle,
 };
 use holochain_client::AdminWebsocket;
@@ -34,16 +35,18 @@ pub async fn launch(
     password: String,
     mdns: bool,
 ) -> WeResult<ConductorHandle> {
-    let admin_port: u16 = match option_env!("ADMIN_PORT") {
-        Some(port) => port.parse().unwrap(),
-        None => portpicker::pick_unused_port().expect("No ports free"),
-    };
-
     let mut config = ConductorConfig::default();
     config.environment_path = fs.conductor_path().into();
     config.keystore = KeystoreConfig::LairServerInProc {
         lair_root: Some(fs.keystore_path()),
     };
+    if let Some(admin_port) = option_env!("ADMIN_PORT") {
+        config.admin_interfaces = Some(vec![AdminInterfaceConfig {
+            driver: InterfaceDriver::Websocket {
+                port: admin_port.parse().unwrap(),
+            },
+        }])
+    }
 
     // TODO: set the DHT arc depending on whether this is mobile
 

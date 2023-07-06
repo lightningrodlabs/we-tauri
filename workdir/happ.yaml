@@ -6,7 +6,7 @@ roles:
   - name: group
     provisioning:
       strategy: create
-      deferred: true
+      deferred: false
     dna:
       bundled: "../dnas/group/workdir/group.dna"
       properties: ~

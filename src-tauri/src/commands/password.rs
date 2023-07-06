@@ -1,7 +1,12 @@
 use futures::lock::Mutex;
 use tauri::{AppHandle, Manager};
 
-use crate::{config::WeConfig, filesystem::WeFileSystem, launch::launch, state::WeResult};
+use crate::{
+    config::WeConfig,
+    filesystem::WeFileSystem,
+    launch::{get_admin_ws, launch},
+    state::WeResult,
+};
 
 #[tauri::command]
 pub async fn is_keystore_initialized(fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
@@ -22,7 +27,10 @@ pub async fn create_password(
 ) -> WeResult<()> {
     let conductor = launch(&config, &fs, password, mdns).await?;
 
+    let admin_ws = get_admin_ws(&conductor).await?;
+
     app_handle.manage(Mutex::new(conductor));
+    app_handle.manage(admin_ws);
 
     Ok(())
 }

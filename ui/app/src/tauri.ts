@@ -114,6 +114,18 @@ export async function openDevhub() {
   return invoke("open_devhub");
 }
 
+export async function isDevModeEnabled(): Promise<boolean> {
+  return invoke("is_dev_mode_enabled");
+}
+
+export async function enableDevMode() {
+  return invoke("enable_dev_mode");
+}
+
+export async function disableDevMode() {
+  return invoke("disable_dev_mode");
+}
+
 /** Copied from https://github.com/holochain/holochain-client-js/blob/main/src/environments/launcher.ts */
 type TauriByteArray = number[]; // Tauri requires a number array instead of a Uint8Array
 
@@ -146,7 +158,7 @@ export const signZomeCallTauri = async (request: CallZomeRequest) => {
     zome_name: request.zome_name,
     fn_name: request.fn_name,
     payload: Array.from(encode(request.payload)),
-    nonce: Array.from(await randomNonce()),
+    nonce: Array.from(randomNonce()),
     expires_at: getNonceExpiration(),
   };
 

@@ -24,7 +24,7 @@ mod launch;
 mod state;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
-    devhub::open_devhub,
+    devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_devhub},
     install_applet_bundle::{fetch_icon, install_applet_bundle},
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
@@ -42,6 +42,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
             open_devhub,
+            is_dev_mode_enabled,
+            enable_dev_mode,
+            disable_dev_mode,
             install_applet_bundle,
             create_password,
             enter_password,
@@ -131,7 +134,7 @@ fn main() {
             tauri::async_runtime::block_on(async move {
                 let we_fs = app_handle.state::<WeFileSystem>();
                 let mutex = app_handle.state::<Mutex<ConductorHandle>>();
-                let mut conductor = mutex.lock().await;
+                let conductor = mutex.lock().await;
 
                 let uri_without_protocol = request
                     .uri()

@@ -39,13 +39,13 @@ import "./your-settings.js";
 import "../../custom-views/elements/all-custom-views.js";
 import "./create-custom-group-view.js";
 import "./edit-custom-group-view.js";
+import "../../applet-bundles/elements/publish-applet-button.js";
 import { AddRelatedGroupDialog } from "./add-related-group-dialog.js";
 
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { openDevhub } from "../../tauri.js";
 import { weStyles } from "../../shared-styles.js";
 
 type View =
@@ -323,9 +323,7 @@ export class GroupHome extends LitElement {
               <span class="title" style="flex: 1"
                 >${msg("Applets Library")}</span
               >
-              <sl-button @click=${() => openDevhub()}
-                >${msg("Publish an applet")}</sl-button
-              >
+              <publish-applet-button></publish-applet-button>
             </div>
 
             <installable-applets

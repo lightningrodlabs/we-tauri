@@ -4,6 +4,7 @@ use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use holochain::prelude::AgentPubKeyB64;
 use holochain_client::AgentPubKey;
+use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
 use holochain_launcher_utils::window_builder::happ_window_builder;
 use holochain_types::web_app::WebAppBundle;
@@ -16,17 +17,42 @@ use crate::launch::get_admin_ws;
 use crate::state::WeResult;
 
 #[tauri::command]
+pub async fn is_dev_mode_enabled(
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+) -> WeResult<bool> {
+    // let mut admin_ws = (*(admin_ws)).clone();
+    let conductor = conductor.lock().await;
+
+    let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
+
+    Ok(apps
+        .iter()
+        .map(|info| info.installed_app_id.clone())
+        .collect::<Vec<String>>()
+        .contains(&devhub_app_id()))
+}
+
+#[tauri::command]
 pub async fn enable_dev_mode(
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     agent_key_b64: String,
 ) -> WeResult<()> {
-    let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
+    if is_dev_mode_enabled(conductor.clone()).await? {
+        let conductor = conductor.lock().await;
 
+        let mut admin_ws = get_admin_ws(&conductor).await?;
+        admin_ws.enable_app(devhub_app_id()).await?;
+        return Ok(());
+    }
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
     let agent_key =
         AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_key_b64.as_str()).unwrap());
@@ -46,6 +72,17 @@ pub async fn enable_dev_mode(
     fs.webapp_store()
         .store_webapp(&devhub_app_id(), &dev_hub_bundle)
         .await?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn disable_dev_mode(conductor: tauri::State<'_, Mutex<ConductorHandle>>) -> WeResult<()> {
+    let conductor = conductor.lock().await;
+
+    let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    admin_ws.disable_app(devhub_app_id()).await?;
 
     Ok(())
 }
