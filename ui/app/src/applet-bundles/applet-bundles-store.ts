@@ -12,7 +12,6 @@ import {
   AdminWebsocket,
   AppAgentClient,
   AppInfo,
-  AppStatusFilter,
   decodeHashFromBase64,
   encodeHashToBase64,
   EntryHash,
@@ -21,13 +20,15 @@ import {
 import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
 import { getAllApps } from "../processes/appstore/get-happs.js";
+import { ConductorInfo } from "../tauri.js";
 import { isAppRunning } from "../utils.js";
 
 export class AppletBundlesStore {
   constructor(
     public appstoreClient: AppAgentClient,
     public weClient: AppAgentClient,
-    public adminWebsocket: AdminWebsocket
+    public adminWebsocket: AdminWebsocket,
+    public conductorInfo: ConductorInfo
   ) {}
 
   allAppletBundles = lazyLoadAndPoll(
@@ -48,10 +49,11 @@ export class AppletBundlesStore {
     pipe(this.appletBundles.get(appletBundleHash), (appEntry) =>
       retryUntilSuccess(async () => {
         if (!appEntry) throw new Error("Can't find app bundle");
-
+        console.log("hey", appEntry);
         const icon: string = await invoke("fetch_icon", {
           appEntryHashB64: encodeHashToBase64(appEntry.id),
         });
+        console.log("hey2");
 
         if (!icon) throw new Error("Icon was not found");
 
@@ -119,15 +121,13 @@ export class AppletBundlesStore {
   });
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
-    const weAppInfo = await this.weClient.appInfo();
-    const devhubAppInfo = await this.appstoreClient.appInfo();
-
+    const nonAppletsApps = [
+      this.conductorInfo.we_app_id,
+      this.conductorInfo.devhub_app_id,
+      this.conductorInfo.appstore_app_id,
+    ];
     return apps
-      .filter(
-        (app) =>
-          app.installed_app_id !== weAppInfo.installed_app_id &&
-          app.installed_app_id !== devhubAppInfo.installed_app_id
-      )
+      .filter((app) => !nonAppletsApps.includes(app.installed_app_id))
       .map((app) => decodeHashFromBase64(app.installed_app_id));
   });
 

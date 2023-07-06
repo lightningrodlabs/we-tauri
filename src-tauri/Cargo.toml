@@ -17,7 +17,14 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
+tauri = { version = "1.2", features = [
+  "cli",
+  "clipboard-write-text",
+  "http-all",
+  "process-command-api",
+  "protocol-all",
+  "shell-open",
+] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
@@ -51,7 +58,8 @@ bytes = "1"
 zip = "0.5"
 
 devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "10faff9c57af369f353330355eec5e0dac1c8f5d" }
-appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "d2648f20f44240833c91f5eeb08671aaf560260f" }
+appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "a2dc60c80ddb1f82ae28817e6f9bca3416271b1d" }
+appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "a2dc60c80ddb1f82ae28817e6f9bca3416271b1d" }
 hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "4c2075ec54349f9d6a4e2de84d7846282a0938fd" }
 essence_payloads = "0.1"
 

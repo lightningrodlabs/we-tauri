@@ -8,13 +8,13 @@ use devhub_types::{
     dnarepo_entry_types::DnaVersionPackage,
     encode_bundle,
     happ_entry_types::{HappManifest, WebHappManifest},
-    DevHubResponse, DnaEntry, DnaVersionEntry, Entity, EntityResponse, EntityType, GetEntityInput,
+    DevHubResponse, DnaEntry, DnaVersionEntry, Entity, EntityResponse, EntityType,
 };
 use essence::EssenceResponse;
 use futures::lock::Mutex;
 use hdk::prelude::{
-    CellId, EntryHash, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName, Serialize,
-    SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
+    ActionHash, CellId, EntryHash, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName,
+    Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
 };
 use holochain::{
     conductor::{
@@ -23,7 +23,7 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        AgentPubKeyB64, AppBundleSource, DnaHash, DnaHashB64, EntryHashB64,
+        ActionHashB64, AgentPubKeyB64, AppBundleSource, DnaHash, DnaHashB64, EntryHashB64,
     },
 };
 use holochain_client::{AgentPubKey, AppInfo, AppWebsocket, InstallAppPayload};
@@ -47,7 +47,7 @@ pub async fn fetch_icon(
     app_entry_hash_b64: String,
 ) -> WeResult<String> {
     let app_entry_hash =
-        EntryHash::from(EntryHashB64::from_b64_str(app_entry_hash_b64.as_str()).unwrap());
+        ActionHash::from(ActionHashB64::from_b64_str(app_entry_hash_b64.as_str()).unwrap());
 
     if let Some(icon) = we_fs.icon_store().get_icon(&app_entry_hash)? {
         return Ok(icon);
@@ -64,8 +64,7 @@ pub async fn fetch_icon(
         conductor.keystore().lair_client(),
     )
     .await?;
-
-    let response: EntityResponse<AppEntry> = client
+    let r = client
         .call_zome_fn(
             RoleName::from("appstore"),
             ZomeName::from("appstore_api"),
@@ -74,27 +73,34 @@ pub async fn fetch_icon(
                 id: app_entry_hash.clone(),
             })?,
         )
-        .await?
-        .decode()?;
+        .await?;
+    let response: appstore::EntityResponse<AppEntry> = r.decode()?;
     let app_entry = response.as_result()?;
 
     let result = client
         .call_zome_fn(
             RoleName::from("appstore"),
-            ZomeName::from("mere_memore_api"),
+            ZomeName::from("mere_memory_api"),
             FunctionName::from("retrieve_bytes"),
             ExternIO::encode(app_entry.content.icon.clone())?,
         )
         .await?;
+    println!("asdf {:?}", result);
     let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
     let bytes = bytes.as_result()?;
-    let icon_src = String::from_utf8(bytes)?;
+    println!("hi3 {:?} {:?}", bytes, app_entry.content.icon.clone());
+    let icon_src = String::from_utf8(bytes.to_vec())?;
 
     we_fs
         .icon_store()
         .store_icon(&app_entry_hash, icon_src.clone())?;
 
     Ok(icon_src)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GetEntityInput {
+    pub id: ActionHash,
 }
 
 pub async fn internal_fetch_applet_bundle(
@@ -324,9 +330,8 @@ async fn get_available_hosts(
     for host in hosts.iter() {
         let mut client = app_store_client.clone();
         let host = host.clone();
-        let devhub_dna = devhub_dna.clone();
         handles.push(tauri::async_runtime::spawn(async move {
-            is_host_available(&mut client, &devhub_dna, &host).await
+            is_host_available(&mut client, &host).await
         }));
     }
 
@@ -347,7 +352,6 @@ pub struct Metadata {
 }
 async fn is_host_available(
     app_store_client: &mut AppAgentWebsocket,
-    devhub_dna: &DnaHash,
     host: &AgentPubKey,
 ) -> WeResult<bool> {
     let response: EssenceResponse<bool, Metadata, ()> = app_store_client
@@ -419,120 +423,120 @@ pub struct Bundle {
     pub manifest: Manifest,
     pub resources: BTreeMap<String, Vec<u8>>,
 }
-async fn get_dna_package(
-    client: &mut AppAgentWebsocket,
-    dna_version_hash: EntryHash,
-) -> WeResult<Entity<DnaVersionPackage>> {
-    let result = client
-        .call_zome_fn(
-            RoleName::from("dnarepo"),
-            ZomeName::from("dna_library"),
-            FunctionName::from("get_dna_version"),
-            ExternIO::encode(GetEntityInput {
-                id: dna_version_hash.clone(),
-            })?,
-        )
-        .await?;
-    let dna_version: EntityResponse<DnaVersionEntry> = result.decode()?;
-    let dna_version = dna_version.as_result()?;
+// async fn get_dna_package(
+//     client: &mut AppAgentWebsocket,
+//     dna_version_hash: EntryHash,
+// ) -> WeResult<Entity<DnaVersionPackage>> {
+//     let result = client
+//         .call_zome_fn(
+//             RoleName::from("dnarepo"),
+//             ZomeName::from("dna_library"),
+//             FunctionName::from("get_dna_version"),
+//             ExternIO::encode(GetEntityInput {
+//                 id: dna_version_hash.clone(),
+//             })?,
+//         )
+//         .await?;
+//     let dna_version: EntityResponse<DnaVersionEntry> = result.decode()?;
+//     let dna_version = dna_version.as_result()?;
 
-    let result = client
-        .call_zome_fn(
-            RoleName::from("dnarepo"),
-            ZomeName::from("dna_library"),
-            FunctionName::from("get_dna"),
-            ExternIO::encode(GetEntityInput {
-                id: dna_version.content.for_dna.clone(),
-            })?,
-        )
-        .await?;
-    let dna: EntityResponse<DnaEntry> = result.decode()?;
-    let dna = dna.as_result()?;
+//     let result = client
+//         .call_zome_fn(
+//             RoleName::from("dnarepo"),
+//             ZomeName::from("dna_library"),
+//             FunctionName::from("get_dna"),
+//             ExternIO::encode(GetEntityInput {
+//                 id: dna_version.content.for_dna.clone(),
+//             })?,
+//         )
+//         .await?;
+//     let dna: EntityResponse<DnaEntry> = result.decode()?;
+//     let dna = dna.as_result()?;
 
-    let mut integrity_zomes: Vec<BundleIntegrityZomeInfo> = vec![];
-    let mut coordinator_zomes: Vec<BundleZomeInfo> = vec![];
-    let mut resources: BTreeMap<String, Vec<u8>> = BTreeMap::new();
+//     let mut integrity_zomes: Vec<BundleIntegrityZomeInfo> = vec![];
+//     let mut coordinator_zomes: Vec<BundleZomeInfo> = vec![];
+//     let mut resources: BTreeMap<String, Vec<u8>> = BTreeMap::new();
 
-    for zome_ref in dna_version.content.integrity_zomes.iter() {
-        let result = client
-            .call_zome_fn(
-                RoleName::from("dnarepo"),
-                ZomeName::from("mere_memory"),
-                FunctionName::from("retrieve_bytes"),
-                ExternIO::encode(zome_ref.resource.clone())?,
-            )
-            .await?;
-        let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
-        let bytes = bytes.as_result()?;
-        let path = format!("./{}.wasm", zome_ref.name);
+//     for zome_ref in dna_version.content.integrity_zomes.iter() {
+//         let result = client
+//             .call_zome_fn(
+//                 RoleName::from("dnarepo"),
+//                 ZomeName::from("mere_memory"),
+//                 FunctionName::from("retrieve_bytes"),
+//                 ExternIO::encode(zome_ref.resource.clone())?,
+//             )
+//             .await?;
+//         let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
+//         let bytes = bytes.as_result()?;
+//         let path = format!("./{}.wasm", zome_ref.name);
 
-        integrity_zomes.push(BundleIntegrityZomeInfo {
-            name: zome_ref.name.clone(),
-            bundled: path.clone(),
-            hash: None,
-        });
+//         integrity_zomes.push(BundleIntegrityZomeInfo {
+//             name: zome_ref.name.clone(),
+//             bundled: path.clone(),
+//             hash: None,
+//         });
 
-        resources.insert(path, bytes);
-    }
+//         resources.insert(path, bytes);
+//     }
 
-    for zome_ref in dna_version.content.zomes.iter() {
-        let result = client
-            .call_zome_fn(
-                RoleName::from("dnarepo"),
-                ZomeName::from("mere_memory"),
-                FunctionName::from("retrieve_bytes"),
-                ExternIO::encode(zome_ref.resource.clone())?,
-            )
-            .await?;
-        let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
-        let bytes = bytes.as_result()?;
-        let path = format!("./{}.wasm", zome_ref.name);
+//     for zome_ref in dna_version.content.zomes.iter() {
+//         let result = client
+//             .call_zome_fn(
+//                 RoleName::from("dnarepo"),
+//                 ZomeName::from("mere_memory"),
+//                 FunctionName::from("retrieve_bytes"),
+//                 ExternIO::encode(zome_ref.resource.clone())?,
+//             )
+//             .await?;
+//         let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
+//         let bytes = bytes.as_result()?;
+//         let path = format!("./{}.wasm", zome_ref.name);
 
-        coordinator_zomes.push(BundleZomeInfo {
-            name: zome_ref.name.clone(),
-            bundled: path.clone(),
-            hash: None,
-            dependencies: zome_ref
-                .dependencies
-                .iter()
-                .map(|name| DependencyRef {
-                    name: name.to_owned(),
-                })
-                .collect(),
-        });
+//         coordinator_zomes.push(BundleZomeInfo {
+//             name: zome_ref.name.clone(),
+//             bundled: path.clone(),
+//             hash: None,
+//             dependencies: zome_ref
+//                 .dependencies
+//                 .iter()
+//                 .map(|name| DependencyRef {
+//                     name: name.to_owned(),
+//                 })
+//                 .collect(),
+//         });
 
-        resources.insert(path, bytes);
-    }
+//         resources.insert(path, bytes);
+//     }
 
-    let bundle = Bundle {
-        manifest: Manifest {
-            manifest_version: "1".into(),
-            name: dna.content.name,
-            integrity: IntegrityZomes {
-                origin_time: dna_version.content.origin_time.clone(),
-                network_seed: dna_version.content.network_seed.clone(),
-                properties: dna_version.content.properties.clone(),
-                zomes: integrity_zomes,
-            },
-            coordinator: CoordinatorZomes {
-                zomes: coordinator_zomes,
-            },
-        },
-        resources,
-    };
+//     let bundle = Bundle {
+//         manifest: Manifest {
+//             manifest_version: "1".into(),
+//             name: dna.content.name,
+//             integrity: IntegrityZomes {
+//                 origin_time: dna_version.content.origin_time.clone(),
+//                 network_seed: dna_version.content.network_seed.clone(),
+//                 properties: dna_version.content.properties.clone(),
+//                 zomes: integrity_zomes,
+//             },
+//             coordinator: CoordinatorZomes {
+//                 zomes: coordinator_zomes,
+//             },
+//         },
+//         resources,
+//     };
 
-    let dna_pack_bytes =
-        encode_bundle(bundle).map_err(|err| WeError::AppWebsocketError(format!("{:?}", err)))?;
-    let package = dna_version.content.to_package(dna_pack_bytes);
+//     let dna_pack_bytes =
+//         encode_bundle(bundle).map_err(|err| WeError::AppWebsocketError(format!("{:?}", err)))?;
+//     let package = dna_version.content.to_package(dna_pack_bytes);
 
-    Ok(Entity {
-        id: dna_version.id,
-        action: dna_version.action,
-        address: dna_version.address,
-        ctype: EntityType::new("dna_version", "package"),
-        content: package,
-    })
-}
+//     Ok(Entity {
+//         id: dna_version.id,
+//         action: dna_version.action,
+//         address: dna_version.address,
+//         ctype: EntityType::new("dna_version", "package"),
+//         content: package,
+//     })
+// }
 
 #[derive(Clone)]
 struct AppAgentWebsocket {

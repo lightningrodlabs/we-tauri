@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use std::{fs, io::Write};
 
-use hdk::prelude::EntryHash;
-use holochain::prelude::EntryHashB64;
+use hdk::prelude::{ActionHash, EntryHash};
+use holochain::prelude::{ActionHashB64, EntryHashB64};
 use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
@@ -134,18 +134,18 @@ pub struct IconStore {
 }
 
 impl IconStore {
-    fn icon_path(&self, app_entry_hash: &EntryHash) -> PathBuf {
+    fn icon_path(&self, app_entry_hash: &ActionHash) -> PathBuf {
         self.path
-            .join(EntryHashB64::from(app_entry_hash.clone()).to_string())
+            .join(ActionHashB64::from(app_entry_hash.clone()).to_string())
     }
 
-    pub fn store_icon(&self, app_entry_hash: &EntryHash, icon_src: String) -> WeResult<()> {
+    pub fn store_icon(&self, app_entry_hash: &ActionHash, icon_src: String) -> WeResult<()> {
         fs::write(self.icon_path(app_entry_hash), icon_src.as_bytes())?;
 
         Ok(())
     }
 
-    pub fn get_icon(&self, app_entry_hash: &EntryHash) -> WeResult<Option<String>> {
+    pub fn get_icon(&self, app_entry_hash: &ActionHash) -> WeResult<Option<String>> {
         let icon_path = self.icon_path(app_entry_hash);
         if icon_path.exists() {
             let icon = fs::read_to_string(icon_path)?;

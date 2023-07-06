@@ -1,4 +1,8 @@
-import { CallZomeRequestUnsigned } from "@holochain/client";
+import {
+  AgentPubKey,
+  CallZomeRequestUnsigned,
+  encodeHashToBase64,
+} from "@holochain/client";
 import { randomNonce } from "@holochain/client";
 import { CallZomeRequest } from "@holochain/client";
 import { getNonceExpiration } from "@holochain/client";
@@ -30,6 +34,7 @@ export interface ConductorInfo {
   applets_ui_port: number;
   we_app_id: string;
   appstore_app_id: string;
+  devhub_app_id: string;
   applet_iframe_protocol: AppletIframeProtocol;
 }
 
@@ -112,6 +117,10 @@ export async function createPassword(
 
 export async function openDevhub() {
   return invoke("open_devhub");
+}
+
+export async function openAppStore() {
+  return invoke("open_appstore");
 }
 
 export async function isDevModeEnabled(): Promise<boolean> {

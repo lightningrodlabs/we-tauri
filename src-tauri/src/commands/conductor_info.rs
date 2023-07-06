@@ -5,7 +5,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
-    default_apps::{appstore_app_id, we_app_id},
+    default_apps::{appstore_app_id, devhub_app_id, we_app_id},
     state::WeResult,
 };
 
@@ -22,6 +22,7 @@ pub struct ConductorInfo {
     applets_ui_port: u16,
     we_app_id: String,
     appstore_app_id: String,
+    devhub_app_id: String,
 }
 
 #[tauri::command]
@@ -39,5 +40,6 @@ pub async fn get_conductor_info(
         applets_ui_port: config.applets_ui_port,
         we_app_id: we_app_id(),
         appstore_app_id: appstore_app_id(),
+        devhub_app_id: devhub_app_id(),
     })
 }

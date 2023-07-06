@@ -2,6 +2,9 @@ import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
 import { execSync } from "child_process";
 import yaml from "js-yaml";
 import fs from "fs";
+import crypto from "crypto";
+import { wrapPathInSvg } from "@holochain-open-dev/elements";
+import { mdiAbacus } from "@mdi/js";
 
 const TESTING_APPLETS_PATH = `${process.cwd()}/testing-applets`;
 
@@ -23,23 +26,57 @@ async function publishApplets() {
     app.installed_app_id.includes("DevHub")
   ).installed_app_id;
 
+  const appstoreAppId = apps.find((app) =>
+    app.installed_app_id.includes("appstore")
+  ).installed_app_id;
+
   const appPorts = await adminWs.listAppInterfaces();
-  const appWs = await AppAgentWebsocket.connect(
+  const devhubClient = await AppAgentWebsocket.connect(
     `ws://localhost:${appPorts[0]}`,
     devhubAppId,
     100000
   );
-  const devhubCells = await appWs.appInfo();
+  const appstoreClient = await AppAgentWebsocket.connect(
+    `ws://localhost:${appPorts[0]}`,
+    appstoreAppId,
+    100000
+  );
+  const devhubCells = await devhubClient.appInfo();
   for (const [role_name, [cell]] of Object.entries(devhubCells.cell_info)) {
     await adminWs.authorizeSigningCredentials(cell["provisioned"].cell_id, {
       All: null,
     });
   }
-  const allAppsOutput = await appWs.callZome({
-    role_name: "happs",
-    fn_name: "get_happs_by_tags",
-    zome_name: "happ_library",
-    payload: ["we-applet"],
+  const appstoreCells = await appstoreClient.appInfo();
+  for (const [role_name, [cell]] of Object.entries(appstoreCells.cell_info)) {
+    await adminWs.authorizeSigningCredentials(cell["provisioned"].cell_id, {
+      All: null,
+    });
+  }
+
+  const publisher = await appstoreClient.callZome({
+    role_name: "appstore",
+    zome_name: "appstore_api",
+    fn_name: "create_publisher",
+    payload: {
+      name: "holo",
+      location: {
+        country: "es",
+        region: "Catalunya",
+        city: "Barcelona",
+      },
+      website: { url: "https://lightningrodlabs.org", context: "website" },
+      icon: crypto.randomBytes(1_000),
+      email: "some@email.org",
+      editors: [],
+    },
+  });
+
+  const allAppsOutput = await appstoreClient.callZome({
+    role_name: "appstore",
+    zome_name: "appstore_api",
+    fn_name: "get_all_apps",
+    payload: null,
   });
   const appletsPaths = getAppletsPaths();
   for (const path of appletsPaths) {
@@ -68,7 +105,7 @@ async function publishApplets() {
       const integrityZomeEntities = [];
       const coordinatorZomeEntities = [];
       for (const izome of dnaManifest.integrity.zomes) {
-        const izomeEntity = await appWs.callZome({
+        const izomeEntity = await devhubClient.callZome({
           role_name: "dnarepo",
           zome_name: "dna_library",
           fn_name: "create_zome",
@@ -82,7 +119,7 @@ async function publishApplets() {
         const zome_bytes = fs.readFileSync(
           `${TESTING_APPLETS_PATH}/${appletName}/happ/dnas/${dna}/zomes/integrity/${izome.name}.wasm`
         );
-        const izomeVersionEntity = await appWs.callZome({
+        const izomeVersionEntity = await devhubClient.callZome({
           role_name: "dnarepo",
           zome_name: "dna_library",
           fn_name: "create_zome_version",
@@ -98,7 +135,7 @@ async function publishApplets() {
         integrityZomeEntities.push([izomeEntity, izomeVersionEntity]);
       }
       for (const czome of dnaManifest.coordinator.zomes) {
-        const czomeEntity = await appWs.callZome({
+        const czomeEntity = await devhubClient.callZome({
           role_name: "dnarepo",
           zome_name: "dna_library",
           fn_name: "create_zome",
@@ -112,7 +149,7 @@ async function publishApplets() {
         const zome_bytes = fs.readFileSync(
           `${TESTING_APPLETS_PATH}/${appletName}/happ/dnas/${dna}/zomes/coordinator/${czome.name}.wasm`
         );
-        const czomeVersionEntity = await appWs.callZome({
+        const czomeVersionEntity = await devhubClient.callZome({
           role_name: "dnarepo",
           zome_name: "dna_library",
           fn_name: "create_zome_version",
@@ -126,7 +163,7 @@ async function publishApplets() {
         });
         coordinatorZomeEntities.push([czomeEntity, czomeVersionEntity]);
       }
-      const dnaEntity = await appWs.callZome({
+      const dnaEntity = await devhubClient.callZome({
         role_name: "dnarepo",
         zome_name: "dna_library",
         fn_name: "create_dna",
@@ -136,7 +173,7 @@ async function publishApplets() {
           description: "",
         },
       });
-      const dnaVersionEntity = await appWs.callZome({
+      const dnaVersionEntity = await devhubClient.callZome({
         role_name: "dnarepo",
         zome_name: "dna_library",
         fn_name: "create_dna_version",
@@ -173,7 +210,7 @@ async function publishApplets() {
       fs.readFileSync(`${TESTING_APPLETS_PATH}/${appletName}/happ/happ.yaml`)
     );
 
-    const appEntity = await appWs.callZome({
+    const appEntity = await devhubClient.callZome({
       role_name: "happs",
       zome_name: "happ_library",
       fn_name: "create_happ",
@@ -189,7 +226,7 @@ async function publishApplets() {
       `${TESTING_APPLETS_PATH}/${appletName}/ui.zip`
     );
 
-    const fileEntity = await appWs.callZome({
+    const fileEntity = await devhubClient.callZome({
       role_name: "web_assets",
       zome_name: "web_assets",
       fn_name: "create_file",
@@ -197,7 +234,7 @@ async function publishApplets() {
         file_bytes,
       },
     });
-    const guiEntity = await appWs.callZome({
+    const guiEntity = await devhubClient.callZome({
       role_name: "happs",
       zome_name: "happ_library",
       fn_name: "create_gui",
@@ -206,7 +243,7 @@ async function publishApplets() {
         description: "",
       },
     });
-    const guiVersionEntity = await appWs.callZome({
+    const guiVersionEntity = await devhubClient.callZome({
       role_name: "happs",
       zome_name: "happ_library",
       fn_name: "create_gui_release",
@@ -218,7 +255,7 @@ async function publishApplets() {
         web_asset_id: fileEntity.payload.address,
       },
     });
-    const appVersionEntity = await appWs.callZome({
+    const appVersionEntity = await devhubClient.callZome({
       role_name: "happs",
       zome_name: "happ_library",
       fn_name: "create_happ_release",
@@ -236,6 +273,44 @@ async function publishApplets() {
           version: dve.payload.id,
           wasm_hash: dve.payload.content.wasm_hash,
         })),
+      },
+    });
+
+    const happlibraryDnaHash =
+      devhubCells.cell_info["happs"][0]["provisioned"].cell_id[0];
+
+    const iconSrc = wrapPathInSvg(mdiAbacus);
+    const iconBytes = Buffer.from(iconSrc, "utf8");
+    const bytesHash = await appstoreClient.callZome({
+      role_name: "appstore",
+      zome_name: "mere_memory_api",
+      fn_name: "save_bytes",
+      payload: iconBytes,
+    });
+    const bytes = await appstoreClient.callZome({
+      role_name: "appstore",
+      zome_name: "mere_memory_api",
+      fn_name: "retrieve_bytes",
+      payload: bytesHash.payload,
+    });
+    console.log(bytes);
+    console.log(bytesHash);
+    await appstoreClient.callZome({
+      role_name: "appstore",
+      zome_name: "appstore_api",
+      fn_name: "create_app",
+      payload: {
+        title: appletName,
+        subtitle: happManifest.description || "",
+        description: "",
+        icon: bytesHash.payload,
+        publisher: publisher.payload.id,
+        devhub_address: {
+          dna: happlibraryDnaHash,
+          happ: appVersionEntity.payload.id,
+          gui: guiVersionEntity.payload.id,
+        },
+        editors: [],
       },
     });
 
@@ -334,7 +409,7 @@ async function publishAppletsRetry() {
     await publishApplets();
   } catch (e) {
     console.log(
-      "Couldn't publish applets yet because the conductor is still setting up, have you entered your password? Retrying again in a few seconds..."
+      "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
     );
     setTimeout(async () => {
       await publishAppletsRetry();

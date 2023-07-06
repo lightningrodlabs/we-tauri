@@ -332,7 +332,7 @@ export class WeStore {
             pickBy(
               installedApplets,
               (appletStore) =>
-                appletStore.applet.devhub_happ_release_hash.toString() ===
+                appletStore.applet.app_entry_hash.toString() ===
                 appBundleHash.toString()
             )
           ),

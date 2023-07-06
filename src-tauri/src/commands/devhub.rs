@@ -2,14 +2,13 @@ use std::collections::HashMap;
 
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
-use holochain::prelude::AgentPubKeyB64;
-use holochain_client::AgentPubKey;
 use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
 use holochain_launcher_utils::window_builder::happ_window_builder;
 use holochain_types::web_app::WebAppBundle;
 
 use crate::config::WeConfig;
+use crate::default_apps::appstore_app_id;
 use crate::default_apps::devhub_app_id;
 use crate::default_apps::network_seed;
 use crate::filesystem::WeFileSystem;
@@ -39,7 +38,6 @@ pub async fn enable_dev_mode(
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
-    agent_key_b64: String,
 ) -> WeResult<()> {
     if is_dev_mode_enabled(conductor.clone()).await? {
         let conductor = conductor.lock().await;
@@ -54,9 +52,7 @@ pub async fn enable_dev_mode(
 
     let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
-    let agent_key =
-        AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_key_b64.as_str()).unwrap());
-
+    let agent_key = admin_ws.generate_agent_pub_key().await?;
     admin_ws
         .install_app(InstallAppPayload {
             source: holochain_types::prelude::AppBundleSource::Bundle(
@@ -68,6 +64,7 @@ pub async fn enable_dev_mode(
             membrane_proofs: HashMap::new(),
         })
         .await?;
+    admin_ws.enable_app(devhub_app_id()).await?;
 
     fs.webapp_store()
         .store_webapp(&devhub_app_id(), &dev_hub_bundle)
@@ -104,6 +101,36 @@ pub async fn open_devhub(
         devhub_app_id,
         String::from("devhub"),
         String::from("DevHub"),
+        holochain_launcher_utils::window_builder::UISource::Path(ui_path.clone()),
+        ui_path.join(".localstorage"),
+        conductor.list_app_interfaces().await?[0],
+        conductor
+            .get_arbitrary_admin_websocket_port()
+            .expect("Cannot get admin_port"),
+        true,
+    )
+    .build()?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn open_appstore(
+    app_handle: tauri::AppHandle,
+    fs: tauri::State<'_, WeFileSystem>,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+) -> WeResult<()> {
+    let appstore_app_id = appstore_app_id();
+
+    let ui_path = fs.webapp_store().webhapp_ui_path(&appstore_app_id);
+
+    let conductor = conductor.lock().await;
+
+    happ_window_builder(
+        &app_handle,
+        appstore_app_id,
+        String::from("appstore"),
+        String::from("AppStore"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_path.clone()),
         ui_path.join(".localstorage"),
         conductor.list_app_interfaces().await?[0],

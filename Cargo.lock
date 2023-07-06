@@ -190,9 +190,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "appstore"
+version = "0.3.0"
+source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae28817e6f9bca3416271b1d#a2dc60c80ddb1f82ae28817e6f9bca3416271b1d"
+dependencies = [
+ "appstore_types",
+ "essence_payloads",
+ "hc_crud_caps",
+ "hc_utils",
+ "hdi",
+ "hdk",
+ "serde",
+ "serde_yaml 0.8.26",
+ "thiserror",
+]
+
+[[package]]
 name = "appstore_types"
 version = "0.3.0"
-source = "git+https://github.com/holochain/app-store-dnas?rev=d2648f20f44240833c91f5eeb08671aaf560260f#d2648f20f44240833c91f5eeb08671aaf560260f"
+source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae28817e6f9bca3416271b1d#a2dc60c80ddb1f82ae28817e6f9bca3416271b1d"
 dependencies = [
  "essence_payloads",
  "hc_crud_caps",
@@ -2664,6 +2680,20 @@ dependencies = [
  "serde",
  "serde_bytes",
  "sodoken 0.0.7",
+]
+
+[[package]]
+name = "hc_utils"
+version = "0.3.0"
+source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae28817e6f9bca3416271b1d#a2dc60c80ddb1f82ae28817e6f9bca3416271b1d"
+dependencies = [
+ "essence_payloads",
+ "hc_crud_caps",
+ "hdi",
+ "hdk",
+ "serde",
+ "serde_yaml 0.8.26",
+ "thiserror",
 ]
 
 [[package]]
@@ -9064,6 +9094,7 @@ name = "we"
 version = "0.0.19"
 dependencies = [
  "anyhow",
+ "appstore",
  "appstore_types",
  "bytes",
  "devhub_types",

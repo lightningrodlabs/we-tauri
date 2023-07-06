@@ -62,6 +62,7 @@ pub async fn install_default_apps_if_necessary(
                 membrane_proofs: HashMap::new(),
             })
             .await?;
+        admin_ws.enable_app(appstore_app_id()).await?;
 
         we_fs
             .webapp_store()
@@ -76,10 +77,11 @@ pub async fn install_default_apps_if_necessary(
                 source: holochain_types::prelude::AppBundleSource::Bundle(we_bundle),
                 agent_key,
                 network_seed: Some(network_seed),
-                installed_app_id: Some(we_app_id),
+                installed_app_id: Some(we_app_id.clone()),
                 membrane_proofs: HashMap::new(),
             })
             .await?;
+        admin_ws.enable_app(we_app_id).await?;
     }
 
     Ok(())
