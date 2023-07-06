@@ -89,20 +89,20 @@ const highStarThreshold: ConfigThreshold = {
 
 // ==========CULTURAL CONTEXTS==========
 const mostThumbsUpContext: ConfigCulturalContext = {
-    "name": "most_thumbs_up",
+    "name": "high interest",
     "resource_def": genericResourceDef,
     "thresholds": [wellRatedThreshold],
     "order_by": [[totalThumbsUpDimension, { "Biggest": null }]]
 }
 const leastThumbsUpContext: ConfigCulturalContext = {
-    "name": "least_thumbs_up",
+    "name": "low interest",
     "resource_def": genericResourceDef,
     "thresholds": [poorlyRatedThreshold],
     "order_by": [[totalThumbsUpDimension, { "Smallest": null }]]
 }
 
 const highStarContext: ConfigCulturalContext = {
-    "name": "high_star",
+    "name": "saved",
     "resource_def": genericResourceDef,
     "thresholds": [highStarThreshold],
     "order_by": [[averageStarDimension, { "Biggest": null }]]
