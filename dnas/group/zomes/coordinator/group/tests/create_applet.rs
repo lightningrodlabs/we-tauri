@@ -28,7 +28,7 @@ async fn create_applet() {
     let applet = Applet {
         custom_name: String::from("custom name"),
         description: String::from("description"),
-        app_entry_hash: fixt!(EntryHash),
+        appstore_app_hash: fixt!(ActionHash),
 
         network_seed: None,
         properties: BTreeMap::new(), // Segmented by RoleId

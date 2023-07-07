@@ -66,8 +66,8 @@ pub async fn enable_dev_mode(
         .await?;
     admin_ws.enable_app(devhub_app_id()).await?;
 
-    fs.webapp_store()
-        .store_webapp(&devhub_app_id(), &dev_hub_bundle)
+    fs.ui_store()
+        .extract_and_store_ui(&devhub_app_id(), &dev_hub_bundle)
         .await?;
 
     Ok(())
@@ -92,7 +92,7 @@ pub async fn open_devhub(
 ) -> WeResult<()> {
     let devhub_app_id = devhub_app_id();
 
-    let ui_path = fs.webapp_store().webhapp_ui_path(&devhub_app_id);
+    let ui_path = fs.ui_store().ui_path(&devhub_app_id);
 
     let conductor = conductor.lock().await;
 
@@ -122,7 +122,7 @@ pub async fn open_appstore(
 ) -> WeResult<()> {
     let appstore_app_id = appstore_app_id();
 
-    let ui_path = fs.webapp_store().webhapp_ui_path(&appstore_app_id);
+    let ui_path = fs.ui_store().ui_path(&appstore_app_id);
 
     let conductor = conductor.lock().await;
 

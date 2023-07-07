@@ -5,10 +5,8 @@ use std::{
 
 use appstore_types::AppEntry;
 use devhub_types::{
-    dnarepo_entry_types::DnaVersionPackage,
-    encode_bundle,
     happ_entry_types::{HappManifest, WebHappManifest},
-    DevHubResponse, DnaEntry, DnaVersionEntry, Entity, EntityResponse, EntityType,
+    DevHubResponse,
 };
 use essence::EssenceResponse;
 use futures::lock::Mutex;
@@ -23,10 +21,11 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        ActionHashB64, AgentPubKeyB64, AppBundleSource, DnaHash, DnaHashB64, EntryHashB64,
+        ActionHashB64, AgentPubKeyB64, AppBundleSource, AppStatus, DnaHash, DnaHashB64,
+        EntryHashB64,
     },
 };
-use holochain_client::{AgentPubKey, AppInfo, AppWebsocket, InstallAppPayload};
+use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, AppWebsocket, InstallAppPayload};
 use holochain_launcher_utils::zome_call_signing::sign_zome_call_with_client;
 use holochain_state::nonce::fresh_nonce;
 use holochain_types::web_app::WebAppBundle;
@@ -85,10 +84,8 @@ pub async fn fetch_icon(
             ExternIO::encode(app_entry.content.icon.clone())?,
         )
         .await?;
-    println!("asdf {:?}", result);
     let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
     let bytes = bytes.as_result()?;
-    println!("hi3 {:?} {:?}", bytes, app_entry.content.icon.clone());
     let icon_src = String::from_utf8(bytes.to_vec())?;
 
     we_fs
@@ -110,22 +107,17 @@ pub async fn internal_fetch_applet_bundle(
     happ_release_hash: EntryHash,
     gui_release_hash: EntryHash,
 ) -> WeResult<WebAppBundle> {
-    let happ_release_hash_b64 = EntryHashB64::from(happ_release_hash.clone()).to_string();
-
-    if let Some(web_app) = we_fs.webapp_store().get_webapp(&happ_release_hash_b64)? {
+    if let Some(web_app) = we_fs.webapp_store().get_webapp(&happ_release_hash)? {
         return Ok(web_app);
     }
 
     let bytes = fetch_web_happ(
-        conductor.list_app_interfaces().await?[0],
-        conductor.keystore().lair_client(),
+        conductor,
         devhub_dna,
-        happ_release_hash,
+        happ_release_hash.clone(),
         gui_release_hash,
     )
     .await?;
-
-    // TODO: remove all this when devhub supports icons
 
     let web_app_bundle = WebAppBundle::decode(&bytes).or(Err(WeError::FileSystemError(
         String::from("Failed to read Web hApp bundle file"),
@@ -133,7 +125,7 @@ pub async fn internal_fetch_applet_bundle(
 
     we_fs
         .webapp_store()
-        .store_webapp(&happ_release_hash_b64, &web_app_bundle)
+        .store_webapp(&happ_release_hash, &web_app_bundle)
         .await?;
 
     Ok(web_app_bundle)
@@ -193,10 +185,14 @@ pub async fn install_applet_bundle(
         .install_app(InstallAppPayload {
             source: AppBundleSource::Bundle(web_app_bundle.happ_bundle().await?),
             agent_key: pub_key,
-            installed_app_id: Some(happ_release_hash),
+            installed_app_id: Some(app_id.clone()),
             network_seed,
             membrane_proofs: converted_membrane_proofs,
         })
+        .await?;
+    admin_ws.enable_app(app_id.clone()).await?;
+    fs.ui_store()
+        .extract_and_store_ui(&app_id, &web_app_bundle)
         .await?;
 
     log::info!("Installed hApp {}", app_id);
@@ -225,16 +221,18 @@ pub struct GetWebHappPackageInput {
     pub gui_release_id: EntryHash,
 }
 async fn fetch_web_happ(
-    app_port: u16,
-    lair_client: LairClient,
+    conductor: &Conductor,
     devhub_dna: DnaHash,
     happ_release_entry_hash: EntryHash,
     gui_release_entry_hash: EntryHash,
 ) -> WeResult<Vec<u8>> {
     let mut client = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", app_port),
+        format!(
+            "ws://localhost:{}",
+            conductor.list_app_interfaces().await?[0]
+        ),
         appstore_app_id(),
-        lair_client,
+        conductor.keystore().lair_client(),
     )
     .await?;
 
@@ -244,13 +242,38 @@ async fn fetch_web_happ(
         gui_release_id: gui_release_entry_hash,
     };
 
+    // If we have the given devhub dna hash, shortcut to us being the host
+    let mut admin_ws = get_admin_ws(conductor).await?;
+    let apps = admin_ws.list_apps(Some(AppStatusFilter::Running)).await?;
+
+    for app in apps {
+        for (_app_name, cells) in app.cell_info {
+            for cell in cells {
+                if let CellInfo::Provisioned(provisioned_cell) = cell {
+                    if provisioned_cell.cell_id.dna_hash().eq(&devhub_dna) {
+                        return get_webhapp_from_host(
+                            &mut client,
+                            &devhub_dna,
+                            &app.agent_pub_key,
+                            &payload,
+                        )
+                        .await;
+                    }
+                }
+            }
+        }
+    }
+
     let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
 
     for host in hosts {
-        if let Ok(web_app_bytes) =
-            get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await
-        {
+        let response = get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await;
+        if let Ok(web_app_bytes) = response {
             return Ok(web_app_bytes);
+        }
+
+        if let Err(err) = response {
+            println!("Error fetching applet {:?}", err);
         }
     }
 
@@ -308,7 +331,7 @@ async fn get_available_hosts(
     app_store_client: &mut AppAgentWebsocket,
     devhub_dna: &DnaHash,
 ) -> WeResult<Vec<AgentPubKey>> {
-    let hosts: DevHubResponse<Vec<Entity<HostEntry>>> = app_store_client
+    let hosts: EssenceResponse<Vec<hc_crud::Entity<HostEntry>>, Metadata, ()> = app_store_client
         .call_zome_fn(
             RoleName::from("portal"),
             ZomeName::from("portal_api"),
@@ -540,6 +563,7 @@ pub struct Bundle {
 
 #[derive(Clone)]
 struct AppAgentWebsocket {
+    pub my_pub_key: AgentPubKey,
     app_ws: AppWebsocket,
     app_info: AppInfo,
     lair_client: LairClient,
@@ -558,6 +582,7 @@ impl AppAgentWebsocket {
             .ok_or(WeError::NotRunning)?;
 
         Ok(AppAgentWebsocket {
+            my_pub_key: app_info.agent_pub_key.clone(),
             app_ws,
             app_info,
             lair_client,

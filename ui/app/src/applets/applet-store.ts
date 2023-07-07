@@ -12,15 +12,17 @@ import {
 } from "applet-messages";
 
 import { AppletHost } from "./applet-host.js";
-import { WeStore } from "../we-store.js";
 import { Applet } from "./types.js";
 import { appletOrigin } from "../utils.js";
+import { ConductorInfo } from "../tauri.js";
+import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
 
 export class AppletStore {
   constructor(
     public appletHash: EntryHash,
     public applet: Applet,
-    private weStore: WeStore
+    public conductorInfo: ConductorInfo,
+    public appletBundlesStore: AppletBundlesStore
   ) {}
 
   host: AsyncReadable<AppletHost> = lazyLoad(async () => {
@@ -33,7 +35,7 @@ export class AppletStore {
       return new AppletHost(iframe);
     }
 
-    const origin = appletOrigin(this.weStore.conductorInfo, this.appletHash);
+    const origin = appletOrigin(this.conductorInfo, this.appletHash);
     iframe = document.createElement("iframe");
     iframe.id = appletHashBase64;
     iframe.src = origin;
@@ -62,7 +64,7 @@ export class AppletStore {
     lazyLoadAndPoll(() => host.getBlocks(), 10000)
   );
 
-  logo = this.weStore.appletBundlesStore.appletBundleLogo.get(
-    this.applet.devhub_happ_release_hash
+  logo = this.appletBundlesStore.appletBundleLogo.get(
+    this.applet.appstore_app_hash
   );
 }

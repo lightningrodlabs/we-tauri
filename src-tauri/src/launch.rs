@@ -67,7 +67,7 @@ pub async fn launch(
     Ok(conductor)
 }
 
-pub async fn get_admin_ws(conductor: &ConductorHandle) -> WeResult<AdminWebsocket> {
+pub async fn get_admin_ws(conductor: &Conductor) -> WeResult<AdminWebsocket> {
     let admin_ws = AdminWebsocket::connect(format!(
         "ws://localhost:{}",
         conductor

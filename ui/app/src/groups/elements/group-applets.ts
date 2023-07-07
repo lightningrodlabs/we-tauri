@@ -29,7 +29,6 @@ import { weStyles } from "../../shared-styles.js";
 import { CustomView } from "../../custom-views/types.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
-import { IconSrcOption } from "../../applet-bundles/types.js";
 import { AppletStore } from "../../applets/applet-store.js";
 
 @localized()
@@ -53,18 +52,13 @@ export class GroupApplets extends LitElement {
               allCustomViews
             )
         ),
-        pipe(
-          this._groupStore.allApplets,
-          (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
-          (appletStores) =>
-            mapAndJoin(appletStores, (appletStore) =>
-              asyncDeriveAndJoin(completed(appletStore), (store) => store.logo)
-            )
+        pipe(this._groupStore.allApplets, (allApplets) =>
+          sliceAndJoin(this.weStore.applets, allApplets)
         ),
       ]) as AsyncReadable<
         [
           ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
-          ReadonlyMap<EntryHash, [AppletStore, IconSrcOption]>
+          ReadonlyMap<EntryHash, AppletStore>
         ]
       >,
     () => [this._groupStore]
@@ -72,9 +66,8 @@ export class GroupApplets extends LitElement {
 
   renderInstalledApplets(
     customViews: ReadonlyMap<ActionHash, EntryRecord<CustomView>>,
-    allApplets: ReadonlyMap<EntryHash, [AppletStore, IconSrcOption]>
+    applets: ReadonlyMap<EntryHash, AppletStore>
   ) {
-    const applets = pickBy(allApplets, ([_store, icon_src]) => !!icon_src);
     if (customViews.size === 0 && applets.size === 0)
       return html`
         <div class="column" style="flex: 1; align-items: center">
@@ -89,7 +82,6 @@ export class GroupApplets extends LitElement {
           </span>
         </div>
       `;
-
     return html`
       <div class="row">
         ${Array.from(customViews.entries())
@@ -124,7 +116,7 @@ export class GroupApplets extends LitElement {
           )}
         ${Array.from(applets.entries())
           .sort(([_, a], [__, b]) =>
-            a[0].applet.custom_name.localeCompare(b[0].applet.custom_name)
+            a.applet.custom_name.localeCompare(b.applet.custom_name)
           )
           .map(
             ([appletHash, applet]) =>
@@ -147,7 +139,7 @@ export class GroupApplets extends LitElement {
                 >
                   <applet-logo .appletHash=${appletHash}></applet-logo>
                   <span style="margin-top: 8px"
-                    >${applet[0].applet.custom_name}</span
+                    >${applet.applet.custom_name}</span
                   >
                 </div>
               `

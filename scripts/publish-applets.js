@@ -1,9 +1,10 @@
 import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
 import { execSync } from "child_process";
+import { toBase64 } from "js-base64";
 import yaml from "js-yaml";
 import fs from "fs";
 import crypto from "crypto";
-import { wrapPathInSvg } from "@holochain-open-dev/elements";
+import { wrapPathInSvgWithoutPrefix } from "@holochain-open-dev/elements";
 import { mdiAbacus } from "@mdi/js";
 
 const TESTING_APPLETS_PATH = `${process.cwd()}/testing-applets`;
@@ -260,7 +261,7 @@ async function publishApplets() {
       zome_name: "happ_library",
       fn_name: "create_happ_release",
       payload: {
-        name: "0.1",
+        version: "0.1",
         description: "",
         for_happ: appEntity.payload.id,
         ordering: 1,
@@ -281,20 +282,6 @@ async function publishApplets() {
 
     const iconSrc = wrapPathInSvg(mdiAbacus);
     const iconBytes = Buffer.from(iconSrc, "utf8");
-    const bytesHash = await appstoreClient.callZome({
-      role_name: "appstore",
-      zome_name: "mere_memory_api",
-      fn_name: "save_bytes",
-      payload: iconBytes,
-    });
-    const bytes = await appstoreClient.callZome({
-      role_name: "appstore",
-      zome_name: "mere_memory_api",
-      fn_name: "retrieve_bytes",
-      payload: bytesHash.payload,
-    });
-    console.log(bytes);
-    console.log(bytesHash);
     await appstoreClient.callZome({
       role_name: "appstore",
       zome_name: "appstore_api",
@@ -303,7 +290,7 @@ async function publishApplets() {
         title: appletName,
         subtitle: happManifest.description || "",
         description: "",
-        icon: bytesHash.payload,
+        icon: iconBytes,
         publisher: publisher.payload.id,
         devhub_address: {
           dna: happlibraryDnaHash,
@@ -317,7 +304,11 @@ async function publishApplets() {
     console.log("Published applet: ", appletName);
   }
 }
-
+function wrapPathInSvg(path) {
+  return `data:image/svg+xml;base64,${toBase64(
+    wrapPathInSvgWithoutPrefix(path)
+  )}`;
+}
 // Output structure:
 // testing-applets/gather
 // ├── gather.happ

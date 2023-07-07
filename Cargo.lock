@@ -196,7 +196,7 @@ source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae
 dependencies = [
  "appstore_types",
  "essence_payloads",
- "hc_crud_caps",
+ "hc_crud_caps 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hc_utils",
  "hdi",
  "hdk",
@@ -211,7 +211,7 @@ version = "0.3.0"
 source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae28817e6f9bca3416271b1d#a2dc60c80ddb1f82ae28817e6f9bca3416271b1d"
 dependencies = [
  "essence_payloads",
- "hc_crud_caps",
+ "hc_crud_caps 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hdi",
  "rmpv",
  "serde",
@@ -2643,6 +2643,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hc_crud_caps"
+version = "0.3.0"
+source = "git+https://github.com/mjbrisebois/rust-hc-crud-caps.git?rev=59752c8aad95bfe421f259a3b2a1cd547dd64457#59752c8aad95bfe421f259a3b2a1cd547dd64457"
+dependencies = [
+ "hdk",
+ "holo_hash",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "hc_crud_ceps"
 version = "0.75.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2659,7 +2670,7 @@ name = "hc_portal_types"
 version = "0.3.0"
 source = "git+https://github.com/holochain/portal-dna?rev=4c2075ec54349f9d6a4e2de84d7846282a0938fd#4c2075ec54349f9d6a4e2de84d7846282a0938fd"
 dependencies = [
- "hc_crud_caps",
+ "hc_crud_caps 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hdi",
  "rmpv",
  "serde",
@@ -2688,7 +2699,7 @@ version = "0.3.0"
 source = "git+https://github.com/holochain/app-store-dnas?rev=a2dc60c80ddb1f82ae28817e6f9bca3416271b1d#a2dc60c80ddb1f82ae28817e6f9bca3416271b1d"
 dependencies = [
  "essence_payloads",
- "hc_crud_caps",
+ "hc_crud_caps 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hdi",
  "hdk",
  "serde",
@@ -9101,6 +9112,7 @@ dependencies = [
  "either",
  "essence_payloads",
  "futures",
+ "hc_crud_caps 0.3.0 (git+https://github.com/mjbrisebois/rust-hc-crud-caps.git?rev=59752c8aad95bfe421f259a3b2a1cd547dd64457)",
  "hc_portal_types",
  "hdk",
  "holochain",

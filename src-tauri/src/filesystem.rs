@@ -64,6 +64,45 @@ impl WeFileSystem {
             path: self.app_data_dir.join("icons"),
         }
     }
+
+    pub fn ui_store(&self) -> UiStore {
+        UiStore {
+            path: self.app_data_dir.join("uis"),
+        }
+    }
+}
+
+pub struct UiStore {
+    path: PathBuf,
+}
+
+impl UiStore {
+    pub fn ui_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
+        self.path.join(installed_app_id)
+    }
+
+    pub async fn extract_and_store_ui(
+        &self,
+        installed_app_id: &InstalledAppId,
+        web_app: &WebAppBundle,
+    ) -> WeResult<()> {
+        let ui_bytes = web_app.web_ui_zip_bytes().await?;
+
+        let ui_folder_path = self.ui_path(installed_app_id);
+
+        fs::create_dir_all(&ui_folder_path)?;
+
+        let ui_zip_path = self.path.join("ui.zip");
+
+        fs::write(ui_zip_path.clone(), ui_bytes.into_owned().into_inner())?;
+
+        let file = std::fs::File::open(ui_zip_path.clone())?;
+        unzip_file(file, ui_folder_path)?;
+
+        fs::remove_file(ui_zip_path)?;
+
+        Ok(())
+    }
 }
 
 pub struct WebAppStore {
@@ -71,23 +110,21 @@ pub struct WebAppStore {
 }
 
 impl WebAppStore {
-    fn webhapp_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
-        self.path.join(installed_app_id)
+    fn webhapp_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
+        let web_app_entry_hash_b64 = EntryHashB64::from(web_app_entry_hash.clone()).to_string();
+        self.path.join(web_app_entry_hash_b64)
     }
 
-    pub fn webhapp_package_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
-        self.webhapp_path(installed_app_id).join("package.webhapp")
+    pub fn webhapp_package_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
+        self.webhapp_path(web_app_entry_hash)
+            .join("package.webhapp")
     }
 
-    pub fn webhapp_ui_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
-        self.webhapp_path(installed_app_id).join("ui")
-    }
-
-    pub fn get_webapp(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<WebAppBundle>> {
-        let path = self.webhapp_path(installed_app_id);
+    pub fn get_webapp(&self, web_app_entry_hash: &EntryHash) -> WeResult<Option<WebAppBundle>> {
+        let path = self.webhapp_path(web_app_entry_hash);
 
         if path.exists() {
-            let bytes = fs::read(self.webhapp_package_path(&installed_app_id))?;
+            let bytes = fs::read(self.webhapp_package_path(&web_app_entry_hash))?;
             let web_app = WebAppBundle::decode(bytes.as_slice())?;
 
             return Ok(Some(web_app));
@@ -98,32 +135,17 @@ impl WebAppStore {
 
     pub async fn store_webapp(
         &self,
-        installed_app_id: &InstalledAppId,
+        web_app_entry_hash: &EntryHash,
         web_app: &WebAppBundle,
     ) -> WeResult<()> {
         let bytes = web_app.encode()?;
 
-        let path = self.webhapp_path(installed_app_id);
+        let path = self.webhapp_path(web_app_entry_hash);
 
         fs::create_dir_all(path.clone())?;
 
-        let mut file = std::fs::File::create(self.webhapp_package_path(installed_app_id))?;
+        let mut file = std::fs::File::create(self.webhapp_package_path(web_app_entry_hash))?;
         file.write_all(bytes.as_slice())?;
-
-        let ui_bytes = web_app.web_ui_zip_bytes().await?;
-
-        let ui_folder_path = self.webhapp_ui_path(installed_app_id);
-
-        fs::create_dir_all(&ui_folder_path)?;
-
-        let ui_zip_path = path.join("ui.zip");
-
-        fs::write(ui_zip_path.clone(), ui_bytes.into_owned().into_inner())?;
-
-        let file = std::fs::File::open(ui_zip_path.clone())?;
-        unzip_file(file, ui_folder_path)?;
-
-        fs::remove_file(ui_zip_path)?;
 
         Ok(())
     }

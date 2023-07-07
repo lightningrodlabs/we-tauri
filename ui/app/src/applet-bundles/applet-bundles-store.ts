@@ -1,6 +1,5 @@
 import {
   asyncDerived,
-  lazyLoad,
   lazyLoadAndPoll,
   manualReloadStore,
   pipe,
@@ -15,9 +14,9 @@ import {
   decodeHashFromBase64,
   encodeHashToBase64,
   EntryHash,
-  InstalledAppId,
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
+import { AppletStore } from "../applets/applet-store.js";
 import { Applet } from "../applets/types.js";
 import { getAllApps } from "../processes/appstore/get-happs.js";
 import { ConductorInfo } from "../tauri.js";
@@ -49,11 +48,10 @@ export class AppletBundlesStore {
     pipe(this.appletBundles.get(appletBundleHash), (appEntry) =>
       retryUntilSuccess(async () => {
         if (!appEntry) throw new Error("Can't find app bundle");
-        console.log("hey", appEntry);
+
         const icon: string = await invoke("fetch_icon", {
           appEntryHashB64: encodeHashToBase64(appEntry.id),
         });
-        console.log("hey2");
 
         if (!icon) throw new Error("Icon was not found");
 
@@ -62,28 +60,12 @@ export class AppletBundlesStore {
     )
   );
 
-  async installApplet(appletHash: EntryHash, applet: Applet) {
-    return this.installAppletBundle(
-      applet.app_entry_hash,
-      encodeHashToBase64(appletHash),
-      applet.network_seed
+  async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
+    const appId = encodeHashToBase64(appletHash);
+
+    const appEntry = await toPromise(
+      this.appletBundles.get(applet.appstore_app_hash)
     );
-  }
-
-  async uninstallApplet(appletHash: EntryHash) {
-    await this.adminWebsocket.disableApp({
-      installed_app_id: encodeHashToBase64(appletHash),
-    });
-
-    await this.installedApps.reload();
-  }
-
-  async installAppletBundle(
-    appEntryHash: EntryHash,
-    appId: InstalledAppId,
-    networkSeed: string | undefined
-  ): Promise<AppInfo> {
-    const appEntry = await toPromise(this.appletBundles.get(appEntryHash));
 
     if (!appEntry) throw new Error("Couldn't find app entry");
 
@@ -102,7 +84,7 @@ export class AppletBundlesStore {
 
     const appInfo: AppInfo = await invoke("install_applet_bundle", {
       appId,
-      networkSeed,
+      networkSeed: applet.network_seed,
       membraneProofs: {},
       happReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.happ),
       guiReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.gui!),
@@ -113,6 +95,14 @@ export class AppletBundlesStore {
     await this.installedApps.reload();
 
     return appInfo;
+  }
+
+  async uninstallApplet(appletHash: EntryHash) {
+    await this.adminWebsocket.disableApp({
+      installed_app_id: encodeHashToBase64(appletHash),
+    });
+
+    await this.installedApps.reload();
   }
 
   installedApps = manualReloadStore(async () => {
@@ -132,12 +122,10 @@ export class AppletBundlesStore {
   });
 
   isInstalled = new LazyHoloHashMap((appletHash: EntryHash) =>
-    asyncDerived(
-      this.installedApplets,
-      (appletsHashes) =>
-        !!appletsHashes.find(
-          (hash) => hash.toString() === appletHash.toString()
-        )
-    )
+    asyncDerived(this.installedApplets, (appletsHashes) => {
+      return !!appletsHashes.find(
+        (hash) => hash.toString() === appletHash.toString()
+      );
+    })
   );
 }

@@ -65,8 +65,8 @@ pub async fn install_default_apps_if_necessary(
         admin_ws.enable_app(appstore_app_id()).await?;
 
         we_fs
-            .webapp_store()
-            .store_webapp(&appstore_app_id(), &appstore_hub_bundle)
+            .ui_store()
+            .extract_and_store_ui(&appstore_app_id(), &appstore_hub_bundle)
             .await?;
 
         let we_app_id = we_app_id();

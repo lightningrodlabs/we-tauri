@@ -4,10 +4,13 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   completed,
+  derived,
+  join,
   lazyLoad,
   manualReloadStore,
   mapAndJoin,
   pipe,
+  Readable,
   retryUntilSuccess,
   sliceAndJoin,
   toPromise,
@@ -17,7 +20,7 @@ import {
   LazyHoloHashMap,
   pickBy,
 } from "@holochain-open-dev/utils";
-import { decodeHashFromBase64 } from "@holochain/client";
+import { decodeHashFromBase64, HoloHash } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
@@ -212,14 +215,23 @@ export class WeStore {
       async () => {
         const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
+        if (groups.size === 0)
+          throw new Error("Applet is not installed in any of the groups");
+
         const applet = await Promise.race(
           Array.from(groups.values()).map((groupStore) =>
             toPromise(groupStore.applets.get(appletHash))
           )
         );
+
         if (!applet) throw new Error("Applet not found yet");
 
-        return new AppletStore(appletHash, applet, this);
+        return new AppletStore(
+          appletHash,
+          applet,
+          this.conductorInfo,
+          this.appletBundlesStore
+        );
       },
       3000,
       4
@@ -332,7 +344,7 @@ export class WeStore {
             pickBy(
               installedApplets,
               (appletStore) =>
-                appletStore.applet.app_entry_hash.toString() ===
+                appletStore.applet.appstore_app_hash.toString() ===
                 appBundleHash.toString()
             )
           ),

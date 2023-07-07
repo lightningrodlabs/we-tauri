@@ -147,12 +147,10 @@ export class GroupStore {
     appEntry: Entity<AppEntry>,
     customName: string
   ): Promise<EntryHash> {
-    // Trigger the download of the webhapp
+    // Trigger the download of the icon
     // TODO: remove this when moving to app store
     await toPromise(
-      this.weStore.appletBundlesStore.appletBundleLogo.get(
-        appEntry.content.devhub_address.happ
-      )
+      this.weStore.appletBundlesStore.appletBundleLogo.get(appEntry.id)
     );
 
     const networkSeed = uuidv4(); // generate random network seed if not provided
@@ -162,7 +160,7 @@ export class GroupStore {
     const applet: Applet = {
       custom_name: customName,
       description: appEntry.content.description,
-      app_entry_hash: appEntry.id,
+      appstore_app_hash: appEntry.id,
       network_seed: networkSeed,
       properties: {},
     };

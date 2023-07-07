@@ -156,7 +156,6 @@ pub async fn read_asset(
     if asset_name.starts_with("/") {
         asset_name = asset_name.strip_prefix("/").unwrap().to_string();
     }
-
     if let "index.html" | "" = asset_name.as_str() {
         return Ok(Some((
             iframe().as_bytes().to_vec(),
@@ -166,7 +165,7 @@ pub async fn read_asset(
 
     let applet_id = get_applet_id_from_lowercase(applet_id, admin_ws).await?;
 
-    let assets_path = we_fs.webapp_store().webhapp_ui_path(&applet_id);
+    let assets_path = we_fs.ui_store().ui_path(&applet_id);
     let asset_file = assets_path.join(asset_name);
 
     let mime_guess = mime_guess::from_path(asset_file.clone());
