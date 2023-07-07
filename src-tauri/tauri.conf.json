@@ -10,39 +10,6 @@
     "version": "0.0.19"
   },
   "tauri": {
-    "cli": {
-      "description": "Running we from the command line",
-      "args": [
-        {
-          "name": "profile",
-          "takesValue": true,
-          "multiple": false
-        },
-        {
-          "name": "network-seed",
-          "takesValue": true,
-          "multiple": false
-        }
-      ]
-    },
-    "allowlist": {
-      "protocol": {
-        "all": true
-      },
-      "clipboard": {
-        "writeText": true
-      },
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": ["applet://*"]
-      }
-    },
     "bundle": {
       "active": true,
       "icon": [
@@ -52,16 +19,12 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "externalBin": ["bins/lair-keystore-v0.2.3"],
       "identifier": "we",
       "targets": "all"
     },
     "security": {
       "csp": "",
       "dangerousDisableAssetCspModification": true
-    },
-    "updater": {
-      "active": false
     },
     "windows": []
   }

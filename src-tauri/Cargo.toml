@@ -13,11 +13,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "1.2", features = [] }
+tauri-build = { version = "2.0.0-alpha.6", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
+tauri = { version = "2.0.0-alpha.10", features = [] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
