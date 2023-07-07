@@ -65,6 +65,9 @@ pub enum WeError {
     #[error(transparent)]
     TauriError(#[from] tauri::Error),
 
+    #[error(transparent)]
+    TauriPathError(#[from] tauri::path::Error),
+
     #[error("Admin Websocket Error: `{0}`")]
     AdminWebsocketError(String),
 

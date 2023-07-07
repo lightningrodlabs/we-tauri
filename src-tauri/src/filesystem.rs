@@ -5,7 +5,7 @@ use hdk::prelude::{ActionHash, EntryHash};
 use holochain::prelude::{ActionHashB64, EntryHashB64};
 use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     default_apps::we_version,
@@ -20,19 +20,13 @@ pub struct WeFileSystem {
 impl WeFileSystem {
     pub fn new(app_handle: &AppHandle, profile: &String) -> WeResult<WeFileSystem> {
         let app_data_dir = app_handle
-            .path_resolver()
-            .app_data_dir()
-            .ok_or(WeError::FileSystemError(String::from(
-                "Could not resolve the data dir for this app",
-            )))?
+            .path()
+            .app_data_dir()?
             .join(we_version())
             .join(profile);
         let app_config_dir = app_handle
-            .path_resolver()
-            .app_config_dir()
-            .ok_or(WeError::FileSystemError(String::from(
-                "Could not resolve the data dir for this app",
-            )))?
+            .path()
+            .app_config_dir()?
             .join(we_version())
             .join(profile);
 

@@ -1,4 +1,32 @@
+use std::path::PathBuf;
 use tauri::App;
+
+use applet_iframes::{pong_iframe, read_asset, start_applet_uis_server};
+use config::WeConfig;
+use filesystem::WeFileSystem;
+use futures::lock::Mutex;
+use holochain::conductor::ConductorHandle;
+use hyper::StatusCode;
+use launch::get_admin_ws;
+use serde_json::Value;
+use tauri::{
+    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
+};
+
+mod applet_iframes;
+mod commands;
+mod config;
+mod default_apps;
+mod filesystem;
+mod launch;
+mod state;
+use commands::{
+    conductor_info::{get_conductor_info, is_launched},
+    devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
+    install_applet_bundle::{fetch_icon, install_applet_bundle},
+    password::{create_password, enter_password, is_keystore_initialized},
+    sign_zome_call::sign_zome_call,
+};
 
 #[cfg(mobile)]
 mod mobile;
@@ -32,7 +60,7 @@ impl AppBuilder {
 
         if !disable_deep_link {
             // Needs to be equal to the identifier in tauri.conf.json
-            tauri_plugin_deep_link::prepare("we");
+            // tauri_plugin_deep_link::prepare("we");
         }
 
         tauri::Builder::default()
@@ -55,38 +83,40 @@ impl AppBuilder {
                 let handle = app.handle();
 
                 // reading profile from cli
-                let cli_matches = app.get_cli_matches()?;
-                let profile: String = match cli_matches.args.get("profile") {
-                    Some(data) => match data.value.clone() {
-                        Value::String(profile) => {
-                            if profile == "default" {
-                                eprintln!(
-                                    "Error: The name 'default' is not allowed for a profile."
-                                );
-                                panic!("Error: The name 'default' is not allowed for a profile.");
-                            }
-                            profile
-                        }
-                        _ => {
-                            // println!("ERROR: Value passed to --profile option could not be interpreted as string.");
-                            String::from("default")
-                            // panic!("Value passed to --profile option could not be interpreted as string.")
-                        }
-                    },
-                    None => String::from("default"),
-                };
+                // let cli_matches = app.get_cli_matches()?;
+                // let profile: String = match cli_matches.args.get("profile") {
+                //     Some(data) => match data.value.clone() {
+                //         Value::String(profile) => {
+                //             if profile == "default" {
+                //                 eprintln!(
+                //                     "Error: The name 'default' is not allowed for a profile."
+                //                 );
+                //                 panic!("Error: The name 'default' is not allowed for a profile.");
+                //             }
+                //             profile
+                //         }
+                //         _ => {
+                //             // println!("ERROR: Value passed to --profile option could not be interpreted as string.");
+                //             String::from("default")
+                //             // panic!("Value passed to --profile option could not be interpreted as string.")
+                //         }
+                //     },
+                //     None => String::from("default"),
+                // };
+                let profile = String::from("default");
 
                 let fs = WeFileSystem::new(&handle, &profile)?;
                 app.manage(fs);
 
                 // reading profile from cli
-                let network_seed = match cli_matches.args.get("network-seed") {
-                    Some(data) => match data.value.clone() {
-                        Value::String(network_seed) => Some(network_seed),
-                        _ => None,
-                    },
-                    None => None,
-                };
+                // let network_seed = match cli_matches.args.get("network-seed") {
+                //     Some(data) => match data.value.clone() {
+                //         Value::String(network_seed) => Some(network_seed),
+                //         _ => None,
+                //     },
+                //     None => None,
+                // };
+                let network_seed = None;
 
                 let title = if profile.as_str() == "default" {
                     String::from("We")
@@ -97,9 +127,9 @@ impl AppBuilder {
                 let app_handle = app.handle();
 
                 let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
-                    .title(title)
+                    // .title(title)
                     .disable_file_drop_handler()
-                    .inner_size(1000.0, 700.0)
+                    // .inner_size(1000.0, 700.0)
                     .build()?;
 
                 let ui_server_port = portpicker::pick_unused_port().expect("No ports free");
@@ -111,14 +141,14 @@ impl AppBuilder {
                 });
 
                 if !disable_deep_link {
-                    if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
-                        window.emit("deep-link-received", request).unwrap();
-                        window
-                            .request_user_attention(Some(UserAttentionType::Informational))
-                            .unwrap();
-                    }) {
-                        println!("Error registering the deep link plugin: {:?}", err);
-                    }
+                    // if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
+                    //     window.emit("deep-link-received", request).unwrap();
+                    //     window
+                    //         .request_user_attention(Some(UserAttentionType::Informational))
+                    //         .unwrap();
+                    // }) {
+                    //     println!("Error registering the deep link plugin: {:?}", err);
+                    // }
                 }
 
                 Ok(())
@@ -193,7 +223,7 @@ impl AppBuilder {
                 // This event is emitted upon quitting the Launcher via cmq+Q on macOS.
                 // Sidecar binaries need to get explicitly killed in this case (https://github.com/holochain/launcher/issues/141)
                 if let RunEvent::Exit = event {
-                    tauri::api::process::kill_children();
+                    // tauri::process::kill_children();
                 }
             });
         // tauri::Builder::default()

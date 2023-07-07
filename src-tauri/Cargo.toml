@@ -21,7 +21,6 @@ tauri-build = { version = "2.0.0-alpha.6", features = [] }
 
 [dependencies]
 tauri = { version = "2.0.0-alpha.10", features = [] }
-tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
 serde = { version = "1.0", features = ["derive"] }
@@ -60,7 +59,7 @@ appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "a2dc60c
 hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "4c2075ec54349f9d6a4e2de84d7846282a0938fd" }
 essence_payloads = "0.1"
 
-holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "we" }
+holochain_launcher_utils = { path = "../crates/holochain_launcher_utils" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
