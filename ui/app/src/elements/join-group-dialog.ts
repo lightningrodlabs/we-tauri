@@ -11,12 +11,13 @@ import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { notifyError, onSubmit } from "@holochain-open-dev/elements";
-import { WeStore } from "../we-store";
-import { weStoreContext } from "../context";
-import { weStyles } from "../shared-styles";
+
+import { WeStore } from "../we-store.js";
+import { weStoreContext } from "../context.js";
+import { weStyles } from "../shared-styles.js";
 
 /**
- * @element create-group-dialog
+ * @element join-group-dialog
  */
 @localized()
 @customElement("join-group-dialog")
@@ -90,5 +91,6 @@ export class JoinGroupDialog extends LitElement {
       </sl-dialog>
     `;
   }
+
   static styles = [weStyles];
 }

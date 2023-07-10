@@ -66,7 +66,7 @@ export class AttachmentsBar extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the attachments")}
-          .error=${this.attachments.value.error.data.data}
+          .error=${this.attachments.value.error}
         ></display-error>`;
     }
   }

@@ -109,7 +109,7 @@ export class HrlLink extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the entry")}
-          .error=${this.info.value.error.data.data}
+          .error=${this.info.value.error}
         ></display-error>`;
     }
   }

@@ -44,7 +44,12 @@ export class SidebarButton extends LitElement {
       placement="${this.placement}"
       .content=${this.tooltipText}
     >
-      <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
+      <img
+        class="icon"
+        src="${this.logoSrc}"
+        @click=${this.handleClick}
+        alt="TODO"
+      />
     </sl-tooltip>`;
   }
 

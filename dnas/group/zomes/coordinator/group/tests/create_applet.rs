@@ -30,6 +30,10 @@ async fn create_applet() {
         description: String::from("description"),
         appstore_app_hash: fixt!(ActionHash),
 
+        devhub_dna_hash: fixt!(DnaHash),
+        devhub_happ_release_hash: fixt!(EntryHash),
+        devhub_gui_release_hash: fixt!(EntryHash),
+
         network_seed: None,
         properties: BTreeMap::new(), // Segmented by RoleId
     };

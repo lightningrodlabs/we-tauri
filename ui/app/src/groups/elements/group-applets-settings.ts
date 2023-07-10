@@ -221,7 +221,7 @@ export class GroupAppletsSettings extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the applets installed in this group")}
-          .error=${this._groupApplets.value.error.data.data}
+          .error=${this._groupApplets.value.error}
         ></display-error>`;
       case "complete":
         return this.renderInstalledApplets(

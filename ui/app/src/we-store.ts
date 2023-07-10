@@ -37,13 +37,13 @@ import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
-import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store";
-import { GroupClient } from "./groups/group-client";
-import { GroupStore } from "./groups/group-store";
+import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
+import { GroupClient } from "./groups/group-client.js";
+import { GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
-import { ConductorInfo } from "./tauri";
+import { ConductorInfo } from "./tauri.js";
 import { findAppForDnaHash, isAppDisabled } from "./utils.js";
-import { AppletStore } from "./applets/applet-store";
+import { AppletStore } from "./applets/applet-store.js";
 
 export class WeStore {
   constructor(
@@ -69,7 +69,7 @@ export class WeStore {
 
     const groupProfile: GroupProfile = {
       logo_src: logo,
-      name: name,
+      name,
     };
 
     try {
@@ -89,7 +89,7 @@ export class WeStore {
   public async joinGroup(networkSeed: string): Promise<ClonedCell> {
     const appInfo = await this.appAgentWebsocket.appInfo();
 
-    for (const cellInfo of appInfo.cell_info["group"]) {
+    for (const cellInfo of appInfo.cell_info.group) {
       if (CellType.Cloned in cellInfo) {
         const cell = cellInfo[CellType.Cloned];
         if (cell.dna_modifiers.network_seed === networkSeed) {
@@ -151,16 +151,18 @@ export class WeStore {
     const groupStore = await toPromise(this.groups.get(groupDnaHash));
     const applets = await toPromise(groupStore.allApplets);
 
-    for (const appletHash of applets) {
-      const groupsForApplet = await toPromise(
-        this.groupsForApplet.get(appletHash)
-      );
-      if (groupsForApplet.size === 1) {
-        await this.adminWebsocket.disableApp({
-          installed_app_id: encodeHashToBase64(appletHash),
-        });
-      }
-    }
+    await Promise.all(
+      applets.map(async (appletHash) => {
+        const groupsForApplet = await toPromise(
+          this.groupsForApplet.get(appletHash)
+        );
+        if (groupsForApplet.size === 1) {
+          await this.adminWebsocket.disableApp({
+            installed_app_id: encodeHashToBase64(appletHash),
+          });
+        }
+      })
+    );
 
     await this.appletBundlesStore.installedApps.reload();
     await this.groupsRolesByDnaHash.reload();
@@ -169,7 +171,7 @@ export class WeStore {
   originalGroupDnaHash = lazyLoad<DnaHash>(async () => {
     const appInfo = await this.appAgentWebsocket.appInfo();
 
-    for (const cellInfo of appInfo.cell_info["group"]) {
+    for (const cellInfo of appInfo.cell_info.group) {
       if (CellType.Provisioned in cellInfo) {
         return cellInfo[CellType.Provisioned].cell_id[0];
       }
@@ -182,7 +184,7 @@ export class WeStore {
     const appInfo = await this.appAgentWebsocket.appInfo();
     const roleNames = new HoloHashMap<DnaHash, RoleName>();
 
-    for (const cellInfo of appInfo.cell_info["group"]) {
+    for (const cellInfo of appInfo.cell_info.group) {
       if (CellType.Cloned in cellInfo && cellInfo[CellType.Cloned].enabled) {
         roleNames.set(
           cellInfo[CellType.Cloned].cell_id[0],
@@ -344,7 +346,7 @@ export class WeStore {
             pickBy(
               installedApplets,
               (appletStore) =>
-                appletStore.applet.appstore_app_hash.toString() ===
+                appletStore.applet.devhub_happ_release_hash.toString() ===
                 appBundleHash.toString()
             )
           ),

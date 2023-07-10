@@ -4,11 +4,8 @@ import { localized, msg } from "@lit/localize";
 
 import { sharedStyles } from "@holochain-open-dev/elements";
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
-import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
-  AppletInfo,
   getAppletsInfosAndGroupsProfiles,
-  GroupProfile,
   WeServices,
   weServicesContext,
   AppletClients,

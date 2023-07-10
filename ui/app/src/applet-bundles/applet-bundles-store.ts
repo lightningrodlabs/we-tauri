@@ -6,7 +6,7 @@ import {
   retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { hash, HashType, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   AdminWebsocket,
   AppAgentClient,
@@ -16,9 +16,10 @@ import {
   EntryHash,
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
-import { AppletStore } from "../applets/applet-store.js";
 import { Applet } from "../applets/types.js";
+import { getHappReleases } from "../processes/appstore/get-happ-releases.js";
 import { getAllApps } from "../processes/appstore/get-happs.js";
+import { AppEntry, Entity } from "../processes/appstore/types.js";
 import { ConductorInfo } from "../tauri.js";
 import { isAppRunning } from "../utils.js";
 
@@ -60,14 +61,53 @@ export class AppletBundlesStore {
     )
   );
 
+  async installLatestVersion(
+    appEntry: Entity<AppEntry>,
+    customName: string,
+    networkSeed: string,
+    properties: any
+  ): Promise<Applet> {
+    // Trigger the download of the icon
+    await toPromise(this.appletBundleLogo.get(appEntry.id));
+
+    const appReleases = await getHappReleases(this.appstoreClient, {
+      dna_hash: appEntry.content.devhub_address.dna,
+      resource_hash: appEntry.content.devhub_address.happ,
+    });
+
+    if (appReleases.length === 0)
+      throw new Error("This app doesn't have any releases yet.");
+
+    const latestRelease = appReleases.sort(
+      (happRelease1, happRelease2) =>
+        happRelease2.content.ordering - happRelease1.content.ordering
+    )[0];
+
+    if (!latestRelease.content.official_gui)
+      throw new Error("This app doesn't have an official GUI.");
+
+    const applet: Applet = {
+      custom_name: customName,
+      description: appEntry.content.description,
+
+      appstore_app_hash: appEntry.id,
+
+      devhub_dna_hash: appEntry.content.devhub_address.dna,
+      devhub_happ_release_hash: latestRelease.id,
+      devhub_gui_release_hash: latestRelease.content.official_gui,
+      network_seed: networkSeed,
+      properties,
+    };
+
+    const appletHash = hash(applet, HashType.ENTRY);
+
+    await this.installApplet(appletHash, applet);
+
+    return applet;
+  }
+
   async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
     const appId = encodeHashToBase64(appletHash);
-
-    const appEntry = await toPromise(
-      this.appletBundles.get(applet.appstore_app_hash)
-    );
-
-    if (!appEntry) throw new Error("Couldn't find app entry");
 
     const installedApps = await toPromise(this.installedApps);
 
@@ -86,9 +126,9 @@ export class AppletBundlesStore {
       appId,
       networkSeed: applet.network_seed,
       membraneProofs: {},
-      happReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.happ),
-      guiReleaseHash: encodeHashToBase64(appEntry.content.devhub_address.gui!),
-      devhubDnaHash: encodeHashToBase64(appEntry.content.devhub_address.dna),
+      happReleaseHash: encodeHashToBase64(applet.devhub_happ_release_hash),
+      guiReleaseHash: encodeHashToBase64(applet.devhub_gui_release_hash),
+      devhubDnaHash: encodeHashToBase64(applet.devhub_dna_hash),
       agentPubKey: encodeHashToBase64(this.appstoreClient.myPubKey),
     });
 
@@ -122,10 +162,12 @@ export class AppletBundlesStore {
   });
 
   isInstalled = new LazyHoloHashMap((appletHash: EntryHash) =>
-    asyncDerived(this.installedApplets, (appletsHashes) => {
-      return !!appletsHashes.find(
-        (hash) => hash.toString() === appletHash.toString()
-      );
-    })
+    asyncDerived(
+      this.installedApplets,
+      (appletsHashes) =>
+        !!appletsHashes.find(
+          (hash) => hash.toString() === appletHash.toString()
+        )
+    )
   );
 }

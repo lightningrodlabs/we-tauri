@@ -3,22 +3,15 @@ import { state, property, customElement } from "lit/decorators.js";
 import { EntryHash, Record, ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
-import {
-  sharedStyles,
-  hashProperty,
-  wrapPathInSvg,
-  notifyError,
-} from "@holochain-open-dev/elements";
+import { sharedStyles, hashProperty } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
-import { mdiAlertCircleOutline, mdiPencil, mdiDelete } from "@mdi/js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
-import SlAlert from "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "./edit-custom-view.js";
 
@@ -55,8 +48,9 @@ export class CustomViewEl extends LitElement {
   renderDetail(entryRecord: EntryRecord<CustomView>) {
     return html`
       <iframe
-        srcdoc="<head><style>${entryRecord.entry
-          .css}</style></head>${entryRecord.entry.html}"
+        title="applet-view"
+        srcdoc="&lt;head&gt;&lt;style&gt;${entryRecord.entry
+          .css}&lt;/style&gt;&lt;/head&gt;${entryRecord.entry.html}"
         style="flex: 1"
       ></iframe>
     `;
@@ -85,7 +79,7 @@ export class CustomViewEl extends LitElement {
         return html`<sl-card>
           <display-error
             .headline=${msg("Error fetching the custom view")}
-            .error=${this._customView.value.error.data.data}
+            .error=${this._customView.value.error}
           ></display-error>
         </sl-card>`;
     }

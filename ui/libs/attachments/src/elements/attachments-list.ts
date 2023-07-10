@@ -141,7 +141,7 @@ export class AttachmentsList extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the attachments")}
-          .error=${this.attachments.value.error.data.data}
+          .error=${this.attachments.value.error}
         ></display-error>`;
     }
   }

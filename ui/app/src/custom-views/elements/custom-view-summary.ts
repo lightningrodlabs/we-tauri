@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
-import { state, property, customElement } from "lit/decorators.js";
-import { EntryHash, Record, ActionHash } from "@holochain/client";
+import { property, customElement } from "lit/decorators.js";
+import { ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import {
@@ -10,8 +10,8 @@ import {
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
-
 import { localized, msg } from "@lit/localize";
+import { mdiDelete, mdiPencil } from "@mdi/js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
@@ -20,11 +20,11 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { CustomViewsStore } from "../custom-views-store";
-import { customViewsStoreContext } from "../context";
-import { CustomView } from "../types";
-import { mdiDelete, mdiPencil } from "@mdi/js";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+
+import { CustomViewsStore } from "../custom-views-store.js";
+import { customViewsStoreContext } from "../context.js";
+import { CustomView } from "../types.js";
 
 /**
  * @element custom-view-summary
@@ -92,6 +92,7 @@ export class CustomViewSummary extends LitElement {
         <img
           style="width: 48px; height: 48px; border-radius: 8px; margin-right: 16px"
           src="${entryRecord.entry.logo}"
+          alt="${entryRecord.entry.name}"
         />
         <span style="flex: 1">${entryRecord.entry.name}</span>
 
@@ -146,7 +147,7 @@ export class CustomViewSummary extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the custom view")}
-          .error=${this._customView.value.error.data.data}
+          .error=${this._customView.value.error}
         ></display-error>`;
     }
   }

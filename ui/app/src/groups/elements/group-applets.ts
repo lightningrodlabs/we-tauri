@@ -109,6 +109,7 @@ export class GroupApplets extends LitElement {
                   <img
                     src="${customView.entry.logo}"
                     style="height: 64px; width: 64px; border-radius: 8px; margin-bottom: 8px"
+                    alt="${customView.entry.name}"
                   />
                   <span>${customView.entry.name}</span>
                 </div>

@@ -9,9 +9,9 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { groupStoreContext } from "../context";
-import { GroupStore } from "../group-store";
-import { weStyles } from "../../shared-styles";
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
+import { weStyles } from "../../shared-styles.js";
 
 @customElement("group-logo")
 export class GroupLogo extends LitElement {
@@ -27,7 +27,7 @@ export class GroupLogo extends LitElement {
   renderLogo(groupProfile: GroupProfile | undefined) {
     if (!groupProfile) return html``;
 
-    return html` <img .src=${groupProfile.logo_src} style="border-radius: 50%"></img> `;
+    return html` <img .src=${groupProfile.logo_src} alt="${groupProfile.name}" style="border-radius: 50%"></img> `;
   }
 
   render() {

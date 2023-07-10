@@ -13,6 +13,7 @@ import {
   mapAndJoin,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
+import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -22,7 +23,6 @@ import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { Applet } from "../../applets/types.js";
 import { CustomView } from "../../custom-views/types.js";
-import { EntryRecord } from "@holochain-open-dev/utils";
 import { appletOrigin } from "../../utils.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";

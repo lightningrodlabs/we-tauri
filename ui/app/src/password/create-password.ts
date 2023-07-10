@@ -1,8 +1,6 @@
 import { localized, msg } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { weStyles } from "../shared-styles.js";
-import { createPassword } from "../tauri.js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
@@ -11,6 +9,9 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import { notifyError, onSubmit } from "@holochain-open-dev/elements";
+
+import { weStyles } from "../shared-styles.js";
+import { createPassword } from "../tauri.js";
 
 @localized()
 @customElement("create-password")
@@ -57,7 +58,6 @@ export class CreatePassword extends LitElement {
           type="password"
           required
           name="password"
-          autofocus
           .placeholder=${msg("Password")}
           style="margin-bottom: 16px"
         ></sl-input>

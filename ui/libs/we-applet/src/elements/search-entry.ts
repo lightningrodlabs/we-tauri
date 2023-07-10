@@ -236,7 +236,7 @@ export class SearchEntry extends LitElement implements FormField {
             style="flex: 1; display:flex"
             tooltip
             .headline=${msg("Error searching entries")}
-            .error=${this._searchEntries.value.error.data.data}
+            .error=${this._searchEntries.value.error}
           ></display-error>
         `;
       case "complete": {

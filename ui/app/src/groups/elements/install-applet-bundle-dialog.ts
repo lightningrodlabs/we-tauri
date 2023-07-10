@@ -46,9 +46,11 @@ export class InstallAppletBundleDialog extends LitElement {
 
   @state()
   _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
+
   @state()
   _uiBundle: { hash: EntryHashB64; setupRenderers: any } | undefined =
     undefined;
+
   @state()
   _invalidUiBundle = false;
 

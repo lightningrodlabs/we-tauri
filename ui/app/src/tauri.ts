@@ -1,15 +1,11 @@
-import {
-  AgentPubKey,
-  CallZomeRequestUnsigned,
-  encodeHashToBase64,
-} from "@holochain/client";
+import { CallZomeRequestUnsigned } from "@holochain/client";
 import { randomNonce } from "@holochain/client";
 import { CallZomeRequest } from "@holochain/client";
 import { getNonceExpiration } from "@holochain/client";
 import { CallZomeRequestSigned } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
-import { isWindows } from "./utils";
+import { isWindows } from "./utils.js";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
   return invoke("is_keystore_initialized");
@@ -59,7 +55,7 @@ async function fetchPing(origin: string) {
       if (resolved) return;
       document.body.removeChild(iframe);
       window.removeEventListener("message", listener);
-      reject(null);
+      reject(new Error("Protocol failed to start."));
     }, 1000);
 
     window.addEventListener("message", listener);

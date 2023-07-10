@@ -1,13 +1,10 @@
-import {
-  AsyncReadable,
-  manualReloadStore,
-  StoreSubscriber,
-} from "@holochain-open-dev/stores";
+import { manualReloadStore, StoreSubscriber } from "@holochain-open-dev/stores";
 import { localized, msg } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { notifyError } from "@holochain-open-dev/elements";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
+
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -15,19 +12,20 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
-import { weStyles } from "../../shared-styles";
+import { weStyles } from "../../shared-styles.js";
 import {
   disableDevMode,
   enableDevMode,
   isDevModeEnabled,
   openAppStore,
   openDevhub,
-} from "../../tauri";
+} from "../../tauri.js";
 
 @localized()
 @customElement("publish-applet-button")
 export class PublishAppletButton extends LitElement {
   devModeEnabled = manualReloadStore(() => isDevModeEnabled());
+
   isDevModeEnabled = new StoreSubscriber(
     this,
     () => this.devModeEnabled,

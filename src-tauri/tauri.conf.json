@@ -52,7 +52,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "externalBin": ["bins/lair-keystore-v0.2.3"],
+      "externalBin": [],
       "identifier": "we",
       "targets": "all"
     },

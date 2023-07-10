@@ -3,16 +3,16 @@ import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
+import { hashProperty } from "@holochain-open-dev/elements";
+import { EntryHash } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { weStoreContext } from "../../context";
-import { WeStore } from "../../we-store";
-import { hashProperty } from "@holochain-open-dev/elements";
-import { EntryHash } from "@holochain/client";
-import { weStyles } from "../../shared-styles";
+import { weStoreContext } from "../../context.js";
+import { WeStore } from "../../we-store.js";
+import { weStyles } from "../../shared-styles.js";
 
 @customElement("applet-logo")
 export class AppletLogo extends LitElement {
@@ -38,6 +38,7 @@ export class AppletLogo extends LitElement {
       <img
         style="height: var(--size, 64px); width: var(--size, 64px); border-radius: 8px"
         .src=${logo}
+        alt="TODO"
       />
     `;
   }

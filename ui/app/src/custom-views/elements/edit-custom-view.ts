@@ -1,14 +1,9 @@
 import { LitElement, html, css } from "lit";
-import { repeat } from "lit/directives/repeat.js";
 import { state, customElement, property, query } from "lit/decorators.js";
-import { ActionHash, Record, EntryHash, AgentPubKey } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import {
-  hashState,
   notifyError,
   sharedStyles,
-  hashProperty,
-  wrapPathInSvg,
   onSubmit,
 } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
@@ -23,9 +18,9 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "grapes-editor";
 import { GrapesEditor } from "grapes-editor";
 
-import { CustomViewsStore } from "../custom-views-store";
-import { customViewsStoreContext } from "../context";
-import { CustomView } from "../types";
+import { CustomViewsStore } from "../custom-views-store.js";
+import { customViewsStoreContext } from "../context.js";
+import { CustomView } from "../types.js";
 
 /**
  * @element edit-custom-view

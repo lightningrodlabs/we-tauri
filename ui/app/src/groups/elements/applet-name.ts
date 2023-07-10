@@ -5,15 +5,15 @@ import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
-import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { groupStoreContext } from "../context";
-import { GroupStore } from "../group-store";
-import { Applet } from "../types";
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
+import { Applet } from "../../applets/types.js";
+import { weStyles } from "../../shared-styles.js";
 
 @customElement("applet-name")
 export class AppletName extends LitElement {
@@ -29,10 +29,10 @@ export class AppletName extends LitElement {
     () => []
   );
 
-  renderName(applet: EntryRecord<Applet> | undefined) {
+  renderName(applet: Applet | undefined) {
     if (!applet) return html``;
 
-    return html`<span>${applet.entry.custom_name}</span>`;
+    return html`<span>${applet.custom_name}</span>`;
   }
 
   render() {
@@ -45,8 +45,10 @@ export class AppletName extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the group profile")}
-          .error=${this.applet.value.error.data.data}
+          .error=${this.applet.value.error}
         ></display-error>`;
     }
   }
+
+  static styles = weStyles;
 }

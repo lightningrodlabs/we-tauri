@@ -20,9 +20,9 @@ import {
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
-import { AppOpenViews } from "../layout/types";
-import { AppletIframeProtocol, signZomeCallTauri } from "../tauri";
-import { WeStore } from "../we-store";
+import { AppOpenViews } from "../layout/types.js";
+import { AppletIframeProtocol, signZomeCallTauri } from "../tauri.js";
+import { WeStore } from "../we-store.js";
 
 function getAppletIdFromOrigin(
   appletIframeProtocol: AppletIframeProtocol,
@@ -116,7 +116,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       );
 
       return {
-        appletBundleId: applet.applet.appstore_app_hash,
+        appletBundleId: applet.applet.devhub_happ_release_hash,
         appletName: applet.applet.custom_name,
         groupsIds: Array.from(groupsForApplet.keys()),
       } as AppletInfo;
@@ -187,7 +187,9 @@ export async function handleAppletIframeMessage(
       const crossApplet = message.crossApplet;
       if (crossApplet) {
         const applets = await toPromise(
-          weStore.appletsForBundleHash.get(applet.applet.appstore_app_hash)
+          weStore.appletsForBundleHash.get(
+            applet.applet.devhub_happ_release_hash
+          )
         );
         const config: IframeConfig = {
           type: "cross-applet",
@@ -249,7 +251,7 @@ export async function handleAppletIframeMessage(
             message.request.context
           );
       }
-
+      break;
     case "search":
       return services.search(message.filter);
     case "get-applet-info":

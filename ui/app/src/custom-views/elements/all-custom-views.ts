@@ -69,7 +69,7 @@ export class AllCustomViews extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the custom views")}
-          .error=${this._allCustomViews.value.error.data.data}
+          .error=${this._allCustomViews.value.error}
         ></display-error>`;
     }
   }

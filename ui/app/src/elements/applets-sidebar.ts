@@ -37,9 +37,11 @@ export class AppletsSidebar extends LitElement {
       new HoloHashMap();
 
     for (const [appletHash, appletStore] of Array.from(applets.entries())) {
-      if (!appletsByBundleHash.has(appletStore.applet.appstore_app_hash)) {
+      if (
+        !appletsByBundleHash.has(appletStore.applet.devhub_happ_release_hash)
+      ) {
         appletsByBundleHash.set(
-          appletStore.applet.appstore_app_hash,
+          appletStore.applet.devhub_happ_release_hash,
           appletStore
         );
       }
@@ -91,7 +93,7 @@ export class AppletsSidebar extends LitElement {
         return html`<display-error
           .headline=${msg("Error displaying the applets")}
           tooltip
-          .error=${this.applets.value.error.data.data}
+          .error=${this.applets.value.error}
         ></display-error>`;
       case "complete":
         return this.renderApplets(this.applets.value.value);

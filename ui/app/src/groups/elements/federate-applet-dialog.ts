@@ -11,7 +11,7 @@ import {
 } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
@@ -32,10 +32,10 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import { mapValues, slice } from "@holochain-open-dev/utils";
 
-import { weStoreContext } from "../../context";
-import { WeStore } from "../../we-store";
-import { GroupStore } from "../group-store";
-import { groupStoreContext } from "../context";
+import { weStoreContext } from "../../context.js";
+import { WeStore } from "../../we-store.js";
+import { GroupStore } from "../group-store.js";
+import { groupStoreContext } from "../context.js";
 
 @localized()
 @customElement("federate-applet-dialog")
@@ -161,6 +161,7 @@ export class FederateAppletDialog extends LitElement {
                     <img
                       slot="prefix"
                       .src=${groupProfile?.logo_src}
+                      alt="${groupProfile?.name}"
                       style="height: 16px; width: 16px"
                     />${groupProfile?.name}</sl-option
                   >

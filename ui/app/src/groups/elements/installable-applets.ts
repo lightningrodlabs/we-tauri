@@ -16,7 +16,6 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import { InstallAppletBundleDialog } from "./install-applet-bundle-dialog.js";
 import "./install-applet-bundle-dialog.js";
 
-import { AppletBundleMetadata } from "../../types.js";
 import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
@@ -83,7 +82,7 @@ export class InstallableApplets extends LitElement {
       ></install-applet-bundle-dialog>
 
       <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-        ${allApplets[0].length == 0
+        ${allApplets[0].length === 0
           ? html`
               <div class="column center-content">
                 <span class="placeholder"

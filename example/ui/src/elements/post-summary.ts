@@ -80,7 +80,7 @@ export class PostSummary extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the post")}
-          .error=${this._post.value.error.data.data}
+          .error=${this._post.value.error}
         ></display-error>`;
     }
   }

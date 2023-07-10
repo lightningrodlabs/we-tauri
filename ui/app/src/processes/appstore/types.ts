@@ -6,6 +6,11 @@ import {
   ZomeCallCapGrant,
 } from "@holochain/client";
 
+export interface ContentAddress<C> {
+  id: EntryHash;
+  address: EntryHash;
+  content: C;
+}
 export interface Entity<T> {
   id: ActionHash;
   action: ActionHash;

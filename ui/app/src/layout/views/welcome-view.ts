@@ -5,9 +5,10 @@ import { localized, msg } from "@lit/localize";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { weStyles } from "../../shared-styles.js";
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
 import { mdiAccountMultiplePlus } from "@mdi/js";
+
+import { weStyles } from "../../shared-styles.js";
 
 @localized()
 @customElement("welcome-view")

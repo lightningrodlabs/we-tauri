@@ -16,7 +16,7 @@ import {
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
-import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog";
+import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -96,6 +96,7 @@ export class GroupHome extends LitElement {
               <img
                 .src=${groupProfile.logo_src}
                 style="height: 64px; width: 64px; margin-right: 16px; border-radius: 50%"
+                alt="${groupProfile.name}"
               />
               <span class="title">${groupProfile.name}</span>
             </div>
@@ -239,7 +240,9 @@ export class GroupHome extends LitElement {
                 <span style="flex: 1"></span>
                 <sl-button
                   variant="primary"
-                  @click=${() => (this.view = { view: "create-custom-view" })}
+                  @click=${() => {
+                    this.view = { view: "create-custom-view" };
+                  }}
                   >${msg("Create Custom View")}</sl-button
                 >
               </div>
@@ -284,8 +287,12 @@ export class GroupHome extends LitElement {
     return html`<div class="column" style="flex: 1">
       <create-custom-group-view
         style="flex: 1"
-        @create-cancelled=${() => (this.view = { view: "main" })}
-        @custom-view-created=${() => (this.view = { view: "main" })}
+        @create-cancelled=${() => {
+          this.view = { view: "main" };
+        }}
+        @custom-view-created=${() => {
+          this.view = { view: "main" };
+        }}
       ></create-custom-group-view>
     </div>`;
   }
@@ -295,8 +302,12 @@ export class GroupHome extends LitElement {
       <edit-custom-group-view
         .customViewHash=${customViewHash}
         style="flex: 1"
-        @edit-cancelled=${() => (this.view = { view: "main" })}
-        @custom-view-updated=${() => (this.view = { view: "main" })}
+        @edit-cancelled=${() => {
+          this.view = { view: "main" };
+        }}
+        @custom-view-updated=${() => {
+          this.view = { view: "main" };
+        }}
       ></edit-custom-group-view>
     </div>`;
   }

@@ -10,7 +10,7 @@ import {
   CellType,
   encodeHashToBase64,
 } from "@holochain/client";
-import { AppletIframeProtocol, ConductorInfo } from "./tauri";
+import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
 
 export async function initAppClient(
   appId: string,

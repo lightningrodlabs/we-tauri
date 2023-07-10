@@ -1,8 +1,9 @@
 import { html, css, LitElement, PropertyValueMap } from "lit";
 import { state, query, property, customElement } from "lit/decorators.js";
-
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
+
+import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 
 import "@holochain-open-dev/elements/dist/elements/select-avatar.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
@@ -13,7 +14,6 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import { weStyles } from "../shared-styles.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 
 /**
  * @element create-group-dialog
@@ -101,5 +101,6 @@ export class CreateGroupDialog extends LitElement {
       </sl-dialog>
     `;
   }
+
   static styles = [weStyles];
 }

@@ -8,9 +8,10 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
 import { EntryInfo, Hrl } from "@lightningrodlabs/we-applet";
-import { WeStore } from "../../we-store";
-import { weStoreContext } from "../../context";
-import { weStyles } from "../../shared-styles";
+
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { weStyles } from "../../shared-styles.js";
 
 @customElement("entry-title")
 export class EntryTitle extends LitElement {
@@ -55,7 +56,7 @@ export class EntryTitle extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the information about the entry")}
-          .error=${this.entryInfo.value.error.data.data}
+          .error=${this.entryInfo.value.error}
         ></display-error>`;
     }
   }

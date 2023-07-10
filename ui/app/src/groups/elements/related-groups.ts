@@ -11,9 +11,10 @@ import { consume } from "@lit-labs/context";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
-import { groupStoreContext } from "../context";
-import { GroupStore } from "../group-store";
-import { weStyles } from "../../shared-styles";
+
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
+import { weStyles } from "../../shared-styles.js";
 
 @localized()
 @customElement("related-groups")
@@ -61,6 +62,7 @@ export class RelatedGroups extends LitElement {
             <img
               src="${groupProfile.logo_src}"
               style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 8px"
+              alt="${groupProfile.name}"
             /><span>${groupProfile.name}</span>
           </div>`
         )}

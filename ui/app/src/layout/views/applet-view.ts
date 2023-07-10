@@ -137,7 +137,7 @@ export class AppletViewEl extends LitElement {
       case "error":
         return html`<display-error
           .headline=${msg("Error initializing the client for this group")}
-          .error=${this._applet.value.error.data.data}
+          .error=${this._applet.value.error}
         ></display-error>`;
       case "complete":
         return this.renderAppletFrame(this._applet.value.value);

@@ -25,6 +25,7 @@ export class ViewFrame extends LitElement {
 
   render() {
     return html`<iframe
+      title="TODO"
       src="${appletOrigin(
         this.weStore.conductorInfo,
         this.appletHash

@@ -26,7 +26,6 @@ Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and d
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`.
 3. Enter the nix shell: `nix develop`.
 4. Run: `npm install`.
-5. Run: `npm run prepare:lair`.
 
 ### Running the DNA tests
 

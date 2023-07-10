@@ -7,7 +7,8 @@ import {
   AppAgentCallZomeRequest,
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { Applet } from "../applets/types";
+
+import { Applet } from "../applets/types.js";
 
 export class GroupClient {
   constructor(

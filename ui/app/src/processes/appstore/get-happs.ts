@@ -1,5 +1,5 @@
 import { AppAgentClient } from "@holochain/client";
-import { AppEntry, DevHubResponse, Entity } from "./types";
+import { AppEntry, DevHubResponse, Entity } from "./types.js";
 
 export async function getAllApps(
   appstoreClient: AppAgentClient

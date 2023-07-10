@@ -11,10 +11,10 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
-import { groupStoreContext } from "../context";
-import { GroupStore } from "../group-store";
-import { WeStore } from "../../we-store";
-import { weStoreContext } from "../../context";
+import { groupStoreContext } from "../context.js";
+import { GroupStore } from "../group-store.js";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
 
 @localized()
 @customElement("your-settings")

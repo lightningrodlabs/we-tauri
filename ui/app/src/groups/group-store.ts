@@ -30,23 +30,26 @@ import {
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
-
-import { AppletBundleMetadata } from "../types";
-import { GroupClient } from "./group-client";
-import { Applet } from "../applets/types";
-import { CustomViewsStore } from "../custom-views/custom-views-store";
-import { CustomViewsClient } from "../custom-views/custom-views-client";
-import { WeStore } from "../we-store";
-import { GroupProfile } from "../../../libs/we-applet/dist";
 import { encode } from "@msgpack/msgpack";
-import { AppEntry, Entity } from "../processes/appstore/types";
+
+import { GroupProfile } from "@lightningrodlabs/we-applet";
+
+import { GroupClient } from "./group-client.js";
+import { CustomViewsStore } from "../custom-views/custom-views-store.js";
+import { CustomViewsClient } from "../custom-views/custom-views-client.js";
+import { WeStore } from "../we-store.js";
+import { AppEntry, Entity } from "../processes/appstore/types.js";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
   profilesStore: ProfilesStore;
+
   peerStatusStore: PeerStatusStore;
+
   groupClient: GroupClient;
+
   customViewsStore: CustomViewsStore;
+
   membraneInvitationsStore: MembraneInvitationsStore;
 
   members: AsyncReadable<Array<AgentPubKey>>;
@@ -147,32 +150,17 @@ export class GroupStore {
     appEntry: Entity<AppEntry>,
     customName: string
   ): Promise<EntryHash> {
-    // Trigger the download of the icon
-    // TODO: remove this when moving to app store
-    await toPromise(
-      this.weStore.appletBundlesStore.appletBundleLogo.get(appEntry.id)
+    const networkSeed = uuidv4();
+
+    const applet = await this.weStore.appletBundlesStore.installLatestVersion(
+      appEntry,
+      customName,
+      networkSeed,
+      {}
     );
 
-    const networkSeed = uuidv4(); // generate random network seed if not provided
-
     // --- Register hApp in the We DNA ---
-
-    const applet: Applet = {
-      custom_name: customName,
-      description: appEntry.content.description,
-      appstore_app_hash: appEntry.id,
-      network_seed: networkSeed,
-      properties: {},
-    };
-
     const appletHash = await this.groupClient.registerApplet(applet);
-
-    try {
-      await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
-    } catch (e) {
-      await this.groupClient.unregisterApplet(appletHash);
-      throw e;
-    }
 
     return appletHash;
   }

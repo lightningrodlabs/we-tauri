@@ -1,7 +1,6 @@
 import { AdminWebsocket, AppInfo, DnaHash, EntryHash } from "@holochain/client";
 import { Hrl } from "@lightningrodlabs/we-applet";
 import { initAppClient } from "../../utils.js";
-import { updateCoordinators } from "../update-coordinators.js";
 import { hrlLocatorZome } from "./hrl_locator.js";
 
 export interface EntryDefLocation {
@@ -38,7 +37,7 @@ export async function locateHrl(
     });
   } catch (e) {
     //
-    await updateCoordinators(adminWebsocket, {
+    await adminWebsocket.updateCoordinators({
       dna_hash: hrl[0],
       ...(await hrlLocatorZome()),
     });

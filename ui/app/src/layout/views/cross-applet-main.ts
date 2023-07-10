@@ -15,9 +15,9 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import "./view-frame.js";
-import { WeStore } from "../../we-store";
-import { weStoreContext } from "../../context";
-import { weStyles } from "../../shared-styles";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { weStyles } from "../../shared-styles.js";
 
 @localized()
 @customElement("cross-applet-main")

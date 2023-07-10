@@ -14,11 +14,13 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import { EntryHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 
-import { WeStore } from "../../we-store";
-import { weStoreContext } from "../../context";
-import { weStyles } from "../../shared-styles";
-import { ContentAddress } from "../../processes/devhub/get-happs";
-import { HappReleaseEntry } from "../../processes/devhub/types";
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { weStyles } from "../../shared-styles.js";
+import {
+  ContentAddress,
+  HappReleaseEntry,
+} from "../../processes/appstore/types.js";
 
 @customElement("applet-bundle-title")
 export class AppletBundleTitle extends LitElement {
@@ -55,6 +57,7 @@ export class AppletBundleTitle extends LitElement {
 
     return html` <div class="row">
       <img
+        alt="${appletBundle}"
         .src=${appletBundleLogo}
         style="height: 16px; width: 16px; display: flex; margin-right: 4px"
       />

@@ -28,6 +28,10 @@ pub struct Applet {
 
     pub appstore_app_hash: ActionHash,
 
+    pub devhub_dna_hash: DnaHash,
+    pub devhub_happ_release_hash: EntryHash,
+    pub devhub_gui_release_hash: EntryHash,
+
     pub network_seed: Option<String>,
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleName

@@ -17,10 +17,11 @@ import { EntryInfo, GroupProfile, Hrl } from "@lightningrodlabs/we-applet";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 import { mapValues } from "@holochain-open-dev/utils";
-import { WeStore } from "../../we-store";
-import { weStoreContext } from "../../context";
-import { weStyles } from "../../shared-styles";
-import { AppletStore } from "../applet-store";
+
+import { WeStore } from "../../we-store.js";
+import { weStoreContext } from "../../context.js";
+import { weStyles } from "../../shared-styles.js";
+import { AppletStore } from "../applet-store.js";
 
 @customElement("applet-title")
 export class AppletTitle extends LitElement {
@@ -59,6 +60,7 @@ export class AppletTitle extends LitElement {
         (groupProfile) => html`
           <img
             .src=${groupProfile.logo_src}
+            alt="${appletStore.applet.custom_name}"
             style="height: 16px; width: 16px; display: flex; margin-right: 4px; border-radius: 50%"
           />
         `
@@ -79,7 +81,7 @@ export class AppletTitle extends LitElement {
         return html`<display-error
           tooltip
           .headline=${msg("Error fetching the information about the applet")}
-          .error=${this._applet.value.error.data.data}
+          .error=${this._applet.value.error}
         ></display-error>`;
     }
   }
