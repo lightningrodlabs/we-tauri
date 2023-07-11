@@ -128,7 +128,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
 
       for (const host of Array.from(hosts.values())) {
         promises.push(
-          (async function () {
+          (async () => {
             try {
               const results = await host.search(filter);
               return results;

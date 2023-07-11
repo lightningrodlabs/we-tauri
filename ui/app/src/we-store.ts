@@ -268,6 +268,7 @@ export class WeStore {
             )
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
+        console.log("hi", appletsByGroup, appletHash);
         return sliceAndJoin(this.groups, groupDnaHashes);
       }
     )

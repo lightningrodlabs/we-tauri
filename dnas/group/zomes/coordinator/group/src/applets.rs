@@ -6,6 +6,11 @@ fn get_applets_path() -> Path {
 }
 
 #[hdk_extern]
+fn hash_applet(applet: Applet) -> ExternResult<EntryHash> {
+   hash_entry(&applet)   
+}
+
+#[hdk_extern]
 fn register_applet(applet: Applet) -> ExternResult<EntryHash> {
     let applet_hash = hash_entry(&applet)?;
 

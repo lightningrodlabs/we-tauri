@@ -43,6 +43,10 @@ export class GroupClient {
     return this.callZome("register_applet", applet);
   }
 
+  async hashApplet(applet: Applet): Promise<EntryHash> {
+    return this.callZome("hash_applet", applet);
+  }
+
   async unregisterApplet(appletHash: EntryHash): Promise<void> {
     return this.callZome("unregister_applet", appletHash);
   }

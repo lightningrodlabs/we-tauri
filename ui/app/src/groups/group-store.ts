@@ -39,6 +39,7 @@ import { CustomViewsStore } from "../custom-views/custom-views-store.js";
 import { CustomViewsClient } from "../custom-views/custom-views-client.js";
 import { WeStore } from "../we-store.js";
 import { AppEntry, Entity } from "../processes/appstore/types.js";
+import { Applet } from "../applets/types.js";
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -152,15 +153,28 @@ export class GroupStore {
   ): Promise<EntryHash> {
     const networkSeed = uuidv4();
 
-    const applet = await this.weStore.appletBundlesStore.installLatestVersion(
-      appEntry,
-      customName,
-      networkSeed,
-      {}
-    );
+    const latestRelease =
+      await this.weStore.appletBundlesStore.getLatestVersion(appEntry);
+
+    const applet: Applet = {
+      custom_name: customName,
+      description: appEntry.content.description,
+
+      appstore_app_hash: appEntry.id,
+
+      devhub_dna_hash: appEntry.content.devhub_address.dna,
+      devhub_happ_release_hash: latestRelease.id,
+      devhub_gui_release_hash: latestRelease.content.official_gui!,
+      network_seed: networkSeed,
+      properties: {},
+    };
+
+    const appletHash = await this.groupClient.hashApplet(applet);
+
+    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
 
     // --- Register hApp in the We DNA ---
-    const appletHash = await this.groupClient.registerApplet(applet);
+    await this.groupClient.registerApplet(applet);
 
     return appletHash;
   }

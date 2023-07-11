@@ -19,7 +19,11 @@ import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
 import { getHappReleases } from "../processes/appstore/get-happ-releases.js";
 import { getAllApps } from "../processes/appstore/get-happs.js";
-import { AppEntry, Entity } from "../processes/appstore/types.js";
+import {
+  AppEntry,
+  Entity,
+  HappReleaseEntry,
+} from "../processes/appstore/types.js";
 import { ConductorInfo } from "../tauri.js";
 import { isAppRunning } from "../utils.js";
 
@@ -61,15 +65,9 @@ export class AppletBundlesStore {
     )
   );
 
-  async installLatestVersion(
-    appEntry: Entity<AppEntry>,
-    customName: string,
-    networkSeed: string,
-    properties: any
-  ): Promise<Applet> {
-    // Trigger the download of the icon
-    await toPromise(this.appletBundleLogo.get(appEntry.id));
-
+  async getLatestVersion(
+    appEntry: Entity<AppEntry>
+  ): Promise<Entity<HappReleaseEntry>> {
     const appReleases = await getHappReleases(this.appstoreClient, {
       dna_hash: appEntry.content.devhub_address.dna,
       resource_hash: appEntry.content.devhub_address.happ,
@@ -86,28 +84,14 @@ export class AppletBundlesStore {
     if (!latestRelease.content.official_gui)
       throw new Error("This app doesn't have an official GUI.");
 
-    const applet: Applet = {
-      custom_name: customName,
-      description: appEntry.content.description,
-
-      appstore_app_hash: appEntry.id,
-
-      devhub_dna_hash: appEntry.content.devhub_address.dna,
-      devhub_happ_release_hash: latestRelease.id,
-      devhub_gui_release_hash: latestRelease.content.official_gui,
-      network_seed: networkSeed,
-      properties,
-    };
-
-    const appletHash = hash(applet, HashType.ENTRY);
-
-    await this.installApplet(appletHash, applet);
-
-    return applet;
+    return latestRelease;
   }
 
   async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
     const appId = encodeHashToBase64(appletHash);
+
+    // Trigger the download of the icon
+    await toPromise(this.appletBundleLogo.get(applet.appstore_app_hash));
 
     const installedApps = await toPromise(this.installedApps);
 

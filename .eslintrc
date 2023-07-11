@@ -3,6 +3,7 @@
   "extends": ["@open-wc/eslint-config", "eslint-config-prettier"],
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "wc/guard-super-call": "off",
     "no-case-declarations": "off",
     "no-console": "off",
     "consistent-return": "off",

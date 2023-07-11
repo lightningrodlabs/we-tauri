@@ -294,7 +294,7 @@ async function publishApplets() {
         publisher: publisher.payload.id,
         devhub_address: {
           dna: happlibraryDnaHash,
-          happ: appVersionEntity.payload.id,
+          happ: appEntity.payload.id,
           gui: guiVersionEntity.payload.id,
         },
         editors: [],
