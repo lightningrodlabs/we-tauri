@@ -287,7 +287,7 @@ export class DashboardFilterMap extends LitElement {
           : this._objectiveDimensionNames.includes(dimensionName) &&
             this.filteredAssessments.every(a => a[dimensionName] !== ''),
     );
-
+    
     switch (this.tableType) {
       case AssessmentTableType.Resource:
         const fieldEntriesResource = contextFieldEntries.map(
@@ -340,7 +340,7 @@ export class DashboardFilterMap extends LitElement {
                   return html`<div></div>`;
                 }
               },
-            }), // TODO: Add widget renderer here
+            }),
           }),
         );
         return fieldEntriesResource.reduce((fields, field) => ({ ...fields, ...field }), {});
@@ -394,10 +394,9 @@ export class DashboardFilterMap extends LitElement {
                   return html`<div></div>`;
                 }
               },
-            }), // TODO: Add widget renderer here
+            }),
           }),
         );
-        console.log('fieldDefs :>> ',  fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {}));
         return fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {});
     }
     return {};
@@ -424,11 +423,6 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
-    console.log(
-      'filtered assessments, fieldDefs in table render',
-      this.filteredAssessments,
-      this.fieldDefs,
-    );
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}

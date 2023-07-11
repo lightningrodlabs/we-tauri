@@ -133,10 +133,10 @@ export class NHDialog extends NHComponentShoelace {
     return html`
       <sl-dialog
         id="main"
-        class=${classMap({
+        class="dialog-scrolling ${classMap({
           large: this.size == 'large',
           medium: this.size == 'medium',
-        })}
+        })}"
         ?open=${this.isOpen}
         label="${this.title}"
         @sl-after-hide=${this.onDialogClosed}

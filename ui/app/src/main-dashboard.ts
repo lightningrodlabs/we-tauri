@@ -1046,6 +1046,8 @@ export class MainDashboard extends NHComponentShoelace {
       .dashboard-content {
         background-color: var(--nh-theme-bg-canvas);
         color: var(--nh-theme-fg-on-dark);
+        overflow: auto;
+        font-size: 14px;
       }
 
       .navBarGroupCentric,
