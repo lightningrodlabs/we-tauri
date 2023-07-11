@@ -105,8 +105,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       lit-svelte-stores:
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.5
+        version: 0.2.5
       md5:
         specifier: ^2.3.0
         version: 2.3.0
@@ -1672,7 +1672,7 @@ packages:
     dependencies:
       '@holochain-open-dev/utils': 0.14.2
       '@holochain/client': 0.14.1
-      lit-svelte-stores: 0.2.1
+      lit-svelte-stores: 0.2.5
       svelte: 3.59.1
     transitivePeerDependencies:
       - bufferutil
@@ -5110,19 +5110,11 @@ packages:
       svelte: 3.59.1
     dev: false
 
-  /lit-svelte-stores@0.2.1:
-    resolution: {integrity: sha512-PzvcgP5GNKoEDhIsodV2PyBHBoDFhs76/BE4+R4FXllWquMiOqdTifpzTq6b7vhD5WtV/jTRQe87PC2ncwABIA==}
-    dependencies:
-      '@lit-labs/task': 1.1.2
-      lit: 2.2.0
-      svelte: 3.59.1
-    dev: false
-
   /lit-svelte-stores@0.2.5:
     resolution: {integrity: sha512-Ny8GtvQB1/fiJwC41CsnNYSO2P/I0Lyd9mCxqSanGBE9EWI1fD2qg1tADN8Vz8hX1plO1q0ZODyHdUf90/ADjg==}
     dependencies:
       '@lit-labs/task': 1.1.2
-      lit: 2.2.0
+      lit: 2.7.5
       lodash-es: 4.17.21
       svelte: 3.59.1
     dev: false

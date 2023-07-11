@@ -30,6 +30,9 @@ export const mockAssessments: AssessmentDict = {'abc' : [
 // Create a mock context with the mock store
 export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
+const mockFieldDefs = {
+  
+}
 const mockSensemakerWritable = writable<AssessmentDict>({});
 
 const mockResourceAssessmentsResponse = {

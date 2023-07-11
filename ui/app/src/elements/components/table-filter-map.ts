@@ -76,11 +76,15 @@ export class DashboardFilterMap extends LitElement {
       this.setupAssessmentFilteringSubscription();
     }
     if (changedProps.has('selectedDimensions')) {
+      debugger;
       await this.fetchSelectedDimensionEntries();
-      // TODO: get the widgets from the store as well and put them in selected dimension state to be available to the 
-      this.filterSelectedDimensionsByComputedMethod()
+      // TODO: get the widgets from the store as well and put them in selected dimension state to be available to the
+      this.filterSelectedDimensionsByComputedMethod();
     }
-    if (changedProps.has('_subjectiveDimensionNames') && typeof changedProps.get('_objectiveDimensionNames') !== 'undefined') {
+    if (
+      changedProps.has('_subjectiveDimensionNames') &&
+      typeof changedProps.get('_objectiveDimensionNames') !== 'undefined'
+    ) {
       this.fieldDefs = this.generateContextFieldDefs();
       this._allAssessments.unsubscribe();
       this.setupAssessmentFilteringSubscription();
@@ -90,7 +94,7 @@ export class DashboardFilterMap extends LitElement {
   setupAssessmentFilteringSubscription() {
     // Subscribe to resourceAssessments, filtering using this component's props when a new value is emitted
     (this._allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
-      console.log("resource assessments before filter", resourceAssessments)
+      console.log('resource assessments before filter', resourceAssessments);
       if (
         Object.values(resourceAssessments) &&
         Object.values(resourceAssessments)?.length !== undefined &&
@@ -100,7 +104,11 @@ export class DashboardFilterMap extends LitElement {
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          console.log('allAssessments, filteredAssessments :>> ',allAssessments,  filteredAssessments);
+          console.log(
+            'allAssessments, filteredAssessments :>> ',
+            allAssessments,
+            filteredAssessments,
+          );
           assessmentTableRecords = filteredAssessments.map(
             this.mapAssessmentToAssessmentTableRecord.bind(this),
           );
@@ -125,7 +133,7 @@ export class DashboardFilterMap extends LitElement {
     this._objectiveDimensionNames = objective;
     this._subjectiveDimensionNames = subjective;
   }
-  
+
   async fetchCurrentContextEntry() {
     if (this.selectedContext == 'none') return;
 
@@ -141,27 +149,22 @@ export class DashboardFilterMap extends LitElement {
     if (!this.selectedDimensions) return;
 
     try {
-      // const appInfo = await this._sensemakerStore.client.appWebsocket.appInfo({
-      //   installed_app_id: 'we',
-      // });
-      const appInfo : AppInfo = await this._sensemakerStore.client.appInfo();
-      const cell_id = appInfo.cell_info['we'];
-      // TODO: wire this back up
-      // sensemaker[1].cloned.cell_id;
-      // const response = await this._sensemakerStore.client.callZome({
-      //   cell_id,
-      //   zome_name: 'sensemaker',
-      //   fn_name: 'get_dimensions',
-      //   payload: null,
-      // });
-      // this._dimensionEntries = response.map(payload => {
-      //   try {
-      //     let dimension = decode(payload.entry.Present.entry) as any;
-      //     return dimension;
-      //   } catch (error) {
-      //     console.log('Error decoding dimension payload: ', error);
-      //   }
-      // }) as Dimension[];
+      const appInfo: AppInfo = await this._sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      const response = await this._sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'get_dimensions',
+        payload: null,
+      });
+      this._dimensionEntries = response.map(payload => {
+        try {
+          let dimension = decode(payload.entry.Present.entry) as any;
+          return dimension;
+        } catch (error) {
+          console.log('Error decoding dimension payload: ', error);
+        }
+      }) as Dimension[];
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
     }
@@ -170,29 +173,39 @@ export class DashboardFilterMap extends LitElement {
   // Filtering
   flatFiltered(assessments: Assessment[][]): Assessment[] {
     // By ResourceDefEH
-    let filteredByResourceDef = (this.resourceDefEh == 'none' ? Object.values(assessments) :this.filterByResourceDefEh(
-      assessments,
-      this.resourceDefEh,
-    )).flat() as Assessment[];
+    let filteredByResourceDef = (
+      this.resourceDefEh == 'none'
+        ? Object.values(assessments)
+        : this.filterByResourceDefEh(assessments, this.resourceDefEh)
+    ).flat() as Assessment[];
 
-    console.log('comparing resource def', this.resourceDefEh, encodeHashToBase64(assessments[0][0].resource_def_eh))
+    console.log(
+      'comparing resource def',
+      this.resourceDefEh,
+      encodeHashToBase64(assessments[0][0].resource_def_eh),
+    );
     // By objective/subjective dimension names
     let filteredByMethodType;
-    console.log('filteredByResourceDef', filteredByResourceDef)
+    console.log('filteredByResourceDef', filteredByResourceDef);
 
     if (this.tableType === AssessmentTableType.Resource) {
       filteredByMethodType = this.filterByMethodNames(
         filteredByResourceDef,
-        this._objectiveDimensionNames
+        this._objectiveDimensionNames,
       );
     } else {
       // else we are dealing with a Context table, filter accordingly
       filteredByMethodType = this.filterByMethodNames(
         filteredByResourceDef,
-        this._subjectiveDimensionNames
+        this._subjectiveDimensionNames,
       );
     }
-    console.log('filteredByMethodType', filteredByMethodType, this._subjectiveDimensionNames, this._objectiveDimensionNames)
+    console.log(
+      'filteredByMethodType',
+      filteredByMethodType,
+      this._subjectiveDimensionNames,
+      this._objectiveDimensionNames,
+    );
 
     // By context
     let tripleFiltered;
@@ -206,7 +219,7 @@ export class DashboardFilterMap extends LitElement {
         encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh),
       );
     }
-    console.log('tripleFiltered', tripleFiltered) 
+    console.log('tripleFiltered', tripleFiltered);
     return tripleFiltered || filteredByMethodType;
   }
 
@@ -269,9 +282,11 @@ export class DashboardFilterMap extends LitElement {
 
   generateContextFieldDefs(): { [x: string]: FieldDefinition<AssessmentTableRecord> } {
     const contextFieldEntries = Object.entries(this.selectedDimensions).filter(
-      ([dimensionName, _]: [string, Uint8Array]) => this.tableType === AssessmentTableType.Resource
-          ? (this._subjectiveDimensionNames).includes(dimensionName) 
-          : (this._objectiveDimensionNames).includes(dimensionName) && this.filteredAssessments.every(a => a[dimensionName] !== '')
+      ([dimensionName, _]: [string, Uint8Array]) =>
+        this.tableType === AssessmentTableType.Resource
+          ? this._subjectiveDimensionNames.includes(dimensionName)
+          : this._objectiveDimensionNames.includes(dimensionName) &&
+            this.filteredAssessments.every(a => a[dimensionName] !== ''),
     );
 
     switch (this.tableType) {
@@ -284,19 +299,32 @@ export class DashboardFilterMap extends LitElement {
                 const assessment = value[1] as Assessment;
                 const isAssessment = !!assessment;
                 if (isAssessment) {
-                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].assess
+                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[
+                    encodeHashToBase64(assessment.dimension_eh)
+                  ].assess;
                   const assessWidget = new assessWidgetType();
                   assessWidget.resourceEh = assessment.resource_eh;
                   assessWidget.dimensionEh = assessment.dimension_eh;
                   assessWidget.resourceDefEh = assessment.resource_def_eh;
                   const methodMap = get(this._sensemakerStore.methodDimensionMapping());
                   // given the assessment.dimension_eh, find the method eh that maps to it
-                  const methodEh = Object.keys(methodMap).find(key => encodeHashToBase64(methodMap[key].inputDimensionEh) === encodeHashToBase64(assessment.dimension_eh));
+                  const methodEh = Object.keys(methodMap).find(
+                    key =>
+                      encodeHashToBase64(methodMap[key].inputDimensionEh) ===
+                      encodeHashToBase64(assessment.dimension_eh),
+                  );
                   assessWidget.methodEh = decodeHashFromBase64(methodEh!);
                   assessWidget.sensemakerStore = this._sensemakerStore;
-                  assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
+                  assessWidget.latestAssessment = get(
+                    this._sensemakerStore.myLatestAssessmentAlongDimension(
+                      encodeHashToBase64(assessment.resource_eh),
+                      encodeHashToBase64(assessment.dimension_eh),
+                    ),
+                  );
 
-                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[
+                    encodeHashToBase64(assessment.dimension_eh)
+                  ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
                   const assessWidgetStyles = assessWidgetType.styles as any;
@@ -307,12 +335,9 @@ export class DashboardFilterMap extends LitElement {
                       ${unsafeCSS(assessWidgetStyles[1])}
                       ${unsafeCSS(displayWidgetStyles[1])}
                     </style>
-                    <div class="widget-wrapper">
-                      ${assessWidget.render()}
-                    </div>
+                    <div class="widget-wrapper">${assessWidget.render()}</div>
                   `;
-                }
-                else {
+                } else {
                   return html`<div></div>`;
                 }
               },
@@ -329,19 +354,32 @@ export class DashboardFilterMap extends LitElement {
                 const assessment = value[1] as Assessment;
                 const isAssessment = !!assessment;
                 if (isAssessment) {
-                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].assess
+                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[
+                    encodeHashToBase64(assessment.dimension_eh)
+                  ].assess;
                   const assessWidget = new assessWidgetType();
                   assessWidget.resourceEh = assessment.resource_eh;
                   assessWidget.dimensionEh = assessment.dimension_eh;
                   assessWidget.resourceDefEh = assessment.resource_def_eh;
                   const methodMap = get(this._sensemakerStore.methodDimensionMapping());
                   // given the assessment.dimension_eh, find the method eh that maps to it
-                  const methodEh = Object.keys(methodMap).find(key => encodeHashToBase64(methodMap[key].outputDimensionEh) === encodeHashToBase64(assessment.dimension_eh));
+                  const methodEh = Object.keys(methodMap).find(
+                    key =>
+                      encodeHashToBase64(methodMap[key].outputDimensionEh) ===
+                      encodeHashToBase64(assessment.dimension_eh),
+                  );
                   assessWidget.methodEh = decodeHashFromBase64(methodEh!);
                   assessWidget.sensemakerStore = this._sensemakerStore;
-                  assessWidget.latestAssessment = get(this._sensemakerStore.myLatestAssessmentAlongDimension(encodeHashToBase64(assessment.resource_eh), encodeHashToBase64(assessment.dimension_eh)));
+                  assessWidget.latestAssessment = get(
+                    this._sensemakerStore.myLatestAssessmentAlongDimension(
+                      encodeHashToBase64(assessment.resource_eh),
+                      encodeHashToBase64(assessment.dimension_eh),
+                    ),
+                  );
 
-                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[encodeHashToBase64(assessment.dimension_eh)].display;
+                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[
+                    encodeHashToBase64(assessment.dimension_eh)
+                  ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
                   const assessWidgetStyles = assessWidgetType.styles as any;
@@ -351,12 +389,9 @@ export class DashboardFilterMap extends LitElement {
                       ${unsafeCSS(assessWidgetStyles[1])}
                       ${unsafeCSS(displayWidgetStyles[1])}
                     </style>
-                    <div class="widget-wrapper">
-                      ${displayWidget.render()}
-                    </div>
+                    <div class="widget-wrapper">${displayWidget.render()}</div>
                   `;
-                }
-                else {
+                } else {
                   return html`<div></div>`;
                 }
               },
@@ -389,7 +424,11 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
-    console.log('filtered assessments, fieldDefs in table render', this.filteredAssessments, this.fieldDefs)
+    console.log(
+      'filtered assessments, fieldDefs in table render',
+      this.filteredAssessments,
+      this.fieldDefs,
+    );
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}

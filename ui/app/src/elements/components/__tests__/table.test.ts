@@ -1,5 +1,4 @@
 const { JSDOM } = require('jsdom');
-import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import { fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 import { expect as expectDomOf } from '@esm-bundle/chai'
@@ -10,6 +9,7 @@ import { mockAssessments, mockSensemakerStore } from './test-harness';
 import { addedAssessment, removedAssessment } from './helpers';
 import '../table';
 import { tableId } from '../table';
+import { AssessmentTableType } from '../helpers/types';
 /**
 * @vitest-environment jsdom
 */
@@ -26,7 +26,7 @@ describe('Table', () => {
 
   const initialRender = async (testComponent) => {
     harness = await stateful(component);
-    componentDom = harness.querySelector('assessments-table');
+    componentDom = harness.querySelector('dashboard-table');
     await componentDom.updateComplete;
   }
   const renderAndReturnDom = async (testComponent, subComponent) => {
@@ -40,8 +40,13 @@ describe('Table', () => {
   }
 
   beforeAll(async () => {
-    component = html`<assessments-table></assessments-table>`;
+    component = html`<dashboard-table
+    .resourceName=${mockResourceName}
+        .assessments=${mockAssessments}
+        .tableType=${AssessmentTableType.Context}
+        .contextFieldDefs=${{}}></dashboard-table>`;
     await initialRender(component)
+    
   });
 
   describe('Given a SensemakerStore with no assessments ', () => {

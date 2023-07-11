@@ -8,7 +8,7 @@
   "scripts": {
     "start": "AGENTS=2 npm run network",
     "dev": "AGENTS=2 npm run network:dev",
-    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && npm run build -w nh-launcher && concurrently \"npm run launch:happ\"",
+    "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && npm run build -w nh-launcher && concurrently \"npm run launch:happ\" \"npm run build:watch -w ui/app\"",
     "network:dev": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && UI_PORT=8888 concurrently \"open-cli http://localhost:8888 && cd ui/app && npm start\" \"ADMIN_PORT=9000 HC_PORT=9001 npm run start:dev\"",
     "launch:happ": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-path ./ui/app/dist network mdns",
     "launch:dev": "RUST_LOG=warn WASM_LOG=debug echo \"pass\" | hc launch --piped -n $AGENTS ./workdir/we.happ --ui-port $UI_PORT network mdns",
@@ -21,7 +21,7 @@
     "playground": "run-singleton \"holochain-playground\"",
     "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.9-alpha/sensemaker.dna",
     "postinstall": "npm run download-sensemaker",
-    "test": "npm run build:zomes && hc app pack workdir && cd tests && npm t"
+    "test:ui": "cd ui/app && npm test"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",
