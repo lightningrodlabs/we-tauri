@@ -18,7 +18,7 @@ import {
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { query } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
@@ -26,9 +26,15 @@ import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
+import { NHDialog } from "./nh/layout/dialog";
 
 export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
+  
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -49,6 +55,9 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @query("#federate-applet-dialog")
   _federateAppletDialog!: FederateAppletDialog;
+  
+  @state()
+  private _widgetConfigDialogActivated: boolean = false;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -160,11 +169,27 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
           .map((appletInfo) => {
             const appStatus = getStatus(appletInfo.appInfo);
             return html`
+            ${this._widgetConfigDialogActivated ? html`
+              <nh-dialog
+                id="applet-widget-config"
+                size="large"
+                dialogType="widget-config"
+                handleOk=${() => {console.log("dialog closed"); this._widgetConfigDialogActivated = false}}
+                isOpen=${true}
+                title="Configure Applet Widgets"
+                .primaryButtonDisabled=${true}
+              >
+                <div slot="inner-content">
+                  <nh-sensemaker-settings
+                    .sensemakerStore=${this._sensemakerStore}
+                  ></nh-sensemaker-settings>
+                </div>
+              </nh-dialog>` : html``}
               <div class="column" style="align-items: right; width: 100%;">
                 <mwc-card style="margin: 5px;">
                   <div
                     class="row"
-                    style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                    style="background: #645d69; color: white; align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
                   >
                     <img
                         style="margin-right: 10px;"
@@ -175,12 +200,12 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                     <div class="row" style="margin-left: auto; align-items: center;">
                       <span style="color: gray; margin-right: 25px;">${appStatus}</span>
 
-                      <sl-tooltip placement="top" content="federate" hoist>
+                      <sl-tooltip placement="top" content="configure widgets" hoist>
                         <mwc-button
                           icon="share"
                           style="margin-right: 10px;"
-                          @click=${() => this._federateAppletDialog.open(appletInfo)}
-                          label="federate"
+                          @click=${() => {console.log("federate clicked"); this._widgetConfigDialogActivated = true}}
+                          label="configure widgets"
                         >
                         </mwc-button>
                       </sl-tooltip>
@@ -285,6 +310,8 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       "mwc-dialog": Dialog,
       "uninstall-applet-dialog": UninstallAppletDialog,
       "federate-applet-dialog": FederateAppletDialog,
+      "nh-sensemaker-settings": NHSensemakerSettings,
+      'nh-dialog': NHDialog,
     };
   }
 

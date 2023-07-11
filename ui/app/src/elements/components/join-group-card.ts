@@ -23,6 +23,7 @@ import { HoloIdenticon } from '@holochain-open-dev/elements';
 import { CreateWeGroupDialog } from '../dialogs/create-we-group-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
+import { NHCard } from './nh/layout/card';
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -214,46 +215,43 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
     return html`
       <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
 
-      <mwc-card>
-        <div class="column content-pane">
-          <div style="font-size: 1.7em;">Joining A Neighbourhood</div>
-          <div class="center-content">
-            <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
-              To join a neighbourhood, send your public key to a member of the neighbourhood you
-              would like to join and ask them to invite you.
-            </div>
-
-            <div class="column center-content">
-              <div class="row title center-content" style="margin-top: 50px;">
-                <mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span>
-              </div>
-              <div style="margin-top: 15px;">
-                <sl-tooltip placement="right" .content=${'copy'}>
-                  <div
-                    class="pubkey-field"
-                    @click=${() => {
-                      navigator.clipboard.writeText(
-                        encodeHashToBase64(this.matrixStore.myAgentPubKey),
-                      );
-                      this._copiedSnackbar.show();
-                    }}
-                  >
-                    ${encodeHashToBase64(this.matrixStore.myAgentPubKey)}
-                  </div>
-                </sl-tooltip>
-                <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
-                  send your public key to your friends if they want to invite you to their
-                  neighbourhood
-                </div>
-              </div>
-            </div>
-
-            ${this._myInvitations.render({
-              complete: i => this.renderInvitationsBlock(i),
-            })}
+      <nh-card heading="Joining A Neighbourhood">
+        <div class="center-content">
+          <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
+            To join a neighbourhood, send your public key to a member of the neighbourhood you
+            would like to join and ask them to invite you.
           </div>
+
+          <div class="column center-content">
+            <div class="row title center-content" style="margin-top: 50px;">
+              <mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span>
+            </div>
+            <div style="margin-top: 15px;">
+              <sl-tooltip placement="right" .content=${'copy'}>
+                <div
+                  class="pubkey-field"
+                  @click=${() => {
+                    navigator.clipboard.writeText(
+                      encodeHashToBase64(this.matrixStore.myAgentPubKey),
+                    );
+                    this._copiedSnackbar.show();
+                  }}
+                >
+                  ${encodeHashToBase64(this.matrixStore.myAgentPubKey)}
+                </div>
+              </sl-tooltip>
+              <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
+                send your public key to your friends if they want to invite you to their
+                neighbourhood
+              </div>
+            </div>
+          </div>
+
+          ${this._myInvitations.render({
+            complete: i => this.renderInvitationsBlock(i),
+          })}
         </div>
-      </mwc-card>
+      </nh-card>
     `;
   }
 
@@ -262,13 +260,13 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       'mwc-button': Button,
       'mwc-list': List,
       'mwc-list-item': ListItem,
-      'mwc-card': Card,
       'mwc-icon': Icon,
       'mwc-snackbar': Snackbar,
       'holo-identicon': HoloIdenticon,
       'create-we-group-dialog': CreateWeGroupDialog,
       'sl-tooltip': SlTooltip,
       'mwc-dialog': Dialog,
+      'nh-card': NHCard,
     };
   }
 

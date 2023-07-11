@@ -1076,18 +1076,21 @@ export class MatrixStore {
     const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
     const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
     const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
-    const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-    sensemakerStore.registerWidget(
-      [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-      TotalThumbsUpDimensionDisplay,
-      ThumbsUpDimenionAssessment,
-    );
 
-    sensemakerStore.registerWidget(
-      [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-      AverageStarDimensionDisplay,
-      StarDimensionAssessment,
-    );
+    // Delay widget registration until new Sensemaker cell is cached.
+    setTimeout(async () => {
+      const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
+      sensemakerStore.registerWidget(
+        [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
+        TotalThumbsUpDimensionDisplay,
+        ThumbsUpDimenionAssessment,
+      );
+      sensemakerStore.registerWidget(
+        [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
+        AverageStarDimensionDisplay,
+        StarDimensionAssessment,
+        );
+      }, 1500);
     
     this._matrix.update((matrix) => {
       const weInfo: WeInfo = {

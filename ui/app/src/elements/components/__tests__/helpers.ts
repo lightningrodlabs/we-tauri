@@ -1,5 +1,5 @@
 import { fixture, html } from "@open-wc/testing";
-import { AssessmentDict } from "../table";
+import { AssessmentDict } from "../helpers/types";
 
 export const stateful = async (component) => fixture(html`
 <test-harness>${component}</test-harness>
