@@ -1,10 +1,13 @@
-import { AssessmentDict } from './../helpers/types';
+import { AssessmentDict, AssessmentTableRecord } from './../helpers/types';
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { createContext, ContextRoot, contextProvider} from '@lit-labs/context';
 import { vi } from 'vitest'
 import { SensemakerStore } from '@neighbourhoods/client';
 import { writable } from '@holochain-open-dev/stores';
+import { FieldDefinition } from '@adaburrows/table-web-component';
+import { mockResourceName } from './table.test';
+import { encodeHashToBase64 } from '@holochain/client';
 
 export const mockAssessments: AssessmentDict = {'abc' : [
     {
@@ -27,11 +30,31 @@ export const mockAssessments: AssessmentDict = {'abc' : [
     },
   ]};
 
+
 // Create a mock context with the mock store
 export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
-const mockFieldDefs = {
+export const mockFieldDefs = {
+  five_star: new FieldDefinition<AssessmentTableRecord>({
+    decorator: () => html`<p></p>`,
+    heading: () => html`<h1></h1>`,
+  }),
   
+  importance: new FieldDefinition<AssessmentTableRecord>({
+    decorator: () => html`<p></p>`,
+    heading: () => html`<h1></h1>`,
+  }),
+  
+  perceived_heat: new FieldDefinition<AssessmentTableRecord>({
+    decorator: () => html`<p></p>`,
+    heading: () => html`<h1></h1>`,
+  }),
+  
+  thumbs_up: new FieldDefinition<AssessmentTableRecord>({
+    decorator: () => html`<p></p>`,
+    heading: () => html`<h1></h1>`,
+  }),
+
 }
 const mockSensemakerWritable = writable<AssessmentDict>({});
 
@@ -62,7 +85,7 @@ export class TestHarness extends LitElement {
   @property({attribute: false})
   // Create a mock store with the mock data
   _sensemakerStore: Object = mockSensemakerStore
-  
+
   render() {
     return html`<slot></slot>`;
   }  

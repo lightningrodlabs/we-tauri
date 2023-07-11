@@ -95,6 +95,12 @@ importers:
       '@scoped-elements/shoelace':
         specifier: ^0.0.8
         version: 0.0.8
+      '@webcomponents/scoped-custom-element-registry':
+        specifier: ^0.0.9
+        version: 0.0.9
+      '@webcomponents/webcomponentsjs':
+        specifier: ^2.8.0
+        version: 2.8.0
       fflate:
         specifier: ^0.7.3
         version: 0.7.3
@@ -3293,6 +3299,14 @@ packages:
       - supports-color
       - utf-8-validate
     dev: true
+
+  /@webcomponents/scoped-custom-element-registry@0.0.9:
+    resolution: {integrity: sha512-4RVHwN9oIp23mhrxeDbP9/0wvdcrB0d/MFMqIStShIgfzsqXZXf1OdU5kvqjgdMYavQ5Zm8C6BuBcAjzNwAetQ==}
+    dev: false
+
+  /@webcomponents/webcomponentsjs@2.8.0:
+    resolution: {integrity: sha512-loGD63sacRzOzSJgQnB9ZAhaQGkN7wl2Zuw7tsphI5Isa0irijrRo6EnJii/GgjGefIFO8AIO7UivzRhFaEk9w==}
+    dev: false
 
   /abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
