@@ -101,7 +101,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
         this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-        this.selectedResourceDefEh = this.selectedResourceDefIndex >= 0 ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
+        this.selectedResourceDefEh = resourceName ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
+        console.log('selected resource :>> ', appletConfig.resource_defs[resourceName], resourceName);
         this.loading = false;
       });
     });
@@ -179,9 +180,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
               <div role="navigation" class="sub-nav indented">
               ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
                 this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                  (resource, i) =>
-                  i == 0 ? html``  // TODO: unhardcode this 
-                  : html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
+                  (resource, i) => html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                     @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
                     >${resource}</sl-menu-item
                   >`,

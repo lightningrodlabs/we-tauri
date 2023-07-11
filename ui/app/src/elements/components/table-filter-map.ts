@@ -76,9 +76,8 @@ export class DashboardFilterMap extends LitElement {
       this.setupAssessmentFilteringSubscription();
     }
     if (changedProps.has('selectedDimensions')) {
-      debugger;
       await this.fetchSelectedDimensionEntries();
-      // TODO: get the widgets from the store as well and put them in selected dimension state to be available to the
+      this.fieldDefs = this.generateContextFieldDefs();
       this.filterSelectedDimensionsByComputedMethod();
     }
     if (
@@ -398,6 +397,7 @@ export class DashboardFilterMap extends LitElement {
             }), // TODO: Add widget renderer here
           }),
         );
+        console.log('fieldDefs :>> ',  fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {}));
         return fieldEntriesContext.reduce((field, fields) => ({ ...fields, ...field }), {});
     }
     return {};
