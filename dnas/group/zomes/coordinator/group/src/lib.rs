@@ -2,6 +2,7 @@ use group_integrity::*;
 use hdk::prelude::*;
 
 pub mod applets;
+pub mod related_groups;
 
 pub fn group_info_path() -> ExternResult<TypedPath> {
     Path::from("group_profile").typed(LinkTypes::GroupInfoPath)
@@ -12,7 +13,11 @@ pub fn group_info_path() -> ExternResult<TypedPath> {
 pub fn get_group_profile(_: ()) -> ExternResult<Option<Record>> {
     let path = group_info_path()?;
 
-    let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToGroupInfo, None)?;
+    let links = get_links(
+        path.path_entry_hash()?,
+        LinkTypes::AnchorToGroupProfile,
+        None,
+    )?;
 
     let latest_group_info_link = links
         .into_iter()
@@ -21,7 +26,11 @@ pub fn get_group_profile(_: ()) -> ExternResult<Option<Record>> {
     match latest_group_info_link {
         None => Ok(None),
         Some(link) => {
-            let record = get(ActionHash::from(link.target), GetOptions::default())?;
+            let record = get(
+                ActionHash::try_from(link.target)
+                    .map_err(|e| wasm_error!(WasmErrorInner::from(e)))?,
+                GetOptions::default(),
+            )?;
 
             Ok(record)
         }
@@ -37,7 +46,7 @@ pub fn set_group_profile(group_profile: GroupProfile) -> ExternResult<()> {
     create_link(
         path.path_entry_hash()?,
         action_hash,
-        LinkTypes::AnchorToGroupInfo,
+        LinkTypes::AnchorToGroupProfile,
         (),
     )?;
 

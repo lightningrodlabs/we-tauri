@@ -4,7 +4,7 @@ import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
 import { CloneDnaRecipe } from "@holochain-open-dev/membrane-invitations";
-import { mapValues } from "@holochain-open-dev/utils";
+import { EntryRecord, mapValues } from "@holochain-open-dev/utils";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
 import { consume } from "@lit-labs/context";
@@ -15,6 +15,7 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { weStyles } from "../../shared-styles.js";
+import { RelatedGroup } from "../types.js";
 
 @localized()
 @customElement("related-groups")
@@ -28,13 +29,8 @@ export class RelatedGroups extends LitElement {
     () => [this._groupStore]
   );
 
-  renderGroups(relatedGroups: ReadonlyMap<DnaHash, CloneDnaRecipe>) {
-    if (relatedGroups.size === 0) return html``;
-
-    const groupsProfiles = mapValues(
-      relatedGroups,
-      (recipe) => decode(recipe.custom_content) as GroupProfile
-    );
+  renderGroups(relatedGroups: Array<EntryRecord<RelatedGroup>>) {
+    if (relatedGroups.length === 0) return html``;
 
     return html` <div class="column" style="flex: 1">
       <div class="row" style="align-items: center">
@@ -42,8 +38,8 @@ export class RelatedGroups extends LitElement {
       </div>
       <sl-divider style="--color: grey"></sl-divider>
       <div class="row">
-        ${Array.from(groupsProfiles.entries()).map(
-          ([groupDnaHash, groupProfile]) => html` <div
+        ${relatedGroups.map(
+          (relatedGroup) => html` <div
             class="column"
             style="align-items: center; cursor: pointer"
             @click=${() =>
@@ -52,18 +48,16 @@ export class RelatedGroups extends LitElement {
                   bubbles: true,
                   composed: true,
                   detail: {
-                    originalGroupDnaHash:
-                      relatedGroups.get(groupDnaHash)?.original_dna_hash,
-                    networkSeed: relatedGroups.get(groupDnaHash)?.network_seed,
+                    networkSeed: relatedGroup.entry.network_seed,
                   },
                 })
               )}
           >
             <img
-              src="${groupProfile.logo_src}"
+              src="${relatedGroup.entry.group_profile.logo_src}"
               style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 8px"
-              alt="${groupProfile.name}"
-            /><span>${groupProfile.name}</span>
+              alt="${relatedGroup.entry.group_profile.name}"
+            /><span>${relatedGroup.entry.group_profile.name}</span>
           </div>`
         )}
       </div>

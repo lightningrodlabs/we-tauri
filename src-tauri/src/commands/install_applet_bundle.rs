@@ -10,10 +10,6 @@ use devhub_types::{
 };
 use essence::EssenceResponse;
 use futures::lock::Mutex;
-use hdk::prelude::{
-    ActionHash, CellId, EntryHash, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName,
-    Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
-};
 use holochain::{
     conductor::{
         api::{CellInfo, ClonedCell, ProvisionedCell},
@@ -21,8 +17,9 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        ActionHashB64, AgentPubKeyB64, AppBundleSource, AppStatus, DnaHash, DnaHashB64,
-        EntryHashB64,
+        ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, AppStatus, CellId, DnaHash,
+        DnaHashB64, EntryHash, EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof,
+        RoleName, Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
     },
 };
 use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, AppWebsocket, InstallAppPayload};

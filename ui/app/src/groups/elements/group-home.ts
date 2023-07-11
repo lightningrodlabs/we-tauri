@@ -77,17 +77,12 @@ export class GroupHome extends LitElement {
     () =>
       join([
         this.groupStore.groupProfile,
-        this.weStore.originalGroupDnaHash,
         this.groupStore.networkSeed,
-      ]) as AsyncReadable<[GroupProfile | undefined, DnaHash, string]>,
+      ]) as AsyncReadable<[GroupProfile | undefined, string]>,
     () => [this.groupStore, this.weStore]
   );
 
-  renderMain(
-    groupProfile: GroupProfile,
-    originalGroupDnaHash: DnaHash,
-    networkSeed: string
-  ) {
+  renderMain(groupProfile: GroupProfile, networkSeed: string) {
     return html`
       <div class="row" style="flex: 1">
         <div class="column" style="flex: 1; margin: 16px">
@@ -154,9 +149,7 @@ export class GroupHome extends LitElement {
 
               <div class="row" style="margin-top: 16px">
                 <sl-input
-                  value="https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
-                    originalGroupDnaHash
-                  )}/${networkSeed}"
+                  value="https://lightningrodlabs.org/we?we://group/${networkSeed}"
                   style="margin-right: 8px; flex: 1"
                 >
                 </sl-input>
@@ -164,9 +157,7 @@ export class GroupHome extends LitElement {
                   variant="primary"
                   @click=${async () => {
                     await navigator.clipboard.writeText(
-                      `https://lightningrodlabs.org/we?we://group/${encodeHashToBase64(
-                        originalGroupDnaHash
-                      )}/${networkSeed}`
+                      `https://lightningrodlabs.org/we?we://group/${networkSeed}`
                     );
                     notify(msg("Invite link copied to clipboard."));
                   }}
@@ -312,14 +303,10 @@ export class GroupHome extends LitElement {
     </div>`;
   }
 
-  renderContent(
-    groupProfile: GroupProfile,
-    originalGroupDnaHash: DnaHash,
-    networkSeed: string
-  ) {
+  renderContent(groupProfile: GroupProfile, networkSeed: string) {
     switch (this.view.view) {
       case "main":
-        return this.renderMain(groupProfile, originalGroupDnaHash, networkSeed);
+        return this.renderMain(groupProfile, networkSeed);
       case "applets-library":
         return html`
           <div class="column" style="margin: 16px; flex: 1">
@@ -361,8 +348,7 @@ export class GroupHome extends LitElement {
         </div>`;
       case "complete":
         const groupProfile = this.groupProfile.value.value[0];
-        const originalGroupDnaHash = this.groupProfile.value.value[1];
-        const networkSeed = this.groupProfile.value.value[2];
+        const networkSeed = this.groupProfile.value.value[1];
 
         if (!groupProfile)
           return html`<div class="column center-content" style="flex: 1">
@@ -384,11 +370,7 @@ export class GroupHome extends LitElement {
                 "Create your personal profile for this group. Only members of this group will be able to see your profile."
               )}</span
             >
-            ${this.renderContent(
-              groupProfile,
-              originalGroupDnaHash,
-              networkSeed
-            )}
+            ${this.renderContent(groupProfile, networkSeed)}
           </profile-prompt>
         `;
       case "error":

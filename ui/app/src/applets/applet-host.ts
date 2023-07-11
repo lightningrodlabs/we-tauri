@@ -209,8 +209,8 @@ export async function handleAppletIframeMessage(
           appletId,
           appPort: weStore.conductorInfo.app_port,
           profilesLocation: {
-            profilesAppId: weStore.conductorInfo.we_app_id,
-            profilesRoleName: groupStore.roleName,
+            profilesAppId: groupStore.groupClient.appAgentClient.installedAppId,
+            profilesRoleName: "group",
           },
         };
         return config;

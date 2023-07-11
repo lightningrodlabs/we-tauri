@@ -15,12 +15,7 @@ import {
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { HoloHashMap, LazyHoloHashMap, pick } from "@holochain-open-dev/utils";
-import {
-  MembraneInvitationsStore,
-  MembraneInvitationsClient,
-  CloneDnaRecipe,
-} from "@holochain-open-dev/membrane-invitations";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   AgentPubKey,
   AppAgentWebsocket,
@@ -30,7 +25,6 @@ import {
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
-import { encode } from "@msgpack/msgpack";
 
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 
@@ -51,75 +45,46 @@ export class GroupStore {
 
   customViewsStore: CustomViewsStore;
 
-  membraneInvitationsStore: MembraneInvitationsStore;
-
   members: AsyncReadable<Array<AgentPubKey>>;
-
-  relatedGroups: AsyncReadable<ReadonlyMap<DnaHash, CloneDnaRecipe>>;
 
   constructor(
     public appAgentWebsocket: AppAgentWebsocket,
     public groupDnaHash: DnaHash,
-    public roleName: string,
     public weStore: WeStore
   ) {
-    this.groupClient = new GroupClient(appAgentWebsocket, roleName);
+    this.groupClient = new GroupClient(appAgentWebsocket, "group");
 
     this.peerStatusStore = new PeerStatusStore(
-      new PeerStatusClient(appAgentWebsocket, roleName)
+      new PeerStatusClient(appAgentWebsocket, "group")
     );
     this.profilesStore = new ProfilesStore(
-      new ProfilesClient(appAgentWebsocket, roleName)
+      new ProfilesClient(appAgentWebsocket, "group")
     );
     this.customViewsStore = new CustomViewsStore(
-      new CustomViewsClient(appAgentWebsocket, roleName)
-    );
-    this.membraneInvitationsStore = new MembraneInvitationsStore(
-      new MembraneInvitationsClient(appAgentWebsocket, roleName)
+      new CustomViewsClient(appAgentWebsocket, "group")
     );
     this.members = this.profilesStore.agentsWithProfile;
-    this.relatedGroups = pipe(
-      this.weStore.originalGroupDnaHash,
-      (originalDnaHash) =>
-        this.membraneInvitationsStore.cloneDnaRecipes.get(originalDnaHash),
-      (cloneDnaRecipes) => {
-        const groups: HoloHashMap<DnaHash, CloneDnaRecipe> = new HoloHashMap();
-        for (const recipe of cloneDnaRecipes) {
-          groups.set(recipe.entry.resulting_dna_hash, recipe.entry);
-        }
-
-        return completed(groups);
-      }
-    );
   }
 
   public async addRelatedGroup(
     groupDnaHash: DnaHash,
     groupProfile: GroupProfile
   ) {
-    const original_dna_hash = await toPromise(
-      this.weStore.originalGroupDnaHash
-    );
-
     const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
 
     const modifiers = await groupStore.groupDnaModifiers();
 
-    await this.membraneInvitationsStore.client.createCloneDnaRecipe({
-      custom_content: encode(groupProfile),
+    await this.groupClient.addRelatedGroup({
+      group_profile: groupProfile,
       network_seed: modifiers.network_seed,
-      properties: modifiers.properties,
-      original_dna_hash,
-      resulting_dna_hash: groupStore.groupDnaHash,
+      resulting_dna_hash: groupDnaHash,
     });
   }
 
   async groupDnaModifiers(): Promise<DnaModifiers> {
     const appInfo = await this.appAgentWebsocket.appInfo();
     const cellInfo = appInfo.cell_info["group"].find(
-      (cellInfo) =>
-        CellType.Cloned in cellInfo &&
-        cellInfo[CellType.Cloned].clone_id === this.roleName
+      (cellInfo) => CellType.Provisioned in cellInfo
     );
 
     if (!cellInfo) throw new Error("Could not find cell for this group");
@@ -207,5 +172,10 @@ export class GroupStore {
     this.installedApplets,
     (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
     (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
+  );
+
+  relatedGroups = lazyLoadAndPoll(
+    () => this.groupClient.getRelatedGroups(),
+    10000
   );
 }

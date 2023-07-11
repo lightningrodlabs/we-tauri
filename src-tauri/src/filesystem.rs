@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 use std::{fs, io::Write};
 
-use hdk::prelude::{ActionHash, EntryHash};
-use holochain::prelude::{ActionHashB64, EntryHashB64};
+use holochain::prelude::{ActionHash, ActionHashB64, EntryHash, EntryHashB64};
 use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;

@@ -10,8 +10,4 @@ name = "profiles_integrity"
 [dependencies]
 serde = "1"
 derive_more = "0"
-hc_zome_profiles_integrity = "0.1.0"
-
-
-
-
+hc_zome_profiles_integrity = "0.2.0"

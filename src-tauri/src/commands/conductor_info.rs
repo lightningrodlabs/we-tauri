@@ -5,7 +5,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
-    default_apps::{appstore_app_id, devhub_app_id, we_app_id},
+    default_apps::{appstore_app_id, devhub_app_id},
     state::WeResult,
 };
 
@@ -20,7 +20,6 @@ pub struct ConductorInfo {
     app_port: u16,
     admin_port: u16,
     applets_ui_port: u16,
-    we_app_id: String,
     appstore_app_id: String,
     devhub_app_id: String,
 }
@@ -38,7 +37,6 @@ pub async fn get_conductor_info(
             .get_arbitrary_admin_websocket_port()
             .expect("Couldn't get admin port"),
         applets_ui_port: config.applets_ui_port,
-        we_app_id: we_app_id(),
         appstore_app_id: appstore_app_id(),
         devhub_app_id: devhub_app_id(),
     })

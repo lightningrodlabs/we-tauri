@@ -30,7 +30,6 @@ import { isAppRunning } from "../utils.js";
 export class AppletBundlesStore {
   constructor(
     public appstoreClient: AppAgentClient,
-    public weClient: AppAgentClient,
     public adminWebsocket: AdminWebsocket,
     public conductorInfo: ConductorInfo
   ) {}
@@ -136,12 +135,15 @@ export class AppletBundlesStore {
 
   installedApplets = asyncDerived(this.installedApps, async (apps) => {
     const nonAppletsApps = [
-      this.conductorInfo.we_app_id,
       this.conductorInfo.devhub_app_id,
       this.conductorInfo.appstore_app_id,
     ];
     return apps
-      .filter((app) => !nonAppletsApps.includes(app.installed_app_id))
+      .filter(
+        (app) =>
+          !nonAppletsApps.includes(app.installed_app_id) &&
+          !app.installed_app_id.startsWith("group-")
+      )
       .map((app) => decodeHashFromBase64(app.installed_app_id));
   });
 

@@ -53,29 +53,19 @@ export class WeApp extends LitElement {
     window["__HC_LAUNCHER_ENV__"] = {
       APP_INTERFACE_PORT: info.app_port,
       ADMIN_INTERFACE_PORT: info.admin_port,
-      INSTALLED_APP_ID: info.we_app_id,
+      INSTALLED_APP_ID: "",
     };
 
     const adminWebsocket = await AdminWebsocket.connect(
       `ws://localhost:${info.admin_port}`
-    );
-    const appAgentWebsocket = await AppAgentWebsocket.connect(
-      `ws://localhost:${info.app_port}`,
-      info.we_app_id
     );
 
     const appStoreClient = await initAppClient(info.appstore_app_id);
 
     this._weStore = new WeStore(
       adminWebsocket,
-      appAgentWebsocket,
       info,
-      new AppletBundlesStore(
-        appStoreClient,
-        appAgentWebsocket,
-        adminWebsocket,
-        info
-      )
+      new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );
 
     this.state = { state: "running" };

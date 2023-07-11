@@ -14,8 +14,8 @@ import {
   join,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
-import { CloneDnaRecipe } from "@holochain-open-dev/membrane-invitations";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { EntryRecord } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
@@ -29,6 +29,7 @@ import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
 import { GroupStore } from "../group-store.js";
 import { groupStoreContext } from "../context.js";
+import { RelatedGroup } from "../types.js";
 
 @localized()
 @customElement("add-related-group-dialog")
@@ -46,10 +47,7 @@ export class AddRelatedGroupDialog extends LitElement {
         this._weStore.allGroupsProfiles,
         this._groupStore.relatedGroups,
       ]) as AsyncReadable<
-        [
-          ReadonlyMap<DnaHash, GroupProfile>,
-          ReadonlyMap<DnaHash, CloneDnaRecipe>
-        ]
+        [ReadonlyMap<DnaHash, GroupProfile>, Array<EntryRecord<RelatedGroup>>]
       >,
     () => [this._weStore]
   );
@@ -86,15 +84,16 @@ export class AddRelatedGroupDialog extends LitElement {
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
-        const relatedGroups = Array.from(this._groups.value.value[1].keys());
+        const relatedGroups = this._groups.value.value[1];
         const groupsProfiles = this._groups.value.value[0];
         const groups = Array.from(groupsProfiles.entries()).filter(
           ([groupDnaHash, _]) =>
             groupDnaHash.toString() !==
               this._groupStore.groupDnaHash.toString() &&
             !relatedGroups.find(
-              (relatedGroupHash) =>
-                relatedGroupHash.toString() === groupDnaHash.toString()
+              (relatedGroup) =>
+                relatedGroup.entry.resulting_dna_hash.toString() ===
+                groupDnaHash.toString()
             )
         );
 

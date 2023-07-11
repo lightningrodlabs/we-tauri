@@ -1,4 +1,4 @@
-import { CallZomeRequestUnsigned } from "@holochain/client";
+import { AppInfo, CallZomeRequestUnsigned } from "@holochain/client";
 import { randomNonce } from "@holochain/client";
 import { CallZomeRequest } from "@holochain/client";
 import { getNonceExpiration } from "@holochain/client";
@@ -28,7 +28,6 @@ export interface ConductorInfo {
   app_port: number;
   admin_port: number;
   applets_ui_port: number;
-  we_app_id: string;
   appstore_app_id: string;
   devhub_app_id: string;
   applet_iframe_protocol: AppletIframeProtocol;
@@ -59,6 +58,12 @@ async function fetchPing(origin: string) {
     }, 1000);
 
     window.addEventListener("message", listener);
+  });
+}
+
+export async function joinGroup(networkSeed: string): Promise<AppInfo> {
+  return invoke("join_group", {
+    networkSeed,
   });
 }
 

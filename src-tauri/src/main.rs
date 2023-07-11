@@ -26,6 +26,7 @@ use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
     install_applet_bundle::{fetch_icon, install_applet_bundle},
+    join_group::join_group,
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
@@ -41,6 +42,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
+            join_group,
             open_devhub,
             open_appstore,
             is_dev_mode_enabled,

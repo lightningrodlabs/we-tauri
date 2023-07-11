@@ -44,18 +44,7 @@ export class MainDashboard extends LitElement {
   @state(hashState())
   selectedGroupDnaHash: DnaHash | undefined;
 
-  async handleOpenGroup(originalDnaHashForLink: DnaHash, networkSeed: string) {
-    const originalDnaHash = await toPromise(this._weStore.originalGroupDnaHash);
-
-    if (originalDnaHash.toString() !== originalDnaHashForLink.toString()) {
-      notifyError(
-        msg(
-          "This version of We can't handle joining this group; check if there is a new We version and upgrade to that."
-        )
-      );
-      return;
-    }
-
+  async handleOpenGroup(networkSeed: string) {
     const groups = await toPromise(
       asyncDeriveStore(this._weStore.allGroups, (groups) =>
         joinAsyncMap(mapValues(groups, (groupStore) => groupStore.networkSeed))
@@ -90,10 +79,7 @@ export class MainDashboard extends LitElement {
             decodeHashFromBase64(split2[2])
           );
         } else if (split2[0] === "group") {
-          await this.handleOpenGroup(
-            decodeHashFromBase64(split2[1]),
-            split2[2]
-          );
+          await this.handleOpenGroup(split2[1]);
         }
       } catch (e) {
         console.error(e);
@@ -202,11 +188,7 @@ export class MainDashboard extends LitElement {
               ],
             }}
             style="flex: 1; min-width: 0; height: calc(100% - 64px)"
-            @open-group=${(e) =>
-              this.handleOpenGroup(
-                e.detail.originalGroupDnaHash,
-                e.detail.networkSeed
-              )}
+            @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
           ></dynamic-layout>
         </div>
       </div>

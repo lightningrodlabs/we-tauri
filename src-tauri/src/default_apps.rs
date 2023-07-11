@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 
 use holochain_client::{AdminWebsocket, InstallAppPayload};
-use holochain_types::{prelude::AppBundle, web_app::WebAppBundle};
+use holochain_types::web_app::WebAppBundle;
 
 use crate::{config::WeConfig, filesystem::WeFileSystem, state::WeResult};
 
 pub fn we_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
-}
-
-pub fn we_app_id() -> String {
-    format!("we-{}", we_version())
 }
 
 pub fn devhub_app_id() -> String {
@@ -68,20 +64,6 @@ pub async fn install_default_apps_if_necessary(
             .ui_store()
             .extract_and_store_ui(&appstore_app_id(), &appstore_hub_bundle)
             .await?;
-
-        let we_app_id = we_app_id();
-        let we_bundle = AppBundle::decode(include_bytes!("../../workdir/we.happ"))?;
-
-        admin_ws
-            .install_app(InstallAppPayload {
-                source: holochain_types::prelude::AppBundleSource::Bundle(we_bundle),
-                agent_key,
-                network_seed: Some(network_seed),
-                installed_app_id: Some(we_app_id.clone()),
-                membrane_proofs: HashMap::new(),
-            })
-            .await?;
-        admin_ws.enable_app(we_app_id).await?;
     }
 
     Ok(())

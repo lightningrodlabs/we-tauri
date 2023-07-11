@@ -1,18 +1,21 @@
-import { EntryRecord } from "@holochain-open-dev/utils";
+import { EntryRecord, HashType, retype } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   DnaHash,
   EntryHash,
   AppAgentClient,
   AppAgentCallZomeRequest,
+  Record,
+  AppAgentWebsocket,
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 
 import { Applet } from "../applets/types.js";
+import { RelatedGroup } from "./types.js";
 
 export class GroupClient {
   constructor(
-    public appAgentClient: AppAgentClient,
+    public appAgentClient: AppAgentWebsocket,
     public roleName: string,
     public zomeName: string = "group"
   ) {}
@@ -26,6 +29,18 @@ export class GroupClient {
 
   async setGroupProfile(groupProfile: GroupProfile): Promise<void> {
     await this.callZome("set_group_profile", groupProfile);
+  }
+
+  /** Related Groups */
+
+  async addRelatedGroup(relatedGroup: RelatedGroup): Promise<void> {
+    return this.callZome("add_related_group", relatedGroup);
+  }
+
+  async getRelatedGroups(): Promise<Array<EntryRecord<RelatedGroup>>> {
+    const records: Record[] = await this.callZome("get_related_groups", null);
+
+    return records.map((r) => new EntryRecord(r));
   }
 
   /** Applets */
@@ -57,12 +72,17 @@ export class GroupClient {
   ): Promise<ActionHash> {
     return this.callZome("federate_applet", {
       applet_hash: appletHash,
-      group_dna_hash: groupDnaHash,
+      group_dna_hash: retype(groupDnaHash, HashType.ENTRY),
     });
   }
 
   async getFederatedGroups(appletHash: EntryHash): Promise<DnaHash[]> {
-    return this.callZome("get_federated_groups", appletHash);
+    const groups: EntryHash[] = await this.callZome(
+      "get_federated_groups",
+      appletHash
+    );
+
+    return groups.map((groupEntryHash) => retype(groupEntryHash, HashType.DNA));
   }
 
   private callZome(fn_name: string, payload: any) {

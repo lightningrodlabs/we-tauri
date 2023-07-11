@@ -4,34 +4,27 @@ import {
   asyncDeriveStore,
   AsyncReadable,
   completed,
-  derived,
-  join,
   lazyLoad,
-  manualReloadStore,
   mapAndJoin,
   pipe,
-  Readable,
   retryUntilSuccess,
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
+import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
-  HoloHashMap,
-  LazyHoloHashMap,
-  pickBy,
-} from "@holochain-open-dev/utils";
-import { decodeHashFromBase64, HoloHash } from "@holochain/client";
+  AppInfo,
+  decodeHashFromBase64,
+  ProvisionedCell,
+} from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
 import {
   ActionHash,
   AdminWebsocket,
-  AppAgentWebsocket,
   CellType,
-  ClonedCell,
   DnaHash,
   EntryHash,
-  RoleName,
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
@@ -41,14 +34,13 @@ import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { GroupClient } from "./groups/group-client.js";
 import { GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
-import { ConductorInfo } from "./tauri.js";
-import { findAppForDnaHash, isAppDisabled } from "./utils.js";
+import { ConductorInfo, joinGroup } from "./tauri.js";
+import { findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 
 export class WeStore {
   constructor(
     public adminWebsocket: AdminWebsocket,
-    public appAgentWebsocket: AppAgentWebsocket,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
   ) {}
@@ -56,15 +48,18 @@ export class WeStore {
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
    */
-  public async createGroup(name: string, logo: string): Promise<ClonedCell> {
+  public async createGroup(name: string, logo: string): Promise<AppInfo> {
     // generate random network seed (maybe use random words instead later, e.g. https://www.npmjs.com/package/generate-passphrase)
     const networkSeed = uuidv4();
 
-    const groupClonedCell = await this.joinGroup(networkSeed); // this line also updates the matrix store
+    const appInfo = await this.joinGroup(networkSeed); // this line also updates the matrix store
+    console.log(appInfo, "a");
+    const groupDnaHash: DnaHash =
+      appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
     const groupClient = new GroupClient(
-      this.appAgentWebsocket,
-      groupClonedCell.clone_id
+      await initAppClient(appInfo.installed_app_id),
+      "group"
     );
 
     const groupProfile: GroupProfile = {
@@ -74,81 +69,52 @@ export class WeStore {
 
     try {
       await groupClient.setGroupProfile(groupProfile);
-
-      await this.groupsRolesByDnaHash.reload();
     } catch (e) {
       // If we can't set profile, disable the group and bubble the error
-      await this.leaveGroup(groupClonedCell.cell_id[0]);
+      await this.leaveGroup(groupDnaHash);
 
       throw e;
     }
 
-    return groupClonedCell;
+    return appInfo;
   }
 
-  public async joinGroup(networkSeed: string): Promise<ClonedCell> {
-    const appInfo = await this.appAgentWebsocket.appInfo();
+  public async joinGroup(networkSeed: string): Promise<AppInfo> {
+    const appInfo = await joinGroup(networkSeed);
 
-    for (const cellInfo of appInfo.cell_info.group) {
-      if (CellType.Cloned in cellInfo) {
-        const cell = cellInfo[CellType.Cloned];
-        if (cell.dna_modifiers.network_seed === networkSeed) {
-          if (cell.enabled) {
-            throw new Error("This group is already installed");
-          } else {
-            const clonedCell = await this.appAgentWebsocket.enableCloneCell({
-              clone_cell_id: [cell.cell_id[0], this.appAgentWebsocket.myPubKey],
-            });
+    const groupDnaHash: DnaHash =
+      appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
-            await this.groupsRolesByDnaHash.reload();
+    const groupStore = await toPromise(this.groups.get(groupDnaHash));
+    const applets = await toPromise(groupStore.allApplets);
 
-            const groupStore = await toPromise(
-              this.groups.get(clonedCell.cell_id[0])
-            );
-            const applets = await toPromise(groupStore.allApplets);
+    const apps = await this.adminWebsocket.listApps({});
+    const disabledApps = apps.filter((app) => isAppDisabled(app));
 
-            const apps = await this.adminWebsocket.listApps({});
-            const disabledApps = apps.filter((app) => isAppDisabled(app));
-
-            for (const app of disabledApps) {
-              if (
-                applets.find(
-                  (appletHash) =>
-                    app.installed_app_id === encodeHashToBase64(appletHash)
-                )
-              ) {
-                await this.adminWebsocket.enableApp({
-                  installed_app_id: app.installed_app_id,
-                });
-              }
-            }
-
-            await this.appletBundlesStore.installedApps.reload();
-            return clonedCell;
-          }
-        }
+    for (const app of disabledApps) {
+      if (
+        applets.find(
+          (appletHash) =>
+            app.installed_app_id === encodeHashToBase64(appletHash)
+        )
+      ) {
+        await this.adminWebsocket.enableApp({
+          installed_app_id: app.installed_app_id,
+        });
       }
     }
 
-    // Create the group cell
-    const clonedCell = await this.appAgentWebsocket.createCloneCell({
-      role_name: "group",
-      modifiers: {
-        network_seed: networkSeed,
-        // origin_time: Date.now() * 1000,
-      },
-    });
-    await this.groupsRolesByDnaHash.reload();
-
-    return clonedCell;
+    await this.appletBundlesStore.installedApps.reload();
+    return appInfo;
   }
 
   public async leaveGroup(groupDnaHash: DnaHash) {
-    await this.appAgentWebsocket.disableCloneCell({
-      clone_cell_id: [groupDnaHash, this.appAgentWebsocket.myPubKey],
+    const groupStore = await toPromise(this.groups.get(groupDnaHash));
+
+    await this.adminWebsocket.disableApp({
+      installed_app_id: groupStore.groupClient.appAgentClient.installedAppId,
     });
 
-    const groupStore = await toPromise(this.groups.get(groupDnaHash));
     const applets = await toPromise(groupStore.allApplets);
 
     await Promise.all(
@@ -165,50 +131,40 @@ export class WeStore {
     );
 
     await this.appletBundlesStore.installedApps.reload();
-    await this.groupsRolesByDnaHash.reload();
   }
 
-  originalGroupDnaHash = lazyLoad<DnaHash>(async () => {
-    const appInfo = await this.appAgentWebsocket.appInfo();
+  groupsApps = asyncDerived(this.appletBundlesStore.installedApps, (apps) =>
+    apps.filter((app) => app.installed_app_id.startsWith("group-"))
+  );
 
-    for (const cellInfo of appInfo.cell_info.group) {
-      if (CellType.Provisioned in cellInfo) {
-        return cellInfo[CellType.Provisioned].cell_id[0];
-      }
-    }
+  groupsDnaHashes = asyncDerived(this.groupsApps, (apps) => {
+    const groupApps = apps.filter((app) =>
+      app.installed_app_id.startsWith("group-")
+    );
 
-    throw new Error("There is no provisioned cell in this app");
-  });
-
-  groupsRolesByDnaHash = manualReloadStore(async () => {
-    const appInfo = await this.appAgentWebsocket.appInfo();
-    const roleNames = new HoloHashMap<DnaHash, RoleName>();
-
-    for (const cellInfo of appInfo.cell_info.group) {
-      if (CellType.Cloned in cellInfo && cellInfo[CellType.Cloned].enabled) {
-        roleNames.set(
-          cellInfo[CellType.Cloned].cell_id[0],
-          cellInfo[CellType.Cloned].clone_id
-        );
-      }
-    }
-
-    return roleNames;
+    const groupsDnaHashes = groupApps.map((app) => {
+      const cell = app.cell_info["group"][0][
+        CellType.Provisioned
+      ] as ProvisionedCell;
+      return cell.cell_id[0];
+    });
+    return groupsDnaHashes;
   });
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
-    retryUntilSuccess(async () => {
-      const roleNames = await toPromise(this.groupsRolesByDnaHash);
-      const groupRoleName = roleNames.get(groupDnaHash);
-
-      if (!groupRoleName) throw new Error("Group not found yet");
-
-      return new GroupStore(
-        this.appAgentWebsocket,
-        groupDnaHash,
-        groupRoleName,
-        this
+    asyncDerived(this.groupsApps, async (apps) => {
+      const groupApp = apps.find(
+        (app) =>
+          app.cell_info["group"][0][
+            CellType.Provisioned
+          ].cell_id[0].toString() === groupDnaHash.toString()
       );
+      if (!groupApp) throw new Error("Group not found yet");
+
+      const groupAppAgentWebsocket = await initAppClient(
+        groupApp.installed_app_id
+      );
+      return new GroupStore(groupAppAgentWebsocket, groupDnaHash, this);
     })
   );
 
@@ -240,8 +196,8 @@ export class WeStore {
     )
   );
 
-  allGroups = asyncDeriveStore(this.groupsRolesByDnaHash, (rolesByDnaHash) =>
-    mapAndJoin(rolesByDnaHash, (_, dnaHash) => this.groups.get(dnaHash))
+  allGroups = asyncDeriveStore(this.groupsDnaHashes, (groupsDnaHahes) =>
+    sliceAndJoin(this.groups, groupsDnaHahes)
   );
 
   allInstalledApplets = pipe(
@@ -362,9 +318,11 @@ export class WeStore {
             groupsByApplets.entries()
           )) {
             if (groups.size > 0) {
+              const firstGroupAppId = Array.from(groups.values())[0].groupClient
+                .appAgentClient.installedAppId;
               appletsB64[encodeHashToBase64(appletHash)] = {
-                profilesAppId: this.conductorInfo.we_app_id,
-                profilesRoleName: Array.from(groups.values())[0].roleName,
+                profilesAppId: firstGroupAppId,
+                profilesRoleName: "group",
               };
             }
           }

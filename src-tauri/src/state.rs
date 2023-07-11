@@ -1,7 +1,7 @@
 use std::string::FromUtf8Error;
 
 use essence::EssenceError;
-use hdk::prelude::SerializedBytesError;
+use holochain::prelude::SerializedBytesError;
 use holochain::{conductor::error::ConductorError, prelude::AppBundleError};
 use holochain_client::ConductorApiError;
 use log::Level;
