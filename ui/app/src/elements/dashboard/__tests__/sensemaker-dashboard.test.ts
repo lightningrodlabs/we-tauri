@@ -3,18 +3,17 @@ import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-regi
 import { fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 
-import './test-harness';
-// import { mockMatrixStore } from './test-harness';
+import './matrix-test-harness';
 import '../sensemaker-dashboard';
-import { SensemakerDashboard } from '../sensemaker-dashboard';
 import { stateful } from '../../components/__tests__/helpers';
-import { AppletTuple, mockMatrixStore } from './test-harness';
+import { AppletTuple, mockApplets, mockMatrixStore, testAppletName } from './matrix-test-harness';
 import { get } from 'svelte/store';
+import { getTagName } from './helpers';
+import { mockAppletConfig, mockAppletConfigResponse } from '../../components/__tests__/sensemaker-test-harness';
 /**
 * @vitest-environment jsdom
 */
 
-export const mockResourceName = 'abc';
 
 describe('SensemakerDashboard', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
@@ -22,7 +21,7 @@ describe('SensemakerDashboard', () => {
 
   const initialRender = async (testComponent) => {
     harness = await stateful(component);
-    componentDom = harness.querySelector('sensemaker-dashboard');
+    componentDom = harness.querySelector(getTagName(testComponent));
     await componentDom.updateComplete;
   }
   const renderAndReturnDom = async (testComponent, subComponent) => {
@@ -51,93 +50,45 @@ describe('SensemakerDashboard', () => {
       expect(storeValue.length).toEqual(0);
     });
 
-    test('And it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu', async () => {
-      // const dom = await renderAndReturnDom(component, false);
-      // const elements = dom.window.document.querySelectorAll(`table`);
-      // expect(elements.length).toBe(0);
-
-      // const p = dom.window.document.querySelectorAll(`p`);
-
-      // expect(p.length).toBe(1);
-      // expect(p[0].textContent).toBe('No assessments found');
+    test(`And state can be altered by adding an applet`, async () => {
+      mockAppletsStream.mockSetSubscribeValue(mockApplets);
+      const storeValue : AppletTuple[] = get(mockAppletsStream.store());
+      expect(storeValue.length).toEqual(1);
     });
+
+    test('And it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu', async () => {
+      mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
+      const dom = await renderAndReturnDom(component, false);
+
+      const searchInput = dom.window.document.querySelectorAll(`.search-input`);
+      expect(searchInput.length).toBe(1);
+
+      const subMenus = dom.window.document.querySelectorAll(`.dashboard-menu-section`);
+      expect(subMenus.length).toBe(3);
+    });
+    // test('And it renders a label in the Neighbourhood sub-menu with the correct Neighbourhood name', async () => {
+    //   const dom = await renderAndReturnDom(component, false);
+      
+    //   const neighbourhoodName = dom.window.document.querySelectorAll(`.dashboard-menu-section:first-of-type .nav-label`);
+    //   expect(neighbourhoodName.length).toBe(1);
+    //   expect(neighbourhoodName[0].textContent).toBe('NH NAME'); // TODO: Come back to this
+    // });
 
     test('And the Sensemaker sub-menu has no items', async () => {
-      // const dom = await renderAndReturnDom(component, false);
-      // const elements = dom.window.document.querySelectorAll(`table`);
-      // expect(elements.length).toBe(0);
+      mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
+      const dom = await renderAndReturnDom(component, false);
 
-      // const p = dom.window.document.querySelectorAll(`p`);
-
-      // expect(p.length).toBe(1);
-      // expect(p[0].textContent).toBe('No assessments found');
+      const elements = dom.window.document.querySelectorAll(`.dashboard-menu-section:nth-of-type(2) .nav-item`);
+      expect(elements.length).toBe(0);
     });
 
-    // test('And the search bar has a placholder string "Search"', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
+    test('And the Neighbourhoods sub-menu has two items', async () => {
+      mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
+      const dom = await renderAndReturnDom(component, false);
 
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
-
-    // test('And there exists a divider between each of the submenus', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
-
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
-
-    // test('And the Neighbourhoods sub-menu has two items', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
-
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
-
-    // test('And the Neighbourhoods sub-menu has the correct values', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
-
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
-
-    // test('And the Member Management sub-menu has two items', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
-
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
-
-    // test('And the Member Management sub-menu has the correct values', async () => {
-    //   // const dom = await renderAndReturnDom(component, false);
-    //   // const elements = dom.window.document.querySelectorAll(`table`);
-    //   // expect(elements.length).toBe(0);
-
-    //   // const p = dom.window.document.querySelectorAll(`p`);
-
-    //   // expect(p.length).toBe(1);
-    //   // expect(p[0].textContent).toBe('No assessments found');
-    // });
+      const elements = dom.window.document.querySelectorAll(`.dashboard-menu-section:nth-of-type(3) .nav-item`);
+      expect(elements.length).toBe(2);
+    });
   });
 
   // describe('Given a MatrixStore one applet with no assessments ', () => {
