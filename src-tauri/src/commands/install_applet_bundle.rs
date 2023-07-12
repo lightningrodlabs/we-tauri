@@ -17,9 +17,9 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, AppStatus, CellId, DnaHash,
-        DnaHashB64, EntryHash, EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof,
-        RoleName, Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
+        ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, CellId, DnaHash, DnaHashB64,
+        EntryHash, EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName,
+        Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
     },
 };
 use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, AppWebsocket, InstallAppPayload};
@@ -352,15 +352,16 @@ async fn get_available_hosts(
     for host in hosts.iter() {
         let mut client = app_store_client.clone();
         let host = host.clone();
-        handles.push(tauri::async_runtime::spawn(async move {
-            is_host_available(&mut client, &host).await
-        }));
+        handles.push(tokio::time::timeout(
+            tokio::time::Duration::from_secs(3),
+            tauri::async_runtime::spawn(async move { is_host_available(&mut client, &host).await }),
+        ));
     }
 
     let mut available_hosts = Vec::new();
 
     for (i, handle) in handles.into_iter().enumerate() {
-        if let Ok(Ok(true)) = handle.await {
+        if let Ok(Ok(Ok(true))) = handle.await {
             available_hosts.push(hosts[i].clone());
         }
     }

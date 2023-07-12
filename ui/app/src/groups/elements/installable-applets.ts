@@ -91,7 +91,7 @@ export class InstallableApplets extends LitElement {
               </div>
             `
           : allApplets[0].map((item, i) =>
-              this.renderInstallableApplet(allApplets[0][i], allApplets[1][i])
+              this.renderInstallableApplet(item, allApplets[1][i])
             )}
       </div>
     `;

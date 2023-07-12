@@ -27,8 +27,9 @@ pub fn get_group_profile(_: ()) -> ExternResult<Option<Record>> {
         None => Ok(None),
         Some(link) => {
             let record = get(
-                ActionHash::try_from(link.target)
-                    .map_err(|e| wasm_error!(WasmErrorInner::from(e)))?,
+                ActionHash::from(link.target),
+                // ActionHash::try_from(link.target)
+                //     .map_err(|e| wasm_error!(WasmErrorInner::from(e)))?,
                 GetOptions::default(),
             )?;
 

@@ -84,7 +84,6 @@ export class WeStore {
 
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
-
     const groupAppAgentWebsocket = await initAppClient(
       appInfo.installed_app_id
     );
@@ -231,7 +230,6 @@ export class WeStore {
             )
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
-        console.log("hi", appletsByGroup, appletHash);
         return sliceAndJoin(this.groups, groupDnaHashes);
       }
     )

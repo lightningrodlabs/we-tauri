@@ -23,9 +23,8 @@ pub async fn create_password(
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     password: String,
-    mdns: bool,
 ) -> WeResult<()> {
-    let conductor = launch(&config, &fs, password, mdns).await?;
+    let conductor = launch(&config, &fs, password).await?;
 
     let admin_ws = get_admin_ws(&conductor).await?;
 
@@ -41,9 +40,8 @@ pub async fn enter_password(
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     password: String,
-    mdns: bool,
 ) -> WeResult<()> {
-    let conductor = launch(&config, &fs, password, mdns).await?;
+    let conductor = launch(&config, &fs, password).await?;
 
     app_handle.manage(Mutex::new(conductor));
 

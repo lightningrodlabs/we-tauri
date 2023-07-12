@@ -19,10 +19,10 @@ export class EnterPassword extends LitElement {
   @state()
   _entering = false;
 
-  async enterPassword(password: string, mdns: boolean) {
+  async enterPassword(password: string) {
     this._entering = true;
     try {
-      await enterPassword(password, mdns);
+      await enterPassword(password);
       this.dispatchEvent(
         new CustomEvent("password-entered", {
           bubbles: true,
@@ -39,10 +39,7 @@ export class EnterPassword extends LitElement {
   render() {
     return html` <sl-card>
       <span class="title" slot="header">${msg("Enter Password")}</span>
-      <form
-        class="column"
-        ${onSubmit((f) => this.enterPassword(f.password, f.mdns === "on"))}
-      >
+      <form class="column" ${onSubmit((f) => this.enterPassword(f.password))}>
         <sl-input
           id="password-field"
           type="password"
@@ -51,10 +48,6 @@ export class EnterPassword extends LitElement {
           name="password"
           style="margin-bottom: 16px"
         ></sl-input>
-
-        <sl-switch name="mdns" style="margin-bottom: 16px">
-          ${msg("Connect only to peers in the local network")}
-        </sl-switch>
 
         <sl-button type="submit" variant="primary" .loading=${this._entering}>
           ${msg("Enter Password")}

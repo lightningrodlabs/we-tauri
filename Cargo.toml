@@ -14,7 +14,7 @@ opt-level = "z"
 opt-level = "z"
 
 [workspace.dependencies]
-hdi = { version = "0.3.0" }
-hdk = { version = "0.2.0" }
+hdi = { version = "=0.2.1" }
+hdk = { version = "=0.1.1" }
 serde = "1"
-holochain = { version = "0.3.0-beta-dev.8" }
+holochain = { version = "=0.1.3" }

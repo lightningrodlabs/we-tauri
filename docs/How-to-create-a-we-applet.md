@@ -7,7 +7,6 @@ At the technical level, a we applet is just a normal `.webhapp`, with 2 main dif
 - UI code:
   - Instead of having the UI have an `index.html` that renders a full blown web app, the UI portion of the `.webhapp` has to export:
     - `index.js`: main file for the applet, define the applet views and its behavior.
-    - `icon.png`: icon for the applet.
     - `styles.css`: CSS stylesheet that will be applied to all the iframes for the applet.
 
 - hApp code:
@@ -52,6 +51,7 @@ This guide assumes you have [we installed in your computer](https://github.com/l
 
 1. Package your `.webhapp` by running `npm run package:applet` from the root folder of the scaffolded project.
 2. Open we, go into the app library of any of your groups, and click the `Publish an applet` button on the top-right corner.
-3. Publish the applet into the devhub, with this **required tag**: `we-applet`.
+3. This will prompt you to enable the developer mode. Do so and open the DevHub.
+4. Follow [this guide to publish your app](https://github.com/holochain/launcher#publishing-and-updating-an-app-in-the-app-store).
 
 By now the applet should be published correctly, and you can use we itself to confirm that it is available as an applet to be installed in any we group.

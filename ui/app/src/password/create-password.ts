@@ -19,10 +19,10 @@ export class CreatePassword extends LitElement {
   @state()
   _creating = false;
 
-  async createPassword(password: string, mdns: boolean) {
+  async createPassword(password: string) {
     this._creating = true;
     try {
-      await createPassword(password, mdns);
+      await createPassword(password);
       this.dispatchEvent(
         new CustomEvent("password-created", {
           bubbles: true,
@@ -40,10 +40,7 @@ export class CreatePassword extends LitElement {
     return html` <sl-card style="max-width: 500px">
       <span class="title" slot="header">${msg("Create Password")}</span>
 
-      <form
-        class="column"
-        ${onSubmit((f) => this.createPassword(f.password, f.mdns === "on"))}
-      >
+      <form class="column" ${onSubmit((f) => this.createPassword(f.password))}>
         <span style="margin-bottom: 16px;"
           >${msg(
             "We'll use this password to encrypt and protect all your data in We."
@@ -61,10 +58,6 @@ export class CreatePassword extends LitElement {
           .placeholder=${msg("Password")}
           style="margin-bottom: 16px"
         ></sl-input>
-
-        <sl-switch name="mdns" style="margin-bottom: 16px">
-          ${msg("Connect only to peers in the local network")}
-        </sl-switch>
 
         <sl-button type="submit" variant="primary" .loading=${this._creating}>
           ${msg("Create Password")}
