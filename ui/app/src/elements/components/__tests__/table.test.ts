@@ -6,7 +6,6 @@ import { describe, expect, test, beforeAll, beforeEach } from 'vitest';
 import './test-harness';
 import {
   mockAssessments,
-  mockFieldDefs,
   mockFieldDefsResourceTable,
   mockSensemakerStore,
 } from './test-harness';

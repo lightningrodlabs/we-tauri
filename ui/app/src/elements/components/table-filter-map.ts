@@ -93,7 +93,6 @@ export class DashboardFilterMap extends LitElement {
   setupAssessmentFilteringSubscription() {
     // Subscribe to resourceAssessments, filtering using this component's props when a new value is emitted
     (this._allAssessments.store() as Readable<any>).subscribe(resourceAssessments => {
-      console.log('resource assessments before filter', resourceAssessments);
       if (
         Object.values(resourceAssessments) &&
         Object.values(resourceAssessments)?.length !== undefined &&
@@ -103,11 +102,6 @@ export class DashboardFilterMap extends LitElement {
         let assessmentTableRecords;
         try {
           let filteredAssessments = this.flatFiltered(allAssessments);
-          console.log(
-            'allAssessments, filteredAssessments :>> ',
-            allAssessments,
-            filteredAssessments,
-          );
           assessmentTableRecords = filteredAssessments.map(
             this.mapAssessmentToAssessmentTableRecord.bind(this),
           );
@@ -178,14 +172,8 @@ export class DashboardFilterMap extends LitElement {
         : this.filterByResourceDefEh(assessments, this.resourceDefEh)
     ).flat() as Assessment[];
 
-    console.log(
-      'comparing resource def',
-      this.resourceDefEh,
-      encodeHashToBase64(assessments[0][0].resource_def_eh),
-    );
     // By objective/subjective dimension names
     let filteredByMethodType;
-    console.log('filteredByResourceDef', filteredByResourceDef);
 
     if (this.tableType === AssessmentTableType.Resource) {
       filteredByMethodType = this.filterByMethodNames(
@@ -199,12 +187,6 @@ export class DashboardFilterMap extends LitElement {
         this._subjectiveDimensionNames,
       );
     }
-    console.log(
-      'filteredByMethodType',
-      filteredByMethodType,
-      this._subjectiveDimensionNames,
-      this._objectiveDimensionNames,
-    );
 
     // By context
     let tripleFiltered;
@@ -218,7 +200,6 @@ export class DashboardFilterMap extends LitElement {
         encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh),
       );
     }
-    console.log('tripleFiltered', tripleFiltered);
     return tripleFiltered || filteredByMethodType;
   }
 

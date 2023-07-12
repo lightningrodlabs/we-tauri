@@ -6,7 +6,8 @@
     "build": "tsc && vite build",
     "build:watch": "rimraf dist && vite build -w",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * ",
-    "test": "vitest --reporter verbose"
+    "test": "vitest run",
+    "test:watch": "vitest --reporter verbose"
   },
   "dependencies": {
     "@adaburrows/table-web-component": "github:adaburrows/table-web-component",

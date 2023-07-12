@@ -102,7 +102,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
         this.selectedResourceDefEh = resourceName ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
-        console.log('selected resource :>> ', appletConfig.resource_defs[resourceName], resourceName);
         this.loading = false;
       });
     });
@@ -243,7 +242,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
-console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
+// console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`
       <div class="container">
