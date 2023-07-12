@@ -8,6 +8,7 @@ import { sharedStyles } from "./sharedStyles";
 import { MatrixStore } from "./matrix-store";
 import { matrixContext } from "./context";
 import { MainDashboard } from "./main-dashboard";
+import { getCellId } from "./utils";
 
 @customElement('we-app')
 export class WeApp extends ScopedElementsMixin(LitElement) {
@@ -21,8 +22,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const appWebsocket = await AppWebsocket.connect(`ws://localhost:9001`);
     console.log("Hello World!");
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-    const cellId = (weAppInfo.cell_info["lobby"][0] as { provisioned: ProvisionedCell }).provisioned.cell_id;
-    await adminWebsocket.authorizeSigningCredentials(cellId);
+    await adminWebsocket.authorizeSigningCredentials(getCellId(weAppInfo.cell_info["lobby"][0])!);
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
 
