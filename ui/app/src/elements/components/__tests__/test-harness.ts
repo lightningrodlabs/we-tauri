@@ -8,6 +8,7 @@ import { writable } from '@holochain-open-dev/stores';
 import { FieldDefinition } from '@adaburrows/table-web-component';
 import { mockResourceName } from './table.test';
 import { encodeHashToBase64 } from '@holochain/client';
+import { generateHeaderHTML } from '../helpers/functions';
 
 export const mockAssessments: AssessmentDict = {'abc' : [
     {
@@ -34,25 +35,25 @@ export const mockAssessments: AssessmentDict = {'abc' : [
 // Create a mock context with the mock store
 export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
-export const mockFieldDefs = {
+export const mockFieldDefsResourceTable = {
   five_star: new FieldDefinition<AssessmentTableRecord>({
     decorator: () => html`<p></p>`,
-    heading: () => html`<h1></h1>`,
+    heading: generateHeaderHTML('Assessment', 'Dimension 1'),
   }),
   
   importance: new FieldDefinition<AssessmentTableRecord>({
     decorator: () => html`<p></p>`,
-    heading: () => html`<h1></h1>`,
+    heading: generateHeaderHTML('Assessment', 'Dimension 2'),
   }),
   
   perceived_heat: new FieldDefinition<AssessmentTableRecord>({
     decorator: () => html`<p></p>`,
-    heading: () => html`<h1></h1>`,
+    heading: generateHeaderHTML('Assessment', 'Dimension 3'),
   }),
   
   thumbs_up: new FieldDefinition<AssessmentTableRecord>({
     decorator: () => html`<p></p>`,
-    heading: () => html`<h1></h1>`,
+    heading: generateHeaderHTML('Assessment', 'Dimension 4'),
   }),
 
 }
