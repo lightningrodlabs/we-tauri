@@ -1,7 +1,7 @@
 import { fixture, html } from '@open-wc/testing';
 import { AssessmentDict } from '../helpers/types';
 import { encodeHashToBase64 } from '@holochain/client';
-import { mockAssessments } from './test-harness';
+import { mockAssessments } from './sensemaker-test-harness';
 
 export const stateful = async component =>
   fixture(html` <test-harness>${component}</test-harness> `);

@@ -1,5 +1,5 @@
 import { CSSResult, css, html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
@@ -28,6 +28,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
+@customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
@@ -79,6 +80,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
 
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
+    console.log('store :>> ', store);
     store.subscribe(store => {
       (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
         // const id: string = appletConfig?.role_name;
@@ -232,16 +234,16 @@ export class SensemakerDashboard extends NHComponentShoelace {
   }
 
   render() {
-    const roleNames = this?.appletDetails && Object.keys(this.appletDetails);
-    const appletDetails = Object.values(this.appletDetails);
+    const roleNames = this?.appletDetails ? Object.keys(this.appletDetails) : [];
+    const appletDetails = typeof this.appletDetails == 'object' ? Object.values(this.appletDetails) : [];
     
-    const appletConfig = (appletDetails?.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
+    const appletConfig = (appletDetails.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
     
     if (appletConfig && appletDetails[this.selectedAppletIndex]) {
       this.selectedResourceName = this.selectedResourceDefIndex < 0 ? "All Resources" : appletDetails[this.selectedAppletIndex].appletRenderInfo.resourceNames[this.selectedResourceDefIndex];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
-    if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
+    if (!appletConfig![0] || !contexts) { this.loadingState = LoadingState.FirstRender };
 // console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`

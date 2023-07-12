@@ -3,12 +3,12 @@ import { fixture, html } from '@open-wc/testing';
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest';
 
-import './test-harness';
+import './sensemaker-test-harness';
 import {
   mockAssessments,
   mockFieldDefsResourceTable,
   mockSensemakerStore,
-} from './test-harness';
+} from './sensemaker-test-harness';
 import { addedAssessment, removedAssessment, mapMockedAssessment } from './helpers';
 import '../table';
 import { tableId } from '../table';
