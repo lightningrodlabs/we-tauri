@@ -22,7 +22,16 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const appWebsocket = await AppWebsocket.connect(`ws://localhost:9001`);
     console.log("Hello World!");
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-    await adminWebsocket.authorizeSigningCredentials(getCellId(weAppInfo.cell_info["lobby"][0])!);
+    
+    // authorize signing credentials for all cells
+    await Promise.all(
+      Object.keys(weAppInfo.cell_info).map(roleName => {
+        weAppInfo.cell_info[roleName].map(cellInfo => {
+          adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        })
+      })
+    );
+
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
 

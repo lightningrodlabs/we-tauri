@@ -704,7 +704,7 @@ export class MatrixStore {
         const sensemakerGroupDnaHash = sensemakerGroupCellId[0];
 
         // create dedicated AppAgentWebsocket for each We group
-        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("", "we");
+        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("ws://localhost:9001", "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
@@ -992,8 +992,10 @@ export class MatrixStore {
     // console.log("DnaDefinition of created clone: ", dnaDefinition);
 
     const newWeGroupCellId = clonedCell.cell_id;
+    await this.adminWebsocket.authorizeSigningCredentials(newWeGroupCellId);
 
-    const appAgentWebsocket = await AppAgentWebsocket.connect("", weParentAppInfo.installed_app_id);
+    
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:9001`, weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
@@ -1033,6 +1035,8 @@ export class MatrixStore {
 
     console.log("CREATED SM GROUP CELL CLONE: ", clonedSensemakerCell);
     console.log("...with DNA hash: ", encodeHashToBase64(clonedSensemakerCell.cell_id[0]));
+
+    await this.adminWebsocket.authorizeSigningCredentials(clonedSensemakerCell.cell_id);
     // add signal handler to listen for "NewApplet" events
     // TODO: will probably want to add signal handler for sensemaker-lite as well
     appAgentWebsocket.on("signal", (signal) => {
