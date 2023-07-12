@@ -21,7 +21,8 @@
     "playground": "run-singleton \"holochain-playground\"",
     "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.9-alpha/sensemaker.dna",
     "postinstall": "npm run download-sensemaker",
-    "test:ui": "cd ui/app && npm test"
+    "test:ui": "cd ui/app && npm test",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.0.11",
@@ -33,6 +34,7 @@
     "new-port-cli": "^1.0.0",
     "open-cli": "^7.2.0",
     "rimraf": "^3.0.2",
-    "run-singleton-cli": "^0.0.7"
+    "run-singleton-cli": "^0.0.7",
+    "husky": "^8.0.0"
   }
 }
