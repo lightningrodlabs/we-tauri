@@ -89,7 +89,7 @@ export class GroupStore {
 
     if (!cellInfo) throw new Error("Could not find cell for this group");
 
-    return cellInfo[CellType.Cloned].dna_modifiers;
+    return cellInfo[CellType.Provisioned].dna_modifiers;
   }
 
   networkSeed = lazyLoad(async () => {

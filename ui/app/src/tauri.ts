@@ -1,4 +1,4 @@
-import { AppInfo, CallZomeRequestUnsigned } from "@holochain/client";
+import { AppInfo, CallZomeRequestUnsigned, CellType } from "@holochain/client";
 import { randomNonce } from "@holochain/client";
 import { CallZomeRequest } from "@holochain/client";
 import { getNonceExpiration } from "@holochain/client";
@@ -62,9 +62,34 @@ async function fetchPing(origin: string) {
 }
 
 export async function joinGroup(networkSeed: string): Promise<AppInfo> {
-  return invoke("join_group", {
+  const appInfo: AppInfo = await invoke("join_group", {
     networkSeed,
   });
+
+  for (const [role, cells] of Object.entries(appInfo.cell_info)) {
+    for (const cell of cells) {
+      if (CellType.Provisioned in cell) {
+        cell[CellType.Provisioned].cell_id = [
+          new Uint8Array(cell[CellType.Provisioned].cell_id[0]),
+          new Uint8Array(cell[CellType.Provisioned].cell_id[1]),
+        ];
+      }
+      if (CellType.Cloned in cell) {
+        cell[CellType.Cloned].cell_id = [
+          new Uint8Array(cell[CellType.Cloned].cell_id[0]),
+          new Uint8Array(cell[CellType.Cloned].cell_id[1]),
+        ];
+      }
+      if (CellType.Stem in cell) {
+        cell[CellType.Stem].cell_id = [
+          new Uint8Array(cell[CellType.Stem].cell_id[0]),
+          new Uint8Array(cell[CellType.Stem].cell_id[1]),
+        ];
+      }
+    }
+  }
+
+  return appInfo;
 }
 
 export async function getConductorInfo(): Promise<ConductorInfo> {

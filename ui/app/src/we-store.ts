@@ -53,7 +53,7 @@ export class WeStore {
     const networkSeed = uuidv4();
 
     const appInfo = await this.joinGroup(networkSeed); // this line also updates the matrix store
-    console.log(appInfo, "a");
+
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
@@ -85,7 +85,14 @@ export class WeStore {
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
-    const groupStore = await toPromise(this.groups.get(groupDnaHash));
+    const groupAppAgentWebsocket = await initAppClient(
+      appInfo.installed_app_id
+    );
+    const groupStore = new GroupStore(
+      groupAppAgentWebsocket,
+      groupDnaHash,
+      this
+    );
     const applets = await toPromise(groupStore.allApplets);
 
     const apps = await this.adminWebsocket.listApps({});
