@@ -6,8 +6,6 @@ import { vi } from 'vitest'
 import { SensemakerStore } from '@neighbourhoods/client';
 import { writable } from '@holochain-open-dev/stores';
 import { FieldDefinition } from '@adaburrows/table-web-component';
-import { mockResourceName } from './table.test';
-import { encodeHashToBase64 } from '@holochain/client';
 import { generateHeaderHTML } from '../helpers/functions';
 
 export const mockAssessments: AssessmentDict = {'abc' : [

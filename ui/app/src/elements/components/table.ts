@@ -40,7 +40,6 @@ export class StatefulTable extends NHComponentShoelace {
     }
 
     this.tableStore.records = this.assessments;
-    console.log(this.tableStore.records)
   }
   async connectedCallback() {
     super.connectedCallback();
