@@ -41,13 +41,14 @@ pub async fn launch(
     config.keystore = KeystoreConfig::LairServerInProc {
         lair_root: Some(fs.keystore_path()),
     };
-    if let Some(admin_port) = option_env!("ADMIN_PORT") {
-        config.admin_interfaces = Some(vec![AdminInterfaceConfig {
-            driver: InterfaceDriver::Websocket {
-                port: admin_port.parse().unwrap(),
-            },
-        }])
-    }
+    let admin_port = match option_env!("ADMIN_PORT") {
+        Some(p) => p.parse().unwrap(),
+        None => portpicker::pick_unused_port().expect("No ports free"),
+    };
+
+    config.admin_interfaces = Some(vec![AdminInterfaceConfig {
+        driver: InterfaceDriver::Websocket { port: admin_port },
+    }]);
 
     // TODO: set the DHT arc depending on whether this is mobile
 
