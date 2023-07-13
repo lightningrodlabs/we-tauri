@@ -57,7 +57,7 @@ export class AddRelatedGroupDialog extends LitElement {
 
   show() {
     (this.shadowRoot?.getElementById("dialog") as SlDialog).show();
-    (this.shadowRoot?.getElementById("form") as HTMLFormElement).reset();
+    (this.shadowRoot?.getElementById("form") as HTMLFormElement)?.reset();
   }
 
   async addRelatedGroup(groupDnaHash: DnaHash, groupProfile: GroupProfile) {
@@ -92,7 +92,7 @@ export class AddRelatedGroupDialog extends LitElement {
               this._groupStore.groupDnaHash.toString() &&
             !relatedGroups.find(
               (relatedGroup) =>
-                relatedGroup.entry.resulting_dna_hash.toString() ===
+                relatedGroup.entry.group_dna_hash.toString() ===
                 groupDnaHash.toString()
             )
         );

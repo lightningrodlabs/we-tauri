@@ -3,7 +3,6 @@ import {
   ActionHash,
   DnaHash,
   EntryHash,
-  AppAgentClient,
   AppAgentCallZomeRequest,
   Record,
   AppAgentWebsocket,
@@ -49,6 +48,10 @@ export class GroupClient {
     return this.callZome("get_applets", null);
   }
 
+  async getArchivedApplets(): Promise<Array<EntryHash>> {
+    return this.callZome("get_archived_applets", null);
+  }
+
   async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {
     const record = await this.callZome("get_applet", appletHash);
     return new EntryRecord<Applet>(record).entry;
@@ -62,8 +65,12 @@ export class GroupClient {
     return this.callZome("hash_applet", applet);
   }
 
-  async unregisterApplet(appletHash: EntryHash): Promise<void> {
-    return this.callZome("unregister_applet", appletHash);
+  async archiveApplet(appletHash: EntryHash): Promise<void> {
+    return this.callZome("archive_applet", appletHash);
+  }
+
+  async unarchiveApplet(appletHash: EntryHash): Promise<void> {
+    return this.callZome("unarchive_applet", appletHash);
   }
 
   async federateApplet(

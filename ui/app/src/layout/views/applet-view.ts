@@ -1,14 +1,21 @@
 import {
   hashProperty,
   notifyError,
+  onSubmit,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import {
   AsyncReadable,
   join,
   StoreSubscriber,
+  toPromise,
 } from "@holochain-open-dev/stores";
-import { DnaHash, EntryHash } from "@holochain/client";
+import {
+  decodeHashFromBase64,
+  DnaHash,
+  encodeHashToBase64,
+  EntryHash,
+} from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
@@ -18,12 +25,14 @@ import { mdiAlertOutline, mdiInformationOutline } from "@mdi/js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import { AppletView, RenderView } from "applet-messages";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { AppletStore } from "../../applets/applet-store.js";
+import { GroupStore } from "../../groups/group-store.js";
 
 @localized()
 @customElement("applet-view")
@@ -37,6 +46,9 @@ export class AppletViewEl extends LitElement {
   @state()
   installing = false;
 
+  @state()
+  registering = false;
+
   @property()
   view!: AppletView;
 
@@ -46,13 +58,52 @@ export class AppletViewEl extends LitElement {
       join([
         this.weStore.applets.get(this.appletHash),
         this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
-      ]) as AsyncReadable<[AppletStore | undefined, boolean]>,
+        this.weStore.groupsForApplet.get(this.appletHash),
+        this.weStore.allGroupsProfiles,
+      ]) as AsyncReadable<
+        [
+          AppletStore | undefined,
+          boolean,
+          ReadonlyMap<DnaHash, GroupStore>,
+          ReadonlyMap<DnaHash, GroupProfile | undefined>
+        ]
+      >,
     () => [this.appletHash]
   );
 
-  renderAppletFrame([appletStore, isInstalled]: [
+  async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
+    if (this.registering) return;
+
+    this.registering = true;
+    try {
+      const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
+
+      if (!appletStore) throw new Error("Applet not found");
+
+      const applet = appletStore.applet;
+      await groupStore.groupClient.registerApplet(applet);
+      await this.weStore.appletBundlesStore.installApplet(
+        this.appletHash,
+        appletStore.applet
+      );
+    } catch (e) {
+      notifyError(msg("Error registering applet."));
+      console.error(e);
+    }
+
+    this.registering = false;
+  }
+
+  renderAppletFrame([
+    appletStore,
+    isInstalled,
+    groupsForThisApplet,
+    allGroups,
+  ]: [
     AppletStore | undefined,
-    boolean
+    boolean,
+    ReadonlyMap<DnaHash, GroupStore>,
+    ReadonlyMap<DnaHash, GroupProfile | undefined>
   ]) {
     if (!appletStore)
       return html`
@@ -75,6 +126,76 @@ export class AppletViewEl extends LitElement {
           >
         </div>
       `;
+
+    if (groupsForThisApplet.size === 0) {
+      // Applet was just archived by another member of the group
+      return html`
+        <div class="row center-content" style="flex: 1">
+          <sl-card
+            ><form
+              style="flex: 1"
+              ${onSubmit((f) =>
+                this.regitsterApplet(
+                  decodeHashFromBase64(f.groupDnaHash),
+                  appletStore
+                )
+              )}
+            >
+              <div class="column center-content">
+                <sl-icon
+                  .src=${wrapPathInSvg(mdiAlertOutline)}
+                  style="font-size: 64px; margin-bottom: 16px"
+                ></sl-icon>
+                <span style="margin-bottom: 4px"
+                  >${msg(
+                    "This applet was just archived in all the groups that had it registered."
+                  )}</span
+                >
+                <span style="margin-bottom: 16px"
+                  >${msg(
+                    "If you want to continue to use it, you must register it in another group."
+                  )}</span
+                >
+                <span style="margin-bottom: 16px"
+                  >${msg(
+                    "You can also just close this window if you don't want to continue using it."
+                  )}</span
+                >
+                <sl-select
+                  .placeholder=${msg("Select Group")}
+                  name="groupDnaHash"
+                  @sl-hide=${(e) => e.stopPropagation()}
+                  style="margin-bottom: 16px"
+                  required
+                >
+                  ${Array.from(allGroups.entries()).map(
+                    ([groupDnaHash, groupProfile]) => html`
+                      <sl-option .value=${encodeHashToBase64(groupDnaHash)}>
+                        <img
+                          slot="prefix"
+                          .src=${groupProfile?.logo_src}
+                          alt="${groupProfile?.name}"
+                          style="height: 16px; width: 16px"
+                        />${groupProfile?.name}</sl-option
+                      >
+                    `
+                  )}
+                </sl-select>
+              </div>
+              <div class="row " style="flex: 1">
+                <span style="flex: 1"></span>
+                <sl-button
+                  variant="primary"
+                  .loading=${this.registering}
+                  type="submit"
+                  >${msg("Register Applet")}</sl-button
+                >
+              </div>
+            </form></sl-card
+          >
+        </div>
+      `;
+    }
 
     if (!isInstalled) {
       return html`

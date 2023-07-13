@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use group_integrity::*;
 use hdk::prelude::*;
 
@@ -16,8 +18,7 @@ fn register_applet(applet: Applet) -> ExternResult<EntryHash> {
 
     create_entry(EntryTypes::Applet(applet))?;
 
-    let path = get_applets_path().typed(LinkTypes::AppletPath)?;
-    path.ensure()?;
+    let path = get_applets_path();
     let anchor_hash = path.path_entry_hash()?;
     create_link(
         anchor_hash,
@@ -30,20 +31,7 @@ fn register_applet(applet: Applet) -> ExternResult<EntryHash> {
 }
 
 #[hdk_extern]
-fn unregister_applet(applet_hash: EntryHash) -> ExternResult<()> {
-    let details = get_details(applet_hash.clone(), GetOptions::default())?;
-
-    let entry_details = match details {
-        Some(Details::Entry(d)) => Ok(d),
-        _ => Err(wasm_error!(WasmErrorInner::Guest(
-            "Malformed details result".to_string()
-        ))),
-    }?;
-
-    for a in entry_details.actions {
-        delete_entry(a.action_address().clone())?;
-    }
-
+fn archive_applet(applet_hash: EntryHash) -> ExternResult<()> {
     let path = get_applets_path();
 
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
@@ -55,6 +43,20 @@ fn unregister_applet(applet_hash: EntryHash) -> ExternResult<()> {
             }
         }
     }
+
+    Ok(())
+}
+
+#[hdk_extern]
+fn unarchive_applet(applet_hash: EntryHash) -> ExternResult<()> {
+    let path = get_applets_path();
+    let anchor_hash = path.path_entry_hash()?;
+    create_link(
+        anchor_hash,
+        applet_hash.clone(),
+        LinkTypes::AnchorToApplet,
+        (),
+    )?;
 
     Ok(())
 }
@@ -73,6 +75,41 @@ fn get_applets(_: ()) -> ExternResult<Vec<EntryHash>> {
     let entry_hashes = links
         .into_iter()
         .filter_map(|link| link.target.into_entry_hash())
+        .collect();
+
+    Ok(entry_hashes)
+}
+
+#[hdk_extern]
+fn get_archived_applets(_: ()) -> ExternResult<Vec<EntryHash>> {
+    let path = get_applets_path();
+
+    let links_details = get_link_details(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
+
+    let mut links_details_by_target: HashMap<
+        EntryHash,
+        Vec<(CreateLink, Vec<SignedActionHashed>)>,
+    > = HashMap::new();
+
+    for (create_link, deletes) in links_details.into_inner() {
+        if let Action::CreateLink(create_link) = create_link.action() {
+            if let Some(target) = create_link.target_address.clone().into_entry_hash() {
+                links_details_by_target
+                    .entry(target)
+                    .or_insert(vec![])
+                    .push((create_link.clone(), deletes));
+            }
+        }
+    }
+
+    let entry_hashes = links_details_by_target
+        .into_iter()
+        .filter(|(_, details_for_target)| {
+            details_for_target
+                .iter()
+                .all(|(_create, deletes)| deletes.len() > 0)
+        })
+        .map(|(target, _)| target)
         .collect();
 
     Ok(entry_hashes)

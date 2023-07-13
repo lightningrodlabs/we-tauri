@@ -4,22 +4,7 @@ use essence::EssenceError;
 use holochain::prelude::SerializedBytesError;
 use holochain::{conductor::error::ConductorError, prelude::AppBundleError};
 use holochain_client::ConductorApiError;
-use log::Level;
-use serde::{Deserialize, Serialize};
 use zip::result::ZipError;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum SetupState {
-    CreatePassword,
-    EnterPassword,
-}
-
-// If not initialized: Not Running -->|run| Setup -->|init && launch(password)| Running
-// If initialized:     Not Running -->|run| Setup -->|launch(password)| Running
-
-pub fn log_level() -> Level {
-    Level::Warn
-}
 
 #[derive(Debug, thiserror::Error)]
 pub enum WeError {

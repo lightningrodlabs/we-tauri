@@ -40,6 +40,9 @@ holochain_integrity_types = "=0.1.1"
 sodoken = "=0.0.7"
 mr_bundle = "=0.1.0"
 either = "*"
+url = "2.2"
+
+base64 = "0.21"
 
 mime_guess = "2.0.4"
 

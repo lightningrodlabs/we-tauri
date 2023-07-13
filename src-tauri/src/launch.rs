@@ -8,8 +8,8 @@ use holochain_client::AdminWebsocket;
 use crate::{
     config::WeConfig,
     default_apps::install_default_apps_if_necessary,
+    error::{WeError, WeResult},
     filesystem::WeFileSystem,
-    state::{WeError, WeResult},
 };
 
 // fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<holochain::prelude::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::BufRead>{

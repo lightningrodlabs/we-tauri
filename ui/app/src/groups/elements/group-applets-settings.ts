@@ -1,5 +1,7 @@
 import {
   asyncDeriveAndJoin,
+  AsyncReadable,
+  join,
   mapAndJoin,
   pipe,
   sliceAndJoin,
@@ -16,7 +18,12 @@ import {
   notifyError,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
-import { mdiDelete, mdiExportVariant, mdiToyBrickPlus } from "@mdi/js";
+import {
+  mdiArchiveArrowDown,
+  mdiArchiveArrowUp,
+  mdiExportVariant,
+  mdiToyBrickPlus,
+} from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -25,6 +32,7 @@ import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 import "./federate-applet-dialog.js";
 import "./group-context.js";
@@ -51,34 +59,54 @@ export class GroupAppletsSettings extends LitElement {
   _groupApplets = new StoreSubscriber(
     this,
     () =>
-      asyncDeriveAndJoin(
-        pipe(this._groupStore.allApplets, (allApplets) =>
+      join([
+        asyncDeriveAndJoin(
+          pipe(this._groupStore.allApplets, (allApplets) =>
+            sliceAndJoin(this._groupStore.applets, allApplets)
+          ),
+          (applets) =>
+            mapAndJoin(applets, (applet, appletHash) =>
+              this._groupStore.appletFederatedGroups.get(appletHash)
+            )
+        ),
+
+        pipe(this._groupStore.archivedApplets, (allApplets) =>
           sliceAndJoin(this._groupStore.applets, allApplets)
         ),
-        (applets) =>
-          mapAndJoin(applets, (applet, appletHash) =>
-            this._groupStore.appletFederatedGroups.get(appletHash)
-          )
-      ),
+      ]) as AsyncReadable<
+        [
+          [
+            ReadonlyMap<EntryHash, Applet>,
+            ReadonlyMap<EntryHash, Array<DnaHash>>
+          ],
+          ReadonlyMap<EntryHash, Applet>
+        ]
+      >,
     () => [this._groupStore]
   );
 
   @state(hashState())
-  appletToUninstall: EntryHash | undefined;
+  appletToArchive: EntryHash | undefined;
+
+  @state(hashState())
+  appletToUnarchive: EntryHash | undefined;
 
   @state(hashState())
   appletToFederate: EntryHash | undefined;
 
   @state()
-  uninstalling = false;
+  archiving = false;
 
-  async uninstallApplet(appletToUninstall: EntryHash) {
-    this.uninstalling = true;
+  @state()
+  unarchiving = false;
+
+  async archiveApplet(appletToArchive: EntryHash) {
+    this.archiving = true;
     try {
-      await this._groupStore.groupClient.unregisterApplet(appletToUninstall!);
+      await this._groupStore.groupClient.archiveApplet(appletToArchive!);
 
       const groupsForApplet = await toPromise(
-        this._weStore.groupsForApplet.get(appletToUninstall)
+        this._weStore.groupsForApplet.get(appletToArchive)
       );
       const otherGroupsForApplet = Array.from(groupsForApplet.keys()).filter(
         (groupDnaHash) =>
@@ -86,46 +114,107 @@ export class GroupAppletsSettings extends LitElement {
       );
 
       if (otherGroupsForApplet.length === 0)
-        this._weStore.appletBundlesStore.uninstallApplet(appletToUninstall);
+        this._weStore.appletBundlesStore.disableApplet(appletToArchive);
 
-      this.appletToUninstall = undefined;
+      this.appletToArchive = undefined;
     } catch (e) {
-      notifyError(msg("Error uninstalling applet."));
+      notifyError(msg("Error archiving the applet."));
       console.error(e);
     }
 
-    this.uninstalling = false;
+    this.archiving = false;
   }
 
-  renderUninstallDialog() {
-    if (!this.appletToUninstall) return html``;
+  async unarchiveApplet(appletToUnarchive: EntryHash) {
+    this.unarchiving = true;
+    try {
+      await this._groupStore.groupClient.unarchiveApplet(appletToUnarchive!);
+      await this._groupStore.installApplet(appletToUnarchive!);
+
+      this.appletToUnarchive = undefined;
+    } catch (e) {
+      notifyError(msg("Error unarchiving the applet."));
+      console.error(e);
+    }
+
+    this.unarchiving = false;
+  }
+
+  renderArchiveDialog() {
+    if (!this.appletToArchive) return html``;
 
     return html`<sl-dialog
-      .label=${msg("Uninstall Applet")}
+      .label=${msg("Archive Applet")}
       open
       @sl-request-close=${(e) => {
-        if (this.uninstalling) {
+        if (this.archiving) {
           e.preventDefault();
         }
       }}
       @sl-hide=${() => {
-        this.appletToUninstall = undefined;
+        this.appletToArchive = undefined;
       }}
     >
-      <span>${msg("Do you want to uninstall this applet?")}</span>
+      <span>${msg("Do you want to archive this applet from this group?")}</span
+      ><br /><br />
+      <span
+        >${msg(
+          "You will be able to unarchive it in the future and no data will be lost."
+        )}</span
+      >
       <sl-button
         slot="footer"
         @click=${() => {
-          this.appletToUninstall = undefined;
+          this.appletToArchive = undefined;
         }}
         >${msg("Cancel")}</sl-button
       >
       <sl-button
         slot="footer"
-        .loading=${this.uninstalling}
+        .loading=${this.archiving}
         variant="primary"
-        @click=${() => this.uninstallApplet(this.appletToUninstall!)}
-        >${msg("Uninstall")}</sl-button
+        @click=${() => this.archiveApplet(this.appletToArchive!)}
+        >${msg("Archive")}</sl-button
+      >
+    </sl-dialog>`;
+  }
+
+  renderUnarchiveDialog() {
+    if (!this.appletToUnarchive) return html``;
+
+    return html`<sl-dialog
+      .label=${msg("Unarchive Applet")}
+      open
+      @sl-request-close=${(e) => {
+        if (this.unarchiving) {
+          e.preventDefault();
+        }
+      }}
+      @sl-hide=${() => {
+        this.appletToUnarchive = undefined;
+      }}
+    >
+      <span
+        >${msg("Do you want to unarchive this applet from this group?")}</span
+      ><br /><br />
+      <span
+        >${msg(
+          "This will make the applet available again to all the members of the group."
+        )}</span
+      >
+      <sl-button
+        slot="footer"
+        @click=${() => {
+          this.appletToUnarchive = undefined;
+        }}
+        >${msg("Cancel")}</sl-button
+      >
+      <sl-button
+        slot="footer"
+        .loading=${this.unarchiving}
+        variant="primary"
+        @click=${() => this.unarchiveApplet(this.appletToUnarchive!)}
+        >${msg("Unarchive")}</sl-button
       >
     </sl-dialog>`;
   }
@@ -161,7 +250,7 @@ export class GroupAppletsSettings extends LitElement {
       `;
 
     return html`
-      ${this.renderUninstallDialog()} ${this.renderFederateDialog()}
+      ${this.renderArchiveDialog()} ${this.renderFederateDialog()}
       <div class="column" style="flex: 1;">
         ${Array.from(applets.entries())
           .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
@@ -195,12 +284,57 @@ export class GroupAppletsSettings extends LitElement {
                         }}
                       ></sl-icon-button>
                     </sl-tooltip>
-                    <sl-tooltip .content=${msg("Uninstall")}>
+                    <sl-tooltip .content=${msg("Archive")}>
                       <sl-icon-button
-                        .src=${wrapPathInSvg(mdiDelete)}
-                        style="font-size: 2rem; display: none"
+                        .src=${wrapPathInSvg(mdiArchiveArrowDown)}
+                        style="font-size: 2rem;"
                         @click=${() => {
-                          this.appletToUninstall = appletHash;
+                          this.appletToArchive = appletHash;
+                        }}
+                      ></sl-icon-button>
+                    </sl-tooltip>
+                  </div>
+                </sl-card>
+              `
+          )}
+      </div>
+    `;
+  }
+
+  renderArchivedApplets(applets: ReadonlyMap<EntryHash, Applet>) {
+    if (applets.size === 0)
+      return html`
+        <div class="row center-content" style="flex: 1">
+          <span
+            class="placeholder"
+            style="margin: 24px; text-align: center; max-width: 600px"
+            >${msg("This group doesn't have any archived applets yet.")}
+          </span>
+        </div>
+      `;
+
+    return html`
+      ${this.renderUnarchiveDialog()}
+      <div class="column" style="flex: 1;">
+        ${Array.from(applets.entries())
+          .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
+          .map(
+            ([appletHash, applet]) =>
+              html`
+                <sl-card style="flex: 1; margin-bottom: 16px">
+                  <div class="row" style="flex: 1; align-items: center">
+                    <applet-logo
+                      .appletHash=${appletHash}
+                      style="margin-right: 16px"
+                    ></applet-logo>
+                    <span style="flex: 1">${applet.custom_name}</span>
+
+                    <sl-tooltip .content=${msg("Unarchive")}>
+                      <sl-icon-button
+                        .src=${wrapPathInSvg(mdiArchiveArrowUp)}
+                        style="font-size: 2rem;"
+                        @click=${() => {
+                          this.appletToUnarchive = appletHash;
                         }}
                       ></sl-icon-button>
                     </sl-tooltip>
@@ -224,10 +358,25 @@ export class GroupAppletsSettings extends LitElement {
           .error=${this._groupApplets.value.error}
         ></display-error>`;
       case "complete":
-        return this.renderInstalledApplets(
-          this._groupApplets.value.value[0],
-          this._groupApplets.value.value[1]
-        );
+        return html`
+          <div class="column" style="flex: 1">
+            <span class="title" style="margin-bottom: 16px"
+              >${msg("Active Applets")}</span
+            >
+            ${this.renderInstalledApplets(
+              this._groupApplets.value.value[0][0],
+              this._groupApplets.value.value[0][1]
+            )}
+
+            <sl-divider></sl-divider>
+
+            <span class="title" style="margin-bottom: 16px"
+              >${msg("Archived Applets")}</span
+            >
+
+            ${this.renderArchivedApplets(this._groupApplets.value.value[1])}
+          </div>
+        `;
     }
   }
 

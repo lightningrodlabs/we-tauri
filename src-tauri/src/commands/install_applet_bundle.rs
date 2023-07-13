@@ -4,6 +4,7 @@ use std::{
 };
 
 use appstore_types::AppEntry;
+use base64::Engine;
 use devhub_types::{
     happ_entry_types::{HappManifest, WebHappManifest},
     DevHubResponse,
@@ -17,23 +18,28 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
-        ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, CellId, DnaHash, DnaHashB64,
-        EntryHash, EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName,
-        Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
+        ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, CellId, CreateCloneCellPayload,
+        DisableCloneCellPayload, DnaHash, DnaHashB64, EnableCloneCellPayload, EntryHash,
+        EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName, Serialize,
+        SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
     },
 };
-use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, AppWebsocket, InstallAppPayload};
+use holochain_client::{
+    AgentPubKey, AppInfo, AppRequest, AppResponse, AppStatusFilter, ConductorApiError,
+    ConductorApiResult, InstallAppPayload, InstalledAppId, ZomeCall,
+};
 use holochain_launcher_utils::zome_call_signing::sign_zome_call_with_client;
 use holochain_state::nonce::fresh_nonce;
 use holochain_types::web_app::WebAppBundle;
+use holochain_websocket::{connect, WebsocketConfig, WebsocketSender};
 use portal_types::{DnaZomeFunction, HostEntry, RemoteCallDetails};
 use serde::Deserialize;
 
 use crate::{
     default_apps::appstore_app_id,
+    error::{WeError, WeResult},
     filesystem::WeFileSystem,
     launch::get_admin_ws,
-    state::{WeError, WeResult},
 };
 
 #[tauri::command]
@@ -83,7 +89,15 @@ pub async fn fetch_icon(
         .await?;
     let bytes: EssenceResponse<Vec<u8>, (), ()> = result.decode()?;
     let bytes = bytes.as_result()?;
-    let icon_src = String::from_utf8(bytes.to_vec())?;
+
+    let base64_string = base64::engine::general_purpose::STANDARD.encode(bytes);
+
+    let mime_type = match app_entry.content.metadata.get("icon_mime_type") {
+        Some(mime_type) => mime_type.as_str().unwrap_or("image/png").to_string(),
+        None => String::from("image/png"),
+    };
+
+    let icon_src = format!("data:{};base64,{}", mime_type, base64_string);
 
     we_fs
         .icon_store()
@@ -160,6 +174,21 @@ pub async fn install_applet_bundle(
 
     let conductor = conductor.lock().await;
 
+    let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    let apps = admin_ws.list_apps(Some(AppStatusFilter::Disabled)).await?;
+
+    let is_disabled = apps
+        .iter()
+        .map(|info| info.installed_app_id.clone())
+        .collect::<Vec<String>>()
+        .contains(&app_id);
+
+    if is_disabled {
+        let app_info = admin_ws.enable_app(app_id).await?;
+        return Ok(app_info.app);
+    }
+
     let web_app_bundle: WebAppBundle = internal_fetch_applet_bundle(
         &conductor,
         &fs,
@@ -169,7 +198,6 @@ pub async fn install_applet_bundle(
     )
     .await?;
 
-    let mut admin_ws = get_admin_ws(&conductor).await?;
     let mut converted_membrane_proofs: HashMap<String, MembraneProof> = HashMap::new();
     for (dna_slot, proof) in membrane_proofs.iter() {
         converted_membrane_proofs.insert(
@@ -683,4 +711,94 @@ fn get_base_role_name_from_clone_id(role_name: &RoleName) -> RoleName {
             .first()
             .unwrap(),
     )
+}
+
+#[derive(Clone)]
+pub struct AppWebsocket {
+    tx: WebsocketSender,
+}
+
+impl AppWebsocket {
+    pub async fn connect(app_url: String) -> WeResult<Self> {
+        let url = url::Url::parse(&app_url).unwrap();
+        let websocket_config = Arc::new(WebsocketConfig::default().max_frame_size(64 << 20));
+        let websocket_config = Arc::clone(&websocket_config);
+        let (tx, _rx) = connect(url.clone().into(), websocket_config)
+            .await
+            .map_err(|e| ConductorApiError::WebsocketError(e))?;
+        Ok(Self { tx })
+    }
+
+    pub async fn app_info(
+        &mut self,
+        app_id: InstalledAppId,
+    ) -> ConductorApiResult<Option<AppInfo>> {
+        let msg = AppRequest::AppInfo {
+            installed_app_id: app_id,
+        };
+        let response = self.send(msg).await?;
+        match response {
+            AppResponse::AppInfo(app_info) => Ok(app_info),
+            _ => unreachable!("Unexpected response {:?}", response),
+        }
+    }
+
+    pub async fn call_zome(&mut self, msg: ZomeCall) -> ConductorApiResult<ExternIO> {
+        let app_request = AppRequest::CallZome(Box::new(msg));
+        let response = self.send(app_request).await?;
+
+        match response {
+            AppResponse::ZomeCalled(result) => Ok(*result),
+            _ => unreachable!("Unexpected response {:?}", response),
+        }
+    }
+
+    pub async fn create_clone_cell(
+        &mut self,
+        msg: CreateCloneCellPayload,
+    ) -> ConductorApiResult<ClonedCell> {
+        let app_request = AppRequest::CreateCloneCell(Box::new(msg));
+        let response = self.send(app_request).await?;
+        match response {
+            AppResponse::CloneCellCreated(clone_cell) => Ok(clone_cell),
+            _ => unreachable!("Unexpected response {:?}", response),
+        }
+    }
+
+    pub async fn enable_clone_cell(
+        &mut self,
+        payload: EnableCloneCellPayload,
+    ) -> ConductorApiResult<ClonedCell> {
+        let msg = AppRequest::EnableCloneCell(Box::new(payload));
+        let response = self.send(msg).await?;
+        match response {
+            AppResponse::CloneCellEnabled(enabled_cell) => Ok(enabled_cell),
+            _ => unreachable!("Unexpected response {:?}", response),
+        }
+    }
+
+    pub async fn disable_clone_cell(
+        &mut self,
+        msg: DisableCloneCellPayload,
+    ) -> ConductorApiResult<()> {
+        let app_request = AppRequest::DisableCloneCell(Box::new(msg));
+        let response = self.send(app_request).await?;
+        match response {
+            AppResponse::CloneCellDisabled => Ok(()),
+            _ => unreachable!("Unexpected response {:?}", response),
+        }
+    }
+
+    async fn send(&mut self, msg: AppRequest) -> ConductorApiResult<AppResponse> {
+        let response = self
+            .tx
+            .request(msg)
+            .await
+            .map_err(|err| ConductorApiError::WebsocketError(err))?;
+
+        match response {
+            AppResponse::Error(error) => Err(ConductorApiError::ExternalApiWireError(error)),
+            _ => Ok(response),
+        }
+    }
 }

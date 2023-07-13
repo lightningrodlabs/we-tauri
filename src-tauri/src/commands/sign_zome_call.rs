@@ -6,7 +6,7 @@ use holochain_launcher_utils::zome_call_signing::{
 };
 use holochain_types::prelude::ZomeCallUnsigned;
 
-use crate::state::{WeError, WeResult};
+use crate::error::{WeError, WeResult};
 
 #[tauri::command]
 pub async fn sign_zome_call(

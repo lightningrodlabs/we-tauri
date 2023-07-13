@@ -37,11 +37,9 @@ export class AppletsSidebar extends LitElement {
       new HoloHashMap();
 
     for (const [appletHash, appletStore] of Array.from(applets.entries())) {
-      if (
-        !appletsByBundleHash.has(appletStore.applet.devhub_happ_release_hash)
-      ) {
+      if (!appletsByBundleHash.has(appletStore.applet.appstore_app_hash)) {
         appletsByBundleHash.set(
-          appletStore.applet.devhub_happ_release_hash,
+          appletStore.applet.appstore_app_hash,
           appletStore
         );
       }
@@ -67,7 +65,8 @@ export class AppletsSidebar extends LitElement {
                       this.dispatchEvent(
                         new CustomEvent("applet-selected", {
                           detail: {
-                            appletBundleHash,
+                            appletBundleHash:
+                              appletStore.applet.appstore_app_hash,
                           },
                           bubbles: true,
                           composed: true,

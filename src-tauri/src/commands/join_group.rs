@@ -4,7 +4,7 @@ use futures::lock::Mutex;
 use holochain::{conductor::ConductorHandle, prelude::AppBundle};
 use holochain_client::{AppInfo, AppStatusFilter, InstallAppPayload};
 
-use crate::{launch::get_admin_ws, state::WeResult};
+use crate::{error::WeResult, launch::get_admin_ws};
 
 #[tauri::command]
 pub async fn join_group(

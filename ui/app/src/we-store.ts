@@ -57,10 +57,7 @@ export class WeStore {
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
-    const groupClient = new GroupClient(
-      await initAppClient(appInfo.installed_app_id),
-      "group"
-    );
+    const groupStore = await toPromise(this.groups.get(groupDnaHash));
 
     const groupProfile: GroupProfile = {
       logo_src: logo,
@@ -68,7 +65,7 @@ export class WeStore {
     };
 
     try {
-      await groupClient.setGroupProfile(groupProfile);
+      await groupStore.groupClient.setGroupProfile(groupProfile);
     } catch (e) {
       // If we can't set profile, disable the group and bubble the error
       await this.leaveGroup(groupDnaHash);
@@ -230,6 +227,11 @@ export class WeStore {
             )
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
+
+        if (groupDnaHashes.length === 0) {
+          this.appletBundlesStore.disableApplet(appletHash);
+        }
+
         return sliceAndJoin(this.groups, groupDnaHashes);
       }
     )
@@ -308,7 +310,7 @@ export class WeStore {
             pickBy(
               installedApplets,
               (appletStore) =>
-                appletStore.applet.devhub_happ_release_hash.toString() ===
+                appletStore.applet.appstore_app_hash.toString() ===
                 appBundleHash.toString()
             )
           ),

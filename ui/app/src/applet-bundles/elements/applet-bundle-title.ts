@@ -18,7 +18,9 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { weStyles } from "../../shared-styles.js";
 import {
+  AppEntry,
   ContentAddress,
+  Entity,
   HappReleaseEntry,
 } from "../../processes/appstore/types.js";
 
@@ -40,28 +42,25 @@ export class AppletBundleTitle extends LitElement {
         this._weStore.appletBundlesStore.appletBundleLogo.get(
           this.appletBundleHash
         ),
-      ]) as AsyncReadable<
-        [
-          [string, ContentAddress<HappReleaseEntry>] | undefined,
-          string | undefined
-        ]
-      >,
+      ]) as AsyncReadable<[Entity<AppEntry> | undefined, string | undefined]>,
     () => [this.appletBundleHash]
   );
 
   renderTitle([appletBundle, appletBundleLogo]: [
-    [string, ContentAddress<HappReleaseEntry>] | undefined,
+    Entity<AppEntry> | undefined,
     string | undefined
   ]) {
     if (!appletBundle) return html``;
 
     return html` <div class="row">
       <img
-        alt="${appletBundle}"
+        alt="${appletBundle.content.title}"
         .src=${appletBundleLogo}
         style="height: 16px; width: 16px; display: flex; margin-right: 4px"
       />
-      <span style="color: rgb(119, 119, 119)">${appletBundle[0]}</span>
+      <span style="color: rgb(119, 119, 119)"
+        >${appletBundle.content.title}</span
+      >
     </div>`;
   }
 

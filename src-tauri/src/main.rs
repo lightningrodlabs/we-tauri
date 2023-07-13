@@ -19,9 +19,9 @@ mod applet_iframes;
 mod commands;
 mod config;
 mod default_apps;
+mod error;
 mod filesystem;
 mod launch;
-mod state;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
