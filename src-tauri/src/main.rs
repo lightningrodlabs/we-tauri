@@ -10,6 +10,7 @@ use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use hyper::StatusCode;
 use launch::get_admin_ws;
+use logs::setup_logs;
 use serde_json::Value;
 use tauri::{
     http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
@@ -22,6 +23,7 @@ mod default_apps;
 mod error;
 mod filesystem;
 mod launch;
+mod logs;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
@@ -80,9 +82,9 @@ fn main() {
             };
 
             let fs = WeFileSystem::new(&handle, &profile)?;
-            app.manage(fs);
+            app.manage(fs.clone());
 
-            // reading profile from cli
+            // reading network seed from cli
             let network_seed = match cli_matches.args.get("network-seed") {
                 Some(data) => match data.value.clone() {
                     Value::String(network_seed) => Some(network_seed),
@@ -90,6 +92,11 @@ fn main() {
                 },
                 None => None,
             };
+
+            // set up logs
+            if let Err(err) = setup_logs(fs) {
+                println!("Error setting up the logs: {:?}", err);
+            }
 
             let title = if profile.as_str() == "default" {
                 String::from("We")
