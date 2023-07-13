@@ -9104,6 +9104,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "url 2.4.0",
+ "url2",
  "zip 0.5.13",
 ]
 

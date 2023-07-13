@@ -1,7 +1,13 @@
-use holochain::conductor::{
-    config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
-    interface::InterfaceDriver,
-    Conductor, ConductorHandle,
+use holochain::{
+    conductor::{
+        config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
+        interface::InterfaceDriver,
+        Conductor, ConductorHandle,
+    },
+    prelude::{
+        kitsune_p2p::dependencies::kitsune_p2p_types::config::KitsuneP2pTuningParams,
+        KitsuneP2pConfig, ProxyConfig, TransportConfig,
+    },
 };
 use holochain_client::AdminWebsocket;
 
@@ -45,10 +51,28 @@ pub async fn launch(
         Some(p) => p.parse().unwrap(),
         None => portpicker::pick_unused_port().expect("No ports free"),
     };
+    let mut network_config = KitsuneP2pConfig::default();
+    network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host"));
+
+    let tuning_params = KitsuneP2pTuningParams::default();
+
+    network_config.tuning_params = tuning_params;
+
+    network_config.transport_pool.push(TransportConfig::Proxy {
+      sub_transport: Box::new(TransportConfig::Quic {
+        bind_to: None,
+        override_host: None,
+        override_port: None,
+      }),
+      proxy_config: ProxyConfig::RemoteProxyClient {
+        proxy_url:  url2::url2!("kitsune-proxy://f3gH2VMkJ4qvZJOXx0ccL_Zo5n-s_CnBjSzAsEHHDCA/kitsune-quic/h/137.184.142.208/p/5788/--")
+      },
+    });
 
     config.admin_interfaces = Some(vec![AdminInterfaceConfig {
         driver: InterfaceDriver::Websocket { port: admin_port },
     }]);
+    config.network = Some(network_config);
 
     // TODO: set the DHT arc depending on whether this is mobile
 
