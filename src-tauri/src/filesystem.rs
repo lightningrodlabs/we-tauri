@@ -11,9 +11,11 @@ use crate::{
     state::{WeError, WeResult},
 };
 
+#[derive(Clone)]
 pub struct WeFileSystem {
     pub app_data_dir: PathBuf,
     pub app_config_dir: PathBuf,
+    pub app_log_dir: PathBuf,
 }
 
 impl WeFileSystem {
@@ -35,12 +37,23 @@ impl WeFileSystem {
             .join(we_version())
             .join(profile);
 
+
+        let app_log_dir = app_handle
+            .path_resolver()
+            .app_log_dir()
+            .ok_or(WeError::FileSystemError(String::from(
+                "Could not resolve the log dir for this app",
+            )))?
+            .join(we_version())
+            .join(profile);
+
         fs::create_dir_all(app_data_dir.join("webhapps"))?;
         fs::create_dir_all(app_data_dir.join("icons"))?;
 
         Ok(WeFileSystem {
             app_data_dir,
             app_config_dir,
+            app_log_dir,
         })
     }
 
