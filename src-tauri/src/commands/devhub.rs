@@ -19,7 +19,6 @@ use crate::launch::get_admin_ws;
 pub async fn is_dev_mode_enabled(
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<bool> {
-    // let mut admin_ws = (*(admin_ws)).clone();
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -39,16 +38,22 @@ pub async fn enable_dev_mode(
     config: tauri::State<'_, WeConfig>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
-    if is_dev_mode_enabled(conductor.clone()).await? {
-        let conductor = conductor.lock().await;
-
-        let mut admin_ws = get_admin_ws(&conductor).await?;
-        admin_ws.enable_app(devhub_app_id()).await?;
-        return Ok(());
-    }
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    let apps = admin_ws.list_apps(Some(AppStatusFilter::Disabled)).await?;
+
+    let is_devhub_installed = apps
+        .iter()
+        .map(|info| info.installed_app_id.clone())
+        .collect::<Vec<String>>()
+        .contains(&devhub_app_id());
+
+    if is_devhub_installed {
+        admin_ws.enable_app(devhub_app_id()).await?;
+        return Ok(());
+    }
 
     let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
