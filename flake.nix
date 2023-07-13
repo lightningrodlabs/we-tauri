@@ -2,6 +2,8 @@
   description = "Template for Holochain app development";
 
   inputs = {
+    android.url = "github:tadfisher/android-nixpkgs";
+
     versions.url  = "github:holochain/holochain?dir=versions/0_1";
 
     holochain-flake.url = "github:holochain/holochain";
@@ -29,11 +31,19 @@
           }: {
             devShells.default = pkgs.mkShell {
               inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
-              packages = [
-                pkgs.nodejs-18_x
+              packages = (with pkgs; [
+                nodejs-18_x
                 # more packages go here
-                pkgs.cargo-nextest
-              ];
+                cargo-nextest
+              ])
+              ++ (with inputs'.android.packages; [
+                  cmdline-tools-latest
+                  build-tools-32-0-0
+                  platform-tools
+                  platforms-android-31
+                  emulator
+                ])
+              ;
               
               buildInputs = (with pkgs; [
                 openssl
