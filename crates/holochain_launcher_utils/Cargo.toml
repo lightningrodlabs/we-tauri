@@ -14,10 +14,12 @@ categories = ["command-line-utilities", "development-tools"]
 [dependencies]
 
 holochain_client = { git = "https://github.com/holochain/holochain-client-rust", branch = "holochain-0.3.0-beta-dev.8" }
-holochain_state = "=0.3.0-beta-dev.7"
+holochain_state = "0.3.0-beta-dev.8"
 holochain_websocket = "0.3.0-beta-dev.3"
-holochain = "0.3.0-beta-dev.8"
-holochain_types = "=0.3.0-beta-dev.7"
+holochain = "0.3.0-beta-dev.9"
+holochain_conductor_api = "0.3.0-beta-dev.9"
+holochain_types = "=0.3.0-beta-dev.8"
+holochain_zome_types = "=0.3.0-beta-dev.6"
 lair_keystore_api = "0.2.4"
 
 

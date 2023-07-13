@@ -232,6 +232,24 @@
         "type": "github"
       }
     },
+    "flake-utils_4": {
+      "inputs": {
+        "systems": "systems_4"
+      },
+      "locked": {
+        "lastModified": 1681202837,
+        "narHash": "sha256-H+Rh19JDwRtpVPAWp64F+rlEtxUWBAQW28eAi3SRSzg=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "cfacdce06f30d2b68473a46042957675eebb3401",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "holochain": {
       "flake": false,
       "locked": {
@@ -283,11 +301,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1688710961,
-        "narHash": "sha256-gKH1esuv/i8f+g7vH8A1wig7ANvfUwDnUY6mbDPON50=",
+        "lastModified": 1689231117,
+        "narHash": "sha256-ATVjf4uJJtELkQ2KIN9SrfdEi7r6kVHlV21GLx56p14=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "ac32a4d01515da5f12ee4e1f34d3779268f1b365",
+        "rev": "df41de30e9b42e510b99fd0176adecdee401e35e",
         "type": "github"
       },
       "original": {
@@ -394,6 +412,22 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1681358109,
+        "narHash": "sha256-eKyxW4OohHQx9Urxi7TQlFBTDWII+F+x2hklDOQPB50=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "96ba1c52e54e74c3197f4d43026b3f3d92e83ff9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "pre-commit-hooks-nix": {
       "flake": false,
       "locked": {
@@ -422,6 +456,7 @@
           "holochain-flake",
           "nixpkgs"
         ],
+        "rust-overlay": "rust-overlay_3",
         "versions": "versions"
       }
     },
@@ -461,11 +496,30 @@
         ]
       },
       "locked": {
-        "lastModified": 1688697203,
-        "narHash": "sha256-0dMSJzu2bFMr9mfkXGRqMr3aPviny4zD4h7yUPk1B0U=",
+        "lastModified": 1689215707,
+        "narHash": "sha256-Wuqkwdjtox/CfCq71p1pVBRd0VTR1Hw3+cb/zdvxOHI=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "f95db88269e9a46c67cd442fb667c5ad05a6d962",
+        "rev": "7a1c8fd0f90694af49b89181344096e3375f2e23",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_3": {
+      "inputs": {
+        "flake-utils": "flake-utils_4",
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1689215707,
+        "narHash": "sha256-Wuqkwdjtox/CfCq71p1pVBRd0VTR1Hw3+cb/zdvxOHI=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "7a1c8fd0f90694af49b89181344096e3375f2e23",
         "type": "github"
       },
       "original": {
@@ -536,6 +590,21 @@
         "type": "github"
       }
     },
+    "systems_4": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "versions": {
       "inputs": {
         "holochain": "holochain",
@@ -545,11 +614,11 @@
       },
       "locked": {
         "dir": "versions/0_1",
-        "lastModified": 1688710961,
-        "narHash": "sha256-gKH1esuv/i8f+g7vH8A1wig7ANvfUwDnUY6mbDPON50=",
+        "lastModified": 1689231117,
+        "narHash": "sha256-ATVjf4uJJtELkQ2KIN9SrfdEi7r6kVHlV21GLx56p14=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "ac32a4d01515da5f12ee4e1f34d3779268f1b365",
+        "rev": "df41de30e9b42e510b99fd0176adecdee401e35e",
         "type": "github"
       },
       "original": {

@@ -10,7 +10,7 @@ use devhub_types::{
 };
 use essence::EssenceResponse;
 use futures::lock::Mutex;
-use hdk::prelude::{
+use holochain::prelude::{
     ActionHash, CellId, EntryHash, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName,
     Serialize, SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
 };

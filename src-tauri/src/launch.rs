@@ -1,8 +1,8 @@
-use holochain::conductor::{
+use holochain::{conductor::{
     config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
     interface::InterfaceDriver,
     Conductor, ConductorHandle,
-};
+}, prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{BufWrite, BufRead}};
 use holochain_client::AdminWebsocket;
 
 use crate::{
@@ -12,8 +12,8 @@ use crate::{
     state::{WeError, WeResult},
 };
 
-fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<sodoken::BufRead> {
-    match sodoken::BufWrite::new_mem_locked(pass_tmp.len()) {
+fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<BufRead> {
+    match BufWrite::new_mem_locked(pass_tmp.len()) {
         Err(e) => {
             pass_tmp.fill(0);
             Err(e.into())

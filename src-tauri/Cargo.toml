@@ -33,10 +33,10 @@ tempdir = "0.3.7"
 thiserror = "1"
 
 holochain_client = { git = "https://github.com/holochain/holochain-client-rust", branch = "holochain-0.3.0-beta-dev.8" }
-holochain_state = "=0.3.0-beta-dev.7"
+holochain_state = "=0.3.0-beta-dev.8"
 holochain_websocket = "0.3.0-beta-dev.3"
-holochain = "0.3.0-beta-dev.8"
-holochain_types = "=0.3.0-beta-dev.7"
+holochain = "0.3.0-beta-dev.9"
+holochain_types = "=0.3.0-beta-dev.8"
 mr_bundle = "0.2"
 either = "*"
 
