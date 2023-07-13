@@ -120,7 +120,10 @@ export class AppletBundlesStore {
     return appInfo;
   }
 
-  async uninstallApplet(appletHash: EntryHash) {
+  async disableApplet(appletHash: EntryHash) {
+    const installed = await toPromise(this.isInstalled.get(appletHash));
+    if (!installed) return;
+
     await this.adminWebsocket.disableApp({
       installed_app_id: encodeHashToBase64(appletHash),
     });

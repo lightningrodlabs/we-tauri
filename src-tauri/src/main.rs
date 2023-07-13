@@ -20,6 +20,7 @@ mod applet_iframes;
 mod commands;
 mod config;
 mod default_apps;
+mod error;
 mod filesystem;
 mod launch;
 mod logs;

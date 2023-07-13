@@ -30,11 +30,13 @@ pub fn get_related_groups(_: ()) -> ExternResult<Vec<Record>> {
 pub fn add_related_group(related_group: RelatedGroup) -> ExternResult<()> {
     let path = related_groups_path();
 
-    let action_hash = create_entry(EntryTypes::RelatedGroup(related_group))?;
+    let related_group_hash = hash_entry(&related_group)?;
+
+    create_entry(EntryTypes::RelatedGroup(related_group))?;
 
     create_link(
         path.path_entry_hash()?,
-        action_hash,
+        related_group_hash,
         LinkTypes::AnchorToRelatedGroup,
         (),
     )?;

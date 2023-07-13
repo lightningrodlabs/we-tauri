@@ -9181,6 +9181,7 @@ dependencies = [
  "anyhow",
  "appstore",
  "appstore_types",
+ "base64 0.21.2",
  "bytes",
  "devhub_types",
  "either",
@@ -9214,6 +9215,8 @@ dependencies = [
  "tempdir",
  "thiserror",
  "tokio",
+ "url 2.4.0",
+ "url2",
  "zip 0.5.13",
 ]
 

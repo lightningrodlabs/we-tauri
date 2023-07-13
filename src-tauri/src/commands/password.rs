@@ -3,9 +3,9 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
+    error::WeResult,
     filesystem::WeFileSystem,
     launch::{get_admin_ws, launch},
-    state::WeResult,
 };
 
 #[tauri::command]

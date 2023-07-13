@@ -59,10 +59,7 @@ export class InstallableApplets extends LitElement {
       <sl-card class="applet-card" style="height: 200px">
         <span slot="header">${appEntry.content.title}</span>
         <div class="column" style="flex: 1">
-          <span>${appEntry.content.subtitle}</span>
-          <span class="placeholder" style="flex: 1; overflow-y: auto;">
-            ${appEntry.content.description}
-          </span>
+          <span style="flex: 1">${appEntry.content.subtitle}</span>
           <sl-button
             @click=${() => {
               this._appletDialog.open(appEntry);

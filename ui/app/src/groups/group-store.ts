@@ -77,7 +77,7 @@ export class GroupStore {
     await this.groupClient.addRelatedGroup({
       group_profile: groupProfile,
       network_seed: modifiers.network_seed,
-      resulting_dna_hash: groupDnaHash,
+      group_dna_hash: groupDnaHash,
     });
   }
 
@@ -156,6 +156,11 @@ export class GroupStore {
   );
 
   allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
+
+  archivedApplets = lazyLoadAndPoll(
+    async () => this.groupClient.getArchivedApplets(),
+    4000
+  );
 
   installedApplets = asyncDerived(
     join([this.allApplets, this.weStore.appletBundlesStore.installedApplets]),

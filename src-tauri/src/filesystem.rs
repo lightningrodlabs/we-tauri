@@ -8,7 +8,7 @@ use tauri::AppHandle;
 
 use crate::{
     default_apps::we_version,
-    state::{WeError, WeResult},
+    error::{WeError, WeResult},
 };
 
 #[derive(Clone)]

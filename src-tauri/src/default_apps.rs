@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::web_app::WebAppBundle;
 
-use crate::{config::WeConfig, filesystem::WeFileSystem, state::WeResult};
+use crate::{config::WeConfig, error::WeResult, filesystem::WeFileSystem};
 
 pub fn we_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()

@@ -116,7 +116,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       );
 
       return {
-        appletBundleId: applet.applet.devhub_happ_release_hash,
+        appletBundleId: applet.applet.appstore_app_hash,
         appletName: applet.applet.custom_name,
         groupsIds: Array.from(groupsForApplet.keys()),
       } as AppletInfo;
@@ -187,9 +187,7 @@ export async function handleAppletIframeMessage(
       const crossApplet = message.crossApplet;
       if (crossApplet) {
         const applets = await toPromise(
-          weStore.appletsForBundleHash.get(
-            applet.applet.devhub_happ_release_hash
-          )
+          weStore.appletsForBundleHash.get(applet.applet.appstore_app_hash)
         );
         const config: IframeConfig = {
           type: "cross-applet",

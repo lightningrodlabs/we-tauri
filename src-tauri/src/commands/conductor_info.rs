@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use crate::{
     config::WeConfig,
     default_apps::{appstore_app_id, devhub_app_id},
-    state::WeResult,
+    error::WeResult,
 };
 
 #[tauri::command]

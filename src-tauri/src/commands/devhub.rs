@@ -11,9 +11,9 @@ use crate::config::WeConfig;
 use crate::default_apps::appstore_app_id;
 use crate::default_apps::devhub_app_id;
 use crate::default_apps::network_seed;
+use crate::error::WeResult;
 use crate::filesystem::WeFileSystem;
 use crate::launch::get_admin_ws;
-use crate::state::WeResult;
 
 #[tauri::command]
 pub async fn is_dev_mode_enabled(

@@ -17,7 +17,14 @@ edition = "2021"
 tauri-build = { version = "1.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.2", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
+tauri = { version = "1.2", features = [
+  "cli",
+  "clipboard-write-text",
+  "http-all",
+  "process-command-api",
+  "protocol-all",
+  "shell-open",
+] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
@@ -42,6 +49,10 @@ holochain_integrity_types = "=0.1.1"
 sodoken = "=0.0.7"
 mr_bundle = "=0.1.0"
 either = "*"
+url = "2.2"
+url2 = "0.0.6"
+
+base64 = "0.21"
 
 mime_guess = "2.0.4"
 
