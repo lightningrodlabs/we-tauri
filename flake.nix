@@ -147,7 +147,7 @@
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME
-                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-30;google_apis;x86_64" --force
+                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis;x86_64" --force
               '';
             };
           };
