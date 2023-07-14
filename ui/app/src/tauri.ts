@@ -1,4 +1,10 @@
-import { AppInfo, CallZomeRequestUnsigned, CellType } from "@holochain/client";
+import {
+  AgentPubKey,
+  AppInfo,
+  CallZomeRequestUnsigned,
+  CellType,
+  encodeHashToBase64,
+} from "@holochain/client";
 import { randomNonce } from "@holochain/client";
 import { CallZomeRequest } from "@holochain/client";
 import { getNonceExpiration } from "@holochain/client";
@@ -61,9 +67,13 @@ async function fetchPing(origin: string) {
   });
 }
 
-export async function joinGroup(networkSeed: string): Promise<AppInfo> {
+export async function joinGroup(
+  networkSeed: string,
+  agentPubKey: AgentPubKey
+): Promise<AppInfo> {
   const appInfo: AppInfo = await invoke("join_group", {
     networkSeed,
+    agentPubKey: encodeHashToBase64(agentPubKey),
   });
 
   for (const [role, cells] of Object.entries(appInfo.cell_info)) {

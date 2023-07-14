@@ -77,7 +77,10 @@ export class WeStore {
   }
 
   public async joinGroup(networkSeed: string): Promise<AppInfo> {
-    const appInfo = await joinGroup(networkSeed);
+    const appInfo = await joinGroup(
+      networkSeed,
+      this.appletBundlesStore.appstoreClient.myPubKey
+    );
 
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
