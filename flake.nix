@@ -2,8 +2,6 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    android.url = "github:tadfisher/android-nixpkgs";
-
     versions.url  = "github:holochain/holochain?dir=versions/0_1";
 
     holochain-flake.url = "github:holochain/holochain";
@@ -39,6 +37,7 @@
             rust = rustPkgs.rust-bin.stable."1.66.1".default.override {
               extensions = [ "rust-src" ];
               targets = [ 
+                "x86_64-linux-android"
                 "i686-linux-android"
                 "aarch64-unknown-linux-musl"
                 "wasm32-unknown-unknown"
@@ -48,15 +47,35 @@
                 "aarch64-linux-android"
               ];
             };
-            sdkPkgs = inputs.android.sdk.${system} (sdkPkgs: with sdkPkgs; [
-                  cmdline-tools-latest
-                  build-tools-32-0-0
-                  platform-tools
-                  platforms-android-31
-                  emulator
-                ]);
-            in {
+            androidPkgs = import pkgs.path {
+              inherit system;
+              config = {
+                android_sdk.accept_license = true;
+                allowUnfree = true;
+              };
+            };
+
+            buildToolsVersion = "30.0.3";
+            ndkVersion = "22.0.7026061";
+            androidComposition = androidPkgs.androidenv.composeAndroidPackages {
+              buildToolsVersions = [ buildToolsVersion ];
+              platformVersions = [ "33" ];
+              abiVersions = [ "x86_64" ];
+              includeEmulator = true;
+              includeNDK = true;
+              ndkVersions = [ ndkVersion ];
+              includeSystemImages = true;
+              systemImageTypes = [ "google_apis" ];
+              useGoogleAPIs = true;
+            };
+            androidSdk = androidComposition.androidsdk;
+          in {
             devShells.default = pkgs.mkShell {
+              ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
+              ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+              ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
+              NDK_HOME = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
+
               inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
               packages = (with pkgs; [
                 nodejs-18_x
@@ -65,7 +84,6 @@
               ])
               ++ ([
                 rust
-                sdkPkgs
               ])
               ;
               
@@ -74,7 +92,9 @@
 
                 # this is required for glib-networking
                 glib
+                jdk17
               ])
+              ++ [ androidSdk ]
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
                   webkitgtk.dev
@@ -109,7 +129,7 @@
               nativeBuildInputs = (with pkgs; [
                 perl
                 pkg-config
-
+                makeWrapper
               ])
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
@@ -127,6 +147,7 @@
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME
+                echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-30;google_apis;x86_64" --force
               '';
             };
           };
