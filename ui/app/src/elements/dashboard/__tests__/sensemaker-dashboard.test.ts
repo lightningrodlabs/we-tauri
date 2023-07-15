@@ -12,6 +12,8 @@ import { MockFactory } from '../../__tests__/mock-factory';
 import { DnaHash } from '@holochain/client';
 import { get } from 'svelte/store';
 import { AppletTuple } from './matrix-test-harness';
+import { AppletConfig } from '@neighbourhoods/client';
+import { cleanResourceNameForUI } from '../../components/helpers/functions';
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -38,11 +40,14 @@ describe('SensemakerDashboard', () => {
     componentDom = harness.querySelector(getTagName(testComponent));
     await componentDom.updateComplete;
   };
-  const renderAndReturnDom = async (testComponent, subComponent) => {
+  const renderAndReturnDom = async (testComponent, subComponent, subComponent2 = '') => {
     await initialRender(testComponent);
     const root = componentDom.renderRoot;
     if (!!subComponent) {
       toBeTestedSubComponent = root.querySelector(subComponent);
+      if (!!subComponent2) {
+        return new JSDOM(toBeTestedSubComponent.renderRoot.querySelector(subComponent2))
+      }
       return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
     }
     return new JSDOM(root.innerHTML);
@@ -67,7 +72,7 @@ describe('SensemakerDashboard', () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(0));
     });
 
-    test('Then it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu', async () => {
+    test(`Then it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const searchInput = dom.window.document.querySelectorAll(`.search-input`);
@@ -120,7 +125,7 @@ describe('SensemakerDashboard', () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(1));
     });
 
-    test(`Then the Sensemaker sub-menu has one item`, async () => {
+    test(`Then the Sensemaker sub-menu has 1 item`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const elements = dom.window.document.querySelectorAll(
@@ -129,7 +134,7 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(1);
     });
 
-    test(`And the Sensemaker sub-menu item has an active state`, async () => {
+    test(`And the 1 Sensemaker sub-menu item has an active state`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const elements = dom.window.document.querySelectorAll(
@@ -138,17 +143,17 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(1);
     });
 
-    test(`And the Sensemaker active sub-menu item has the Applet name as a value`, async () => {
+    test(`And the 1 Sensemaker sub-menu item has the same text value as the Applet name`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item.active`,
       );
-      const appletTuple : AppletTuple = get(mockFetchAppletsResponse)![0];
+      const appletTuple: AppletTuple = get(mockFetchAppletsResponse)![0];
       expect(elements[0].textContent).toBe(appletTuple[1].customName);
     });
 
-    test(`And the Sensemaker sub-menu has one sub-nav`, async () => {
+    test(`And the 1 Sensemaker sub-menu has 1 sub-nav`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const elements = dom.window.document.querySelectorAll(
@@ -157,61 +162,75 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(1);
     });
 
-    // test(`Then state is initialized`, async () => {
-    //   expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
+    test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfig: AppletConfig = get(mockAppletConfigResponse);
+      const resourceDefsLength = Object.entries(appletConfig.resource_defs).length;
 
-    //   expect(mockStore.value[mockResourceName].length).toEqual(0);
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+      );
+      expect(elements.length).toBe(resourceDefsLength);
+    });
 
-    //   expect(componentDom.tableStore).toBeDefined();
-    //   expect(componentDom.tableStore.records.length).toEqual(0);
-    // });
+    test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfig: AppletConfig = get(mockAppletConfigResponse);
+      const resourceDefNames = Object.keys(appletConfig.resource_defs);
 
-    // test('And it renders no table but gives a message', async () => {
-    //   const dom = await renderAndReturnDom(component, false);
-    //   const elements = dom.window.document.querySelectorAll(`table`);
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+      );
+      expect([...elements].map(node => node.textContent.trim())).eql(
+        resourceDefNames.map(name => cleanResourceNameForUI(name)),
+      );
+    });
+
+    // test('And it renders no table but instead a skeleton', async () => {
+    //   const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
+    //   const elements =  dom.window.document.querySelector('table');
     //   expect(elements.length).toBe(0);
 
-    //   const p = dom.window.document.querySelectorAll(`p`);
+    //   const skeleton = dom.window.document.querySelectorAll(`sl-skeleton`);
 
-    //   expect(p.length).toBe(1);
-    //   expect(p[0].textContent).toBe('No assessments found');
+    //   expect(skeleton.length).toBe(1);
     // });
   });
 
   // describe('Given a MatrixStore with an AppletConfig with one resource and two assessments', () => {
-    // beforeEach(async () => {
-    //   mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
-    //   mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(1));
-    // });
+  // beforeEach(async () => {
+  //   mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
+  //   mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(1));
+  // });
 
-    // test(`Then state is initialized`, async () => {
-    //   expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
+  // test(`Then state is initialized`, async () => {
+  //   expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
 
-    //   expect(mockStore.value[mockResourceName].length).toEqual(2);
-    //   expect(componentDom.tableStore).toBeDefined();
-    //   expect(componentDom.tableStore.records.length).toEqual(2);
-    // });
+  //   expect(mockStore.value[mockResourceName].length).toEqual(2);
+  //   expect(componentDom.tableStore).toBeDefined();
+  //   expect(componentDom.tableStore.records.length).toEqual(2);
+  // });
 
-    // test('And it renders a header row', async () => {
-    //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    //   const elements = dom.window.document.querySelectorAll(`thead tr`);
-    //   expect(elements.length).toBe(1);
-    // });
-    // test('And the header row has the correct number of columns ', async () => {
-    //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-    //   expect(elements.length).toBe(4);
-    // });
-    // test('And the header row has the correct column headings ', async () => {
-    //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-    //   expect([...elements].map((node) => node.textContent.trim())).eql([
-    //     "Value",
-    //     "Dimension",
-    //     "Resource",
-    //     "Author",
-    //   ]);
-    // });
+  // test('And it renders a header row', async () => {
+  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
+  //   const elements = dom.window.document.querySelectorAll(`thead tr`);
+  //   expect(elements.length).toBe(1);
+  // });
+  // test('And the header row has the correct number of columns ', async () => {
+  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
+  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
+  //   expect(elements.length).toBe(4);
+  // });
+  // test('And the header row has the correct column headings ', async () => {
+  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
+  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
+  //   expect([...elements].map((node) => node.textContent.trim())).eql([
+  //     "Value",
+  //     "Dimension",
+  //     "Resource",
+  //     "Author",
+  //   ]);
+  // });
   // });
   // describe('Given a MatrixStore with three resources and two assessments each resource', () => {
   //   beforeEach(async () => {
