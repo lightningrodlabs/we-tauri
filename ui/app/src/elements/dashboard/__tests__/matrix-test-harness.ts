@@ -1,16 +1,12 @@
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { createContext, contextProvider } from '@lit-labs/context';
-import { vi } from 'vitest';
-import { Readable, readable, writable } from '@holochain-open-dev/stores';
-import { AppletClassInfo, MatrixStore } from '../../../matrix-store';
-import { EntryHashMap } from '../../../holo-hash-map-temp';
+import { contextProvider } from '@lit-labs/context';
 import { DnaHash, EntryHash } from '@holochain/client';
 import { Applet } from '../../../types';
-import { mockSensemakerStore } from '../../components/__tests__/sensemaker-test-harness';
+import { MockFactory } from '../../__tests__/mock-factory';
+import { mockContext } from './helpers';
 
 export type AppletTuple = [EntryHash, Partial<Applet>, DnaHash[]];
-
 
 export const testAppletName = 'test-applet';
 
@@ -27,35 +23,6 @@ export const mockApplets: AppletTuple[] = [[
   [new Uint8Array([1, 2, 3])] as DnaHash[],
 ]]
 
-// Mock the response of fetchAllApplets method
-export function mockFetchAllApplets(
-  weGroupId: DnaHash | undefined,
-): Readable<AppletTuple[]> {
-  return readable(mockApplets);
-}
-const mockMatrixReadable = mockFetchAllApplets(new Uint8Array());
-const mockMatrixWritable = writable<AppletTuple[]>([]);
-
-mockMatrixReadable.subscribe(value => {
-  // Update the value of the writable store when the readable store changes
-  mockMatrixWritable.set(value as any);
-});
-
-// Create a mock context with the mock store
-export const mockContext = createContext<Partial<MatrixStore>>('hc_zome_we/matrix_context');
-
-const mockFetchAllAppletsResponse = {
-  store: () => mockMatrixWritable,
-  subscribe: mockFetchAllApplets(new Uint8Array()).subscribe,
-  unsubscribe: vi.fn(),
-  mockSetSubscribeValue: (value: AppletTuple[]): void => mockMatrixWritable.update(_ => value),
-};
-
-export const mockMatrixStore = {
-  fetchAllApplets: vi.fn(() => mockFetchAllAppletsResponse),
-  sensemakerStore: vi.fn((weGroupId: DnaHash | undefined) => mockSensemakerStore),
-};
-
 @customElement('dashboard-test-harness')
 export class TestHarness extends LitElement {
   /**
@@ -64,7 +31,7 @@ export class TestHarness extends LitElement {
   @contextProvider({ context: mockContext })
   @property({ attribute: false })
   // Create a mock store with the mock data
-  _matrixStore: Object = mockMatrixStore;
+  _matrixStore;
 
   render() {
     return html`<slot></slot>`;

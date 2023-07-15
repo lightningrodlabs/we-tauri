@@ -60,40 +60,42 @@ export class SensemakerDashboard extends NHComponentShoelace {
     this._sensemakerStore = get(
       this._matrixStore.sensemakerStore(this.selectedWeGroupId) as Readable<SensemakerStore>,
     );
-
     const appletStream = await this._matrixStore.fetchAllApplets(this.selectedWeGroupId);
     appletStream.subscribe(applets => {
-      console.log('applets in stream', applets)
-      this.appletDetails = applets.reduce((applets, a) => {
+      this.appletDetails = applets?.length ? applets.reduce((applets, a) => {
         const roleName = Object.keys(a[1].dnaHashes)[0];
-        
         return {
           ...applets,
           [roleName]: {
             customName: a[1].customName
           }
         }
-      }, {})        
+      }, {}) : {}       
     });
     this.setupAssessmentsSubscription()
   }
 
   setupAssessmentsSubscription() {
-    let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
-    console.log('store :>> ', store);
-    store.subscribe(store => {
-      (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
-        // const id: string = appletConfig?.role_name;
-        const id = "todo_lists" // TODO: unhardcode this
-        console.log('id :>> ', id);
-        // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
-        if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
+    const createUniqueKeyForAppletConfig = (appletConfig: AppletConfig) => {
+      if(!appletConfig || !appletConfig.cultural_contexts || !appletConfig.dimensions || !appletConfig.methods || !appletConfig.resource_defs) { console.error('Error making id for AppletConfig'); return }
+      const encode = (array) => array.slice(0,5).toString().replace(/,/g,'')
+      let firstPart = encode(Object.values(appletConfig.cultural_contexts)[0]);
+      let secondPart = encode(Object.values(appletConfig.dimensions)[0]);
+      let thirdPart = encode(Object.values(appletConfig.methods)[0]);
+      let fourthPart = encode(Object.values(appletConfig.resource_defs)[0]);
+      return `${firstPart}-${secondPart}-${thirdPart}-${fourthPart}`
+    }
 
-        console.log('appletConfig:', appletConfig);
-        this.appletDetails[id].appletRenderInfo = {
+    let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
+    store.subscribe(store => {
+        const appletConfig = get(store!.appletConfig());
+        const id = createUniqueKeyForAppletConfig(appletConfig);
+        if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
+        
+        if(!this.appletDetails[id]) { this.appletDetails[id] = {} }
+        this.appletDetails[id]!.appletRenderInfo = {
           resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
         };
-        
         // Keep dimensions for dashboard table prop        
         this.dimensions = appletConfig.dimensions;
         //Keep context names for display
@@ -105,7 +107,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
         const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
         this.selectedResourceDefEh = resourceName ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
         this.loading = false;
-      });
     });
   }
 
@@ -152,7 +153,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       </div>
     `;
   }
-  renderSidebar(appletRoleNames: string[]) {
+  renderSidebar(appletIds: string[]) {
     return html`
       <nav>
       <div>
@@ -165,29 +166,34 @@ export class SensemakerDashboard extends NHComponentShoelace {
       </sl-menu>
       <sl-menu class="dashboard-menu-section">
         <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-        ${appletRoleNames.map(
-          (roleName, i) => html`
+        ${appletIds.map(
+          (id, i) => {
+            const applet = Object.values(this.appletDetails)[2*i + 1] ;
+            const appletName = Object.values(this.appletDetails)[2*i]?.customName;
+            // TODO: link ids and stop relying on ordering like this
+            // console.log('appletIds, applet, appletName :>> ', appletIds, applet, appletName);
+            return !!applet ? html`
             <sl-menu-item 
               class="nav-item ${classMap({
               active: this.selectedAppletIndex === i})}"
-              value="${this.appletDetails[roleName].customName.toLowerCase()}"
+              value="${appletName}"
               @click=${() => {
                 this.selectedAppletIndex = i; 
                 this.selectedResourceDefIndex = -1;
                 this.setupAssessmentsSubscription()
               }}
-              >${this.appletDetails[roleName].customName}</sl-menu-item
+              >${appletName}</sl-menu-item
               >
               <div role="navigation" class="sub-nav indented">
-              ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
-                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
+              ${applet?.appletRenderInfo?.resourceNames &&
+                applet?.appletRenderInfo?.resourceNames.map(
                   (resource, i) => html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                     @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
                     >${resource}</sl-menu-item
                   >`,
               )}
             </div>
-          `,
+          ` : html``},
         )}
       </sl-menu>
       <sl-menu class="dashboard-menu-section">
@@ -234,22 +240,20 @@ export class SensemakerDashboard extends NHComponentShoelace {
   }
 
   render() {
-    const roleNames = this?.appletDetails ? Object.keys(this.appletDetails) : [];
+    const appletIds = this?.appletDetails ? Object.keys(this.appletDetails) : [];
     const appletDetails = typeof this.appletDetails == 'object' ? Object.values(this.appletDetails) : [];
-    
-    const appletConfig = (appletDetails.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
+    const appletConfig = (appletDetails.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[]))
     
     if (appletConfig && appletDetails[this.selectedAppletIndex]) {
       this.selectedResourceName = this.selectedResourceDefIndex < 0 ? "All Resources" : appletDetails[this.selectedAppletIndex].appletRenderInfo.resourceNames[this.selectedResourceDefIndex];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
     if (!appletConfig![0] || !contexts) { this.loadingState = LoadingState.FirstRender };
-// console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
-
+    
     return html`
       <div class="container">
       <slot name="configure-widget-button"></slot>
-        ${this.renderSidebar(roleNames as string[])}
+        ${this.renderSidebar(appletIds as string[])}
         <main>
           ${this.loading
             ? this.renderMainSkeleton()
