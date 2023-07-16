@@ -56,7 +56,7 @@
             };
 
             buildToolsVersion = "30.0.3";
-            ndkVersion = "22.0.7026061";
+            ndkVersion = "25.2.9519653";
             androidComposition = androidPkgs.androidenv.composeAndroidPackages {
               buildToolsVersions = [ buildToolsVersion ];
               platformVersions = [ "33" ];
@@ -89,10 +89,10 @@
               
               buildInputs = (with pkgs; [
                 openssl
-
                 # this is required for glib-networking
                 glib
                 jdk17
+                bzip2
               ])
               ++ [ androidSdk ]
               ++ (lib.optionals pkgs.stdenv.isLinux
