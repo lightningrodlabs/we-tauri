@@ -4,7 +4,8 @@
     "outDir": "dist",
     "rootDir": "./src",
     "declaration": false,
-    "incremental": true
+    "incremental": true,
+    "types": ["vite/client"]
   },
   "include": ["src/**/*.ts","**/*.d.ts", "src/elements/components/__tests__/table.test.ts"]
 }

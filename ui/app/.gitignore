@@ -5,3 +5,4 @@ out-tsc
 *.tsbuildinfo
 .rollup.cache
 .env.*
+.env
