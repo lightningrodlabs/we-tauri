@@ -17,5 +17,5 @@ package-lock.json
 .gitignore
 .vscode/
 .rollup.cache
-.env.*
+.env.local
 .env
