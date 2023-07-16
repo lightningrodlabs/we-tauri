@@ -216,7 +216,7 @@ export class MatrixStore {
     adminWebsocket: AdminWebsocket,
     weParentAppInfo: AppInfo,
   ) {
-    const appAgentWebsocket = await AppAgentWebsocket.connect("ws://localhost:9001", "we");
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(
@@ -995,7 +995,7 @@ export class MatrixStore {
     await this.adminWebsocket.authorizeSigningCredentials(newWeGroupCellId);
 
     
-    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:9001`, weParentAppInfo.installed_app_id);
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
