@@ -149,7 +149,7 @@ describe('SensemakerDashboard', () => {
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item.active`,
       );
-      const appletTuple: AppletTuple = get(mockFetchAppletsResponse)![0];
+      const appletTuple: AppletTuple = (get(mockFetchAppletsResponse)as any)![0];
       expect(elements[0].textContent).toBe(appletTuple[1].customName);
     });
 
