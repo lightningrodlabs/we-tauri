@@ -34,7 +34,7 @@
             rustPkgs = import pkgs.path {
               inherit system overlays;
             };
-            rust = rustPkgs.rust-bin.stable."1.66.1".default.override {
+            rust = rustPkgs.rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
               targets = [ 
                 "x86_64-linux-android"
