@@ -5,7 +5,7 @@ import { generateHeaderHTML } from '../components/helpers/functions';
 import { html } from 'lit';
 import { Applet } from '../../types';
 import { EntryHash, DnaHash } from '@holochain/client';
-import { AppletTuple, testAppletName } from '../dashboard/__tests__/matrix-test-harness';
+import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matrix-test-harness';
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
 import { SensemakerStore } from '@neighbourhoods/client';
@@ -52,14 +52,14 @@ export class MockFactory {
   }
 
   static createAppletConfig(
-    numberOfResourceDefs: number = 1,
-    name = 'An applet',
-    role_name = 'applet_role',
-    ranges = { my_range: new Uint8Array([1, 2, 3]) },
-    dimensions = { my_dimension: new Uint8Array([1, 2, 3]) },
-    resource_defs = { my_resource_def: new Uint8Array([1, 2, 3]) },
-    methods = { my_method: new Uint8Array([1, 2, 3]) },
-    cultural_contexts = { my_context: new Uint8Array([1, 2, 3]) },
+    seed: number = 0,
+    name = 'An applet' + (seed + 1),
+    role_name = testAppletBaseRoleName + (seed + 1),
+    ranges = { my_range: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
+    dimensions = { my_dimension: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
+    resource_defs = { ["my_resource_def" + (seed + 1)]: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
+    methods = { my_method: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
+    cultural_contexts = { my_context: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
   ): AppletConfig {
     return {
       name: name,
@@ -89,18 +89,19 @@ export class MockFactory {
     return fieldDefsResourceTable;
   }
   static createAppletTuple(
-    roleName = testAppletName,
+    seed = 0,
+    roleName = testAppletBaseRoleName + (seed + 1),
     entryHash = [1, 2, 3],
-    customName = 'UserAppletName',
-    title = 'AppletTitle',
-    description = 'A test applet',
+    customName = 'UserAppletName' + (seed + 1),
+    title = 'AppletTitle' + (seed + 1),
+    description = 'A test applet' + (seed + 1),
     logoSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAA…nGGT8mfoaf0ZOwgM08H91gsijgKjJeQAAAABJRU5ErkJggg==',
     dnaHashes = {},
-    dnaHash = [1, 2, 3],
+    dnaHash = [1, 2, 3].map(x => x * (seed + 1)),
   ): AppletTuple {
-    dnaHashes = { [roleName]: new Uint8Array([28, 29, 30]) };
+    dnaHashes = { [roleName]: new Uint8Array([28, 29, 30].map(x => x * (seed + 1))) };
     const applet: AppletTuple = [
-      new Uint8Array([1, 2, 3]) as EntryHash,
+      new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) as EntryHash,
       {
         customName,
         title,
@@ -108,7 +109,7 @@ export class MockFactory {
         logoSrc,
         dnaHashes,
       } as Partial<Applet>,
-      [new Uint8Array([1, 2, 3])] as DnaHash[],
+      [new Uint8Array([1, 2, 3].map(x => x * (seed + 1)))] as DnaHash[],
     ];
 
     return applet;
@@ -116,7 +117,7 @@ export class MockFactory {
 
   static createAppletTuples(numberInArray: number
   ): AppletTuple[] {
-    return [...new Array(numberInArray)].map((applet, index) => this.createAppletTuple('test-applet'));
+    return [...new Array(numberInArray)].map((_, index) => this.createAppletTuple(index));
   }
 
   static mockStoreResponse(methodName: string) {

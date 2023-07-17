@@ -8,7 +8,7 @@ import { mockContext } from './helpers';
 
 export type AppletTuple = [EntryHash, Partial<Applet>, DnaHash[]];
 
-export const testAppletName = 'test-applet';
+export const testAppletBaseRoleName = 'test-applet';
 
 export const mockApplets: AppletTuple[] = [[
   new Uint8Array([1, 2, 3]) as EntryHash,
@@ -18,7 +18,7 @@ export const mockApplets: AppletTuple[] = [[
     description: 'A test applet',
     logoSrc:
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAA…nGGT8mfoaf0ZOwgM08H91gsijgKjJeQAAAABJRU5ErkJggg==',
-    dnaHashes: { [testAppletName]: new Uint8Array([28, 29, 30]) },
+    dnaHashes: { [testAppletBaseRoleName]: new Uint8Array([28, 29, 30]) },
   } as Partial<Applet>,
   [new Uint8Array([1, 2, 3])] as DnaHash[],
 ]]
