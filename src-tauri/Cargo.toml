@@ -14,10 +14,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "=1.2", features = [] }
+tauri-build = { version = "=1.4", features = [] }
 
 [dependencies]
-tauri = { version = "=1.2", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
+tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open"] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
@@ -49,7 +49,7 @@ base64 = "0.21"
 
 mime_guess = "2.0.4"
 
-hyper = { version = "1.0.0-rc.3", features = ["full"] }
+hyper = { version = "0.14.27", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 http-body-util = "0.1.0-rc.2"
 bytes = "1"
