@@ -1,13 +1,15 @@
 import { css } from 'lit';
 
 export const sharedStyles = css`
+:host {
+
+  --nh-menu-subtitle: #A89CB0;
+
 
   /**
  * NH Design System Token Variables
  * Generated on Mon, 03 Jul 2023 09:59:43 GMT
  */
-
-  :host {
     --nh-text-decoration-captions: none;
     --nh-text-decoration-buttons: none;
     --nh-text-decoration-none: none;
