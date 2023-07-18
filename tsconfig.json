@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "es6",
     "lib": ["es2017", "dom", "dom.iterable"],
     "declaration": true,
     "emitDeclarationOnly": true,

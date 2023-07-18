@@ -17,7 +17,6 @@
     "build-storybook": "build-storybook"
   },
   "devDependencies": {
-    "lit": "^2.0.2",
     "@babel/core": "^7.17.2",
     "@storybook/addon-actions": "^6.4.19",
     "@storybook/addon-essentials": "^6.4.19",
@@ -27,5 +26,9 @@
     "storybook-builder-vite": "^0.1.15",
     "typescript": "^4.5.4",
     "vite": "^2.8.0"
+  },
+  "dependencies": {
+    "lit": "^2.2.0",
+    "neighbourhoods-design-system-components": "^0.0.15"
   }
 }
