@@ -24,6 +24,9 @@ export default meta;
 
 type Story = StoryObj<AssessmentWidgetProps>;
 
+export const BasicWidget: Story = {
+  render: meta.render
+};
 export const Pear: Story = {
   args: {
     name: 'Pear',
