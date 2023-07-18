@@ -58,6 +58,9 @@ pub enum WeError {
 
     #[error("Error signing zome call: `{0}`")]
     SignZomeCallError(String),
+
+    #[error("No available DevHub host(s) found.")]
+    NoAvailableHostsError(()),
 }
 
 impl From<ConductorApiError> for WeError {

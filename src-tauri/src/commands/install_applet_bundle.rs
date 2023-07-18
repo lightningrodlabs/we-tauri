@@ -293,6 +293,12 @@ async fn fetch_web_happ(
 
     let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
 
+    if hosts.len() == 0 {
+        return Err(WeError::NoAvailableHostsError(()));
+    }
+
+    let mut errors = vec![];
+
     for host in hosts {
         let response = get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await;
         if let Ok(web_app_bytes) = response {
@@ -301,11 +307,13 @@ async fn fetch_web_happ(
 
         if let Err(err) = response {
             println!("Error fetching applet {:?}", err);
+            errors.push(err);
         }
     }
 
-    return Err(WeError::AppWebsocketError(String::from(
-        "Couldn't fetch the webhapp from any of the hosts",
+    return Err(WeError::AppWebsocketError(format!(
+        "Couldn't fetch the webhapp from any of the hosts. Errors: {:?}",
+        errors
     )));
 }
 
