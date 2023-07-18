@@ -21,7 +21,6 @@ export class NHAssessmentWidget extends NHComponentShoelace {
   protected firstUpdated(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
-    console.log(this._containers);
     this._containers.forEach((container) => {
       let timeoutId: any = null; // Variable to store the timeout ID
       const timerBeforeSending = 2000;

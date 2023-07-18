@@ -34,6 +34,7 @@ export class NHCard extends NHComponentShoelace {
     ${unsafeCSS(sharedStyles)}
     
       .container {
+        color: var(--nh-theme-fg-default);
         border-radius: calc(1px * var(--nh-radii-xl));
         background-color: var(--nh-theme-bg-subtle);
         padding: calc(1px * var(--nh-spacing-xl));

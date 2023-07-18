@@ -5,6 +5,7 @@ module.exports = {
   core: {
     builder: 'storybook-builder-vite',
   },
+  staticDirs: ['../public'],
   async viteFinal(config, { configType }) {
     // customize the Vite config here
     config.optimizeDeps.include = [
