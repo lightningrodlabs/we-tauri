@@ -34,17 +34,14 @@ export async function getHappReleases(
   appstoreClient: AppAgentClient,
   forHapp: ResourceLocator
 ): Promise<Array<Entity<HappReleaseEntry>>> {
-  // console.log("@getHappReleases: trying to get host.");
-
   try {
-    const host: AgentPubKey = await getAvailableHostForZomeFunction(
+    return remoteCallCascadeToAvailableHosts(
       appstoreClient,
       forHapp.dna_hash,
       "happ_library",
-      "get_happ_releases"
+      "get_happ_releases",
+      { for_happ: forHapp.resource_hash }
     );
-
-    return getHappReleasesFromHost(appstoreClient, host, forHapp);
   } catch (e) {
     throw new Error(`Failed to get happ releases: ${JSON.stringify(e)}`);
   }
