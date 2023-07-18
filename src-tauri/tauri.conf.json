@@ -60,6 +60,9 @@
       "csp": "",
       "dangerousDisableAssetCspModification": true
     },
+    "systemTray": {
+      "iconPath": "icons/32x32.png"
+    },
     "updater": {
       "active": false
     },

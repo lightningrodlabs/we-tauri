@@ -5,15 +5,17 @@ use std::path::PathBuf;
 
 use applet_iframes::{pong_iframe, read_asset, start_applet_uis_server};
 use config::WeConfig;
-use filesystem::WeFileSystem;
+use filesystem::{Profile, WeFileSystem};
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use hyper::StatusCode;
 use launch::get_admin_ws;
 use logs::setup_logs;
+use menu::{build_menu, handle_menu_event};
 use serde_json::Value;
+use system_tray::{app_system_tray, handle_system_tray_event};
 use tauri::{
-    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
+    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl, SystemTray, SystemTrayEvent,
 };
 
 mod applet_iframes;
@@ -24,6 +26,9 @@ mod error;
 mod filesystem;
 mod launch;
 mod logs;
+mod menu;
+mod system_tray;
+mod window;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
@@ -32,6 +37,9 @@ use commands::{
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call,
 };
+use window::build_main_window;
+
+pub const APP_NAME: &str = "We";
 
 fn main() {
     let disable_deep_link = std::env::var("DISABLE_DEEP_LINK").is_ok();
@@ -42,6 +50,13 @@ fn main() {
     }
 
     tauri::Builder::default()
+        .menu(build_menu())
+        .on_menu_event(|event| handle_menu_event(event.menu_item_id(), event.window()))
+        .system_tray(SystemTray::new().with_menu(app_system_tray()))
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => handle_system_tray_event(app, id),
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![
             sign_zome_call,
             join_group,
@@ -63,7 +78,7 @@ fn main() {
 
             // reading profile from cli
             let cli_matches = app.get_cli_matches()?;
-            let profile: String = match cli_matches.args.get("profile") {
+            let profile: Profile = match cli_matches.args.get("profile") {
                 Some(data) => match data.value.clone() {
                     Value::String(profile) => {
                         if profile == "default" {
@@ -83,6 +98,7 @@ fn main() {
 
             let fs = WeFileSystem::new(&handle, &profile)?;
             app.manage(fs.clone());
+            app.manage(profile);
 
             // reading network seed from cli
             let network_seed = match cli_matches.args.get("network-seed") {
@@ -98,19 +114,9 @@ fn main() {
                 println!("Error setting up the logs: {:?}", err);
             }
 
-            let title = if profile.as_str() == "default" {
-                String::from("We")
-            } else {
-                format!("We - {}", profile)
-            };
-
             let app_handle = app.handle();
 
-            let window = WindowBuilder::new(app, "we", WindowUrl::App("index.html".into()))
-                .title(title)
-                .disable_file_drop_handler()
-                .inner_size(1000.0, 700.0)
-                .build()?;
+            let window = build_main_window(&app_handle)?;
 
             let ui_server_port = portpicker::pick_unused_port().expect("No ports free");
             start_applet_uis_server(app_handle, ui_server_port);
@@ -200,10 +206,10 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|_app_handle, event| {
-            // This event is emitted upon quitting the Launcher via cmq+Q on macOS.
-            // Sidecar binaries need to get explicitly killed in this case (https://github.com/holochain/launcher/issues/141)
-            if let RunEvent::Exit = event {
-                tauri::api::process::kill_children();
+            // This event is emitted upon pressing the x to close the App window
+            // The app is prevented from exiting to keep it running in the background with the system tray
+            if let RunEvent::ExitRequested { api, .. } = event {
+                api.prevent_exit();
             }
         });
 }
