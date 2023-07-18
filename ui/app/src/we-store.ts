@@ -81,37 +81,48 @@ export class WeStore {
       networkSeed,
       this.appletBundlesStore.appstoreClient.myPubKey
     );
+    try {
+      const groupDnaHash: DnaHash =
+        appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
+      const groupAppAgentWebsocket = await initAppClient(
+        appInfo.installed_app_id
+      );
+      const groupStore = new GroupStore(
+        groupAppAgentWebsocket,
+        groupDnaHash,
+        this
+      );
+      const applets = await toPromise(groupStore.allApplets);
 
-    const groupDnaHash: DnaHash =
-      appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
-    const groupAppAgentWebsocket = await initAppClient(
-      appInfo.installed_app_id
-    );
-    const groupStore = new GroupStore(
-      groupAppAgentWebsocket,
-      groupDnaHash,
-      this
-    );
-    const applets = await toPromise(groupStore.allApplets);
+      const apps = await this.adminWebsocket.listApps({});
+      const disabledApps = apps.filter((app) => isAppDisabled(app));
 
-    const apps = await this.adminWebsocket.listApps({});
-    const disabledApps = apps.filter((app) => isAppDisabled(app));
-
-    for (const app of disabledApps) {
-      if (
-        applets.find(
-          (appletHash) =>
-            app.installed_app_id === encodeHashToBase64(appletHash)
-        )
-      ) {
-        await this.adminWebsocket.enableApp({
-          installed_app_id: app.installed_app_id,
-        });
+      for (const app of disabledApps) {
+        if (
+          applets.find(
+            (appletHash) =>
+              app.installed_app_id === encodeHashToBase64(appletHash)
+          )
+        ) {
+          await this.adminWebsocket.enableApp({
+            installed_app_id: app.installed_app_id,
+          });
+        }
       }
-    }
 
-    await this.appletBundlesStore.installedApps.reload();
-    return appInfo;
+      await this.appletBundlesStore.installedApps.reload();
+      return appInfo;
+    } catch (e) {
+      try {
+        await this.adminWebsocket.uninstallApp({
+          installed_app_id: appInfo.installed_app_id,
+        });
+      } catch (e) {
+        console.warn(e);
+      }
+
+      throw e;
+    }
   }
 
   public async leaveGroup(groupDnaHash: DnaHash) {

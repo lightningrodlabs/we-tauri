@@ -271,27 +271,21 @@ async fn fetch_web_happ(
     let mut admin_ws = get_admin_ws(conductor).await?;
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Running)).await?;
 
+    // Otherwise, get the list of available host and try them one by one
+
+    let mut hosts = get_available_hosts(&mut client, &devhub_dna).await?;
+
     for app in apps {
         for (_app_name, cells) in app.cell_info {
             for cell in cells {
                 if let CellInfo::Provisioned(provisioned_cell) = cell {
                     if provisioned_cell.cell_id.dna_hash().eq(&devhub_dna) {
-                        return get_webhapp_from_host(
-                            &mut client,
-                            &devhub_dna,
-                            &app.agent_pub_key,
-                            &payload,
-                        )
-                        .await;
+                        hosts.insert(0, app.agent_pub_key);
                     }
                 }
             }
         }
     }
-
-    // Otherwise, get the list of available host and try them one by one
-
-    let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
 
     for host in hosts {
         let response = get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await;
