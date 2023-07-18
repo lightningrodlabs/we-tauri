@@ -23,13 +23,12 @@ import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
 import { classMap } from 'lit/directives/class-map.js';
 import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
-export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace) {
+export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
@@ -102,7 +101,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
         this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
         const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
         const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-        this.selectedResourceDefEh = this.selectedResourceDefIndex >= 0 ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
+        this.selectedResourceDefEh = resourceName ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
         this.loading = false;
       });
     });
@@ -180,9 +179,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
               <div role="navigation" class="sub-nav indented">
               ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
                 this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                  (resource, i) =>
-                  i == 0 ? html``  // TODO: unhardcode this 
-                  : html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
+                  (resource, i) => html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
                     @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
                     >${resource}</sl-menu-item
                   >`,
@@ -245,7 +242,7 @@ export class SensemakerDashboard extends ScopedElementsMixin(NHComponentShoelace
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
     if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
-console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
+// console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`
       <div class="container">
@@ -307,7 +304,7 @@ console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from rende
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-skeleton': SlSkeleton,
       'sl-input': SlInput,

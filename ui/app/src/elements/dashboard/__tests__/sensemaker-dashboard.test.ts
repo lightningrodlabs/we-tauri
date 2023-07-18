@@ -4,20 +4,21 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
 
 import './test-harness';
-import { mockMatrixStore } from './test-harness';
+// import { mockMatrixStore } from './test-harness';
 import '../sensemaker-dashboard';
 import { SensemakerDashboard } from '../sensemaker-dashboard';
-import { stateful } from './helpers';
+import { stateful } from '../../components/__tests__/helpers';
+import { AppletTuple, mockMatrixStore } from './test-harness';
+import { get } from 'svelte/store';
 /**
 * @vitest-environment jsdom
 */
 
 export const mockResourceName = 'abc';
 
-describe('SensemakeDashboard', () => {
+describe('SensemakerDashboard', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
-  let subComponentId = '';
-  let mockStore;
+  let mockAppletsStream;
 
   const initialRender = async (testComponent) => {
     harness = await stateful(component);
@@ -41,15 +42,13 @@ describe('SensemakeDashboard', () => {
 
   describe('Given a MatrixStore with no applets ', () => {
     beforeEach(async () => {
-      mockStore = mockMatrixStore._allAppletClasses;
-      mockStore.mockSetSubscribeValue({_values : {}});
+      mockAppletsStream = mockMatrixStore.fetchAllApplets();
+      mockAppletsStream.mockSetSubscribeValue([]);
     });
 
     test(`Then state is initialized`, async () => {
-      expect(Object.keys(mockStore.value._values).length).toEqual(0);
-
-      expect(componentDom._allAppletsStore).toBeDefined();
-      expect(componentDom._allAppletsStore.value).toEqual(0);
+      const storeValue : AppletTuple[] = get(mockAppletsStream.store());
+      expect(storeValue.length).toEqual(0);
     });
 
     test('And it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu', async () => {

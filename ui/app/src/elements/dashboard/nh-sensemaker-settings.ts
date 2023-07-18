@@ -72,12 +72,6 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
           </div>
         </nh-card>
-        <nh-card title=${'PREVIEW WITH TODO'}>
-          <div class="preview-container todo">
-            <img src="todo-example.png" style="width: 100%; object-fit: cover" />
-            ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
-          </div>
-        </nh-card>
       </div>
       ${dimensionNames.map(
         (dimension, i) => html`
@@ -442,7 +436,6 @@ h3 {
   grid-template-rows: 4rem 1fr;
   grid-template-areas: "h1 h2"
                       "c1 c2";
-  margin-bottom: calc(1rem * var(--nh-spacing-sm));
 }
 .choose-assessment-widget h3:first-of-type {
   grid-area: h1;

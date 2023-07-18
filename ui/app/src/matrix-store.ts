@@ -75,7 +75,7 @@ import { decompressSync, unzipSync } from "fflate";
 import { toSrc } from "./processes/import-logsrc-from-file";
 import { GlobalAppletsService } from "./global-applets-service";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
-import { PeerStatusStore } from "@holochain-open-dev/peer-status";
+import { PeerStatusStore, PeerStatusClient } from "@holochain-open-dev/peer-status";
 import md5 from "md5";
 import { getCellId } from "./utils";
 import { defaultAppletConfig } from "./defaultAppletConfig";
@@ -216,7 +216,7 @@ export class MatrixStore {
     adminWebsocket: AdminWebsocket,
     weParentAppInfo: AppInfo,
   ) {
-    const appAgentWebsocket = await AppAgentWebsocket.connect("", "we");
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(
@@ -704,7 +704,7 @@ export class MatrixStore {
         const sensemakerGroupDnaHash = sensemakerGroupCellId[0];
 
         // create dedicated AppAgentWebsocket for each We group
-        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("", "we");
+        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("ws://localhost:9001", "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
@@ -741,7 +741,7 @@ export class MatrixStore {
           new ProfilesClient(weGroupAgentWebsocket, weGroupCellInfo.clone_id!)
         );
 
-        const peerStatusStore = new PeerStatusStore(weGroupAgentWebsocket);
+        const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
         const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
         sensemakerStore.registerWidget(
@@ -992,8 +992,10 @@ export class MatrixStore {
     // console.log("DnaDefinition of created clone: ", dnaDefinition);
 
     const newWeGroupCellId = clonedCell.cell_id;
+    await this.adminWebsocket.authorizeSigningCredentials(newWeGroupCellId);
 
-    const appAgentWebsocket = await AppAgentWebsocket.connect("", weParentAppInfo.installed_app_id);
+    
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
@@ -1033,6 +1035,8 @@ export class MatrixStore {
 
     console.log("CREATED SM GROUP CELL CLONE: ", clonedSensemakerCell);
     console.log("...with DNA hash: ", encodeHashToBase64(clonedSensemakerCell.cell_id[0]));
+
+    await this.adminWebsocket.authorizeSigningCredentials(clonedSensemakerCell.cell_id);
     // add signal handler to listen for "NewApplet" events
     // TODO: will probably want to add signal handler for sensemaker-lite as well
     appAgentWebsocket.on("signal", (signal) => {
@@ -1074,7 +1078,7 @@ export class MatrixStore {
     const sensemakerCell = (sensemakerCellInfo as { [CellType.Cloned]: ClonedCell }).cloned!;
 
     const profilesStore = new ProfilesStore(new ProfilesClient(appAgentWebsocket, cell.clone_id!));
-    const peerStatusStore = new PeerStatusStore(appAgentWebsocket);
+    const peerStatusStore = new PeerStatusStore(new PeerStatusClient(appAgentWebsocket, 'we'));
     const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
 
     // Delay widget registration until new Sensemaker cell is cached.

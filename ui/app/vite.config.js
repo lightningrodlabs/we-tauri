@@ -1,6 +1,4 @@
-import { defineConfig } from "vite";
-import { viteStaticCopy } from "vite-plugin-static-copy";
-import { VitePluginFonts } from 'vite-plugin-fonts'
+import { defineConfig, loadEnv  } from "vite";
 
 const components = [
   "dialog",

@@ -2,12 +2,11 @@ import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlAlert } from '@scoped-elements/shoelace';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
 export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
 @customElement('nh-alert')
-export class NHAlert extends ScopedElementsMixin(NHComponentShoelace) {
+export class NHAlert extends NHComponentShoelace {
   @property()
   open: boolean = true;
   @property()
@@ -22,7 +21,7 @@ export class NHAlert extends ScopedElementsMixin(NHComponentShoelace) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-alert': SlAlert,
     };

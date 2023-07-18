@@ -41,7 +41,6 @@ export class StatefulTable extends NHComponentShoelace {
 
     this.tableStore.records = this.assessments;
   }
-
   async connectedCallback() {
     super.connectedCallback();
 
@@ -67,7 +66,7 @@ export class StatefulTable extends NHComponentShoelace {
     const fixedFieldDefs = {
       resource: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
-        decorator: (resource: any) => html` <div
+        decorator: (resource: any) => html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
           ${generateHashHTML(resource.eh)}

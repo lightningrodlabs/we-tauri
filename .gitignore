@@ -16,3 +16,6 @@ holochain-v0.0.156-x86_64-unknown-linux-gnu
 package-lock.json
 .gitignore
 .vscode/
+.rollup.cache
+.env.local
+.env

@@ -19,7 +19,8 @@ NH Launcher can be installed within the Holochain launcher. For instructions on 
 1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
 2. Clone this repo (**IMPORTANT**: in `develop` branch): `git clone https://github.com/neighbour-hoods/nh-launcher && cd ./nh-launcher && git checkout develop`
 3. Enter the nix shell: `nix develop` (if you are having issues with this command, see: https://hackmd.io/BKCt3FckSiSDJ4aSJ1Ur6A, as you may have to enable nix commands with the following terminal commands: `mkdir -p ~/.config/nix && echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf`)
-4. Run: `npm install`
+4. Run: `pnpm install` ( you may first need to install pnpm globally with `npm install -g pnpm` )
+5. Rename `.env.example` to `.env` which will allow you to customise environment variables (although the defaults should be fine)
 
 #### Building the DNA
 
@@ -29,18 +30,22 @@ Build the DNA (assumes you are still in the nix shell for correct rust/cargo ver
 npm run build:happ
 ```
 
-#### Running the DNA tests
+#### Running the UI tests
 
 ```bash
-npm run test
+npm run test:ui
 ```
 
 #### UI
 
 To test out the UI:
-
+(for a Tauri environment)
 ``` bash
 npm run start
+```
+(for a browser environment - applets not working as of yet)
+``` bash
+npm run dev
 ```
 
 #### Package

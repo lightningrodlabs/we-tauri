@@ -1,8 +1,7 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { html, LitElement, css, CSSResult } from "lit";
+import { html, css, CSSResult } from "lit";
 import {
   Snackbar,
   Dialog,
@@ -18,7 +17,7 @@ import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
 
 
-export class HomeScreen extends ScopedElementsMixin(NHComponentShoelace) {
+export class HomeScreen extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -64,7 +63,7 @@ export class HomeScreen extends ScopedElementsMixin(NHComponentShoelace) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-snackbar": Snackbar,
       "create-we-group-dialog": CreateWeGroupDialog,

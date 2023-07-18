@@ -1,53 +1,59 @@
 const { JSDOM } = require('jsdom');
-import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import { fixture, html } from '@open-wc/testing';
-import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
-import { expect as expectDomOf } from '@esm-bundle/chai'
-// import { getDiffableHTML  } from '@open-wc/semantic-dom-diff';
+import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
+import { describe, expect, test, beforeAll, beforeEach } from 'vitest';
 
 import './test-harness';
-import { mockAssessments, mockSensemakerStore } from './test-harness';
-import { addedAssessment, removedAssessment } from './helpers';
+import {
+  mockAssessments,
+  mockFieldDefsResourceTable,
+  mockSensemakerStore,
+} from './test-harness';
+import { addedAssessment, removedAssessment, mapMockedAssessment } from './helpers';
 import '../table';
 import { tableId } from '../table';
+import { AssessmentTableType } from '../helpers/types';
 /**
-* @vitest-environment jsdom
-*/
+ * @vitest-environment jsdom
+ */
 
 export const mockResourceName = 'abc';
 
-export const stateful = async (component) => fixture(html`
-    <test-harness>${component}</test-harness>
-`)
+export const stateful = async component =>
+  fixture(html` <test-harness>${component}</test-harness> `);
 
-describe('Table', () => {
+describe('StatefulTable', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
   let mockStore;
 
-  const initialRender = async (testComponent) => {
+  const initialRender = async testComponent => {
     harness = await stateful(component);
-    componentDom = harness.querySelector('assessments-table');
+    componentDom = harness.querySelector('dashboard-table');
     await componentDom.updateComplete;
-  }
-  const renderAndReturnDom = async (testComponent, subComponent) => {
-    await initialRender(testComponent)
+  };
+  const renderAndReturnDom = async (testComponent, subComponentTag) => {
+    await initialRender(testComponent);
+
     const root = componentDom.renderRoot;
-    if(!!subComponent) {
-      toBeTestedSubComponent = root.querySelector(subComponent);
+    if (!!subComponentTag) {
+      toBeTestedSubComponent = root.querySelector(subComponentTag);
+      
       return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
     }
     return new JSDOM(root.innerHTML);
-  }
-
-  beforeAll(async () => {
-    component = html`<assessments-table></assessments-table>`;
-    await initialRender(component)
-  });
+  };
 
   describe('Given a SensemakerStore with no assessments ', () => {
     beforeEach(async () => {
+      component = html`<dashboard-table
+        .resourceName=${mockResourceName}
+        .assessments=${{ abc: [] }}
+        .tableType=${AssessmentTableType.Resource}
+        .contextFieldDefs=${undefined}
+      ></dashboard-table>`;
       mockStore = mockSensemakerStore.resourceAssessments();
-      mockStore.mockSetSubscribeValue({ 'abc': [] });
+      mockStore.mockSetSubscribeValue({ abc: [] });
+      await initialRender(component);
     });
 
     test(`Then state is initialized`, async () => {
@@ -56,18 +62,16 @@ describe('Table', () => {
       expect(mockStore.value[mockResourceName].length).toEqual(0);
 
       expect(componentDom.tableStore).toBeDefined();
-      expect(componentDom.tableStore.records.length).toEqual(0);
+      expect(componentDom.tableStore.records[mockResourceName].length).toEqual(0);
     });
 
-    test('And it renders no table but gives a message', async () => {
+    test('And it renders no table but renders a skeleton', async () => {
       const dom = await renderAndReturnDom(component, false);
       const elements = dom.window.document.querySelectorAll(`table`);
       expect(elements.length).toBe(0);
 
-      const p = dom.window.document.querySelectorAll(`p`);
-
-      expect(p.length).toBe(1);
-      expect(p[0].textContent).toBe('No assessments found');
+      const skeleton = dom.window.document.querySelectorAll(`.skeleton-main-container`);
+      expect(skeleton.length).toBe(1);
     });
   });
 
@@ -75,7 +79,17 @@ describe('Table', () => {
     beforeEach(async () => {
       mockStore = mockSensemakerStore.resourceAssessments();
       mockStore.mockSetSubscribeValue(mockAssessments);
-      toBeTestedSubComponent = componentDom.renderRoot.querySelector("#" + tableId);
+      const mappedAssessmentDict = { 'abc' : mockAssessments['abc'].map(mapMockedAssessment)};
+
+      component = html`<dashboard-table
+        .resourceName=${mockResourceName}
+        .assessments=${mappedAssessmentDict[mockResourceName]}
+        .tableType=${AssessmentTableType.Resource}
+        .contextFieldDefs=${mockFieldDefsResourceTable}
+      ></dashboard-table>`;
+      await initialRender(component);
+
+      toBeTestedSubComponent = componentDom.renderRoot.querySelector('#' + tableId);
     });
 
     test(`Then state is initialized`, async () => {
@@ -87,28 +101,44 @@ describe('Table', () => {
     });
 
     test('And it renders a header row', async () => {
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const dom = await renderAndReturnDom(component, 'wc-table');
       const elements = dom.window.document.querySelectorAll(`thead tr`);
       expect(elements.length).toBe(1);
     });
     test('And the header row has the correct number of columns ', async () => {
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const dom = await renderAndReturnDom(component, 'wc-table');
       const elements = dom.window.document.querySelectorAll(`thead tr th`);
-      expect(elements.length).toBe(4);
+
+      const numberOfContexts = Object.keys(mockFieldDefsResourceTable).length;
+      expect(elements.length).toBe(numberOfContexts + 2); // two fixed columns plus contexts
     });
-    test('And the header row has the correct column headings ', async () => {
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
-      const elements = dom.window.document.querySelectorAll(`thead tr th`);
-      expect([...elements].map((node) => node.textContent.trim())).eql([
-        "Value",
-        "Dimension",
-        "Resource",
-        "Author",
+    test('And the header row has the correct column main headings ', async () => {
+      const dom = await renderAndReturnDom(component, 'wc-table');
+      const elements = dom.window.document.querySelectorAll(`thead tr th h2`);
+      expect([...elements].map(node => node.textContent.trim())).eql([
+        mockResourceName,
+        'Member',
+        'Dimension 1',
+        'Dimension 2',
+        'Dimension 3',
+        'Dimension 4',
+      ]);
+    });
+    test('And the header row has the correct column secondary headings ', async () => {
+      const dom = await renderAndReturnDom(component, 'wc-table');
+      const elements = dom.window.document.querySelectorAll(`thead tr th h4`);
+      expect([...elements].map(node => node.textContent.trim())).eql([
+        'Resource',
+        'Neighbour',
+        'Assessment',
+        'Assessment',
+        'Assessment',
+        'Assessment',
       ]);
     });
 
     test('And it renders a table body with two rows', async () => {
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      const dom = await renderAndReturnDom(component, 'wc-table');
       const elements = dom.window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(2);
     });
@@ -119,14 +149,21 @@ describe('Table', () => {
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
 
       expect(mockStore.value[mockResourceName].length).toEqual(3);
+      
+      componentDom.assessments = addedAssessment(mockAssessments, mockResourceName)[mockResourceName].map(mapMockedAssessment);
+      await componentDom.updateComplete;
       expect(componentDom.tableStore.records.length).toEqual(3);
     });
 
     test('And it renders a table body with three rows', async () => {
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
-
-      const elements = dom.window.document.querySelectorAll(`tbody tr`);
+      await renderAndReturnDom(component, 'wc-table');
+      
+      componentDom.assessments = addedAssessment(mockAssessments, mockResourceName)[mockResourceName].map(mapMockedAssessment);
+      await componentDom.updateComplete;
+      const newDom = (componentDom.renderRoot.querySelector('wc-table')).renderRoot.innerHTML;
+      
+      const elements = new JSDOM(newDom).window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(3);
     });
 
@@ -136,14 +173,21 @@ describe('Table', () => {
       mockStore.mockSetSubscribeValue(removedAssessment(mockAssessments, mockResourceName));
 
       expect(mockStore.value[mockResourceName].length).toEqual(1);
+
+      componentDom.assessments = removedAssessment(mockAssessments, mockResourceName)[mockResourceName].map(mapMockedAssessment);
+      await componentDom.updateComplete;
       expect(componentDom.tableStore.records.length).toEqual(1);
     });
 
     test('And it renders a table body with one row', async () => {
       mockStore.mockSetSubscribeValue(removedAssessment(mockAssessments, mockResourceName));
-      const dom = await renderAndReturnDom(component, 'adaburrows-table');
+      await renderAndReturnDom(component, 'wc-table');
 
-      const elements = dom.window.document.querySelectorAll(`tbody tr`);
+      componentDom.assessments = removedAssessment(mockAssessments, mockResourceName)[mockResourceName].map(mapMockedAssessment);
+      await componentDom.updateComplete;
+      const newDom = (componentDom.renderRoot.querySelector('wc-table')).renderRoot.innerHTML;
+      
+      const elements = new JSDOM(newDom).window.document.querySelectorAll(`tbody tr`);
       expect(elements.length).toBe(1);
     });
   });

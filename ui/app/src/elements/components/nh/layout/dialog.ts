@@ -2,7 +2,6 @@ import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType, NHAlert } from './alert';
 
@@ -15,7 +14,7 @@ enum DialogType {
 } 
 
 @customElement('nh-dialog')
-export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
+export class NHDialog extends NHComponentShoelace {
   @property()
   title!: string
   @property()
@@ -134,10 +133,10 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
     return html`
       <sl-dialog
         id="main"
-        class=${classMap({
+        class="dialog-scrolling ${classMap({
           large: this.size == 'large',
           medium: this.size == 'medium',
-        })}
+        })}"
         ?open=${this.isOpen}
         label="${this.title}"
         @sl-after-hide=${this.onDialogClosed}
@@ -173,7 +172,7 @@ export class NHDialog extends ScopedElementsMixin(NHComponentShoelace) {
     this.hideDialog();
   };
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-dialog': SlDialog,
       'nh-alert': NHAlert,

@@ -39,12 +39,11 @@ import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 import { NHDialog } from './elements/components/nh/layout/dialog';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 
-export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
+export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
@@ -869,7 +868,7 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'mwc-fab': Fab,
       'mwc-icon': Icon,
@@ -1047,6 +1046,8 @@ export class MainDashboard extends ScopedElementsMixin(NHComponentShoelace) {
       .dashboard-content {
         background-color: var(--nh-theme-bg-canvas);
         color: var(--nh-theme-fg-on-dark);
+        overflow: auto;
+        font-size: 14px;
       }
 
       .navBarGroupCentric,
