@@ -1,4 +1,4 @@
-import { css, CSSResult, html, LitElement, unsafeCSS } from "lit";
+import { css, CSSResult, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "neighbourhoods-design-system-components";
@@ -13,15 +13,19 @@ export class NHCard extends NHComponentShoelace {
   heading!: string;
   @property()
   hasContextMenu: boolean = false;
+  @property()
+  theme: string = 'dark';
 
   render() {
     return html`
-      <div class="container">
+      <div class="container ${classMap({
+        light: this.theme == 'light',
+        dark: this.theme == 'dark',
+      })}">
         ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
         ${this.hasContextMenu ? html`<nav class="dots-context-menu"> <div class="menu-dot"></div> <div class="menu-dot"></div> <div class="menu-dot"></div> </nav>` : html``}
         <div
-          class="content"
-          class=${classMap({
+          class="content" class=${classMap({
             noheading: !this.heading,
           })}
         >
@@ -38,12 +42,21 @@ export class NHCard extends NHComponentShoelace {
     css`
       ${unsafeCSS(sharedStyles)}
 
+      :root {
+        display: flex;
+      }
+      
       .container {
         color: var(--nh-theme-fg-default);
         border-radius: calc(1px * var(--nh-radii-xl));
-        background-color: var(--nh-theme-bg-subtle);
         padding: calc(1px * var(--nh-spacing-xl));
         position: relative;
+      }
+      .container.light {
+        background-color: var(--nh-theme-bg-muted);
+      }
+      .container.dark {
+        background-color: var(--nh-theme-bg-subtle);
       }
       h1,
       *::slotted(*) {

@@ -2,10 +2,11 @@ import './card';
 import { html } from 'lit';
 import type { Meta, StoryObj } from '@storybook/web-components';
 
-interface CardProps {
+export interface CardProps {
   title: string;
   heading: string;
   hasContextMenu: boolean;
+  theme: 'dark' | 'light';
 }
 
 const meta: Meta<CardProps> = {
@@ -14,8 +15,9 @@ const meta: Meta<CardProps> = {
   argTypes: {
     title: { control: 'text' },
     heading: { control: 'text' },
+    theme: { control: 'none' },
   },
-  render:  (args) => html`<nh-card .title=${args.title} .heading=${args.heading} .hasContextMenu=${args.hasContextMenu}>
+  render:  (args) => html`<nh-card .theme=${args.theme} .title=${args.title} .heading=${args.heading} .hasContextMenu=${args.hasContextMenu}>
     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa, auctor vitae viverra et, consequat vulputate felis. Integer congue leo quis urna vestibulum varius. Duis vehicula ligula id leo.</p>
   </nh-card>`,
 };
@@ -23,38 +25,39 @@ const meta: Meta<CardProps> = {
 export default meta;
 
 type Story = StoryObj<CardProps>;
-export const Card: Story = {
+export const Basic: Story = {
   args: {
-    title: 'Primary Title',
-    heading: 'Primary Heading',
+    theme: 'dark'
   },
-  render:  (args) => html`<nh-card .title=${args.title} .heading=${args.heading} .hasContextMenu=${args.hasContextMenu}>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa, auctor vitae viverra et, consequat vulputate felis. Integer congue leo quis urna vestibulum varius. Duis vehicula ligula id leo.</p>
-  </nh-card>`,
+  render:  meta.render,
 };
 
 export const Default: Story = {
   args: {
     title: 'Primary Title',
     heading: 'Primary Heading',
+    theme: 'dark'
   },
 };
-export const NoHeading: Story = {
+export const TitleNoHeading: Story = {
   args: {
     title: 'Welcome to Neighbourhoods',
     heading: '',
+    theme: 'dark'
   },
 };
 export const DotsMenu: Story = {
   args: {
     title: 'Welcome to Neighbourhoods',
     heading: '',
-    hasContextMenu: true
+    hasContextMenu: true,
+    theme: 'dark'
   },
 };
-export const NoTitle: Story = {
+export const HeadingNoTitle: Story = {
   args: {
     title: '',
     heading: 'Primary Heading',
+    theme: 'dark'
   },
 };
