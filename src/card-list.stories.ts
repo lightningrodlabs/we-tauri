@@ -1,7 +1,10 @@
+import "./button";
 import "./card-list";
+import "./page-header-card";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { Basic, CardProps } from "./card.stories";
+import { backArrow } from "./b64images";
 
 interface CardListProps {
   cards: CardProps[];
@@ -9,6 +12,7 @@ interface CardListProps {
   buttons: boolean;
   vertical: boolean;
   grid: boolean;
+  hasHeader: boolean;
   contentText: string;
 }
 const meta: Meta<CardListProps> = {
@@ -26,6 +30,11 @@ const meta: Meta<CardListProps> = {
       .type=${args.grid ? "grid" : "linear"}
       .direction=${args.vertical ? "vertical" : "horizontal"}
     >
+      ${args.hasHeader ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
+        <img src="data:image/svg+xml;base64,${backArrow}" slot="secondary-action"/> 
+        
+        <nh-button label="Upload Applet File" slot="primary-action"><nh-button/>
+      </nh-page-header-card>` : null}
       ${args.cards.map((card) => {
         card.hasWidget = args.widgets;
         card.hasPrimaryAction = args.buttons;
@@ -68,6 +77,7 @@ export const Dark: Story = {
       },
       // Add more cards as needed...
     ],
+    hasHeader: false
   },
 };
 export const Light: Story = {
@@ -100,6 +110,7 @@ export const Light: Story = {
       // Add more cards as needed...
     ],
     widgets: true,
+    hasHeader: false
   },
 };
 
@@ -108,7 +119,8 @@ const defaultSmallCardProperties = {
   hasContextMenu: false,
   theme: "dark",
   textSize: "sm",
-  footerAlign: "c"
+  footerAlign: "c",
+  hasHeader: true,
 };
 const headings = [
   "Feed", "Chat", "Market", "Co-playlist", "Todo", "Calendar", "Notes", "Wiki"
@@ -119,6 +131,7 @@ export const AppletGrid: Story = {
     contentText: "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
     widgets: false,
     buttons: true,
-    grid: true
+    grid: true,
+    hasHeader: true
   },
 };

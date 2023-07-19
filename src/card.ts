@@ -143,7 +143,8 @@ export class NHCard extends NHComponentShoelace {
       /* Footer */
       
       ::slotted([slot=footer]) {
-        margin: calc(1px * var(--nh-spacing-lg)) 0;
+        margin: auto 0;
+        padding-top: calc(1px * var(--nh-spacing-lg));
         display: flex;
       }
       .footer-left ::slotted([slot=footer]) {

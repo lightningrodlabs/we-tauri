@@ -14,7 +14,7 @@ export class NHButton extends NHComponent {
   @property()
   outline: boolean = false;
   @property()
-  disabled: boolean = true;
+  disabled: boolean = false;
   @property()
   theme: string = "dark";
   @property()
@@ -33,6 +33,8 @@ export class NHButton extends NHComponent {
           dark: this.theme == "dark",
           outline: this.outline,
           'text-sm': this.textSize == "sm",
+          'text-md': this.textSize == "md",
+          'text-lg': this.textSize == "lg",
         })}"
       >
         ${this.label}
@@ -43,17 +45,14 @@ export class NHButton extends NHComponent {
   static styles: CSSResult[] = [
     // super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-
-      button {
+    ${unsafeCSS(sharedStyles)}
+    
+    button {
+        color: var(--nh-theme-fg-default);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
         border-radius: calc(1px * var(--nh-radii-sm));
         background-color: var(--nh-theme-accent-default);
-        color: var(--nh-theme-fg-default);
         font-family: var(--nh-font-families-body);
-        font-size: calc(1px * var(--nh-font-size-xl));
-        font-weight: var(--nh-font-weights-headlines-bold);
-        line-height: var(--nh-line-heights-body-default);
         letter-spacing: var(--nh-letter-spacing-buttons);
       }
       button:focus {
@@ -70,10 +69,19 @@ export class NHButton extends NHComponent {
         background-color: var(--nh-theme-fg-disabled);
       }
       button.text-sm {
-        color: var(--nh-theme-fg-default);
         line-height: var(--nh-line-heights-headlines-default);
         font-weight: var(--nh-font-weights-body-regular);
         font-size: calc(1px * var(--nh-font-size-sm));
+      }
+      button.text-md {
+        line-height: var(--nh-line-heights-headlines-default);
+        font-weight: var(--nh-font-weights-body-regular);
+        font-size: calc(1px * var(--nh-font-size-md));
+      }
+      button.text-lg {
+        line-height: var(--nh-line-heights-body-default);
+        font-weight: var(--nh-font-weights-headlines-bold);
+        font-size: calc(1px * var(--nh-font-size-xl));
       }
     `,
   ];

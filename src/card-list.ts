@@ -19,6 +19,7 @@ export class NHCard extends NHComponentShoelace {
         vertical: this.type == 'linear'&& this.direction === 'vertical',
         grid: this.type === 'grid',
       })}">
+        <slot name="header"></slot>
         <slot></slot>
       </div>
     `;
@@ -30,9 +31,12 @@ export class NHCard extends NHComponentShoelace {
       ${unsafeCSS(sharedStyles)}
 
       .list-container {
+        background-color: var(--nh-theme-bg-canvas);
+        padding: calc(1px * var(--nh-spacing-lg));
         gap: calc(1px * var(--nh-spacing-lg));
       }
       .list-container.grid {
+        gap: calc(1px * var(--nh-spacing-lg)) calc(1px * var(--nh-spacing-3xl));
         display: grid;
         grid-template-rows: auto;
         grid-template-columns: 1fr 1fr;

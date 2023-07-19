@@ -11,8 +11,9 @@ export interface CardProps {
   hasContextMenu: boolean;
   hasWidget?: boolean;
   hasPrimaryAction?: boolean;
+  contentText?: string;
   theme: "dark" | "light";
-  textSize: "md" | "sm";
+  textSize: "lg" | "md" | "sm";
   footerAlign: "l" | "r" | "c";
 }
 
@@ -39,9 +40,9 @@ const meta: Meta<CardProps> = {
     .footerAlign=${args.footerAlign}
   >
     <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
+      ${args.contentText || `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
       auctor vitae viverra et, consequat vulputate felis. Integer congue leo
-      quis urna vestibulum varius. Duis vehicula ligula id leo.
+      quis urna vestibulum varius. Duis vehicula ligula id leo.`}
     </p>
     ${args.hasWidget && !args.hasPrimaryAction
       ? html`<div slot="footer">
