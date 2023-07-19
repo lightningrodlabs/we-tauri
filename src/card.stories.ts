@@ -97,7 +97,7 @@ export const TitleNoHeading: Story = {
 export const DotsMenu: Story = {
   args: {
     title: "Welcome to Neighbourhoods",
-    heading: "",
+    heading: "hello there",
     hasContextMenu: true,
     theme: "dark",
     hasWidget: false,

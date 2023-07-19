@@ -68,6 +68,7 @@ export class NHCard extends NHComponentShoelace {
       }
       
       .container {
+        max-width: 45vw;
         color: var(--nh-theme-fg-default);
         border-radius: calc(1px * var(--nh-radii-xl));
         padding: calc(1px * var(--nh-spacing-xl));
@@ -99,10 +100,14 @@ export class NHCard extends NHComponentShoelace {
         flex-grow: 1;
         flex-shrink: 1;
         flex-basis: auto;
+        margin-top: 0;
+        margin-left: 3px;
+
         font-size: calc(1px * var(--nh-font-size-sm));
+        letter-spacing: calc(2 * var(--nh-letter-spacing-buttons)); 
+        font-family: var(--nh-font-families-headlines);
         text-transform: uppercase;
         line-height: calc(var(--nh-line-heights-headlines-lg));
-        margin-top: 0;
       }
       .text-sm h1 {
         font-size: calc(1px * var(--nh-font-size-lg));

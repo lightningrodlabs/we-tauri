@@ -109,7 +109,7 @@ export const Light: Story = {
       },
       // Add more cards as needed...
     ],
-    widgets: true,
+    widgets: false,
     hasHeader: false
   },
 };
