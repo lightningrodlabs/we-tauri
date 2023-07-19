@@ -9,6 +9,7 @@ interface CardListProps {
   buttons: boolean;
   vertical: boolean;
   grid: boolean;
+  contentText: string;
 }
 const meta: Meta<CardListProps> = {
   title: "NHComponentShoelace/CardList",
@@ -28,6 +29,7 @@ const meta: Meta<CardListProps> = {
       ${args.cards.map((card) => {
         card.hasWidget = args.widgets;
         card.hasPrimaryAction = args.buttons;
+        card.contentText = args.contentText;
         return (Basic as any).render(card);
       })}</nh-card-list>`;
   },
@@ -98,5 +100,25 @@ export const Light: Story = {
       // Add more cards as needed...
     ],
     widgets: true,
+  },
+};
+
+const defaultSmallCardProperties = {
+  title: "",
+  hasContextMenu: false,
+  theme: "dark",
+  textSize: "sm",
+  footerAlign: "c"
+};
+const headings = [
+  "Feed", "Chat", "Market", "Co-playlist", "Todo", "Calendar", "Notes", "Wiki"
+];
+export const AppletGrid: Story = {
+  args: {
+    cards:  headings.map(heading => ({ ...defaultSmallCardProperties, heading })) as any,
+    contentText: "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
+    widgets: false,
+    buttons: true,
+    grid: true
   },
 };
