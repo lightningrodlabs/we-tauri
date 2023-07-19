@@ -28,7 +28,7 @@ export const BasicWidget: Story = {
   args: {
     name: '',
     iconAlt: '', 
-    iconImg: null
+    iconImg: null as any
   },
   render: meta.render
 };

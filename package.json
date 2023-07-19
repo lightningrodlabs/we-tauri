@@ -28,6 +28,7 @@
     "vite": "^2.8.0"
   },
   "dependencies": {
+    "@scoped-elements/shoelace": "^0.1.0",
     "lit": "^2.2.0",
     "neighbourhoods-design-system-components": "^0.0.15"
   }

@@ -135,3 +135,15 @@ export const AppletGrid: Story = {
     hasHeader: true
   },
 };
+
+export const AppletColumn: Story = {
+  args: {
+    cards:  headings.map(heading => ({ ...defaultSmallCardProperties, heading })) as any,
+    contentText: "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
+    widgets: false,
+    buttons: true,
+    grid: false,
+    hasHeader: true,
+    vertical: true,
+  },
+};
