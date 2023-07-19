@@ -42,6 +42,7 @@ export class NHCard extends NHComponentShoelace {
       }
       .vertical {
         flex-direction: column;
+        max-width: 500px;
       }
     `,
   ];

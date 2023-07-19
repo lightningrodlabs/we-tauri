@@ -43,18 +43,21 @@ export const Dark: Story = {
         heading: "Heading 1",
         hasContextMenu: true,
         theme: "dark",
+        textSize: "md"
       },
       {
         title: "Card 2",
         heading: "Heading 2",
         hasContextMenu: true,
         theme: "dark",
+        textSize: "md"
       },
       {
         title: "Card 3",
         heading: "Heading 3",
         hasContextMenu: true,
         theme: "dark",
+        textSize: "md"
       },
       // Add more cards as needed...
     ],
@@ -68,18 +71,21 @@ export const Light: Story = {
         heading: "Heading 1",
         hasContextMenu: true,
         theme: "light",
+        textSize: "md"
       },
       {
         title: "Card 2",
         heading: "Heading 2",
         hasContextMenu: true,
         theme: "light",
+        textSize: "md"
       },
       {
         title: "Card 3",
         heading: "Heading 3",
         hasContextMenu: true,
         theme: "light",
+        textSize: "md"
       },
       // Add more cards as needed...
     ],

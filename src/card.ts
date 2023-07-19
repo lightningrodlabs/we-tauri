@@ -14,22 +14,36 @@ export class NHCard extends NHComponentShoelace {
   @property()
   hasContextMenu: boolean = false;
   @property()
-  theme: string = 'dark';
+  theme: string = "dark";
+  @property()
+  textSize: string = "md";
 
   render() {
+    console.log(this.textSize)
     return html`
-      <div class="container ${classMap({
-        light: this.theme == 'light',
-        dark: this.theme == 'dark',
-      })}">
-        ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
-        ${this.hasContextMenu ? html`<nav class="dots-context-menu"> <div class="menu-dot"></div> <div class="menu-dot"></div> <div class="menu-dot"></div> </nav>` : html``}
-        <div
-          class="content" class=${classMap({
-            noheading: !this.heading,
-          })}
-        >
+      <div
+        class="container${classMap({
+          light: this.theme == "light",
+          dark: this.theme == "dark",
+          'text-sm': this.textSize == "sm",
+        })}"
+      >
+        ${this.hasContextMenu
+          ? html`<nav class="dots-context-menu">
+              <div class="menu-dot"></div>
+              <div class="menu-dot"></div>
+              <div class="menu-dot"></div>
+            </nav>`
+          : html``}
+        <slot name="header">
+          ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
           ${this.heading ? html`<h1>${this.heading}</h1>` : html``}
+        </slot>
+        <div
+          class="content${classMap({
+            noheading: !this.heading,
+          })}"
+        >
           <slot></slot>
         </div>
         <slot name="footer"></slot>
@@ -42,6 +56,7 @@ export class NHCard extends NHComponentShoelace {
     css`
       ${unsafeCSS(sharedStyles)}
 
+      /* Layout */
       :root {
         display: flex;
       }
@@ -52,27 +67,27 @@ export class NHCard extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-xl));
         position: relative;
       }
+      .container.text-sm {
+        padding: calc(1px * var(--nh-spacing-lg)) calc(1px * var(--nh-spacing-3xl));
+
+      }
       .container.light {
         background-color: var(--nh-theme-bg-muted);
       }
       .container.dark {
         background-color: var(--nh-theme-bg-subtle);
       }
+      
+      /* Headings */
+      
       h1,
       *::slotted(*) {
         margin: 0;
-        font-family: var(--nh-font-families-body);
+        font-family: var(--nh-font-families-menu);
       }
       h1 {
         font-weight: var(--nh-font-weights-body-regular);
         margin-bottom: calc(1px * var(--nh-spacing-xl));
-      }
-
-      .content {
-        padding: calc(1px * var(--nh-spacing-xl));
-      }
-      .content.noheading {
-        padding: 0;
       }
       h2.title {
         flex-grow: 1;
@@ -82,10 +97,28 @@ export class NHCard extends NHComponentShoelace {
         text-transform: uppercase;
         line-height: calc(var(--nh-line-heights-headlines-lg));
         margin-top: 0;
-        margin-left: 3px;
+      }
+      .text-sm h1 {
+        font-size: calc(1px * var(--nh-font-size-xl));
+        margin-bottom: calc(1px * var(--nh-spacing-sm));
+        line-height: var(--nh-line-heights-headlines-default);
+        font-weight: 500;
+      }
+      
+      /* Content */
+      
+      .text-sm ::slotted(*) {
+        color: var(--nh-menu-subtitle);
+        line-height: var(--nh-line-heights-headlines-default);
+        font-weight: var(--nh-font-weights-body-regular);
+        font-size: calc(1px * var(--nh-font-size-sm));
+      }
+      .content.noheading {
+        padding: 0;
       }
 
-
+      /* Context Menu */
+      
       .dots-context-menu {
         position: absolute;
         display: flex;
@@ -99,6 +132,12 @@ export class NHCard extends NHComponentShoelace {
         margin: 2px;
         border-radius: 100%;
         background: var(--nh-menu-subtitle);
+      }
+      
+      /* Footer */
+      
+      ::slotted([slot=footer]) {
+        margin: calc(1px * var(--nh-spacing-lg)) 0;
       }
     `,
   ];

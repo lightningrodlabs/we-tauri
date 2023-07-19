@@ -4,6 +4,7 @@ export const sharedStyles = css`
 :host {
 
   --nh-menu-subtitle: #A89CB0;
+  --nh-font-families-menu: "Work Sans", "Open Sans";
 
 
   /**
