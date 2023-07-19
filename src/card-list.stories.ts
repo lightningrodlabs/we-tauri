@@ -6,6 +6,7 @@ import { Basic, CardProps } from "./card.stories";
 interface CardListProps {
   cards: CardProps[];
   widgets: boolean;
+  buttons: boolean;
   vertical: boolean;
   grid: boolean;
 }
@@ -15,6 +16,7 @@ const meta: Meta<CardListProps> = {
   argTypes: {
     cards: { control: "none" },
     widgets: { control: "boolean" },
+    buttons: { control: "boolean" },
     vertical: { control: "boolean" },
     grid: { control: "boolean" },
   },
@@ -25,9 +27,9 @@ const meta: Meta<CardListProps> = {
     >
       ${args.cards.map((card) => {
         card.hasWidget = args.widgets;
+        card.hasPrimaryAction = args.buttons;
         return (Basic as any).render(card);
-      })}</nh-card-list
-    >`;
+      })}</nh-card-list>`;
   },
 };
 
@@ -43,21 +45,24 @@ export const Dark: Story = {
         heading: "Heading 1",
         hasContextMenu: true,
         theme: "dark",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "c"
       },
       {
         title: "Card 2",
         heading: "Heading 2",
         hasContextMenu: true,
         theme: "dark",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "c"
       },
       {
         title: "Card 3",
         heading: "Heading 3",
         hasContextMenu: true,
         theme: "dark",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "c"
       },
       // Add more cards as needed...
     ],
@@ -71,21 +76,24 @@ export const Light: Story = {
         heading: "Heading 1",
         hasContextMenu: true,
         theme: "light",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "l"
       },
       {
         title: "Card 2",
         heading: "Heading 2",
         hasContextMenu: true,
         theme: "light",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "l"
       },
       {
         title: "Card 3",
         heading: "Heading 3",
         hasContextMenu: true,
         theme: "light",
-        textSize: "md"
+        textSize: "md",
+        footerAlign: "l"
       },
       // Add more cards as needed...
     ],

@@ -14,18 +14,24 @@ export class NHCard extends NHComponentShoelace {
   @property()
   hasContextMenu: boolean = false;
   @property()
+  hasPrimaryAction: boolean = false;
+  @property()
   theme: string = "dark";
   @property()
   textSize: string = "md";
+  @property()
+  footerAlign: "l" | "r" | "c" = "c";
 
   render() {
-    console.log(this.textSize)
     return html`
       <div
         class="container${classMap({
           light: this.theme == "light",
           dark: this.theme == "dark",
           'text-sm': this.textSize == "sm",
+          'footer-left': this.footerAlign === 'l',
+          'footer-right': this.footerAlign === 'r',
+          'footer-center': this.footerAlign === 'c',
         })}"
       >
         ${this.hasContextMenu
@@ -99,7 +105,7 @@ export class NHCard extends NHComponentShoelace {
         margin-top: 0;
       }
       .text-sm h1 {
-        font-size: calc(1px * var(--nh-font-size-xl));
+        font-size: calc(1px * var(--nh-font-size-lg));
         margin-bottom: calc(1px * var(--nh-spacing-sm));
         line-height: var(--nh-line-heights-headlines-default);
         font-weight: 500;
@@ -138,6 +144,16 @@ export class NHCard extends NHComponentShoelace {
       
       ::slotted([slot=footer]) {
         margin: calc(1px * var(--nh-spacing-lg)) 0;
+        display: flex;
+      }
+      .footer-left ::slotted([slot=footer]) {
+        justify-content: flex-start;
+      }
+      .footer-center ::slotted([slot=footer]) {
+        justify-content: center;
+      }
+      .footer-right ::slotted([slot=footer]) {
+        justify-content: flex-end;
       }
     `,
   ];

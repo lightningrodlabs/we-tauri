@@ -1,4 +1,5 @@
 import "./card";
+import "./button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { BasicWidget } from "./assessment-widget.stories";
@@ -9,8 +10,10 @@ export interface CardProps {
   heading: string;
   hasContextMenu: boolean;
   hasWidget?: boolean;
+  hasPrimaryAction?: boolean;
   theme: "dark" | "light";
   textSize: "md" | "sm";
+  footerAlign: "l" | "r" | "c";
 }
 
 const meta: Meta<CardProps> = {
@@ -20,7 +23,10 @@ const meta: Meta<CardProps> = {
     title: { control: "text" },
     heading: { control: "text" },
     theme: { control: "none" },
+    footerAlign: { control: "none" },
+    textSize: { control: "none" },
     hasWidget: { control: "boolean" },
+    hasPrimaryAction: { control: "boolean" },
     // textSize: { options: ["md", "sm"], control: { type: "radio" } },
   },
   render: (args) => html`<nh-card
@@ -28,20 +34,27 @@ const meta: Meta<CardProps> = {
     .title=${args.title}
     .heading=${args.heading}
     .hasContextMenu=${args.hasContextMenu}
+    .hasPrimaryAction=${args.hasPrimaryAction}
     .textSize=${args.textSize}
+    .footerAlign=${args.footerAlign}
   >
     <p>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
       auctor vitae viverra et, consequat vulputate felis. Integer congue leo
       quis urna vestibulum varius. Duis vehicula ligula id leo.
     </p>
-    ${args.hasWidget
+    ${args.hasWidget && !args.hasPrimaryAction
       ? html`<div slot="footer">
           ${(BasicWidget as any).render({
             name: "Pear",
             iconAlt: "a pear",
             iconImg: pearImg,
           })}
+        </div>`
+      : null}
+    ${args.hasPrimaryAction && !args.hasWidget
+      ? html`<div slot="footer">
+          <nh-button label="Install" type="primary"></nh-button>
         </div>`
       : null}
   </nh-card>`,
@@ -54,7 +67,8 @@ export const Basic: Story = {
   args: {
     theme: "dark",
     hasWidget: false,
-    textSize: "md"
+    textSize: "md",
+    footerAlign: "c",
   },
   render: meta.render,
 };
@@ -65,7 +79,8 @@ export const Default: Story = {
     heading: "Primary Heading",
     theme: "dark",
     hasWidget: false,
-    textSize: "md"
+    textSize: "md",
+    footerAlign: "c",
   },
 };
 export const TitleNoHeading: Story = {
@@ -74,7 +89,8 @@ export const TitleNoHeading: Story = {
     heading: "",
     theme: "dark",
     hasWidget: false,
-    textSize: "md"
+    textSize: "md",
+    footerAlign: "c",
   },
 };
 export const DotsMenu: Story = {
@@ -84,7 +100,8 @@ export const DotsMenu: Story = {
     hasContextMenu: true,
     theme: "dark",
     hasWidget: false,
-    textSize: "md"
+    textSize: "md",
+    footerAlign: "c",
   },
 };
 export const HeadingNoTitle: Story = {
@@ -93,7 +110,8 @@ export const HeadingNoTitle: Story = {
     heading: "Primary Heading",
     theme: "dark",
     hasWidget: false,
-    textSize: "md"
+    textSize: "md",
+    footerAlign: "c",
   },
 };
 export const HeadingNoTitleTextSm: Story = {
@@ -102,6 +120,7 @@ export const HeadingNoTitleTextSm: Story = {
     heading: "Feed",
     theme: "dark",
     hasWidget: false,
-    textSize: "sm"
+    textSize: "sm",
+    footerAlign: "c",
   },
 };
