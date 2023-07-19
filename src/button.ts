@@ -14,7 +14,7 @@ export class NHButton extends NHComponent {
   @property()
   outline: boolean = false;
   @property()
-  disabled: boolean = false;
+  disabled: boolean = true;
   @property()
   theme: string = "dark";
   @property()
@@ -27,7 +27,8 @@ export class NHButton extends NHComponent {
       <button
         disabled=${this.disabled}
         class="btn${classMap({
-          primary: this.theme == "primary",
+          disabled: !!this.disabled,
+          primary: this.variant == "primary",
           light: this.theme == "light",
           dark: this.theme == "dark",
           outline: this.outline,
@@ -54,6 +55,19 @@ export class NHButton extends NHComponent {
         font-weight: var(--nh-font-weights-headlines-bold);
         line-height: var(--nh-line-heights-body-default);
         letter-spacing: var(--nh-letter-spacing-buttons);
+      }
+      button:focus {
+        border: 1px solid var(--nh-theme-accent-default);
+      }
+      button:hover {
+        background-color: var(--nh-theme-accent-muted);
+      }
+      button:active {
+        background-color: var(--nh-theme-accent-emphasis);
+      }
+      button.disabled {
+        color: var(--nh-theme-fg-on-disabled);
+        background-color: var(--nh-theme-fg-disabled);
       }
       button.text-sm {
         color: var(--nh-theme-fg-default);

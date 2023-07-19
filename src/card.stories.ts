@@ -54,7 +54,7 @@ const meta: Meta<CardProps> = {
       : null}
     ${args.hasPrimaryAction && !args.hasWidget
       ? html`<div slot="footer">
-          <nh-button label="Install" type="primary"></nh-button>
+          <nh-button ?disabled=${false} label="Install" type="primary"></nh-button>
         </div>`
       : null}
   </nh-card>`,
