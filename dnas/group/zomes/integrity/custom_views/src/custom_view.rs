@@ -36,15 +36,15 @@ pub fn validate_create_link_all_custom_views(
     _tag: LinkTag,
 ) -> ExternResult<ValidateCallbackResult> {
     // Check the entry type for the given action hash
-    let action_hash = ActionHash::from(target_address);
-    let record = must_get_valid_record(action_hash)?;
-    let _custom_view: crate::CustomView = record
-        .entry()
-        .to_app_option()
-        .map_err(|e| wasm_error!(e))?
-        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
-            "Linked action must reference an entry"
-        ))))?;
+    // let action_hash = ActionHash::from(target_address);
+    // let record = must_get_valid_record(action_hash)?;
+    // let _custom_view: crate::CustomView = record
+    //     .entry()
+    //     .to_app_option()
+    //     .map_err(|e| wasm_error!(e))?
+    //     .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+    //         "Linked action must reference an entry"
+    //     ))))?;
     // TODO: add the appropriate validation rules
     Ok(ValidateCallbackResult::Valid)
 }

@@ -4,5 +4,5 @@
 )]
 
 pub fn main() {
-    app::AppBuilder::new().run();
+    we::AppBuilder::new().run();
 }

@@ -44,7 +44,7 @@ fn unregister_applet(applet_hash: EntryHash) -> ExternResult<()> {
     let links = get_links(path.path_entry_hash()?, LinkTypes::AnchorToApplet, None)?;
 
     for link in links {
-        if EntryHash::from(link.target).eq(&applet_hash) {
+        if EntryHash::try_from(link.target).unwrap().eq(&applet_hash) {
             delete_link(link.create_link_hash)?;
         }
     }
@@ -65,27 +65,27 @@ fn get_applets(_: ()) -> ExternResult<Vec<EntryHash>> {
 
     let entry_hashes = links
         .into_iter()
-        .map(|link| EntryHash::from(link.target))
+        .map(|link| EntryHash::try_from(link.target).unwrap())
         .collect();
 
     Ok(entry_hashes)
 }
 
-#[hdk_extern]
-pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
-    create_link(
-        input.applet_hash,
-        input.group_dna_hash.retype(holo_hash::hash_type::Entry),
-        LinkTypes::AppletToInvitedGroup,
-        (),
-    )
-}
+// #[hdk_extern]
+// pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
+//     create_link(
+//         input.applet_hash,
+//         input.group_dna_hash,
+//         LinkTypes::AppletToInvitedGroup,
+//         (),
+//     )
+// }
 
-#[hdk_extern]
-pub fn get_federated_groups(applet_hash: EntryHash) -> ExternResult<Vec<holo_hash::DnaHash>> {
-    let links = get_links(applet_hash, LinkTypes::AppletToInvitedGroup, None)?;
-    Ok(links
-        .iter()
-        .map(|link| EntryHash::from(link.target.clone()).retype(holo_hash::hash_type::Dna))
-        .collect::<Vec<holo_hash::DnaHash>>())
-}
+// #[hdk_extern]
+// pub fn get_federated_groups(applet_hash: EntryHash) -> ExternResult<Vec<holo_hash::EntryHash>> {
+//     let links = get_links(applet_hash, LinkTypes::AppletToInvitedGroup, None)?;
+//     Ok(links
+//         .iter()
+//         .map(|link| EntryHash::try_from(link.target.clone()).unwrap())
+//         .collect::<Vec<holo_hash::EntryHash>>())
+// }

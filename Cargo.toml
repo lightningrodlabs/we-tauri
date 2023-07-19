@@ -12,9 +12,13 @@ opt-level = "z"
 
 [profile.release]
 opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true      # Automatically strip symbols from the binary.
+panic = "abort"
 
 [workspace.dependencies]
 hdi = { version = "0.3" }
 hdk = { version = "0.2" }
 serde = "1"
-holochain = { version = "0.3.0-beta-dev.8" }
+holochain = { version = "0.3.0-beta-dev.9" }

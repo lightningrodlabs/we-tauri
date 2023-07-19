@@ -21,7 +21,7 @@ pub fn get_group_profile(_: ()) -> ExternResult<Option<Record>> {
     match latest_group_info_link {
         None => Ok(None),
         Some(link) => {
-            let record = get(ActionHash::from(link.target), GetOptions::default())?;
+            let record = get(ActionHash::try_from(link.target).unwrap(), GetOptions::default())?;
 
             Ok(record)
         }

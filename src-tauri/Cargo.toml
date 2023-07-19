@@ -32,6 +32,8 @@ portpicker = "0.1"
 tempdir = "0.3.7"
 thiserror = "1"
 
+bzip2 = { version = "0.4", features = ["static"] }
+
 holochain_client = { git = "https://github.com/holochain/holochain-client-rust", branch = "holochain-0.3.0-beta-dev.8" }
 holochain_state = "=0.3.0-beta-dev.8"
 holochain_websocket = "0.3.0-beta-dev.3"
@@ -42,12 +44,12 @@ either = "*"
 
 mime_guess = "2.0.4"
 
-hyper = { version = "1.0.0-rc.3", features = ["full"] }
+hyper = { version = "0.14", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 http-body-util = "0.1.0-rc.2"
 bytes = "1"
 
-zip = "0.5"
+zip = "0.6"
 
 hc_crud_caps = "0.7"
 devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "1b1ab2adfb67defd597b4a9a3995cf87bf1e1456" }

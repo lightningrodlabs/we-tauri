@@ -22,7 +22,7 @@
     "tauri": "tauri",
     "start:android": "concurrently \"npm run start:ui\" \"npm run tauri android dev\"",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
-    "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we",
+    "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we --exclude holochain_launcher_utils",
     "build:example": "npm run build:libs && npm run build:zomes && npm run package -w example-applet && rimraf testing-applets/example-applet && cp example/workdir/example-applet.webhapp testing-applets ",
     "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.14.0/devhub.webhapp && curl -L --output AppStore.webhapp https://github.com/holochain/app-store-gui/releases/download/v0.2.0/appstore.webhapp && npm run build:libs"
   },

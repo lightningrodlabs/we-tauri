@@ -1,18 +1,21 @@
-use std::net::SocketAddr;
+use std::{convert::Infallible, net::SocketAddr};
 
 use bytes::Bytes;
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
 use http_body_util::Full;
-use hyper::{server::conn::http1, service::service_fn, Response};
+use hyper::{
+    service::{make_service_fn, service_fn},
+    Body, Request, Response, Server,
+};
 use tauri::{AppHandle, Manager};
 use tokio::net::TcpListener;
 
 use crate::{
+    state::{WeError, WeResult},
     filesystem::WeFileSystem,
     launch::get_admin_ws,
-    state::{WeError, WeResult},
 };
 
 pub fn pong_iframe() -> String {
@@ -22,83 +25,104 @@ pub fn pong_iframe() -> String {
 pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> () {
     tauri::async_runtime::spawn(async move {
         let addr: SocketAddr = ([127, 0, 0, 1], ui_server_port).into();
-
-        let listener = TcpListener::bind(addr).await.expect("Can't bind to port");
-
-        loop {
-            let (stream, _) = listener
-                .accept()
-                .await
-                .expect("Can't accept new request on stream");
+        let app_handle = app_handle.clone();
+        // The closure inside `make_service_fn` is run for each connection,
+        // creating a 'service' to handle requests for that specific connection.
+        let make_service = make_service_fn(move |_| {
             let app_handle = app_handle.clone();
-            tauri::async_runtime::spawn(async move {
-                let app_handle = &app_handle;
-                let sfn = service_fn(move |request| async move {
-                    let host = request
-                        .headers()
-                        .get("host")
-                        .ok_or(WeError::AppletsUIServerError(String::from(
-                            "URI has no host",
-                        )))?
-                        .clone()
-                        .to_str()
-                        .map_err(|err| WeError::AppletsUIServerError(format!("{:?}", err)))?
-                        .to_string();
+            // While the state was moved into the make_service closure,
+            // we need to clone it here because this closure is called
+            // once for every connection.
+            //
+            // Each connection could send multiple requests, so
+            // the `Service` needs a clone to handle later requests.
+            async move {
+                // This is the `Service` that will handle the connection.
+                // `service_fn` is a helper to convert a function that
+                // returns a Response into a `Service`.
+                let app_handle = app_handle.clone();
+                Ok::<_, hyper::Error>(service_fn(move |request| {
+                    let app_handle = app_handle.clone();
+                    async move {
+                        let app_handle = app_handle.clone();
+                        let host = request
+                            .headers()
+                            .get("host")
+                            .ok_or(WeError::AppletsUIServerError(String::from(
+                                "URI has no host",
+                            )))?
+                            .clone()
+                            .to_str()
+                            .map_err(|err| WeError::AppletsUIServerError(format!("{:?}", err)))?
+                            .to_string();
 
-                    if host.starts_with("ping.localhost") {
-                        let r: WeResult<Response<Full<Bytes>>> = Ok(Response::builder()
-                            .status(202)
-                            .header("content-type", "text/html")
-                            .body(Full::new(Bytes::from(pong_iframe().as_bytes().to_vec())))
-                            .map_err(|err| WeError::AppletsUIServerError(format!("{:?}", err)))?);
-                        return r;
-                    }
-
-                    let split_host: Vec<String> =
-                        host.split(".").into_iter().map(|s| s.to_string()).collect();
-                    let lowercase_applet_id = split_host.get(0).unwrap();
-
-                    let file_name = request.uri().path();
-
-                    let fs = app_handle.state::<WeFileSystem>();
-                    let mutex = app_handle.state::<Mutex<ConductorHandle>>();
-                    let conductor = mutex.lock().await;
-                    let mut admin_ws = get_admin_ws(&conductor).await?;
-
-                    let r: WeResult<Response<Full<Bytes>>> = match read_asset(
-                        &fs,
-                        &mut admin_ws,
-                        &lowercase_applet_id,
-                        file_name.to_string(),
-                    )
-                    .await
-                    {
-                        Ok(Some((asset, mime_type))) => {
-                            let mut response_builder = Response::builder().status(202);
-                            if let Some(mime_type) = mime_type {
-                                response_builder =
-                                    response_builder.header("content-type", mime_type);
-                            }
-
-                            Ok(response_builder
-                                .body(Full::new(Bytes::from(asset)))
-                                .unwrap())
+                        if host.starts_with("ping.localhost") {
+                            let r: WeResult<Response<Body>> = Ok(Response::builder()
+                                .status(202)
+                                .header("content-type", "text/html")
+                                .body(pong_iframe().into())
+                                .map_err(|err| {
+                                    WeError::AppletsUIServerError(format!("{:?}", err))
+                                })?);
+                            return r;
                         }
-                        Ok(None) => Ok(Response::builder()
-                            .status(404)
-                            .body(Full::new(Bytes::from(vec![])))
-                            .map_err(|err| WeError::AppletsUIServerError(format!("{:?}", err)))?),
-                        Err(e) => Ok(Response::builder()
-                            .status(500)
-                            .body(Full::new(Bytes::from(format!("{:?}", e))))
-                            .unwrap()),
-                    };
-                    r
-                });
-                if let Err(err) = http1::Builder::new().serve_connection(stream, sfn).await {
-                    println!("Error serving connection: {:?}", err);
-                }
-            });
+
+                        let split_host: Vec<String> =
+                            host.split(".").into_iter().map(|s| s.to_string()).collect();
+                        let lowercase_applet_id = split_host.get(0).unwrap();
+
+                        let file_name = request.uri().path();
+
+                        let fs = app_handle.state::<WeFileSystem>();
+                        let mutex = app_handle.state::<Mutex<ConductorHandle>>();
+                        let conductor = mutex.lock().await;
+                        let mut admin_ws = get_admin_ws(&conductor).await?;
+
+                        let r: WeResult<Response<Body>> = match read_asset(
+                            &fs,
+                            &mut admin_ws,
+                            &lowercase_applet_id,
+                            file_name.to_string(),
+                        )
+                        .await
+                        {
+                            Ok(Some((asset, mime_type))) => {
+                                let mut response_builder = Response::builder().status(202);
+                                if let Some(mime_type) = mime_type {
+                                    response_builder =
+                                        response_builder.header("content-type", mime_type);
+                                }
+
+                                Ok(response_builder.body(asset.into()).unwrap())
+                            }
+                            Ok(None) => Ok(Response::builder()
+                                .status(404)
+                                .body(vec![].into())
+                                .map_err(|err| {
+                                    WeError::AppletsUIServerError(format!("{:?}", err))
+                                })?),
+                            Err(e) => Ok(Response::builder()
+                                .status(500)
+                                .body(format!("{:?}", e).into())
+                                .unwrap()),
+                        };
+                        r
+                    }
+                }))
+            }
+        });
+
+        // let app_handle = &app_handle;
+        // let make_svc = make_service_fn(|_conn| async {
+        //     // service_fn converts our function into a `Service`
+        //     Ok::<_, Infallible>(service_fn(|request: Request<Body>| async move {
+        //         }
+        // })
+        // });
+
+        let server = Server::bind(&addr).serve(make_service);
+        if let Err(err) = server.await {
+            println!("Error serving connection: {:?}", err);
         }
     });
 }

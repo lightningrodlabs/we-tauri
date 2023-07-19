@@ -37,6 +37,7 @@
             rust = rustPkgs.rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" ];
               targets = [ 
+                "armv7-linux-androideabi"
                 "x86_64-linux-android"
                 "i686-linux-android"
                 "aarch64-unknown-linux-musl"
@@ -81,6 +82,7 @@
                 nodejs-18_x
                 # more packages go here
                 cargo-nextest
+                upx
               ])
               ++ ([
                 rust
@@ -92,12 +94,11 @@
                 # this is required for glib-networking
                 glib
                 jdk17
-                bzip2
               ])
               ++ [ androidSdk ]
               ++ (lib.optionals pkgs.stdenv.isLinux
                 (with pkgs; [
-                  webkitgtk.dev
+                  webkitgtk_4_1.dev
                   gdk-pixbuf
                   gtk3
                   # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
@@ -148,6 +149,7 @@
                 unset CARGO_TARGET_DIR
                 unset CARGO_HOME
                 echo "no" | avdmanager -s create avd -n Pixel -k "system-images;android-33;google_apis;x86_64" --force
+                export RUSTFLAGS+=" -C link-arg=$(gcc -print-libgcc-file-name)"
               '';
             };
           };

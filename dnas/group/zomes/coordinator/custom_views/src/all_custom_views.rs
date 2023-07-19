@@ -7,7 +7,7 @@ pub fn get_all_custom_views(_: ()) -> ExternResult<Vec<Record>> {
     let get_input: Vec<GetInput> = links
         .into_iter()
         .map(|link| GetInput::new(
-            ActionHash::from(link.target).into(),
+            ActionHash::try_from(link.target).unwrap().into(),
             GetOptions::default(),
         ))
         .collect();
