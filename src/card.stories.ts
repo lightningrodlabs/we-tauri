@@ -18,7 +18,7 @@ export interface CardProps {
 }
 
 const meta: Meta<CardProps> = {
-  title: "NHComponentShoelace/Card",
+  title: "NHComponent/Card",
   component: "nh-card",
   argTypes: {
     title: { control: "text" },

@@ -10,7 +10,7 @@ interface AssessmentWidgetProps {
 }
 
 const meta: Meta<AssessmentWidgetProps> = {
-  title: 'NHComponentShoelace/AssessmentWidget',
+  title: 'NHComponent/AssessmentWidget',
   component: 'nh-card',
   argTypes: {
     name: { control: 'text' },
@@ -25,6 +25,11 @@ export default meta;
 type Story = StoryObj<AssessmentWidgetProps>;
 
 export const BasicWidget: Story = {
+  args: {
+    name: '',
+    iconAlt: '', 
+    iconImg: null
+  },
   render: meta.render
 };
 export const Pear: Story = {

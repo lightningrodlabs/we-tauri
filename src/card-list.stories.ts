@@ -16,7 +16,7 @@ interface CardListProps {
   contentText: string;
 }
 const meta: Meta<CardListProps> = {
-  title: "NHComponentShoelace/CardList",
+  title: "NHComponent/CardList",
   component: "nh-card-list",
   argTypes: {
     cards: { control: "none" },
