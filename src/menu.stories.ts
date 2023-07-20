@@ -1,4 +1,4 @@
-import { pearImg } from './b64images';
+import { cycleArrow, pearImg, planeArrow } from './b64images';
 import "./menu";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
@@ -37,7 +37,7 @@ export const HorizontalButtons: Story = {
     direction: "horizontal",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary" },
+    itemComponentProps: { variant: "primary", size: "lg" },
     fixedFirstItem: false,
     theme: "dark",
   },
@@ -48,7 +48,7 @@ export const VerticalButtons: Story = {
     direction: "vertical",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary" },
+    itemComponentProps: { variant: "primary", size: "stretch" },
     fixedFirstItem: false,
     theme: "dark",
   },
@@ -59,7 +59,18 @@ export const HorizontalIconButtons: Story = {
     direction: "horizontal",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary", iconImgB64: pearImg },
+    itemComponentProps: { variant: "primary", iconImageB64: cycleArrow, size: "lg" },
+    fixedFirstItem: false,
+    theme: "dark",
+  },
+};
+
+export const HorizontalIconButtonsNoLabel: Story = {
+  args: {
+    direction: "horizontal",
+    itemLabels: ["", "", "", ""],
+    itemComponentTag: literal`nh-button`,
+    itemComponentProps: { variant: "primary", iconImageB64: cycleArrow, size: "icon" },
     fixedFirstItem: false,
     theme: "dark",
   },
@@ -70,7 +81,17 @@ export const VerticalIconButtons: Story = {
     direction: "vertical",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary", iconImgB64: pearImg },
+    itemComponentProps: { variant: "primary", iconImageB64: planeArrow, size: "stretch" },
+    fixedFirstItem: false,
+    theme: "dark",
+  },
+};
+export const HorizontalTabButtons: Story = {
+  args: {
+    direction: "horizontal",
+    itemLabels: ["Posts", "Popular", "Recent", "Review"],
+    itemComponentTag: literal`nh-tab-button`,
+    itemComponentProps: { variant: "primary", size: "lg" },
     fixedFirstItem: false,
     theme: "dark",
   },

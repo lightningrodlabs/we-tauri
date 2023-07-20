@@ -1,10 +1,11 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { StaticValue, html as litHtml, literal } from "lit/static-html.js";
+import { html as litHtml, literal } from "lit/static-html.js";
 import { customElement, property } from "lit/decorators.js";
 import { NHComponentShoelace } from "neighbourhoods-design-system-components";
 import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
+import "./tab-button";
 
 export const capitalize = (part: string) =>
   part[0].toUpperCase() + part.slice(1);
@@ -14,11 +15,11 @@ export class NHCard extends NHComponentShoelace {
   @property()
   direction: "vertical" | "horizontal" = "horizontal";
   @property()
-  itemLabels: string[] = ["posts", "pages", "popular"];
+  itemLabels: string[] = ["Button 1", "Button 2", "Button 3"];
   @property()
   itemComponentTag: any = literal`nh-button`;
   @property()
-  itemComponentProps: object = {};
+  itemComponentProps: any = { size: "md", iconImageB64: "" };
   @property()
   theme: string = "dark";
   @property()
@@ -43,17 +44,15 @@ export class NHCard extends NHComponentShoelace {
                   litHtml`<${
                     this.itemComponentTag // Dynamically render passed in component tag
                   }
-                    label=${label}
                     id=${`menu-${this.direction}-item-${i}`}
                     class="menu-item"
-                    name=${`menu-${
-                      this.direction
-                    }-${label.toLowerCase()}`}
+                    name=${`menu-${this.direction}-${label.toLowerCase()}`}
+                    .label=${label}
+                    .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
+                    .size=${this.itemComponentProps?.size || "md"}
                   >
-                    ${capitalize(label)}
-                  </${
-                    this.itemComponentTag
-                  }>`
+                    ${label !== "" ? capitalize(label): label}
+                  </${this.itemComponentTag}>`
               )
             : null}
           <slot name="extra-item"></slot>
@@ -80,7 +79,6 @@ export class NHCard extends NHComponentShoelace {
       .container.horizontal {
         justify-content: start;
       }
-      .menu-item,
       .container,
       .content {
         display: flex;
@@ -88,6 +86,7 @@ export class NHCard extends NHComponentShoelace {
       }
       .vertical .menu-item {
         flex-basis: 100%;
+        width: 100%;
       }
 
       .container {

@@ -17,9 +17,15 @@ export class NHButton extends NHComponent {
   @property()
   theme: string = "dark";
   @property()
-  textSize: string = "md";
+  size: "stretch" | "lg" | "md" | "sm" | "icon" = "md";
   @property()
-  variant: "primary" | "success" | "neutral" | "warning" | "danger" | "default" = "default";
+  variant:
+    | "primary"
+    | "success"
+    | "neutral"
+    | "warning"
+    | "danger"
+    | "default" = "default";
 
   render() {
     return html`
@@ -32,12 +38,14 @@ export class NHButton extends NHComponent {
           light: this.theme == "light",
           dark: this.theme == "dark",
           outline: this.outline,
-          'text-sm': this.textSize == "sm",
-          'text-md': this.textSize == "md",
-          'text-lg': this.textSize == "lg",
+          [this.size]: !!this.size
         })}"
       >
-        <div class="button-inner">${this.iconImageB64 ? html`<img src=${this.iconImageB64} />` : null}<span>${this.label}</span></div>
+        <div class="button-inner">
+          ${this.iconImageB64
+            ? html`<img src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
+            : null}<span>${this.label}</span>
+        </div>
       </button>
     `;
   }
@@ -45,16 +53,52 @@ export class NHButton extends NHComponent {
   static styles: CSSResult[] = [
     // super.styles as CSSResult,
     css`
-    ${unsafeCSS(sharedStyles)}
-    
-    button {
+      ${unsafeCSS(sharedStyles)}
+
+      button {
         color: var(--nh-theme-fg-default);
-        padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
+        padding: calc(1px * var(--nh-spacing-md))
+          calc(1px * var(--nh-spacing-xl));
         border-radius: calc(1px * var(--nh-radii-sm));
         background-color: var(--nh-theme-accent-default);
         font-family: var(--nh-font-families-body);
         letter-spacing: var(--nh-letter-spacing-buttons);
+      }
+      button.stretch {
         width: 100%;
+      }
+      button.icon {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+      }
+      button.lg {
+        width: 145px;
+      }
+      button.md {
+        width: 88px;
+      }
+      button.sm {
+        width: 62px;
+      }
+      .button-inner {
+        gap: calc(1px * var(--nh-spacing-md));
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .button-inner img {
+        width: calc(1px * var(--nh-spacing-xl));
+      }
+      .button.icon .button-inner img {
+        with: auto;
+      }
+
+      button.icon .button-inner {
+        display: grid;
+        gap: 0;
+        height: 100%;
+        place-content: center;
       }
       button:focus {
         border: 1px solid var(--nh-theme-accent-default);
@@ -69,17 +113,17 @@ export class NHButton extends NHComponent {
         color: var(--nh-theme-fg-on-disabled);
         background-color: var(--nh-theme-fg-disabled);
       }
-      button.text-sm {
+      button.sm {
         line-height: var(--nh-line-heights-headlines-default);
-        font-weight: var(--nh-font-weights-body-regular);
+        font-weight: var(--nh-font-weights-headlines-bold);
         font-size: calc(1px * var(--nh-font-size-sm));
       }
-      button.text-md {
+      button.md, button.stretch {
         line-height: var(--nh-line-heights-headlines-default);
-        font-weight: var(--nh-font-weights-body-regular);
+        font-weight: var(--nh-font-weights-headlines-bold);
         font-size: calc(1px * var(--nh-font-size-md));
       }
-      button.text-lg {
+      button.lg {
         line-height: var(--nh-line-heights-body-default);
         font-weight: var(--nh-font-weights-headlines-bold);
         font-size: calc(1px * var(--nh-font-size-xl));
