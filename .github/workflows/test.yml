@@ -32,11 +32,19 @@ jobs:
           extra_nix_config: |
             experimental-features = flakes nix-command
 
+      # install the latest version of `tauri-driver`.
+      # note: the tauri-driver version is independent of any other Tauri versions
+      - name: Install tauri-driver
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: tauri-driver
+          
       - uses: cachix/cachix-action@v10
         with:
           name: holochain-ci
 
       - name: Install and test
         run: |
-          nix develop --command bash -c "npm i && npm t"
+          nix develop --command bash -c "npm i && npm t && xvfb-run npm run e2e"
 

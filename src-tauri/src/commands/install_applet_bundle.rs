@@ -280,7 +280,7 @@ async fn fetch_web_happ(
             for cell in cells {
                 if let CellInfo::Provisioned(provisioned_cell) = cell {
                     if provisioned_cell.cell_id.dna_hash().eq(&devhub_dna) {
-                        hosts.insert(0, app.agent_pub_key);
+                        hosts.insert(0, app.agent_pub_key.clone());
                     }
                 }
             }

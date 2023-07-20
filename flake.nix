@@ -29,10 +29,10 @@
           }: {
             devShells.default = pkgs.mkShell {
               inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
-              packages = [
-                pkgs.nodejs-18_x
-                # more packages go here
-                pkgs.cargo-nextest
+              packages = with pkgs; [
+                nodejs-18_x
+                cargo-nextest
+                xvfb-run
               ];
               
               buildInputs = (with pkgs; [
@@ -91,8 +91,6 @@
                 export GIO_MODULE_DIR=${pkgs.glib-networking}/lib/gio/modules/
                 export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules
                 export WEBKIT_DISABLE_COMPOSITING_MODE=1
-                unset CARGO_TARGET_DIR
-                unset CARGO_HOME
               '';
             };
           };
