@@ -1,17 +1,19 @@
+import { pearImg } from './b64images';
 import "./menu";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+import { StaticValue, literal } from 'lit/static-html.js';
 
-export interface MwnuProps {
+export interface MenuProps {
   direction: "vertical" | "horizontal";
   itemLabels: string[];
-  itemComponentTag: string;
+  itemComponentTag: StaticValue;
   itemComponentProps: object;
   theme: string;
   fixedFirstItem: boolean;
 }
 
-const meta: Meta<MwnuProps> = {
+const meta: Meta<MenuProps> = {
   title: "NHComponent/Menu",
   component: "nh-menu",
   argTypes: {},
@@ -28,25 +30,47 @@ const meta: Meta<MwnuProps> = {
 
 export default meta;
 
-type Story = StoryObj<MwnuProps>;
+type Story = StoryObj<MenuProps>;
 
-export const Horizontal: Story = {
+export const HorizontalButtons: Story = {
   args: {
     direction: "horizontal",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
-    itemComponentTag: "nh-button",
+    itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary" },
     fixedFirstItem: false,
     theme: "dark",
   },
 };
 
-export const Vertical: Story = {
+export const VerticalButtons: Story = {
   args: {
     direction: "vertical",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
-    itemComponentTag: "nh-button",
+    itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary" },
+    fixedFirstItem: false,
+    theme: "dark",
+  },
+};
+
+export const HorizontalIconButtons: Story = {
+  args: {
+    direction: "horizontal",
+    itemLabels: ["Posts", "Popular", "Recent", "Review"],
+    itemComponentTag: literal`nh-button`,
+    itemComponentProps: { variant: "primary", iconImgB64: pearImg },
+    fixedFirstItem: false,
+    theme: "dark",
+  },
+};
+
+export const VerticalIconButtons: Story = {
+  args: {
+    direction: "vertical",
+    itemLabels: ["Posts", "Popular", "Recent", "Review"],
+    itemComponentTag: literal`nh-button`,
+    itemComponentProps: { variant: "primary", iconImgB64: pearImg },
     fixedFirstItem: false,
     theme: "dark",
   },

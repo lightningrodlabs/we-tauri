@@ -37,7 +37,7 @@ export class NHButton extends NHComponent {
           'text-lg': this.textSize == "lg",
         })}"
       >
-        ${this.label}
+        <div class="button-inner">${this.iconImageB64 ? html`<img src=${this.iconImageB64} />` : null}<span>${this.label}</span></div>
       </button>
     `;
   }
