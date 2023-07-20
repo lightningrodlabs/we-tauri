@@ -16,6 +16,7 @@ import { Hrl } from "@lightningrodlabs/we-applet";
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
 import "../groups/elements/group-logo.js";
+import "../groups/elements/group-title.js";
 import "../groups/elements/applet-name.js";
 import "../groups/elements/entry-title.js";
 import "../applets/elements/applet-title.js";
@@ -138,7 +139,7 @@ export class DynamicLayout extends LitElement {
     const el = this.shadowRoot?.getElementById(
       "golden-layout"
     ) as GoldenLayoutEl;
-    return el.goldenLayout;
+    return el.goldenLayout as any;
   }
 
   render() {
@@ -158,7 +159,7 @@ export class DynamicLayout extends LitElement {
           html`
             <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
               <group-logo></group-logo>
-              <span style="margin-left: 4px">${msg("Home")}</span>
+              <group-title style="margin-left: 4px;"></group-title>
             </group-context>
           `}
         .template=${({ groupDnaHash }, container) => html`
