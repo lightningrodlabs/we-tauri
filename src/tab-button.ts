@@ -13,6 +13,8 @@ export class NHTabButton extends NHComponent {
   @property()
   disabled: boolean = false;
   @property()
+  fixed: boolean = false;
+  @property()
   theme: string = "dark";
   @property()
   size: string = "md";
@@ -22,8 +24,9 @@ export class NHTabButton extends NHComponent {
       <button
         ?disabled=${this.disabled}
         class="btn${classMap({
-          active: !!this.selected,
-          disabled: !!this.disabled,
+          active: this.selected,
+          fixed: this.fixed,
+          disabled: this.disabled,
           [this.theme]: !!this.theme,
           [this.size]: !!this.size
         })}"
@@ -37,14 +40,13 @@ export class NHTabButton extends NHComponent {
     // super.styles as CSSResult,
     css`
     ${unsafeCSS(sharedStyles)}
-    
     button {
-        color: var(--nh-theme-fg-default);
+        color: #D9D9D9;
         background-color: var(--nh-theme-bg-subtle);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
         height: 52px;
         position: relative;
-
+        
         border: 0;
         border-radius: calc(1px * var(--nh-radii-lg));
         border-bottom-right-radius: 0;
@@ -61,8 +63,8 @@ export class NHTabButton extends NHComponent {
       }
 
       /* Tab hover effect */
-      button:hover::after,
-      button:active::after {
+      button:not(.fixed):hover::after,
+      button:not(.fixed):active::after {
         position: absolute;
         background-color: var(--nh-theme-bg-neutral);
         bottom: calc(-1px * var(--nh-spacing-sm));
@@ -71,6 +73,15 @@ export class NHTabButton extends NHComponent {
         width: 100%;
         height: calc(1px * var(--nh-spacing-sm));
       }
+      
+      button.fixed {
+        color: var(--nh-theme-fg-default);
+        background-color: var(--nh-theme-bg-neutral);
+        border: 4px solid --nh-colors-eggplant-800;
+        border-radius: calc(1px * var(--nh-radii-md));
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
       button:active::after,
       button:active::part(base) {
         background-color: var(--nh-theme-bg-surface);
@@ -78,6 +89,7 @@ export class NHTabButton extends NHComponent {
       button:active {
         background-color: var(--nh-theme-bg-surface);
       }
+
       button.disabled {
         color: var(--nh-theme-fg-on-disabled);
         background-color: var(--nh-theme-fg-disabled);

@@ -48,8 +48,11 @@ export class NHCard extends NHComponentShoelace {
                     this.itemComponentTag // Dynamically render passed in component tag
                   }
                     id=${`menu-${this.direction}-item-${i}`}
-                    class="menu-item"
                     name=${`menu-${this.direction}-${label.toLowerCase()}`}
+                    class="menu-item${classMap({
+                      fixed: this.fixedFirstItem && i == 0,
+                    })}"
+                    .fixed=${this.fixedFirstItem && i == 0}
                     .label=${label}
                     .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
                     .size=${this.itemComponentProps?.size || "md"}

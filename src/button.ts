@@ -22,8 +22,7 @@ export class NHButton extends NHComponent {
     | "success"
     | "neutral"
     | "warning"
-    | "danger"
-    | "default" = "default";
+    | "danger" = "neutral";
 
   render() {
     return html`
@@ -60,6 +59,7 @@ export class NHButton extends NHComponent {
         font-family: var(--nh-font-families-body);
         letter-spacing: var(--nh-letter-spacing-buttons);
         background-color: var(--nh-theme-accent-default);
+        border: 1px solid transparent;
       }
       button.icon {
         background-color: var(--nh-theme-bg-neutral);

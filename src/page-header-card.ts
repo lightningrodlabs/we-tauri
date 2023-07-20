@@ -26,7 +26,7 @@ export class NHPageHeaderCard extends NHComponent {
             noheading: !this.heading,
           })}"
           >
-          ${this.heading ? html`<h1>${this.heading}</h1>` : html``}
+          ${this.heading !== "" ? html`<h1>${this.heading}</h1>` : html``}
         </div>
         <slot name="primary-action"></slot>
       </div>
@@ -81,10 +81,11 @@ export class NHPageHeaderCard extends NHComponent {
       
       /* Actions */
       
-      ::slotted([slot=primary-action]), :slotted([slot=secondary-action]) {
-        display: flex;
-      }
-      ::slotted([slot=secondary-action]) {
+      
+      /* Slot specific */
+      
+      :host([slot="top-menu"]) .container {
+        padding: 0;
       }
       
     `,

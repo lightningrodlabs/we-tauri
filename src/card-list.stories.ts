@@ -30,17 +30,19 @@ const meta: Meta<CardListProps> = {
       .type=${args.grid ? "grid" : "linear"}
       .direction=${args.vertical ? "vertical" : "horizontal"}
     >
-      ${args.hasHeader ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
+      ${args.hasHeader
+        ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
         <img src="data:image/svg+xml;base64,${backArrow}" slot="secondary-action"/> 
-        
-        <nh-button label="Upload Applet File" slot="primary-action"><nh-button/>
-      </nh-page-header-card>` : null}
+        <nh-button label="Upload Applet File" slot="primary-action"></nh-button>
+      </nh-page-header-card>`
+        : null}
       ${args.cards.map((card) => {
         card.hasWidget = args.widgets;
         card.hasPrimaryAction = args.buttons;
         card.contentText = args.contentText;
         return (Basic as any).render(card);
-      })}</nh-card-list>`;
+      })}</nh-card-list
+    >`;
   },
 };
 
@@ -57,7 +59,7 @@ export const Dark: Story = {
         hasContextMenu: true,
         theme: "dark",
         textSize: "md",
-        footerAlign: "c"
+        footerAlign: "c",
       },
       {
         title: "Card 2",
@@ -65,7 +67,7 @@ export const Dark: Story = {
         hasContextMenu: true,
         theme: "dark",
         textSize: "md",
-        footerAlign: "c"
+        footerAlign: "c",
       },
       {
         title: "Card 3",
@@ -73,11 +75,11 @@ export const Dark: Story = {
         hasContextMenu: true,
         theme: "dark",
         textSize: "md",
-        footerAlign: "c"
+        footerAlign: "c",
       },
       // Add more cards as needed...
     ],
-    hasHeader: false
+    hasHeader: false,
   },
 };
 export const Light: Story = {
@@ -89,7 +91,7 @@ export const Light: Story = {
         hasContextMenu: true,
         theme: "light",
         textSize: "md",
-        footerAlign: "l"
+        footerAlign: "l",
       },
       {
         title: "Card 2",
@@ -97,7 +99,7 @@ export const Light: Story = {
         hasContextMenu: true,
         theme: "light",
         textSize: "md",
-        footerAlign: "l"
+        footerAlign: "l",
       },
       {
         title: "Card 3",
@@ -105,12 +107,12 @@ export const Light: Story = {
         hasContextMenu: true,
         theme: "light",
         textSize: "md",
-        footerAlign: "l"
+        footerAlign: "l",
       },
       // Add more cards as needed...
     ],
     widgets: false,
-    hasHeader: false
+    hasHeader: false,
   },
 };
 
@@ -123,23 +125,38 @@ const defaultSmallCardProperties = {
   hasHeader: true,
 };
 const headings = [
-  "Feed", "Chat", "Market", "Co-playlist", "Todo", "Calendar", "Notes", "Wiki"
+  "Feed",
+  "Chat",
+  "Market",
+  "Co-playlist",
+  "Todo",
+  "Calendar",
+  "Notes",
+  "Wiki",
 ];
 export const AppletGrid: Story = {
   args: {
-    cards:  headings.map(heading => ({ ...defaultSmallCardProperties, heading })) as any,
-    contentText: "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
+    cards: headings.map((heading) => ({
+      ...defaultSmallCardProperties,
+      heading,
+    })) as any,
+    contentText:
+      "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
     widgets: false,
     buttons: true,
     grid: true,
-    hasHeader: true
+    hasHeader: true,
   },
 };
 
 export const AppletColumn: Story = {
   args: {
-    cards:  headings.map(heading => ({ ...defaultSmallCardProperties, heading })) as any,
-    contentText: "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
+    cards: headings.map((heading) => ({
+      ...defaultSmallCardProperties,
+      heading,
+    })) as any,
+    contentText:
+      "An informative and clear description of what the applet is, does and how amazing it is. So that people can download it with confidence that it will meet their needs. ",
     widgets: false,
     buttons: true,
     grid: false,
