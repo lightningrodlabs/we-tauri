@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
 import { EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
@@ -21,7 +21,7 @@ import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
-import { AppEntry, Entity } from "../../processes/appstore/types.js";
+import { AppEntry, Entity, HostAvailability } from "../../processes/appstore/types.js";
 
 @localized()
 @customElement("install-applet-bundle-dialog")
@@ -63,12 +63,33 @@ export class InstallAppletBundleDialog extends LitElement {
   @state()
   _appletInfo: Entity<AppEntry> | undefined;
 
+  @state()
+  _peerHostsStatus: HostAvailability | undefined;
+
+  @state()
+  _pollInterval: number | null = null;
+
   open(appletInfo: Entity<AppEntry>) {
     this._appletInfo = appletInfo;
     setTimeout(() => {
       this.form.reset();
       this._appletDialog.show();
     });
+  }
+
+  async firstUpdated() {
+    try {
+      this._peerHostsStatus = this._appletInfo ? await this.groupStore.weStore.appletBundlesStore.getVisibleHosts(this._appletInfo) : undefined;
+    } catch (e) {
+      console.error(`Failed to get peer host statuses: ${JSON.stringify(e)}`);
+    }
+
+    this._pollInterval = window.setInterval(
+      async () => {
+        this._peerHostsStatus = this._appletInfo ? await this.groupStore.weStore.appletBundlesStore.getVisibleHosts(this._appletInfo) : undefined;
+      },
+      5000
+    );
   }
 
   get publishDisabled() {
@@ -174,6 +195,16 @@ export class InstallAppletBundleDialog extends LitElement {
           }
         }}
       >
+        <div class="row" style="justify-content: flex-end; align-items: center; color: #3d3d3d; font-size: 15px;">
+          <span class="online-dot ${this._peerHostsStatus && this._peerHostsStatus.responded.length > 0 ? 'online' : 'offline'}"></span>
+          ${
+            this._peerHostsStatus
+              ? html`
+                <span>${this._peerHostsStatus.responded.length > 0 ? this._peerHostsStatus.responded.length : 0 } available peer host${this._peerHostsStatus.responded.length === 1 ? "" : "s"}</span>
+              `
+              : html`<span>pinging peer hosts...</span>`
+          }
+        </div>
         <form
           class="column"
           ${onSubmit((f) => this.installApplet(f.custom_name))}
@@ -184,5 +215,23 @@ export class InstallAppletBundleDialog extends LitElement {
     `;
   }
 
-  static styles = weStyles;
+  static styles = [
+    weStyles,
+    css`
+      .online-dot {
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        margin-right: 10px;
+      }
+
+      .online {
+        background-color: #17d310;
+      }
+
+      .offline {
+        background-color: #bfbfbf;
+      }
+    `
+  ];
 }
