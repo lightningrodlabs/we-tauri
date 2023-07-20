@@ -1,6 +1,6 @@
 import { defineConfig, UserConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import { internalIpV4 } from "internal-ip";
+// import { internalIpV4 } from "internal-ip";
 
 const components = [
   "dialog",
@@ -27,19 +27,19 @@ const exclude = components.map(
   (c) => `@shoelace-style/shoelace/dist/components/${c}/${c}.js`
 );
 export default defineConfig(async () => {
-  // const host = await internalIpV4();
-
+  const easyIp = await import("easy-ip");
+  const host = await new easyIp.default().getLocalIp().ip;
   /** @type {import('vite').UserConfig} */
   const config: UserConfig = {
     server: {
       host: "0.0.0.0", // listen on all addresses
       port: 5173,
       strictPort: true,
-      // hmr: {
-      //   protocol: "ws",
-      //   host,
-      //   port: 5183,
-      // },
+      hmr: {
+        protocol: "ws",
+        host,
+        port: 5194,
+      },
     },
   };
   config.plugins = [

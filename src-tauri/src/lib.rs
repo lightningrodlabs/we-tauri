@@ -8,7 +8,6 @@ use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use hyper::StatusCode;
 use launch::get_admin_ws;
-use serde_json::Value;
 use tauri::{
     http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl,
 };
@@ -60,7 +59,7 @@ impl AppBuilder {
 
         if !disable_deep_link {
             // Needs to be equal to the identifier in tauri.conf.json
-            // tauri_plugin_deep_link::prepare("we");
+            tauri_plugin_deep_link::prepare("we");
         }
 
         tauri::Builder::default()
@@ -141,14 +140,14 @@ impl AppBuilder {
                 });
 
                 if !disable_deep_link {
-                    // if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
-                    //     window.emit("deep-link-received", request).unwrap();
-                    //     window
-                    //         .request_user_attention(Some(UserAttentionType::Informational))
-                    //         .unwrap();
-                    // }) {
-                    //     println!("Error registering the deep link plugin: {:?}", err);
-                    // }
+                    if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
+                        window.emit("deep-link-received", request).unwrap();
+                        window
+                            .request_user_attention(Some(UserAttentionType::Informational))
+                            .unwrap();
+                    }) {
+                        println!("Error registering the deep link plugin: {:?}", err);
+                    }
                 }
 
                 Ok(())

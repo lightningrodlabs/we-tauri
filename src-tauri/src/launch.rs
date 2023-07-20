@@ -1,8 +1,19 @@
-use holochain::{conductor::{
-    config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
-    interface::InterfaceDriver,
-    Conductor, ConductorHandle,
-}, prelude::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{BufWrite, BufRead}};
+use holochain::{
+    conductor::{
+        config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
+        interface::InterfaceDriver,
+        Conductor, ConductorHandle,
+    },
+    prelude::{
+        kitsune_p2p::dependencies::{
+            kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{
+                BufRead, BufWrite,
+            },
+            url2,
+        },
+        KitsuneP2pConfig, TransportConfig,
+    },
+};
 use holochain_client::AdminWebsocket;
 
 use crate::{
@@ -40,13 +51,24 @@ pub async fn launch(
     config.keystore = KeystoreConfig::LairServerInProc {
         lair_root: Some(fs.keystore_path()),
     };
-    if let Some(admin_port) = option_env!("ADMIN_PORT") {
-        config.admin_interfaces = Some(vec![AdminInterfaceConfig {
-            driver: InterfaceDriver::Websocket {
-                port: admin_port.parse().unwrap(),
-            },
-        }])
-    }
+    let admin_port = match option_env!("ADMIN_PORT") {
+        Some(p) => p.parse().unwrap(),
+        None => portpicker::pick_unused_port().expect("No ports free"),
+    };
+
+    config.admin_interfaces = Some(vec![AdminInterfaceConfig {
+        driver: InterfaceDriver::Websocket { port: admin_port },
+    }]);
+
+    let mut network_config = KitsuneP2pConfig::default();
+
+    network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host"));
+
+    network_config.transport_pool.push(TransportConfig::WebRTC {
+        signal_url: String::from("wss://signal.holo.host"),
+    });
+
+    config.network = Some(network_config);
 
     // TODO: set the DHT arc depending on whether this is mobile
 

@@ -1,21 +1,18 @@
-use std::{convert::Infallible, net::SocketAddr};
+use std::net::SocketAddr;
 
-use bytes::Bytes;
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
-use http_body_util::Full;
 use hyper::{
     service::{make_service_fn, service_fn},
-    Body, Request, Response, Server,
+    Body, Response, Server,
 };
 use tauri::{AppHandle, Manager};
-use tokio::net::TcpListener;
 
 use crate::{
-    state::{WeError, WeResult},
     filesystem::WeFileSystem,
     launch::get_admin_ws,
+    state::{WeError, WeResult},
 };
 
 pub fn pong_iframe() -> String {
