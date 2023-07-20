@@ -1,6 +1,6 @@
 import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
-import { AppAgentWebsocket, AdminWebsocket } from "@holochain/client";
+import { AdminWebsocket } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";

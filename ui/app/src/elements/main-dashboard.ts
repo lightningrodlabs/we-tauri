@@ -183,6 +183,7 @@ export class MainDashboard extends LitElement {
                   id: "welcome",
                   type: "component",
                   title: "Welcome",
+                  isClosable: false,
                   componentType: "welcome",
                 },
               ],

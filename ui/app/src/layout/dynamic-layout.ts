@@ -48,6 +48,7 @@ export class DynamicLayout extends LitElement {
       root: this.rootItemConfig,
       header: {
         popout: false,
+        maximise: false,
       },
     };
   }

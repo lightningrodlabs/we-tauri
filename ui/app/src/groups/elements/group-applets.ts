@@ -138,7 +138,7 @@ export class GroupApplets extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo .appletHash=${appletHash}></applet-logo>
+                  <applet-logo .appletHash=${appletHash} class="applet-icon"></applet-logo>
                   <span style="margin-top: 8px"
                     >${applet.applet.custom_name}</span
                   >
@@ -173,6 +173,11 @@ export class GroupApplets extends LitElement {
     css`
       :host {
         display: flex;
+      }
+
+      .applet-icon:hover {
+        box-shadow: 0 0 5px #646464;
+        border-radius: 8px;
       }
     `,
   ];
