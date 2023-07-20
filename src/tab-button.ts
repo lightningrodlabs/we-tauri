@@ -8,8 +8,6 @@ import { sharedStyles } from "./sharedStyles";
 export class NHTabButton extends NHComponent {
   @property()
   label!: string;
-  // @property()
-  // iconImageB64!: string;
   @property()
   selected: boolean = false;
   @property()
@@ -17,20 +15,17 @@ export class NHTabButton extends NHComponent {
   @property()
   theme: string = "dark";
   @property()
-  textSize: string = "md";
+  size: string = "md";
 
   render() {
     return html`
       <button
-        disabled=${this.disabled}
+        ?disabled=${this.disabled}
         class="btn${classMap({
           active: !!this.selected,
           disabled: !!this.disabled,
-          light: this.theme == "light",
-          dark: this.theme == "dark",
-          'text-sm': this.textSize == "sm",
-          'text-md': this.textSize == "md",
-          'text-lg': this.textSize == "lg",
+          [this.theme]: !!this.theme,
+          [this.size]: !!this.size
         })}"
       >
         ${this.label}
@@ -45,39 +40,62 @@ export class NHTabButton extends NHComponent {
     
     button {
         color: var(--nh-theme-fg-default);
+        background-color: var(--nh-theme-bg-subtle);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
-        border-radius: calc(1px * var(--nh-radii-sm));
-        background-color: var(--nh-theme-accent-default);
-        font-family: var(--nh-font-families-body);
+        height: 52px;
+        position: relative;
+
+        border: 0;
+        border-radius: calc(1px * var(--nh-radii-lg));
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+
+        font-family: var(--nh-font-families-menu);
         letter-spacing: var(--nh-letter-spacing-buttons);
       }
       button:focus {
-        border: 1px solid var(--nh-theme-accent-default);
       }
       button:hover {
-        background-color: var(--nh-theme-accent-muted);
+        background-color: var(--nh-theme-bg-neutral);
+        color: var(--nh-theme-accent-emphasis);
+      }
+
+      /* Tab hover effect */
+      button:hover::after,
+      button:active::after {
+        position: absolute;
+        background-color: var(--nh-theme-bg-neutral);
+        bottom: calc(-1px * var(--nh-spacing-sm));
+        left: 0px;
+        content: '';
+        width: 100%;
+        height: calc(1px * var(--nh-spacing-sm));
+      }
+      button:active::after,
+      button:active::part(base) {
+        background-color: var(--nh-theme-bg-surface);
       }
       button:active {
-        background-color: var(--nh-theme-accent-emphasis);
+        background-color: var(--nh-theme-bg-surface);
       }
       button.disabled {
         color: var(--nh-theme-fg-on-disabled);
         background-color: var(--nh-theme-fg-disabled);
       }
-      button.text-sm {
+      button.sm {
         line-height: var(--nh-line-heights-headlines-default);
-        font-weight: var(--nh-font-weights-body-regular);
+        font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-sm));
       }
-      button.text-md {
+      button.md, button.stretch {
         line-height: var(--nh-line-heights-headlines-default);
-        font-weight: var(--nh-font-weights-body-regular);
+        font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-md));
       }
-      button.text-lg {
+      button.lg {
         line-height: var(--nh-line-heights-body-default);
-        font-weight: var(--nh-font-weights-headlines-bold);
-        font-size: calc(1px * var(--nh-font-size-xl));
+        font-weight: 600;
+        font-size: calc(1px * var(--nh-font-size-lg));
       }
     `,
   ];

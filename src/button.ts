@@ -11,8 +11,6 @@ export class NHButton extends NHComponent {
   @property()
   iconImageB64!: string;
   @property()
-  outline: boolean = false;
-  @property()
   disabled: boolean = false;
   @property()
   theme: string = "dark";
@@ -31,19 +29,18 @@ export class NHButton extends NHComponent {
     return html`
       <button
         type="button"
-        disabled=${this.disabled}
+        ?disabled=${this.disabled}
         class="btn${classMap({
           disabled: !!this.disabled,
-          primary: this.variant == "primary",
           light: this.theme == "light",
           dark: this.theme == "dark",
-          outline: this.outline,
+          [this.variant]: !!this.variant,
           [this.size]: !!this.size
         })}"
       >
         <div class="button-inner">
           ${this.iconImageB64
-            ? html`<img src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
+            ? html`<img alt="button icon" src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
             : null}<span>${this.label}</span>
         </div>
       </button>
@@ -60,17 +57,22 @@ export class NHButton extends NHComponent {
         padding: calc(1px * var(--nh-spacing-md))
           calc(1px * var(--nh-spacing-xl));
         border-radius: calc(1px * var(--nh-radii-sm));
-        background-color: var(--nh-theme-accent-default);
         font-family: var(--nh-font-families-body);
         letter-spacing: var(--nh-letter-spacing-buttons);
-      }
-      button.stretch {
-        width: 100%;
+        background-color: var(--nh-theme-accent-default);
       }
       button.icon {
+        background-color: var(--nh-theme-bg-neutral);
         width: 45px;
         height: 45px;
         padding: 0;
+        border: 0;
+      }
+      button.primary {
+        background-color: var(--nh-theme-accent-default);
+      }
+      button.stretch {
+        width: 100%;
       }
       button.lg {
         width: 145px;
@@ -90,8 +92,15 @@ export class NHButton extends NHComponent {
       .button-inner img {
         width: calc(1px * var(--nh-spacing-xl));
       }
-      .button.icon .button-inner img {
+      button.icon .button-inner img {
         with: auto;
+      }
+      button.primary.icon {
+        height: 32px;
+        width: 32px;
+      }
+      button.primary.icon img {
+        height: 70%;
       }
 
       button.icon .button-inner {
@@ -103,7 +112,10 @@ export class NHButton extends NHComponent {
       button:focus {
         border: 1px solid var(--nh-theme-accent-default);
       }
-      button:hover {
+      button.icon:hover {
+        background-color: var(--nh-theme-bg-subtle);
+      }
+      button:hover, button.primary.icon:hover {
         background-color: var(--nh-theme-accent-muted);
       }
       button:active {

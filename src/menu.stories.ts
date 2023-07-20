@@ -11,6 +11,7 @@ export interface MenuProps {
   itemComponentProps: object;
   theme: string;
   fixedFirstItem: boolean;
+  addItemButton: boolean;
 }
 
 const meta: Meta<MenuProps> = {
@@ -18,12 +19,13 @@ const meta: Meta<MenuProps> = {
   component: "nh-menu",
   argTypes: {},
   render: (args) => html`<nh-menu
-    direction=${args.direction}
-    itemLabels=${args.itemLabels}
-    itemComponentTag=${args.itemComponentTag}
-    itemComponentProps=${args.itemComponentProps}
-    theme=${args.theme}
-    fixedFirstItem=${args.fixedFirstItem}
+    .direction=${args.direction}
+    .itemLabels=${args.itemLabels}
+    .itemComponentTag=${args.itemComponentTag}
+    .itemComponentProps=${args.itemComponentProps}
+    .theme=${args.theme}
+    .fixedFirstItem=${args.fixedFirstItem}
+    .addItemButton=${args.addItemButton}
   >
   </nh-menu>`,
 };
@@ -39,6 +41,7 @@ export const HorizontalButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary", size: "lg" },
     fixedFirstItem: false,
+    addItemButton: false,
     theme: "dark",
   },
 };
@@ -50,6 +53,7 @@ export const VerticalButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary", size: "stretch" },
     fixedFirstItem: false,
+    addItemButton: false,
     theme: "dark",
   },
 };
@@ -61,6 +65,7 @@ export const HorizontalIconButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary", iconImageB64: cycleArrow, size: "lg" },
     fixedFirstItem: false,
+    addItemButton: false,
     theme: "dark",
   },
 };
@@ -72,6 +77,7 @@ export const HorizontalIconButtonsNoLabel: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary", iconImageB64: cycleArrow, size: "icon" },
     fixedFirstItem: false,
+    addItemButton: false,
     theme: "dark",
   },
 };
@@ -83,6 +89,7 @@ export const VerticalIconButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: { variant: "primary", iconImageB64: planeArrow, size: "stretch" },
     fixedFirstItem: false,
+    addItemButton: false,
     theme: "dark",
   },
 };
@@ -91,8 +98,9 @@ export const HorizontalTabButtons: Story = {
     direction: "horizontal",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-tab-button`,
-    itemComponentProps: { variant: "primary", size: "lg" },
+    itemComponentProps: { size: "lg"},
     fixedFirstItem: false,
+    addItemButton: true,
     theme: "dark",
   },
 };

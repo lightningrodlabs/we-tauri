@@ -6,6 +6,7 @@ import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
 import "./tab-button";
+import { plusIcon } from "./b64images";
 
 export const capitalize = (part: string) =>
   part[0].toUpperCase() + part.slice(1);
@@ -24,6 +25,8 @@ export class NHCard extends NHComponentShoelace {
   theme: string = "dark";
   @property()
   fixedFirstItem: boolean = true;
+  @property()
+  addItemButton: boolean = false;
 
   render() {
     return html`
@@ -55,6 +58,7 @@ export class NHCard extends NHComponentShoelace {
                   </${this.itemComponentTag}>`
               )
             : null}
+            ${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${plusIcon}></nh-button>`: null}
           <slot name="extra-item"></slot>
         </div>
         <slot name="actions"></slot>
@@ -107,6 +111,7 @@ export class NHCard extends NHComponentShoelace {
 
       .content {
         gap: calc(1px * var(--nh-spacing-sm));
+        align-items: center;
       }
       .content.vertical {
         flex-direction: column;

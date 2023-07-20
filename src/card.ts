@@ -79,7 +79,7 @@ export class NHCard extends NHComponentShoelace {
 
       }
       .container.light {
-        background-color: #433A4A;
+        background-color: var(--nh-theme-bg-neutral);
       }
       .container.dark {
         background-color: var(--nh-theme-bg-subtle);
