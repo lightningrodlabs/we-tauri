@@ -432,10 +432,14 @@ export class MatrixStore {
         JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
     )!.appInfo;
 
+    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, appInfo.installed_app_id);
+
     const renderers = await gui.appletRenderers(
       this.appWebsocket,
+      appletAppAgentWebsocket,
       this.adminWebsocket,
       weServices,
+      //@ts-ignore
       [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }]
     );
 
@@ -1244,7 +1248,18 @@ export class MatrixStore {
 
       this.adminWebsocket
         .installApp(request)
-        .then()
+        .then(
+          async (appInfo) => {
+            const installedCells = appInfo.cell_info;
+            await Promise.all(
+              Object.keys(installedCells).map(roleName => {
+                installedCells[roleName].map(cellInfo => {
+                  this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+                })
+              })
+            );
+          }
+        )
         .catch((e) => {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
