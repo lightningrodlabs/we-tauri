@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use holochain::{
     conductor::{
         config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
@@ -6,8 +8,9 @@ use holochain::{
     },
     prelude::{
         kitsune_p2p::dependencies::{
-            kitsune_p2p_types::dependencies::lair_keystore_api::dependencies::sodoken::{
-                BufRead, BufWrite,
+            kitsune_p2p_types::{
+                config::tuning_params_struct::KitsuneP2pTuningParams,
+                dependencies::lair_keystore_api::dependencies::sodoken::{BufRead, BufWrite},
             },
             url2,
         },
@@ -61,6 +64,13 @@ pub async fn launch(
     }]);
 
     let mut network_config = KitsuneP2pConfig::default();
+
+    let mut tuning_params = KitsuneP2pTuningParams::default();
+
+    if cfg!(mobile) {
+        tuning_params.gossip_arc_clamping = "empty".to_string();
+    }
+    network_config.tuning_params = Arc::new(tuning_params);
 
     network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host"));
 

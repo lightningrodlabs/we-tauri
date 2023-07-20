@@ -59,6 +59,7 @@ impl AppBuilder {
 
         if !disable_deep_link {
             // Needs to be equal to the identifier in tauri.conf.json
+            #[cfg(not(mobile))]
             tauri_plugin_deep_link::prepare("we");
         }
 
@@ -140,6 +141,7 @@ impl AppBuilder {
                 });
 
                 if !disable_deep_link {
+                    #[cfg(not(mobile))]
                     if let Err(err) = tauri_plugin_deep_link::register("we", move |request| {
                         window.emit("deep-link-received", request).unwrap();
                         window

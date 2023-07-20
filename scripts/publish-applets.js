@@ -399,6 +399,7 @@ async function publishAppletsRetry() {
   try {
     await publishApplets();
   } catch (e) {
+    console.log(e);
     console.log(
       "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
     );

@@ -22,7 +22,7 @@
     "@msgpack/msgpack": "^2.7.2",
     "@scoped-elements/golden-layout": "^0.2.6",
     "@shoelace-style/shoelace": "^2.3.0",
-    "@tauri-apps/api": "^1.2.0",
+    "@tauri-apps/api": "^2.0.0-alpha.5",
     "applet-messages": "^0",
     "golden-layout": "^2.6.0",
     "grapes-editor": "^0.1.0",
