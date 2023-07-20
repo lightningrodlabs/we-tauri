@@ -4,34 +4,30 @@ import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from "neighbourhoods-design-system-components";
 import { sharedStyles } from "./sharedStyles";
 
-@customElement("nh-button")
-export class NHButton extends NHComponent {
+@customElement("nh-tab-button")
+export class NHTabButton extends NHComponent {
   @property()
   label!: string;
+  // @property()
+  // iconImageB64!: string;
   @property()
-  iconImageB64!: string;
-  @property()
-  outline: boolean = false;
+  selected: boolean = false;
   @property()
   disabled: boolean = false;
   @property()
   theme: string = "dark";
   @property()
   textSize: string = "md";
-  @property()
-  variant: "primary" | "success" | "neutral" | "warning" | "danger" | "default" = "default";
 
   render() {
     return html`
       <button
-        type="button"
         disabled=${this.disabled}
         class="btn${classMap({
+          active: !!this.selected,
           disabled: !!this.disabled,
-          primary: this.variant == "primary",
           light: this.theme == "light",
           dark: this.theme == "dark",
-          outline: this.outline,
           'text-sm': this.textSize == "sm",
           'text-md': this.textSize == "md",
           'text-lg': this.textSize == "lg",
@@ -54,7 +50,6 @@ export class NHButton extends NHComponent {
         background-color: var(--nh-theme-accent-default);
         font-family: var(--nh-font-families-body);
         letter-spacing: var(--nh-letter-spacing-buttons);
-        width: 100%;
       }
       button:focus {
         border: 1px solid var(--nh-theme-accent-default);
