@@ -20,7 +20,7 @@
     "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe -w grapes-editor -w @lightningrodlabs/attachments",
     "build:ui": "npm run build:libs && npm run build -w we",
     "test": "npm run build:happ && cargo nextest run -j 1",
-    "e2e": "npm run build:happ && npm test -w e2e-tests",
+    "e2e": "npm run build:happ && cargo build --release -p we && npm test -w e2e-tests",
     "tauri": "tauri",
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we",

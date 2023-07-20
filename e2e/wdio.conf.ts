@@ -1,11 +1,12 @@
-const os = require("os");
-const path = require("path");
-const { spawn, spawnSync } = require("child_process");
+import os from "os";
+import path from "path";
+import { spawn, spawnSync } from "child_process";
+import type { Options } from "@wdio/types";
 
 // keep track of the `tauri-driver` child process
 let tauriDriver;
 
-exports.config = {
+export const config: Options.Testrunner = {
   specs: ["./tests/**/*.ts"],
   maxInstances: 1,
   capabilities: [
@@ -14,7 +15,7 @@ exports.config = {
       "tauri:options": {
         application: "../target/release/we",
       },
-    },
+    } as any,
   ],
   reporters: ["spec"],
   framework: "mocha",
@@ -22,15 +23,15 @@ exports.config = {
     ui: "bdd",
     timeout: 60000,
   },
-
-  // ensure the rust project is built since we expect this binary to exist for the webdriver sessions
-  onPrepare: () =>
-    spawnSync("cargo", ["build", "--release"], {
-      cwd: `${process.cwd()}/..`,
-      env: process.env,
-      stdio: [process.stdin, process.stdout, process.stderr],
-      encoding: "utf-8",
-    }),
+  autoCompileOpts: {
+    autoCompile: true,
+    // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
+    // for all available options
+    tsNodeOpts: {
+      transpileOnly: true,
+      project: "./tsconfig.json",
+    },
+  },
 
   // ensure we are running `tauri-driver` before the session starts so that we can proxy the webdriver requests
   beforeSession: () =>
