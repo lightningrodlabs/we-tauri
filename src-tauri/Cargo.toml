@@ -28,13 +28,14 @@ futures = "0.3"
 log = "0.4.14"
 portpicker = "0.1"
 thiserror = "1"
-
 bzip2 = { version = "0.4", features = ["static"] }
-
 holochain_client = { git = "https://github.com/holochain/holochain-client-rust", branch = "holochain-0.3.0-beta-dev.8" }
 holochain_state = "=0.3.0-beta-dev.8"
 holochain_websocket = "0.3.0-beta-dev.3"
-holochain = "0.3.0-beta-dev.9"
+holochain = { version = "0.3.0-beta-dev.9", features = [
+  "sqlite-encrypted",
+  "tx5",
+] }
 holochain_types = "=0.3.0-beta-dev.8"
 mr_bundle = "0.2"
 either = "*"

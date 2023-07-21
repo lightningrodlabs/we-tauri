@@ -35,11 +35,11 @@ export default defineConfig(async () => {
       host: "0.0.0.0", // listen on all addresses
       port: 5173,
       strictPort: true,
-      hmr: {
-        protocol: "ws",
-        host,
-        port: 5194,
-      },
+      // hmr: {
+      //   protocol: "ws",
+      //   host,
+      //   port: 5194,
+      // },
     },
   };
   config.plugins = [

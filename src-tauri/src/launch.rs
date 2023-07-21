@@ -67,9 +67,9 @@ pub async fn launch(
 
     let mut tuning_params = KitsuneP2pTuningParams::default();
 
-    if cfg!(mobile) {
-        tuning_params.gossip_arc_clamping = "empty".to_string();
-    }
+    // if cfg!(mobile) {
+    //     tuning_params.gossip_arc_clamping = "empty".to_string();
+    // }
     network_config.tuning_params = Arc::new(tuning_params);
 
     network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host"));

@@ -40,6 +40,7 @@
                 "armv7-linux-androideabi"
                 "x86_64-linux-android"
                 "i686-linux-android"
+                "aarch64-unknown-linux-gnu"
                 "aarch64-unknown-linux-musl"
                 "wasm32-unknown-unknown"
                 "x86_64-pc-windows-gnu"
@@ -76,6 +77,9 @@
               ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
               ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
               NDK_HOME = "${androidSdk}/libexec/android-sdk/ndk/${ndkVersion}";
+              OPENSSL_DIR = pkgs.pkgsCross.aarch64-multiplatform.openssl_1_1.dev;
+              OPENSSL_LIB_DIR = "${pkgs.pkgsCross.aarch64-multiplatform.openssl_1_1.dev}/lib";
+              OPENSSL_INCLUDE_DIR = "${pkgs.pkgsCross.aarch64-multiplatform.openssl_1_1.dev}/include/openssl";
 
               inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
               packages = (with pkgs; [
@@ -91,6 +95,9 @@
               
               buildInputs = (with pkgs; [
                 openssl
+                openssl.dev
+                pkgsCross.aarch64-multiplatform.openssl_1_1
+                pkgsCross.aarch64-multiplatform.openssl_1_1.dev
                 # this is required for glib-networking
                 glib
                 jdk17
