@@ -11,6 +11,8 @@ use crate::{
     error::{WeError, WeResult},
 };
 
+pub type Profile = String;
+
 #[derive(Clone)]
 pub struct WeFileSystem {
     pub app_data_dir: PathBuf,

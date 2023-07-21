@@ -24,6 +24,7 @@ tauri = { version = "=1.4", features = [
   "process-command-api",
   "protocol-all",
   "shell-open",
+  "system-tray",
 ] }
 tauri-plugin-deep-link = "0.1"
 
