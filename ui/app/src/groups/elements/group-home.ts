@@ -394,6 +394,9 @@ export class GroupHome extends LitElement {
         display: flex;
         justify-content: center;
       }
+      .title {
+        font-size: 25px;
+      }
     `,
   ];
 }

@@ -49,7 +49,7 @@ export class GroupsSidebar extends LitElement {
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-bottom: 8px; border-radius: 50%;"
+                style="margin-bottom: 8px; border-radius: 50%; --size: 60px;"
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
                 @click=${() => {
@@ -70,7 +70,7 @@ export class GroupsSidebar extends LitElement {
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-bottom: 8px; border-radius: 50%;"
+              style="margin-bottom: 8px; border-radius: 50%; --size: 60px;"
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
               @click=${() => {
@@ -109,7 +109,7 @@ export class GroupsSidebar extends LitElement {
     return html`
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
-      <div class="column" style="padding: 4px; align-items: center;">
+      <div class="column" style="padding: 12px; align-items: center;">
         ${this.renderGroupsLoading()}
 
         <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
@@ -123,7 +123,9 @@ export class GroupsSidebar extends LitElement {
                 ) as CreateGroupDialog
               ).open()}
           >
-            <sl-icon .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
+            <div class="column center-content" style="height: 100%;">
+              <sl-icon style="width: 30px; height: 30px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
+            </div>
           </sl-button>
         </sl-tooltip>
       </div>

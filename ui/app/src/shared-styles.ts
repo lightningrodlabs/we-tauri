@@ -17,6 +17,7 @@ export const weStyles = [
       /* for buttons */
       --sl-input-border-radius-medium: 6px;
 
+      --sl-input-height-large: 60px;
 
       /* Fonts */
       --sl-font-mono: "Aileron", "Open Sans", "Helvetica Neue", sans-serif;

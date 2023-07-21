@@ -159,8 +159,8 @@ export class DynamicLayout extends LitElement {
         .titleRenderer=${({ groupDnaHash }) =>
           html`
             <group-context .groupDnaHash=${decodeHashFromBase64(groupDnaHash)}>
-              <group-logo></group-logo>
-              <group-title style="margin-left: 4px;"></group-title>
+              <group-logo style="--size: 25px"></group-logo>
+              <group-title style="margin-left: 4px; font-size: 16px;"></group-title>
             </group-context>
           `}
         .template=${({ groupDnaHash }, container) => html`

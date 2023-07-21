@@ -60,10 +60,13 @@ export class SidebarButton extends LitElement {
       }
       .icon {
         cursor: pointer;
-        width: 48px;
-        height: 48px;
+        width: var(--size, 48px);
+        height: var(--size, 48px);
         border-radius: var(--border-radius, 50%);
         object-fit: cover;
+      }
+      .icon:hover {
+        box-shadow: 0 0 3px 3px var(--hover-color, white);
       }
     `;
   }
