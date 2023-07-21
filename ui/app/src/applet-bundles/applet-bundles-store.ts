@@ -17,12 +17,13 @@ import {
 } from "@holochain/client";
 import { invoke } from "@tauri-apps/api";
 import { Applet } from "../applets/types.js";
-import { getHappReleases } from "../processes/appstore/get-happ-releases.js";
+import { getHappReleases, getVisibleHostsForZomeFunction } from "../processes/appstore/get-happ-releases.js";
 import { getAllApps } from "../processes/appstore/get-happs.js";
 import {
   AppEntry,
   Entity,
   HappReleaseEntry,
+  HostAvailability,
 } from "../processes/appstore/types.js";
 import { ConductorInfo } from "../tauri.js";
 import { isAppRunning } from "../utils.js";
@@ -63,6 +64,18 @@ export class AppletBundlesStore {
       })
     )
   );
+
+  async getVisibleHosts (
+    appEntry: Entity<AppEntry>
+  ): Promise<HostAvailability> {
+    return getVisibleHostsForZomeFunction(
+      this.appstoreClient,
+      appEntry.content.devhub_address.dna,
+      "happ_library",
+      "get_webhapp_package", // TODO change to 'get_webasset_file' once fetching in chunks is implemented
+      4000,
+    )
+  }
 
   async getLatestVersion(
     appEntry: Entity<AppEntry>
