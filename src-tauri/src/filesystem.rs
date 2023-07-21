@@ -6,10 +6,7 @@ use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
 
-use crate::{
-    default_apps::we_version,
-    error::{WeError, WeResult},
-};
+use crate::error::{WeError, WeResult};
 
 pub type Profile = String;
 
@@ -28,7 +25,7 @@ impl WeFileSystem {
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the data dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
         let app_config_dir = app_handle
             .path_resolver()
@@ -36,7 +33,7 @@ impl WeFileSystem {
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the data dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
 
 
@@ -46,7 +43,7 @@ impl WeFileSystem {
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the log dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
 
         fs::create_dir_all(app_data_dir.join("webhapps"))?;
@@ -216,4 +213,30 @@ pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> WeResult<()> {
     }
 
     Ok(())
+}
+
+
+
+/// Returns a string considering the relevant part of the version regarding breaking changes
+/// Examples:
+/// 3.2.0 becomes 3.x.x
+/// 0.2.2 becomes 0.2.x
+/// 0.0.5 becomes 0.0.5
+/// 0.2.3-alpha.2 remains 0.2.3-alpha.2 --> pre-releases always get their own storage location since we have to assume breaking changes
+pub fn breaking_app_version(app_handle: &AppHandle) -> String {
+    let app_version = app_handle.package_info().version.clone();
+
+    if app_version.pre.is_empty() == false {
+        return app_version.to_string();
+    }
+
+    match app_version.major {
+        0 => {
+            match app_version.minor {
+                0 => format!("0.0.{}", app_version.patch),
+                _ => format!("0.{}.x", app_version.minor),
+            }
+        },
+        _ => format!("{}.x.x", app_version.major)
+    }
 }

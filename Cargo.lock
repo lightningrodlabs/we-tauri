@@ -9180,8 +9180,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "we"
-version = "0.0.21"
+name = "we-alpha"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "appstore",

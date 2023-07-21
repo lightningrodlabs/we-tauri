@@ -38,6 +38,7 @@ fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<sodoken::BufRead> {
 }
 
 pub async fn launch(
+    app_handle: &tauri::AppHandle,
     we_config: &WeConfig,
     fs: &WeFileSystem,
     password: String,
@@ -88,7 +89,7 @@ pub async fn launch(
         .add_app_interface(either::Either::Left(0))
         .await?;
 
-    install_default_apps_if_necessary(we_config, &fs, &mut admin_ws).await?;
+    install_default_apps_if_necessary(app_handle, we_config, &fs, &mut admin_ws).await?;
 
     Ok(conductor)
 }

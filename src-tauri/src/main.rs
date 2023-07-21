@@ -15,7 +15,7 @@ use menu::{build_menu, handle_menu_event};
 use serde_json::Value;
 use system_tray::{app_system_tray, handle_system_tray_event};
 use tauri::{
-    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, WindowBuilder, WindowUrl, SystemTray, SystemTrayEvent,
+    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, SystemTray, SystemTrayEvent,
 };
 
 mod applet_iframes;
