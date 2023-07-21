@@ -111,6 +111,7 @@ export interface AppletInstanceInfo {
   appInfo: AppInfo; // InstalledAppInfo
   applet: Applet;
   federatedGroups: DnaHash[];
+  appAgentWebsocket?: AppAgentClient;
 }
 
 export interface UninstalledAppletInstanceInfo {
@@ -429,13 +430,28 @@ export class MatrixStore {
     const weGroupId =
       this.getWeGroupInfoForAppletInstance(appletInstanceId).cell_id[0];
     const [_weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
-    const appInfo = appInstanceInfos.find(
+    const appInstanceInfo = appInstanceInfos.find(
       (info) =>
         JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
-    )!.appInfo;
-
-    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+    )!;
+    const appInfo = appInstanceInfo.appInfo;
+    
+    let appletAppAgentWebsocket: AppAgentClient;
+    if (!appInstanceInfo.appAgentWebsocket) {
+      console.log('app agent websocket not instantiated yet');
+      const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+      appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      this._matrix.update((matrix) => {
+        matrix.get(weGroupId)[1].find(
+          (info) =>
+            JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
+        )!.appAgentWebsocket = appletAppAgentWebsocket;
+        return matrix;
+      })
+    }
+    else {
+      appletAppAgentWebsocket = appInstanceInfo.appAgentWebsocket;
+    }
 
     const renderers = await gui.appletRenderers(
       this.appWebsocket,
@@ -1299,11 +1315,14 @@ export class MatrixStore {
         guiToCommit
       );
 
+      const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+      const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
       const appInstanceInfo: AppletInstanceInfo = {
         appletId: appletInstanceId,
         appInfo: appInfo,
         applet: newAppletInfo.applet,
         federatedGroups: newAppletInfo.federatedGroups,
+        appAgentWebsocket: appletAppAgentWebsocket,
       };
       // update stores
       // update _matrix
@@ -1462,11 +1481,14 @@ export class MatrixStore {
       registerAppletInput
     );
 
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
     const appInstanceInfo: AppletInstanceInfo = {
       appletId: appletInstanceId,
       appInfo: appInfo,
       applet: applet,
       federatedGroups: [],
+      appAgentWebsocket: appletAppAgentWebsocket,
     };
 
     // update stores
