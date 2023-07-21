@@ -18,24 +18,31 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   loading = true;
 
   async firstUpdated() {
-    const adminWebsocket = await AdminWebsocket.connect(`ws://localhost:${import.meta.env.VITE_ADMIN_PORT}`);
-    const appWebsocket = await AppWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`);
-    console.log("Hello World!");
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    const adminPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_ADMIN_PORT_2 : import.meta.env.VITE_ADMIN_PORT;
+    const adminWebsocket = await AdminWebsocket.connect(`ws://localhost:${adminPort}`);
+    const appWebsocket = await AppWebsocket.connect(`ws://localhost:${hcPort}`);
+    console.log("Hello World!", hcPort, adminPort);
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
     
     // authorize signing credentials for all cells
     await Promise.all(
       Object.keys(weAppInfo.cell_info).map(roleName => {
-        weAppInfo.cell_info[roleName].map(cellInfo => {
-          adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        console.log("role name from mapping", roleName)
+        weAppInfo.cell_info[roleName].map(async (cellInfo) => {
+          console.log("cell info from mapping", cellInfo)
+          await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
         })
       })
     );
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
-
-    this.loading = false;
+    
+    setTimeout(() => {
+      this.loading = false;
+    }, 200);
+    // this.loading = false;
   }
 
   render() {

@@ -216,7 +216,9 @@ export class MatrixStore {
     adminWebsocket: AdminWebsocket,
     weParentAppInfo: AppInfo,
   ) {
-    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, "we");
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    console.log("hcPort in matrix connect: ", hcPort);
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(
@@ -432,10 +434,15 @@ export class MatrixStore {
         JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
     )!.appInfo;
 
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+
     const renderers = await gui.appletRenderers(
       this.appWebsocket,
+      appletAppAgentWebsocket,
       this.adminWebsocket,
       weServices,
+      //@ts-ignore
       [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }]
     );
 
@@ -704,7 +711,9 @@ export class MatrixStore {
         const sensemakerGroupDnaHash = sensemakerGroupCellId[0];
 
         // create dedicated AppAgentWebsocket for each We group
-        const weGroupAgentWebsocket = await AppAgentWebsocket.connect("ws://localhost:9001", "we");
+        const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+        console.log("hcPort in matrix fetchMatrix: ", hcPort)
+        const weGroupAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
@@ -743,6 +752,7 @@ export class MatrixStore {
 
         const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
+        await this.adminWebsocket.authorizeSigningCredentials(sensemakerGroupCellId)
         const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
         sensemakerStore.registerWidget(
           [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
@@ -995,7 +1005,9 @@ export class MatrixStore {
     await this.adminWebsocket.authorizeSigningCredentials(newWeGroupCellId);
 
     
-    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${import.meta.env.VITE_HC_PORT}`, weParentAppInfo.installed_app_id);
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    console.log("hcPort in matrix installWeGroup: ", hcPort)
+    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
@@ -1244,7 +1256,18 @@ export class MatrixStore {
 
       this.adminWebsocket
         .installApp(request)
-        .then()
+        .then(
+          async (appInfo) => {
+            const installedCells = appInfo.cell_info;
+            await Promise.all(
+              Object.keys(installedCells).map(roleName => {
+                installedCells[roleName].map(cellInfo => {
+                  this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+                })
+              })
+            );
+          }
+        )
         .catch((e) => {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
