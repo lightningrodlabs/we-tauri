@@ -1,6 +1,6 @@
 import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
-import { AppAgentWebsocket, AdminWebsocket } from "@holochain/client";
+import { AdminWebsocket } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -8,8 +8,11 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
 import "./password/enter-password.js";
 import "./password/create-password.js";
+import "./password/factory-reset.js";
 import "./elements/main-dashboard.js";
 
+
+import { listen } from "@tauri-apps/api/event";
 import { weStyles } from "./shared-styles.js";
 import { weStoreContext } from "./context.js";
 import { WeStore } from "./we-store.js";
@@ -24,18 +27,29 @@ import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 type State =
   | { state: "loading" }
   | { state: "password"; initialized: boolean }
-  | { state: "running" };
+  | { state: "running" }
+  | { state: "factoryReset" };
 
 @customElement("we-app")
 export class WeApp extends LitElement {
   @state()
   state: State = { state: "loading" };
 
+  @state()
+  previousState: State = { state: "loading" };
+
   @provide({ context: weStoreContext })
   @state()
   _weStore!: WeStore;
 
   async firstUpdated() {
+
+    await listen("request-factory-reset", () => {
+      console.log("Received factory reset event.");
+      this.previousState = this.state;
+      this.state = { state: "factoryReset" }
+    });
+
     const launched = await isLaunched();
 
     if (launched) {
@@ -48,6 +62,7 @@ export class WeApp extends LitElement {
 
   async connect() {
     this.state = { state: "loading" };
+
     const info = await getConductorInfo();
 
     window["__HC_LAUNCHER_ENV__"] = {
@@ -95,6 +110,12 @@ export class WeApp extends LitElement {
         `;
       case "running":
         return html`<main-dashboard></main-dashboard>`;
+      case "factoryReset":
+        return html`
+          <div class="column center-content" style="flex: 1">
+            <factory-reset @cancel-factory-reset=${() => { this.state = this.previousState; }}></factory-reset>
+          </div>
+        `;
     }
   }
 

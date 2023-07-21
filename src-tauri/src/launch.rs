@@ -44,9 +44,9 @@ pub async fn launch(
     password: String,
 ) -> WeResult<ConductorHandle> {
     let mut config = ConductorConfig::default();
-    config.environment_path = fs.conductor_path().into();
+    config.environment_path = fs.conductor_dir().into();
     config.keystore = KeystoreConfig::LairServerInProc {
-        lair_root: Some(fs.keystore_path()),
+        lair_root: Some(fs.keystore_dir()),
     };
     let admin_port = match option_env!("ADMIN_PORT") {
         Some(p) => p.parse().unwrap(),

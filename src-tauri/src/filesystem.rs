@@ -27,6 +27,7 @@ impl WeFileSystem {
             )))?
             .join(breaking_app_version(app_handle))
             .join(profile);
+
         let app_config_dir = app_handle
             .path_resolver()
             .app_config_dir()
@@ -35,7 +36,6 @@ impl WeFileSystem {
             )))?
             .join(breaking_app_version(app_handle))
             .join(profile);
-
 
         let app_log_dir = app_handle
             .path_resolver()
@@ -56,11 +56,23 @@ impl WeFileSystem {
         })
     }
 
-    pub fn keystore_path(&self) -> PathBuf {
+    pub fn app_data_dir(&self) -> PathBuf {
+        self.app_data_dir.clone()
+    }
+
+    pub fn app_config_dir(&self) -> PathBuf {
+        self.app_config_dir.clone()
+    }
+
+    pub fn app_log_dir(&self) -> PathBuf {
+        self.app_log_dir.clone()
+    }
+
+    pub fn keystore_dir(&self) -> PathBuf {
         self.app_data_dir.join("keystore")
     }
 
-    pub fn conductor_path(&self) -> PathBuf {
+    pub fn conductor_dir(&self) -> PathBuf {
         self.app_data_dir.join("conductor")
     }
 
@@ -81,6 +93,7 @@ impl WeFileSystem {
             path: self.app_data_dir.join("uis"),
         }
     }
+
 }
 
 pub struct UiStore {
@@ -88,6 +101,10 @@ pub struct UiStore {
 }
 
 impl UiStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     pub fn ui_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
         self.path.join(installed_app_id)
     }
@@ -121,6 +138,10 @@ pub struct WebAppStore {
 }
 
 impl WebAppStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     fn webhapp_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
         let web_app_entry_hash_b64 = EntryHashB64::from(web_app_entry_hash.clone()).to_string();
         self.path.join(web_app_entry_hash_b64)
@@ -167,6 +188,10 @@ pub struct IconStore {
 }
 
 impl IconStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     fn icon_path(&self, app_entry_hash: &ActionHash) -> PathBuf {
         self.path
             .join(ActionHashB64::from(app_entry_hash.clone()).to_string())

@@ -11,7 +11,7 @@ use crate::{
 #[tauri::command]
 pub async fn is_keystore_initialized(fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
     let exists = fs
-        .keystore_path()
+        .keystore_dir()
         .join("lair-keystore-config.yaml")
         .exists();
     Ok(exists)

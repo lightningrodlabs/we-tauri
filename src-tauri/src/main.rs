@@ -32,6 +32,7 @@ mod window;
 use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
+    factory_reset::execute_factory_reset,
     install_applet_bundle::{fetch_icon, install_applet_bundle},
     join_group::join_group,
     password::{create_password, enter_password, is_keystore_initialized},
@@ -58,20 +59,21 @@ fn main() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
-            sign_zome_call,
-            join_group,
-            open_devhub,
-            open_appstore,
-            is_dev_mode_enabled,
-            enable_dev_mode,
-            disable_dev_mode,
-            install_applet_bundle,
             create_password,
+            disable_dev_mode,
+            enable_dev_mode,
             enter_password,
+            execute_factory_reset,
+            fetch_icon,
+            get_conductor_info,
+            install_applet_bundle,
+            is_dev_mode_enabled,
             is_keystore_initialized,
             is_launched,
-            get_conductor_info,
-            fetch_icon
+            join_group,
+            open_appstore,
+            open_devhub,
+            sign_zome_call,
         ])
         .setup(move |app| {
             let handle = app.handle();
