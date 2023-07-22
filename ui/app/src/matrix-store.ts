@@ -437,7 +437,11 @@ export class MatrixStore {
     const appInfo = appInstanceInfo.appInfo;
     
     let appletAppAgentWebsocket: AppAgentClient;
+    
+    // check if the applets app agent websocket has been instantiated yet
     if (!appInstanceInfo.appAgentWebsocket) {
+
+      //instantiate the websocket
       console.log('app agent websocket not instantiated yet');
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
@@ -448,11 +452,18 @@ export class MatrixStore {
         )!.appAgentWebsocket = appletAppAgentWebsocket;
         return matrix;
       })
+
+      // authorize signing credentials for all cells in the applet happ
+      for (const roleName in appInfo.cell_info) {
+        for (const cellInfo of appInfo.cell_info[roleName]) {
+          await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        }
+      }
     }
     else {
       appletAppAgentWebsocket = appInstanceInfo.appAgentWebsocket;
     }
-
+    
     const renderers = await gui.appletRenderers(
       this.appWebsocket,
       appletAppAgentWebsocket,
@@ -1275,13 +1286,11 @@ export class MatrixStore {
         .then(
           async (appInfo) => {
             const installedCells = appInfo.cell_info;
-            await Promise.all(
-              Object.keys(installedCells).map(roleName => {
-                installedCells[roleName].map(cellInfo => {
-                  this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-                })
-              })
-            );
+            for (const [roleName, cells] of Object.entries(installedCells)) {
+              for (const cellInfo of cells) {
+                await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+              }
+            }
           }
         )
         .catch((e) => {
