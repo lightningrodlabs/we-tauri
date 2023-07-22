@@ -4,7 +4,7 @@
   "description": "packaged styles for the Neighbourhoods design system",
   "main": "index.ts",
   "scripts": {
-    "prepare": "npm run build",
+    "prepare": "npm run build:styles && npm run build",
     "build": "rollup -c rollup.config.mjs",
     "build:styles": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
