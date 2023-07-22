@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Sat, 22 Jul 2023 10:29:47 GMT
+ * Generated on Sat, 22 Jul 2023 11:08:19 GMT
  */
 
 module.exports = {
@@ -1863,6 +1863,23 @@ module.exports = {
           "500"
         ]
       },
+      "550": {
+        "value": "#514957",
+        "type": "color",
+        "filePath": "dark.json",
+        "isSource": true,
+        "original": {
+          "value": "#514957",
+          "type": "color"
+        },
+        "name": "nhColorsEggplant550",
+        "attributes": {},
+        "path": [
+          "colors",
+          "eggplant",
+          "550"
+        ]
+      },
       "600": {
         "value": "#3d3443",
         "type": "color",
@@ -1880,13 +1897,30 @@ module.exports = {
           "600"
         ]
       },
-      "700": {
-        "value": "#312a36",
+      "650": {
+        "value": "#37303D",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "#312a36",
+          "value": "#37303D",
+          "type": "color"
+        },
+        "name": "nhColorsEggplant650",
+        "attributes": {},
+        "path": [
+          "colors",
+          "eggplant",
+          "650"
+        ]
+      },
+      "700": {
+        "value": "#342D37",
+        "type": "color",
+        "filePath": "dark.json",
+        "isSource": true,
+        "original": {
+          "value": "#342D37",
           "type": "color"
         },
         "name": "nhColorsEggplant700",
@@ -2906,25 +2940,25 @@ module.exports = {
   },
   "radii": {
     "base": {
-      "value": "3",
+      "value": "6",
       "type": "other",
       "description": "the base for our radii tokens",
       "filePath": "dark.json",
       "isSource": true,
       "original": {
-        "value": "3",
+        "value": "6",
         "type": "other",
         "description": "the base for our radii tokens"
       },
       "name": "nhRadiiBase",
       "attributes": {
-        "value": "3",
+        "value": "6",
         "type": "other",
         "description": "the base for our radii tokens",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "3",
+          "value": "6",
           "type": "other",
           "description": "the base for our radii tokens"
         },
@@ -2943,7 +2977,7 @@ module.exports = {
       "comment": "the base for our radii tokens"
     },
     "xs": {
-      "value": "1.5",
+      "value": "3",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -2959,7 +2993,7 @@ module.exports = {
       ]
     },
     "sm": {
-      "value": "3",
+      "value": "6",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -2975,7 +3009,7 @@ module.exports = {
       ]
     },
     "md": {
-      "value": "6",
+      "value": "12",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -2991,7 +3025,7 @@ module.exports = {
       ]
     },
     "lg": {
-      "value": "9",
+      "value": "18",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -3007,7 +3041,7 @@ module.exports = {
       ]
     },
     "xl": {
-      "value": "12",
+      "value": "24",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -3023,7 +3057,7 @@ module.exports = {
       ]
     },
     "2xl": {
-      "value": "15",
+      "value": "30",
       "type": "borderRadius",
       "filePath": "dark.json",
       "isSource": true,
@@ -3059,7 +3093,7 @@ module.exports = {
     "blur": {
       "20": {
         "type": "dimension",
-        "value": "1.5",
+        "value": "3px",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
@@ -3076,7 +3110,7 @@ module.exports = {
       },
       "40": {
         "type": "dimension",
-        "value": "2",
+        "value": "4px",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
@@ -3093,7 +3127,7 @@ module.exports = {
       },
       "60": {
         "type": "dimension",
-        "value": "4",
+        "value": "8px",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
@@ -3110,7 +3144,7 @@ module.exports = {
       },
       "80": {
         "type": "dimension",
-        "value": "8",
+        "value": "16px",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
@@ -3127,7 +3161,7 @@ module.exports = {
       },
       "100": {
         "type": "dimension",
-        "value": "16",
+        "value": "32px",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
@@ -3143,13 +3177,13 @@ module.exports = {
         ]
       },
       "base": {
-        "value": "0.5",
-        "type": "other",
+        "value": "1px",
+        "type": "dimension",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "0.5",
-          "type": "other"
+          "value": "1",
+          "type": "dimension"
         },
         "name": "nhShadowsBlurBase",
         "attributes": {},
@@ -3266,7 +3300,7 @@ module.exports = {
     },
     "theme": {
       "20": {
-        "value": "0 1px 1.5px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 1px 3px 0 rgba(13, 13, 13, 0.9), 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3300,7 +3334,7 @@ module.exports = {
         ]
       },
       "40": {
-        "value": "0 2px 2px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 2px 4px 0 rgba(13, 13, 13, 0.9), 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3334,7 +3368,7 @@ module.exports = {
         ]
       },
       "60": {
-        "value": "0 4px 4px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 4px 8px 0 rgba(13, 13, 13, 0.9), 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3368,7 +3402,7 @@ module.exports = {
         ]
       },
       "80": {
-        "value": "0 8px 8px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 8px 16px 0 rgba(13, 13, 13, 0.9), 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3402,7 +3436,7 @@ module.exports = {
         ]
       },
       "100": {
-        "value": "0 16px 16px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 16px 32px 0 rgba(13, 13, 13, 0.9), 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3438,7 +3472,7 @@ module.exports = {
     },
     "theme-active": {
       "20": {
-        "value": "0 0 5px 0 #6e46cc, 0 0 0.5px 0 #0D0D0D",
+        "value": "0 0 5px 0 #6e46cc, 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3472,7 +3506,7 @@ module.exports = {
         ]
       },
       "40": {
-        "value": "0 0 10px 0 #6e46cc, 0 0 0.5px 0 #0D0D0D",
+        "value": "0 0 10px 0 #6e46cc, 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3506,7 +3540,7 @@ module.exports = {
         ]
       },
       "60": {
-        "value": "0 0 20px 0 #6e46cc, 0 0 0.5px 0 #0D0D0D",
+        "value": "0 0 20px 0 #6e46cc, 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3540,7 +3574,7 @@ module.exports = {
         ]
       },
       "80": {
-        "value": "0 0 50px 0 #6e46cc, 0 0 0.5px 0 #0D0D0D",
+        "value": "0 0 50px 0 #6e46cc, 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3574,7 +3608,7 @@ module.exports = {
         ]
       },
       "100": {
-        "value": "0 0 16px 0 #6e46cc, 0 0 0.5px 0 #0D0D0D",
+        "value": "0 0 32px 0 #6e46cc, 0 0 1px 0 #0D0D0D",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3608,59 +3642,9 @@ module.exports = {
         ]
       }
     },
-    "theme-soft": {
-      "20": {
-        "value": "0 0 4px 0 #8b98f9",
-        "type": "boxShadow",
-        "filePath": "dark.json",
-        "isSource": true,
-        "original": {
-          "value": {
-            "x": "0",
-            "y": "0",
-            "blur": "{shadows.blur.60}",
-            "spread": "0",
-            "color": "{colors.blue.300}",
-            "type": "dropShadow"
-          },
-          "type": "boxShadow"
-        },
-        "name": "nhShadowsThemeSoft20",
-        "attributes": {},
-        "path": [
-          "shadows",
-          "theme-soft",
-          "20"
-        ]
-      },
-      "40": {
-        "value": "0 0 4px 0 #b1bafb",
-        "type": "boxShadow",
-        "filePath": "dark.json",
-        "isSource": true,
-        "original": {
-          "value": {
-            "x": "0",
-            "y": "0",
-            "blur": "{shadows.blur.60}",
-            "spread": "0",
-            "color": "{colors.blue.200}",
-            "type": "dropShadow"
-          },
-          "type": "boxShadow"
-        },
-        "name": "nhShadowsThemeSoft40",
-        "attributes": {},
-        "path": [
-          "shadows",
-          "theme-soft",
-          "40"
-        ]
-      }
-    },
     "theme-background-canvas": {
       "20": {
-        "value": "0 1px 1.5px 0 #05080f, 0 0 0.5px 0 #05080f",
+        "value": "0 1px 3px 0 #18151b, 0 0 1px 0 #18151b",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3694,7 +3678,7 @@ module.exports = {
         ]
       },
       "40": {
-        "value": "0 2px 2px 0 #05080f, 0 0 0.5px 0 #05080f",
+        "value": "0 2px 4px 0 #18151b, 0 0 1px 0 #18151b",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3728,14 +3712,14 @@ module.exports = {
         ]
       },
       "60": {
-        "value": "0 4px 4px 0 rgba(13, 13, 13, 0.9), 0 0 0.5px 0 #05080f",
+        "value": "0 4px 8px 0 #18151b, 0 0 1px 0 #18151b",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.shadow.blur}",
+              "color": "{theme.bg.canvas}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.60}",
@@ -3762,7 +3746,7 @@ module.exports = {
         ]
       },
       "80": {
-        "value": "0 8px 8px 0 #05080f, 0 0 0.5px 0 #05080f",
+        "value": "0 8px 16px 0 #18151b, 0 0 1px 0 #18151b",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3796,7 +3780,7 @@ module.exports = {
         ]
       },
       "100": {
-        "value": "0 16px 16px 0 #05080f, 0 0 0.5px 0 #05080f",
+        "value": "0 16px 32px 0 #18151b, 0 0 1px 0 #18151b",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -3832,14 +3816,14 @@ module.exports = {
     },
     "theme-background-subtle": {
       "20": {
-        "value": "0 1px 1.5px 0 #323232, 0 0 0.5px 0 #323232",
+        "value": "0 1px 3px 0 #342D37, 0 0 1px 0 #342D37",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.20}",
@@ -3847,7 +3831,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -3866,14 +3850,14 @@ module.exports = {
         ]
       },
       "40": {
-        "value": "0 2px 2px 0 #323232, 0 0 0.5px 0 #323232",
+        "value": "0 2px 4px 0 #342D37, 0 0 1px 0 #342D37",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.40}",
@@ -3881,7 +3865,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -3900,14 +3884,14 @@ module.exports = {
         ]
       },
       "60": {
-        "value": "0 4px 4px 0 #323232, 0 0 0.5px 0 #323232",
+        "value": "0 4px 8px 0 #342D37, 0 0 1px 0 #342D37",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.60}",
@@ -3915,7 +3899,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -3934,14 +3918,14 @@ module.exports = {
         ]
       },
       "80": {
-        "value": "0 8px 8px 0 #323232, 0 0 0.5px 0 #323232",
+        "value": "0 8px 16px 0 #342D37, 0 0 1px 0 #342D37",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.80}",
@@ -3949,7 +3933,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -3968,14 +3952,14 @@ module.exports = {
         ]
       },
       "100": {
-        "value": "0 16px 16px 0 #323232, 0 0 0.5px 0 #323232",
+        "value": "0 16px 32px 0 #342D37, 0 0 1px 0 #342D37",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.100}",
@@ -3983,7 +3967,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.bg.subtle}",
+              "color": "{theme.bg.element}",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4004,7 +3988,7 @@ module.exports = {
     },
     "theme-background-surface": {
       "20": {
-        "value": "0 1px 1.5px 0 #424242, 0 0 0.5px 0 #424242",
+        "value": "0 1px 3px 0 #251f28, 0 0 1px 0 #251f28",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -4038,7 +4022,7 @@ module.exports = {
         ]
       },
       "40": {
-        "value": "0 2px 2px 0 #424242, 0 0 0.5px 0 #424242",
+        "value": "0 2px 4px 0 #251f28, 0 0 1px 0 #251f28",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -4072,7 +4056,7 @@ module.exports = {
         ]
       },
       "60": {
-        "value": "0 4px 4px 0 #424242, 0 0 0.5px 0 #424242",
+        "value": "0 4px 8px 0 #251f28, 0 0 1px 0 #251f28",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -4106,7 +4090,7 @@ module.exports = {
         ]
       },
       "80": {
-        "value": "0 8px 8px 0 #424242, 0 0 0.5px 0 #424242",
+        "value": "0 8px 16px 0 #251f28, 0 0 1px 0 #251f28",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -4140,7 +4124,7 @@ module.exports = {
         ]
       },
       "100": {
-        "value": "0 16px 16px 0 #424242, 0 0 0.5px 0 #424242",
+        "value": "0 16px 32px 0 #251f28, 0 0 1px 0 #251f28",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
@@ -4174,16 +4158,16 @@ module.exports = {
         ]
       }
     },
-    "theme-soft2": {
+    "theme-soft": {
       "20": {
-        "value": "0 1px 1.5px 0 rgba(rgba(13, 13, 13, 0.9), 0.5), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 1px 3px 0 rgba(rgba(13, 13, 13, 0.9), 0.3), 0 0 1px 0 rgba(rgba(13, 13, 13, 0.9), 0.3)",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "rgba({theme.shadow.blur}, 0.5)",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.20}",
@@ -4191,7 +4175,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.shadow.color}",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4201,23 +4185,23 @@ module.exports = {
           ],
           "type": "boxShadow"
         },
-        "name": "nhShadowsThemeSoft220",
+        "name": "nhShadowsThemeSoft20",
         "attributes": {},
         "path": [
           "shadows",
-          "theme-soft2",
+          "theme-soft",
           "20"
         ]
       },
       "40": {
-        "value": "0 2px 2px 0 rgba(rgba(13, 13, 13, 0.9), 0.5), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 2px 4px 0 rgba(rgba(13, 13, 13, 0.9), 0.3), 0 0 1px 0 rgba(rgba(13, 13, 13, 0.9), 0.3)",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "rgba({theme.shadow.blur}, 0.5)",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.40}",
@@ -4225,7 +4209,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.shadow.color}",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4235,23 +4219,23 @@ module.exports = {
           ],
           "type": "boxShadow"
         },
-        "name": "nhShadowsThemeSoft240",
+        "name": "nhShadowsThemeSoft40",
         "attributes": {},
         "path": [
           "shadows",
-          "theme-soft2",
+          "theme-soft",
           "40"
         ]
       },
       "60": {
-        "value": "0 4px 4px 0 rgba(rgba(13, 13, 13, 0.9), 0.5), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 4px 8px 0 rgba(rgba(13, 13, 13, 0.9), 0.3), 0 0 1px 0 rgba(rgba(13, 13, 13, 0.9), 0.3)",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "rgba({theme.shadow.blur}, 0.5)",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.60}",
@@ -4259,7 +4243,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.shadow.color}",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4269,23 +4253,23 @@ module.exports = {
           ],
           "type": "boxShadow"
         },
-        "name": "nhShadowsThemeSoft260",
+        "name": "nhShadowsThemeSoft60",
         "attributes": {},
         "path": [
           "shadows",
-          "theme-soft2",
+          "theme-soft",
           "60"
         ]
       },
       "80": {
-        "value": "0 8px 8px 0 rgba(rgba(13, 13, 13, 0.9), 0.5), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 8px 16px 0 rgba(rgba(13, 13, 13, 0.9), 0.3), 0 0 1px 0 rgba(rgba(13, 13, 13, 0.9), 0.3)",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "rgba({theme.shadow.blur}, 0.5)",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.80}",
@@ -4293,7 +4277,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.shadow.color}",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4303,23 +4287,23 @@ module.exports = {
           ],
           "type": "boxShadow"
         },
-        "name": "nhShadowsThemeSoft280",
+        "name": "nhShadowsThemeSoft80",
         "attributes": {},
         "path": [
           "shadows",
-          "theme-soft2",
+          "theme-soft",
           "80"
         ]
       },
       "100": {
-        "value": "0 16px 16px 0 rgba(rgba(13, 13, 13, 0.9), 0.5), 0 0 0.5px 0 #0D0D0D",
+        "value": "0 16px 32px 0 rgba(rgba(13, 13, 13, 0.9), 0.3), 0 0 1px 0 rgba(rgba(13, 13, 13, 0.9), 0.3)",
         "type": "boxShadow",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
           "value": [
             {
-              "color": "rgba({theme.shadow.blur}, 0.5)",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "{shadows.y.100}",
@@ -4327,7 +4311,7 @@ module.exports = {
               "spread": "0"
             },
             {
-              "color": "{theme.shadow.color}",
+              "color": "rgba({theme.shadow.blur}, 0.3)",
               "type": "dropShadow",
               "x": "0",
               "y": "0",
@@ -4337,11 +4321,11 @@ module.exports = {
           ],
           "type": "boxShadow"
         },
-        "name": "nhShadowsThemeSoft2100",
+        "name": "nhShadowsThemeSoft100",
         "attributes": {},
         "path": [
           "shadows",
-          "theme-soft2",
+          "theme-soft",
           "100"
         ]
       }
@@ -4630,12 +4614,12 @@ module.exports = {
   },
   "fontFamilies": {
     "headlines": {
-      "value": "PT Serif",
+      "value": "Manrope",
       "type": "fontFamilies",
       "filePath": "dark.json",
       "isSource": true,
       "original": {
-        "value": "PT Serif",
+        "value": "Manrope",
         "type": "fontFamilies"
       },
       "name": "nhFontFamiliesHeadlines",
@@ -4646,12 +4630,12 @@ module.exports = {
       ]
     },
     "body": {
-      "value": "Oxygen",
+      "value": "Manrope",
       "type": "fontFamilies",
       "filePath": "dark.json",
       "isSource": true,
       "original": {
-        "value": "Oxygen",
+        "value": "Manrope",
         "type": "fontFamilies"
       },
       "name": "nhFontFamiliesBody",
@@ -5205,12 +5189,12 @@ module.exports = {
   "theme": {
     "bg": {
       "surface": {
-        "value": "#424242",
+        "value": "#251f28",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.grey.800}",
+          "value": "{colors.eggplant.800}",
           "type": "color"
         },
         "name": "nhThemeBgSurface",
@@ -5221,47 +5205,47 @@ module.exports = {
           "surface"
         ]
       },
-      "subtle": {
-        "value": "#323232",
+      "element": {
+        "value": "#342D37",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.grey.900}",
+          "value": "{colors.eggplant.700}",
           "type": "color"
         },
-        "name": "nhThemeBgSubtle",
+        "name": "nhThemeBgElement",
         "attributes": {},
         "path": [
           "theme",
           "bg",
-          "subtle"
+          "element"
         ]
       },
-      "muted": {
-        "value": "#757575",
+      "detail": {
+        "value": "#514957",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.grey.600}",
+          "value": "{colors.eggplant.550}",
           "type": "color"
         },
-        "name": "nhThemeBgMuted",
+        "name": "nhThemeBgDetail",
         "attributes": {},
         "path": [
           "theme",
           "bg",
-          "muted"
+          "detail"
         ]
       },
       "canvas": {
-        "value": "#05080f",
+        "value": "#18151b",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.slate.950}",
+          "value": "{colors.eggplant.900}",
           "type": "color"
         },
         "name": "nhThemeBgCanvas",
@@ -5270,6 +5254,23 @@ module.exports = {
           "theme",
           "bg",
           "canvas"
+        ]
+      },
+      "backdrop": {
+        "value": "#0c0a0d",
+        "type": "color",
+        "filePath": "dark.json",
+        "isSource": true,
+        "original": {
+          "value": "{colors.eggplant.950}",
+          "type": "color"
+        },
+        "name": "nhThemeBgBackdrop",
+        "attributes": {},
+        "path": [
+          "theme",
+          "bg",
+          "backdrop"
         ]
       }
     },
@@ -5292,12 +5293,12 @@ module.exports = {
         ]
       },
       "default": {
-        "value": "#e95c7b",
+        "value": "#a179ff",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.red.400}",
+          "value": "{colors.lavender.400}",
           "type": "color"
         },
         "name": "nhThemeAccentDefault",
@@ -5309,12 +5310,12 @@ module.exports = {
         ]
       },
       "subtle": {
-        "value": "#160207",
+        "value": "#1c1233",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.red.900}",
+          "value": "{colors.lavender.900}",
           "type": "color"
         },
         "name": "nhThemeAccentSubtle",
@@ -5326,12 +5327,12 @@ module.exports = {
         ]
       },
       "muted": {
-        "value": "#9c0f2e",
+        "value": "#6e46cc",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.red.600}",
+          "value": "{colors.lavender.600}",
           "type": "color"
         },
         "name": "nhThemeAccentMuted",
@@ -5343,12 +5344,12 @@ module.exports = {
         ]
       },
       "emphasis": {
-        "value": "#563fd8",
+        "value": "#8a58ff",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{colors.purple.500}",
+          "value": "{colors.lavender.500}",
           "type": "color"
         },
         "name": "nhThemeAccentEmphasis",
@@ -5465,7 +5466,7 @@ module.exports = {
       },
       "opacity": {
         "1": {
-          "value": "rgba(66, 66, 66, 0.01)",
+          "value": "rgba(37, 31, 40, 0.01)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5483,7 +5484,7 @@ module.exports = {
           ]
         },
         "5": {
-          "value": "rgba(66, 66, 66, 0.05)",
+          "value": "rgba(37, 31, 40, 0.05)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5501,7 +5502,7 @@ module.exports = {
           ]
         },
         "10": {
-          "value": "rgba(66, 66, 66, 0.1)",
+          "value": "rgba(37, 31, 40, 0.1)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5519,7 +5520,7 @@ module.exports = {
           ]
         },
         "20": {
-          "value": "rgba(66, 66, 66, 0.2)",
+          "value": "rgba(37, 31, 40, 0.2)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5537,7 +5538,7 @@ module.exports = {
           ]
         },
         "30": {
-          "value": "rgba(66, 66, 66, 0.3)",
+          "value": "rgba(37, 31, 40, 0.3)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5555,7 +5556,7 @@ module.exports = {
           ]
         },
         "40": {
-          "value": "rgba(66, 66, 66, 0.4)",
+          "value": "rgba(37, 31, 40, 0.4)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5573,7 +5574,7 @@ module.exports = {
           ]
         },
         "50": {
-          "value": "rgba(66, 66, 66, 0.5)",
+          "value": "rgba(37, 31, 40, 0.5)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5591,7 +5592,7 @@ module.exports = {
           ]
         },
         "60": {
-          "value": "rgba(66, 66, 66, 0.6)",
+          "value": "rgba(37, 31, 40, 0.6)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5609,7 +5610,7 @@ module.exports = {
           ]
         },
         "70": {
-          "value": "rgba(66, 66, 66, 0.7)",
+          "value": "rgba(37, 31, 40, 0.7)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5627,7 +5628,7 @@ module.exports = {
           ]
         },
         "80": {
-          "value": "rgba(66, 66, 66, 0.8)",
+          "value": "rgba(37, 31, 40, 0.8)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -5645,7 +5646,7 @@ module.exports = {
           ]
         },
         "90": {
-          "value": "rgba(66, 66, 66, 0.9)",
+          "value": "rgba(37, 31, 40, 0.9)",
           "type": "color",
           "filePath": "dark.json",
           "isSource": true,
@@ -6142,12 +6143,12 @@ module.exports = {
     },
     "border": {
       "default": {
-        "value": "#323232",
+        "value": "#342D37",
         "type": "color",
         "filePath": "dark.json",
         "isSource": true,
         "original": {
-          "value": "{theme.bg.subtle}",
+          "value": "{theme.bg.element}",
           "type": "color"
         },
         "name": "nhThemeBorderDefault",
@@ -6290,7 +6291,7 @@ module.exports = {
   "typography": {
     "Colossus": {
       "Bold": {
-        "value": "700 122px/1.1 'PT Serif'",
+        "value": "700 122px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6316,7 +6317,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 122px/1.1 'PT Serif'",
+        "value": "400 122px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6344,7 +6345,7 @@ module.exports = {
     },
     "Display": {
       "Bold": {
-        "value": "700 71px/1.1 'PT Serif'",
+        "value": "700 71px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6370,7 +6371,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 71px/1.1 'PT Serif'",
+        "value": "400 71px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6398,7 +6399,7 @@ module.exports = {
     },
     "Hero": {
       "Bold": {
-        "value": "700 85px/1.1 'PT Serif'",
+        "value": "700 85px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6424,7 +6425,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 85px/1.1 'PT Serif'",
+        "value": "400 85px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6452,7 +6453,7 @@ module.exports = {
     },
     "Uber": {
       "Bold": {
-        "value": "700 102px/1.1 'PT Serif'",
+        "value": "700 102px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6478,7 +6479,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 102px/1.1 'PT Serif'",
+        "value": "400 102px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6506,7 +6507,7 @@ module.exports = {
     },
     "Headline 1": {
       "Bold": {
-        "value": "700 59px/1.1 'PT Serif'",
+        "value": "700 59px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6532,7 +6533,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 59px/1.1 'PT Serif'",
+        "value": "400 59px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6560,7 +6561,7 @@ module.exports = {
     },
     "Headline 2": {
       "Bold": {
-        "value": "700 49px/1.1 'PT Serif'",
+        "value": "700 49px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6586,7 +6587,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 49px/1.1 'PT Serif'",
+        "value": "400 49px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6614,7 +6615,7 @@ module.exports = {
     },
     "Headline 3": {
       "Bold": {
-        "value": "700 41px/1.1 'PT Serif'",
+        "value": "700 41px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6640,7 +6641,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 41px/1.1 'PT Serif'",
+        "value": "400 41px/1.1 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6668,7 +6669,7 @@ module.exports = {
     },
     "Headline 4": {
       "Bold": {
-        "value": "700 34px/1.3 'PT Serif'",
+        "value": "700 34px/1.3 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6694,7 +6695,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 34px/1.3 'PT Serif'",
+        "value": "400 34px/1.3 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6722,7 +6723,7 @@ module.exports = {
     },
     "Headline 5": {
       "Bold": {
-        "value": "700 23px/1.3 'PT Serif'",
+        "value": "700 23px/1.3 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6748,7 +6749,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 23px/1.3 'PT Serif'",
+        "value": "400 23px/1.3 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6776,7 +6777,7 @@ module.exports = {
     },
     "Lead": {
       "Bold": {
-        "value": "700 28px/1.5 Oxygen",
+        "value": "700 28px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6802,7 +6803,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 28px/1.5 Oxygen",
+        "value": "400 28px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6830,7 +6831,7 @@ module.exports = {
     },
     "Body": {
       "Bold": {
-        "value": "700 19px/1.5 Oxygen",
+        "value": "700 19px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6856,7 +6857,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 19px/1.5 Oxygen",
+        "value": "400 19px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6884,7 +6885,7 @@ module.exports = {
     },
     "Small": {
       "Bold": {
-        "value": "700 16px/1.5 Oxygen",
+        "value": "700 16px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6910,7 +6911,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 16px/1.5 Oxygen",
+        "value": "400 16px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6938,7 +6939,7 @@ module.exports = {
     },
     "Caption": {
       "Bold": {
-        "value": "700 13px/1.5 Oxygen",
+        "value": "700 13px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6964,7 +6965,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 13px/1.5 Oxygen",
+        "value": "400 13px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -6992,7 +6993,7 @@ module.exports = {
     },
     "XSmall": {
       "Bold": {
-        "value": "700 11px/1.5 Oxygen",
+        "value": "700 11px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -7018,7 +7019,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 11px/1.5 Oxygen",
+        "value": "400 11px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -7046,7 +7047,7 @@ module.exports = {
     },
     "Tiny": {
       "Bold": {
-        "value": "700 9px/1.5 Oxygen",
+        "value": "700 9px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -7072,7 +7073,7 @@ module.exports = {
         ]
       },
       "Regular": {
-        "value": "400 9px/1.5 Oxygen",
+        "value": "400 9px/1.5 Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -7101,7 +7102,7 @@ module.exports = {
     "Button": {
       "Normal": {
         "Bold": {
-          "value": "700 13px/1.5 Oxygen",
+          "value": "700 13px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7128,7 +7129,7 @@ module.exports = {
           ]
         },
         "Regular": {
-          "value": "400 13px/1.5 Oxygen",
+          "value": "400 13px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7157,7 +7158,7 @@ module.exports = {
       },
       "Large": {
         "Bold": {
-          "value": "700 16px/1.5 Oxygen",
+          "value": "700 16px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7184,7 +7185,7 @@ module.exports = {
           ]
         },
         "Regular": {
-          "value": "400 16px/1.5 Oxygen",
+          "value": "400 16px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7213,7 +7214,7 @@ module.exports = {
       },
       "XLarge": {
         "Bold": {
-          "value": "700 23px/1.5 Oxygen",
+          "value": "700 23px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7240,7 +7241,7 @@ module.exports = {
           ]
         },
         "Regular": {
-          "value": "400 23px/1.5 Oxygen",
+          "value": "400 23px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7271,7 +7272,7 @@ module.exports = {
     "Input": {
       "Normal": {
         "Bold": {
-          "value": "700 13px/1.5 Oxygen",
+          "value": "700 13px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7298,7 +7299,7 @@ module.exports = {
           ]
         },
         "Regular": {
-          "value": "400 13px/1.5 Oxygen",
+          "value": "400 13px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7327,7 +7328,7 @@ module.exports = {
       },
       "Large": {
         "Bold": {
-          "value": "700 16px/1.5 Oxygen",
+          "value": "700 16px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7354,7 +7355,7 @@ module.exports = {
           ]
         },
         "Regular": {
-          "value": "400 16px/1.5 Oxygen",
+          "value": "400 16px/1.5 Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7503,7 +7504,7 @@ module.exports = {
     "headlines": {
       "bold": {
         "large": {
-          "value": "700 48px/140% 'PT Serif'",
+          "value": "700 48px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7530,7 +7531,7 @@ module.exports = {
           ]
         },
         "small": {
-          "value": "700 20px/140% 'PT Serif'",
+          "value": "700 20px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7559,7 +7560,7 @@ module.exports = {
       },
       "regular": {
         "large": {
-          "value": "400 48px/140% 'PT Serif'",
+          "value": "400 48px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7586,7 +7587,7 @@ module.exports = {
           ]
         },
         "small": {
-          "value": "400 20px/140% 'PT Serif'",
+          "value": "400 20px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7614,7 +7615,7 @@ module.exports = {
         }
       },
       "xl": {
-        "value": "700 112px/140% 'PT Serif'",
+        "value": "700 112px/140% Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,
@@ -7643,7 +7644,7 @@ module.exports = {
     "body": {
       "bold": {
         "large": {
-          "value": "700 48px/140% Oxygen",
+          "value": "700 48px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7670,7 +7671,7 @@ module.exports = {
           ]
         },
         "small": {
-          "value": "700 20px/140% Oxygen",
+          "value": "700 20px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7699,7 +7700,7 @@ module.exports = {
       },
       "regular": {
         "large": {
-          "value": "400 48px/140% Oxygen",
+          "value": "400 48px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7726,7 +7727,7 @@ module.exports = {
           ]
         },
         "small": {
-          "value": "400 20px/140% Oxygen",
+          "value": "400 20px/140% Manrope",
           "type": "typography",
           "filePath": "dark.json",
           "isSource": true,
@@ -7754,7 +7755,7 @@ module.exports = {
         }
       },
       "xl": {
-        "value": "700 112px/140% Oxygen",
+        "value": "700 112px/140% Manrope",
         "type": "typography",
         "filePath": "dark.json",
         "isSource": true,

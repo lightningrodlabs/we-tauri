@@ -6,7 +6,8 @@ registerTransforms(StyleDictionary)
 
 const log = (obj) => console.dir(obj, { depth: null })
 
-const tokenFile = "./style-dictionary/tokens/tokens.json"
+const includedThemes = ["dark"];
+const tokenFile = "./tokens.json";
 
 const kebabCase = str => str
     .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
@@ -33,7 +34,7 @@ function MergeRecursive(obj1, obj2) {
 function writeThemeTokenFiles(tokenFile) {
   const filestream = fs.readFileSync(tokenFile)
   const tokenConfig = JSON.parse(filestream)
-  const themeNames = tokenConfig.$themes.map((theme) => theme.name)
+  const themeNames = tokenConfig.$themes.map((theme) => theme.name).filter((theme => includedThemes.includes(theme)))
   const tokenSetOrder = tokenConfig.$metadata.tokenSetOrder
 
   log(`Processing ${tokenFile} with token set order:`)
@@ -70,6 +71,8 @@ function writeThemeTokenFiles(tokenFile) {
 
 const themeNames = writeThemeTokenFiles(tokenFile);
 
+console.log('included theme names :>> ', themeNames);
+
 themeNames.forEach((themeName) => {
   const sd = StyleDictionary.extend({
     source: [`${themeName}.json`],
@@ -95,7 +98,7 @@ themeNames.forEach((themeName) => {
           'ts/size/px',
           'ts/opacity',
           'ts/size/lineheight',
-          'ts/type/fontWeight',
+          'ts/typography/fontWeight',
           'ts/resolveMath',
           'ts/size/css/letterspacing',
           'ts/typography/css/shorthand',

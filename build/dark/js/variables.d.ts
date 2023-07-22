@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Sat, 22 Jul 2023 10:29:47 GMT
+ * Generated on Sat, 22 Jul 2023 11:08:19 GMT
  */
 
 export default tokens;
@@ -150,7 +150,9 @@ declare const tokens: {
       "300": DesignToken,
       "400": DesignToken,
       "500": DesignToken,
+      "550": DesignToken,
       "600": DesignToken,
+      "650": DesignToken,
       "700": DesignToken,
       "800": DesignToken,
       "900": DesignToken,
@@ -305,10 +307,6 @@ declare const tokens: {
       "80": DesignToken,
       "100": DesignToken
     },
-    "theme-soft": {
-      "20": DesignToken,
-      "40": DesignToken
-    },
     "theme-background-canvas": {
       "20": DesignToken,
       "40": DesignToken,
@@ -330,7 +328,7 @@ declare const tokens: {
       "80": DesignToken,
       "100": DesignToken
     },
-    "theme-soft2": {
+    "theme-soft": {
       "20": DesignToken,
       "40": DesignToken,
       "60": DesignToken,
@@ -415,9 +413,10 @@ declare const tokens: {
   "theme": {
     "bg": {
       "surface": DesignToken,
-      "subtle": DesignToken,
-      "muted": DesignToken,
-      "canvas": DesignToken
+      "element": DesignToken,
+      "detail": DesignToken,
+      "canvas": DesignToken,
+      "backdrop": DesignToken
     },
     "accent": {
       "disabled": DesignToken,
