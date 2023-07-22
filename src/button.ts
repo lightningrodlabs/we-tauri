@@ -1,5 +1,5 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, CSSResult, html, PropertyValueMap, unsafeCSS } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from "neighbourhoods-design-system-components";
 import { sharedStyles } from "./sharedStyles";
@@ -11,7 +11,7 @@ export class NHButton extends NHComponent {
   @property()
   iconImageB64!: string;
   @property()
-  disabled: boolean = false;
+  disabled: () => boolean = () => false;
   @property()
   theme: string = "dark";
   @property()
@@ -23,14 +23,20 @@ export class NHButton extends NHComponent {
     | "neutral"
     | "warning"
     | "danger" = "neutral";
+  @query(".btn")
+  _button!: HTMLElement;
+
+  @property()
+  onClick!: () => void;
 
   render() {
     return html`
       <button
+        @click=${() => console.log("click")}
         type="button"
         ?disabled=${this.disabled}
         class="btn${classMap({
-          disabled: !!this.disabled,
+          disabled: this.disabled(),
           light: this.theme == "light",
           dark: this.theme == "dark",
           [this.variant]: !!this.variant,
