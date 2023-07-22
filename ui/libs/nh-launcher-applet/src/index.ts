@@ -3,6 +3,7 @@ import {
   AdminWebsocket,
   AppWebsocket,
   AppInfo,
+  AppAgentClient,
 } from "@holochain/client";
 import { SensemakerStore } from "@neighbourhoods/client";
 
@@ -28,10 +29,10 @@ export interface WeServices {
 
 export interface NhLauncherApplet {
   appletRenderers: (
-    appWebsocket: AppWebsocket,
-    adminWebsocket: AdminWebsocket,
     weStore: WeServices,
     appletInfo: AppletInfo[],
+    appWebsocket?: AppWebsocket,
+    appAgentWebsocket?: AppAgentClient,
   ) => Promise<AppletRenderers>;
 }
 
