@@ -26,6 +26,7 @@ pub struct ConductorInfo {
 
 #[tauri::command]
 pub async fn get_conductor_info(
+    app_handle: AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     config: tauri::State<'_, WeConfig>,
 ) -> WeResult<ConductorInfo> {
@@ -37,7 +38,7 @@ pub async fn get_conductor_info(
             .get_arbitrary_admin_websocket_port()
             .expect("Couldn't get admin port"),
         applets_ui_port: config.applets_ui_port,
-        appstore_app_id: appstore_app_id(),
-        devhub_app_id: devhub_app_id(),
+        appstore_app_id: appstore_app_id(&app_handle),
+        devhub_app_id: devhub_app_id(&app_handle),
     })
 }

@@ -11,7 +11,7 @@ use crate::{
 #[tauri::command]
 pub async fn is_keystore_initialized(fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
     let exists = fs
-        .keystore_path()
+        .keystore_dir()
         .join("lair-keystore-config.yaml")
         .exists();
     Ok(exists)
@@ -24,7 +24,7 @@ pub async fn create_password(
     config: tauri::State<'_, WeConfig>,
     password: String,
 ) -> WeResult<()> {
-    let conductor = launch(&config, &fs, password).await?;
+    let conductor = launch(&app_handle, &config, &fs, password).await?;
 
     let admin_ws = get_admin_ws(&conductor).await?;
 
@@ -41,7 +41,7 @@ pub async fn enter_password(
     config: tauri::State<'_, WeConfig>,
     password: String,
 ) -> WeResult<()> {
-    let conductor = launch(&config, &fs, password).await?;
+    let conductor = launch(&app_handle, &config, &fs, password).await?;
 
     app_handle.manage(Mutex::new(conductor));
 

@@ -6,8 +6,8 @@
     "beforeBuildCommand": "npm run build:ui"
   },
   "package": {
-    "productName": "We",
-    "version": "0.0.21"
+    "productName": "We alpha",
+    "version": "0.1.0"
   },
   "tauri": {
     "cli": {
@@ -53,11 +53,11 @@
         "icons/icon.ico"
       ],
       "externalBin": [],
-      "identifier": "we",
+      "identifier": "org.lightningrodlabs.we-alpha",
       "targets": "all"
     },
     "security": {
-      "csp": "",
+      "csp": null,
       "dangerousDisableAssetCspModification": true
     },
     "systemTray": {

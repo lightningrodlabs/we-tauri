@@ -73,7 +73,7 @@ export class GroupApplets extends LitElement {
         <div class="column" style="flex: 1; align-items: center">
           <span
             class="placeholder"
-            style="margin: 24px; max-width: 600px; text-align: center;"
+            style="margin: 24px; max-width: 600px; text-align: center; font-size: 20px;"
             >${msg(
               "This group doesn't have any applets installed yet. Go to the applet library (the "
             )} <sl-icon .src=${wrapPathInSvg(mdiToyBrickPlus)}></sl-icon>${msg(
@@ -138,7 +138,7 @@ export class GroupApplets extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo .appletHash=${appletHash}></applet-logo>
+                  <applet-logo .appletHash=${appletHash} class="applet-icon"></applet-logo>
                   <span style="margin-top: 8px"
                     >${applet.applet.custom_name}</span
                   >
@@ -173,6 +173,11 @@ export class GroupApplets extends LitElement {
     css`
       :host {
         display: flex;
+      }
+
+      .applet-icon:hover {
+        box-shadow: 0 0 5px #646464;
+        border-radius: 8px;
       }
     `,
   ];

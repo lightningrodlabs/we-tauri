@@ -239,7 +239,7 @@ export class GroupAppletsSettings extends LitElement {
         <div class="row center-content" style="flex: 1">
           <span
             class="placeholder"
-            style="margin: 24px; text-align: center; max-width: 600px"
+            style="margin: 24px; text-align: center; max-width: 600px; font-size: 20px;"
             >${msg(
               "This group doesn't have any applets installed yet. Go to the applet library (the "
             )} <sl-icon .src=${wrapPathInSvg(mdiToyBrickPlus)}></sl-icon>${msg(

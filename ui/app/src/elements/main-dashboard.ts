@@ -115,7 +115,7 @@ export class MainDashboard extends LitElement {
           <div class="top-left-corner-bg"></div>
           <div class="column top-left-corner">
             <sidebar-button
-              style="border-radius: 50%;"
+              style="--size: 60px; --border-radius: 25%; margin-top: 8px;"
               .logoSrc=${weLogoIcon}
               .tooltipText=${msg("Welcome")}
               @click=${() => {
@@ -183,6 +183,7 @@ export class MainDashboard extends LitElement {
                   id: "welcome",
                   type: "component",
                   title: "Welcome",
+                  isClosable: false,
                   componentType: "welcome",
                 },
               ],
@@ -206,7 +207,7 @@ export class MainDashboard extends LitElement {
 
         .top-left-corner-bg {
           border-style: solid;
-          border-width: 72px 0 0 72px;
+          border-width: 74px 0 0 74px;
           position: absolute;
           z-index: 0;
           border-color: var(--sl-color-primary-600) var(--sl-color-primary-600)
@@ -228,13 +229,13 @@ export class MainDashboard extends LitElement {
         .top-bar {
           overflow-x: auto;
           background-color: var(--sl-color-primary-600);
-          min-height: 64px;
+          min-height: 74px;
           align-items: center;
         }
 
         groups-sidebar {
           background-color: var(--sl-color-primary-900);
-          width: 64px;
+          width: 74px;
         }
       `,
     ];

@@ -2,47 +2,46 @@ use std::collections::HashMap;
 
 use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::web_app::WebAppBundle;
+use tauri::AppHandle;
 
-use crate::{config::WeConfig, error::WeResult, filesystem::WeFileSystem};
+use crate::{config::WeConfig, error::WeResult, filesystem::{WeFileSystem, breaking_app_version}};
 
-pub fn we_version() -> String {
-    env!("CARGO_PKG_VERSION").to_string()
+
+pub fn devhub_app_id(app_handle: &AppHandle) -> String {
+    format!("DevHub-{}", breaking_app_version(app_handle))
 }
 
-pub fn devhub_app_id() -> String {
-    format!("DevHub-{}", we_version())
+pub fn appstore_app_id(app_handle: &AppHandle) -> String {
+    format!("AppStore-{}", breaking_app_version(app_handle))
 }
 
-pub fn appstore_app_id() -> String {
-    format!("appstore-{}", we_version())
-}
-
-pub fn network_seed(config: &WeConfig) -> String {
+pub fn network_seed(app_handle: &AppHandle, config: &WeConfig) -> String {
     let network_seed = if let Some(network_seed) = &config.network_seed {
         network_seed.clone()
     } else if cfg!(debug_assertions) {
-        format!("we-dev")
+        format!("lightningrodlabs-we-dev")
     } else {
-        format!("we")
+        format!("lightningrodlabs-we")
     };
 
-    format!("{}-{}", we_version(), network_seed)
+    format!("{}-{}", breaking_app_version(app_handle), network_seed)
 }
 
 pub async fn install_default_apps_if_necessary(
+    app_handle: &tauri::AppHandle,
     config: &WeConfig,
     we_fs: &WeFileSystem,
     admin_ws: &mut AdminWebsocket,
 ) -> WeResult<()> {
     let apps = admin_ws.list_apps(None).await?;
 
-    let network_seed = network_seed(&config);
+    let network_seed = network_seed(app_handle, &config);
 
     if !apps
         .iter()
         .map(|info| info.installed_app_id.clone())
         .collect::<Vec<String>>()
-        .contains(&appstore_app_id())
+        .contains(&appstore_app_id(&app_handle))
     {
         let agent_key = admin_ws.generate_agent_pub_key().await?;
         let appstore_hub_bundle = WebAppBundle::decode(include_bytes!("../../AppStore.webhapp"))?;
@@ -54,15 +53,15 @@ pub async fn install_default_apps_if_necessary(
                 ),
                 agent_key: agent_key.clone(),
                 network_seed: Some(network_seed.clone()),
-                installed_app_id: Some(appstore_app_id()),
+                installed_app_id: Some(appstore_app_id(app_handle)),
                 membrane_proofs: HashMap::new(),
             })
             .await?;
-        admin_ws.enable_app(appstore_app_id()).await?;
+        admin_ws.enable_app(appstore_app_id(app_handle)).await?;
 
         we_fs
             .ui_store()
-            .extract_and_store_ui(&appstore_app_id(), &appstore_hub_bundle)
+            .extract_and_store_ui(&appstore_app_id(app_handle), &appstore_hub_bundle)
             .await?;
     }
 

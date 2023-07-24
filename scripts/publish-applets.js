@@ -26,7 +26,7 @@ async function publishApplets() {
   ).installed_app_id;
 
   const appstoreAppId = apps.find((app) =>
-    app.installed_app_id.includes("appstore")
+    app.installed_app_id.includes("AppStore")
   ).installed_app_id;
 
   const appPorts = await adminWs.listAppInterfaces();

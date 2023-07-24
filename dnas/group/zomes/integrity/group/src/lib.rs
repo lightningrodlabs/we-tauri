@@ -19,7 +19,7 @@ pub enum LinkTypes {
     AnchorToRelatedGroup,
 }
 
-/// An applet insatnce
+/// An applet instance
 #[hdk_entry_helper]
 #[derive(Clone)]
 pub struct Applet {

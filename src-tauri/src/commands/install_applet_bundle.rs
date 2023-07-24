@@ -44,6 +44,7 @@ use crate::{
 
 #[tauri::command]
 pub async fn fetch_icon(
+    app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
     app_entry_hash_b64: String,
@@ -62,7 +63,7 @@ pub async fn fetch_icon(
             "ws://localhost:{}",
             conductor.list_app_interfaces().await?[0]
         ),
-        appstore_app_id(),
+        appstore_app_id(&app_handle),
         conductor.keystore().lair_client(),
     )
     .await?;
@@ -112,6 +113,7 @@ pub struct GetEntityInput {
 }
 
 pub async fn internal_fetch_applet_bundle(
+    app_handle: tauri::AppHandle,
     conductor: &Conductor,
     we_fs: &WeFileSystem,
     devhub_dna: DnaHash,
@@ -123,6 +125,7 @@ pub async fn internal_fetch_applet_bundle(
     }
 
     let bytes = fetch_web_happ(
+        app_handle,
         conductor,
         devhub_dna,
         happ_release_hash.clone(),
@@ -144,6 +147,7 @@ pub async fn internal_fetch_applet_bundle(
 
 #[tauri::command]
 pub async fn install_applet_bundle(
+    app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     fs: tauri::State<'_, WeFileSystem>,
     app_id: String,
@@ -190,6 +194,7 @@ pub async fn install_applet_bundle(
     }
 
     let web_app_bundle: WebAppBundle = internal_fetch_applet_bundle(
+        app_handle,
         &conductor,
         &fs,
         devhub_dna_hash,
@@ -246,6 +251,7 @@ pub struct GetWebHappPackageInput {
     pub gui_release_id: EntryHash,
 }
 async fn fetch_web_happ(
+    app_handle: tauri::AppHandle,
     conductor: &Conductor,
     devhub_dna: DnaHash,
     happ_release_entry_hash: EntryHash,
@@ -256,7 +262,7 @@ async fn fetch_web_happ(
             "ws://localhost:{}",
             conductor.list_app_interfaces().await?[0]
         ),
-        appstore_app_id(),
+        appstore_app_id(&app_handle),
         conductor.keystore().lair_client(),
     )
     .await?;
@@ -287,6 +293,16 @@ async fn fetch_web_happ(
         }
     }
 
+    // Otherwise, get the list of available host and try them one by one
+
+    let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
+
+    if hosts.len() == 0 {
+        return Err(WeError::NoAvailableHostsError(()));
+    }
+
+    let mut errors = vec![];
+
     for host in hosts {
         let response = get_webhapp_from_host(&mut client, &devhub_dna, &host, &payload).await;
         if let Ok(web_app_bytes) = response {
@@ -295,11 +311,13 @@ async fn fetch_web_happ(
 
         if let Err(err) = response {
             println!("Error fetching applet {:?}", err);
+            errors.push(err);
         }
     }
 
-    return Err(WeError::AppWebsocketError(String::from(
-        "Couldn't fetch the webhapp from any of the hosts",
+    return Err(WeError::AppWebsocketError(format!(
+        "Couldn't fetch the webhapp from any of the hosts. Errors: {:?}",
+        errors
     )));
 }
 

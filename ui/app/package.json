@@ -1,12 +1,13 @@
 {
-  "name": "we",
-  "version": "0.0.1",
+  "name": "we-alpha",
+  "version": "0.1.0",
   "scripts": {
     "start": "vite --clearScreen false --port 1420",
     "build": "vite build",
     "build:watch": "vite build -w"
   },
   "dependencies": {
+    "@fontsource/aileron": "^5.0.5",
     "@holochain-open-dev/elements": "^0.5.8",
     "@holochain-open-dev/membrane-invitations": "^0.1.5",
     "@holochain-open-dev/peer-status": "^0.8.0",
@@ -20,7 +21,7 @@
     "@lit/localize": "^0.11.4",
     "@mdi/js": "^7.2.96",
     "@msgpack/msgpack": "^2.7.2",
-    "@scoped-elements/golden-layout": "^0.2.6",
+    "@scoped-elements/golden-layout": "file:/home/matthias/code/holochain/matthme/scoped-golden-layout",
     "@shoelace-style/shoelace": "^2.3.0",
     "@tauri-apps/api": "^1.2.0",
     "applet-messages": "^0",

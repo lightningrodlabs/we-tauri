@@ -6,10 +6,7 @@ use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
 
-use crate::{
-    default_apps::we_version,
-    error::{WeError, WeResult},
-};
+use crate::error::{WeError, WeResult};
 
 pub type Profile = String;
 
@@ -28,17 +25,17 @@ impl WeFileSystem {
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the data dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
+
         let app_config_dir = app_handle
             .path_resolver()
             .app_config_dir()
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the data dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
-
 
         let app_log_dir = app_handle
             .path_resolver()
@@ -46,7 +43,7 @@ impl WeFileSystem {
             .ok_or(WeError::FileSystemError(String::from(
                 "Could not resolve the log dir for this app",
             )))?
-            .join(we_version())
+            .join(breaking_app_version(app_handle))
             .join(profile);
 
         fs::create_dir_all(app_data_dir.join("webhapps"))?;
@@ -59,11 +56,23 @@ impl WeFileSystem {
         })
     }
 
-    pub fn keystore_path(&self) -> PathBuf {
+    pub fn app_data_dir(&self) -> PathBuf {
+        self.app_data_dir.clone()
+    }
+
+    pub fn app_config_dir(&self) -> PathBuf {
+        self.app_config_dir.clone()
+    }
+
+    pub fn app_log_dir(&self) -> PathBuf {
+        self.app_log_dir.clone()
+    }
+
+    pub fn keystore_dir(&self) -> PathBuf {
         self.app_data_dir.join("keystore")
     }
 
-    pub fn conductor_path(&self) -> PathBuf {
+    pub fn conductor_dir(&self) -> PathBuf {
         self.app_data_dir.join("conductor")
     }
 
@@ -84,6 +93,7 @@ impl WeFileSystem {
             path: self.app_data_dir.join("uis"),
         }
     }
+
 }
 
 pub struct UiStore {
@@ -91,6 +101,10 @@ pub struct UiStore {
 }
 
 impl UiStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     pub fn ui_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
         self.path.join(installed_app_id)
     }
@@ -124,6 +138,10 @@ pub struct WebAppStore {
 }
 
 impl WebAppStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     fn webhapp_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
         let web_app_entry_hash_b64 = EntryHashB64::from(web_app_entry_hash.clone()).to_string();
         self.path.join(web_app_entry_hash_b64)
@@ -170,6 +188,10 @@ pub struct IconStore {
 }
 
 impl IconStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
     fn icon_path(&self, app_entry_hash: &ActionHash) -> PathBuf {
         self.path
             .join(ActionHashB64::from(app_entry_hash.clone()).to_string())
@@ -216,4 +238,30 @@ pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> WeResult<()> {
     }
 
     Ok(())
+}
+
+
+
+/// Returns a string considering the relevant part of the version regarding breaking changes
+/// Examples:
+/// 3.2.0 becomes 3.x.x
+/// 0.2.2 becomes 0.2.x
+/// 0.0.5 becomes 0.0.5
+/// 0.2.3-alpha.2 remains 0.2.3-alpha.2 --> pre-releases always get their own storage location since we have to assume breaking changes
+pub fn breaking_app_version(app_handle: &AppHandle) -> String {
+    let app_version = app_handle.package_info().version.clone();
+
+    if app_version.pre.is_empty() == false {
+        return app_version.to_string();
+    }
+
+    match app_version.major {
+        0 => {
+            match app_version.minor {
+                0 => format!("0.0.{}", app_version.patch),
+                _ => format!("0.{}.x", app_version.minor),
+            }
+        },
+        _ => format!("{}.x.x", app_version.major)
+    }
 }
