@@ -8,11 +8,12 @@ import { createContext } from '@lit-labs/context';
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
 }
+
 export class SensemakerStore {
   // store any value here that would benefit from being a store
   // like cultural context entry hash and then the context result vec
 
-  _appletConfig: Writable<AppletConfig> = writable({ dimensions: {}, resource_defs: {}, methods: {}, cultural_contexts: {}, name: "", role_name: "", ranges: {} });
+  _appletConfig: Writable<{ [appletName: string]: AppletConfig}> = writable({});
   _contextResults: Writable<ContextResults> = writable({});
 
   // TODO: update the structure of this store to include dimension and resource type
@@ -94,6 +95,8 @@ export class SensemakerStore {
   async getAllAgents() {
     return await this.service.getAllAgents();
   }
+  
+  // TODO: update applet config update to key by applet name
   async createDimension(dimension: Dimension): Promise<EntryHash> {
     const dimensionEh = await this.service.createDimension(dimension);
     this._appletConfig.update(appletConfig => {
@@ -186,14 +189,22 @@ export class SensemakerStore {
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
     if (maybeAppletConfig) {
-      this._appletConfig.update(() => maybeAppletConfig)
+      this._appletConfig.update((appletConfigs) => 
+        {
+          appletConfigs[appletName] = maybeAppletConfig;
+          return appletConfigs;
+        }
+      )
     }
     return maybeAppletConfig;
   }
 
   async registerApplet(appletConfigInput: CreateAppletConfigInput): Promise<AppletConfig> {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
-    this._appletConfig.update(() => appletConfig);
+    this._appletConfig.update((appletConfigs) => {
+      appletConfigs[appletConfig.name] = appletConfig;
+      return appletConfigs;
+    });
     return appletConfig;
   }
 
