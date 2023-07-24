@@ -777,18 +777,18 @@ export class MatrixStore {
         const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
         await this.adminWebsocket.authorizeSigningCredentials(sensemakerGroupCellId)
-        const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-        sensemakerStore.registerWidget(
-          [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-          TotalThumbsUpDimensionDisplay,
-          ThumbsUpDimenionAssessment,
-        );
+        // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
+        // sensemakerStore.registerWidget(
+        //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
+        //   TotalThumbsUpDimensionDisplay,
+        //   ThumbsUpDimenionAssessment,
+        // );
 
-        sensemakerStore.registerWidget(
-          [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-          AverageStarDimensionDisplay,
-          StarDimensionAssessment,
-        );
+        // sensemakerStore.registerWidget(
+        //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
+        //   AverageStarDimensionDisplay,
+        //   StarDimensionAssessment,
+        // );
 
 
         // create WeGroupData object
@@ -1119,17 +1119,17 @@ export class MatrixStore {
 
     // Delay widget registration until new Sensemaker cell is cached.
     setTimeout(async () => {
-      const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-      sensemakerStore.registerWidget(
-        [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-        TotalThumbsUpDimensionDisplay,
-        ThumbsUpDimenionAssessment,
-      );
-      sensemakerStore.registerWidget(
-        [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-        AverageStarDimensionDisplay,
-        StarDimensionAssessment,
-        );
+      // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
+      // sensemakerStore.registerWidget(
+      //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
+      //   TotalThumbsUpDimensionDisplay,
+      //   ThumbsUpDimenionAssessment,
+      // );
+      // sensemakerStore.registerWidget(
+      //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
+      //   AverageStarDimensionDisplay,
+      //   StarDimensionAssessment,
+      //   );
       }, 1500);
     
     this._matrix.update((matrix) => {
