@@ -107,21 +107,22 @@ export class GroupsSidebar extends LitElement {
 
   render() {
     return html`
-      <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
-      <div class="column" style="padding: 12px; align-items: center;">
+      <div class="column" style="padding: 12px; align-items: center; overflow-y: auto;">
         ${this.renderGroupsLoading()}
 
         <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
           <sl-button
             size="large"
             circle
-            @click=${() =>
-              (
-                this.shadowRoot?.getElementById(
-                  "create-group-dialog"
-                ) as CreateGroupDialog
-              ).open()}
+            @click=${() => {
+                this.dispatchEvent(
+                  new CustomEvent("request-create-group", {
+                    bubbles: true,
+                    composed: true,
+                  })
+                );
+              }}
           >
             <div class="column center-content" style="height: 100%;">
               <sl-icon style="width: 30px; height: 30px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>

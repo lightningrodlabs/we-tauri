@@ -147,11 +147,11 @@ export class DynamicLayout extends LitElement {
     return html` <golden-layout
       id="golden-layout"
       .layoutConfig=${this.layoutConfig}
-      style="flex: 1; display: flex; min-width: 0"
+      style="flex: 1; display: flex; min-width: 0;"
     >
       <golden-layout-register component-type="welcome">
         <template>
-          <welcome-view style="margin: 24px"></welcome-view>
+          <welcome-view></welcome-view>
         </template>
       </golden-layout-register>
       <golden-layout-register

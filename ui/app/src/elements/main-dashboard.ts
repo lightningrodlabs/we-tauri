@@ -31,6 +31,7 @@ import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
 import { weLogoIcon } from "../icons/we-logo-icon.js";
 import { buildHeadlessWeServices } from "../applets/applet-host.js";
+import { CreateGroupDialog } from "./create-group-dialog.js";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
@@ -110,8 +111,10 @@ export class MainDashboard extends LitElement {
         @group-joined=${(e) => this.openGroup(e.detail.groupDnaHash)}
       ></join-group-dialog>
 
-      <div class="row" style="flex: 1">
-        <div class="column">
+      <create-group-dialog id="create-group-dialog"></create-group-dialog>
+
+        <!-- left sidebar -->
+        <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0;">
           <div class="top-left-corner-bg"></div>
           <div class="column top-left-corner">
             <sidebar-button
@@ -131,7 +134,7 @@ export class MainDashboard extends LitElement {
 
           <groups-sidebar
             class="left-sidebar"
-            style="flex: 1; margin-top: 4px"
+            style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll"
             .selectedGroupDnaHash=${this.selectedGroupDnaHash}
             @home-selected=${() => {
               this.dynamicLayout.openTab({
@@ -144,53 +147,69 @@ export class MainDashboard extends LitElement {
             @group-created=${(e: CustomEvent) => {
               this.openGroup(e.detail.groupDnaHash);
             }}
+            @request-create-group=${() =>
+              (this.shadowRoot?.getElementById(
+                  "create-group-dialog"
+                ) as CreateGroupDialog
+              ).open()
+              }
           ></groups-sidebar>
         </div>
 
-        <div class="column" style="flex: 1">
-          <div class="top-bar row">
-            <applets-sidebar
-              @applet-selected=${(e: CustomEvent) => {
-                this.dynamicLayout.openViews.openCrossAppletMain(
-                  e.detail.appletBundleHash
-                );
-              }}
-              style="margin-left: 4px; flex: 1"
-            ></applets-sidebar>
-            <we-services-context
-              .services=${buildHeadlessWeServices(this._weStore)}
-            >
-              <search-entry
-                field-label=""
-                style="margin-right: 8px"
-                @entry-selected=${(e) => {
-                  this.dynamicLayout.openViews.openHrl(
-                    e.detail.hrlWithContext.hrl,
-                    e.detail.hrlWithContext.context
-                  );
-                  e.target.reset();
-                }}
-              ></search-entry>
-            </we-services-context>
-          </div>
 
-          <dynamic-layout
-            id="dynamic-layout"
-            .rootItemConfig=${{
-              type: "row",
-              content: [
-                {
-                  id: "welcome",
-                  type: "component",
-                  title: "Welcome",
-                  isClosable: false,
-                  componentType: "welcome",
-                },
-              ],
+        <!-- top bar -->
+        <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
+          <applets-sidebar
+            @applet-selected=${(e: CustomEvent) => {
+              this.dynamicLayout.openViews.openCrossAppletMain(
+                e.detail.appletBundleHash
+              );
             }}
-            style="flex: 1; min-width: 0; height: calc(100% - 64px)"
-            @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
-          ></dynamic-layout>
+            style="margin-left: 4px; flex: 1; overflow-x: sroll;"
+          ></applets-sidebar>
+          <we-services-context
+            .services=${buildHeadlessWeServices(this._weStore)}
+          >
+            <search-entry
+              field-label=""
+              style="margin-right: 8px"
+              @entry-selected=${(e) => {
+                this.dynamicLayout.openViews.openHrl(
+                  e.detail.hrlWithContext.hrl,
+                  e.detail.hrlWithContext.context
+                );
+                e.target.reset();
+              }}
+            ></search-entry>
+          </we-services-context>
+        </div>
+
+        <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px;">
+
+        <!-- <div class="flex-scrollable-parent" style="flex: 1; width: calc(100vw - 74px); height: calc(100vh - 74px);"> -->
+          <!-- <div class="flex-scrollable-container" style="flex: 1;"> -->
+              <!-- <div class="flex-scrollable-y flex-scrollable-x"> -->
+              <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: 100%;">
+
+                <dynamic-layout
+                  id="dynamic-layout"
+                  .rootItemConfig=${{
+                    type: "row",
+                    content: [
+                      {
+                        id: "welcome",
+                        type: "component",
+                        title: "Welcome",
+                        isClosable: false,
+                        componentType: "welcome",
+                      },
+                    ],
+                  }}
+                  style="flex: 1; min-width: 0; height: calc(100% - 64px);"
+                  @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
+                ></dynamic-layout>
+              <!-- </div> -->
+          <!-- </div> -->
         </div>
       </div>
     `;

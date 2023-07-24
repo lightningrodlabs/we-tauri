@@ -81,7 +81,7 @@ export class WelcomeView extends LitElement {
 
   render() {
     return html`
-      <div class="column" style="align-items: center; flex: 1">
+      <div class="column" style="align-items: center; flex: 1; overflow: scroll;">
         <div
           class="row center-content default-font"
           style="font-size: 3em; color: #2c3888; margin-top: 15px;"
