@@ -49,7 +49,7 @@ export class GroupsSidebar extends LitElement {
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-bottom: 8px; border-radius: 50%; --size: 60px;"
+                style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
                 @click=${() => {
@@ -70,7 +70,7 @@ export class GroupsSidebar extends LitElement {
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-bottom: 8px; border-radius: 50%; --size: 60px;"
+              style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
               @click=${() => {
@@ -93,7 +93,11 @@ export class GroupsSidebar extends LitElement {
   renderGroupsLoading() {
     switch (this._groupsProfiles.value.status) {
       case "pending":
-        return html`<sl-skeleton></sl-skeleton>`;
+        return html`
+          <sl-skeleton effect="pulse" style="width: 60px; height: 58px; margin-bottom: 10px;"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="width: 60px; height: 58px; margin-bottom: 10px;"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="width: 60px; height: 58px; margin-bottom: 10px;"></sl-skeleton>
+        `;
       case "error":
         return html`<display-error
           .headline=${msg("Error displaying the groups")}
@@ -108,7 +112,7 @@ export class GroupsSidebar extends LitElement {
   render() {
     return html`
 
-      <div class="column" style="padding: 12px; align-items: center; overflow-y: auto;">
+      <div class="column" style="padding: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
         ${this.renderGroupsLoading()}
 
         <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
@@ -125,7 +129,7 @@ export class GroupsSidebar extends LitElement {
               }}
           >
             <div class="column center-content" style="height: 100%;">
-              <sl-icon style="width: 30px; height: 30px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
+              <sl-icon style="width: 25px; height: 25px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
             </div>
           </sl-button>
         </sl-tooltip>

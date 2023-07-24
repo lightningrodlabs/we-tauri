@@ -27,7 +27,7 @@ export class GroupTitle extends LitElement {
       case "pending":
         return html`<span>${msg("loading...")}</span>`;
       case "complete":
-        return html`<span style="font-size=10px; color: black;">${this.groupProfile.value.value?.name}</span>`;
+        return html`<span style="font-size=10px; color: black;" title=${this.groupProfile.value.value?.name}>${this.groupProfile.value.value?.name}</span>`;
       case "error":
         return html`<span>${msg("unknown...")}</span>`;
     }

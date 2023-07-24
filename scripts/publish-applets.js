@@ -402,7 +402,7 @@ async function publishAppletsRetry() {
       );
     } else if (e.toString().includes("crypto.getRandomValues is not a function")) {
       console.log("Failed to publish applets: Error: ", e);
-      console.log("\n\nMake sure to use a recent enough version of node. Check your node version with 'node --version'.");
+      console.log("\n\nMake sure to use a recent enough version of node (>18). Check your node version with 'node --version'.");
     } else {
       console.log("Failed to publish applets. Error: ", e);
     }

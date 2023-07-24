@@ -118,7 +118,7 @@ export class MainDashboard extends LitElement {
           <div class="top-left-corner-bg"></div>
           <div class="column top-left-corner">
             <sidebar-button
-              style="--size: 60px; --border-radius: 25%; margin-top: 8px;"
+              style="--size: 58px; --border-radius: 25%; margin-top: 8px;"
               .logoSrc=${weLogoIcon}
               .tooltipText=${msg("Welcome")}
               @click=${() => {
@@ -134,7 +134,7 @@ export class MainDashboard extends LitElement {
 
           <groups-sidebar
             class="left-sidebar"
-            style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll"
+            style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll; overflow-x: hidden;"
             .selectedGroupDnaHash=${this.selectedGroupDnaHash}
             @home-selected=${() => {
               this.dynamicLayout.openTab({

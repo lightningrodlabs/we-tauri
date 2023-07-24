@@ -27,7 +27,7 @@ export class GroupLogo extends LitElement {
   renderLogo(groupProfile: GroupProfile | undefined) {
     if (!groupProfile) return html``;
 
-    return html` <img .src=${groupProfile.logo_src} alt="${groupProfile.name}" style="border-radius: 50%"></img> `;
+    return html` <img .src=${groupProfile.logo_src} alt="${groupProfile.name}" style="border-radius: 50%"> `;
   }
 
   render() {

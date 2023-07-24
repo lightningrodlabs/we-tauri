@@ -73,7 +73,7 @@ export class AppletsSidebar extends LitElement {
                         })
                       );
                     }}
-                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 48px"
+                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 58px"
                   ></applet-logo>
                 </sl-tooltip>
               `
@@ -86,7 +86,8 @@ export class AppletsSidebar extends LitElement {
     switch (this.applets.value.status) {
       case "pending":
         return html`<sl-skeleton
-          style="height: 48px; width: 48px; border-radius: 8px"
+          class="square-skeleton"
+          style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px;"
         ></sl-skeleton>`;
       case "error":
         return html`<display-error

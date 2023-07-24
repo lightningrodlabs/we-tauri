@@ -31,6 +31,9 @@ export class AppletTitle extends LitElement {
   @property(hashProperty("applet-hash"))
   appletHash!: EntryHash;
 
+  @property()
+  icon: string | undefined;
+
   _applet = new StoreSubscriber(
     this,
     () =>
@@ -49,26 +52,24 @@ export class AppletTitle extends LitElement {
     () => [this.appletHash]
   );
 
-  renderTitle([appletStore, groupsProfiles]: [
+  renderTitle([appletStore, _groupsProfiles]: [
     AppletStore | undefined,
     ReadonlyMap<DnaHash, GroupProfile>
   ]) {
     if (!appletStore) return html``;
 
-    return html` <div class="row">
-      ${Array.from(groupsProfiles.values()).map(
-        (groupProfile) => html`
-          <img
-            .src=${groupProfile.logo_src}
-            alt="${appletStore.applet.custom_name}"
-            style="height: 16px; width: 16px; display: flex; margin-right: 4px; border-radius: 50%"
-          />
-        `
-      )}
-      <span style="color: rgb(119, 119, 119)"
-        >${appletStore.applet.custom_name}</span
-      >
-    </div>`;
+    return html`
+      <div class="row" style="align-items: center;" title=${appletStore.applet.custom_name}>
+        <img
+          .src=${this.icon}
+          alt="${appletStore.applet.custom_name}"
+          style="height: 25px; width: 25px; display: flex; margin-right: 4px; border-radius: 50%"
+        />
+        <span style="color: rgb(119, 119, 119)"
+          >${appletStore.applet.custom_name}</span
+        >
+      </div>
+    `;
   }
 
   render() {
@@ -76,6 +77,14 @@ export class AppletTitle extends LitElement {
       case "pending":
         return html``;
       case "complete":
+        const appletStore = this._applet.value.value[0];
+        if (appletStore) {
+          appletStore.logo.subscribe((v) => {
+            if (v.status === "complete") {
+              this.icon = v.value;
+            }
+          })
+        }
         return this.renderTitle(this._applet.value.value);
       case "error":
         return html`<display-error

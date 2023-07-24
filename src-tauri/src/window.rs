@@ -13,6 +13,6 @@ pub fn build_main_window(app_handle: &AppHandle) -> Result<Window, tauri::Error>
     WindowBuilder::new(app_handle, "main", WindowUrl::App("index.html".into()))
         .title(title)
         .disable_file_drop_handler()
-        .inner_size(1000.0, 700.0)
+        .inner_size(1536.0, 900.0)
         .build()
 }
