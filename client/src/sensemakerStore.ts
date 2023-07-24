@@ -14,7 +14,7 @@ export class SensemakerStore {
   // store any value here that would benefit from being a store
   // like cultural context entry hash and then the context result vec
 
-  _appletConfig: Writable<{ [appletName: string]: AppletConfig}> = writable({});
+  _appletConfigs: Writable<{ [appletName: string]: AppletConfig}> = writable({});
   _contextResults: Writable<ContextResults> = writable({});
 
   // TODO: update the structure of this store to include dimension and resource type
@@ -79,8 +79,21 @@ export class SensemakerStore {
     })
   }
 
-  appletConfig() {
-    return derived(this._appletConfig, appletConfig => appletConfig)
+  appletConfigs() {
+    return derived(this._appletConfigs, appletConfigs => appletConfigs)
+  }
+  
+  flattenedAppletConfigs() {
+    return derived(this._appletConfigs, appletConfigs => {
+      const flattenedAppletConfigs = Object.values(appletConfigs).reduce((flattenedAppletConfigs, appletConfig) => {
+        flattenedAppletConfigs.dimensions = {...flattenedAppletConfigs.dimensions, ...appletConfig.dimensions};
+        flattenedAppletConfigs.methods = {...flattenedAppletConfigs.methods, ...appletConfig.methods};
+        flattenedAppletConfigs.resource_defs = {...flattenedAppletConfigs.resource_defs, ...appletConfig.resource_defs};
+        flattenedAppletConfigs.cultural_contexts = {...flattenedAppletConfigs.cultural_contexts, ...appletConfig.cultural_contexts};
+        return flattenedAppletConfigs;
+      }, {dimensions: {}, methods: {}, resource_defs: {}, cultural_contexts: {}} as AppletConfig);
+      return flattenedAppletConfigs;
+    })
   }
 
   contextResults() {
@@ -131,23 +144,23 @@ export class SensemakerStore {
   }
   
   // TODO: update applet config update to key by applet name
-  async createDimension(dimension: Dimension): Promise<EntryHash> {
-    const dimensionEh = await this.service.createDimension(dimension);
-    this._appletConfig.update(appletConfig => {
-      appletConfig.dimensions[dimension.name] = dimensionEh;
-      return appletConfig;
-    });
-    return dimensionEh;
-  }
+  // async createDimension(dimension: Dimension): Promise<EntryHash> {
+  //   const dimensionEh = await this.service.createDimension(dimension);
+  //   this._appletConfig.update(appletConfig => {
+  //     appletConfig.dimensions[dimension.name] = dimensionEh;
+  //     return appletConfig;
+  //   });
+  //   return dimensionEh;
+  // }
 
-  async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
-    const resourceDefEh = await this.service.createResourceDef(resourceDef);
-    this._appletConfig.update(appletConfig => {
-      appletConfig.resource_defs[resourceDef.name] = resourceDefEh;
-      return appletConfig;
-    });
-    return resourceDefEh;
-  }
+  // async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
+  //   const resourceDefEh = await this.service.createResourceDef(resourceDef);
+  //   this._appletConfig.update(appletConfig => {
+  //     appletConfig.resource_defs[resourceDef.name] = resourceDefEh;
+  //     return appletConfig;
+  //   });
+  //   return resourceDefEh;
+  // }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
     const assessmentEh = await this.service.createAssessment(assessment);
@@ -178,14 +191,14 @@ export class SensemakerStore {
     return resourceAssessments;
   }
   
-  async createMethod(method: Method): Promise<EntryHash> {
-    const methodEh = await this.service.createMethod(method);
-    this._appletConfig.update(appletConfig => {
-      appletConfig.methods[method.name] = methodEh;
-      return appletConfig;
-    });
-    return methodEh;
-  }
+  // async createMethod(method: Method): Promise<EntryHash> {
+  //   const methodEh = await this.service.createMethod(method);
+  //   this._appletConfig.update(appletConfig => {
+  //     appletConfig.methods[method.name] = methodEh;
+  //     return appletConfig;
+  //   });
+  //   return methodEh;
+  // }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
     let assessment = await this.service.runMethod(runMethodInput);
@@ -198,14 +211,14 @@ export class SensemakerStore {
     return assessment;
   }
 
-  async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
-    const contextEh = await this.service.createCulturalContext(culturalContext);
-    this._appletConfig.update(appletConfig => {
-      appletConfig.cultural_contexts[culturalContext.name] = contextEh;
-      return appletConfig;
-    });
-    return contextEh;
-  }
+  // async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
+  //   const contextEh = await this.service.createCulturalContext(culturalContext);
+  //   this._appletConfig.update(appletConfig => {
+  //     appletConfig.cultural_contexts[culturalContext.name] = contextEh;
+  //     return appletConfig;
+  //   });
+  //   return contextEh;
+  // }
 
   async getCulturalContext(culturalContextEh: EntryHash): Promise<HolochainRecord> {
     return await this.service.getCulturalContext(culturalContextEh) 
@@ -223,7 +236,7 @@ export class SensemakerStore {
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
     if (maybeAppletConfig) {
-      this._appletConfig.update((appletConfigs) => 
+      this._appletConfigs.update((appletConfigs) => 
         {
           appletConfigs[appletName] = maybeAppletConfig;
           return appletConfigs;
@@ -235,7 +248,7 @@ export class SensemakerStore {
 
   async registerApplet(appletConfigInput: CreateAppletConfigInput): Promise<AppletConfig> {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
-    this._appletConfig.update((appletConfigs) => {
+    this._appletConfigs.update((appletConfigs) => {
       appletConfigs[appletConfig.name] = appletConfig;
       return appletConfigs;
     });
@@ -243,8 +256,8 @@ export class SensemakerStore {
     this._methodDimensionMapping.update(methodDimensionMapping => {
       appletConfigInput.applet_config_input.methods.forEach(method => {
         methodDimensionMapping[encodeHashToBase64(appletConfig.methods[method.name])] = {
-          inputDimensionEh: get(this.appletConfig())[appletConfig.name].dimensions[method.input_dimensions[0].name],
-          outputDimensionEh: get(this.appletConfig())[appletConfig.name].dimensions[method.output_dimension.name],
+          inputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.input_dimensions[0].name],
+          outputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.output_dimension.name],
         };
       });
       return methodDimensionMapping;
