@@ -83,7 +83,7 @@ export class GroupApplets extends LitElement {
         </div>
       `;
     return html`
-      <div class="row">
+      <div class="row" style="flex-wrap: wrap;">
         ${Array.from(customViews.entries())
           .filter(([_, b]) => !!b)
           .sort(([_, a], [__, b]) => a.entry.name.localeCompare(b.entry.name))
@@ -108,7 +108,7 @@ export class GroupApplets extends LitElement {
                 >
                   <img
                     src="${customView.entry.logo}"
-                    style="height: 64px; width: 64px; border-radius: 8px; margin-bottom: 8px"
+                    style="height: 120px; width: 120px; border-radius: 15px; margin-bottom: 8px"
                     alt="${customView.entry.name}"
                   />
                   <span>${customView.entry.name}</span>
@@ -124,7 +124,7 @@ export class GroupApplets extends LitElement {
               html`
                 <div
                   class="column"
-                  style="margin-right: 16px; align-items: center; cursor: pointer"
+                  style="margin-right: 25px; align-items: center; cursor: pointer"
                   @click=${() => {
                     this.dispatchEvent(
                       new CustomEvent("applet-selected", {
@@ -138,8 +138,8 @@ export class GroupApplets extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo .appletHash=${appletHash} class="applet-icon"></applet-logo>
-                  <span style="margin-top: 8px"
+                  <applet-logo .appletHash=${appletHash} class="applet-icon" style="--size: 120px; --border-radius: 20px;"></applet-logo>
+                  <span style="margin-top: 8px; font-size: 16px;"
                     >${applet.applet.custom_name}</span
                   >
                 </div>
@@ -152,9 +152,11 @@ export class GroupApplets extends LitElement {
   render() {
     switch (this._groupApplets.value?.status) {
       case "pending":
-        return html` <sl-skeleton
-          style="height: 48px; width: 48px;"
-        ></sl-skeleton>`;
+        return html`
+          <sl-skeleton effect="pulse" style="height: 120px; width: 120px; margin-right: 25px; --border-radius: 20px; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="height: 120px; width: 120px; margin-right: 25px; --border-radius: 20px; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="height: 120px; width: 120px; margin-right: 25px; --border-radius: 20px; --color: var(--sl-color-primary-400);"></sl-skeleton>
+        `;
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the applets installed in this group")}
@@ -176,8 +178,8 @@ export class GroupApplets extends LitElement {
       }
 
       .applet-icon:hover {
-        box-shadow: 0 0 5px #646464;
-        border-radius: 8px;
+        box-shadow: 0 0 10px #525252;
+        border-radius: 20px;
       }
     `,
   ];

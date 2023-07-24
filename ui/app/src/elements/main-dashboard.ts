@@ -115,7 +115,7 @@ export class MainDashboard extends LitElement {
 
       <!-- golden-layout -->
       <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; z-index: auto;">
-        <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: 100%;">
+        <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: calc(100% - 74px);">
           <dynamic-layout
             id="dynamic-layout"
             .rootItemConfig=${{

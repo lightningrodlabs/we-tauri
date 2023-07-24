@@ -117,7 +117,7 @@ export class GroupHome extends LitElement {
             <div class="column" style="flex: 1; margin-right: 16px">
               <span class="title">${msg("Installed Applets")}</span>
               <sl-divider style="--color: grey"></sl-divider>
-              <group-applets style="flex: 1"></group-applets>
+              <group-applets style="flex: 1; margin: 10px;"></group-applets>
             </div>
 
             <related-groups></related-groups>

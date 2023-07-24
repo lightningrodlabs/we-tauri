@@ -47,7 +47,7 @@ pub async fn fetch_icon(
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
-    app_entry_hash_b64: String,
+    app_entry_hash_b64: String, // Hash of the entry of the applet's webassets in the DevHub
 ) -> WeResult<String> {
     let app_entry_hash =
         ActionHash::from(ActionHashB64::from_b64_str(app_entry_hash_b64.as_str()).unwrap());
