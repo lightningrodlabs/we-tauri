@@ -1278,24 +1278,42 @@ export class MatrixStore {
         network_seed: networkSeed,
       };
 
-      this.adminWebsocket
-        .installApp(request)
-        .then(
-          async (appInfo) => {
-            const installedCells = appInfo.cell_info;
-            for (const [roleName, cells] of Object.entries(installedCells)) {
-              for (const cellInfo of cells) {
-                await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-              }
-            }
+      try {
+        const appInfo = await this.adminWebsocket.installApp(request);
+        const installedCells = appInfo.cell_info;
+        for (const [roleName, cells] of Object.entries(installedCells)) {
+          for (const cellInfo of cells) {
+            await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
           }
-        )
-        .catch((e) => {
+        }
+
+      } 
+      catch (e: any) {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
             throw new Error(e);
           }
-        });
+      }     
+
+
+      // this.adminWebsocket
+      //   .installApp(request)
+      //   .then(
+      //     async (appInfo) => {
+      //       const installedCells = appInfo.cell_info;
+      //       for (const [roleName, cells] of Object.entries(installedCells)) {
+      //         for (const cellInfo of cells) {
+      //           await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+      //         }
+      //       }
+      //     }
+      //   )
+      //   .catch((e) => {
+      //     // exact same applet can only be installed once to the conductor
+      //     if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+      //       throw new Error(e);
+      //     }
+      //   });
 
       const enabledAppInfo = await this.adminWebsocket.enableApp({
         installed_app_id: installedAppId,
