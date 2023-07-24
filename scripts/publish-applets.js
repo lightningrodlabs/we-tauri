@@ -396,9 +396,16 @@ async function publishAppletsRetry() {
   try {
     await publishApplets();
   } catch (e) {
-    console.log(
-      "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
-    );
+    if (e.toString().includes("could not connect to holochain conductor")) {
+      console.log(
+        "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
+      );
+    } else if (e.toString().includes("crypto.getRandomValues is not a function")) {
+      console.log("Failed to publish applets: Error: ", e);
+      console.log("\n\nMake sure to use a recent enough version of node. Check your node version with 'node --version'.");
+    } else {
+      console.log("Failed to publish applets. Error: ", e);
+    }
     setTimeout(async () => {
       await publishAppletsRetry();
     }, 15000);
