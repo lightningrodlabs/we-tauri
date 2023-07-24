@@ -20,7 +20,6 @@ import "./create-group-dialog.js";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { weStyles } from "../shared-styles.js";
-import { CreateGroupDialog } from "./create-group-dialog.js";
 
 @localized()
 @customElement("groups-sidebar")

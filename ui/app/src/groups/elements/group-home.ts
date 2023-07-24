@@ -85,7 +85,7 @@ export class GroupHome extends LitElement {
   renderMain(groupProfile: GroupProfile, networkSeed: string) {
     return html`
       <div class="row" style="flex: 1">
-        <div class="column" style="flex: 1; margin: 16px">
+        <div class="column" style="flex: 1; margin: 16px;">
           <div class="row" style="align-items: center; margin-bottom: 24px">
             <div class="row" style="align-items: center; flex: 1;">
               <img

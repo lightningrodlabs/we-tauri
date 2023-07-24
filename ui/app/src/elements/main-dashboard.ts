@@ -225,7 +225,7 @@ export class MainDashboard extends LitElement {
           z-index: 0;
           border-color: var(--sl-color-primary-600) var(--sl-color-primary-600)
             var(--sl-color-primary-600) var(--sl-color-primary-900);
-          box-shadow: -6px 4px 10px 2px var(--sl-color-primary-900);
+          box-shadow: -6px 4px 6px 1px var(--sl-color-primary-900);
         }
 
         .top-left-corner {

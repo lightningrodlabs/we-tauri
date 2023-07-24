@@ -36,6 +36,7 @@ export class AppletLogo extends LitElement {
 
     return html`
       <img
+        class="icon"
         style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 8px)"
         .src=${logo}
         alt="TODO"
@@ -67,6 +68,9 @@ export class AppletLogo extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
+      }
+      .icon:hover {
+        box-shadow: 0 0 3px 3px var(--hover-color, white);
       }
     `,
   ];
