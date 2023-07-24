@@ -86,9 +86,18 @@ export class AppletsSidebar extends LitElement {
     switch (this.applets.value.status) {
       case "pending":
         return html`<sl-skeleton
-          class="square-skeleton"
-          style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px;"
-        ></sl-skeleton>`;
+          style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px; margin-right: 10px;"
+          effect="pulse"
+        ></sl-skeleton>
+        <sl-skeleton
+          style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px; margin-right: 10px;"
+          effect="pulse"
+        ></sl-skeleton>
+        <sl-skeleton
+          style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px; margin-right: 10px;"
+          effect="pulse"
+        ></sl-skeleton>
+        `;
       case "error":
         return html`<display-error
           .headline=${msg("Error displaying the applets")}

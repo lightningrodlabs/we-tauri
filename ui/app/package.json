@@ -22,7 +22,7 @@
     "@mdi/js": "^7.2.96",
     "@msgpack/msgpack": "^2.7.2",
     "@scoped-elements/golden-layout": "file:/home/matthias/code/holochain/matthme/scoped-golden-layout",
-    "@shoelace-style/shoelace": "^2.3.0",
+    "@shoelace-style/shoelace": "^2.5.2",
     "@tauri-apps/api": "^1.2.0",
     "applet-messages": "^0",
     "golden-layout": "^2.6.0",

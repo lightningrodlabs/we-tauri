@@ -113,104 +113,98 @@ export class MainDashboard extends LitElement {
 
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
-        <!-- left sidebar -->
-        <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0;">
-          <div class="top-left-corner-bg"></div>
-          <div class="column top-left-corner">
-            <sidebar-button
-              style="--size: 58px; --border-radius: 25%; margin-top: 8px;"
-              .logoSrc=${weLogoIcon}
-              .tooltipText=${msg("Welcome")}
-              @click=${() => {
-                this.dynamicLayout.openTab({
+      <!-- golden-layout -->
+      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; z-index: auto;">
+        <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: 100%;">
+          <dynamic-layout
+            id="dynamic-layout"
+            .rootItemConfig=${{
+              type: "row",
+              content: [
+                {
                   id: "welcome",
                   type: "component",
+                  title: "Welcome",
+                  isClosable: false,
                   componentType: "welcome",
-                  title: msg("Welcome"),
-                });
-              }}
-            ></sidebar-button>
-          </div>
+                },
+              ],
+            }}
+            style="flex: 1; min-width: 0; height: 100%;"
+            @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
+          ></dynamic-layout>
+      </div>
 
-          <groups-sidebar
-            class="left-sidebar"
-            style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll; overflow-x: hidden;"
-            .selectedGroupDnaHash=${this.selectedGroupDnaHash}
-            @home-selected=${() => {
+      <!-- left sidebar -->
+      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0;">
+        <div class="top-left-corner-bg"></div>
+        <div class="column top-left-corner">
+          <sidebar-button
+            style="--size: 58px; --border-radius: 25%; margin-top: 8px;"
+            .logoSrc=${weLogoIcon}
+            .tooltipText=${msg("Welcome")}
+            placement="bottom"
+            @click=${() => {
               this.dynamicLayout.openTab({
+                id: "welcome",
                 type: "component",
                 componentType: "welcome",
+                title: msg("Welcome"),
               });
             }}
-            @group-selected=${(e: CustomEvent) =>
-              this.openGroup(e.detail.groupDnaHash)}
-            @group-created=${(e: CustomEvent) => {
-              this.openGroup(e.detail.groupDnaHash);
-            }}
-            @request-create-group=${() =>
-              (this.shadowRoot?.getElementById(
-                  "create-group-dialog"
-                ) as CreateGroupDialog
-              ).open()
-              }
-          ></groups-sidebar>
+          ></sidebar-button>
         </div>
 
+        <groups-sidebar
+          class="left-sidebar"
+          style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll; overflow-x: hidden;"
+          .selectedGroupDnaHash=${this.selectedGroupDnaHash}
+          @home-selected=${() => {
+            this.dynamicLayout.openTab({
+              type: "component",
+              componentType: "welcome",
+            });
+          }}
+          @group-selected=${(e: CustomEvent) =>
+            this.openGroup(e.detail.groupDnaHash)}
+          @group-created=${(e: CustomEvent) => {
+            this.openGroup(e.detail.groupDnaHash);
+          }}
+          @request-create-group=${() =>
+            (this.shadowRoot?.getElementById(
+                "create-group-dialog"
+              ) as CreateGroupDialog
+            ).open()
+            }
+        ></groups-sidebar>
+      </div>
 
-        <!-- top bar -->
-        <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
-          <applets-sidebar
-            @applet-selected=${(e: CustomEvent) => {
-              this.dynamicLayout.openViews.openCrossAppletMain(
-                e.detail.appletBundleHash
+
+      <!-- top bar -->
+      <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
+        <applets-sidebar
+          @applet-selected=${(e: CustomEvent) => {
+            this.dynamicLayout.openViews.openCrossAppletMain(
+              e.detail.appletBundleHash
+            );
+          }}
+          style="margin-left: 4px; flex: 1; overflow-x: sroll;"
+        ></applets-sidebar>
+        <we-services-context
+          .services=${buildHeadlessWeServices(this._weStore)}
+        >
+          <search-entry
+            field-label=""
+            style="margin-right: 8px"
+            @entry-selected=${(e) => {
+              this.dynamicLayout.openViews.openHrl(
+                e.detail.hrlWithContext.hrl,
+                e.detail.hrlWithContext.context
               );
+              e.target.reset();
             }}
-            style="margin-left: 4px; flex: 1; overflow-x: sroll;"
-          ></applets-sidebar>
-          <we-services-context
-            .services=${buildHeadlessWeServices(this._weStore)}
-          >
-            <search-entry
-              field-label=""
-              style="margin-right: 8px"
-              @entry-selected=${(e) => {
-                this.dynamicLayout.openViews.openHrl(
-                  e.detail.hrlWithContext.hrl,
-                  e.detail.hrlWithContext.context
-                );
-                e.target.reset();
-              }}
-            ></search-entry>
-          </we-services-context>
-        </div>
-
-        <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px;">
-
-        <!-- <div class="flex-scrollable-parent" style="flex: 1; width: calc(100vw - 74px); height: calc(100vh - 74px);"> -->
-          <!-- <div class="flex-scrollable-container" style="flex: 1;"> -->
-              <!-- <div class="flex-scrollable-y flex-scrollable-x"> -->
-              <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: 100%;">
-
-                <dynamic-layout
-                  id="dynamic-layout"
-                  .rootItemConfig=${{
-                    type: "row",
-                    content: [
-                      {
-                        id: "welcome",
-                        type: "component",
-                        title: "Welcome",
-                        isClosable: false,
-                        componentType: "welcome",
-                      },
-                    ],
-                  }}
-                  style="flex: 1; min-width: 0; height: calc(100% - 64px);"
-                  @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
-                ></dynamic-layout>
-              <!-- </div> -->
-          <!-- </div> -->
-        </div>
+          ></search-entry>
+        </we-services-context>
       </div>
     `;
   }
@@ -231,6 +225,7 @@ export class MainDashboard extends LitElement {
           z-index: 0;
           border-color: var(--sl-color-primary-600) var(--sl-color-primary-600)
             var(--sl-color-primary-600) var(--sl-color-primary-900);
+          box-shadow: -6px 4px 10px 2px var(--sl-color-primary-900);
         }
 
         .top-left-corner {
