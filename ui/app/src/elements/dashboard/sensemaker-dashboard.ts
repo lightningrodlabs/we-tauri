@@ -89,16 +89,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
     store.subscribe(store => {
-      (store?.appletConfig() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
+      (store?.appletConfigs() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
         appletConfigs => {
-          // const id: string = appletConfigs?.role_name;
-          // const id = "todo_lists" // TODO: unhardcode this
-          // console.log('id :>> ', id);
           // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
           Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
-            // if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
-
-            console.log('appletConfig:', appletConfigs);
             this.appletDetails[installedAppId].appletRenderInfo = {
               resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
             };
