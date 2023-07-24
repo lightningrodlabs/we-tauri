@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.4 - 2023-07-24
+- `appletConfig()` method renamed to `appletConfigs()` which now returns `{ [appletName: string]: AppletUIConfig }` instead of `AppletConfig`. This was done so that sensemaker primitives could be organized by applets that defined them.
+- `flattenedAppletConfigs()` method added to return a flattened version of the applet configs, which can be used to replace any old references to `appletConfig()`.
+- the following methods were removed:
+    - `createDimension`
+    - `createResourceDef`
+    - `createMethod`
+    - `createCulturalContext`
 ## v0.0.3 - 2023-06-13
 - `appletUIConfig()` method removed.
 - `widgetRegistry()` method added to store a mapping from a dimension eh to the display and assessment widgets.
