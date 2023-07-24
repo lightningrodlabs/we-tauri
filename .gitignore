@@ -9,4 +9,4 @@ node_modules/
 .hc*
 .hc
 .running
-.DS_Store
+*.DS_Store
