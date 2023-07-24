@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.3 - 2023-06-13
+- `appletUIConfig()` method removed.
+- `widgetRegistry()` method added to store a mapping from a dimension eh to the display and assessment widgets.
+- `activeMethod()` method added to store the currently active method for a given resource definition (this is how we currently make the association to know which widget to display).
+- `methodDimensionMapping()` method added to store to map from a method eh to its input and output dimesion eh's.
+- `myLatestAssessmentAlongDimension()` method added to return the latest assessment by the current agent along a dimension if it exists.
+- `updateActiveMethod()` method added to update which method (and thus widget) to be associated with a given resource definition eh.
+- `registerWidget()` method added to store the widget definition so that it can be accessed and rendered elsewhere.
+- `dimension_ehs` property of `GetAssessmentsForResourceInput` changed from `DimensionEh[]` to `Option<DimensionEh[]>`. If nothing is provided, then all dimensions are used.
 ## v0.0.2 - 2023-05-09
 - `SensemakerStore` constructor inputs changed from `Sensemaker(public service: SensemakerService)` to `constructor(public client: AppAgentClient, public roleName: RoleName, public zomeName = 'sensemaker')` so that the signal handler can be set up in the constructor.
 - signal handler implemented so that whenever a signal of type `NewAssessment` is received, the assessment store is updated.

@@ -18,9 +18,31 @@ Returns a Readable object of the applet configuration.
 
 Returns a Readable object of the context results. Currently, whenever a context is computed, this store is updated with the new results, keyed by the context name.
 
-`appletUIConfig(): Readable<`[`AppletUIConfig`](../src/applet.ts#L42-L48)`>`
+`widgetRegistry(): Readable<`[`WidgetRegistry`](../src/applet.ts#L52-57)`>`
 
-Returns a Readable object of the applet UI configuration, which is currently used to know which dimensions/assessments to render for a given resource hash within an applet.
+Returns a Readable object of the widget registry. This is a mapping from a dimension entry hash to the display and assessment widgets.
+
+`activeMethod(): Readable<{
+    [resourceDefEh: string]: EntryHashB64 // mapping from resourceDefEh to active methodEh
+}>`
+
+Returns a Readable object mapping a resource def eh to a method eh, to be able to know which widget is active for a given reesource def.
+
+`methodDimensionMapping(): Readable<`[`MethodDimensionMapping`](../src/applet.ts#L59-64)`>`
+
+Returns a Readable object of the method dimension mapping. This is a mapping from a method entry hash to its input and output dimension entry hashes.
+
+`isAssessedByMeAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64)`
+
+Returns a boolean indicating whether the current agent has assessed the given resource along the given dimension.
+
+`myLatestAssessmentAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64): Readable<Assessment | null>`
+
+Returns a Readable object of the latest assessment by the current agent along the given dimension for the given resource.
+
+`getAllAgents()`
+
+Returns an array of all the agents pub key that have registered themselves in the Neighbourhood.
 
 `createDimension(dimension: `[`Dimension`](../src/dimension.ts#L8-L10)`): Promise<EntryHash>`
 
@@ -73,3 +95,13 @@ Registers a new applet configuration in the sensemaker, but going through the co
 `async updateAppletUIConfig(resourceDefEh: EntryHashB64, currentObjectiveDimensionEh: EntryHash, currentCreateAssessmentDimensionEh: EntryHash, currentMethodEh: EntryHash)`
 
 Updates the UI configuration for a resource definition so that the UI can know which dimensions to render for a given resource.
+
+# util functions
+`getLargestAssessment(assessments: Assessment[], dimension_eh: EntryHashB64): Option<Assessment>`
+
+Given a list of assessments and a dimension eh, returns the largest assessment for that dimension, if it exists.
+
+`getLatestAssessment(assessments: Assessment[], dimension_eh: EntryHashB64): Option<Assessment>`
+
+Given a list of assessments and a dimension eh, returns the latest assessment for that dimension, if it exists.
+

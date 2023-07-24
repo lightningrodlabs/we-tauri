@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput } from "@neighbourhoods/client";
+import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -131,7 +131,7 @@ export default () => {
           "get_post",
           createPostEntryHash
         );
-        console.log(readPostOutput);
+        console.log('read post record', readPostOutput);
         t.deepEqual(
           createPost,
           decode((readPostOutput.entry as any).Present.entry) as any
@@ -1253,6 +1253,242 @@ export default () => {
           value: {
             Integer:
               ((createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer) / 2,
+          },
+          dimension_eh: createDimensionEntryHash2,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+          author: alice_agent_key,
+          timestamp: runMethodOutput.timestamp,
+        };
+        
+        t.deepEqual(
+          objectiveAssessment,
+          runMethodOutput
+        );
+      } catch (e) {
+        console.log(e);
+        t.ok(null);
+      }
+
+      await alice.shutDown();
+      await bob.shutDown();
+      await cleanAllConductors();
+    });
+  });
+  test("average method computation with float", async (t) => {
+    await runScenario(async (scenario) => {
+      const {
+        alice,
+        bob,
+        alice_happs,
+        bob_happs,
+        alice_agent_key,
+        bob_agent_key,
+        ss_cell_id_alice,
+        ss_cell_id_bob,
+        provider_cell_id_alice,
+        provider_cell_id_bob,
+      } = await setUpAliceandBob();
+
+      const callZomeAlice = async (
+        zome_name,
+        fn_name,
+        payload,
+        is_ss = false
+      ) => {
+        return await alice.appWs().callZome({
+          cap_secret: null,
+          cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
+          zome_name,
+          fn_name,
+          payload,
+          provenance: alice_agent_key,
+        });
+      };
+      const callZomeBob = async (
+        zome_name,
+        fn_name,
+        payload,
+        is_ss = false
+      ) => {
+        return await bob.appWs().callZome({
+          cap_secret: null,
+          cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
+          zome_name,
+          fn_name,
+          payload,
+          provenance: bob_agent_key,
+        });
+      };
+      try {
+        const pauseDuration = 1000;
+        await scenario.shareAllAgents();
+        await pause(pauseDuration);
+
+        // create an entry type in the provider DNA
+        const createPost = {
+          title: "Intro",
+          content: "anger!!",
+        };
+        const createPostEntryHash: EntryHash = await callZomeAlice(
+          "test_provider",
+          "create_post",
+          createPost
+        );
+        // create range for dimension
+        const integerRange = {
+          name: "10-scale",
+          kind: {
+            Float: { min: 0, max: 10 },
+          },
+        };
+
+        const rangeHash = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        t.ok(rangeHash);
+
+        const createDimension = {
+          name: "heat",
+          range_eh: rangeHash,
+          computed: false,
+        };
+
+        const createDimension2 = {
+          name: "total_heat",
+          range_eh: rangeHash,
+          computed: true,
+        };
+
+        // Alice creates a dimension
+        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createDimension,
+          true
+        );
+        t.ok(createDimensionEntryHash);
+
+        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createDimension2,
+          true
+        );
+        t.ok(createDimensionEntryHash2);
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        const createResourceDef = {
+          name: "angryPost",
+          //@ts-ignore
+          base_types: [
+            //@ts-ignore
+            { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
+          ],
+          dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
+        };
+
+        // Alice creates a resource type
+        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_resource_def",
+          createResourceDef,
+          true
+        );
+        t.ok(createResourceDefEntryHash);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // Bob gets the created resource type
+        // create an assessment on the Post
+        const createAssessment: CreateAssessmentInput = {
+          value: { Float: -2 },
+          dimension_eh: createDimensionEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+        };
+
+        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createAssessment,
+          true
+        );
+        t.ok(createAssessmentEntryHash);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // create a second assessment on the Post
+        const createAssessment2: CreateAssessmentInput = {
+          value: { Float: 3 },
+          dimension_eh: createDimensionEntryHash,
+          resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
+          maybe_input_dataset: null,
+        };
+
+        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_assessment",
+          createAssessment2,
+          true
+        );
+        t.ok(createAssessmentEntryHash2);
+
+        // Wait for the created entry to be propagated to the other node.
+        await pause(pauseDuration);
+
+        // Alice creates a dimension
+        // create a method
+        const totalHeatMethod = {
+          name: "total_heat_method",
+          target_resource_def_eh: createResourceDefEntryHash,
+          input_dimension_ehs: [createDimensionEntryHash],
+          output_dimension_eh: createDimensionEntryHash2,
+          program: { Average: null },
+          can_compute_live: false,
+          requires_validation: false,
+        };
+
+        const createMethodEntryHash: EntryHash = await callZomeAlice(
+          "sensemaker",
+          "create_method",
+          totalHeatMethod,
+          true
+        );
+        t.ok(createMethodEntryHash);
+
+        await pause(pauseDuration);
+
+        // compute objective dimension
+        const runMethodInput = {
+          resource_eh: createPostEntryHash,
+          method_eh: createMethodEntryHash,
+        };
+
+        const runMethodOutput: Assessment = await callZomeAlice(
+          "sensemaker",
+          "run_method",
+          runMethodInput,
+          true
+        );
+        t.ok(runMethodOutput);
+        console.log('runMethodOutput', runMethodOutput);
+
+        await pause(pauseDuration);
+
+        const objectiveAssessment: Assessment = {
+          value: {
+            Float:
+              ((createAssessment.value as RangeValueFloat).Float + (createAssessment2.value as RangeValueFloat).Float) / 2,
           },
           dimension_eh: createDimensionEntryHash2,
           resource_eh: createPostEntryHash,

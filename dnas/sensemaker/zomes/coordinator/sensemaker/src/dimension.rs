@@ -50,6 +50,6 @@ pub struct UpdateDimensionInput {
 //     delete_entry(action_hash)
 // }
 
-fn dimensions_typed_path() -> ExternResult<TypedPath> {
+pub fn dimensions_typed_path() -> ExternResult<TypedPath> {
     Path::from("dimensions").typed(LinkTypes::Dimensions)
 }

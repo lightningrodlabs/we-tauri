@@ -25,6 +25,7 @@ pub fn get_assessments_for_resource_inner(
     dimension_ehs: Vec<EntryHash>,
 ) -> ExternResult<BTreeMap<EntryHash, Vec<Assessment>>> {
     let mut assessments: BTreeMap<EntryHash, Vec<Assessment>> = BTreeMap::new();
+    
     for dimension_eh in dimension_ehs {
         let mut dimension_assessments: Vec<Assessment> = Vec::new();
         let links = get_links(

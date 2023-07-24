@@ -86,6 +86,7 @@ export default () => test("range CRUD tests", async (t) => {
         tenScaleRangeEntryHash,
         true
       );
+      console.log('================ tenScaleRangeReadOutput', tenScaleRangeReadOutput)
       t.deepEqual(tenScaleRange, decode((tenScaleRangeReadOutput.entry as any).Present.entry) as any);
 
       // Bob gets the twenty scale range

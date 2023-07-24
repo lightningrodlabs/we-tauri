@@ -1,9 +1,10 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, AppletUIConfig, Assessment, ComputeContextInput, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, DimensionEh, GetAssessmentsForResourceInput, Method, ResourceDef, ResourceDefEh, ResourceEh, RunMethodInput, SignalPayload } from './index';
-import { derived, get, Writable, writable } from 'svelte/store';
-import { Option } from './utils';
+import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
+import { derived, Readable, Writable, writable } from 'svelte/store';
+import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
+import { get } from "svelte/store";
 
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
@@ -24,16 +25,14 @@ export class SensemakerStore {
   */
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
-  // TODO: we probably want there to be a default Applet UI Config, specified in the applet config or somewhere.
-  _appletUIConfig: Writable<AppletUIConfig> = writable({});
-  /*
-  {
-    [resourceDefEh: string]: {
-      display_objective_dimension: EntryHash, // the dimension eh
-      create_assessment_dimension: EntryHash, // the dimension eh
-    }
-  }
-  */
+  _widgetRegistry: Writable<WidgetRegistry> = writable({});
+
+  _activeMethod: Writable<{
+    [resourceDefEh: string]: EntryHashB64 // mapping from resourceDefEh to active methodEh
+  }> = writable({});
+
+  _methodDimensionMapping: Writable<MethodDimensionMap> = writable({});
+
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -88,8 +87,43 @@ export class SensemakerStore {
     return derived(this._contextResults, contextResults => contextResults)
   }
 
-  appletUIConfig() {
-    return derived(this._appletUIConfig, appletUIConfig => appletUIConfig)
+  widgetRegistry() {
+    return derived(this._widgetRegistry, widgetRegistry => widgetRegistry)
+  }
+  
+  activeMethod() {
+    return derived(this._activeMethod, activeMethod => activeMethod)
+  }
+  methodDimensionMapping() {
+    return derived(this._methodDimensionMapping, methodDimensionMapping => methodDimensionMapping)
+  }
+
+  isAssessedByMeAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64) {
+    return derived(this._resourceAssessments, resourceAssessments => {
+      const assessments = resourceAssessments[resource_eh];
+      if (assessments) {
+        return assessments.some(assessment => encodeHashToBase64(assessment.author) === encodeHashToBase64(this.myAgentPubKey) && encodeHashToBase64(assessment.dimension_eh) === dimension_eh);
+      }
+      else {
+        return false;
+      }
+    })
+  }
+
+  myLatestAssessmentAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64): Readable<Assessment | null> {
+    return derived(this._resourceAssessments, resourceAssessments => {
+      const assessments = resourceAssessments[resource_eh];
+      if (!assessments) {
+        return null;
+      }
+      const myAssessments = assessments.filter(assessment => encodeHashToBase64(assessment.author) === encodeHashToBase64(this.myAgentPubKey));
+      if (myAssessments.length > 0) { 
+        return getLatestAssessment(myAssessments, dimension_eh);
+      }
+      else {
+        return null;
+      }
+    })
   }
 
   async getAllAgents() {
@@ -205,23 +239,48 @@ export class SensemakerStore {
       appletConfigs[appletConfig.name] = appletConfig;
       return appletConfigs;
     });
+
+    this._methodDimensionMapping.update(methodDimensionMapping => {
+      appletConfigInput.applet_config_input.methods.forEach(method => {
+        methodDimensionMapping[encodeHashToBase64(appletConfig.methods[method.name])] = {
+          inputDimensionEh: get(this.appletConfig())[appletConfig.name].dimensions[method.input_dimensions[0].name],
+          outputDimensionEh: get(this.appletConfig())[appletConfig.name].dimensions[method.output_dimension.name],
+        };
+      });
+      return methodDimensionMapping;
+    });
+
+    // initialize the active method to the first method for each resource def
+    Object.values(appletConfig.resource_defs).forEach(resourceDef => {
+      // if the active method hasn't been set yet, set it.
+      if (!get(this._activeMethod)[encodeHashToBase64(resourceDef)]) {
+        this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
+      }
+    });
     return appletConfig;
   }
 
-  async updateAppletUIConfig(
-    resourceDefEh: EntryHashB64, 
-    currentObjectiveDimensionEh: EntryHash, 
-    currentCreateAssessmentDimensionEh: EntryHash,
-    currentMethodEh: EntryHash
+  updateActiveMethod(resourceDefEh: EntryHashB64, methodEh: EntryHashB64) {
+    this._activeMethod.update((activeMethods) => {
+      activeMethods[resourceDefEh] = methodEh;
+      return activeMethods;
+    });
+  }
+
+  registerWidget(
+    dimensionEhs: EntryHashB64[], 
+    displayWidget: typeof ConcreteDisplayDimensionWidget,
+    assessWidget: typeof ConcreteAssessDimensionWidget
   ) {
-    this._appletUIConfig.update(appletUIConfig => {
-      appletUIConfig[resourceDefEh] = {
-        display_objective_dimension: currentObjectiveDimensionEh,
-        create_assessment_dimension: currentCreateAssessmentDimensionEh,
-        method_for_created_assessment: currentMethodEh
-      } 
-      return appletUIConfig;
-    }
+      this._widgetRegistry.update(widgetRegistry => {
+        dimensionEhs.forEach(dimensionEh => {
+        widgetRegistry[dimensionEh] = {
+          display: displayWidget,
+          assess: assessWidget
+        } 
+      })
+        return widgetRegistry;
+      }
     )
   }
 }

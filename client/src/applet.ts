@@ -1,9 +1,10 @@
 import { EntryHash } from "@holochain/client";
 import { ConfigCulturalContext } from "./culturalContext";
-import { ConfigDimension, Dimension } from "./dimension";
+import { ConfigDimension } from "./dimension";
 import { ConfigMethod } from "./method";
 import { ConfigResourceDef } from "./resourceDef";
 import { Range } from "./range";
+import { ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget } from "./widgets/dimension-widget-interface";
 
 export interface AppletConfig {
     name: string,
@@ -39,10 +40,25 @@ export interface CreateAppletConfigInput {
     role_name: string,
 }
 
-export interface AppletUIConfig {
+export interface WidgetMappingConfig {
     [resourceDefEh: string]: {
-      display_objective_dimension: EntryHash, // the dimension eh
-      create_assessment_dimension: EntryHash, // the dimension eh
-      method_for_created_assessment: EntryHash, // the method eh
+        activeDimensionEh: string, // the dimension eh
+        inputDimensionMapping: {
+            [inputDimensionEh: string]: [outputDimensionEh: EntryHash, methodEh: EntryHash], // the dimension eh
+        }
   }
+}
+
+export interface WidgetRegistry {
+    [dimensionEh: string]: {
+        display: typeof ConcreteDisplayDimensionWidget,
+        assess: typeof ConcreteAssessDimensionWidget,
+    }
+}
+
+export interface MethodDimensionMap {
+    [methodEh: string]: { 
+        inputDimensionEh: EntryHash,
+        outputDimensionEh: EntryHash,
+    },
 }
