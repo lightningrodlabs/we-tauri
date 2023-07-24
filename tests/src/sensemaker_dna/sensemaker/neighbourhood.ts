@@ -131,7 +131,7 @@ export default () => {
           "get_post",
           createPostEntryHash
         );
-        console.log(readPostOutput);
+        console.log('read post record', readPostOutput);
         t.deepEqual(
           createPost,
           decode((readPostOutput.entry as any).Present.entry) as any

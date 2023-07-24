@@ -1,7 +1,7 @@
 import { contextProvided } from "@lit-labs/context";
 import { property, state } from "lit/decorators.js";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, unsafeCSS } from "lit";
 import { sensemakerStoreContext } from "../sensemakerStore";
 import { SensemakerStore } from "../sensemakerStore";
 import { getLatestAssessment } from "../utils";
@@ -44,6 +44,10 @@ export class SensemakeResource extends ScopedElementsMixin(LitElement) {
             encodeHashToBase64(outputDimensionEh)
         );
         return html`
+            <style>
+                ${unsafeCSS(assessDimensionWidgetType.styles![1])}
+                ${unsafeCSS(displayDimensionWidgetType.styles![1])}
+            </style>
             <div class="sensemake-resource">
                 <slot></slot>
                 ${displayDimensionWidget.render()}
@@ -51,12 +55,14 @@ export class SensemakeResource extends ScopedElementsMixin(LitElement) {
             </div>
         `
     }
-    static styles = css`
-          .sensemake-resource {
-            display: flex;
-            flex-direction: row;
-          }
-        `;
+    static get styles() {
+        return [
+            css`
+            .sensemake-resource {
+                display: flex;
+                flex-direction: row;
+            }
+        `]};
     static get scopedElements() {
         return {
         }
