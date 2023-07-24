@@ -3,6 +3,7 @@ import { execSync } from "child_process";
 import yaml from "js-yaml";
 import fs from "fs";
 import crypto from "crypto";
+import AdmZip from "adm-zip";
 
 const WE_LOGO_PATH = `${process.cwd()}/logo.svg`;
 const TESTING_APPLETS_PATH = `${process.cwd()}/testing-applets`;
@@ -278,7 +279,18 @@ async function publishApplets() {
     const happlibraryDnaHash =
       devhubCells.cell_info["happs"][0]["provisioned"].cell_id[0];
 
-    const iconBytes = fs.readFileSync(WE_LOGO_PATH);
+    // check whether there is an icon in the ui.zip, otherwise take a default icon
+    let iconBytes = fs.readFileSync(WE_LOGO_PATH); // default icon
+    let icon_mime_type = "image/svg+xml";
+
+    let zip = new AdmZip(file_bytes);
+    const zipEntries = zip.getEntries();
+    zipEntries.forEach((entry) => {
+      if (entry.entryName === "icon.png") {
+        iconBytes = entry.getData();
+        icon_mime_type = "image/png";
+      }
+    });
 
     await appstoreClient.callZome({
       role_name: "appstore",
@@ -297,7 +309,7 @@ async function publishApplets() {
         },
         editors: [],
         metadata: {
-          icon_mime_type: "image/svg+xml",
+          icon_mime_type,
         },
       },
     });
