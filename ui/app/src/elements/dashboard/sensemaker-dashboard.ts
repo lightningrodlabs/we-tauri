@@ -25,7 +25,13 @@ import { encodeHashToBase64 } from '@holochain/client';
 import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 
 import { classMap } from 'lit/directives/class-map.js';
-import { LoadingState, DimensionDict, ContextEhDict, AppletRenderInfo, AssessmentTableType } from '../components/helpers/types';
+import {
+  LoadingState,
+  DimensionDict,
+  ContextEhDict,
+  AppletRenderInfo,
+  AssessmentTableType,
+} from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -60,50 +66,67 @@ export class SensemakerDashboard extends NHComponentShoelace {
       this._matrixStore.sensemakerStore(this.selectedWeGroupId) as Readable<SensemakerStore>,
     );
 
-    const appletStream = await this._matrixStore.fetchAllApplets(this.selectedWeGroupId);
-    appletStream.subscribe(applets => {
-      console.log('applets in stream', applets)
-      this.appletDetails = applets.reduce((applets, a) => {
-        const roleName = Object.keys(a[1].dnaHashes)[0];
-        
+    const appletInstancesStream = this._matrixStore.getAppletInstanceInfosForGroup(
+      this.selectedWeGroupId,
+    );
+
+    appletInstancesStream.subscribe(applets => {
+      console.log('applets in stream', applets);
+      this.appletDetails = applets!.reduce((appletDetails, applet) => {
+        const installedAppId = applet.appInfo.installed_app_id;
+
         return {
-          ...applets,
-          [roleName]: {
-            customName: a[1].customName
-          }
-        }
-      }, {})        
+          ...appletDetails,
+          [installedAppId]: {
+            customName: applet.applet.customName,
+          },
+        };
+      }, {});
     });
-    this.setupAssessmentsSubscription()
+    this.setupAssessmentsSubscription();
   }
 
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
     store.subscribe(store => {
-      (store?.appletConfig() as Readable<AppletConfig>).subscribe(appletConfig => {
-        // const id: string = appletConfig?.role_name;
-        const id = "todo_lists" // TODO: unhardcode this
-        console.log('id :>> ', id);
-        // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
-        if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
+      (store?.appletConfig() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
+        appletConfigs => {
+          // const id: string = appletConfigs?.role_name;
+          // const id = "todo_lists" // TODO: unhardcode this
+          // console.log('id :>> ', id);
+          // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
+          Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
+            // if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
 
-        console.log('appletConfig:', appletConfig);
-        this.appletDetails[id].appletRenderInfo = {
-          resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
-        };
-        
-        // Keep dimensions for dashboard table prop        
-        this.dimensions = appletConfig.dimensions;
-        //Keep context names for display
-        this.appletDetails[id].contexts = Object.keys(appletConfig.cultural_contexts).map(cleanResourceNameForUI);
+            console.log('appletConfig:', appletConfigs);
+            this.appletDetails[installedAppId].appletRenderInfo = {
+              resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+            };
 
-        // Keep context entry hashes and resource_def_eh for filtering in dashboard table
-        this.context_ehs = Object.fromEntries(zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)));
-        const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]?.appletRenderInfo;
-        const resourceName : string = this.selectedResourceDefIndex >= 0 && snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-        this.selectedResourceDefEh = resourceName ? encodeHashToBase64(appletConfig.resource_defs[resourceName]) : 'none';
-        this.loading = false;
-      });
+            // Keep dimensions for dashboard table prop
+            this.dimensions = appletConfig.dimensions;
+            //Keep context names for display
+            this.appletDetails[installedAppId].contexts = Object.keys(appletConfig.cultural_contexts).map(
+              cleanResourceNameForUI,
+            );
+
+            // Keep context entry hashes and resource_def_eh for filtering in dashboard table
+            this.context_ehs = Object.fromEntries(
+              zip(this.appletDetails[installedAppId].contexts, Object.values(appletConfig.cultural_contexts)),
+            );
+            const currentAppletRenderInfo = Object.values(this.appletDetails)[
+              this.selectedAppletIndex
+            ]?.appletRenderInfo;
+            const resourceName: string =
+              this.selectedResourceDefIndex >= 0 &&
+              snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
+            this.selectedResourceDefEh = resourceName
+              ? encodeHashToBase64(appletConfig.resource_defs[resourceName])
+              : 'none';
+          });
+          this.loading = false;
+        },
+      );
     });
   }
 
@@ -153,47 +176,53 @@ export class SensemakerDashboard extends NHComponentShoelace {
   renderSidebar(appletRoleNames: string[]) {
     return html`
       <nav>
-      <div>
-        <sl-input class="search-input" placeholder="SEARCH" size="small"></sl-input>
-      </div>
-      <sl-menu class="dashboard-menu-section">
-        <sl-menu-label class="nav-label">NH NAME</sl-menu-label>
-        <sl-menu-item class="nav-item" value="overview">Overview</sl-menu-item>
-        <sl-menu-item class="nav-item" value="roles">Roles</sl-menu-item>
-      </sl-menu>
-      <sl-menu class="dashboard-menu-section">
-        <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-        ${appletRoleNames.map(
-          (roleName, i) => html`
-            <sl-menu-item 
-              class="nav-item ${classMap({
-              active: this.selectedAppletIndex === i})}"
-              value="${this.appletDetails[roleName].customName.toLowerCase()}"
-              @click=${() => {
-                this.selectedAppletIndex = i; 
-                this.selectedResourceDefIndex = -1;
-                this.setupAssessmentsSubscription()
-              }}
-              >${this.appletDetails[roleName].customName}</sl-menu-item
+        <div>
+          <sl-input class="search-input" placeholder="SEARCH" size="small"></sl-input>
+        </div>
+        <sl-menu class="dashboard-menu-section">
+          <sl-menu-label class="nav-label">NH NAME</sl-menu-label>
+          <sl-menu-item class="nav-item" value="overview">Overview</sl-menu-item>
+          <sl-menu-item class="nav-item" value="roles">Roles</sl-menu-item>
+        </sl-menu>
+        <sl-menu class="dashboard-menu-section">
+          <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
+          ${appletRoleNames.map(
+            (roleName, i) => html`
+              <sl-menu-item
+                class="nav-item ${classMap({
+                  active: this.selectedAppletIndex === i,
+                })}"
+                value="${this.appletDetails[roleName].customName.toLowerCase()}"
+                @click=${() => {
+                  this.selectedAppletIndex = i;
+                  this.selectedResourceDefIndex = -1;
+                  this.setupAssessmentsSubscription();
+                }}
+                >${this.appletDetails[roleName].customName}</sl-menu-item
               >
               <div role="navigation" class="sub-nav indented">
-              ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
+                ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
                 this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                  (resource, i) => html`<sl-menu-item class="nav-item" value="${resource.toLowerCase()}"
-                    @click=${() => {this.selectedResourceDefIndex = i; this.setupAssessmentsSubscription()}}
+                  (resource, i) => html`<sl-menu-item
+                    class="nav-item"
+                    value="${resource.toLowerCase()}"
+                    @click=${() => {
+                      this.selectedResourceDefIndex = i;
+                      this.setupAssessmentsSubscription();
+                    }}
                     >${resource}</sl-menu-item
                   >`,
-              )}
-            </div>
-          `,
-        )}
-      </sl-menu>
-      <sl-menu class="dashboard-menu-section">
-        <sl-menu-label class="nav-label">Member Management</sl-menu-label>
-        <sl-menu-item class="nav-item" value="overview">Members</sl-menu-item>
-        <sl-menu-item class="nav-item" value="roles">Invitees</sl-menu-item>
-      </sl-menu>
-    </nav>
+                )}
+              </div>
+            `,
+          )}
+        </sl-menu>
+        <sl-menu class="dashboard-menu-section">
+          <sl-menu-label class="nav-label">Member Management</sl-menu-label>
+          <sl-menu-item class="nav-item" value="overview">Members</sl-menu-item>
+          <sl-menu-item class="nav-item" value="roles">Invitees</sl-menu-item>
+        </sl-menu>
+      </nav>
     `;
   }
   renderMainSkeleton() {
@@ -234,19 +263,28 @@ export class SensemakerDashboard extends NHComponentShoelace {
   render() {
     const roleNames = this?.appletDetails && Object.keys(this.appletDetails);
     const appletDetails = Object.values(this.appletDetails);
-    
-    const appletConfig = (appletDetails?.length && ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[])) //hard-coded to first applet
-    
+
+    const appletConfig =
+      appletDetails?.length &&
+      ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[]); //hard-coded to first applet
+
     if (appletConfig && appletDetails[this.selectedAppletIndex]) {
-      this.selectedResourceName = this.selectedResourceDefIndex < 0 ? "All Resources" : appletDetails[this.selectedAppletIndex].appletRenderInfo.resourceNames[this.selectedResourceDefIndex];
+      this.selectedResourceName =
+        this.selectedResourceDefIndex < 0
+          ? 'All Resources'
+          : appletDetails[this.selectedAppletIndex].appletRenderInfo.resourceNames[
+              this.selectedResourceDefIndex
+            ];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
-    if (!appletConfig[0] || !contexts) { this.loadingState = LoadingState.FirstRender };
-// console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
+    if (!appletConfig[0] || !contexts) {
+      this.loadingState = LoadingState.FirstRender;
+    }
+    // console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`
       <div class="container">
-      <slot name="configure-widget-button"></slot>
+        <slot name="configure-widget-button"></slot>
         ${this.renderSidebar(roleNames as string[])}
         <main>
           ${this.loading
@@ -254,18 +292,31 @@ export class SensemakerDashboard extends NHComponentShoelace {
             : html`<sl-tab-group class="dashboard-tab-group">
                 <div slot="nav" class="tab-nav">
                   <div class="tabs">
-                    <sl-tab panel="resource" class="dashboard-tab resource ${classMap({
-                      active: this.selectedContext === 'none'})}"
-                      @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = 'none' }}
-                        >${this.selectedResourceName}</sl-tab>
+                    <sl-tab
+                      panel="resource"
+                      class="dashboard-tab resource ${classMap({
+                        active: this.selectedContext === 'none',
+                      })}"
+                      @click=${() => {
+                        this.loadingState = LoadingState.FirstRender;
+                        this.selectedContext = 'none';
+                      }}
+                      >${this.selectedResourceName}</sl-tab
+                    >
                     ${contexts &&
                     contexts.map(
                       context =>
                         html`<sl-tab 
                             panel="${context.toLowerCase()}" 
                             class="dashboard-tab ${classMap({
-                              active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}"
-                            @click=${() => { this.loadingState = LoadingState.FirstRender; this.selectedContext = encodeHashToBase64(this.context_ehs[context])}}
+                              active:
+                                encodeHashToBase64(this.context_ehs[context]) ===
+                                this.selectedContext,
+                            })}"
+                            @click=${() => {
+                              this.loadingState = LoadingState.FirstRender;
+                              this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
+                            }}
                           ><span>${context}</span></sl-tab-panel
                         >`,
                     )}
@@ -274,29 +325,37 @@ export class SensemakerDashboard extends NHComponentShoelace {
                 </div>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
-                ${this.selectedContext !== 'none' ? '' : html`<dashboard-filter-map
-                    .resourceName=${this.selectedResourceName}
-                    .resourceDefEh=${this.selectedResourceDefEh}
-                    .tableType=${AssessmentTableType.Resource} 
-                    .selectedContext=${this.selectedContext}
-                    .selectedDimensions=${this.dimensions}>
-                </dashboard-filter-map>`}
-              
-                </sl-tab-panel>
-                ${contexts &&
-                contexts.map(
-                  context =>
-                    encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext ? '' : html`<sl-tab-panel class="dashboard-tab-panel ${classMap({
-                      active: encodeHashToBase64(this.context_ehs[context]) === this.selectedContext})}" name="${context.toLowerCase()}">
-                      <dashboard-filter-map
+                  ${this.selectedContext !== 'none'
+                    ? ''
+                    : html`<dashboard-filter-map
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
-                        .tableType=${AssessmentTableType.Context} 
+                        .tableType=${AssessmentTableType.Resource}
                         .selectedContext=${this.selectedContext}
-                        .selectedDimensions=${this.dimensions}>
-                      </dashboard-filter-map>
-
-                    </sl-tab-panel>`,
+                        .selectedDimensions=${this.dimensions}
+                      >
+                      </dashboard-filter-map>`}
+                </sl-tab-panel>
+                ${contexts &&
+                contexts.map(context =>
+                  encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext
+                    ? ''
+                    : html`<sl-tab-panel
+                        class="dashboard-tab-panel ${classMap({
+                          active:
+                            encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
+                        })}"
+                        name="${context.toLowerCase()}"
+                      >
+                        <dashboard-filter-map
+                          .resourceName=${this.selectedResourceName}
+                          .resourceDefEh=${this.selectedResourceDefEh}
+                          .tableType=${AssessmentTableType.Context}
+                          .selectedContext=${this.selectedContext}
+                          .selectedDimensions=${this.dimensions}
+                        >
+                        </dashboard-filter-map>
+                      </sl-tab-panel>`,
                 )}
               </sl-tab-group>`}
         </main>
@@ -321,9 +380,9 @@ export class SensemakerDashboard extends NHComponentShoelace {
     };
   }
 
-  static styles : CSSResult[] = [
+  static styles: CSSResult[] = [
     super.styles as CSSResult,
-      css`
+    css`
       /** Layout **/
       :host {
         --menu-width: 138px;
@@ -603,7 +662,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         display: grid;
         gap: calc(1px * var(--nh-spacing-md));
         grid-template-rows: 1fr 1fr 1fr 1fr;
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr ;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
         gap: calc(1px * var(--nh-spacing-sm));
       }
       .skeleton-overview nav {
@@ -612,5 +671,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
         margin: calc(1px * var(--nh-spacing-sm));
         margin-top: calc(1px * var(--nh-spacing-xl));
       }
-    `];
+    `,
+  ];
 }
