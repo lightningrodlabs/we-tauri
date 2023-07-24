@@ -25,7 +25,7 @@
     "@lit-labs/scoped-registry-mixin": "^1.0.1",
     "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
-    "@neighbourhoods/client": "^0.0.3",
+    "@neighbourhoods/client": "0.0.4",
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@open-wc/scoped-elements": "^2.1.5",
     "@scoped-elements/material-web": "^0.0.19",
