@@ -73,7 +73,7 @@ export class AppletsSidebar extends LitElement {
                         })
                       );
                     }}
-                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 10px; --size: 58px"
+                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 58px"
                   ></applet-logo>
                 </sl-tooltip>
               `

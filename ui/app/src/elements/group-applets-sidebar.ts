@@ -62,11 +62,24 @@ export class GroupAppletsSidebar extends LitElement {
                   .content=${appletStore.applet.custom_name}
                 >
                   <applet-logo
+                  title="double-click to open in tab"
                     .selected=${this.selectedAppletHash === appletStore.appletHash}
                     .appletHash=${appletStore.appletHash}
                     @click=${() => {
                       this.dispatchEvent(
                         new CustomEvent("applet-selected", {
+                          detail: {
+                            appletHash:
+                              appletStore.appletHash,
+                          },
+                          bubbles: true,
+                          composed: true,
+                        })
+                      );
+                    }}
+                    @dblclick=${() => {
+                      this.dispatchEvent(
+                        new CustomEvent("applet-selected-open-tab", {
                           detail: {
                             appletHash:
                               appletStore.appletHash,

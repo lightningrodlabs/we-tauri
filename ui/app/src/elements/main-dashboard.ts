@@ -123,25 +123,10 @@ export class MainDashboard extends LitElement {
       case "groupView":
         return this.selectedAppletHash
          ? html`
-            <div class="column" style="display: flex; flex: 1;">
-              <div class="row" style="height: 50px; background: var(--sl-color-primary-200); justify-content: flex-end; align-items: center; padding-right: 8px;">
-                <div
-                  class="row open-tab-btn"
-                  @click=${() => {
-                    this.selectedGroupDnaHash = undefined;
-                    this.dashboardMode = "browserView";
-                    this.dynamicLayout.openViews.openAppletMain(this.selectedAppletHash!);
-                    this.selectedAppletHash = undefined;
-                  }}
-                >
-                  <span>Open in Tab</span>
-                </div>
-              </div>
               <applet-main
                 .appletHash=${this.selectedAppletHash}
                 style="flex: 1;"
               ></applet-main>
-            </div>
           `
 
         : html`
@@ -154,6 +139,11 @@ export class MainDashboard extends LitElement {
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);
                 this.selectedAppletHash = e.detail.appletHash;
+              }}
+              @applet-selected-open-tab=${(e: CustomEvent) => {
+                this.dashboardMode = "browserView";
+                this.selectedGroupDnaHash = undefined;
+                this.dynamicLayout.openViews.openAppletMain(e.detail.appletHash);
               }}
               @custom-view-selected=${(e) => {
                 this.dashboardMode = "browserView";
@@ -230,7 +220,7 @@ export class MainDashboard extends LitElement {
       </div>
 
       <!-- left sidebar -->
-      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; background: var(--sl-color-primary-900);">
+      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; ${this.dashboardMode === "browserView" ? "background: var(--sl-color-primary-900);" : "background: var(--sl-color-primary-600);"}">
         <div
           class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}"
           @mouseenter=${() => { this.hoverBrowser = true } }
@@ -301,6 +291,11 @@ export class MainDashboard extends LitElement {
                     //   e.detail.appletHash
                     // );
                   }}
+                  @applet-selected-open-tab=${(e: CustomEvent) => {
+                    this.selectedGroupDnaHash = undefined;
+                    this.dashboardMode = "browserView";
+                    this.dynamicLayout.openViews.openAppletMain(e.detail.appletHash);
+                  }}
                   style="margin-left: 12px; flex: 1; overflow-x: sroll;"
                 ></group-applets-sidebar>
               </group-context>
@@ -325,7 +320,7 @@ export class MainDashboard extends LitElement {
         }
       </div>
 
-      <div class="row hover-browser" style="${this.hoverBrowser ? "" : "display: none;"} align-items: center; font-size: 20px; padding-left: 20px; font-weight: 500;">
+      <div class="row hover-browser" style="${this.hoverBrowser && this.dashboardMode !== 'browserView' ? "" : "display: none;"} align-items: center; font-size: 20px; padding-left: 20px; font-weight: 500;">
         <span>Switch to browser view...</span>
       </div>
 
@@ -346,11 +341,11 @@ export class MainDashboard extends LitElement {
           justify-content: center;
           background: var(--sl-color-primary-900);
           height: 74px;
-          border-radius: 10px 10px 0 0;
+          border-radius: 12px 12px 0 0;
         }
 
         .top-left-corner:hover {
-          border-radius: 10px 0 0 10px;
+          border-radius: 12px 0 0 12px;
           background: var(--sl-color-primary-200);
         }
 
@@ -365,7 +360,7 @@ export class MainDashboard extends LitElement {
         }
 
         .selected {
-          border-radius: 10px 0 0 10px;
+          border-radius: 12px 0 0 12px;
           background: var(--sl-color-primary-200);
         }
 
