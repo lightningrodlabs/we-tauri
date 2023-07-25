@@ -46,9 +46,19 @@ export class GroupAppletsSidebar extends LitElement {
   );
 
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
+    if (Array.from(applets.entries()).length === 0) {
+      return html`
+      <div class="row" style="align-items: center; font-size: 20px; padding-left: 10px; font-weight: 500;">
+        <span>
+          No applets installed in this group...
+        </span>
+      </div>
+      `
+    }
+
 
     return html`
-      <div class="row" style="align-items:center">
+      <div class="row" style="align-items: center;">
         ${Array.from(applets.entries())
           .sort((a1, a2) =>
             a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)

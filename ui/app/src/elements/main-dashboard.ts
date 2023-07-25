@@ -220,7 +220,7 @@ export class MainDashboard extends LitElement {
       </div>
 
       <!-- left sidebar -->
-      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; ${this.dashboardMode === "browserView" ? "background: var(--sl-color-primary-900);" : "background: var(--sl-color-primary-600);"}">
+      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; ${this.dashboardMode === "browserView" || this.hoverBrowser ? "background: var(--sl-color-primary-900);" : "background: var(--sl-color-primary-600);"}">
         <div
           class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}"
           @mouseenter=${() => { this.hoverBrowser = true } }
