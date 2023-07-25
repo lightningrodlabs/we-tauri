@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-holochain-[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish-happ:
@@ -15,7 +16,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v2
-      
+
       - name: Install nix
         uses: cachix/install-nix-action@v18
         with:
@@ -67,7 +68,7 @@ jobs:
       - name: Extend space
         if: matrix.platform == 'ubuntu-20.04'
         uses: ./.github/actions/extend-space
-        
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
