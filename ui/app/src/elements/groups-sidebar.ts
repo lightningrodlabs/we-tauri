@@ -33,6 +33,9 @@ export class GroupsSidebar extends LitElement {
     () => []
   );
 
+  @property(hashProperty("group-dna-hash"))
+  selectedGroupDnaHash!: DnaHash;
+
   renderGroups(groups: ReadonlyMap<DnaHash, GroupProfile | undefined>) {
     const knownGroups = Array.from(groups.entries()).filter(
       ([_, groupProfile]) => !!groupProfile
@@ -48,7 +51,8 @@ export class GroupsSidebar extends LitElement {
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
+                style="margin-bottom: 10px; border-radius: 50%; --size: 58px;"
+                .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
                 @click=${() => {
@@ -69,7 +73,8 @@ export class GroupsSidebar extends LitElement {
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
+              style="margin-bottom: 10px; border-radius: 50%; --size: 58px;"
+              .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
               @click=${() => {
@@ -110,7 +115,6 @@ export class GroupsSidebar extends LitElement {
 
   render() {
     return html`
-
       <div class="column" style="padding: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
         ${this.renderGroupsLoading()}
 

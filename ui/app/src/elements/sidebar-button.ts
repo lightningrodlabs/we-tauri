@@ -45,7 +45,7 @@ export class SidebarButton extends LitElement {
       .content=${this.tooltipText}
     >
       <img
-        class="icon"
+        class="icon ${this.selected ? "selected" : ""}"
         src="${this.logoSrc}"
         @click=${this.handleClick}
         alt="TODO"
@@ -63,10 +63,15 @@ export class SidebarButton extends LitElement {
         width: var(--size, 48px);
         height: var(--size, 48px);
         border-radius: var(--border-radius, 50%);
-        object-fit: cover;
+        /* object-fit: cover; */
       }
       .icon:hover {
-        box-shadow: 0 0 3px 3px var(--hover-color, white);
+        box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-200));
+        background: var(--hover-color, var(--sl-color-primary-200));
+      }
+      .selected {
+        box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-200));
+        background: var(--hover-color, var(--sl-color-primary-200));
       }
     `;
   }

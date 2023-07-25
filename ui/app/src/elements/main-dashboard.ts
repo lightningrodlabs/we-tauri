@@ -1,6 +1,6 @@
 import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
-import { encodeHashToBase64, DnaHash, AnyDhtHash } from "@holochain/client";
+import { encodeHashToBase64, DnaHash, AnyDhtHash, EntryHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 import { listen } from "@tauri-apps/api/event";
 import {
@@ -20,9 +20,10 @@ import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
 
 import "./groups-sidebar.js";
-import "./applets-sidebar.js";
+import "./group-applets-sidebar.js";
 import "./join-group-dialog.js";
 import "../layout/dynamic-layout.js";
+import "../layout/views/applet-main.js";
 import { DynamicLayout } from "../layout/dynamic-layout.js";
 
 import { weStyles } from "../shared-styles.js";
@@ -44,6 +45,12 @@ export class MainDashboard extends LitElement {
 
   @state(hashState())
   selectedGroupDnaHash: DnaHash | undefined;
+
+  @state(hashState())
+  selectedAppletHash: EntryHash | undefined;
+
+  @state()
+  dashboardMode: "groupView" | "browserView" = "browserView";
 
   async handleOpenGroup(networkSeed: string) {
     const groups = await toPromise(
@@ -105,6 +112,69 @@ export class MainDashboard extends LitElement {
     });
   }
 
+  renderDashboard() {
+    switch (this.dashboardMode) {
+      case "browserView":
+        return html``
+
+      case "groupView":
+        return this.selectedAppletHash
+         ? html`
+            <applet-main
+              .appletHash=${this.selectedAppletHash}
+              style="flex: 1"
+            ></applet-main>
+          `
+
+        : html`
+          <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
+            <group-home
+              style="flex: 1"
+              @group-left=${() => {
+                this.selectedGroupDnaHash = undefined;
+              }}
+              @applet-selected=${(e: CustomEvent) => {
+                // this.openViews.openAppletMain(e.detail.appletHash);
+                this.selectedAppletHash = e.detail.appletHash;
+              }}
+              @custom-view-selected=${(e) => {
+                this.dashboardMode = "browserView";
+                this.dynamicLayout.openTab({
+                  id: `custom-view-${this.selectedGroupDnaHash}-${encodeHashToBase64(
+                    e.detail.customViewHash
+                  )}`,
+                  type: "component",
+                  componentType: "custom-view",
+                  componentState: {
+                    groupDnaHash: this.selectedGroupDnaHash,
+                    customViewHash: encodeHashToBase64(e.detail.customViewHash),
+                  },
+                });
+              }}
+              @custom-view-created=${(e) => {
+                this.dashboardMode = "browserView";
+                this.dynamicLayout.openTab({
+                  id: `custom-view-${this.selectedGroupDnaHash}-${encodeHashToBase64(
+                    e.detail.customViewHash
+                  )}`,
+                  type: "component",
+                  componentType: "custom-view",
+                  componentState: {
+                    groupDnaHash: this.selectedGroupDnaHash,
+                    customViewHash: encodeHashToBase64(e.detail.customViewHash),
+                  },
+                });
+              }}
+            ></group-home>
+          </group-context>
+          `
+    }
+  }
+
+  openTab(arg0: { id: string; type: string; componentType: string; componentState: { groupDnaHash: any; customViewHash: string; }; }) {
+    throw new Error("Method not implemented.");
+  }
+
   render() {
     return html`
       <join-group-dialog
@@ -113,38 +183,45 @@ export class MainDashboard extends LitElement {
 
       <create-group-dialog id="create-group-dialog"></create-group-dialog>
 
-      <!-- golden-layout -->
-      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; z-index: auto;">
-        <div style="position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: calc(100% - 74px);">
-          <dynamic-layout
-            id="dynamic-layout"
-            .rootItemConfig=${{
-              type: "row",
-              content: [
-                {
-                  id: "welcome",
-                  type: "component",
-                  title: "Welcome",
-                  isClosable: false,
-                  componentType: "welcome",
-                },
-              ],
-            }}
-            style="flex: 1; min-width: 0; height: 100%;"
-            @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
-          ></dynamic-layout>
+
+      <!-- dashboard -->
+      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; bottom: 0; right: 0; z-index: auto;">
+          <!-- golden-layout (display: none if not in browserView) -->
+          <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: calc(100% - 74px);">
+            <dynamic-layout
+              id="dynamic-layout"
+              .rootItemConfig=${{
+                type: "row",
+                content: [
+                  {
+                    id: "welcome",
+                    type: "component",
+                    title: "Welcome",
+                    isClosable: false,
+                    componentType: "welcome",
+                  },
+                ],
+              }}
+              style="flex: 1; min-width: 0; height: 100%;"
+              @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
+            ></dynamic-layout>
+          </div>
+        ${this.renderDashboard()}
       </div>
 
       <!-- left sidebar -->
       <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0;">
-        <div class="top-left-corner-bg"></div>
-        <div class="column top-left-corner">
+        <div class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}">
           <sidebar-button
-            style="--size: 58px; --border-radius: 25%; margin-top: 8px;"
+            style="--size: 58px; --border-radius: 25%; --hover-color: transparent;"
+            .selected=${this.selectedGroupDnaHash === undefined}
             .logoSrc=${weLogoIcon}
-            .tooltipText=${msg("Welcome")}
+            .tooltipText=${msg("Browser View")}
             placement="bottom"
             @click=${() => {
+              this.dashboardMode = "browserView";
+              this.selectedAppletHash = undefined;
+              this.selectedGroupDnaHash = undefined;
               this.dynamicLayout.openTab({
                 id: "welcome",
                 type: "component",
@@ -157,7 +234,7 @@ export class MainDashboard extends LitElement {
 
         <groups-sidebar
           class="left-sidebar"
-          style="display: flex; flex: 1; margin-top: 4px; overflow-y: scroll; overflow-x: hidden;"
+          style="display: flex; flex: 1; overflow-y: scroll; overflow-x: hidden; border-radius: 8px 8px 0 0;"
           .selectedGroupDnaHash=${this.selectedGroupDnaHash}
           @home-selected=${() => {
             this.dynamicLayout.openTab({
@@ -165,8 +242,11 @@ export class MainDashboard extends LitElement {
               componentType: "welcome",
             });
           }}
-          @group-selected=${(e: CustomEvent) =>
-            this.openGroup(e.detail.groupDnaHash)}
+          @group-selected=${(e: CustomEvent) => {
+            this.selectedAppletHash = undefined;
+            this.selectedGroupDnaHash = e.detail.groupDnaHash;
+            this.dashboardMode = "groupView";
+          }}
           @group-created=${(e: CustomEvent) => {
             this.openGroup(e.detail.groupDnaHash);
           }}
@@ -181,15 +261,28 @@ export class MainDashboard extends LitElement {
 
 
       <!-- top bar -->
-      <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
-        <applets-sidebar
-          @applet-selected=${(e: CustomEvent) => {
-            this.dynamicLayout.openViews.openCrossAppletMain(
-              e.detail.appletBundleHash
-            );
-          }}
-          style="margin-left: 4px; flex: 1; overflow-x: sroll;"
-        ></applets-sidebar>
+      <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0; border-radius: 8px 0 0 8px;">
+        ${
+          this.selectedGroupDnaHash
+            ? html`
+              <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
+                <group-applets-sidebar
+                  .selectedAppletHash=${this.selectedAppletHash}
+                  @applet-selected=${(e: CustomEvent) => {
+                    this.dashboardMode = "groupView";
+                    // this.dashboardMode = "browserView";
+                    this.selectedAppletHash = e.detail.appletHash;
+                    // this.dynamicLayout.openViews.openAppletMain(
+                    //   e.detail.appletHash
+                    // );
+                  }}
+                  style="margin-left: 12px; flex: 1; overflow-x: sroll;"
+                ></group-applets-sidebar>
+              </group-context>
+            `
+            : html`<span style="display: flex; flex: 1;"></span>`
+        }
+
         <we-services-context
           .services=${buildHeadlessWeServices(this._weStore)}
         >
@@ -218,23 +311,23 @@ export class MainDashboard extends LitElement {
           display: flex;
         }
 
-        .top-left-corner-bg {
-          border-style: solid;
-          border-width: 74px 0 0 74px;
-          position: absolute;
-          z-index: 0;
-          border-color: var(--sl-color-primary-600) var(--sl-color-primary-600)
-            var(--sl-color-primary-600) var(--sl-color-primary-900);
-          box-shadow: -6px 4px 6px 1px var(--sl-color-primary-900);
-        }
-
         .top-left-corner {
           z-index: 1;
           align-items: center;
           justify-content: center;
-          background-color: transparent;
-          height: 64px;
+          background-color: var(--sl-color-primary-300);
+          height: 74px;
+          border-radius: 0 8px 8px 8px;
         }
+
+        .top-left-corner:hover {
+          box-shadow: inset 0 0 4px 3px var(--sl-color-primary-700);
+        }
+
+        .selected {
+          box-shadow: inset 0 0 4px 3px var(--sl-color-primary-700);
+        }
+
 
         .left-sidebar {
           overflow-y: auto;

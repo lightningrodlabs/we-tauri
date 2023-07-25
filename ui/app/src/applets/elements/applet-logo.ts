@@ -22,6 +22,9 @@ export class AppletLogo extends LitElement {
   @property(hashProperty("applet-hash"))
   appletHash!: EntryHash;
 
+  @property()
+  selected = false;
+
   appletLogo = new StoreSubscriber(
     this,
     () =>
@@ -36,8 +39,8 @@ export class AppletLogo extends LitElement {
 
     return html`
       <img
-        class="icon"
-        style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 8px)"
+        class="icon ${this.selected ? "selected" : ""}"
+        style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 50%)"
         .src=${logo}
         alt="TODO"
       />
@@ -48,7 +51,7 @@ export class AppletLogo extends LitElement {
     switch (this.appletLogo.value.status) {
       case "pending":
         return html`<sl-skeleton
-          style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 8px)"
+          style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 50%)"
         ></sl-skeleton> `;
       case "complete":
         return this.renderLogo(this.appletLogo.value.value);
@@ -70,7 +73,12 @@ export class AppletLogo extends LitElement {
         justify-content: center;
       }
       .icon:hover {
-        box-shadow: 0 0 3px 3px var(--hover-color, white);
+        box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-900));
+        background: var(--sl-color-primary-900);
+      }
+      .selected {
+        box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-900));
+        background: var(--sl-color-primary-900);
       }
     `,
   ];

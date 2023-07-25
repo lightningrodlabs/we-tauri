@@ -1,10 +1,10 @@
-import { StoreSubscriber } from "@holochain-open-dev/stores";
+import { AsyncReadable, join, pipe, sliceAndJoin, StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import { EntryHash } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { hashProperty } from "@holochain-open-dev/elements";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -19,40 +19,42 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
+import { GroupStore } from "../groups/group-store.js";
+import { groupStoreContext } from "../groups/context.js";
+import { CustomView } from "../custom-views/types.js";
 
+
+// Sidebar for the applet instances of a group
 @localized()
-@customElement("applets-sidebar")
-export class AppletsSidebar extends LitElement {
-  @consume({ context: weStoreContext })
-  _weStore!: WeStore;
+@customElement("group-applets-sidebar")
+export class GroupAppletsSidebar extends LitElement {
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
 
-  applets = new StoreSubscriber(
+  @consume({ context: groupStoreContext, subscribe: true })
+  _groupStore!: GroupStore;
+
+  @property(hashProperty("applet-hash"))
+  selectedAppletHash!: EntryHash;
+
+  _groupApplets = new StoreSubscriber(
     this,
-    () => this._weStore.allInstalledApplets,
-    () => []
+    () => pipe(this._groupStore.allApplets, (allApplets) =>
+          sliceAndJoin(this.weStore.applets, allApplets)
+        ) as AsyncReadable<ReadonlyMap<EntryHash, AppletStore>>,
+    () => [this._groupStore]
   );
 
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
-    const appletsByBundleHash: HoloHashMap<EntryHash, AppletStore> =
-      new HoloHashMap();
-
-    for (const [appletHash, appletStore] of Array.from(applets.entries())) {
-      if (!appletsByBundleHash.has(appletStore.applet.appstore_app_hash)) {
-        appletsByBundleHash.set(
-          appletStore.applet.appstore_app_hash,
-          appletStore
-        );
-      }
-    }
 
     return html`
       <div class="row" style="align-items:center">
-        ${Array.from(appletsByBundleHash.entries())
+        ${Array.from(applets.entries())
           .sort((a1, a2) =>
             a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
           )
           .map(
-            ([appletBundleHash, appletStore]) =>
+            ([_appletBundleHash, appletStore]) =>
               html`
                 <sl-tooltip
                   hoist
@@ -60,20 +62,21 @@ export class AppletsSidebar extends LitElement {
                   .content=${appletStore.applet.custom_name}
                 >
                   <applet-logo
+                    .selected=${this.selectedAppletHash === appletStore.appletHash}
                     .appletHash=${appletStore.appletHash}
                     @click=${() => {
                       this.dispatchEvent(
                         new CustomEvent("applet-selected", {
                           detail: {
-                            appletBundleHash:
-                              appletStore.applet.appstore_app_hash,
+                            appletHash:
+                              appletStore.appletHash,
                           },
                           bubbles: true,
                           composed: true,
                         })
                       );
                     }}
-                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 10px; --size: 58px"
+                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 58px"
                   ></applet-logo>
                 </sl-tooltip>
               `
@@ -83,7 +86,7 @@ export class AppletsSidebar extends LitElement {
   }
 
   renderAppletsLoading() {
-    switch (this.applets.value.status) {
+    switch (this._groupApplets.value.status) {
       case "pending":
         return html`<sl-skeleton
           style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px; margin-right: 10px;"
@@ -102,10 +105,10 @@ export class AppletsSidebar extends LitElement {
         return html`<display-error
           .headline=${msg("Error displaying the applets")}
           tooltip
-          .error=${this.applets.value.error}
+          .error=${this._groupApplets.value.error}
         ></display-error>`;
       case "complete":
-        return this.renderApplets(this.applets.value.value);
+        return this.renderApplets(this._groupApplets.value.value);
     }
   }
 
