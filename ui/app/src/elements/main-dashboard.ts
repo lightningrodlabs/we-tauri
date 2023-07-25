@@ -52,6 +52,9 @@ export class MainDashboard extends LitElement {
   @state()
   dashboardMode: "groupView" | "browserView" = "browserView";
 
+  @state()
+  hoverBrowser: boolean = false;
+
   async handleOpenGroup(networkSeed: string) {
     const groups = await toPromise(
       asyncDeriveStore(this._weStore.allGroups, (groups) =>
@@ -120,10 +123,25 @@ export class MainDashboard extends LitElement {
       case "groupView":
         return this.selectedAppletHash
          ? html`
-            <applet-main
-              .appletHash=${this.selectedAppletHash}
-              style="flex: 1"
-            ></applet-main>
+            <div class="column" style="display: flex; flex: 1;">
+              <div class="row" style="height: 50px; background: var(--sl-color-primary-200); justify-content: flex-end; align-items: center; padding-right: 8px;">
+                <div
+                  class="row open-tab-btn"
+                  @click=${() => {
+                    this.selectedGroupDnaHash = undefined;
+                    this.dashboardMode = "browserView";
+                    this.dynamicLayout.openViews.openAppletMain(this.selectedAppletHash!);
+                    this.selectedAppletHash = undefined;
+                  }}
+                >
+                  <span>Open in Tab</span>
+                </div>
+              </div>
+              <applet-main
+                .appletHash=${this.selectedAppletHash}
+                style="flex: 1;"
+              ></applet-main>
+            </div>
           `
 
         : html`
@@ -185,33 +203,39 @@ export class MainDashboard extends LitElement {
 
 
       <!-- dashboard -->
-      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; bottom: 0; right: 0; z-index: auto;">
-          <!-- golden-layout (display: none if not in browserView) -->
-          <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 74px; left: 74px; bottom: 0px; right: 0px; height: calc(100% - 74px);">
-            <dynamic-layout
-              id="dynamic-layout"
-              .rootItemConfig=${{
-                type: "row",
-                content: [
-                  {
-                    id: "welcome",
-                    type: "component",
-                    title: "Welcome",
-                    isClosable: false,
-                    componentType: "welcome",
-                  },
-                ],
-              }}
-              style="flex: 1; min-width: 0; height: 100%;"
-              @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
-            ></dynamic-layout>
-          </div>
+      <!-- golden-layout (display: none if not in browserView) -->
+      <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
+      <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
+        <dynamic-layout
+          id="dynamic-layout"
+          .rootItemConfig=${{
+            type: "row",
+            content: [
+              {
+                id: "welcome",
+                type: "component",
+                title: "Welcome",
+                isClosable: false,
+                componentType: "welcome",
+              },
+            ],
+          }}
+          style="flex: 1; min-width: 0; height: 100%;"
+          @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
+        ></dynamic-layout>
+      </div>
+
+      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; bottom: 0; right: 0;">
         ${this.renderDashboard()}
       </div>
 
       <!-- left sidebar -->
-      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0;">
-        <div class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}">
+      <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; background: var(--sl-color-primary-900);">
+        <div
+          class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}"
+          @mouseenter=${() => { this.hoverBrowser = true } }
+          @mouseleave=${() => { this.hoverBrowser = false } }
+        >
           <sidebar-button
             style="--size: 58px; --border-radius: 25%; --hover-color: transparent;"
             .selected=${this.selectedGroupDnaHash === undefined}
@@ -219,6 +243,7 @@ export class MainDashboard extends LitElement {
             .tooltipText=${msg("Browser View")}
             placement="bottom"
             @click=${() => {
+              this.hoverBrowser = false;
               this.dashboardMode = "browserView";
               this.selectedAppletHash = undefined;
               this.selectedGroupDnaHash = undefined;
@@ -234,7 +259,7 @@ export class MainDashboard extends LitElement {
 
         <groups-sidebar
           class="left-sidebar"
-          style="display: flex; flex: 1; overflow-y: scroll; overflow-x: hidden; border-radius: 8px 8px 0 0;"
+          style="display: flex; flex: 1; overflow-y: scroll; overflow-x: hidden;"
           .selectedGroupDnaHash=${this.selectedGroupDnaHash}
           @home-selected=${() => {
             this.dynamicLayout.openTab({
@@ -261,7 +286,7 @@ export class MainDashboard extends LitElement {
 
 
       <!-- top bar -->
-      <div class="top-bar row" style="flex: 1; position: fixed; left: 74px; top: 0; right: 0; border-radius: 8px 0 0 8px;">
+      <div class="top-bar row" style="${this.selectedGroupDnaHash ? "" : "display: none;"} flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
         ${
           this.selectedGroupDnaHash
             ? html`
@@ -279,26 +304,31 @@ export class MainDashboard extends LitElement {
                   style="margin-left: 12px; flex: 1; overflow-x: sroll;"
                 ></group-applets-sidebar>
               </group-context>
-            `
-            : html`<span style="display: flex; flex: 1;"></span>`
-        }
 
-        <we-services-context
-          .services=${buildHeadlessWeServices(this._weStore)}
-        >
-          <search-entry
-            field-label=""
-            style="margin-right: 8px"
-            @entry-selected=${(e) => {
-              this.dynamicLayout.openViews.openHrl(
-                e.detail.hrlWithContext.hrl,
-                e.detail.hrlWithContext.context
-              );
-              e.target.reset();
-            }}
-          ></search-entry>
-        </we-services-context>
+              <we-services-context
+                .services=${buildHeadlessWeServices(this._weStore)}
+              >
+                <search-entry
+                  field-label=""
+                  style="margin-right: 8px"
+                  @entry-selected=${(e) => {
+                    this.dynamicLayout.openViews.openHrl(
+                      e.detail.hrlWithContext.hrl,
+                      e.detail.hrlWithContext.context
+                    );
+                    e.target.reset();
+                  }}
+                ></search-entry>
+              </we-services-context>
+            `
+            : html``
+        }
       </div>
+
+      <div class="row hover-browser" style="${this.hoverBrowser ? "" : "display: none;"} align-items: center; font-size: 20px; padding-left: 20px; font-weight: 500;">
+        <span>Switch to browser view...</span>
+      </div>
+
     `;
   }
 
@@ -312,26 +342,53 @@ export class MainDashboard extends LitElement {
         }
 
         .top-left-corner {
-          z-index: 1;
           align-items: center;
           justify-content: center;
-          background-color: var(--sl-color-primary-300);
+          background: var(--sl-color-primary-900);
           height: 74px;
-          border-radius: 0 8px 8px 8px;
+          border-radius: 10px 10px 0 0;
         }
 
         .top-left-corner:hover {
-          box-shadow: inset 0 0 4px 3px var(--sl-color-primary-700);
+          border-radius: 10px 0 0 10px;
+          background: var(--sl-color-primary-200);
+        }
+
+        .hover-browser {
+          flex: 1;
+          position: fixed;
+          left: 74px;
+          top: 0;
+          right: 0;
+          background: var(--sl-color-primary-200);
+          height: 74px;
         }
 
         .selected {
-          box-shadow: inset 0 0 4px 3px var(--sl-color-primary-700);
+          border-radius: 10px 0 0 10px;
+          background: var(--sl-color-primary-200);
+        }
+
+        .open-tab-btn {
+          background: var(--sl-color-primary-900);
+          font-weight: 600;
+          color: white;
+          height: 40px;
+          align-items: center;
+          padding: 0 8px;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .open-tab-btn:hover {
+          background: var(--sl-color-primary-600);
         }
 
 
         .left-sidebar {
           overflow-y: auto;
         }
+
 
         .top-bar {
           overflow-x: auto;

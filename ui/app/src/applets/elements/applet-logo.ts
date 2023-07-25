@@ -52,6 +52,7 @@ export class AppletLogo extends LitElement {
       case "pending":
         return html`<sl-skeleton
           style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 50%)"
+          effect="pulse"
         ></sl-skeleton> `;
       case "complete":
         return this.renderLogo(this.appletLogo.value.value);

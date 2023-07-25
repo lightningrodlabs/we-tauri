@@ -30,7 +30,7 @@ export class GroupsSidebar extends LitElement {
   _groupsProfiles = new StoreSubscriber(
     this,
     () => this._weStore.allGroupsProfiles,
-    () => []
+    () => [this._weStore]
   );
 
   @property(hashProperty("group-dna-hash"))
