@@ -415,6 +415,9 @@ async function publishAppletsRetry() {
     } else if (e.toString().includes("crypto.getRandomValues is not a function")) {
       console.log("Failed to publish applets: Error: ", e);
       console.log("\n\nMake sure to use a recent enough version of node (>18). Check your node version with 'node --version'.");
+    } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
+      console.log("Failed to publish applets: Error: ", e);
+      console.log("\n\nYou probably haven't installed the DevHub yet.");
     } else {
       console.log("Failed to publish applets. Error: ", e);
     }

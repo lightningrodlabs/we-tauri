@@ -20,7 +20,6 @@ export class GroupTitle extends LitElement {
   );
 
   render() {
-    console.log("rendering  group title...");
     if (!this.groupProfile.value) return html``;
 
     switch (this.groupProfile.value.status) {
