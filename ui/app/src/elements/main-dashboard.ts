@@ -233,7 +233,7 @@ export class MainDashboard extends LitElement {
           @mouseleave=${() => { this.hoverBrowser = false } }
         >
           <sidebar-button
-            style="--size: 58px; --border-radius: 25%; --hover-color: transparent;"
+            style="--size: 58px; --border-radius: 20px; --hover-color: transparent;"
             .selected=${this.selectedGroupDnaHash === undefined}
             .logoSrc=${weLogoIcon}
             .tooltipText=${msg("Browser View")}
@@ -347,11 +347,11 @@ export class MainDashboard extends LitElement {
           justify-content: center;
           background: var(--sl-color-primary-900);
           height: 74px;
-          border-radius: 12px 12px 0 0;
+          border-radius: 25px 25px 0 0;
         }
 
         .top-left-corner:hover {
-          border-radius: 12px 0 0 12px;
+          border-radius: 25px 0 0 25px;
           background: var(--sl-color-primary-200);
         }
 
@@ -366,7 +366,7 @@ export class MainDashboard extends LitElement {
         }
 
         .selected {
-          border-radius: 12px 0 0 12px;
+          border-radius: 25px 0 0 25px;
           background: var(--sl-color-primary-200);
         }
 

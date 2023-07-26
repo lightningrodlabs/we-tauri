@@ -12,7 +12,8 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
-import "../applets/elements/applet-logo.js";
+import "../applets/elements/applet-logo-raw.js";
+import "../elements/topbar-button.js";
 import "./create-group-dialog.js";
 
 import { weStoreContext } from "../context.js";
@@ -21,7 +22,6 @@ import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
 import { GroupStore } from "../groups/group-store.js";
 import { groupStoreContext } from "../groups/context.js";
-import { CustomView } from "../custom-views/types.js";
 
 
 // Sidebar for the applet instances of a group
@@ -66,42 +66,42 @@ export class GroupAppletsSidebar extends LitElement {
           .map(
             ([_appletBundleHash, appletStore]) =>
               html`
-                <sl-tooltip
-                  hoist
-                  placement="bottom"
-                  .content=${appletStore.applet.custom_name}
-                >
-                  <applet-logo
+                <topbar-button
                   title="double-click to open in tab"
-                    .selected=${this.selectedAppletHash === appletStore.appletHash}
+                  style="margin-left: 8px;"
+                  .selected=${this.selectedAppletHash === appletStore.appletHash}
+                  .tooltipText=${appletStore.applet.custom_name}
+                  placement="bottom"
+                  @click=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("applet-selected", {
+                        detail: {
+                          appletHash:
+                            appletStore.appletHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
+                  @dblclick=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("applet-selected-open-tab", {
+                        detail: {
+                          appletHash:
+                            appletStore.appletHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
+                >
+                  <applet-logo-raw
                     .appletHash=${appletStore.appletHash}
-                    @click=${() => {
-                      this.dispatchEvent(
-                        new CustomEvent("applet-selected", {
-                          detail: {
-                            appletHash:
-                              appletStore.appletHash,
-                          },
-                          bubbles: true,
-                          composed: true,
-                        })
-                      );
-                    }}
-                    @dblclick=${() => {
-                      this.dispatchEvent(
-                        new CustomEvent("applet-selected-open-tab", {
-                          detail: {
-                            appletHash:
-                              appletStore.appletHash,
-                          },
-                          bubbles: true,
-                          composed: true,
-                        })
-                      );
-                    }}
-                    style="cursor: pointer; margin-top: 2px; margin-bottom: 2px; margin-right: 12px; --size: 58px"
-                  ></applet-logo>
-                </sl-tooltip>
+                    style="z-index: 1;"
+                  ></applet-logo-raw>
+                </topbar-button>
               `
           )}
       </div>
@@ -137,7 +137,7 @@ export class GroupAppletsSidebar extends LitElement {
 
   render() {
     return html`
-      <div class="row" style="flex: 1; padding: 4px; align-items: center;">
+      <div class="row" style="flex: 1; align-items: center;">
         ${this.renderAppletsLoading()}
       </div>
     `;
