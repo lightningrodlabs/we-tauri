@@ -215,9 +215,15 @@ export class MainDashboard extends LitElement {
         ></dynamic-layout>
       </div>
 
-      <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; bottom: 0; right: 0;">
-        ${this.renderDashboard()}
-      </div>
+      ${
+        this.dashboardMode === "groupView"
+          ? html`
+            <div style="display: flex; flex: 1; position: fixed; top: 74px; left: 74px; bottom: 0; right: 0;">
+              ${this.renderDashboard()}
+            </div>
+            `
+          : html``
+      }
 
       <!-- left sidebar -->
       <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; ${this.dashboardMode === "browserView" || this.hoverBrowser ? "background: var(--sl-color-primary-900);" : "background: var(--sl-color-primary-600);"}">
