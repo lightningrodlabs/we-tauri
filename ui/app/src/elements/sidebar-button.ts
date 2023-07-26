@@ -3,6 +3,7 @@ import { customElement, property, query } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import { weStyles } from "../shared-styles.js";
 
 @customElement("sidebar-button")
 export class SidebarButton extends LitElement {
@@ -44,35 +45,109 @@ export class SidebarButton extends LitElement {
       placement="${this.placement}"
       .content=${this.tooltipText}
     >
-      <img
-        class="icon ${this.selected ? "selected" : ""}"
-        src="${this.logoSrc}"
+      <div
+        class="icon-container column ${this.selected ? "selected" : ""}"
         @click=${this.handleClick}
-        alt="TODO"
-      />
+        >
+        <img
+          class="icon"
+          src="${this.logoSrc}"
+          alt="TODO"
+        />
+      </div>
     </sl-tooltip>`;
   }
 
   static get styles() {
-    return css`
+    return [
+      weStyles,
+      css`
       :host {
         display: flex;
       }
       .icon {
-        cursor: pointer;
         width: var(--size, 48px);
         height: var(--size, 48px);
         border-radius: var(--border-radius, 50%);
         /* object-fit: cover; */
       }
-      .icon:hover {
+      /* .icon:hover {
         box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-200));
         background: var(--hover-color, var(--sl-color-primary-200));
+      } */
+
+      .icon-container {
+        cursor: pointer;
+        position: relative;
+        align-items: center;
+        border-radius: 50% 0 0 50%;
+        justify-content: center;
+        height: 74px;
+        width: 74px;
+      }
+      .icon-container:hover {
+        /* padding: 5px; */
+        background-color: var(--hover-color, var(--sl-color-primary-200));
+      }
+      .icon-container:hover::after {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        display: block;
+        background-color: transparent;
+        right: 0;
+        bottom: -50px;
+        height: 50px;
+        width: 80px;
+        border-radius: 0 30px 0 0;
+        box-shadow: 30px 0 0 0 var(--hover-color, var(--sl-color-primary-200));
+      }
+      .icon-container:hover::before {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        display: block;
+        background-color: transparent;
+        right: 0;
+        top: -50px;
+        height: 50px;
+        width: 80px;
+        border-radius: 0 0 30px 0;
+        box-shadow: 30px 0 0 0 var(--hover-color, var(--sl-color-primary-200));
       }
       .selected {
-        box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-200));
-        background: var(--hover-color, var(--sl-color-primary-200));
+        background-color: var(--hover-color, var(--sl-color-primary-200));
+        /* box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-200));
+        background: var(--hover-color, var(--sl-color-primary-200)); */
       }
-    `;
+      .selected::after {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        display: block;
+        background-color: transparent;
+        right: 0;
+        bottom: -50px;
+        height: 50px;
+        width: 80px;
+        border-radius: 0 30px 0 0;
+        box-shadow: 30px 0 0 0 var(--hover-color, var(--sl-color-primary-200));
+      }
+      .selected::before {
+        pointer-events: none;
+        content: "";
+        position: absolute;
+        display: block;
+        background-color: transparent;
+        right: 0;
+        top: -50px;
+        height: 50px;
+        width: 80px;
+        border-radius: 0 0 30px 0;
+        box-shadow: 30px 0 0 0 var(--hover-color, var(--sl-color-primary-200));
+      }
+
+    `
+    ];
   }
 }

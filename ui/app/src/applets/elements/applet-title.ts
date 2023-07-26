@@ -65,7 +65,7 @@ export class AppletTitle extends LitElement {
           alt="${appletStore.applet.custom_name}"
           style="height: 25px; width: 25px; display: flex; margin-right: 4px; border-radius: 50%"
         />
-        <span style="color: rgb(119, 119, 119)"
+        <span
           >${appletStore.applet.custom_name}</span
         >
       </div>

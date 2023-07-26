@@ -45,13 +45,14 @@ export class GroupsSidebar extends LitElement {
     ) as Array<[DnaHash, GroupProfile]>;
 
     return html`
+      <div style="height: 10px;"></div>
       ${knownGroups
         .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
         .map(
           ([groupDnaHash, groupProfile]) =>
             html`
               <sidebar-button
-                style="margin-bottom: 10px; border-radius: 50%; --size: 58px;"
+                style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
                 .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
                 .logoSrc=${groupProfile.logo_src}
                 .tooltipText=${groupProfile.name}
@@ -73,7 +74,7 @@ export class GroupsSidebar extends LitElement {
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-bottom: 10px; border-radius: 50%; --size: 58px;"
+              style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
               .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
@@ -130,6 +131,7 @@ export class GroupsSidebar extends LitElement {
                   })
                 );
               }}
+            style="margin-top: 8px;"
           >
             <div class="column center-content" style="height: 100%;">
               <sl-icon style="width: 25px; height: 25px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>
