@@ -255,7 +255,6 @@ export class MainDashboard extends LitElement {
 
         <groups-sidebar
           class="left-sidebar"
-          style="display: flex; flex: 1; overflow-y: scroll; overflow-x: hidden;"
           .selectedGroupDnaHash=${this.selectedGroupDnaHash}
           @home-selected=${() => {
             this.dynamicLayout.openTab({
@@ -282,7 +281,7 @@ export class MainDashboard extends LitElement {
 
 
       <!-- top bar -->
-      <div class="top-bar row" style="${this.selectedGroupDnaHash ? "" : "display: none;"} flex: 1; position: fixed; left: 74px; top: 0; right: 0;">
+      <div class="top-bar row" style="${this.selectedGroupDnaHash ? "" : "display: none;"} flex: 1; position: fixed; left: var(--sidebar-width); top: 0; right: 0;">
         ${
           this.selectedGroupDnaHash
             ? html`
@@ -346,7 +345,7 @@ export class MainDashboard extends LitElement {
           align-items: center;
           justify-content: center;
           background: var(--sl-color-primary-900);
-          height: 74px;
+          height: var(--sidebar-width);
           border-radius: 25px 25px 0 0;
         }
 
@@ -358,11 +357,11 @@ export class MainDashboard extends LitElement {
         .hover-browser {
           flex: 1;
           position: fixed;
-          left: 74px;
+          left: var(--sidebar-width);
           top: 0;
           right: 0;
           background: var(--sl-color-primary-200);
-          height: 74px;
+          height: var(--sidebar-width);
         }
 
         .selected {
@@ -387,20 +386,21 @@ export class MainDashboard extends LitElement {
 
 
         .left-sidebar {
+          background-color: var(--sl-color-primary-900);
+          width: var(--sidebar-width);
           overflow-y: auto;
+          display: flex;
+          flex: 1;
+          overflow-y: scroll;
+          overflow-x: hidden;
         }
 
 
         .top-bar {
           overflow-x: auto;
           background-color: var(--sl-color-primary-600);
-          min-height: 74px;
+          min-height: var(--sidebar-width);
           align-items: center;
-        }
-
-        groups-sidebar {
-          background-color: var(--sl-color-primary-900);
-          width: 74px;
         }
       `,
     ];

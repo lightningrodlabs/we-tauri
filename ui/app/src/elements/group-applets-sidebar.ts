@@ -58,7 +58,7 @@ export class GroupAppletsSidebar extends LitElement {
 
 
     return html`
-      <div class="row" style="align-items: center;">
+      <div class="row" style="align-items: flex-end;">
         ${Array.from(applets.entries())
           .sort((a1, a2) =>
             a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)

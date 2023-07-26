@@ -116,7 +116,7 @@ export class GroupsSidebar extends LitElement {
 
   render() {
     return html`
-      <div class="column" style="padding: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
+      <div class="column" style="padding-top: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
         ${this.renderGroupsLoading()}
 
         <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>

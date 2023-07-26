@@ -82,11 +82,10 @@ export class SidebarButton extends LitElement {
         align-items: center;
         border-radius: 50% 0 0 50%;
         justify-content: center;
-        height: 74px;
-        width: 74px;
+        height: var(--sidebar-width);
+        width: var(--sidebar-width);
       }
       .icon-container:hover {
-        /* padding: 5px; */
         background-color: var(--hover-color, var(--sl-color-primary-200));
       }
       .icon-container:hover::after {
