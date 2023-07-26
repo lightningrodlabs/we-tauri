@@ -145,7 +145,7 @@ fn main() {
             if request.uri().starts_with("applet://ping") {
                 return ResponseBuilder::new()
                     .status(StatusCode::ACCEPTED)
-                    .mimetype("text/html")
+                    .header("Content-Type", "text/html;charset=utf-8")
                     .body(pong_iframe().as_bytes().to_vec());
             }
             // prepare our response
@@ -191,7 +191,9 @@ fn main() {
                     Ok(Some((asset, mime_type))) => {
                         let mut response = ResponseBuilder::new().status(StatusCode::ACCEPTED);
                         if let Some(mime_type) = mime_type {
-                            response = response.mimetype(mime_type.as_str());
+                            response = response.header("Content-Type", format!("{};charset=utf-8", mime_type))
+                        } else {
+                            response = response.header("Content-Type", "charset=utf-8")
                         }
 
                         return response.body(asset);
