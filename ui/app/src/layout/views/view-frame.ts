@@ -32,7 +32,7 @@ export class ViewFrame extends LitElement {
         this.weStore.conductorInfo,
         this.appletHash
       )}?${renderViewToQueryString(this.renderView)}"
-      style="flex: 1;"
+      style="flex: 1; display: block; padding: 0; margin: 0;"
     ></iframe>`;
   }
 

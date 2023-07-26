@@ -74,6 +74,8 @@ export class MainDashboard extends LitElement {
   }
 
   async handleOpenHrl(dnaHash: DnaHash, hash: AnyDhtHash) {
+    this.selectedGroupDnaHash = undefined;
+    this.dashboardMode = "browserView";
     this.dynamicLayout.openViews.openHrl([dnaHash, hash], {});
   }
 
@@ -197,6 +199,10 @@ export class MainDashboard extends LitElement {
       <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout
+          @open-tab-request=${() => {
+            this.selectedGroupDnaHash = undefined;
+            this.dashboardMode = "browserView";
+          }}
           id="dynamic-layout"
           .rootItemConfig=${{
             type: "row",
@@ -312,6 +318,8 @@ export class MainDashboard extends LitElement {
                   field-label=""
                   style="margin-right: 8px"
                   @entry-selected=${(e) => {
+                    this.selectedGroupDnaHash = undefined;
+                    this.dashboardMode = "browserView";
                     this.dynamicLayout.openViews.openHrl(
                       e.detail.hrlWithContext.hrl,
                       e.detail.hrlWithContext.context
