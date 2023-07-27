@@ -7,7 +7,10 @@ import './matrix-test-harness';
 import '../sensemaker-dashboard';
 import { stateful } from './helpers';
 import { getTagName } from './helpers';
-import { mockAppletConfig, mockAppletConfigs } from '../../components/__tests__/sensemaker-store-test-harness';
+import {
+  mockAppletConfig,
+  mockAppletConfigs,
+} from '../../components/__tests__/sensemaker-store-test-harness';
 import { MockFactory } from '../../__tests__/mock-factory';
 import { DnaHash } from '@holochain/client';
 import { get } from 'svelte/store';
@@ -40,15 +43,25 @@ describe('SensemakerDashboard', () => {
     componentDom = harness.querySelector(getTagName(testComponent));
     await componentDom.updateComplete;
   };
-  const renderAndReturnDom = async (testComponent, subComponent, subComponent2 = '') => {
+  const renderAndReturnDom = async (
+    testComponent,
+    subComponent,
+    subComponent2 = '',
+    subComponent3 = '',
+  ) => {
     await initialRender(testComponent);
     const root = componentDom.renderRoot;
     if (!!subComponent) {
       toBeTestedSubComponent = root.querySelector(subComponent);
       if (!!subComponent2) {
         // TODO: make this function recursive and extract to a helper function that lets you delve into x levels of webcomponent tree
-        componentDom = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
-        return new JSDOM(componentDom.renderRoot.innerHTML)
+        toBeTestedSubComponent = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
+        if (!!subComponent3) {
+          await toBeTestedSubComponent.updateComplete;
+          toBeTestedSubComponent = toBeTestedSubComponent.renderRoot.querySelector(subComponent3);
+          return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
+        }
+        return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
       }
       return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
     }
@@ -166,7 +179,8 @@ describe('SensemakerDashboard', () => {
 
     test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
       const dom = await renderAndReturnDom(component, false);
-      const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+      const appletConfigs: { [appletInstanceId: string]: AppletConfig } =
+        get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
       const resourceDefsLength = Object.values(config.resource_defs).length;
       const elements = dom.window.document.querySelectorAll(
@@ -177,7 +191,8 @@ describe('SensemakerDashboard', () => {
 
     test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
       const dom = await renderAndReturnDom(component, false);
-      const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+      const appletConfigs: { [appletInstanceId: string]: AppletConfig } =
+        get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
       const resourceDefNames = Object.keys(config.resource_defs);
 
@@ -191,7 +206,7 @@ describe('SensemakerDashboard', () => {
 
     test('And it renders no table but instead a skeleton', async () => {
       const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
-      
+
       const elements = dom.window.document.querySelector('table');
       expect(elements).toBeNull();
 
@@ -200,49 +215,86 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  describe('Given a MatrixStore with an applet (AppletConfig has two resources) and two assessments in SM store', () => {
-  beforeAll(async () => {
-    mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
-    mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
-    mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
+  describe('Given a MatrixStore with an applet (AppletConfig has two resources) and two assessments in SM store and No Dimensions', () => {
+    beforeAll(async () => {
+      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
+      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
+      mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
 
-    const mockSMStore : any = get(mockSensemakerResponse);
-    mockSMStore.setResourceAssessments(MockFactory.createAssessmentDict());
+      const mockSMStore: any = get(mockSensemakerResponse);
+      mockSMStore.setResourceAssessments(MockFactory.createAssessmentDict());
+    });
 
-    // const a : any = (get(mockSensemakerResponse) as any).resourceAssessments();
-  });
+    test(`Then state is initialized`, async () => {
+      let mockSMStore = get(mockSensemakerResponse) as any;
+      expect(mockSMStore.resourceAssessments).toHaveBeenCalled();
 
-  test(`Then state is initialized`, async () => {
-    let mockSMStore = get(mockSensemakerResponse) as any;
-    expect((mockSMStore).resourceAssessments).toHaveBeenCalled();
+      expect(mockSMStore.resourceAssessments().value['abc'].length).toEqual(2);
 
-    expect(mockSMStore.resourceAssessments().value['abc'].length).toEqual(2);
-    
-    await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
-    expect(componentDom.tableStore).toBeDefined();
-    expect(componentDom.tableStore.records.length).toEqual(2);
-  });
+      await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
 
-  test('And it renders a header row', async () => {
-    const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    const elements = dom.window.document.querySelectorAll(`thead tr`);
-    expect(elements.length).toBe(1);
-  });
-  test('And the header row has the correct number of columns ', async () => {
-    const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    const elements = dom.window.document.querySelectorAll(`thead tr th`);
-    expect(elements.length).toBe(4);
-  });
-  test('And the header row has the correct column headings ', async () => {
-    const dom = await renderAndReturnDom(component, 'adaburrows-table');
-    const elements = dom.window.document.querySelectorAll(`thead tr th`);
-    expect([...elements].map((node) => node.textContent.trim())).eql([
-      "Value",
-      "Dimension",
-      "Resource",
-      "Author",
-    ]);
-  });
+      expect(toBeTestedSubComponent.tableStore).toBeDefined();
+      expect(toBeTestedSubComponent.tableStore.records.length).toEqual(2);
+    });
+
+    test('And it renders a table', async () => {
+      const dom = await renderAndReturnDom(
+        component,
+        'dashboard-filter-map',
+        'dashboard-table',
+        'wc-table',
+      );
+      await toBeTestedSubComponent.updateComplete;
+
+      const elements = dom.window.document.querySelectorAll(`table`);
+      expect(elements.length).toBe(1);
+    });
+
+    test('And it renders a header row', async () => {
+      const dom = await renderAndReturnDom(
+        component,
+        'dashboard-filter-map',
+        'dashboard-table',
+        'wc-table',
+      );
+      await toBeTestedSubComponent.updateComplete;
+
+      const elements = dom.window.document.querySelectorAll(`thead tr`);
+      expect(elements.length).toBe(1);
+    });
+    test('And the header row has the correct number of columns ', async () => {
+      const dom = await renderAndReturnDom(
+        component,
+        'dashboard-filter-map',
+        'dashboard-table',
+        'wc-table',
+      );
+      await toBeTestedSubComponent.updateComplete;
+
+      const elements = dom.window.document.querySelectorAll(`thead tr th`);
+      expect(elements.length).toBe(2);
+    });
+    test('And the header row has the correct column headings ', async () => {
+      const dom = await renderAndReturnDom(
+        component,
+        'dashboard-filter-map',
+        'dashboard-table',
+        'wc-table',
+      );
+      await toBeTestedSubComponent.updateComplete;
+
+      const h4s = dom.window.document.querySelectorAll(`thead tr th h4`);
+      expect([...h4s].map(node => node.textContent.trim(). replace(/(\r\n|\n|\r)/gm, ""))).eql([
+        'Resource',
+        'Neighbour',
+      ]);
+
+      const h2s = dom.window.document.querySelectorAll(`thead tr th h2`);
+      expect([...h2s].map(node => node.textContent.trim(). replace(/(\r\n|\n|\r)/gm, ""))).eql([
+        'All Resources', // The resource name
+        'Member',
+      ]);
+    });
   });
   // describe('Given a MatrixStore with three resources and two assessments each resource', () => {
   //   beforeEach(async () => {
@@ -285,14 +337,13 @@ describe('SensemakerDashboard', () => {
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(2));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
-      const mockSMStore : any = get(mockSensemakerResponse.store());
+      const mockSMStore: any = get(mockSensemakerResponse.store());
       mockSMStore.setAppletConfigs(mockAppletConfigs);
-      
     });
 
     test(`Then the Sensemaker sub-menu has 2 items`, async () => {
       const dom = await renderAndReturnDom(component, false);
-      
+
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
       );
@@ -315,9 +366,11 @@ describe('SensemakerDashboard', () => {
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
       );
-      const applets = (get(mockFetchAppletsResponse) as any).map(appletInstanceInfo => appletInstanceInfo.applet);
+      const applets = (get(mockFetchAppletsResponse) as any).map(
+        appletInstanceInfo => appletInstanceInfo.applet,
+      );
       const appletNames = applets.map(applet => applet.customName);
-          expect([...elements].map((node) => node.textContent.trim())).eql(appletNames);
+      expect([...elements].map(node => node.textContent.trim())).eql(appletNames);
     });
 
     test(`And the 2 Sensemaker sub-menus each have 1 sub-nav below`, async () => {
@@ -332,13 +385,15 @@ describe('SensemakerDashboard', () => {
     test(`And the 2 sub-navs each have as many nav items as there are Resource Definitions in the AppletConfigs`, async () => {
       const dom = await renderAndReturnDom(component, false);
       const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
-      const resourceDefsLengths = appletConfigs.map(config => Object.entries(config.resource_defs).length);
+      const resourceDefsLengths = appletConfigs.map(
+        config => Object.entries(config.resource_defs).length,
+      );
 
       const subnavs = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
       );
-      const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
-      const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
+      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
+      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
       expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
       expect(secondNavMenuItems.length).toBe(resourceDefsLengths[1]);
     });
@@ -351,8 +406,8 @@ describe('SensemakerDashboard', () => {
       const subnavs = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
       );
-      const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
-      const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
+      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
+      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
       expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
         resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
       );

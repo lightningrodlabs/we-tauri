@@ -8,7 +8,7 @@ import { EntryHash, DnaHash } from '@holochain/client';
 import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matrix-test-harness';
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
-import { SensemakerStore } from '@neighbourhoods/client';
+import { Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { AppletInstanceInfo } from '../../matrix-store';
 import { encode } from '@msgpack/msgpack';
 
@@ -148,7 +148,16 @@ export class MockFactory {
 
   static mockStoreResponse(methodName: string) {
     let mockStore: any = {};
-    const mockClient = {
+    const mockClient = (mockDimensions: any = [{
+      "name": "importance",
+      "range": {
+        "name": "1-scale",
+        "kind": {
+            "Integer": { "min": 0, "max": 1 }
+        }
+    },
+      "computed": false
+  }]) => ({
       appInfo: vi.fn(() => ({
         cell_info: {
           sensemaker: [null, { cloned: { cell_id: 'mock-cell-id' } }],
@@ -157,17 +166,13 @@ export class MockFactory {
       callZome: vi.fn(({fn_name}) => {
         switch (fn_name) {
           case 'get_dimensions':
-            return [{
-              "name": "importance",
-              "range": {},
-              "computed": false
-          }].map(dimension => ({entry: { Present: { 'entry': encode(dimension) } }}))
+            return [mockDimensions].map(dimension => ({entry: { Present: { 'entry': encode(dimension) } }}))
           default:
             break;
         }
       }),
-    };
-    mockStore.client = mockClient;
+    });
+    mockStore.client = mockClient();
 
     switch (methodName) {
       case 'matrix-sensemaker-for-we-group-id':
@@ -246,6 +251,7 @@ export class MockFactory {
         }
         mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
         mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
+        mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions)};
       default:
         return mockStore;
     }
