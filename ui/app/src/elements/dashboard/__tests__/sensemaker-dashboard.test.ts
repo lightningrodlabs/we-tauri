@@ -47,9 +47,8 @@ describe('SensemakerDashboard', () => {
       toBeTestedSubComponent = root.querySelector(subComponent);
       if (!!subComponent2) {
         // TODO: make this function recursive and extract to a helper function that lets you delve into x levels of webcomponent tree
-        let a = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
-        let b = new JSDOM(a.renderRoot.innerHTML)
-        return b
+        componentDom = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
+        return new JSDOM(componentDom.renderRoot.innerHTML)
       }
       return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
     }
@@ -121,7 +120,7 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  describe('Given a MatrixStore with an applet (AppletConfig has one resource) with no assessments in SM store', () => {
+  describe('Given a MatrixStore with an applet (AppletConfig has two resources) with no assessments in SM store', () => {
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
@@ -201,41 +200,50 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  // describe('Given a MatrixStore with an AppletConfig with one resource and two assessments', () => {
-  // beforeEach(async () => {
-  //   mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfigs);
-  //   mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
-  // });
+  describe('Given a MatrixStore with an applet (AppletConfig has two resources) and two assessments in SM store', () => {
+  beforeAll(async () => {
+    mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
+    mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
+    mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
 
-  // test(`Then state is initialized`, async () => {
-  //   expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
+    const mockSMStore : any = get(mockSensemakerResponse);
+    mockSMStore.setResourceAssessments(MockFactory.createAssessmentDict());
 
-  //   expect(mockStore.value[mockResourceName].length).toEqual(2);
-  //   expect(componentDom.tableStore).toBeDefined();
-  //   expect(componentDom.tableStore.records.length).toEqual(2);
-  // });
+    // const a : any = (get(mockSensemakerResponse) as any).resourceAssessments();
+  });
 
-  // test('And it renders a header row', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr`);
-  //   expect(elements.length).toBe(1);
-  // });
-  // test('And the header row has the correct number of columns ', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-  //   expect(elements.length).toBe(4);
-  // });
-  // test('And the header row has the correct column headings ', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-  //   expect([...elements].map((node) => node.textContent.trim())).eql([
-  //     "Value",
-  //     "Dimension",
-  //     "Resource",
-  //     "Author",
-  //   ]);
-  // });
-  // });
+  test(`Then state is initialized`, async () => {
+    let mockSMStore = get(mockSensemakerResponse) as any;
+    expect((mockSMStore).resourceAssessments).toHaveBeenCalled();
+
+    expect(mockSMStore.resourceAssessments().value['abc'].length).toEqual(2);
+    
+    await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
+    expect(componentDom.tableStore).toBeDefined();
+    expect(componentDom.tableStore.records.length).toEqual(2);
+  });
+
+  test('And it renders a header row', async () => {
+    const dom = await renderAndReturnDom(component, 'adaburrows-table');
+    const elements = dom.window.document.querySelectorAll(`thead tr`);
+    expect(elements.length).toBe(1);
+  });
+  test('And the header row has the correct number of columns ', async () => {
+    const dom = await renderAndReturnDom(component, 'adaburrows-table');
+    const elements = dom.window.document.querySelectorAll(`thead tr th`);
+    expect(elements.length).toBe(4);
+  });
+  test('And the header row has the correct column headings ', async () => {
+    const dom = await renderAndReturnDom(component, 'adaburrows-table');
+    const elements = dom.window.document.querySelectorAll(`thead tr th`);
+    expect([...elements].map((node) => node.textContent.trim())).eql([
+      "Value",
+      "Dimension",
+      "Resource",
+      "Author",
+    ]);
+  });
+  });
   // describe('Given a MatrixStore with three resources and two assessments each resource', () => {
   //   beforeEach(async () => {
   //     mockStore = mockMatrixStore.resourceAssessments();
