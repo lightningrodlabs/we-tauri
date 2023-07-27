@@ -162,28 +162,30 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(1);
     });
 
-    // test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
-    //   const dom = await renderAndReturnDom(component, false);
-    //   const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
-    //   const resourceDefsLength = Object.entries(appletConfigs['abc'].resource_defs).length;
-    //   const elements = dom.window.document.querySelectorAll(
-    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
-    //   );
-    //   expect(elements.length).toBe(resourceDefsLength);
-    // });
+    test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+      const config = Object.values(appletConfigs)[0];
+      const resourceDefsLength = Object.values(config.resource_defs).length;
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+      );
+      expect(elements.length).toBe(resourceDefsLength);
+    });
 
-    // test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
-    //   const dom = await renderAndReturnDom(component, false);
-    //   const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
-    //   const resourceDefNames = Object.keys(appletConfigs['abc'].resource_defs);
+    test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+      const config = Object.values(appletConfigs)[0];
+      const resourceDefNames = Object.keys(config.resource_defs);
 
-    //   const elements = dom.window.document.querySelectorAll(
-    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
-    //   );
-    //   expect([...elements].map(node => node.textContent.trim())).eql(
-    //     resourceDefNames.map(name => cleanResourceNameForUI(name)),
-    //   );
-    // });
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+      );
+      expect([...elements].map(node => node.textContent.trim())).eql(
+        resourceDefNames.map(name => cleanResourceNameForUI(name)),
+      );
+    });
 
     // test('And it renders no table but instead a skeleton', async () => {
     //   const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
