@@ -59,7 +59,7 @@ export class MockFactory {
     role_name = testAppletBaseRoleName,
     // installed_app_id = testAppletBaseRoleName + (seed + 1),
     ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
-    dimensions = { my_dimension: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
+    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
     resource_defs = {
       ['my_resource_def' + (seed + 1)]: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),
       ['another_resource_def' + (seed + 1)]: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),
@@ -146,18 +146,30 @@ export class MockFactory {
     return [...new Array(numberInArray)].map((_, index) => this.createAppletTuple(index));
   }
 
-  static mockStoreResponse(methodName: string) {
-    let mockStore: any = {};
-    const mockClient = (mockDimensions: any = [{
-      "name": "importance",
+  static createConfigDimensions(numberInArray: number, subjectivity: string = "subjective"): any {
+    return [...new Array(numberInArray)].map((_, index) => ({
+      "name": "my_dimension" + (index + 1),
       "range": {
         "name": "1-scale",
         "kind": {
             "Integer": { "min": 0, "max": 1 }
         }
     },
-      "computed": false
-  }]) => ({
+      "computed": subjectivity === "objective"
+  }));
+  }
+
+  static mockStoreResponse(methodName: string) {
+    let mockStore: any = {};
+    const mockClient = (mockDimensions : any = [{
+      "name": "importance",
+      "range": {
+        "name": "1-scale",
+        "kind": {
+            "Integer": { "min": 0, "max": 1 }
+        }
+    }
+  }], subjectivity: string ="subjective") => ({
       appInfo: vi.fn(() => ({
         cell_info: {
           sensemaker: [null, { cloned: { cell_id: 'mock-cell-id' } }],
@@ -166,7 +178,7 @@ export class MockFactory {
       callZome: vi.fn(({fn_name}) => {
         switch (fn_name) {
           case 'get_dimensions':
-            return [mockDimensions].map(dimension => ({entry: { Present: { 'entry': encode(dimension) } }}))
+            return mockDimensions.map(dimension => ({entry: { Present: { 'entry': encode({...dimension, "computed": subjectivity == "objective"}) } }}))
           default:
             break;
         }
@@ -251,7 +263,7 @@ export class MockFactory {
         }
         mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
         mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
-        mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions)};
+        mockStore.setAppletConfigDimensions = (dimensions: any, subjectivity: string) => { mockStore.client = mockClient(dimensions, subjectivity);};
       default:
         return mockStore;
     }

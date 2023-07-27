@@ -221,7 +221,11 @@ describe('SensemakerDashboard', () => {
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
       mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
 
+      let config = Object.values(mockAppletConfig)[0];
+      const numberOfDimensions = Object.values(config.dimensions).length;
+
       const mockSMStore: any = get(mockSensemakerResponse);
+      mockSMStore.setAppletConfigDimensions(MockFactory.createConfigDimensions(numberOfDimensions), "objective");
       mockSMStore.setResourceAssessments(MockFactory.createAssessmentDict());
     });
 
