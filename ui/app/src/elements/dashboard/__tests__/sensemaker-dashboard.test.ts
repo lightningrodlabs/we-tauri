@@ -46,7 +46,10 @@ describe('SensemakerDashboard', () => {
     if (!!subComponent) {
       toBeTestedSubComponent = root.querySelector(subComponent);
       if (!!subComponent2) {
-        return new JSDOM(toBeTestedSubComponent.renderRoot.querySelector(subComponent2))
+        // TODO: make this function recursive and extract to a helper function that lets you delve into x levels of webcomponent tree
+        let a = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
+        let b = new JSDOM(a.renderRoot.innerHTML)
+        return b
       }
       return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
     }
@@ -187,15 +190,15 @@ describe('SensemakerDashboard', () => {
       );
     });
 
-    // test('And it renders no table but instead a skeleton', async () => {
-    //   const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
-    //   const elements =  dom.window.document.querySelector('table');
-    //   expect(elements.length).toBe(0);
+    test('And it renders no table but instead a skeleton', async () => {
+      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
+      
+      const elements = dom.window.document.querySelector('table');
+      expect(elements).toBeNull();
 
-    //   const skeleton = dom.window.document.querySelectorAll(`sl-skeleton`);
-
-    //   expect(skeleton.length).toBe(1);
-    // });
+      const skeleton = dom.window.document.querySelectorAll(`.skeleton-main-container`);
+      expect(skeleton.length).toBe(1);
+    });
   });
 
   // describe('Given a MatrixStore with an AppletConfig with one resource and two assessments', () => {
