@@ -66,19 +66,22 @@ export class SensemakerDashboard extends NHComponentShoelace {
     this._sensemakerStore = get(
       this._matrixStore.sensemakerStore(this.selectedWeGroupId) as Readable<SensemakerStore>,
     );
-    const appletStream = await this._matrixStore.fetchAllApplets(this.selectedWeGroupId);
-    appletStream.subscribe(applets => {
-      this.appletDetails = applets?.length
-        ? applets.reduce((applets, a) => {
-            const roleName = Object.keys(a[1].dnaHashes)[0];
-            return {
-              ...applets,
-              [roleName]: {
-                customName: a[1].customName,
-              },
-            };
-          }, {})
-        : {};
+
+    const appletInstancesStream = this._matrixStore.getAppletInstanceInfosForGroup(
+      this.selectedWeGroupId,
+    );
+
+    appletInstancesStream.subscribe(applets => {
+      this.appletDetails = applets!.reduce((appletDetails, applet) => {
+        const installedAppId = applet.appInfo.installed_app_id;
+
+        return {
+          ...appletDetails,
+          [installedAppId]: {
+            customName: applet.applet.customName,
+          },
+        };
+      }, {});
     });
     this.setupAssessmentsSubscription();
   }
@@ -86,39 +89,39 @@ export class SensemakerDashboard extends NHComponentShoelace {
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
     store.subscribe(store => {
-      store!.appletConfig().subscribe(appletConfig => {
-      // const appletConfig = get(store!.appletConfig());
-      const id = appletConfig?.role_name;
-      // TODO: make issue on sensemaker API to get a unique id from both of the fetchAllApplet and appletConfig streams so they can be reliably linked.
-      if (!id) return this.setLoadingState(LoadingState.NoAppletSensemakerData);
-      if (!this.appletDetails[id]) {
-        this.appletDetails[id] = {};
-      }
-      console.log('id, appletConfig :>> ',this.appletDetails, id, appletConfig);
-      this.appletDetails[id]!.appletRenderInfo = {
-        resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
-      };
-      // Keep dimensions for dashboard table prop
-      this.dimensions = appletConfig.dimensions;
-      //Keep context names for display
-      this.appletDetails[id].contexts = Object.keys(appletConfig.cultural_contexts).map(
-        cleanResourceNameForUI,
-      );
+      (store?.appletConfigs() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
+        appletConfigs => {
+          // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
+          if(typeof appletConfigs !== 'object') return;
+          Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
+            this.appletDetails[installedAppId].appletRenderInfo = {
+              resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+            };
 
-      // Keep context entry hashes and resource_def_eh for filtering in dashboard table
-      this.context_ehs = Object.fromEntries(
-        zip(this.appletDetails[id].contexts, Object.values(appletConfig.cultural_contexts)),
+            // Keep dimensions for dashboard table prop
+            this.dimensions = appletConfig.dimensions;
+            //Keep context names for display
+            this.appletDetails[installedAppId].contexts = Object.keys(appletConfig.cultural_contexts).map(
+              cleanResourceNameForUI,
+            );
+
+            // Keep context entry hashes and resource_def_eh for filtering in dashboard table
+            this.context_ehs = Object.fromEntries(
+              zip(this.appletDetails[installedAppId].contexts, Object.values(appletConfig.cultural_contexts)),
+            );
+            const currentAppletRenderInfo = Object.values(this.appletDetails)[
+              this.selectedAppletIndex
+            ]?.appletRenderInfo;
+            const resourceName: string =
+              this.selectedResourceDefIndex >= 0 &&
+              snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
+            this.selectedResourceDefEh = resourceName
+              ? encodeHashToBase64(appletConfig.resource_defs[resourceName])
+              : 'none';
+          });
+          this.loading = false;
+        },
       );
-      const currentAppletRenderInfo = Object.values(this.appletDetails)[this.selectedAppletIndex]
-        ?.appletRenderInfo;
-      const resourceName: string =
-        this.selectedResourceDefIndex >= 0 &&
-        snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-      this.selectedResourceDefEh = resourceName
-        ? encodeHashToBase64(appletConfig.resource_defs[resourceName])
-        : 'none';
-      this.loading = false;
-      });
     });
   }
 

@@ -7,7 +7,7 @@ import { MockFactory } from '../../__tests__/mock-factory';
 import { mockContext } from './helpers';
 
 export const mockAssessments: AssessmentDict = MockFactory.createAssessmentDict();
-export const mockAppletConfig : AppletConfig = MockFactory.createAppletConfig();
+export const mockAppletConfigs : {[appletInstanceId: string] : AppletConfig} = MockFactory.createAppletConfigDict();
 export const mockFieldDefsResourceTable = MockFactory.createFieldDefsResourceTable();
 
 @customElement('sensemaker-store-test-harness')

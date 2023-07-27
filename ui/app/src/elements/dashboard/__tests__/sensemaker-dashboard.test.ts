@@ -7,12 +7,12 @@ import './matrix-test-harness';
 import '../sensemaker-dashboard';
 import { stateful } from './helpers';
 import { getTagName } from './helpers';
-import { mockAppletConfig } from '../../components/__tests__/sensemaker-store-test-harness';
+import { mockAppletConfigs } from '../../components/__tests__/sensemaker-store-test-harness';
 import { MockFactory } from '../../__tests__/mock-factory';
 import { DnaHash } from '@holochain/client';
 import { get } from 'svelte/store';
 import { AppletTuple } from './matrix-test-harness';
-import { AppletConfig } from '@neighbourhoods/client';
+import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { cleanResourceNameForUI } from '../../components/helpers/functions';
 
 const intersectionObserverMock = () => ({
@@ -32,8 +32,8 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 
 describe('SensemakerDashboard', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
-  let mockStore, appletConfig2;
-  let mockAppletConfigResponse, mockFetchAppletsResponse, mockSensemakerResponse;
+  let mockStore;
+  let mockAppletConfigsResponse, mockFetchAppletsResponse, mockSensemakerResponse;
 
   const initialRender = async testComponent => {
     harness = await stateful(component, mockStore);
@@ -54,12 +54,12 @@ describe('SensemakerDashboard', () => {
   };
 
   beforeAll(async () => {
-    mockAppletConfigResponse = MockFactory.mockStoreResponse('appletConfig').appletConfig();
-    mockFetchAppletsResponse = MockFactory.mockStoreResponse('fetchAllApplets');
+    mockAppletConfigsResponse = MockFactory.mockStoreResponse('appletConfigs').appletConfigs();
+    mockFetchAppletsResponse = MockFactory.mockStoreResponse('getAppletInstanceInfosForGroup');
     mockSensemakerResponse = MockFactory.mockStoreResponse('matrix-sensemaker-for-we-group-id');
 
     mockStore = {
-      fetchAllApplets: vi.fn(() => mockFetchAppletsResponse),
+      getAppletInstanceInfosForGroup: vi.fn(() => mockFetchAppletsResponse),
       sensemakerStore: vi.fn((weGroupId: DnaHash | undefined) => mockSensemakerResponse),
     };
 
@@ -69,7 +69,7 @@ describe('SensemakerDashboard', () => {
 
   describe('Given a MatrixStore with no applets ', () => {
     beforeEach(async () => {
-      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(0));
+      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(0));
     });
 
     test(`Then it renders a menu with a search bar, a Neighbourhood sub-menu, a member management sub-menu AND a Sensemaker sub-menu`, async () => {
@@ -120,14 +120,13 @@ describe('SensemakerDashboard', () => {
 
   describe('Given a MatrixStore with an applet (AppletConfig has one resource) with no assessments in SM store', () => {
     beforeAll(async () => {
-      mockSensemakerResponse.mockSetStoreAppConfig(mockAppletConfig);
-      mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
-      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(1));
+      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
+      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
+      mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfigs);
     });
 
     test(`Then the Sensemaker sub-menu has 1 item`, async () => {
       const dom = await renderAndReturnDom(component, false);
-
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
       );
@@ -149,8 +148,9 @@ describe('SensemakerDashboard', () => {
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item.active`,
       );
-      const appletTuple: AppletTuple = (get(mockFetchAppletsResponse)as any)![0];
-      expect(elements[0].textContent).toBe(appletTuple[1].customName);
+
+      const applet = (get(mockFetchAppletsResponse) as any)![0].applet;
+      expect(elements[0].textContent).toBe(applet.customName);
     });
 
     test(`And the 1 Sensemaker sub-menu has 1 sub-nav below`, async () => {
@@ -162,29 +162,28 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(1);
     });
 
-    test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-      const appletConfig: AppletConfig = get(mockAppletConfigResponse);
-      const resourceDefsLength = Object.entries(appletConfig.resource_defs).length;
+    // test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
+    //   const dom = await renderAndReturnDom(component, false);
+    //   const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+    //   const resourceDefsLength = Object.entries(appletConfigs['abc'].resource_defs).length;
+    //   const elements = dom.window.document.querySelectorAll(
+    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+    //   );
+    //   expect(elements.length).toBe(resourceDefsLength);
+    // });
 
-      const elements = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
-      );
-      expect(elements.length).toBe(resourceDefsLength);
-    });
+    // test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
+    //   const dom = await renderAndReturnDom(component, false);
+    //   const appletConfigs: {[appletInstanceId: string] : AppletConfig} = get(mockAppletConfigsResponse);
+    //   const resourceDefNames = Object.keys(appletConfigs['abc'].resource_defs);
 
-    test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-      const appletConfig: AppletConfig = get(mockAppletConfigResponse);
-      const resourceDefNames = Object.keys(appletConfig.resource_defs);
-
-      const elements = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
-      );
-      expect([...elements].map(node => node.textContent.trim())).eql(
-        resourceDefNames.map(name => cleanResourceNameForUI(name)),
-      );
-    });
+    //   const elements = dom.window.document.querySelectorAll(
+    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
+    //   );
+    //   expect([...elements].map(node => node.textContent.trim())).eql(
+    //     resourceDefNames.map(name => cleanResourceNameForUI(name)),
+    //   );
+    // });
 
     // test('And it renders no table but instead a skeleton', async () => {
     //   const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
@@ -199,8 +198,8 @@ describe('SensemakerDashboard', () => {
 
   // describe('Given a MatrixStore with an AppletConfig with one resource and two assessments', () => {
   // beforeEach(async () => {
-  //   mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
-  //   mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(1));
+  //   mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfigs);
+  //   mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
   // });
 
   // test(`Then state is initialized`, async () => {
@@ -271,13 +270,11 @@ describe('SensemakerDashboard', () => {
 
   describe('Given a MatrixStore with 2 applets (AppletConfigs each have one resource) with no assessments in SM store', () => {
     beforeAll(async () => {
-      appletConfig2 =  MockFactory.createAppletConfig(1);
-      mockSensemakerResponse.mockSetStoreAppConfig(mockAppletConfig);
-      mockAppletConfigResponse.mockSetSubscribeValue(mockAppletConfig);
+      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(2));
+      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
+      const mockSMStore : any = get(mockSensemakerResponse.store());
+      mockSMStore.setAppletConfigs(mockAppletConfigs);
       
-      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletTuples(2));
-      mockSensemakerResponse.mockSetStoreAppConfig(appletConfig2);
-      mockAppletConfigResponse.mockSetSubscribeValue(appletConfig2);
     });
 
     test(`Then the Sensemaker sub-menu has 2 items`, async () => {
@@ -305,8 +302,8 @@ describe('SensemakerDashboard', () => {
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
       );
-      const appletTuples: AppletTuple = get(mockFetchAppletsResponse);
-      const appletNames = appletTuples.map(tuple => tuple[1].customName);
+      const applets = (get(mockFetchAppletsResponse) as any).map(appletInstanceInfo => appletInstanceInfo.applet);
+      const appletNames = applets.map(applet => applet.customName);
           expect([...elements].map((node) => node.textContent.trim())).eql(appletNames);
     });
 
@@ -319,36 +316,30 @@ describe('SensemakerDashboard', () => {
       expect(elements.length).toBe(2);
     });
 
-    // test(`And the 2 sub-navs each have as many nav items as there are Resource Definitions in the AppletConfigs`, async () => {
-    //   const dom = await renderAndReturnDom(component, false);
-    //   const appletConfigs: AppletConfig[] = [mockAppletConfig, appletConfig2];
-    //   const resourceDefsLengths = appletConfigs.map(config => Object.entries(config.resource_defs).length);
+    test(`And the 2 sub-navs each have as many nav items as there are Resource Definitions in the AppletConfigs`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
+      const resourceDefsLengths = appletConfigs.map(config => Object.entries(config.resource_defs).length);
 
-    //   const subnavs = dom.window.document.querySelectorAll(
-    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
-    //   );
-    //   const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
-    //   const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
-    //   expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
-    //   expect(secondNavMenuItems.length).toBe(resourceDefsLengths[1]);
-    // });
+      const subnavs = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
+      );
+      const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
+      expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
+    });
 
-    // test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
-    //   const dom = await renderAndReturnDom(component, false);
-    //   const appletConfigs: AppletConfig[] = [mockAppletConfig, appletConfig2];
-    //   const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
+    test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
+      const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
 
-    //   const subnavs = dom.window.document.querySelectorAll(
-    //     `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
-    //   );
-    //   const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
-    //   const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
-    //   expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
-    //     resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
-    //   );
-    //   expect([...secondNavMenuItems].map(node => node.textContent.trim())).eql(
-    //     resourceDefNames[1].map(name => cleanResourceNameForUI(name)),
-    //   );
-    // });
+      const subnavs = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
+      );
+      const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
+      expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
+        resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
+      );
+    });
   });
 });

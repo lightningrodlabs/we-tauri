@@ -29,7 +29,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   connectedCallback() {
     super.connectedCallback();
-    let store: Readable<AppletConfig> = this.sensemakerStore?.appletConfig();
+    let store: Readable<AppletConfig> = this.sensemakerStore?.flattenedAppletConfigs();
     store &&
       store.subscribe(appletConfig => {
         this.appletDetails = appletConfig;

@@ -9,6 +9,7 @@ import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matr
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
 import { SensemakerStore } from '@neighbourhoods/client';
+import { AppletInstanceInfo } from '../../matrix-store';
 
 export class MockFactory {
   static createAssessment(
@@ -54,10 +55,11 @@ export class MockFactory {
   static createAppletConfig(
     seed: number = 0,
     name = 'An applet' + (seed + 1),
-    role_name = testAppletBaseRoleName + (seed + 1),
+    role_name = testAppletBaseRoleName,
+    // installed_app_id = testAppletBaseRoleName + (seed + 1),
     ranges = { my_range: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
     dimensions = { my_dimension: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
-    resource_defs = { ["my_resource_def" + (seed + 1)]: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
+    resource_defs = { ["my_resource_def" + (seed + 1)]: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))), ["another_resource_def" + (seed + 1)]: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
     methods = { my_method: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
     cultural_contexts = { my_context: new Uint8Array(([1, 2, 3].map(x => x * (seed + 1)))) },
   ): AppletConfig {
@@ -70,6 +72,19 @@ export class MockFactory {
       methods: methods,
       cultural_contexts: cultural_contexts,
     };
+  }
+
+  static createAppletConfigDict(
+    seed = 0,
+    appletInstanceIds = [
+      testAppletBaseRoleName + (seed + 1)
+    ],
+  ): {[appletInstanceId: string] : AppletConfig} {
+    let result = {};
+    appletInstanceIds.forEach((id, index) => {
+      result[id] =  this.createAppletConfig(index)
+    });
+    return result;
   }
 
   static createFieldDefsResourceTable(
@@ -92,6 +107,7 @@ export class MockFactory {
     seed = 0,
     roleName = testAppletBaseRoleName + (seed + 1),
     entryHash = [1, 2, 3],
+    installed_app_id = testAppletBaseRoleName + (seed + 1),
     customName = 'UserAppletName' + (seed + 1),
     title = 'AppletTitle' + (seed + 1),
     description = 'A test applet' + (seed + 1),
@@ -106,6 +122,7 @@ export class MockFactory {
         customName,
         title,
         description,
+        installed_app_id,
         logoSrc,
         dnaHashes,
       } as Partial<Applet>,
@@ -115,6 +132,10 @@ export class MockFactory {
     return applet;
   }
 
+  static createAppletInstanceInfos(numberInArray: number
+  ): Partial<AppletInstanceInfo>[] {
+    return this.createAppletTuples(numberInArray).map(tuple => ({appInfo: {installed_app_id: tuple[1].installed_app_id}, applet: tuple[1] as Applet}))
+  }
   static createAppletTuples(numberInArray: number
   ): AppletTuple[] {
     return [...new Array(numberInArray)].map((_, index) => this.createAppletTuple(index));
@@ -133,7 +154,7 @@ export class MockFactory {
           subscribe: mockStoreWritable.subscribe, 
           unsubscribe: vi.fn(),
           mockSetStoreResourceAssessments: (value: AssessmentDict) : void => {mockSMStore.setResourceAssessments(value); mockStoreWritable.update( _ => mockSMStore)  },
-          mockSetStoreAppConfig: (value: AppletConfig) : void => {mockSMStore.setAppletConfig(value); mockStoreWritable.update( _ => mockSMStore)  }
+          mockSetStoreAppConfigs: (value: {[appletInstanceId: string] : AppletConfig}) : void => {mockSMStore.setAppletConfigs(value); mockStoreWritable.update( _ => mockSMStore)  }
         };
 
       case 'fetchAllApplets':
@@ -144,6 +165,16 @@ export class MockFactory {
           subscribe: mockAppletsWritable.subscribe,
           unsubscribe: vi.fn(),
           mockSetSubscribeValue: (value: AppletTuple[]): void => mockAppletsWritable.update(_ => value),
+        }
+
+      case 'getAppletInstanceInfosForGroup':
+        const mockAppletInstancesWritable = writable<AppletInstanceInfo[]>([]);
+        
+        return {
+          store: () => mockAppletInstancesWritable,
+          subscribe: mockAppletInstancesWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: AppletInstanceInfo[]): void => mockAppletInstancesWritable.update(_ => value),
         }
 
       case 'all': // mocks all available SensemakerStore methods
@@ -165,19 +196,19 @@ export class MockFactory {
         mockStore.resourceAssessments = vi.fn(() => mockResourceAssessmentsResponse);
         mockStore.setResourceAssessments = mockUpdateSensemakerStore.bind(mockResourceAssessmentsResponse)
 
-      case 'appletConfig':
-        const mockAppletDetailsWritable = writable<AppletConfig>();
-        const mockAppletConfigResponse = {
+      case 'appletConfigs':
+        const mockAppletDetailsWritable = writable<{[appletInstanceId: string] : AppletConfig}>();
+        const mockAppletConfigsResponse = {
           store: () => mockAppletDetailsWritable, 
           subscribe: mockAppletDetailsWritable.subscribe, 
           unsubscribe: vi.fn(),
-          mockSetSubscribeValue: (value: AppletConfig): void => mockAppletDetailsWritable.update((_) => value)
+          mockSetSubscribeValue: (value: {[appletInstanceId: string] : AppletConfig}): void => mockAppletDetailsWritable.update((_) => value)
         };
-        function mockUpdateAppletConfig(newValue) {
+        function mockUpdateAppletConfigs(newValue) {
           mockAppletDetailsWritable.update((_) => newValue)
         }
-        mockStore.appletConfig = vi.fn(() => mockAppletConfigResponse);
-        mockStore.setAppletConfig = mockUpdateAppletConfig.bind(mockAppletConfigResponse);
+        mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
+        mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
       default:
         return mockStore
     }

@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "scripts": {
     "start": "vite dev --clearScreen false --port $UI_PORT",
+    "dev": "vite dev --clearScreen false --port=$UI_PORT",
+    "dev2": "concurrently \"npm run dev & VITE_AGENT=2 vite dev --clearScreen false --port $UI_PORT_2\"",
     "build": "tsc && vite build",
     "build:watch": "rimraf dist && vite build -w",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * ",
@@ -23,7 +25,7 @@
     "@lit-labs/scoped-registry-mixin": "^1.0.1",
     "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
-    "@neighbourhoods/client": "^0.0.3",
+    "@neighbourhoods/client": "0.0.4",
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@open-wc/scoped-elements": "^2.1.5",
     "@scoped-elements/material-web": "^0.0.19",
