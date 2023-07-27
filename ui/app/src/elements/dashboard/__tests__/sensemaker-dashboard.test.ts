@@ -7,7 +7,7 @@ import './matrix-test-harness';
 import '../sensemaker-dashboard';
 import { stateful } from './helpers';
 import { getTagName } from './helpers';
-import { mockAppletConfigs } from '../../components/__tests__/sensemaker-store-test-harness';
+import { mockAppletConfig, mockAppletConfigs } from '../../components/__tests__/sensemaker-store-test-harness';
 import { MockFactory } from '../../__tests__/mock-factory';
 import { DnaHash } from '@holochain/client';
 import { get } from 'svelte/store';
@@ -121,8 +121,8 @@ describe('SensemakerDashboard', () => {
   describe('Given a MatrixStore with an applet (AppletConfig has one resource) with no assessments in SM store', () => {
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
-      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
-      mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfigs);
+      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
+      mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
     });
 
     test(`Then the Sensemaker sub-menu has 1 item`, async () => {
@@ -325,20 +325,26 @@ describe('SensemakerDashboard', () => {
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
       );
       const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
+      const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
       expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
+      expect(secondNavMenuItems.length).toBe(resourceDefsLengths[1]);
     });
 
     test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
       const dom = await renderAndReturnDom(component, false);
-      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
+      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs);
       const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
 
       const subnavs = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
       );
       const firstNavMenuItems = subnavs[0].querySelectorAll(".nav-item");
+      const secondNavMenuItems = subnavs[1].querySelectorAll(".nav-item");
       expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
         resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
+      );
+      expect([...secondNavMenuItems].map(node => node.textContent.trim())).eql(
+        resourceDefNames[1].map(name => cleanResourceNameForUI(name)),
       );
     });
   });

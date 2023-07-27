@@ -76,9 +76,8 @@ export class MockFactory {
 
   static createAppletConfigDict(
     seed = 0,
-    appletInstanceIds = [
-      testAppletBaseRoleName + (seed + 1)
-    ],
+    appletInstanceIds = [...new Array(seed + 1)].map((testConfig, idx) => 
+      testAppletBaseRoleName + (idx + 1)),
   ): {[appletInstanceId: string] : AppletConfig} {
     let result = {};
     appletInstanceIds.forEach((id, index) => {
