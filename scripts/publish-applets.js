@@ -128,7 +128,7 @@ async function publishApplets() {
             version: "0.1",
             ordering: 1,
             zome_bytes,
-            hdk_version: "v0.1.0",
+            hdk_version: "v0.2.1",
           },
         });
 
@@ -158,7 +158,7 @@ async function publishApplets() {
             version: "0.1",
             ordering: 1,
             zome_bytes,
-            hdk_version: "v0.1.0",
+            hdk_version: "v0.2.1",
           },
         });
         coordinatorZomeEntities.push([czomeEntity, czomeVersionEntity]);
@@ -181,7 +181,7 @@ async function publishApplets() {
           for_dna: dnaEntity.payload.id,
           version: "0.1",
           ordering: 1,
-          hdk_version: "v0.1.0",
+          hdk_version: "v0.2.1",
           integrity_zomes: integrityZomeEntities.map(([ze, zve]) => ({
             name: ze.payload.content.name,
             zome: zve.payload.content.for_zome,

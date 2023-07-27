@@ -31,8 +31,8 @@ async fn create_applet() {
         appstore_app_hash: fixt!(ActionHash),
 
         devhub_dna_hash: fixt!(DnaHash),
-        devhub_happ_release_hash: fixt!(EntryHash),
-        devhub_gui_release_hash: fixt!(EntryHash),
+        devhub_happ_release_hash: fixt!(ActionHash),
+        devhub_gui_release_hash: fixt!(ActionHash),
 
         network_seed: None,
         properties: BTreeMap::new(), // Segmented by RoleId

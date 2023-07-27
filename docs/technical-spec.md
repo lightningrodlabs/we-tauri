@@ -5,7 +5,7 @@
 	- Identified by the hash of the applet entry all throughout the code.
 	- `AppletStore` is a TS class that given an applet exposes relevant queries.
 - Applet Bundles
-  - Identified by appletBundleHash which is the devhub happ_release_entry_hash.
+  - Identified by appletBundleHash which is the hash of the AppEntry in the appstore.
 	- `AppletBundlesStore` is a TS class that can fetch or install applet bundles.
 - Groups
   - Identified by the groupDnaHash.
@@ -22,9 +22,9 @@
 - Origin for iframes looks like `applet://BASE64_APPLET_HASH`.
   - In Http, the origin is the part that goes between http:// and the first /.
 	  - Eg, in https://subdomain.lightingrodlabs.org/we the origin is subdomain.lightningrodlabs.we
-		- Http as a protocol takes the origin to be the "author" and "authority" of that website's resources. 
+		- Http as a protocol takes the origin to be the "author" and "authority" of that website's resources.
 		- It will prevent calls with `fetch` to other origins by default.
-		
+
 - When we wants to render an applet, it just renders an iframe with the applet's hash in it's origin.
 
 - Two big patterns when this happens:

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from "lit";
-import { state, property, customElement } from "lit/decorators.js";
-import { EntryHash, Record, ActionHash } from "@holochain/client";
+import { property, customElement } from "lit/decorators.js";
+import { ActionHash } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { sharedStyles, hashProperty } from "@holochain-open-dev/elements";

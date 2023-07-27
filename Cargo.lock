@@ -209,11 +209,11 @@ dependencies = [
 [[package]]
 name = "appstore"
 version = "0.0.0"
-source = "git+https://github.com/matthme/app-store-dnas?branch=holochain-0.2.1#e091c36df3477b23790584f2bf801d0fa17f847f"
+source = "git+https://github.com/holochain/app-store-dnas?rev=893a83a774d129eaa556da5fd46cce9a6bb88b4b#893a83a774d129eaa556da5fd46cce9a6bb88b4b"
 dependencies = [
  "appstore_types",
  "essence_payloads",
- "hc_crud_caps 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hc_crud_caps",
  "hc_utils",
  "hdi 0.3.1",
  "hdk 0.2.1",
@@ -226,10 +226,10 @@ dependencies = [
 [[package]]
 name = "appstore_types"
 version = "0.1.0"
-source = "git+https://github.com/matthme/app-store-dnas?branch=holochain-0.2.1#e091c36df3477b23790584f2bf801d0fa17f847f"
+source = "git+https://github.com/holochain/app-store-dnas?rev=893a83a774d129eaa556da5fd46cce9a6bb88b4b#893a83a774d129eaa556da5fd46cce9a6bb88b4b"
 dependencies = [
  "essence_payloads",
- "hc_crud_caps 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hc_crud_caps",
  "hdi 0.3.1",
  "rmpv",
  "serde",
@@ -1636,12 +1636,12 @@ checksum = "3c877555693c14d2f84191cfd3ad8582790fc52b5e2274b40b59cf5f5cea25c7"
 
 [[package]]
 name = "devhub_types"
-version = "0.2.1"
-source = "git+https://github.com/matthme/devhub-dnas?branch=holochain-0.2.1#72a50dd8a04d1c8b38b9985d5d70794b6d95a2fa"
+version = "0.0.0"
+source = "git+https://github.com/holochain/devhub-dnas?rev=8ad6faaaa965dfdaccbf25a6947086680acf0fa7#8ad6faaaa965dfdaccbf25a6947086680acf0fa7"
 dependencies = [
  "essence_payloads",
  "flate2",
- "hc_crud_ceps",
+ "hc_crud_caps",
  "hdk 0.2.1",
  "hex",
  "rmp-serde 0.15.5",
@@ -2604,7 +2604,7 @@ dependencies = [
 
 [[package]]
 name = "group_coordinator"
-version = "0.0.1-alpha1"
+version = "0.0.1-alpha.1"
 dependencies = [
  "fixt",
  "futures",
@@ -2617,7 +2617,7 @@ dependencies = [
 
 [[package]]
 name = "group_integrity"
-version = "0.0.1-alpha1"
+version = "0.0.1-alpha.2"
 dependencies = [
  "hdi 0.3.1",
  "hdk 0.2.1",
@@ -2756,31 +2756,9 @@ dependencies = [
 
 [[package]]
 name = "hc_crud_caps"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fa44d48eabcca01ac2c2985dff3bf8cc0247d5859ac32058757a668e5c06e71"
-dependencies = [
- "hdk 0.2.1",
- "holo_hash 0.2.1",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "hc_crud_caps"
-version = "0.8.0"
-source = "git+https://github.com/matthme/rust-hc-crud-caps.git?branch=holochain-0.2.1#371d8fcde32a50198497d9a70d839c54348c0fbc"
-dependencies = [
- "hdk 0.2.1",
- "holo_hash 0.2.1",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "hc_crud_ceps"
-version = "0.79.0"
-source = "git+https://github.com/matthme/rust-hc-crud-ceps?branch=holochain-0.2.1#d5dd36f5f56ca7dfd23b752da9eb3bca7c53145d"
+checksum = "65d2beba013ec933d507dec64e210ab52b793692d88aa251c8424f7aa76ff2ea"
 dependencies = [
  "hdk 0.2.1",
  "holo_hash 0.2.1",
@@ -2790,10 +2768,10 @@ dependencies = [
 
 [[package]]
 name = "hc_portal_types"
-version = "0.7.0"
-source = "git+https://github.com/matthme/portal-dna?branch=holochain-0.2.1#93ad32490472524d2391733122fbc7498c085086"
+version = "0.8.0"
+source = "git+https://github.com/holochain/portal-dna?rev=14ad357ae42ee7451848a249a7e32acb40519dbc#14ad357ae42ee7451848a249a7e32acb40519dbc"
 dependencies = [
- "hc_crud_caps 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hc_crud_caps",
  "hdi 0.3.1",
  "rmpv",
  "serde",
@@ -2817,11 +2795,11 @@ dependencies = [
 
 [[package]]
 name = "hc_utils"
-version = "0.8.0"
-source = "git+https://github.com/matthme/app-store-dnas?branch=holochain-0.2.1#e091c36df3477b23790584f2bf801d0fa17f847f"
+version = "0.9.0"
+source = "git+https://github.com/holochain/app-store-dnas?rev=893a83a774d129eaa556da5fd46cce9a6bb88b4b#893a83a774d129eaa556da5fd46cce9a6bb88b4b"
 dependencies = [
  "essence_payloads",
- "hc_crud_caps 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hc_crud_caps",
  "hdi 0.3.1",
  "hdk 0.2.1",
  "serde",
@@ -5701,9 +5679,9 @@ dependencies = [
 
 [[package]]
 name = "mere_memory_types"
-version = "0.87.0"
+version = "0.88.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7c2db054460c8d213654315ba67b4d5b4215903bbabcef75bf1b12de81dc266"
+checksum = "501dd46ce313dd9a474c6a483d68b49f7b78572ff2025b78c74b994806311d3d"
 dependencies = [
  "getrandom 0.2.7",
  "hdi 0.3.1",
@@ -10465,7 +10443,7 @@ dependencies = [
 
 [[package]]
 name = "we-alpha"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "appstore",
@@ -10476,7 +10454,7 @@ dependencies = [
  "either",
  "essence_payloads",
  "futures",
- "hc_crud_caps 0.8.0 (git+https://github.com/matthme/rust-hc-crud-caps.git?branch=holochain-0.2.1)",
+ "hc_crud_caps",
  "hc_portal_types",
  "holochain 0.2.1",
  "holochain_client",

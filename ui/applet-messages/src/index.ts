@@ -1,4 +1,5 @@
 import {
+  ActionHash,
   CallZomeRequest,
   decodeHashFromBase64,
   DnaHash,
@@ -17,7 +18,7 @@ export type OpenViewRequest =
     }
   | {
       type: "cross-applet-main";
-      appletBundleId: EntryHash;
+      appletBundleId: ActionHash;
     }
   | {
       type: "applet-block";
@@ -27,7 +28,7 @@ export type OpenViewRequest =
     }
   | {
       type: "cross-applet-block";
-      appletBundleId: EntryHash;
+      appletBundleId: ActionHash;
       block: string;
       context: any;
     }

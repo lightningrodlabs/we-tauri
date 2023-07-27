@@ -1,13 +1,11 @@
 import {
   notify,
-  sharedStyles,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { ActionHash, encodeHashToBase64, EntryHash } from "@holochain/client";
-import { DnaHash } from "@holochain/client";
+import { ActionHash, EntryHash } from "@holochain/client";
 import {
   AsyncReadable,
   join,

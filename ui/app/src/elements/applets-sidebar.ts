@@ -3,7 +3,7 @@ import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { EntryHash } from "@holochain/client";
+import { ActionHash, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -33,7 +33,7 @@ export class AppletsSidebar extends LitElement {
   );
 
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
-    const appletsByBundleHash: HoloHashMap<EntryHash, AppletStore> =
+    const appletsByBundleHash: HoloHashMap<ActionHash, AppletStore> =
       new HoloHashMap();
 
     for (const [appletHash, appletStore] of Array.from(applets.entries())) {

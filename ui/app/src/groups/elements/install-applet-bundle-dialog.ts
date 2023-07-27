@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { encodeHashToBase64, EntryHashB64 } from "@holochain/client";
+import { ActionHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
 import {
@@ -45,10 +45,10 @@ export class InstallAppletBundleDialog extends LitElement {
   form!: HTMLFormElement;
 
   @state()
-  _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
+  _dnaBundle: { hash: ActionHashB64; file: File } | undefined = undefined;
 
   @state()
-  _uiBundle: { hash: EntryHashB64; setupRenderers: any } | undefined =
+  _uiBundle: { hash: ActionHashB64; setupRenderers: any } | undefined =
     undefined;
 
   @state()

@@ -315,7 +315,7 @@ export class WeStore {
 
   appletsForBundleHash = new LazyHoloHashMap(
     (
-      appBundleHash: EntryHash // appletid
+      appletBundleHash: ActionHash // action hash of the AppEntry in the app store
     ) =>
       pipe(
         this.allInstalledApplets,
@@ -325,7 +325,7 @@ export class WeStore {
               installedApplets,
               (appletStore) =>
                 appletStore.applet.appstore_app_hash.toString() ===
-                appBundleHash.toString()
+                appletBundleHash.toString()
             )
           ),
         (appletsForThisBundleHash) =>

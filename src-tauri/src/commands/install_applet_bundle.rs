@@ -19,8 +19,8 @@ use holochain::{
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
         ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, CellId, CreateCloneCellPayload,
-        DisableCloneCellPayload, DnaHash, DnaHashB64, EnableCloneCellPayload, EntryHash,
-        EntryHashB64, ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName, Serialize,
+        DisableCloneCellPayload, DnaHash, DnaHashB64, EnableCloneCellPayload,
+        ExternIO, FunctionName, HumanTimestamp, MembraneProof, RoleName, Serialize,
         SerializedBytes, Timestamp, UnsafeBytes, ZomeCallUnsigned, ZomeName,
     },
 };
@@ -47,12 +47,12 @@ pub async fn fetch_icon(
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
-    app_entry_hash_b64: String, // Hash of the entry of the applet's webassets in the DevHub
+    app_action_hash_b64: String, // Hash of the entry of the applet's webassets in the DevHub
 ) -> WeResult<String> {
-    let app_entry_hash =
-        ActionHash::from(ActionHashB64::from_b64_str(app_entry_hash_b64.as_str()).unwrap());
+    let app_action_hash =
+        ActionHash::from(ActionHashB64::from_b64_str(app_action_hash_b64.as_str()).unwrap());
 
-    if let Some(icon) = we_fs.icon_store().get_icon(&app_entry_hash)? {
+    if let Some(icon) = we_fs.icon_store().get_icon(&app_action_hash)? {
         return Ok(icon);
     }
 
@@ -73,7 +73,7 @@ pub async fn fetch_icon(
             ZomeName::from("appstore_api"),
             FunctionName::from("get_app"),
             ExternIO::encode(GetEntityInput {
-                id: app_entry_hash.clone(),
+                id: app_action_hash.clone(),
             })?,
         )
         .await?;
@@ -102,7 +102,7 @@ pub async fn fetch_icon(
 
     we_fs
         .icon_store()
-        .store_icon(&app_entry_hash, icon_src.clone())?;
+        .store_icon(&app_action_hash, icon_src.clone())?;
 
     Ok(icon_src)
 }
@@ -117,8 +117,8 @@ pub async fn internal_fetch_applet_bundle(
     conductor: &Conductor,
     we_fs: &WeFileSystem,
     devhub_dna: DnaHash,
-    happ_release_hash: EntryHash,
-    gui_release_hash: EntryHash,
+    happ_release_hash: ActionHash,
+    gui_release_hash: ActionHash,
 ) -> WeResult<WebAppBundle> {
     if let Some(web_app) = we_fs.webapp_store().get_webapp(&happ_release_hash)? {
         return Ok(web_app);
@@ -171,10 +171,10 @@ pub async fn install_applet_bundle(
     let pub_key = AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_pub_key.as_str()).unwrap());
     let devhub_dna_hash =
         DnaHash::from(DnaHashB64::from_b64_str(devhub_dna_hash.as_str()).unwrap());
-    let happ_release_entry_hash =
-        EntryHash::from(EntryHashB64::from_b64_str(happ_release_hash.as_str()).unwrap());
-    let gui_release_entry_hash =
-        EntryHash::from(EntryHashB64::from_b64_str(gui_release_hash.as_str()).unwrap());
+    let happ_release_action_hash =
+        ActionHash::from(ActionHashB64::from_b64_str(happ_release_hash.as_str()).unwrap());
+    let gui_release_action_hash =
+        ActionHash::from(ActionHashB64::from_b64_str(gui_release_hash.as_str()).unwrap());
 
     let conductor = conductor.lock().await;
 
@@ -198,8 +198,8 @@ pub async fn install_applet_bundle(
         &conductor,
         &fs,
         devhub_dna_hash,
-        happ_release_entry_hash,
-        gui_release_entry_hash,
+        happ_release_action_hash,
+        gui_release_action_hash,
     )
     .await?;
 
@@ -247,15 +247,15 @@ pub struct HappBundle {
 #[derive(Debug, Serialize)]
 pub struct GetWebHappPackageInput {
     pub name: String,
-    pub happ_release_id: EntryHash,
-    pub gui_release_id: EntryHash,
+    pub happ_release_id: ActionHash,
+    pub gui_release_id: ActionHash,
 }
 async fn fetch_web_happ(
     app_handle: tauri::AppHandle,
     conductor: &Conductor,
     devhub_dna: DnaHash,
-    happ_release_entry_hash: EntryHash,
-    gui_release_entry_hash: EntryHash,
+    happ_release_action_hash: ActionHash,
+    gui_release_action_hash: ActionHash,
 ) -> WeResult<Vec<u8>> {
     let mut client = AppAgentWebsocket::connect(
         format!(
@@ -269,8 +269,8 @@ async fn fetch_web_happ(
 
     let payload = GetWebHappPackageInput {
         name: String::from("app"),
-        happ_release_id: happ_release_entry_hash,
-        gui_release_id: gui_release_entry_hash,
+        happ_release_id: happ_release_action_hash,
+        gui_release_id: gui_release_action_hash,
     };
 
     // If we have the given devhub dna hash, shortcut to us being the host
@@ -488,7 +488,7 @@ pub struct Bundle {
 }
 // async fn get_dna_package(
 //     client: &mut AppAgentWebsocket,
-//     dna_version_hash: EntryHash,
+//     dna_version_hash: ActionHash,
 // ) -> WeResult<Entity<DnaVersionPackage>> {
 //     let result = client
 //         .call_zome_fn(

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::{fs, io::Write};
 
-use holochain::prelude::{ActionHash, ActionHashB64, EntryHash, EntryHashB64};
+use holochain::prelude::{ActionHash, ActionHashB64};
 use holochain_client::InstalledAppId;
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
@@ -142,21 +142,21 @@ impl WebAppStore {
         self.path.clone()
     }
 
-    fn webhapp_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
-        let web_app_entry_hash_b64 = EntryHashB64::from(web_app_entry_hash.clone()).to_string();
-        self.path.join(web_app_entry_hash_b64)
+    fn webhapp_path(&self, web_app_action_hash: &ActionHash) -> PathBuf {
+        let web_app_action_hash_b64 = ActionHashB64::from(web_app_action_hash.clone()).to_string();
+        self.path.join(web_app_action_hash_b64)
     }
 
-    pub fn webhapp_package_path(&self, web_app_entry_hash: &EntryHash) -> PathBuf {
-        self.webhapp_path(web_app_entry_hash)
+    pub fn webhapp_package_path(&self, web_app_action_hash: &ActionHash) -> PathBuf {
+        self.webhapp_path(web_app_action_hash)
             .join("package.webhapp")
     }
 
-    pub fn get_webapp(&self, web_app_entry_hash: &EntryHash) -> WeResult<Option<WebAppBundle>> {
-        let path = self.webhapp_path(web_app_entry_hash);
+    pub fn get_webapp(&self, web_app_action_hash: &ActionHash) -> WeResult<Option<WebAppBundle>> {
+        let path = self.webhapp_path(web_app_action_hash);
 
         if path.exists() {
-            let bytes = fs::read(self.webhapp_package_path(&web_app_entry_hash))?;
+            let bytes = fs::read(self.webhapp_package_path(&web_app_action_hash))?;
             let web_app = WebAppBundle::decode(bytes.as_slice())?;
 
             return Ok(Some(web_app));
@@ -167,16 +167,16 @@ impl WebAppStore {
 
     pub async fn store_webapp(
         &self,
-        web_app_entry_hash: &EntryHash,
+        web_app_action_hash: &ActionHash,
         web_app: &WebAppBundle,
     ) -> WeResult<()> {
         let bytes = web_app.encode()?;
 
-        let path = self.webhapp_path(web_app_entry_hash);
+        let path = self.webhapp_path(web_app_action_hash);
 
         fs::create_dir_all(path.clone())?;
 
-        let mut file = std::fs::File::create(self.webhapp_package_path(web_app_entry_hash))?;
+        let mut file = std::fs::File::create(self.webhapp_package_path(web_app_action_hash))?;
         file.write_all(bytes.as_slice())?;
 
         Ok(())
@@ -192,19 +192,19 @@ impl IconStore {
         self.path.clone()
     }
 
-    fn icon_path(&self, app_entry_hash: &ActionHash) -> PathBuf {
+    fn icon_path(&self, app_action_hash: &ActionHash) -> PathBuf {
         self.path
-            .join(ActionHashB64::from(app_entry_hash.clone()).to_string())
+            .join(ActionHashB64::from(app_action_hash.clone()).to_string())
     }
 
-    pub fn store_icon(&self, app_entry_hash: &ActionHash, icon_src: String) -> WeResult<()> {
-        fs::write(self.icon_path(app_entry_hash), icon_src.as_bytes())?;
+    pub fn store_icon(&self, app_action_hash: &ActionHash, icon_src: String) -> WeResult<()> {
+        fs::write(self.icon_path(app_action_hash), icon_src.as_bytes())?;
 
         Ok(())
     }
 
-    pub fn get_icon(&self, app_entry_hash: &ActionHash) -> WeResult<Option<String>> {
-        let icon_path = self.icon_path(app_entry_hash);
+    pub fn get_icon(&self, app_action_hash: &ActionHash) -> WeResult<Option<String>> {
+        let icon_path = self.icon_path(app_action_hash);
         if icon_path.exists() {
             let icon = fs::read_to_string(icon_path)?;
             return Ok(Some(icon));

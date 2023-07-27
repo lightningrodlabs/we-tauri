@@ -1,6 +1,6 @@
 [package]
 name = "we-alpha"
-version = "0.1.1"
+version = "0.2.0"
 description = "An alternative Holochain runtime focused on groups."
 authors = [
   "eric@harris-braun.com",
@@ -56,17 +56,12 @@ bytes = "1"
 
 zip = "0.5"
 
-hc_crud_caps = { git = "https://github.com/matthme/rust-hc-crud-caps.git", branch = "holochain-0.2.1" }
-devhub_types = { git = "https://github.com/matthme/devhub-dnas", branch = "holochain-0.2.1" }
-appstore_types = { git = "https://github.com/matthme/app-store-dnas", branch = "holochain-0.2.1" }
-appstore = { git = "https://github.com/matthme/app-store-dnas", branch = "holochain-0.2.1" }
-hc_portal_types = { git = "https://github.com/matthme/portal-dna", branch = "holochain-0.2.1" }
+hc_crud_caps = "0.9.0"
+devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "8ad6faaaa965dfdaccbf25a6947086680acf0fa7" }
+appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
+appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
+hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "14ad357ae42ee7451848a249a7e32acb40519dbc" }
 
-# hc_crud_caps = "0.7"
-# devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "1b1ab2adfb67defd597b4a9a3995cf87bf1e1456" }
-# appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "a671385285b9833305bdee9f2226c9d4d9dd6f4e" }
-# appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "a671385285b9833305bdee9f2226c9d4d9dd6f4e" }
-# hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "66c846ad8695f16c0cfeefd96106ddc48442aaa8" }
 essence_payloads = "0.1"
 
 holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "we-hc-0.2.1" }

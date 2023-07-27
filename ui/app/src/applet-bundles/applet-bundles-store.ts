@@ -8,6 +8,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { hash, HashType, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
+  ActionHash,
   AdminWebsocket,
   AppAgentClient,
   AppInfo,
@@ -40,7 +41,7 @@ export class AppletBundlesStore {
     30000
   );
 
-  appletBundles = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
+  appletBundles = new LazyHoloHashMap((appletBundleHash: ActionHash) =>
     asyncDerived(this.allAppletBundles, async (appletBundles) => {
       const appletBundle = appletBundles.find(
         (app) => app.id.toString() === appletBundleHash.toString()
@@ -49,13 +50,13 @@ export class AppletBundlesStore {
     })
   );
 
-  appletBundleLogo = new LazyHoloHashMap((appletBundleHash: EntryHash) =>
+  appletBundleLogo = new LazyHoloHashMap((appletBundleHash: ActionHash) =>
     pipe(this.appletBundles.get(appletBundleHash), (appEntry) =>
       retryUntilSuccess(async () => {
         if (!appEntry) throw new Error("Can't find app bundle");
 
         const icon: string = await invoke("fetch_icon", {
-          appEntryHashB64: encodeHashToBase64(appEntry.id),
+          appActionHashB64: encodeHashToBase64(appEntry.id),
         });
 
         if (!icon) throw new Error("Icon was not found");

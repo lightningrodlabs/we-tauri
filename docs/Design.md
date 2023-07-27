@@ -20,16 +20,19 @@ The applets zome is responsible for installing, joining and querying applets of 
 
 ```=rust
 pub struct Applet {
-    pub name: String,
+    // name of the applet as chosen by the person adding it to the group,
+    pub custom_name: String,
     pub description: String,
-    pub logo_src: Option<String>,
 
-    pub devhub_happ_release_hash: EntryHashB64,
-    pub gui_file_hash: EntryHashB64,
+    pub appstore_app_hash: ActionHash,
 
-    pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleId
-    pub network_seed: BTreeMap<String, Option<String>>,         // Segmented by RoleId
-    pub dna_hashes: BTreeMap<String, DnaHashB64>,      // Segmented by RoleId
+    pub devhub_dna_hash: DnaHash,
+    pub devhub_happ_release_hash: ActionHash,
+    pub devhub_gui_release_hash: ActionHash,
+
+    pub network_seed: Option<String>,
+
+    pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleName
 }
 ```
 

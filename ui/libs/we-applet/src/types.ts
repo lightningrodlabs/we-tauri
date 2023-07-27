@@ -36,9 +36,9 @@ export interface OpenViews {
   openAppletMain(appletId: EntryHash): void;
   openAppletBlock(appletId: EntryHash, block: string, context: any): void;
   openHrl(hrl: Hrl, context: any): void;
-  openCrossAppletMain(appletBundleId: EntryHash): void;
+  openCrossAppletMain(appletBundleId: ActionHash): void;
   openCrossAppletBlock(
-    appletBundleId: EntryHash,
+    appletBundleId: ActionHash,
     block: string,
     context: any
   ): void;
@@ -50,7 +50,7 @@ export interface EntryLocationAndInfo {
 }
 
 export interface AppletInfo {
-  appletBundleId: EntryHash;
+  appletBundleId: ActionHash;
   appletName: string;
   groupsIds: Array<DnaHash>;
 }
