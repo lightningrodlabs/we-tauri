@@ -310,24 +310,6 @@ export class MainDashboard extends LitElement {
                   style="margin-left: 12px; flex: 1; overflow-x: sroll;"
                 ></group-applets-sidebar>
               </group-context>
-
-              <we-services-context
-                .services=${buildHeadlessWeServices(this._weStore)}
-              >
-                <search-entry
-                  field-label=""
-                  style="margin-right: 8px"
-                  @entry-selected=${(e) => {
-                    this.selectedGroupDnaHash = undefined;
-                    this.dashboardMode = "browserView";
-                    this.dynamicLayout.openViews.openHrl(
-                      e.detail.hrlWithContext.hrl,
-                      e.detail.hrlWithContext.context
-                    );
-                    e.target.reset();
-                  }}
-                ></search-entry>
-              </we-services-context>
             `
             : html``
         }
@@ -336,6 +318,25 @@ export class MainDashboard extends LitElement {
       <div class="row hover-browser" style="${this.hoverBrowser && this.dashboardMode !== 'browserView' ? "" : "display: none;"} align-items: center; font-size: 20px; padding-left: 20px; font-weight: 500;">
         <span>Switch to browser view...</span>
       </div>
+
+
+      <we-services-context
+        .services=${buildHeadlessWeServices(this._weStore)}
+      >
+        <search-entry
+          field-label=""
+          style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0;"
+          @entry-selected=${(e) => {
+            this.selectedGroupDnaHash = undefined;
+            this.dashboardMode = "browserView";
+            this.dynamicLayout.openViews.openHrl(
+              e.detail.hrlWithContext.hrl,
+              e.detail.hrlWithContext.context
+            );
+            e.target.reset();
+          }}
+        ></search-entry>
+      </we-services-context>
 
     `;
   }

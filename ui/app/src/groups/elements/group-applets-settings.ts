@@ -257,7 +257,7 @@ export class GroupAppletsSettings extends LitElement {
           .map(
             ([appletHash, applet]) =>
               html`
-                <sl-card style="flex: 1; margin-bottom: 16px">
+                <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
                   <div class="row" style="flex: 1; align-items: center">
                     <applet-logo
                       .appletHash=${appletHash}
@@ -304,7 +304,7 @@ export class GroupAppletsSettings extends LitElement {
   renderArchivedApplets(applets: ReadonlyMap<EntryHash, Applet>) {
     if (applets.size === 0)
       return html`
-        <div class="row center-content" style="flex: 1">
+        <div class="row center-content" style="flex: 1; min-width: 800px;">
           <span
             class="placeholder"
             style="margin: 24px; text-align: center; max-width: 600px"
@@ -359,8 +359,8 @@ export class GroupAppletsSettings extends LitElement {
         ></display-error>`;
       case "complete":
         return html`
-          <div class="column" style="flex: 1">
-            <span class="title" style="margin-bottom: 16px"
+          <div class="column" style="flex: 1; align-items: center; overflow: auto; padding: 30px 10px 20px 10px; --sl-border-radius-medium: 20px;">
+            <span class="title" style="margin-bottom: 30px; font-size: 28px;"
               >${msg("Active Applets")}</span
             >
             ${this.renderInstalledApplets(
