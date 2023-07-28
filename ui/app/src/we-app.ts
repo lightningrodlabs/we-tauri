@@ -1,6 +1,6 @@
 import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
-import { AdminWebsocket } from "@holochain/client";
+import { AdminWebsocket, AppWebsocket } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -75,10 +75,15 @@ export class WeApp extends LitElement {
       `ws://localhost:${info.admin_port}`
     );
 
+    const appWebsocket = await AppWebsocket.connect(
+      `ws://localhost:${info.app_port}`
+    );
+
     const appStoreClient = await initAppClient(info.appstore_app_id);
 
     this._weStore = new WeStore(
       adminWebsocket,
+      appWebsocket,
       info,
       new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );

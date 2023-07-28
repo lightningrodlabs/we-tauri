@@ -35,6 +35,7 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/divider/divider.js";
 
 import "./federate-applet-dialog.js";
+import "./applet-detail-card.js";
 import "./group-context.js";
 import "./group-logo.js";
 import "../../applets/elements/applet-logo.js";
@@ -65,21 +66,29 @@ export class GroupAppletsSettings extends LitElement {
             sliceAndJoin(this._groupStore.applets, allApplets)
           ),
           (applets) =>
-            mapAndJoin(applets, (applet, appletHash) =>
+            mapAndJoin(applets, (_applet, appletHash) =>
               this._groupStore.appletFederatedGroups.get(appletHash)
             )
         ),
 
-        pipe(this._groupStore.archivedApplets, (allApplets) =>
-          sliceAndJoin(this._groupStore.applets, allApplets)
-        ),
+        asyncDeriveAndJoin(
+          pipe(this._groupStore.archivedApplets, (allApplets) =>
+            sliceAndJoin(this._groupStore.applets, allApplets)
+          ),
+          (applets) => mapAndJoin(applets, (_applet, appletHash) =>
+            this._groupStore.appletFederatedGroups.get(appletHash)
+          )
+        )
       ]) as AsyncReadable<
         [
           [
             ReadonlyMap<EntryHash, Applet>,
             ReadonlyMap<EntryHash, Array<DnaHash>>
           ],
-          ReadonlyMap<EntryHash, Applet>
+          [
+            ReadonlyMap<EntryHash, Applet>,
+            ReadonlyMap<EntryHash, Array<DnaHash>>
+          ]
         ]
       >,
     () => [this._groupStore]
@@ -257,51 +266,23 @@ export class GroupAppletsSettings extends LitElement {
           .map(
             ([appletHash, applet]) =>
               html`
-                <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
-                  <div class="row" style="flex: 1; align-items: center">
-                    <applet-logo
-                      .appletHash=${appletHash}
-                      style="margin-right: 16px"
-                    ></applet-logo>
-                    <span style="flex: 1">${applet.custom_name}</span>
-
-                    ${Array.from(federatedGroups.get(appletHash)!).map(
-                      (groupDnaHash) => html`
-                        <group-context .groupDnaHash=${groupDnaHash}>
-                          <group-logo
-                            style="margin-right: 8px; --size: 32px"
-                          ></group-logo
-                        ></group-context>
-                      `
-                    )}
-
-                    <sl-tooltip .content=${msg("Federate")}>
-                      <sl-icon-button
-                        .src=${wrapPathInSvg(mdiExportVariant)}
-                        style="font-size: 2rem"
-                        @click=${() => {
-                          this.appletToFederate = appletHash;
-                        }}
-                      ></sl-icon-button>
-                    </sl-tooltip>
-                    <sl-tooltip .content=${msg("Archive")}>
-                      <sl-icon-button
-                        .src=${wrapPathInSvg(mdiArchiveArrowDown)}
-                        style="font-size: 2rem;"
-                        @click=${() => {
-                          this.appletToArchive = appletHash;
-                        }}
-                      ></sl-icon-button>
-                    </sl-tooltip>
-                  </div>
-                </sl-card>
+                <applet-detail-card
+                  @federate-applet=${(e) => {this.appletToFederate = e.detail}}
+                  @archive-applet=${(e) => {this.appletToArchive = e.detail}}
+                  .appletHash=${appletHash}
+                  .applet=${applet}
+                  .federatedGroups=${federatedGroups}
+                ></applet-detail-card>
               `
           )}
       </div>
     `;
   }
 
-  renderArchivedApplets(applets: ReadonlyMap<EntryHash, Applet>) {
+  renderArchivedApplets(
+    applets: ReadonlyMap<EntryHash, Applet>,
+    federatedGroups: ReadonlyMap<EntryHash, Array<DnaHash>>
+  ) {
     if (applets.size === 0)
       return html`
         <div class="row center-content" style="flex: 1; min-width: 800px;">
@@ -321,25 +302,12 @@ export class GroupAppletsSettings extends LitElement {
           .map(
             ([appletHash, applet]) =>
               html`
-                <sl-card style="flex: 1; margin-bottom: 16px">
-                  <div class="row" style="flex: 1; align-items: center">
-                    <applet-logo
-                      .appletHash=${appletHash}
-                      style="margin-right: 16px"
-                    ></applet-logo>
-                    <span style="flex: 1">${applet.custom_name}</span>
-
-                    <sl-tooltip .content=${msg("Unarchive")}>
-                      <sl-icon-button
-                        .src=${wrapPathInSvg(mdiArchiveArrowUp)}
-                        style="font-size: 2rem;"
-                        @click=${() => {
-                          this.appletToUnarchive = appletHash;
-                        }}
-                      ></sl-icon-button>
-                    </sl-tooltip>
-                  </div>
-                </sl-card>
+                <applet-detail-card
+                  @unarchive-applet=${(e) => {this.appletToUnarchive = e.detail}}
+                  .appletHash=${appletHash}
+                  .applet=${applet}
+                  .federatedGroups=${federatedGroups}
+                ></applet-detail-card>
               `
           )}
       </div>
@@ -374,7 +342,10 @@ export class GroupAppletsSettings extends LitElement {
               >${msg("Archived Applets")}</span
             >
 
-            ${this.renderArchivedApplets(this._groupApplets.value.value[1])}
+            ${this.renderArchivedApplets(
+              this._groupApplets.value.value[1][0],
+              this._groupApplets.value.value[1][1]
+            )}
           </div>
         `;
     }

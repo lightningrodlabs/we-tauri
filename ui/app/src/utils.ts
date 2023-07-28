@@ -9,6 +9,8 @@ import {
   DnaHash,
   CellType,
   encodeHashToBase64,
+  ClonedCell,
+  DnaHashB64,
 } from "@holochain/client";
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
 
@@ -153,4 +155,36 @@ export function getCellName(cellInfo: CellInfo): string | undefined {
   if ("stem" in cellInfo) {
     return cellInfo.stem.name;
   }
+}
+
+export function dnaHashForCell(cell: CellInfo): DnaHashB64 {
+  return encodeHashToBase64(new Uint8Array(getCellId(cell)![0]))
+}
+
+export function flattenCells(cell_info: Record<string, CellInfo[]>): [string, CellInfo][] {
+  return Object.entries(cell_info).map(([roleName, cellInfos]) =>
+    cellInfos.map((CellInfo) => [roleName, CellInfo])
+  ).flat() as any
+}
+
+
+export function getProvisionedCells(appInfo: AppInfo): [string, CellInfo][] {
+  const provisionedCells = flattenCells(appInfo.cell_info)
+    .filter(([_roleName, cellInfo]) => "provisioned" in cellInfo)
+    .sort(([roleName_a, _cellInfo_a], [roleName_b, _cellInfo_b]) => roleName_a.localeCompare(roleName_b));
+  return provisionedCells
+}
+
+export function getEnabledClonedCells(appInfo: AppInfo): [string, CellInfo][] {
+  return flattenCells(appInfo.cell_info)
+    .filter(([_roleName, cellInfo]) => "cloned" in cellInfo)
+    .filter(([_roleName, cellInfo]) => (cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.enabled)
+    .sort(([roleName_a, _cellInfo_a], [roleName_b, _cellInfo_b]) => roleName_a.localeCompare(roleName_b));
+}
+
+export function getDisabledClonedCells(appInfo: AppInfo): [string, CellInfo][] {
+  return flattenCells(appInfo.cell_info)
+    .filter(([_roleName, cellInfo]) => "cloned" in cellInfo)
+    .filter(([_roleName, cellInfo]) => !(cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.enabled)
+    .sort(([roleName_a, _cellInfo_a], [roleName_b, _cellInfo_b]) => roleName_a.localeCompare(roleName_b));
 }

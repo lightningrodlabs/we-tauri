@@ -14,6 +14,7 @@ import {
 import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
   AppInfo,
+  AppWebsocket,
   decodeHashFromBase64,
   ProvisionedCell,
 } from "@holochain/client";
@@ -41,6 +42,7 @@ import { AppletStore } from "./applets/applet-store.js";
 export class WeStore {
   constructor(
     public adminWebsocket: AdminWebsocket,
+    public appWebsocket: AppWebsocket,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
   ) {}

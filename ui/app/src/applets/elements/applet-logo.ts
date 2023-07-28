@@ -73,10 +73,10 @@ export class AppletLogo extends LitElement {
         align-items: center;
         justify-content: center;
       }
-      .icon:hover {
+      /* .icon:hover {
         box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-900));
         background: var(--sl-color-primary-900);
-      }
+      } */
       .selected {
         box-shadow: 0 0 0px 4px var(--hover-color, var(--sl-color-primary-900));
         background: var(--sl-color-primary-900);
