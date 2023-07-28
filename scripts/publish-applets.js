@@ -252,7 +252,7 @@ async function publishApplets() {
         changelog: "",
         for_gui: guiEntity.payload.id,
         for_happ_releases: [],
-        web_asset_id: fileEntity.payload.address,
+        web_asset_id: fileEntity.payload.id,
       },
     });
     const appVersionEntity = await devhubClient.callZome({
