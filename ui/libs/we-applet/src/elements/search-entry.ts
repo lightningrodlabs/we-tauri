@@ -297,7 +297,7 @@ export class SearchEntry extends LitElement implements FormField {
   render() {
     return html`
       <div style="flex: 1; display: flex;">
-        <sl-dropdown id="dropdown">
+        <sl-dropdown id="dropdown" hoist>
           <sl-input
             id="textfield"
             slot="trigger"
