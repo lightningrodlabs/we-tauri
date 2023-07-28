@@ -293,10 +293,6 @@ async fn fetch_web_happ(
         }
     }
 
-    // Otherwise, get the list of available host and try them one by one
-
-    let hosts = get_available_hosts(&mut client, &devhub_dna).await?;
-
     if hosts.len() == 0 {
         return Err(WeError::NoAvailableHostsError(()));
     }
