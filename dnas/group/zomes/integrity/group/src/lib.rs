@@ -47,7 +47,7 @@ pub struct RelatedGroup {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct FederateAppletInput {
+pub struct RegisterAppletFederationInput {
     pub applet_hash: EntryHash,
     pub group_dna_hash: EntryHash,
 }

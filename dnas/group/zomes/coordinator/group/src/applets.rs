@@ -115,8 +115,11 @@ fn get_archived_applets(_: ()) -> ExternResult<Vec<EntryHash>> {
     Ok(entry_hashes)
 }
 
+/// Registers the federation of an applet. The actual federation happens in the front-end
+/// by installing the same applet in another group. It is only registered in the backend
+/// that this applet has been federated.
 #[hdk_extern]
-pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
+pub fn register_applet_federation(input: RegisterAppletFederationInput) -> ExternResult<ActionHash> {
     create_link(
         input.applet_hash,
         input.group_dna_hash,
@@ -125,6 +128,9 @@ pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
     )
 }
 
+/// Get the nearest-neighbor groups this app is federated with. The applet may in reality
+/// be shared by arbitrarily many groups of which the group calling this function does
+/// not know about ("viral federation").
 #[hdk_extern]
 pub fn get_federated_groups(applet_hash: EntryHash) -> ExternResult<Vec<EntryHash>> {
     let links = get_links(applet_hash, LinkTypes::AppletToInvitedGroup, None)?;

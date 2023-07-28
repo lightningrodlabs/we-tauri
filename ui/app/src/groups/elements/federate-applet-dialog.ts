@@ -104,11 +104,11 @@ export class FederateAppletDialog extends LitElement {
 
       // Two way link from one group to the other
       // TODO: what to do when the applet is uninstalled
-      await this._groupStore.groupClient.federateApplet(
+      await this._groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         groupDnaHash
       );
-      await groupStore.groupClient.federateApplet(
+      await groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         this._groupStore.groupDnaHash
       );
