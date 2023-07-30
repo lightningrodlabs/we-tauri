@@ -57,24 +57,32 @@ pub async fn notify(
     return Err(WeError::UnauthorizedWindow(String::from("notify")));
   }
 
+  println!("Received notification request: {:?}", message);
+
+  match window.is_focused() {
+    // don't show notification dot in systray icon if window is already focused
+    Ok(true) => return Ok(()),
+    _ => (),
+  }
+
   // change systray icon
   if systray {
     let mutex = app_handle.state::<Mutex<SysTrayIconState>>();
-    let systray_state = (*mutex).lock().await;
 
     match message.urgency.as_str() {
       "low" => (),
       "medium" => {
-        let icon_path_option = app_handle.path_resolver().resolve_resource("icons/icon_priority_medium_32x32.png");
-        if let Some(icon_path) = icon_path_option {
-          app_handle.tray_handle().set_icon(Icon::File(icon_path))?;
-        }
-        match systray_state.get_icon_state() {
+        let systray_icon_state = mutex.lock().await.get_icon_state();
+        match systray_icon_state {
           IconState::Clean | IconState::Low => {
+            println!("Current icon state: clean or low");
             let icon_path_option = app_handle.path_resolver().resolve_resource("icons/icon_priority_medium_32x32.png");
             if let Some(icon_path) = icon_path_option {
               app_handle.tray_handle().set_icon(Icon::File(icon_path))?;
             }
+            *mutex.lock().await = SysTrayIconState { icon_state: IconState::Medium };
+
+            println!("Current icon state after medium message: {:?}", (*mutex).lock().await.get_icon_state());
           },
           _ => (),
         }
@@ -84,6 +92,9 @@ pub async fn notify(
         if let Some(icon_path) = icon_path_option {
           app_handle.tray_handle().set_icon(Icon::File(icon_path))?;
         }
+        *mutex.lock().await = SysTrayIconState { icon_state: IconState::High };
+
+        println!("Current icon state after urgent message: {:?}", (*mutex).lock().await.get_icon_state());
       },
       _ => log::error!("Got invalid notification urgency level: {}", message.urgency),
     }
@@ -98,6 +109,13 @@ pub async fn notify(
     match applet_name {
       Some(name) => notification = notification.title(format!("{} - {}", name, message.title)),
       None => notification = notification.title(message.title),
+    }
+
+    if let Some(icon_path) = app_handle.path_resolver().resolve_resource("icons/32x32.png") {
+      match icon_path.into_os_string().into_string() {
+        Ok(path_string) => notification = notification.icon(path_string),
+        Err(e) => log::error!("Failed to convert icon path into os string: {:?}", e),
+      }
     }
 
     // not working... icon method takes file path
@@ -131,6 +149,15 @@ pub async fn clear_systray_notification_state(
 ) -> WeResult<()> {
   if window.label() != "main" {
     return Err(WeError::UnauthorizedWindow(String::from("notify")));
+  }
+
+  // clear notification dots
+  let icon_path_option = app_handle.path_resolver().resolve_resource("icons/32x32.png");
+  if let Some(icon_path) = icon_path_option {
+      match app_handle.tray_handle().set_icon(Icon::File(icon_path)) {
+          Ok(()) => (),
+          Err(e) => log::error!("Failed to set system tray icon: {}", e)
+      };
   }
 
   let mutex = app_handle.state::<Mutex<SysTrayIconState>>();

@@ -11,6 +11,50 @@ import "./elements/create-post.js";
 @customElement("applet-main")
 export class AppletMain extends LitElement {
 
+  @state()
+  mediumInterval: number | null = null;
+
+  @state()
+  highInterval: number | null = null;
+
+  // firstUpdated() {
+  //   this.mediumInterval = window.setInterval(() => {
+  //     this.dispatchEvent(new CustomEvent('notification', {
+  //       detail: {
+  //         title: "New Message",
+  //         body: "Hello from the test app :)",
+  //         notification_type: "default",
+  //         icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+  //         urgency: "medium",
+  //       },
+  //       bubbles: true,
+  //     }))
+  //   }, 5000);
+
+  //   this.highInterval = window.setInterval(() => {
+  //     this.dispatchEvent(new CustomEvent('notification', {
+  //       detail: {
+  //         title: "Important Message",
+  //         body: "This is an URGENT message",
+  //         notification_type: "default",
+  //         icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+  //         urgency: "high",
+  //       },
+  //       bubbles: true,
+  //     })),
+  //     40000
+  //   })
+  // }
+
+  // disconnectedCallback(): void {
+  //   if (this.mediumInterval) {
+  //     window.clearInterval(this.mediumInterval);
+  //   }
+  //   if (this.highInterval) {
+  //     window.clearInterval(this.highInterval);
+  //   }
+  // }
+
   sendUrgentNotification(delay: number) {
     setTimeout(() => {
       this.dispatchEvent(new CustomEvent('notification', {

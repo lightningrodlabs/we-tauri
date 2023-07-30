@@ -327,7 +327,7 @@ export async function handleAppletIframeMessage(
       await notifyTauri(
         message.message,
         appletNotificationSettings.showInSystray,
-        appletNotificationSettings.allowOSNotification,
+        appletNotificationSettings.allowOSNotification && message.message.urgency === "high",
         // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
         appletStore ? appletStore.applet.custom_name : undefined
       );

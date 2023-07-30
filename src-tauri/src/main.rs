@@ -35,7 +35,7 @@ use commands::{
     factory_reset::execute_factory_reset,
     install_applet_bundle::{fetch_icon, install_applet_bundle},
     join_group::join_group,
-    notification::{notify, IconState},
+    notification::{notify, IconState, clear_systray_notification_state},
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call, notification::SysTrayIconState,
 };
@@ -60,6 +60,7 @@ fn main() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
+            clear_systray_notification_state,
             create_password,
             disable_dev_mode,
             enable_dev_mode,

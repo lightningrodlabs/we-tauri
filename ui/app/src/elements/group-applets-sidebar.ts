@@ -3,7 +3,7 @@ import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { EntryHash } from "@holochain/client";
+import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -22,6 +22,8 @@ import { weStyles } from "../shared-styles.js";
 import { AppletStore } from "../applets/applet-store.js";
 import { GroupStore } from "../groups/group-store.js";
 import { groupStoreContext } from "../groups/context.js";
+import { NotificationStorage } from "../applets/types.js";
+import { clearAppletNotifications, getAppletNotificationState } from "../utils.js";
 
 
 // Sidebar for the applet instances of a group
@@ -56,6 +58,11 @@ export class GroupAppletsSidebar extends LitElement {
       `
     }
 
+    // parse notification storage only once for all applets
+    const notificationStorageJson = window.localStorage.getItem("notifications");
+    const notificationsStorage: NotificationStorage = notificationStorageJson
+      ? JSON.parse(notificationStorageJson)
+      : {};
 
     return html`
       <div class="row" style="align-items: flex-end;">
@@ -65,7 +72,9 @@ export class GroupAppletsSidebar extends LitElement {
           )
           .map(
             ([_appletBundleHash, appletStore]) =>
-              html`
+            {
+              const appletNotificationState = getAppletNotificationState(notificationsStorage, encodeHashToBase64(appletStore.appletHash));
+              return html`
                 <topbar-button
                   title="double-click to open in tab"
                   style="margin-left: 8px;"
@@ -83,6 +92,7 @@ export class GroupAppletsSidebar extends LitElement {
                         composed: true,
                       })
                     );
+                    clearAppletNotifications(notificationsStorage, encodeHashToBase64(appletStore.appletHash));
                   }}
                   @dblclick=${() => {
                     this.dispatchEvent(
@@ -99,10 +109,13 @@ export class GroupAppletsSidebar extends LitElement {
                 >
                   <applet-logo-raw
                     .appletHash=${appletStore.appletHash}
+                    .notificationUrgency=${appletNotificationState[0]}
+                    .notificationCount=${appletNotificationState[1]}
                     style="z-index: 1;"
                   ></applet-logo-raw>
                 </topbar-button>
               `
+            }
           )}
       </div>
     `;

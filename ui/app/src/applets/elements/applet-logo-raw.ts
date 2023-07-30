@@ -25,6 +25,12 @@ export class AppletLogo extends LitElement {
   @property()
   selected = false;
 
+  @property()
+  notificationCount: number | undefined;
+
+  @property()
+  notificationUrgency: "low" | "medium" | "high" | undefined;
+
   appletLogo = new StoreSubscriber(
     this,
     () =>
@@ -38,12 +44,23 @@ export class AppletLogo extends LitElement {
     if (!logo) return html``;
 
     return html`
-      <img
-        class="icon"
-        style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 50%)"
-        .src=${logo}
-        alt="TODO"
-      />
+      <div style="position: relative;">
+        <div
+          class="row center-content notification-dot
+            ${this.notificationUrgency === "high" ? "urgent" : ""}
+            ${this.notificationCount && this.notificationCount > 9 ? "padded" : ""}
+          "
+          style="${!this.notificationUrgency ? "display: none" : ""}"
+          >
+          ${ this.notificationCount ? this.notificationCount : undefined }
+        </div>
+        <img
+          class="icon"
+          style="height: var(--size, 64px); width: var(--size, 64px); border-radius: var(--border-radius, 50%)"
+          .src=${logo}
+          alt="TODO"
+        />
+      </div>
     `;
   }
 
@@ -72,6 +89,25 @@ export class AppletLogo extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
+      }
+
+      .notification-dot {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-weight: bold;
+        background: #355dfa;
+        border-radius: 10px;
+        height: 20px;
+        min-width: 20px;
+      }
+
+      .urgent {
+        background: #fcee2d;
+      }
+
+      .padded {
+        padding: 0 4px;
       }
     `,
   ];

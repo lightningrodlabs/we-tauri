@@ -14,6 +14,12 @@ export class SidebarButton extends LitElement {
   tooltipText!: string;
 
   @property()
+  notificationCount: number | undefined = 23;
+
+  @property()
+  notificationUrgency: "low" | "medium" | "high" | undefined;
+
+  @property()
   placement:
     | "top"
     | "top-start"
@@ -49,6 +55,15 @@ export class SidebarButton extends LitElement {
         class="icon-container column ${this.selected ? "selected" : ""}"
         @click=${this.handleClick}
         >
+        <div
+          class="row center-content notification-dot
+            ${this.notificationUrgency === "high" ? "urgent" : ""}
+            ${this.notificationCount && this.notificationCount > 9 ? "padded" : ""}
+          "
+          style="${!this.notificationUrgency ? "display: none" : ""}"
+          >
+          ${ this.notificationCount ? this.notificationCount : undefined }
+        </div>
         <img
           class="icon"
           src="${this.logoSrc}"
@@ -144,6 +159,25 @@ export class SidebarButton extends LitElement {
         width: 80px;
         border-radius: 0 0 30px 0;
         box-shadow: 30px 0 0 0 var(--hover-color, var(--sl-color-primary-200));
+      }
+
+      .notification-dot {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-weight: bold;
+        background: #355dfa;
+        border-radius: 10px;
+        height: 20px;
+        min-width: 20px;
+      }
+
+      .urgent {
+        background: #fcee2d;
+      }
+
+      .padded {
+        padding: 0 4px;
       }
 
     `

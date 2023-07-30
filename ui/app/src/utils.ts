@@ -12,7 +12,11 @@ import {
   ClonedCell,
   DnaHashB64,
 } from "@holochain/client";
+import { WeNotification } from "@lightningrodlabs/we-applet";
+
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
+import { NotificationLevel, NotificationStorage, NotificationTimestamp } from "./applets/types.js";
+import { AppletId } from "./types.js";
 
 export async function initAppClient(
   appId: string,
@@ -187,4 +191,37 @@ export function getDisabledClonedCells(appInfo: AppInfo): [string, CellInfo][] {
     .filter(([_roleName, cellInfo]) => "cloned" in cellInfo)
     .filter(([_roleName, cellInfo]) => !(cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.enabled)
     .sort(([roleName_a, _cellInfo_a], [roleName_b, _cellInfo_b]) => roleName_a.localeCompare(roleName_b));
+}
+
+export function getAppletNotificationState(
+  notificationsStorage: NotificationStorage,
+  appletId: AppletId
+): [string | undefined, number | undefined] {
+
+  const appletNotifications: Record<NotificationLevel, Array<[WeNotification, NotificationTimestamp]>> = notificationsStorage[appletId] ?
+    notificationsStorage[appletId] :
+    { "low": [], "medium": [], "high": [] };
+
+  console.log("@getAppletNotificationState: appletNotifications: ", appletNotifications);
+  if (appletNotifications.high.length > 0) {
+    return ["high", appletNotifications.high.length]
+  }
+
+  if (appletNotifications.medium.length > 0) {
+    return ["medium", undefined]
+  }
+
+  if (appletNotifications.low.length > 0) {
+    return ["low", undefined]
+  }
+
+  return [undefined, undefined]
+}
+
+export function clearAppletNotifications(
+  notificationsStorage: NotificationStorage,
+  appletId: AppletId,
+): void {
+  notificationsStorage[appletId] = { "low": [], "medium": [], "high": [] };
+  window.localStorage.setItem("notifications", JSON.stringify(notificationsStorage));
 }

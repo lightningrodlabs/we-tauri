@@ -175,7 +175,6 @@ export async function notifyTauri(
   // appstoreAppHashB64: ActionHashB64 | undefined,
   appletName: string | undefined,
 ): Promise<void> {
-  console.log("invoking notify command in tauri with arguments: ", { message, systray, os, appletName });
   try {
     await invoke('notify', { message, systray, os, appletName });
   } catch (e) {
