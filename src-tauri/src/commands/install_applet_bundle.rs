@@ -44,11 +44,16 @@ use crate::{
 
 #[tauri::command]
 pub async fn fetch_icon(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
-    app_action_hash_b64: String, // Hash of the entry of the applet's webassets in the DevHub
+    app_action_hash_b64: String, // ActionHash of the entry of the applet's webassets in the DevHub
 ) -> WeResult<String> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("fetch_icon")));
+    }
+
     let app_action_hash =
         ActionHash::from(ActionHashB64::from_b64_str(app_action_hash_b64.as_str()).unwrap());
 
@@ -147,6 +152,7 @@ pub async fn internal_fetch_applet_bundle(
 
 #[tauri::command]
 pub async fn install_applet_bundle(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     fs: tauri::State<'_, WeFileSystem>,
@@ -158,6 +164,10 @@ pub async fn install_applet_bundle(
     happ_release_hash: String,
     gui_release_hash: String,
 ) -> WeResult<AppInfo> {
+    if window.label() != "main" {
+    return Err(WeError::UnauthorizedWindow(String::from("install_applet_bundle")));
+    }
+
     log::info!("Installing: app_id = {:?}", app_id);
 
     let mut converted_membrane_proofs: HashMap<String, MembraneProof> = HashMap::new();

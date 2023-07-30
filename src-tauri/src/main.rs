@@ -15,7 +15,7 @@ use menu::{build_menu, handle_menu_event};
 use serde_json::Value;
 use system_tray::{app_system_tray, handle_system_tray_event};
 use tauri::{
-    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, SystemTray, SystemTrayEvent,
+    http::ResponseBuilder, Manager, RunEvent, UserAttentionType, SystemTray, SystemTrayEvent, WindowEvent,
 };
 
 mod applet_iframes;
@@ -35,8 +35,9 @@ use commands::{
     factory_reset::execute_factory_reset,
     install_applet_bundle::{fetch_icon, install_applet_bundle},
     join_group::join_group,
+    notification::{notify, IconState},
     password::{create_password, enter_password, is_keystore_initialized},
-    sign_zome_call::sign_zome_call,
+    sign_zome_call::sign_zome_call, notification::SysTrayIconState,
 };
 use window::build_main_window;
 
@@ -71,6 +72,7 @@ fn main() {
             is_keystore_initialized,
             is_launched,
             join_group,
+            notify,
             open_appstore,
             open_devhub,
             sign_zome_call,
@@ -101,6 +103,7 @@ fn main() {
             let fs = WeFileSystem::new(&handle, &profile)?;
             app.manage(fs.clone());
             app.manage(profile);
+            app.manage(Mutex::new(SysTrayIconState { icon_state: IconState::Clean }));
 
             // reading network seed from cli
             let network_seed = match cli_matches.args.get("network-seed") {
@@ -209,11 +212,25 @@ fn main() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_app_handle, event| {
-            // This event is emitted upon pressing the x to close the App window
-            // The app is prevented from exiting to keep it running in the background with the system tray
-            if let RunEvent::ExitRequested { api, .. } = event {
-                api.prevent_exit();
+        .run(|app_handle, event| {
+            match event {
+                // This event is emitted upon pressing the x to close the App window
+                // The app is prevented from exiting to keep it running in the background with the system tray
+                RunEvent::ExitRequested { api, .. } => api.prevent_exit(),
+
+                // also let the window run in the background to have the UI keep listening to notifications
+                RunEvent::WindowEvent { label, event, .. } => {
+                    if label == "main" {
+                        if let WindowEvent::CloseRequested { api, .. } = event {
+                            api.prevent_close();
+                            let main_window = app_handle.get_window("main").unwrap();
+                            main_window.hide().unwrap();
+                        }
+                    }
+                },
+
+                _ => (),
             }
+
         });
 }

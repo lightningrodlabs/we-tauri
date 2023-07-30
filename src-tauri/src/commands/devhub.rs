@@ -11,15 +11,21 @@ use crate::config::WeConfig;
 use crate::default_apps::appstore_app_id;
 use crate::default_apps::devhub_app_id;
 use crate::default_apps::network_seed;
+use crate::error::WeError;
 use crate::error::WeResult;
 use crate::filesystem::WeFileSystem;
 use crate::launch::get_admin_ws;
 
 #[tauri::command]
 pub async fn is_dev_mode_enabled(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<bool> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("is_dev_mode_enabled")));
+    }
+
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -35,11 +41,16 @@ pub async fn is_dev_mode_enabled(
 
 #[tauri::command]
 pub async fn enable_dev_mode(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("enable_dev_mode")));
+    }
+
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -82,9 +93,14 @@ pub async fn enable_dev_mode(
 
 #[tauri::command]
 pub async fn disable_dev_mode(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>
 ) -> WeResult<()> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("disable_dev_mode")));
+    }
+
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -96,10 +112,15 @@ pub async fn disable_dev_mode(
 
 #[tauri::command]
 pub async fn open_devhub(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("open_devhub")));
+    }
+
     let devhub_app_id = devhub_app_id(&app_handle);
 
     let ui_path = fs.ui_store().ui_path(&devhub_app_id);
@@ -126,10 +147,15 @@ pub async fn open_devhub(
 
 #[tauri::command]
 pub async fn open_appstore(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("open_appstore")));
+    }
+
     let appstore_app_id = appstore_app_id(&app_handle);
 
     let ui_path = fs.ui_store().ui_path(&appstore_app_id);

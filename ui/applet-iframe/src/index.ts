@@ -24,6 +24,7 @@ import {
 import {
   AttachmentType,
   WeApplet,
+  WeNotification,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
@@ -61,7 +62,7 @@ window.onload = async () => {
       const result = await handleMessage(applet, iframeConfig!, m.data);
       m.ports[0].postMessage({ type: "success", result });
     } catch (e) {
-      m.ports[0].postMessage({ type: "error", error: e.message });
+      m.ports[0].postMessage({ type: "error", error: (e as any).message });
     }
   });
 
@@ -206,10 +207,10 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
         type: "get-entry-info",
         hrl,
       }),
-    appletInfo: (appletId) =>
+    appletInfo: (appletHash) =>
       postMessage({
         type: "get-applet-info",
-        appletId,
+        appletHash,
       }),
     groupProfile: (groupId) =>
       postMessage({
@@ -221,6 +222,11 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
         type: "search",
         filter,
       }),
+    notify: (message: WeNotification) =>
+      postMessage({
+        type: "notify",
+        message,
+      })
   };
 }
 
@@ -241,14 +247,14 @@ async function renderView(
     );
     let client = await setupAppletClient(
       iframeConfig.appPort,
-      iframeConfig.appletId
+      iframeConfig.appletHash
     );
     switch (view.view.type) {
       case "main":
         (
           await applet.appletViews(
             client,
-            iframeConfig.appletId,
+            iframeConfig.appletHash,
             profilesClient,
             weServices
           )
@@ -258,7 +264,7 @@ async function renderView(
         (
           await applet.appletViews(
             client,
-            iframeConfig.appletId,
+            iframeConfig.appletHash,
             profilesClient,
             weServices
           )
@@ -273,7 +279,7 @@ async function renderView(
         (
           await applet.appletViews(
             client,
-            iframeConfig.appletId,
+            iframeConfig.appletHash,
             profilesClient,
             weServices
           )
@@ -330,7 +336,7 @@ async function handleMessage(
 ) {
   if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
-  const appletId = iframeConfig.appletId;
+  const appletId = iframeConfig.appletHash;
 
   let client = await setupAppletClient(iframeConfig.appPort, appletId);
   let weServices: WeServices;
@@ -445,7 +451,7 @@ async function postMessage(request: AppletToParentRequest): Promise<any> {
       appletId: appletId(),
     };
 
-    top.postMessage(message, "*", [channel.port2]);
+    top!.postMessage(message, "*", [channel.port2]);
 
     channel.port1.onmessage = (m) => {
       if (m.data.type === "success") {

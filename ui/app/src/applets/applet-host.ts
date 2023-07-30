@@ -15,14 +15,18 @@ import {
   EntryLocationAndInfo,
   Hrl,
   HrlWithContext,
+  WeNotification,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
 import { AppOpenViews } from "../layout/types.js";
-import { AppletIframeProtocol, signZomeCallTauri } from "../tauri.js";
+import { AppletIframeProtocol, notifyTauri, signZomeCallTauri } from "../tauri.js";
 import { WeStore } from "../we-store.js";
+import { Applet, NotifiactionSettings, NotificationLevel, NotificationSettingsStorage, NotificationStorage, NotificationTimestamp } from "./types.js";
+import { AppletHash, AppletId } from "../types.js";
+import { AppletStore } from "./applet-store.js";
 
 function getAppletIdFromOrigin(
   appletIframeProtocol: AppletIframeProtocol,
@@ -69,7 +73,7 @@ export async function setupAppletMessageHandler(
       );
       message.ports[0].postMessage({ type: "success", result });
     } catch (e) {
-      message.ports[0].postMessage({ type: "error", error: e.message });
+      message.ports[0].postMessage({ type: "error", error: (e as any).message });
     }
   });
 }
@@ -108,11 +112,11 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
 
       return groupProfile;
     },
-    async appletInfo(appletId: EntryHash) {
-      const applet = await toPromise(weStore.applets.get(appletId));
+    async appletInfo(appletHash: AppletHash) {
+      const applet = await toPromise(weStore.applets.get(appletHash));
       if (!applet) return undefined;
       const groupsForApplet = await toPromise(
-        weStore.groupsForApplet.get(appletId)
+        weStore.groupsForApplet.get(appletHash)
       );
 
       return {
@@ -150,6 +154,9 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
         .filter((h) => !!h);
       return hrls;
     },
+    async notify(message: WeNotification) {
+      console.error("notify is not implemented on headless WeServices.");
+    },
     attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
     openViews: {
       openAppletMain: () => {},
@@ -164,7 +171,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
 export async function handleAppletIframeMessage(
   weStore: WeStore,
   openViews: AppOpenViews,
-  appletId: EntryHash,
+  appletHash: EntryHash,
   message: AppletToParentRequest
 ) {
   let host: AppletHost;
@@ -172,9 +179,9 @@ export async function handleAppletIframeMessage(
   switch (message.type) {
     case "get-iframe-config":
       const isInstalled = await toPromise(
-        weStore.appletBundlesStore.isInstalled.get(appletId)
+        weStore.appletBundlesStore.isInstalled.get(appletHash)
       );
-      const applet = await toPromise(weStore.applets.get(appletId));
+      const applet = await toPromise(weStore.applets.get(appletHash));
 
       if (!isInstalled) {
         const iframeConfig: IframeConfig = {
@@ -197,14 +204,14 @@ export async function handleAppletIframeMessage(
         return config;
       } else {
         const groupsStores = await toPromise(
-          weStore.groupsForApplet.get(appletId)
+          weStore.groupsForApplet.get(appletHash)
         );
 
         // TODO: change this when personas and profiles is integrated
         const groupStore = Array.from(groupsStores.values())[0];
         const config: IframeConfig = {
           type: "applet",
-          appletId,
+          appletHash,
           appPort: weStore.conductorInfo.app_port,
           profilesLocation: {
             profilesAppId: groupStore.groupClient.appAgentClient.installedAppId,
@@ -252,8 +259,81 @@ export async function handleAppletIframeMessage(
       break;
     case "search":
       return services.search(message.filter);
+    case "notify":
+      const appletId = encodeHashToBase64(appletHash);
+
+      // add notification to localStorage (pre-filtered by urgency level for efficiency)
+      const notificationStorageJson = window.localStorage.getItem("notifications");
+      const notificationsStorage: NotificationStorage = notificationStorageJson
+        ? JSON.parse(notificationStorageJson)
+        : {};
+
+      const appletNotifications: Record<NotificationLevel, Array<[WeNotification, NotificationTimestamp]>> = notificationsStorage[appletId] ?
+        notificationsStorage[appletId] :
+        { "low": [], "medium": [], "high": [] };
+
+      switch (message.message.urgency) {
+        case "low":
+          if (appletNotifications.low) {
+            appletNotifications.low.push([message.message, Date.now()])
+          } else {
+            appletNotifications["low"] = [[message.message, Date.now()]];
+          }
+          break;
+        case "medium":
+          if (appletNotifications.medium) {
+            appletNotifications.medium.push([message.message, Date.now()])
+          } else {
+            appletNotifications["medium"] = [[message.message, Date.now()]]
+          }
+          break;
+        case "high":
+          if (appletNotifications.low) {
+            appletNotifications.high.push([message.message, Date.now()])
+          } else {
+            appletNotifications["high"] = [[message.message, Date.now()]];
+          }
+          break;
+      }
+
+      notificationsStorage[appletId] = appletNotifications;
+      window.localStorage.setItem("notifications", JSON.stringify(notificationsStorage));
+
+
+      // send notification to tauri for systray dot and/or OS notification
+      const notificationSettingsJson = window.localStorage.getItem("notificationSettings");
+      const notificationSettings: NotificationSettingsStorage = notificationSettingsJson
+        ? JSON.parse(notificationSettingsJson)
+        : {};
+
+      const appletNotificationSettings: NotifiactionSettings = notificationSettings[appletId]
+        ? notificationSettings[appletId]
+        : {
+          allowOSNotification: true,
+          showInSystray: true,
+          showInGroupSidebar: true,
+          showInAppletSidebar: true,
+          showInGroupHomeFeed: true,
+        };
+
+      let appletStore: AppletStore | undefined;
+      try {
+        appletStore = await toPromise(weStore.applets.get(appletHash));
+      } catch (e) {
+        console.warn("Failed to fetch applet icon in notification hook: ", (e as any).toString());
+      }
+
+      // TODO implement sending the Applet Icon to tauri for display in the notification
+      await notifyTauri(
+        message.message,
+        appletNotificationSettings.showInSystray,
+        appletNotificationSettings.allowOSNotification,
+        // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
+        appletStore ? appletStore.applet.custom_name : undefined
+      );
+      return;
     case "get-applet-info":
-      return services.appletInfo(message.appletId);
+      return services.appletInfo(message.appletHash);
     case "get-group-profile":
       return services.groupProfile(message.groupId);
     case "get-entry-info":

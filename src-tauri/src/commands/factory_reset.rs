@@ -4,10 +4,14 @@ use crate::filesystem::WeFileSystem;
 
 #[tauri::command]
 pub async fn execute_factory_reset(
+  window: tauri::Window,
   fs: tauri::State<'_, WeFileSystem>,
   app_handle: tauri::AppHandle,
   delete_logs: bool,
 ) -> Result<(), String> {
+  if window.label() != "main" {
+    return Err(String::from("Attempted to call tauri command 'execute_factory_reset' from unauthorized window."))
+  }
 
   log::warn!("Factory reset requested.");
 

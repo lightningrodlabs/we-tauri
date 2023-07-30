@@ -2,6 +2,7 @@ import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
 import { AdminWebsocket, AppWebsocket } from "@holochain/client";
 import { LitElement, html, css } from "lit";
+import { invoke } from "@tauri-apps/api";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -43,6 +44,10 @@ export class WeApp extends LitElement {
   _weStore!: WeStore;
 
   async firstUpdated() {
+
+    await listen("clear-systray-notification-state", async () => {
+      await invoke('clear_systray_notification_state', {});
+    })
 
     await listen("request-factory-reset", () => {
       console.log("Received factory reset event.");

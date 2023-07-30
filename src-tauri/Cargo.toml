@@ -17,7 +17,7 @@ edition = "2021"
 tauri-build = { version = "=1.4", features = [] }
 
 [dependencies]
-tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open", "system-tray"] }
+tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all", "icon-png", "notification", "process-command-api", "protocol-all", "shell-open", "system-tray"] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"

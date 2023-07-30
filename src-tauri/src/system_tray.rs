@@ -1,4 +1,4 @@
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem};
+use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem, Icon};
 use crate::window::build_main_window;
 
 pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
@@ -10,8 +10,19 @@ pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
                 window.show().unwrap();
                 window.unminimize().unwrap();
                 window.set_focus().unwrap();
+                // tauri function to clear SysTrayIconState is routed via the frontend because the systray callback cannot be async
+                window.emit("clear-systray-notification-state", ()).unwrap();
             } else {
                 let _r = build_main_window(app);
+            }
+
+            // clear notification dots
+            let icon_path_option = app.path_resolver().resolve_resource("icons/32x32.png");
+            if let Some(icon_path) = icon_path_option {
+                match app.tray_handle().set_icon(Icon::File(icon_path)) {
+                    Ok(()) => (),
+                    Err(e) => log::error!("Failed to set system tray icon: {}", e)
+                };
             }
         }
         "restart" => app.app_handle().restart(),

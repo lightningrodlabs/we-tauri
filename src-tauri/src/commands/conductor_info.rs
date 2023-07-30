@@ -6,11 +6,14 @@ use tauri::{AppHandle, Manager};
 use crate::{
     config::WeConfig,
     default_apps::{appstore_app_id, devhub_app_id},
-    error::WeResult,
+    error::{WeResult, WeError},
 };
 
 #[tauri::command]
-pub fn is_launched(app_handle: AppHandle) -> WeResult<bool> {
+pub fn is_launched(window: tauri::Window, app_handle: AppHandle) -> WeResult<bool> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("is_launched")));
+    }
     let connected_state: Option<tauri::State<'_, Mutex<ConductorHandle>>> = app_handle.try_state();
     Ok(connected_state.is_some())
 }
@@ -26,10 +29,15 @@ pub struct ConductorInfo {
 
 #[tauri::command]
 pub async fn get_conductor_info(
+    window: tauri::Window,
     app_handle: AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     config: tauri::State<'_, WeConfig>,
 ) -> WeResult<ConductorInfo> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("get_conductor_info")));
+    }
+
     let conductor = conductor.lock().await;
 
     Ok(ConductorInfo {

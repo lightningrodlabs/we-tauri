@@ -7,7 +7,7 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { Hrl } from "@lightningrodlabs/we-applet";
+import { Hrl, WeNotification } from "@lightningrodlabs/we-applet";
 import { encode, decode } from "@msgpack/msgpack";
 import { fromUint8Array, toUint8Array } from "js-base64";
 
@@ -72,7 +72,7 @@ export type IframeConfig =
   | {
       type: "applet";
       appPort: number;
-      appletId: EntryHash;
+      appletHash: EntryHash;
 
       profilesLocation: ProfilesLocation;
     }
@@ -120,8 +120,12 @@ export type AppletToParentRequest =
       filter: string;
     }
   | {
+      type: "notify";
+      message: WeNotification;
+  }
+  | {
       type: "get-applet-info";
-      appletId: EntryHash;
+      appletHash: AppletHash;
     }
   | {
       type: "get-attachment-types";
@@ -134,6 +138,9 @@ export type AppletToParentRequest =
       type: "get-entry-info";
       hrl: Hrl;
     };
+
+
+type AppletHash = EntryHash;
 
 export interface HrlLocation {
   roleName: string;

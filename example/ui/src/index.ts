@@ -84,6 +84,9 @@ async function appletViews(
                   detail: "asdf",
                 });
               }}
+              @notification=${async (e: CustomEvent) => {
+                weServices.notify(e.detail);
+              }}
             ></applet-main>
           `
         ),

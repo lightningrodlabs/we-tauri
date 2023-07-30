@@ -61,6 +61,12 @@ pub enum WeError {
 
     #[error("No available DevHub host(s) found.")]
     NoAvailableHostsError(()),
+
+    #[error("Tauri API error: `{0}`")]
+    TauriApiError(#[from] tauri::api::Error),
+
+    #[error("Attempted to call tauri command `{0}` from an unauthorized window")]
+    UnauthorizedWindow(String),
 }
 
 impl From<ConductorApiError> for WeError {

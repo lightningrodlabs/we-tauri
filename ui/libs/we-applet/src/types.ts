@@ -32,6 +32,16 @@ export interface AttachmentType {
   create: (attachToHrl: Hrl) => Promise<HrlWithContext>;
 }
 
+export interface WeNotification {
+  title: string;
+  body: string; // content of the notification
+  notification_type: string; // type of notification, in a chat app e.g. "message" or "mention"
+  icon_src: string | undefined;
+  urgency: "low" | "medium" | "high"; // urgency level "medium" shows up as a dot in the system tray icon
+                                      // urgency level "high" additionally triggers an OS notification
+                                      // urgency level "low" only shows up in the We UI when opened
+}
+
 export interface OpenViews {
   openAppletMain(appletId: EntryHash): void;
   openAppletBlock(appletId: EntryHash, block: string, context: any): void;
@@ -60,9 +70,10 @@ export interface WeServices {
   attachmentTypes: ReadonlyMap<EntryHash, Record<string, AttachmentType>>; // Segmented by groupId
 
   groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
-  appletInfo(appletId: EntryHash): Promise<AppletInfo | undefined>;
+  appletInfo(appletHash: EntryHash): Promise<AppletInfo | undefined>;
   entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
   search(filter: string): Promise<Array<HrlWithContext>>;
+  notify(message: WeNotification): Promise<void>;
 }
 
 export type MainView = (rootElement: HTMLElement) => void;
