@@ -211,7 +211,7 @@ export function validateNotifications(notifications: Array<WeNotification>): voi
       if (typeof notification.timestamp !== "number") {
         throw new Error(`Received a notification with a timestamp that's not a number: ${notification.timestamp}`)
       } else if (!isMillisecondTimestamp(notification.timestamp)) {
-        throw new Error("Received a notification with a timestamp that's not in millisecond format.")
+        throw new Error(`Received a notification with a timestamp that's not in millisecond format: ${notification.timestamp}`)
       }
     })
 }

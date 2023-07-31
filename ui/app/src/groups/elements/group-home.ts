@@ -405,6 +405,7 @@ export class GroupHome extends LitElement {
             </div>
 
             <installable-applets
+              style="display: flex; flex: 1; overflow-y: auto;"
               @applet-installed=${() => {
                 this.view = { view: "main" };
               }}

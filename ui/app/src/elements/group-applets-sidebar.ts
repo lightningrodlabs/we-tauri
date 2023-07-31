@@ -59,7 +59,7 @@ export class GroupAppletsSidebar extends LitElement {
     }
 
     return html`
-      <div class="row" style="align-items: flex-end;">
+      <div class="row" style="align-items: flex-end; padding-left: 10px;">
         ${Array.from(applets.entries())
           .sort((a1, a2) =>
             a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
@@ -71,7 +71,7 @@ export class GroupAppletsSidebar extends LitElement {
               return html`
                 <topbar-button
                   title="double-click to open in tab"
-                  style="margin-left: 8px;"
+                  style="margin-left: -4px;"
                   .selected=${this.selectedAppletHash === appletStore.appletHash}
                   .tooltipText=${appletStore.applet.custom_name}
                   placement="bottom"
