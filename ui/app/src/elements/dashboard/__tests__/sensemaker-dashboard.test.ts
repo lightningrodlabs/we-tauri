@@ -208,14 +208,15 @@ describe('SensemakerDashboard', () => {
       );
     });
 
-    test('And it renders no table but instead a skeleton', async () => {
-      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
+    test('And it renders a table but with no rows', async () => {
+      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
+      await toBeTestedSubComponent.updateComplete;
+      
+      const tableElements = dom.window.document.querySelectorAll('table');
+      expect(tableElements.length).toBe(1);
 
-      const elements = dom.window.document.querySelector('table');
-      expect(elements).toBeNull();
-
-      const skeleton = dom.window.document.querySelectorAll(`.skeleton-main-container`);
-      expect(skeleton.length).toBe(1);
+      const rowElements = dom.window.document.querySelectorAll('table tbody tr');
+      expect(rowElements.length).toBe(0);
     });
   });
 
