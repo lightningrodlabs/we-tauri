@@ -97,7 +97,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       if (!entryInfo) return undefined;
 
       const entryAndAppletInfo: EntryLocationAndInfo = {
-        appletId: location.dnaLocation.appletHash,
+        appletHash: location.dnaLocation.appletHash,
         entryInfo,
       };
 

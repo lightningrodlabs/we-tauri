@@ -87,8 +87,8 @@ export interface NotificationCount {
 }
 
 export interface OpenViews {
-  openAppletMain(appletId: EntryHash): void;
-  openAppletBlock(appletId: EntryHash, block: string, context: any): void;
+  openAppletMain(appletHash: EntryHash): void;
+  openAppletBlock(appletHash: EntryHash, block: string, context: any): void;
   openHrl(hrl: Hrl, context: any): void;
   openCrossAppletMain(appletBundleId: ActionHash): void;
   openCrossAppletBlock(
@@ -99,7 +99,7 @@ export interface OpenViews {
 }
 
 export interface EntryLocationAndInfo {
-  appletId: EntryHash;
+  appletHash: EntryHash;
   entryInfo: EntryInfo;
 }
 
@@ -174,7 +174,7 @@ export interface AppletClients {
 export interface WeApplet {
   appletViews: (
     client: AppAgentClient,
-    appletId: EntryHash,
+    appletHash: EntryHash,
     profilesClient: ProfilesClient,
     weServices: WeServices
   ) => Promise<AppletViews>;
@@ -186,13 +186,13 @@ export interface WeApplet {
 
   attachmentTypes: (
     appletClient: AppAgentClient,
-    appletId: EntryHash,
+    appletHash: EntryHash,
     weServices: WeServices
   ) => Promise<Record<string, AttachmentType>>;
 
   search: (
     appletClient: AppAgentClient,
-    appletId: EntryHash,
+    appletHash: EntryHash,
     weServices: WeServices,
     searchFilter: string
   ) => Promise<Array<HrlWithContext>>;
