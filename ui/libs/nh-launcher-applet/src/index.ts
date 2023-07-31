@@ -29,10 +29,9 @@ export interface WeServices {
 
 export interface NhLauncherApplet {
   appletRenderers: (
+    appAgentWebsocket: AppAgentClient,
     weStore: WeServices,
     appletInfo: AppletInfo[],
-    appWebsocket?: AppWebsocket,
-    appAgentWebsocket?: AppAgentClient,
   ) => Promise<AppletRenderers>;
 }
 

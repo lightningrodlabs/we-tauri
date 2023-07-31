@@ -465,10 +465,9 @@ export class MatrixStore {
     }
 
     const renderers = await gui.appletRenderers(
+      appletAppAgentWebsocket,
       weServices,
       [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
-      this.appWebsocket,
-      appletAppAgentWebsocket,
     );
 
     return renderers;
