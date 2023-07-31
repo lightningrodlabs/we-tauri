@@ -53,12 +53,16 @@ describe('SensemakerDashboard', () => {
     const root = componentDom.renderRoot;
     if (!!subComponent) {
       toBeTestedSubComponent = root.querySelector(subComponent);
+      // if(subComponent == 'dashboard-filter-map') {
+      //   toBeTestedSubComponent.__tableType = 'resource';
+      // }
       if (!!subComponent2) {
         // TODO: make this function recursive and extract to a helper function that lets you delve into x levels of webcomponent tree
         toBeTestedSubComponent = toBeTestedSubComponent.renderRoot.querySelector(subComponent2);
         if (!!subComponent3) {
           await toBeTestedSubComponent.updateComplete;
           toBeTestedSubComponent = toBeTestedSubComponent.renderRoot.querySelector(subComponent3);
+          await toBeTestedSubComponent.updateComplete;
           return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
         }
         return new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
@@ -304,30 +308,29 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  describe('Given a MatrixStore with 1 applet (AppletConfig has 2 resources) and 2 assessments in SM store and 0 dimensions configured', () => {
+  describe('Given a MatrixStore with 1 applet (AppletConfig has 2 resources) and 2 assessments in SM store and 1  objective, 1 subjective dimension configured', () => {
+    let objective, subjective, dimensions;
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
       mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
 
-      let config = Object.values(mockAppletConfig)[0];
-      const numberOfDimensions = Object.values(config.dimensions).length;
-
       const mockSMStore: any = get(mockSensemakerResponse);
-      mockSMStore.setAppletConfigDimensions(MockFactory.createConfigDimensions(numberOfDimensions), "objective");
+      subjective = MockFactory.createConfigDimensions(1, 'subjective');
+      objective = MockFactory.createConfigDimensions(2, 'objective').slice(1);
+      dimensions = [...objective, ...subjective];
+
+      mockSMStore.setAppletConfigDimensions(dimensions);
       mockSMStore.setResourceAssessments(MockFactory.createAssessmentDict());
     });
 
-    test(`Then state is initialized`, async () => {
-      let mockSMStore = get(mockSensemakerResponse) as any;
-      expect(mockSMStore.resourceAssessments).toHaveBeenCalled();
-
-      expect(mockSMStore.resourceAssessments().value['abc'].length).toEqual(2);
-
+    test(`Then state is initialized And TableType is set to Resource by default`, async () => {
       await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
-
+      
       expect(toBeTestedSubComponent.tableStore).toBeDefined();
       expect(toBeTestedSubComponent.tableStore.records.length).toEqual(2);
+      expect(toBeTestedSubComponent.__tableType).toBeDefined();
+      expect(toBeTestedSubComponent.__tableType).toBe('resource');
     });
 
     test('And it renders a table', async () => {
@@ -337,7 +340,6 @@ describe('SensemakerDashboard', () => {
         'dashboard-table',
         'wc-table',
       );
-      await toBeTestedSubComponent.updateComplete;
 
       const elements = dom.window.document.querySelectorAll(`table`);
       expect(elements.length).toBe(1);
@@ -350,43 +352,59 @@ describe('SensemakerDashboard', () => {
         'dashboard-table',
         'wc-table',
       );
-      await toBeTestedSubComponent.updateComplete;
 
       const elements = dom.window.document.querySelectorAll(`thead tr`);
       expect(elements.length).toBe(1);
     });
-    test('And the header row has the correct number of columns ', async () => {
-      const dom = await renderAndReturnDom(
+    test('And the header row has the correct number of columns for a Resource TableType', async () => {
+      await renderAndReturnDom(
         component,
         'dashboard-filter-map',
         'dashboard-table',
         'wc-table',
       );
-      await toBeTestedSubComponent.updateComplete;
+      const dom = new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
 
       const elements = dom.window.document.querySelectorAll(`thead tr th`);
-      expect(elements.length).toBe(2);
+      expect(elements.length).toBe(3); // Two base columns plus one for the subjective assessment dimension
     });
-    test('And the header row has the correct column headings ', async () => {
-      const dom = await renderAndReturnDom(
+    test('And the header row has the correct column headings for a Resource TableType', async () => {
+      await renderAndReturnDom(
         component,
         'dashboard-filter-map',
         'dashboard-table',
         'wc-table',
       );
-      await toBeTestedSubComponent.updateComplete;
+      const dom = new JSDOM(toBeTestedSubComponent.renderRoot.innerHTML);
 
       const h4s = dom.window.document.querySelectorAll(`thead tr th h4`);
       expect([...h4s].map(node => node.textContent.trim(). replace(/(\r\n|\n|\r)/gm, ""))).eql([
         'Resource',
         'Neighbour',
+        'Assessment',
       ]);
 
       const h2s = dom.window.document.querySelectorAll(`thead tr th h2`);
       expect([...h2s].map(node => node.textContent.trim(). replace(/(\r\n|\n|\r)/gm, ""))).eql([
         'All Resources', // The resource name
         'Member',
+        cleanResourceNameForUI(subjective[0].name)
       ]);
+    });
+
+    test('And it renders 2 rows', async () => {
+      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
+
+      const rowElements = dom.window.document.querySelectorAll('table tbody tr');
+      expect(rowElements.length).toBe(2);
+    });
+
+
+    test(`And When the TableType is set to Context`, async () => {
+      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
+      // toBeTestedSubComponent.__tableType = 'context';
+      // debugger;
+      // const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
     });
   });
 });

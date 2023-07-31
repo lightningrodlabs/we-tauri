@@ -402,6 +402,7 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
+    console.log('this.fieldDefs :>> ', this.fieldDefs);
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}

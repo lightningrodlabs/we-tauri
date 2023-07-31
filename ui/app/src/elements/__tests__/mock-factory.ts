@@ -59,7 +59,7 @@ export class MockFactory {
     role_name = testAppletBaseRoleName,
     // installed_app_id = testAppletBaseRoleName + (seed),
     ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
-    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
+    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed))),['my_dimension2']: new Uint8Array([3, 2, 1].map(x => x * (seed))), },
     resource_defs = {
       ['my_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
       ['another_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
@@ -161,15 +161,18 @@ export class MockFactory {
 
   static mockStoreResponse(methodName: string) {
     let mockStore: any = {};
+    
+    // Set up mocks for direct zome calls as needed/implemented by your component
     const mockClient = (mockDimensions : any = [{
       "name": "importance",
       "range": {
         "name": "1-scale",
         "kind": {
             "Integer": { "min": 0, "max": 1 }
-        }
+        },
+      "computed": "false"
     }
-  }], subjectivity: string ="subjective") => ({
+  }]) => ({
       appInfo: vi.fn(() => ({
         cell_info: {
           sensemaker: [null, { cloned: { cell_id: 'mock-cell-id' } }],
@@ -178,7 +181,7 @@ export class MockFactory {
       callZome: vi.fn(({fn_name}) => {
         switch (fn_name) {
           case 'get_dimensions':
-            return mockDimensions.map(dimension => ({entry: { Present: { 'entry': encode({...dimension, "computed": subjectivity == "objective"}) } }}))
+            return mockDimensions.map(dimension => ({entry: { Present: { 'entry': encode({...dimension}) } }}))
           default:
             break;
         }
@@ -263,7 +266,7 @@ export class MockFactory {
         }
         mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
         mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
-        mockStore.setAppletConfigDimensions = (dimensions: any, subjectivity: string) => { mockStore.client = mockClient(dimensions, subjectivity);};
+        mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions);};
       default:
         return mockStore;
     }
