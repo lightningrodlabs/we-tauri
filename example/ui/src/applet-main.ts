@@ -18,6 +18,10 @@ export class AppletMain extends LitElement {
   @state()
   highInterval: number | null = null;
 
+  firstUpdated() {
+    console.log("@firstUpdated in example applet: Hello.");
+  }
+
   sendUrgentNotification(delay: number) {
     const notification: WeNotification = {
       title: "Title",
@@ -74,7 +78,15 @@ export class AppletMain extends LitElement {
       <div class="column">
         <div class="row">
           <create-post></create-post>
-          <all-posts></all-posts>
+          <all-posts
+              @notification=${(e: CustomEvent) => {
+                console.log("@applet-main: got notification event from all-posts: ", e);
+                this.dispatchEvent(new CustomEvent('notification', {
+                  detail: e.detail,
+                  bubbles: true,
+                }))
+              }}
+          ></all-posts>
         </div>
 
         <div class="column center-content" style="margin-top: 50px;">

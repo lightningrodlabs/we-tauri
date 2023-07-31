@@ -85,6 +85,7 @@ async function appletViews(
                 });
               }}
               @notification=${async (e: CustomEvent) => {
+                console.log("@example-app: @index.ts: Got notification event: ", e);
                 weServices.notifyWe(e.detail);
               }}
             ></applet-main>

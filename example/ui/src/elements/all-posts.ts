@@ -55,6 +55,10 @@ export class AllPosts extends LitElement {
         ${hashes.map(
           (hash) =>
             html`<post-summary
+              @notification=${(e: CustomEvent) => this.dispatchEvent(new CustomEvent('notification', {
+                detail: e.detail,
+                bubbles: true,
+              }))}
               .postHash=${hash}
               style="margin-bottom: 16px;"
             ></post-summary>`
