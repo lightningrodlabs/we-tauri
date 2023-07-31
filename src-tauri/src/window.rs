@@ -1,7 +1,10 @@
 use tauri::{AppHandle, Window, WindowBuilder, WindowUrl, Manager};
-use crate::{filesystem::Profile, APP_NAME};
+use crate::{filesystem::{Profile, WeFileSystem}, APP_NAME};
 
-pub fn build_main_window(app_handle: &AppHandle) -> Result<Window, tauri::Error> {
+pub fn build_main_window(
+    app_handle: &AppHandle,
+    we_fs: tauri::State<'_, WeFileSystem>,
+) -> Result<Window, tauri::Error> {
     let profile = app_handle.state::<Profile>().inner().to_owned();
 
     let title = if profile.as_str() == "default" {
@@ -14,5 +17,6 @@ pub fn build_main_window(app_handle: &AppHandle) -> Result<Window, tauri::Error>
         .title(title)
         .disable_file_drop_handler()
         .inner_size(1536.0, 900.0)
+        .data_directory(we_fs.app_data_dir())
         .build()
 }
