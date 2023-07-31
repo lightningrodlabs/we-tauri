@@ -2,8 +2,7 @@ use tauri::{AppHandle, Window, WindowBuilder, WindowUrl, Manager};
 use crate::{filesystem::{Profile, WeFileSystem}, APP_NAME};
 
 pub fn build_main_window(
-    app_handle: &AppHandle,
-    we_fs: tauri::State<'_, WeFileSystem>,
+    app_handle: &AppHandle
 ) -> Result<Window, tauri::Error> {
     let profile = app_handle.state::<Profile>().inner().to_owned();
 
@@ -12,6 +11,8 @@ pub fn build_main_window(
     } else {
         format!("{} - {}", APP_NAME, profile)
     };
+
+    let we_fs = app_handle.state::<WeFileSystem>();
 
     WindowBuilder::new(app_handle, "main", WindowUrl::App("index.html".into()))
         .title(title)

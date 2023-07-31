@@ -111,7 +111,7 @@ export class GroupAppletsSidebar extends LitElement {
                     .appletHash=${appletStore.appletHash}
                     .notificationUrgency=${appletNotificationState[0]}
                     .notificationCount=${appletNotificationState[1]}
-                    style="z-index: 1;"
+                    style="z-index: 1; --size: 58px;"
                   ></applet-logo-raw>
                 </topbar-button>
               `
