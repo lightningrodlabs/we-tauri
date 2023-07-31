@@ -22,6 +22,10 @@ import { WeGroupSettings } from "./we-group-settings";
 import { NHCard } from "../components/nh/layout/card";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { NHDialog } from "../components/nh/layout/dialog";
+import { NHButton } from "../components/nh/layout/button";
+import { NHMenu } from "../components/nh/layout/menu";
+import { backArrow } from "../components/nh/layout/b64images";
+import { NHPageHeaderCard } from "../components/nh/layout/page-header-card";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -158,21 +162,27 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       <div class="flex-scrollable-parent">
       <slot name="applet-config"></slot>
         <div class="flex-scrollable-container">
-          <div class="flex-scrollable-y" style="display: flex; height: 100%;">
+          <div class="flex-scrollable-y" style="display: flex; height: 100%; padding: calc(1px * var(--nh-spacing-xl)); box-sizing: border-box">
             ${this._showLibrary
               ? html`
-                <div class="column" style="flex: 1; margin: 24px; position: relative">
-                  <sl-tooltip placement="right" content="Close Settings" hoist>
-                    <mwc-icon-button class="back-home" @click=${() => this._showLibrary = false} icon="arrow_back"></mwc-icon-button>
-                  </sl-tooltip>
+                <div class="column" style="display:grid;grid-template-rows: auto 1fr; width: 100%;">
+                  <nh-page-header-card
+                  .heading=${"Applet Library"}
+                  >
+                    <img
+                      src="data:image/svg+xml;base64,${backArrow}"
+                      slot="secondary-action"
+                      @click=${() => this._showLibrary = false}
+                    />
+                    <nh-button
+                      .label=${"Upload Applet File"}
+                      .variant=${"primary"}
+                      .size=${"md"}
+                      .clickHandler=${() => this._installFromFsDialog.open()}
+                      slot="primary-action"
+                    ></nh-button>
+                  </nh-page-header-card>
 
-                  <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
-                  </div>
-
-                  <div class="row center-content" style="margin-top: 10px;"><h2>Applet Library</h2></div>
-
-                  <hr style="width: 100%" />
                   <installable-applets></installable-applets>
 
                   <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
@@ -324,6 +334,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-linear-progress": LinearProgress,
       // "list-agents-by-status": ListAgentsByStatus,
+      'nh-page-header-card': NHPageHeaderCard,
+      'nh-menu': NHMenu,
+      'nh-button': NHButton,
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,

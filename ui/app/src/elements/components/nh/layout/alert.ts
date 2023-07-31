@@ -30,9 +30,15 @@ export class NHAlert extends NHComponentShoelace {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-      #main::part(base) {
+    
+    #main::part(message) {
+      --sl-spacing-large: calc(1px * var(--nh-spacing-md));
+    }
+    #main::part(base) {
+        --nh-menu-sub-title: #eeebef;
+
         --sl-color-primary-600: var(--nh-theme-accent-muted);
-        background-color: var(--nh-theme-menu-sub-title);
+        background-color: var(--nh-menu-sub-title);
         margin-bottom: calc(1px * var(--nh-spacing-xl));
         border-width: 0;
         --sl-panel-border-width: calc(1px * var(--nh-spacing-md));

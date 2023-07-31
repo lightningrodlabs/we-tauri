@@ -4,6 +4,7 @@ import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType, NHAlert } from './alert';
+import { NHButton } from './button';
 
 enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
@@ -101,27 +102,27 @@ export class NHDialog extends NHComponentShoelace {
           >
             ${this.chooseButtonText().secondary}
           </sl-button>
-          <sl-button
+          <nh-button
             id="primary-action-button"
-            size="large"
-            variant="primary"
-            @click=${this.onOkClicked}
+            .size=${"md"}
+            .variant=${"primary"}
+            .clickHandler=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
+            .label=${this.chooseButtonText().primary}
+            >
+            </nh-button>
+            </sl-button-group>`;
+            case 'widget-config' === this.dialogType:
+              return html`<sl-button-group id="buttons">
+          <nh-button
+          id="primary-action-button"
+          size=${"md"}
+          variant=${"primary"}
+          .clickHandler=${this.onOkClicked}
+          ?disabled=${this.primaryButtonDisabled}
+          .label=${this.chooseButtonText().primary}
           >
-          ${this.chooseButtonText().primary}
-          </sl-button>
-        </sl-button-group>`;
-      case 'widget-config' === this.dialogType:
-        return html`<sl-button-group id="buttons">
-          <sl-button
-            id="primary-action-button"
-            size="large"
-            variant="primary"
-            @click=${this.onOkClicked}
-            ?disabled=${this.primaryButtonDisabled}
-          >
-          ${this.chooseButtonText().primary}
-          </sl-button>
+          </nh-button>
         </sl-button-group>`;
 
       default:
@@ -178,6 +179,7 @@ export class NHDialog extends NHComponentShoelace {
       'nh-alert': NHAlert,
       'sl-button-group': SlButtonGroup,
       'sl-button': SlButton,
+      'nh-button': NHButton,
     };
   }
 

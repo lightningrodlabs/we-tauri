@@ -22,6 +22,7 @@ import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
 import { fakeMd5SeededEntryHash } from '../../utils';
 import { NHDialog } from '../components/nh/layout/dialog';
 import { SlButton, SlInput, SlTextarea } from '@scoped-elements/shoelace';
+import { NHButton } from '../components/nh/layout/button';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -78,12 +79,12 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     return !this._installedAppIdField || this._duplicateName || !this._fileBytes;
   }
 
-  checkValidity(_newValue, _nativeValidity) {
+  checkValidity(newValue) {
     if (this._allApplets.value) {
       const allNames = this._allApplets.value!.map(
         ([_appletEntryHash, applet]) => applet.customName,
       );
-      if (allNames.includes(this._installedAppIdField.value)) {
+      if (allNames.includes(newValue)) {
         this._duplicateName = true;
         return {
           valid: false,
@@ -202,28 +203,33 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
               @sl-input=${e => this.requestUpdate()}
               required
               autofocus
-              .validityTransform=${(newValue, nativeValidity) =>
-                this.checkValidity(newValue, nativeValidity)}
+              @sl-change=${(e) => this.checkValidity(e.target.value)}
             ></sl-input>
             ${this._duplicateName
               ? html`<div
                   class="default-font"
-                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
+                  style="margin-bottom: 16px; color: var(--nh-theme-error-emphasis); font-size: calc(1px * var(--nh-font-size-base));"
                 >
                   Name already exists.
                 </div>`
               : html``}
             <sl-textarea id="description-field" label="Description"> </sl-textarea>
-            <span>Select file:</span>
-            <input type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes} />
-            ${this._fileBytes
-              ? html``
-              : html`<div
-                  class="default-font"
-                  style="color: #b10323; font-size: 12px; margin-left: 4px;"
-                >
-                  No file selected.
-                </div>`}
+            <div style="display: flex; justify-content: space-between">
+              <div style="display: flex; flex-direction: column; gap: calc(1px * var(--nh-spacing-md))">
+                <span class="label">Select file</span>
+                ${this._fileBytes
+                  ? html``
+                  : html`<div
+                      class="default-font"
+                      style="color: var(--nh-theme-error-emphasis); font-size: calc(1px * var(--nh-font-size-base));"
+                    >
+                      No file selected.
+                    </div>`}
+              </div>
+              <nh-button .disabled=${this._fileBytes} .variant=${"primary"} .label=${!this._fileBytes ? "Choose File" : "File Chosen"} .size=${"md"} .clickHandler=${() => {} } @click=${(e) => {if (this._fileBytes) return; e.currentTarget.nextElementSibling.click()}}>
+              </nh-button>
+              <input style="display:none;" type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes} />
+            </div>
           </div>
         </div>
       </nh-dialog>
@@ -241,7 +247,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       'mwc-snackbar': Snackbar,
       'mwc-circular-progress': CircularProgress,
       'mwc-textarea': TextArea,
-      'sl-button': SlButton,
+      'nh-button': NHButton,
     };
   }
 
@@ -283,8 +289,9 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         margin: 0 calc(1px * var(--nh-spacing-xs));
         padding: calc(1px * var(--nh-spacing-xs));
       }
-      *::part(label) {
+      *::part(label), span.label {
         --sl-spacing-3x-small: calc(1px * var(--nh-spacing-xl));
+        font-size: calc(1px * var(--nh-font-size-base));
       }
       sl-input::part(input)::placeholder {
         color: var(--nh-theme-input-placeholder);
