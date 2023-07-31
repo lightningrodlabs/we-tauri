@@ -31,7 +31,13 @@ export default defineConfig({
     globals: true,
     deps: {
         inline: [/@neighbourhoods/, /@scoped-elements\/shoelace/]
-      }
+      },
+    environment: 'jsdom',
+    include: ['./src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+    ],
   },
   plugins: [
     // checker({
