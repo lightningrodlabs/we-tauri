@@ -398,13 +398,5 @@ describe('SensemakerDashboard', () => {
       const rowElements = dom.window.document.querySelectorAll('table tbody tr');
       expect(rowElements.length).toBe(2);
     });
-
-
-    test(`And When the TableType is set to Context`, async () => {
-      const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
-      // toBeTestedSubComponent.__tableType = 'context';
-      // debugger;
-      // const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
-    });
   });
 });
