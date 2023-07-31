@@ -111,6 +111,7 @@ export interface AppletInstanceInfo {
   appInfo: AppInfo; // InstalledAppInfo
   applet: Applet;
   federatedGroups: DnaHash[];
+  appAgentWebsocket?: AppAgentClient;
 }
 
 export interface UninstalledAppletInstanceInfo {
@@ -429,21 +430,45 @@ export class MatrixStore {
     const weGroupId =
       this.getWeGroupInfoForAppletInstance(appletInstanceId).cell_id[0];
     const [_weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
-    const appInfo = appInstanceInfos.find(
+    const appInstanceInfo = appInstanceInfos.find(
       (info) =>
         JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
-    )!.appInfo;
+    )!;
+    const appInfo = appInstanceInfo.appInfo;
+    
+    let appletAppAgentWebsocket: AppAgentClient;
+    
+    // check if the applets app agent websocket has been instantiated yet
+    if (!appInstanceInfo.appAgentWebsocket) {
 
-    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      //instantiate the websocket
+      console.log('app agent websocket not instantiated yet');
+      const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+      appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      this._matrix.update((matrix) => {
+        matrix.get(weGroupId)[1].find(
+          (info) =>
+            JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
+        )!.appAgentWebsocket = appletAppAgentWebsocket;
+        return matrix;
+      })
+
+      // authorize signing credentials for all cells in the applet happ
+      for (const roleName in appInfo.cell_info) {
+        for (const cellInfo of appInfo.cell_info[roleName]) {
+          await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        }
+      }
+    }
+    else {
+      appletAppAgentWebsocket = appInstanceInfo.appAgentWebsocket;
+    }
 
     const renderers = await gui.appletRenderers(
+      weServices,
+      [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
       this.appWebsocket,
       appletAppAgentWebsocket,
-      this.adminWebsocket,
-      weServices,
-      //@ts-ignore
-      [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }]
     );
 
     return renderers;
@@ -471,10 +496,9 @@ export class MatrixStore {
     // 2. create the renderers and return them
 
     const renderers = await gui.appletRenderers(
-      this.appWebsocket,
-      this.adminWebsocket,
       {},
-      this.getInstalledAppletInfoListForClass(devhubHappReleaseHash)
+      this.getInstalledAppletInfoListForClass(devhubHappReleaseHash),
+      this.appWebsocket,
     );
 
     return renderers;
@@ -753,18 +777,18 @@ export class MatrixStore {
         const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
         await this.adminWebsocket.authorizeSigningCredentials(sensemakerGroupCellId)
-        const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-        sensemakerStore.registerWidget(
-          [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-          TotalThumbsUpDimensionDisplay,
-          ThumbsUpDimenionAssessment,
-        );
+        // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
+        // sensemakerStore.registerWidget(
+        //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
+        //   TotalThumbsUpDimensionDisplay,
+        //   ThumbsUpDimenionAssessment,
+        // );
 
-        sensemakerStore.registerWidget(
-          [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-          AverageStarDimensionDisplay,
-          StarDimensionAssessment,
-        );
+        // sensemakerStore.registerWidget(
+        //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
+        //   AverageStarDimensionDisplay,
+        //   StarDimensionAssessment,
+        // );
 
 
         // create WeGroupData object
@@ -1095,17 +1119,17 @@ export class MatrixStore {
 
     // Delay widget registration until new Sensemaker cell is cached.
     setTimeout(async () => {
-      const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-      sensemakerStore.registerWidget(
-        [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-        TotalThumbsUpDimensionDisplay,
-        ThumbsUpDimenionAssessment,
-      );
-      sensemakerStore.registerWidget(
-        [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-        AverageStarDimensionDisplay,
-        StarDimensionAssessment,
-        );
+      // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
+      // sensemakerStore.registerWidget(
+      //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
+      //   TotalThumbsUpDimensionDisplay,
+      //   ThumbsUpDimenionAssessment,
+      // );
+      // sensemakerStore.registerWidget(
+      //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
+      //   AverageStarDimensionDisplay,
+      //   StarDimensionAssessment,
+      //   );
       }, 1500);
     
     this._matrix.update((matrix) => {
@@ -1254,26 +1278,42 @@ export class MatrixStore {
         network_seed: networkSeed,
       };
 
-      this.adminWebsocket
-        .installApp(request)
-        .then(
-          async (appInfo) => {
-            const installedCells = appInfo.cell_info;
-            await Promise.all(
-              Object.keys(installedCells).map(roleName => {
-                installedCells[roleName].map(cellInfo => {
-                  this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-                })
-              })
-            );
+      try {
+        const appInfo = await this.adminWebsocket.installApp(request);
+        const installedCells = appInfo.cell_info;
+        for (const [roleName, cells] of Object.entries(installedCells)) {
+          for (const cellInfo of cells) {
+            await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
           }
-        )
-        .catch((e) => {
+        }
+
+      } 
+      catch (e: any) {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
             throw new Error(e);
           }
-        });
+      }     
+
+
+      // this.adminWebsocket
+      //   .installApp(request)
+      //   .then(
+      //     async (appInfo) => {
+      //       const installedCells = appInfo.cell_info;
+      //       for (const [roleName, cells] of Object.entries(installedCells)) {
+      //         for (const cellInfo of cells) {
+      //           await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+      //         }
+      //       }
+      //     }
+      //   )
+      //   .catch((e) => {
+      //     // exact same applet can only be installed once to the conductor
+      //     if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
+      //       throw new Error(e);
+      //     }
+      //   });
 
       const enabledAppInfo = await this.adminWebsocket.enableApp({
         installed_app_id: installedAppId,
@@ -1299,11 +1339,14 @@ export class MatrixStore {
         guiToCommit
       );
 
+      const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+      const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
       const appInstanceInfo: AppletInstanceInfo = {
         appletId: appletInstanceId,
         appInfo: appInfo,
         applet: newAppletInfo.applet,
         federatedGroups: newAppletInfo.federatedGroups,
+        appAgentWebsocket: appletAppAgentWebsocket,
       };
       // update stores
       // update _matrix
@@ -1462,11 +1505,14 @@ export class MatrixStore {
       registerAppletInput
     );
 
+    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
+    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
     const appInstanceInfo: AppletInstanceInfo = {
       appletId: appletInstanceId,
       appInfo: appInfo,
       applet: applet,
       federatedGroups: [],
+      appAgentWebsocket: appletAppAgentWebsocket,
     };
 
     // update stores

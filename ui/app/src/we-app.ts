@@ -26,23 +26,17 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
     
     // authorize signing credentials for all cells
-    await Promise.all(
-      Object.keys(weAppInfo.cell_info).map(roleName => {
-        console.log("role name from mapping", roleName)
-        weAppInfo.cell_info[roleName].map(async (cellInfo) => {
-          console.log("cell info from mapping", cellInfo)
-          await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-        })
-      })
-    );
+    
+    for (const roleName in weAppInfo.cell_info) {
+      for (const cellInfo of weAppInfo.cell_info[roleName]) {
+        await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+      }
+    }
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
     
-    setTimeout(() => {
-      this.loading = false;
-    }, 200);
-    // this.loading = false;
+    this.loading = false;
   }
 
   render() {
