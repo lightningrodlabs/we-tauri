@@ -215,7 +215,7 @@ export class MainDashboard extends NHComponentShoelace {
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
-      return html` ${this.renderAppletClassListSecondary(this._allAppletClasses.value.values())} `;
+      return html``;
     }
   }
 
