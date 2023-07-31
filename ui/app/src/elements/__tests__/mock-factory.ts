@@ -54,18 +54,18 @@ export class MockFactory {
   }
 
   static createAppletConfig(
-    seed: number = 0,
-    name = 'An applet' + (seed + 1),
+    seed: number = 1,
+    name = 'An applet' + (seed),
     role_name = testAppletBaseRoleName,
-    // installed_app_id = testAppletBaseRoleName + (seed + 1),
-    ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
-    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
+    // installed_app_id = testAppletBaseRoleName + (seed),
+    ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
+    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
     resource_defs = {
-      ['my_resource_def' + (seed + 1)]: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),
-      ['another_resource_def' + (seed + 1)]: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),
+      ['my_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
+      ['another_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
     },
-    methods = { my_method: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
-    cultural_contexts = { my_context: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))) },
+    methods = { my_method: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
+    cultural_contexts = { my_context: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
   ): AppletConfig {
     return {
       name: name,
@@ -79,8 +79,8 @@ export class MockFactory {
   }
 
   static createAppletConfigDict(
-    seed = 0,
-    appletInstanceIds = [...new Array(seed + 1)].map(
+    seed = 1,
+    appletInstanceIds = [...new Array(seed)].map(
       (testConfig, idx) => testAppletBaseRoleName + (idx + 1),
     ),
   ): { [appletInstanceId: string]: AppletConfig } {

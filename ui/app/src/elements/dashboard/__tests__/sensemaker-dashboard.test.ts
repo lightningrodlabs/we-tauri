@@ -73,6 +73,7 @@ describe('SensemakerDashboard', () => {
     mockFetchAppletsResponse = MockFactory.mockStoreResponse('getAppletInstanceInfosForGroup');
     mockSensemakerResponse = MockFactory.mockStoreResponse('matrix-sensemaker-for-we-group-id');
 
+    // Make a reusable mock store object that has constituent mock data streams as created by the MockFactory
     mockStore = {
       getAppletInstanceInfosForGroup: vi.fn(() => mockFetchAppletsResponse),
       sensemakerStore: vi.fn((weGroupId: DnaHash | undefined) => mockSensemakerResponse),
@@ -133,7 +134,7 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  describe('Given a MatrixStore with an applet (AppletConfig has two resources) with no assessments in SM store', () => {
+  describe('Given a MatrixStore with 1 applet (AppletConfig has 2 resources) with 0 assessments in SM store', () => {
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
@@ -168,7 +169,7 @@ describe('SensemakerDashboard', () => {
       expect(elements[0].textContent).toBe(applet.customName);
     });
 
-    test(`And the 1 Sensemaker sub-menu has 1 sub-nav below`, async () => {
+    test(`And the 1 Sensemaker sub-menu has 1 sub-nav below it`, async () => {
       const dom = await renderAndReturnDom(component, false);
 
       const elements = dom.window.document.querySelectorAll(
@@ -179,9 +180,11 @@ describe('SensemakerDashboard', () => {
 
     test(`And the 1 sub-nav has as many nav items as there are Resource Definitions in the AppletConfig`, async () => {
       const dom = await renderAndReturnDom(component, false);
+
       const appletConfigs: { [appletInstanceId: string]: AppletConfig } =
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
+
       const resourceDefsLength = Object.values(config.resource_defs).length;
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
@@ -191,11 +194,12 @@ describe('SensemakerDashboard', () => {
 
     test(`And the 1 sub-nav item has the same text values as the Resource Definitions in the AppletConfig`, async () => {
       const dom = await renderAndReturnDom(component, false);
+
       const appletConfigs: { [appletInstanceId: string]: AppletConfig } =
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
-      const resourceDefNames = Object.keys(config.resource_defs);
 
+      const resourceDefNames = Object.keys(config.resource_defs);
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
       );
@@ -215,7 +219,91 @@ describe('SensemakerDashboard', () => {
     });
   });
 
-  describe('Given a MatrixStore with an applet (AppletConfig has two resources) and two assessments in SM store and No Dimensions', () => {
+  describe('Given a MatrixStore with 2 applets (AppletConfigs each have 2 resources) with 0 assessments in SM store', () => {
+    beforeAll(async () => {
+      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(2));
+      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
+      const mockSMStore: any = get(mockSensemakerResponse.store());
+      mockSMStore.setAppletConfigs(mockAppletConfigs);
+    });
+
+    test(`Then the Sensemaker sub-menu has 2 items`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
+      );
+      expect(elements.length).toBe(2);
+    });
+
+    test(`And of the 2 Sensemaker sub-menu items, only the first has an active state`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+
+      const menuItems = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
+      );
+      expect(menuItems[0].classList.contains('active')).toBe(true);
+      expect(menuItems[1].classList.contains('active')).toBe(false);
+    });
+
+    test(`And the 2 Sensemaker sub-menu items have the same text values as the Applet names`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
+      );
+      const applets = (get(mockFetchAppletsResponse) as any).map(
+        appletInstanceInfo => appletInstanceInfo.applet,
+      );
+      const appletNames = applets.map(applet => applet.customName);
+      expect([...elements].map(node => node.textContent.trim())).eql(appletNames);
+    });
+
+    test(`And the 2 Sensemaker sub-menus each have 1 sub-nav below`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+
+      const elements = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) >  sl-menu-item + .sub-nav`,
+      );
+      expect(elements.length).toBe(2);
+    });
+
+    test(`And the 2 sub-navs each have as many nav items as there are Resource Definitions in the AppletConfigs`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
+      const resourceDefsLengths = appletConfigs.map(
+        config => Object.entries(config.resource_defs).length,
+      );
+
+      const subnavs = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
+      );
+      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
+      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
+      expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
+      expect(secondNavMenuItems.length).toBe(resourceDefsLengths[1]);
+    });
+
+    test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
+      const dom = await renderAndReturnDom(component, false);
+      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs);
+      const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
+
+      const subnavs = dom.window.document.querySelectorAll(
+        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
+      );
+      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
+      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
+      expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
+        resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
+      );
+      expect([...secondNavMenuItems].map(node => node.textContent.trim())).eql(
+        resourceDefNames[1].map(name => cleanResourceNameForUI(name)),
+      );
+    });
+  });
+
+  describe('Given a MatrixStore with 1 applet (AppletConfig has 2 resources) and 2 assessments in SM store and 0 dimensions configured', () => {
     beforeAll(async () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
@@ -298,126 +386,6 @@ describe('SensemakerDashboard', () => {
         'All Resources', // The resource name
         'Member',
       ]);
-    });
-  });
-  // describe('Given a MatrixStore with three resources and two assessments each resource', () => {
-  //   beforeEach(async () => {
-  //     mockStore = mockMatrixStore.resourceAssessments();
-  //     mockStore.mockSetSubscribeValue(mockAssessments);
-  //     toBeTestedSubComponent = componentDom.renderRoot.querySelector("#" + subComponentId);
-  //   });
-
-  // test(`Then state is initialized`, async () => {
-  //   expect(mockMatrixStore.resourceAssessments).toHaveBeenCalled();
-
-  //   expect(mockStore.value[mockResourceName].length).toEqual(2);
-  //   expect(componentDom.tableStore).toBeDefined();
-  //   expect(componentDom.tableStore.records.length).toEqual(2);
-  // });
-
-  // test('And it renders a header row', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr`);
-  //   expect(elements.length).toBe(1);
-  // });
-  // test('And the header row has the correct number of columns ', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-  //   expect(elements.length).toBe(4);
-  // });
-  // test('And the header row has the correct column headings ', async () => {
-  //   const dom = await renderAndReturnDom(component, 'adaburrows-table');
-  //   const elements = dom.window.document.querySelectorAll(`thead tr th`);
-  //   expect([...elements].map((node) => node.textContent.trim())).eql([
-  //     "Value",
-  //     "Dimension",
-  //     "Resource",
-  //     "Author",
-  //   ]);
-  // });
-  // });
-
-  describe('Given a MatrixStore with 2 applets (AppletConfigs each have one resource) with no assessments in SM store', () => {
-    beforeAll(async () => {
-      mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(2));
-      mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfigs);
-      const mockSMStore: any = get(mockSensemakerResponse.store());
-      mockSMStore.setAppletConfigs(mockAppletConfigs);
-    });
-
-    test(`Then the Sensemaker sub-menu has 2 items`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-
-      const elements = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
-      );
-      expect(elements.length).toBe(2);
-    });
-
-    test(`And of the 2 Sensemaker sub-menu items, only the first has an active state`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-
-      const menuItems = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
-      );
-      expect(menuItems[0].classList.contains('active')).toBe(true);
-      expect(menuItems[1].classList.contains('active')).toBe(false);
-    });
-
-    test(`And the 2 Sensemaker sub-menu items have the same text values as the Applet names`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-
-      const elements = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > sl-menu-item`,
-      );
-      const applets = (get(mockFetchAppletsResponse) as any).map(
-        appletInstanceInfo => appletInstanceInfo.applet,
-      );
-      const appletNames = applets.map(applet => applet.customName);
-      expect([...elements].map(node => node.textContent.trim())).eql(appletNames);
-    });
-
-    test(`And the 2 Sensemaker sub-menus each have 1 sub-nav below`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-
-      const elements = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) >  sl-menu-item + .sub-nav`,
-      );
-      expect(elements.length).toBe(2);
-    });
-
-    test(`And the 2 sub-navs each have as many nav items as there are Resource Definitions in the AppletConfigs`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
-      const resourceDefsLengths = appletConfigs.map(
-        config => Object.entries(config.resource_defs).length,
-      );
-
-      const subnavs = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
-      );
-      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
-      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
-      expect(firstNavMenuItems.length).toBe(resourceDefsLengths[0]);
-      expect(secondNavMenuItems.length).toBe(resourceDefsLengths[1]);
-    });
-
-    test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
-      const dom = await renderAndReturnDom(component, false);
-      const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs);
-      const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
-
-      const subnavs = dom.window.document.querySelectorAll(
-        `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
-      );
-      const firstNavMenuItems = subnavs[0].querySelectorAll('.nav-item');
-      const secondNavMenuItems = subnavs[1].querySelectorAll('.nav-item');
-      expect([...firstNavMenuItems].map(node => node.textContent.trim())).eql(
-        resourceDefNames[0].map(name => cleanResourceNameForUI(name)),
-      );
-      expect([...secondNavMenuItems].map(node => node.textContent.trim())).eql(
-        resourceDefNames[1].map(name => cleanResourceNameForUI(name)),
-      );
     });
   });
 });

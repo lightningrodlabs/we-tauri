@@ -136,7 +136,7 @@ describe('StatefulTable', () => {
       expect(elements.length).toBe(2);
     });
 
-    test(`Then state can be mutated by adding an assessment`, async () => {
+    test(`When state is mutated by adding an assessment Then the TableStore state is changed`, async () => {
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore.records.length).toEqual(2);
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
@@ -160,7 +160,7 @@ describe('StatefulTable', () => {
       expect(elements.length).toBe(3);
     });
 
-    test(`Then state can be mutated by removing an assessment`, async () => {
+    test(`When state is mutated by removing an assessment Then the TableStore state is changed`, async () => {
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore.records.length).toEqual(2);
       mockStore.mockSetSubscribeValue(removedAssessment(mockAssessments, mockResourceName));
