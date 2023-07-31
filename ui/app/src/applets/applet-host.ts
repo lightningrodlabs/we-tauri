@@ -24,8 +24,9 @@ import { HoloHashMap } from "@holochain-open-dev/utils";
 import { AppOpenViews } from "../layout/types.js";
 import { AppletIframeProtocol, notifyTauri, signZomeCallTauri } from "../tauri.js";
 import { WeStore } from "../we-store.js";
-import { Applet, NotifiactionSettings, NotificationLevel, NotificationSettingsStorage, NotificationStorage, NotificationTimestamp } from "./types.js";
+import { AppletNotificationSettings } from "./types.js";
 import { AppletHash, AppletId } from "../types.js";
+import { getAppletNotificationSettings, storeAppletNotifications, validateNotifications } from "../utils.js";
 import { AppletStore } from "./applet-store.js";
 
 function getAppletIdFromOrigin(
@@ -154,8 +155,8 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
         .filter((h) => !!h);
       return hrls;
     },
-    async notify(message: WeNotification) {
-      console.error("notify is not implemented on headless WeServices.");
+    async notifyWe(notifications: Array<WeNotification>) {
+      throw new Error("notify is not implemented on headless WeServices.");
     },
     attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
     openViews: {
@@ -259,78 +260,45 @@ export async function handleAppletIframeMessage(
       break;
     case "search":
       return services.search(message.filter);
-    case "notify":
-      const appletId = encodeHashToBase64(appletHash);
+    case "notify-we":
+      const appletId: AppletId = encodeHashToBase64(appletHash);
 
-      // add notification to localStorage (pre-filtered by urgency level for efficiency)
-      const notificationStorageJson = window.localStorage.getItem("notifications");
-      const notificationsStorage: NotificationStorage = notificationStorageJson
-        ? JSON.parse(notificationStorageJson)
-        : {};
-
-      const appletNotifications: Record<NotificationLevel, Array<[WeNotification, NotificationTimestamp]>> = notificationsStorage[appletId] ?
-        notificationsStorage[appletId] :
-        { "low": [], "medium": [], "high": [] };
-
-      switch (message.message.urgency) {
-        case "low":
-          if (appletNotifications.low) {
-            appletNotifications.low.push([message.message, Date.now()])
-          } else {
-            appletNotifications["low"] = [[message.message, Date.now()]];
-          }
-          break;
-        case "medium":
-          if (appletNotifications.medium) {
-            appletNotifications.medium.push([message.message, Date.now()])
-          } else {
-            appletNotifications["medium"] = [[message.message, Date.now()]]
-          }
-          break;
-        case "high":
-          if (appletNotifications.low) {
-            appletNotifications.high.push([message.message, Date.now()])
-          } else {
-            appletNotifications["high"] = [[message.message, Date.now()]];
-          }
-          break;
+      if (!message.notifications) {
+        throw new Error(`Got notification message without notifications attribute: ${JSON.stringify(message)}`)
       }
 
-      notificationsStorage[appletId] = appletNotifications;
-      window.localStorage.setItem("notifications", JSON.stringify(notificationsStorage));
+      // add notifications to unread messages and store them in the persisted notifications log
+      const notifications: Array<WeNotification> = message.notifications;
+      validateNotifications(notifications); // validate notifications to ensure not to corrupt localStorage
+      storeAppletNotifications(notifications, appletId);
 
-
-      // send notification to tauri for systray dot and/or OS notification
-      const notificationSettingsJson = window.localStorage.getItem("notificationSettings");
-      const notificationSettings: NotificationSettingsStorage = notificationSettingsJson
-        ? JSON.parse(notificationSettingsJson)
-        : {};
-
-      const appletNotificationSettings: NotifiactionSettings = notificationSettings[appletId]
-        ? notificationSettings[appletId]
-        : {
-          allowOSNotification: true,
-          showInSystray: true,
-          showInGroupSidebar: true,
-          showInAppletSidebar: true,
-          showInGroupHomeFeed: true,
-        };
+      // trigger OS notification if allowed by the user and notification is fresh enough (less than 10 minutes old)
+      const appletNotificationSettings: AppletNotificationSettings = getAppletNotificationSettings(appletId);
 
       let appletStore: AppletStore | undefined;
       try {
         appletStore = await toPromise(weStore.applets.get(appletHash));
       } catch (e) {
-        console.warn("Failed to fetch applet icon in notification hook: ", (e as any).toString());
+        console.warn("Failed to fetch AppletStore in notify hook: ", (e as any).toString());
       }
 
-      // TODO implement sending the Applet Icon to tauri for display in the notification
-      await notifyTauri(
-        message.message,
-        appletNotificationSettings.showInSystray,
-        appletNotificationSettings.allowOSNotification && message.message.urgency === "high",
-        // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
-        appletStore ? appletStore.applet.custom_name : undefined
-      );
+      console.log("Got notifications @applet-host: ", notifications);
+
+      await Promise.all(notifications.map(async (notification) => {
+        // check whether it's actually a new event or not. Events older than 5 minutes won't trigger an OS notification
+        // because it is assumed that they are emitted by the Applet UI upon startup of We and occurred while the
+        // user was offline
+        if ((Date.now() - notification.timestamp) < 300000) {
+          console.log("notifying tauri");
+          await notifyTauri(
+            notification,
+            appletNotificationSettings.showInSystray,
+            appletNotificationSettings.allowOSNotification && notification.urgency === "high",
+            // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
+            appletStore ? appletStore.applet.custom_name : undefined
+          );
+        }
+      }))
       return;
     case "get-applet-info":
       return services.appletInfo(message.appletHash);

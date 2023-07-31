@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { state, property, customElement } from "lit/decorators.js";
-import { EntryHash, Record, ActionHash } from "@holochain/client";
+import { EntryHash, Record, ActionHash, ActionHashB64, encodeHashToBase64 } from "@holochain/client";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { hashProperty, sharedStyles } from "@holochain-open-dev/elements";
@@ -15,6 +15,7 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import { PostsStore } from "../posts-store";
 import { postsStoreContext } from "../context";
 import { Post } from "../types";
+import { WeNotification } from "@lightningrodlabs/we-applet";
 
 /**
  * @element post-summary
@@ -43,6 +44,27 @@ export class PostSummary extends LitElement {
   );
 
   renderSummary(entryRecord: EntryRecord<Post>) {
+    // send notifications if necessary
+    let knownPostsJSON: string | null = window.localStorage.getItem("knownPosts");
+    let knownPosts: Array<ActionHashB64> = knownPostsJSON ? JSON.parse(knownPostsJSON) : [];
+    const actionHashB64 = encodeHashToBase64(entryRecord.actionHash);
+    if (!knownPosts.includes(actionHashB64)) {
+      const notification: WeNotification = {
+        title: "New Post",
+        body: entryRecord.entry.title,
+        notification_type: "new post",
+        icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+        urgency: "high",
+        timestamp: entryRecord.action.timestamp/1000 // IMPORTANT: Convert to milliseconds here
+      };
+      this.dispatchEvent(new CustomEvent('notification', {
+        detail: [notification],
+        bubbles: true,
+      }));
+      knownPosts.push(actionHashB64);
+      window.localStorage.setItem("knownPosts", JSON.stringify(knownPosts));
+    }
+
     return html`
       <div style="display: flex; flex-direction: column">
         <div style="display: flex; flex-direction: column; margin-bottom: 16px">

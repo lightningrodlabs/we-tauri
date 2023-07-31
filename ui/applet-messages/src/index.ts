@@ -120,8 +120,8 @@ export type AppletToParentRequest =
       filter: string;
     }
   | {
-      type: "notify";
-      message: WeNotification;
+      type: "notify-we";
+      notifications: Array<WeNotification>;
   }
   | {
       type: "get-applet-info";

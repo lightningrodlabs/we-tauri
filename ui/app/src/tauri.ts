@@ -176,7 +176,7 @@ export async function notifyTauri(
   appletName: string | undefined,
 ): Promise<void> {
   try {
-    await invoke('notify', { message, systray, os, appletName });
+    await invoke('notify_tauri', { message, systray, os, appletName });
   } catch (e) {
     console.error("Failed to invoke tauri command 'notify': ", e);
   }

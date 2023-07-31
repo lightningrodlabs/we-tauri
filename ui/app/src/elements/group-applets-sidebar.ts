@@ -23,7 +23,7 @@ import { AppletStore } from "../applets/applet-store.js";
 import { GroupStore } from "../groups/group-store.js";
 import { groupStoreContext } from "../groups/context.js";
 import { NotificationStorage } from "../applets/types.js";
-import { clearAppletNotifications, getAppletNotificationState } from "../utils.js";
+import { clearAppletNotificationState, getAppletNotificationState } from "../utils.js";
 
 
 // Sidebar for the applet instances of a group
@@ -58,12 +58,6 @@ export class GroupAppletsSidebar extends LitElement {
       `
     }
 
-    // parse notification storage only once for all applets
-    const notificationStorageJson = window.localStorage.getItem("notifications");
-    const notificationsStorage: NotificationStorage = notificationStorageJson
-      ? JSON.parse(notificationStorageJson)
-      : {};
-
     return html`
       <div class="row" style="align-items: flex-end;">
         ${Array.from(applets.entries())
@@ -73,7 +67,7 @@ export class GroupAppletsSidebar extends LitElement {
           .map(
             ([_appletBundleHash, appletStore]) =>
             {
-              const appletNotificationState = getAppletNotificationState(notificationsStorage, encodeHashToBase64(appletStore.appletHash));
+              const appletNotificationState = getAppletNotificationState(encodeHashToBase64(appletStore.appletHash));
               return html`
                 <topbar-button
                   title="double-click to open in tab"
@@ -92,7 +86,7 @@ export class GroupAppletsSidebar extends LitElement {
                         composed: true,
                       })
                     );
-                    clearAppletNotifications(notificationsStorage, encodeHashToBase64(appletStore.appletHash));
+                    clearAppletNotificationState(encodeHashToBase64(appletStore.appletHash));
                   }}
                   @dblclick=${() => {
                     this.dispatchEvent(

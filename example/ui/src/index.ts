@@ -85,7 +85,7 @@ async function appletViews(
                 });
               }}
               @notification=${async (e: CustomEvent) => {
-                weServices.notify(e.detail);
+                weServices.notifyWe(e.detail);
               }}
             ></applet-main>
           `

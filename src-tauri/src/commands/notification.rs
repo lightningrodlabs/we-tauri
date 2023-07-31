@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use futures::lock::Mutex;
 use holochain_types::prelude::{ActionHashB64, ActionHash};
 use tauri::{AppHandle, Icon, Manager};
@@ -43,10 +45,10 @@ impl SysTrayIconState {
 
 
 #[tauri::command]
-pub async fn notify(
+pub async fn notify_tauri(
   window: tauri::Window,
   app_handle: AppHandle,
-  // we_fs: tauri::State<'_, WeFileSystem>,
+  we_fs: tauri::State<'_, WeFileSystem>,
   message: WeNotification,
   systray: bool,
   os: bool,
@@ -54,7 +56,7 @@ pub async fn notify(
   applet_name: Option<String>,
 ) -> WeResult<()> {
   if window.label() != "main" {
-    return Err(WeError::UnauthorizedWindow(String::from("notify")));
+    return Err(WeError::UnauthorizedWindow(String::from("notify_tauri")));
   }
 
   println!("Received notification request: {:?}", message);
@@ -111,6 +113,14 @@ pub async fn notify(
       None => notification = notification.title(message.title),
     }
 
+    // let icon_path = we_fs.icon_store().root_dir().join("uhCkkEYzzy0DoxAjfYrBj8SniQFJzQfMK7GjVfwjLE7xy13PFoiZl");
+    // let icon_path = PathBuf::from("home").join("matthias").join("Pictures").join("cleave2.png");
+    // match icon_path.into_os_string().into_string() {
+    //   Ok(path_string) => notification = notification.icon(path_string),
+    //   Err(e) => println!("Failed to convert icon_path into path_string: {:?}", e),
+    // }
+
+
     if let Some(icon_path) = app_handle.path_resolver().resolve_resource("icons/32x32.png") {
       match icon_path.into_os_string().into_string() {
         Ok(path_string) => notification = notification.icon(path_string),
@@ -148,7 +158,7 @@ pub async fn clear_systray_notification_state(
   app_handle: AppHandle,
 ) -> WeResult<()> {
   if window.label() != "main" {
-    return Err(WeError::UnauthorizedWindow(String::from("notify")));
+    return Err(WeError::UnauthorizedWindow(String::from("clear_systray_notification_state")));
   }
 
   // clear notification dots

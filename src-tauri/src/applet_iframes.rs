@@ -1,16 +1,12 @@
-use std::{convert::Infallible, net::SocketAddr};
-
-use bytes::Bytes;
+use std::net::SocketAddr;
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
-use http_body_util::Full;
 use hyper::{
     service::{make_service_fn, service_fn},
-    Body, Request, Response, Server,
+    Body, Response, Server,
 };
 use tauri::{AppHandle, Manager};
-use tokio::net::TcpListener;
 
 use crate::{
     error::{WeError, WeResult},
@@ -134,9 +130,9 @@ pub fn iframe() -> String {
           <head>
             <style>
               body {{
-                margin: 0; 
-                height: 100%; 
-                width: 100%; 
+                margin: 0;
+                height: 100%;
+                width: 100%;
                 display: flex;
               }}
             </style>

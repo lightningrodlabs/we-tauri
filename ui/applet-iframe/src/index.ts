@@ -222,10 +222,10 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
         type: "search",
         filter,
       }),
-    notify: (message: WeNotification) =>
+    notifyWe: (notifications: Array<WeNotification>) =>
       postMessage({
-        type: "notify",
-        message,
+        type: "notify-we",
+        notifications,
       })
   };
 }

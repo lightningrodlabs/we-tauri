@@ -15,7 +15,7 @@ import {
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
-import { NotificationLevel, NotificationStorage, NotificationTimestamp } from "./applets/types.js";
+import { AppletNotificationSettings, NotificationLevel, NotificationStorage, NotificationTimestamp } from "./applets/types.js";
 import { AppletId } from "./types.js";
 
 export async function initAppClient(
@@ -193,35 +193,125 @@ export function getDisabledClonedCells(appInfo: AppInfo): [string, CellInfo][] {
     .sort(([roleName_a, _cellInfo_a], [roleName_b, _cellInfo_b]) => roleName_a.localeCompare(roleName_b));
 }
 
+export function validateNotifications(notifications: Array<WeNotification>): void {
+    notifications.forEach((notification) => {
+      if (typeof notification.title !== "string") {
+        throw new Error("Received a notification with a title that's not of type string.")
+      }
+      if (typeof notification.body !== "string") {
+        throw new Error("Received a notification with a body that's not of type string.")
+      }
+      if (!["low", "medium", "high"].includes(notification.urgency)) {
+        throw new Error("Received a notification with an invalid urgency level. Valid urgency levels are ['low', 'medium', 'high'].")
+      }
+      if (notification.icon_src && typeof notification.icon_src !== "string") {
+        throw new Error("Received a notification an invalid icon_src attribute. Must be either of type string or undefined.")
+      }
+      // validate timestamp
+      if (typeof notification.timestamp !== "number") {
+        throw new Error(`Received a notification with a timestamp that's not a number: ${notification.timestamp}`)
+      } else if (!isMillisecondTimestamp(notification.timestamp)) {
+        throw new Error("Received a notification with a timestamp that's not in millisecond format.")
+      }
+    })
+}
+
+export function storeAppletNotifications(notifications: Array<WeNotification>, appletId: AppletId): void {
+  // store them to unread messages
+  const unreadNotificationsJson: string | null = window.localStorage.getItem(`appletNotificationsUnread#${appletId}`);
+  let unreadNotifications: Array<WeNotification>;
+
+  if (unreadNotificationsJson) {
+    unreadNotifications = JSON.parse(unreadNotificationsJson);
+    unreadNotifications = [...new Set([...unreadNotifications, ...notifications])]; // dedpulicated array
+  } else {
+    unreadNotifications = [...notifications];
+  }
+
+  window.localStorage.setItem(`appletNotificationsUnread#${appletId}`, JSON.stringify(unreadNotifications));
+
+  // store to persistend time-indexed notifications log
+  notifications.forEach((notification) => {
+    const timestamp = notification.timestamp;
+    const daysSinceEpoch = Math.floor(timestamp/8.64e7);
+    const notificationsOfSameDateJSON: string | null = window.localStorage.getItem(`appletNotifications#${daysSinceEpoch}#${appletId}`);
+    let notificationsOfSameDate: Array<WeNotification>;
+    if (notificationsOfSameDateJSON) {
+      notificationsOfSameDate = JSON.parse(notificationsOfSameDateJSON);
+      notificationsOfSameDate = [...new Set([...notificationsOfSameDate, notification])]
+    } else {
+      notificationsOfSameDate = [notification]
+    }
+    window.localStorage.setItem(`appletNotifications#${daysSinceEpoch}#${appletId}`, JSON.stringify(notificationsOfSameDate));
+  })
+}
+
+function isMillisecondTimestamp(timestamp: number): boolean {
+  const now = 1690803917545;
+  if (timestamp / now > 10 || now / timestamp > 1.5) {
+    return false
+  }
+  return true
+}
+
+/**
+ * Gets the state of unread notifications for an applet. Used to display
+ * notification dots in sidebars
+ * @param appletId
+ * @returns
+ */
 export function getAppletNotificationState(
-  notificationsStorage: NotificationStorage,
   appletId: AppletId
 ): [string | undefined, number | undefined] {
 
-  const appletNotifications: Record<NotificationLevel, Array<[WeNotification, NotificationTimestamp]>> = notificationsStorage[appletId] ?
-    notificationsStorage[appletId] :
-    { "low": [], "medium": [], "high": [] };
+  const unreadNotificationsJson: string | null = window.localStorage.getItem(`appletNotificationsUnread#${appletId}`);
+  let unreadNotifications: Array<WeNotification>;
 
-  console.log("@getAppletNotificationState: appletNotifications: ", appletNotifications);
-  if (appletNotifications.high.length > 0) {
-    return ["high", appletNotifications.high.length]
+  if (unreadNotificationsJson) {
+    unreadNotifications = JSON.parse(unreadNotificationsJson);
+    const notificationCounts = { "low": 0, "medium": 0, "high": 0 }
+    unreadNotifications.forEach((notification) => {
+      notificationCounts[notification.urgency] += 1;
+    })
+    if (notificationCounts.high) {
+      return ["high", notificationCounts.high];
+    } else if (notificationCounts.medium) {
+      return ["medium", notificationCounts.medium];
+    } else if (notificationCounts.low) {
+      return ["low", notificationCounts.low];
+    }
+    return [undefined, undefined]
+  } else {
+    return [undefined, undefined]
   }
-
-  if (appletNotifications.medium.length > 0) {
-    return ["medium", undefined]
-  }
-
-  if (appletNotifications.low.length > 0) {
-    return ["low", undefined]
-  }
-
-  return [undefined, undefined]
 }
 
-export function clearAppletNotifications(
-  notificationsStorage: NotificationStorage,
-  appletId: AppletId,
-): void {
-  notificationsStorage[appletId] = { "low": [], "medium": [], "high": [] };
-  window.localStorage.setItem("notifications", JSON.stringify(notificationsStorage));
+/**
+ * Clears all unread notifications of an applet to remove the corresponding
+ * notification dots.
+ * @param appletId
+ */
+export function clearAppletNotificationState(appletId: AppletId): void {
+  window.localStorage.setItem(`appletNotificationsUnread#${appletId}`, JSON.stringify([]));
+}
+
+/**
+ * Gets the user-defined notification settings for the specified applet Id from localStorage
+ * @param appletId
+ * @returns
+ */
+export function getAppletNotificationSettings(appletId: AppletId): AppletNotificationSettings {
+
+  const appletNotificationSettingsJson: string | null = window.localStorage.getItem(`appletNotificationSettings#${appletId}`);
+  const appletNotificationSettings: AppletNotificationSettings = appletNotificationSettingsJson
+    ? JSON.parse(appletNotificationSettingsJson)
+    : {
+      allowOSNotification: true,
+      showInSystray: true,
+      showInGroupSidebar: true,
+      showInAppletSidebar: true,
+      showInGroupHomeFeed: true,
+    };
+
+  return appletNotificationSettings;
 }

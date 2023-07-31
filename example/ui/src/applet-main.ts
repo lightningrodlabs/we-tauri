@@ -6,6 +6,7 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
+import { WeNotification } from "@lightningrodlabs/we-applet";
 
 @localized()
 @customElement("applet-main")
@@ -17,54 +18,18 @@ export class AppletMain extends LitElement {
   @state()
   highInterval: number | null = null;
 
-  // firstUpdated() {
-  //   this.mediumInterval = window.setInterval(() => {
-  //     this.dispatchEvent(new CustomEvent('notification', {
-  //       detail: {
-  //         title: "New Message",
-  //         body: "Hello from the test app :)",
-  //         notification_type: "default",
-  //         icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
-  //         urgency: "medium",
-  //       },
-  //       bubbles: true,
-  //     }))
-  //   }, 5000);
-
-  //   this.highInterval = window.setInterval(() => {
-  //     this.dispatchEvent(new CustomEvent('notification', {
-  //       detail: {
-  //         title: "Important Message",
-  //         body: "This is an URGENT message",
-  //         notification_type: "default",
-  //         icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
-  //         urgency: "high",
-  //       },
-  //       bubbles: true,
-  //     })),
-  //     40000
-  //   })
-  // }
-
-  // disconnectedCallback(): void {
-  //   if (this.mediumInterval) {
-  //     window.clearInterval(this.mediumInterval);
-  //   }
-  //   if (this.highInterval) {
-  //     window.clearInterval(this.highInterval);
-  //   }
-  // }
-
   sendUrgentNotification(delay: number) {
+    const notification: WeNotification = {
+      title: "Title",
+      body: "Message body",
+      notification_type: "default",
+      icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+      urgency: "high",
+      timestamp: Date.now(),
+    };
     setTimeout(() => {
       this.dispatchEvent(new CustomEvent('notification', {
-        detail: {
-          title: "Title",
-          body: "Message body",
-          notification_type: "default",
-          icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
-          urgency: "high",
-        },
+        detail: [notification],
         bubbles: true,
       }))
     }, delay);
@@ -72,14 +37,33 @@ export class AppletMain extends LitElement {
 
   sendMediumNotification(delay: number) {
     setTimeout(() => {
+      const notification: WeNotification = {
+        title: "Title",
+        body: "Message body",
+        notification_type: "default",
+        icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+        urgency: "medium",
+        timestamp: Date.now(),
+      }
       this.dispatchEvent(new CustomEvent('notification', {
-        detail: {
-          title: "Title",
-          body: "Message body",
-          notification_type: "default",
-          icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
-          urgency: "medium",
-        },
+        detail: [notification],
+        bubbles: true,
+      }))
+    }, delay);
+  }
+
+  sendLowNotification(delay: number) {
+    const notification: WeNotification = {
+      title: "Title",
+      body: "Message body",
+      notification_type: "default",
+      icon_src: "https://static-00.iconduck.com/assets.00/duckduckgo-icon-512x512-zp12dd1l.png",
+      urgency: "low",
+      timestamp: Date.now(),
+    }
+    setTimeout(() => {
+      this.dispatchEvent(new CustomEvent('notification', {
+        detail: [notification],
         bubbles: true,
       }))
     }, delay);
@@ -94,11 +78,13 @@ export class AppletMain extends LitElement {
         </div>
 
         <div class="column center-content" style="margin-top: 50px;">
-          <button @click=${() => this.sendUrgentNotification(0)}>Send Urgent Notification</button>
-          <button @click=${() => this.sendMediumNotification(0)}>Send Medium Notification</button>
+          <button @click=${() => this.sendLowNotification(0)}>Send Low Urgency Notification</button>
+          <button @click=${() => this.sendMediumNotification(0)}>Send Medium Urgency Notification</button>
+          <button @click=${() => this.sendUrgentNotification(0)}>Send High Urgency Notification</button>
 
-          <button @click=${() => this.sendUrgentNotification(5000)}>Send Urgent Notification with 5 seconds delay</button>
-          <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Notification with 5 seconds delay</button>
+          <button @click=${() => this.sendLowNotification(5000)}>Send Low Urgency Notification with 5 seconds delay</button>
+          <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Urgency Notification with 5 seconds delay</button>
+          <button @click=${() => this.sendUrgentNotification(5000)}>Send High Urgency Notification with 5 seconds delay</button>
         </div>
       </div>
     `;

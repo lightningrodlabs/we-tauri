@@ -23,9 +23,7 @@ export type NotificationLevel = "low" | "medium" | "high";
 
 export type NotificationStorage = Record<AppletId, Record<NotificationLevel, Array<[WeNotification, NotificationTimestamp]>>>;
 
-export type NotificationSettingsStorage = Record<AppletId, NotifiactionSettings>;
-
-export interface NotifiactionSettings {
+export interface AppletNotificationSettings {
   allowOSNotification: boolean,
   showInSystray: boolean,
   showInGroupSidebar: boolean,
