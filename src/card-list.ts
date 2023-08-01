@@ -6,7 +6,7 @@ import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 
 @customElement("nh-card-list")
-export class NHCard extends NHComponentShoelace {
+export class NHCardList extends NHComponentShoelace {
   @property()
   direction!: 'vertical' | 'horizontal';
 
