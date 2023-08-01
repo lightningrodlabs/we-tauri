@@ -1,18 +1,23 @@
 {
   "name": "my-webcomponents",
   "version": "1.0.0",
-  "main": "dist/index.es.js",
+  "type": "module",
+  "files": ["dist"],
   "exports": {
-    ".": "./dist/index.es.js"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   },
-  "types": "types/index.d.ts",
-  "files": [
-    "dist",
-    "types"
-  ],
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "scripts": {
+    "preinstall": "npx allow-only pnpm",
+    "prepare": "npm run build",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc; vite build",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
