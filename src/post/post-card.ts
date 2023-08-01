@@ -1,6 +1,6 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { NHComponent } from "neighbourhoods-design-system-components";
+import { NHComponent } from '../ancestors/base';
 import "../card";
 import "../assessment-widget";
 import { sharedStyles } from "../sharedStyles";

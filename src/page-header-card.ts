@@ -1,7 +1,7 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { NHComponent } from "neighbourhoods-design-system-components";
+import { NHComponent } from './ancestors/base';
 import "./polyfill";
 import { sharedStyles } from "./sharedStyles";
 

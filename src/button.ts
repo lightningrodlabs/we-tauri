@@ -1,7 +1,7 @@
 import { css, CSSResult, html, PropertyValueMap, unsafeCSS } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { NHComponent } from "neighbourhoods-design-system-components";
+import { NHComponent } from './ancestors/base';
 import { sharedStyles } from "./sharedStyles";
 
 @customElement("nh-button")

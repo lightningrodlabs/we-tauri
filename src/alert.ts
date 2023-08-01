@@ -1,7 +1,7 @@
 import { unsafeCSS } from 'lit';
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from './ancestors/base';
 import { SlAlert } from '@scoped-elements/shoelace';
 import { sharedStyles } from './sharedStyles';
 
