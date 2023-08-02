@@ -163,27 +163,27 @@ export class AppletBundlesStore {
     return apps.filter((app) => isAppRunning(app));
   });
 
-  installedApps = manualReloadStore(async () => {
-    return await this.adminWebsocket.listApps({});
-  });
+  installedApps = manualReloadStore(async () =>
+    this.adminWebsocket.listApps({})
+  );
 
-  runningApplets = asyncDerived(this.runningApps, async (apps) => {
-    return apps
+  runningApplets = asyncDerived(this.runningApps, async (apps) =>
+    apps
       .filter(
         (app) =>
           app.installed_app_id.startsWith("applet#")
       )
-      .map((app) => appletHashFromAppId(app.installed_app_id));
-  });
+      .map((app) => appletHashFromAppId(app.installed_app_id))
+  );
 
-  installedApplets = asyncDerived(this.installedApps, async (apps) => {
-    return apps
+  installedApplets = asyncDerived(this.installedApps, async (apps) =>
+    apps
       .filter(
         (app) =>
           app.installed_app_id.startsWith("applet#")
       )
-      .map((app) => appletHashFromAppId(app.installed_app_id));
-  });
+      .map((app) => appletHashFromAppId(app.installed_app_id))
+  );
 
   isInstalled = new LazyHoloHashMap((appletHash: EntryHash) =>
     asyncDerived(
