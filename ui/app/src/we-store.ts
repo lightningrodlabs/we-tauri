@@ -187,7 +187,7 @@ export class WeStore {
     })
   );
 
-  applets = new LazyHoloHashMap((appletHash: EntryHash) =>
+  appletStores = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(
       async () => {
         const groups = await toPromise(this.groupsForApplet.get(appletHash));
@@ -221,8 +221,8 @@ export class WeStore {
 
   allInstalledApplets = pipe(
     this.appletBundlesStore.installedApplets,
-    (appletsIds) =>
-      sliceAndJoin(this.applets, appletsIds) as AsyncReadable<
+    (appletsHashes) =>
+      sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
       >
   );
@@ -278,6 +278,7 @@ export class WeStore {
         asyncDerived(
           this.dnaLocations.get(dnaHash),
           async (dnaLocation: DnaLocation) => {
+            console.log("@hrlLocations: got dnaLocation: ", dnaLocation);
             const entryDefLocation = await locateHrl(
               this.adminWebsocket,
               dnaLocation,
@@ -300,7 +301,7 @@ export class WeStore {
         pipe(this.hrlLocations.get(dnaHash).get(hash), (location) =>
           location
             ? pipe(
-                this.applets.get(location.dnaLocation.appletHash),
+                this.appletStores.get(location.dnaLocation.appletHash),
                 (appletStore) => appletStore!.host,
                 (host) =>
                   lazyLoad(() =>

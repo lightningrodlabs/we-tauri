@@ -185,19 +185,23 @@ export class AppletBundlesStore {
       .map((app) => appletHashFromAppId(app.installed_app_id))
   );
 
-  isInstalled = new LazyHoloHashMap((appletHash: EntryHash) =>
-    asyncDerived(
+  isInstalled = new LazyHoloHashMap((appletHash: EntryHash) => {
+    this.installedApps.reload(); // required after fresh installation of app
+    return asyncDerived(
       this.installedApplets,
-      (appletsHashes) =>
-        !!appletsHashes.find(
+      (appletsHashes) => {
+        console.log("installedApplets: ", appletsHashes.map((hash) => encodeHashToBase64(hash)));
+        console.log("requested hash: ", encodeHashToBase64(appletHash));
+        return !!appletsHashes.find(
           (hash) => hash.toString() === appletHash.toString()
-        )
-    )
-  );
+        );
+      }
+    );
+  });
 
   isRunning = new LazyHoloHashMap((appletHash: EntryHash) =>
     asyncDerived(
-      this.runningApps,
+      this.runningApplets,
       (appletsHashes) =>
         !!appletsHashes.find(
           (hash) => hash.toString() === appletHash.toString()

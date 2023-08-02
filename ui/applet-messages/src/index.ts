@@ -14,7 +14,7 @@ import { fromUint8Array, toUint8Array } from "js-base64";
 export type OpenViewRequest =
   | {
       type: "applet-main";
-      appletId: EntryHash;
+      appletHash: EntryHash;
     }
   | {
       type: "cross-applet-main";
@@ -22,7 +22,7 @@ export type OpenViewRequest =
     }
   | {
       type: "applet-block";
-      appletId: EntryHash;
+      appletHash: EntryHash;
       block: string;
       context: any;
     }
@@ -39,7 +39,7 @@ export type OpenViewRequest =
     };
 
 export interface CreateAttachmentRequest {
-  appletId: EntryHash;
+  appletHash: EntryHash;
   attachmentType: string;
   attachToHrl: Hrl;
 }
@@ -87,7 +87,7 @@ export type IframeConfig =
     };
 
 export interface AppletToParentMessage {
-  appletId: EntryHash;
+  appletHash: EntryHash;
   request: AppletToParentRequest;
 }
 

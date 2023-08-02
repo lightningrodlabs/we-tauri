@@ -42,7 +42,7 @@ export class GroupAppletsSidebar extends LitElement {
   _groupApplets = new StoreSubscriber(
     this,
     () => pipe(this._groupStore.allApplets, (allApplets) =>
-          sliceAndJoin(this.weStore.applets, allApplets)
+          sliceAndJoin(this.weStore.appletStores, allApplets)
         ) as AsyncReadable<ReadonlyMap<EntryHash, AppletStore>>,
     () => [this._groupStore]
   );

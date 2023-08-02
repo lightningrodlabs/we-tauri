@@ -19,6 +19,6 @@ export class PostsStore {
 
   allPosts = lazyLoadAndPoll(async () => {
     const records = await this.client.getAllPosts();
-    return records.map(r => r.actionHash);
-  }, 4000);
+    return records;
+  }, 15000);
 }

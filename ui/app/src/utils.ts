@@ -11,19 +11,19 @@ import {
   encodeHashToBase64,
   ClonedCell,
   DnaHashB64,
-  EntryHashB64,
   decodeHashFromBase64,
 } from "@holochain/client";
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
-import { AppletNotificationSettings, NotificationLevel, NotificationStorage, NotificationTimestamp } from "./applets/types.js";
-import { AppletId } from "./types.js";
+import { AppletNotificationSettings } from "./applets/types.js";
+import { AppletHash, AppletId } from "./types.js";
 
 export async function initAppClient(
   appId: string,
   defaultTimeout?: number
 ): Promise<AppAgentWebsocket> {
+  console.log("initiating app client for app id: ", appId);
   const client = await AppAgentWebsocket.connect("", appId, defaultTimeout);
   client.installedAppId = appId;
   client.cachedAppInfo = undefined;
@@ -38,19 +38,19 @@ export function isWindows(): boolean {
 
 export function appletOrigin(
   conductorInfo: ConductorInfo,
-  appletId: EntryHash
+  appletHash: AppletHash
 ): string {
   if (conductorInfo.applet_iframe_protocol === AppletIframeProtocol.Assets) {
-    return `applet://${encodeHashToBase64(appletId)}`;
+    return `applet://${encodeHashToBase64(appletHash)}`;
   } else if (
     conductorInfo.applet_iframe_protocol ===
     AppletIframeProtocol.LocalhostSubdomain
   ) {
-    return `http://${encodeHashToBase64(appletId)}.localhost:${
+    return `http://${encodeHashToBase64(appletHash)}.localhost:${
       conductorInfo.applets_ui_port
     }`;
   } else {
-    return `http://${encodeHashToBase64(appletId)}.localtest.me:${
+    return `http://${encodeHashToBase64(appletHash)}.localtest.me:${
       conductorInfo.applets_ui_port
     }`;
   }
@@ -83,19 +83,21 @@ export function findAppForDnaHash(
   return undefined;
 }
 
-export function appIdFromAppletHash(appletHash: EntryHash): string {
+// IMPORTANT: If this function is changed, the same function in ui/applet-iframe/index.ts needs
+// to be changed accordingly
+export function appIdFromAppletHash(appletHash: AppletHash): string {
   return `applet#${encodeHashToBase64(appletHash)}`
 }
 
-export function appIdFromAppletId(appletId: EntryHashB64): string {
+export function appIdFromAppletId(appletId: AppletId): string {
   return `applet#${appletId}`
 }
 
-export function appletHashFromAppId(installedAppId: string): EntryHash {
+export function appletHashFromAppId(installedAppId: string): AppletHash {
   return decodeHashFromBase64(installedAppId.slice(7))
 }
 
-export function appletIdFromAppId(installedAppId: string): string {
+export function appletIdFromAppId(installedAppId: string): AppletId {
   return installedAppId.slice(7);
 }
 

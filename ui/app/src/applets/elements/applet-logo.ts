@@ -28,7 +28,7 @@ export class AppletLogo extends LitElement {
   appletLogo = new StoreSubscriber(
     this,
     () =>
-      pipe(this.weStore.applets.get(this.appletHash), (appletStore) =>
+      pipe(this.weStore.appletStores.get(this.appletHash), (appletStore) =>
         appletStore ? appletStore.logo : completed(undefined)
       ),
     () => [this.appletHash]

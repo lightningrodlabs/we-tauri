@@ -91,7 +91,7 @@ export class FederateAppletDialog extends LitElement {
     this.federating = true;
     try {
       const appletStore = await toPromise(
-        this._weStore.applets.get(this.appletHash)
+        this._weStore.appletStores.get(this.appletHash)
       );
       const groupStore = await toPromise(
         this._weStore.groups.get(groupDnaHash)

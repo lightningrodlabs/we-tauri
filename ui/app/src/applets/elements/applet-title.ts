@@ -38,7 +38,7 @@ export class AppletTitle extends LitElement {
     this,
     () =>
       join([
-        this._weStore.applets.get(this.appletHash),
+        this._weStore.appletStores.get(this.appletHash),
         asyncDeriveStore(
           this._weStore.groupsForApplet.get(this.appletHash),
           (groupsStores) =>

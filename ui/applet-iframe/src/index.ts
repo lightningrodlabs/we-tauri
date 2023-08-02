@@ -55,11 +55,11 @@ window.onload = async () => {
   let applet = await fetchApplet();
 
   if (view) {
-    await renderView(applet, iframeConfig!, view);
+    await renderView(applet, iframeConfig, view);
   }
   window.addEventListener("message", async (m) => {
     try {
-      const result = await handleMessage(applet, iframeConfig!, m.data);
+      const result = await handleMessage(applet, iframeConfig, m.data);
       m.ports[0].postMessage({ type: "success", result });
     } catch (e) {
       m.ports[0].postMessage({ type: "error", error: (e as any).message });
@@ -90,9 +90,9 @@ async function setupAppAgentClient(appPort: number, installedAppId: string) {
 
 async function setupAppletClient(
   appPort: number,
-  appletId: EntryHash
+  appletHash: EntryHash,
 ): Promise<AppAgentClient> {
-  return setupAppAgentClient(appPort, encodeHashToBase64(appletId));
+  return setupAppAgentClient(appPort, appIdFromAppletHash(appletHash));
 }
 
 async function setupProfilesClient(
@@ -100,6 +100,7 @@ async function setupProfilesClient(
   appId: string,
   roleName: string
 ) {
+  console.log("### Trying to set up profiles client with app id: ", appId);
   const client = await setupAppAgentClient(appPort, appId);
 
   return new ProfilesClient(client, roleName);
@@ -108,6 +109,7 @@ async function setupProfilesClient(
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
   const m = await import("/index.js");
+  console.log("Fetched applet: ", m.default);
 
   return m.default;
 }
@@ -139,7 +141,7 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
             postMessage({
               type: "create-attachment",
               request: {
-                appletId: decodeHashFromBase64(appletId),
+                appletHash: decodeHashFromBase64(appletId),
                 attachmentType: name,
                 attachToHrl,
               },
@@ -156,20 +158,20 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
   return {
     attachmentTypes,
     openViews: {
-      openAppletMain: (appletId) =>
+      openAppletMain: (appletHash) =>
         postMessage({
           type: "open-view",
           request: {
             type: "applet-main",
-            appletId,
+            appletHash,
           },
         }),
-      openAppletBlock: (appletId, block, context) =>
+      openAppletBlock: (appletHash, block, context) =>
         postMessage({
           type: "open-view",
           request: {
             type: "applet-block",
-            appletId,
+            appletHash,
             block,
             context,
           },
@@ -336,16 +338,16 @@ async function handleMessage(
 ) {
   if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
-  const appletId = iframeConfig.appletHash;
+  const appletHash = iframeConfig.appletHash;
 
-  let client = await setupAppletClient(iframeConfig.appPort, appletId);
+  let client = await setupAppletClient(iframeConfig.appPort, appletHash);
   let weServices: WeServices;
 
   switch (request.type) {
     case "get-entry-info":
-      const appletViews = await applet!.appletViews(
-        client!,
-        appletId,
+      const appletViews = await applet.appletViews(
+        client,
+        appletHash,
         null as any,
         null as any
       );
@@ -372,9 +374,11 @@ async function handleMessage(
       ].info(request.hrl);
     case "get-attachment-types":
       weServices = await buildWeServices(false);
-      const types = await applet!.attachmentTypes(
-        client!,
-        appletId,
+      console.log("@applet-iframe @get-attachment-types hook: build weServices: ", weServices);
+      console.log("@applet-iframe: @ get-attachment-types hook: got applet: ", applet);
+      const types = await applet.attachmentTypes(
+        client,
+        appletHash,
         weServices
       );
 
@@ -390,8 +394,8 @@ async function handleMessage(
       return internalAttachmentTypes;
     case "get-block-types":
       const views = await applet.appletViews(
-        client!,
-        appletId,
+        client,
+        appletHash,
         null as any,
         null as any
       );
@@ -407,10 +411,10 @@ async function handleMessage(
       return blocks;
     case "search":
       weServices = await buildWeServices();
-      return applet!.search(client!, appletId, weServices, request.filter);
+      return applet.search(client, appletHash, weServices, request.filter);
     case "create-attachment":
       weServices = await buildWeServices();
-      return (await applet!.attachmentTypes(client!, appletId, weServices))[
+      return (await applet.attachmentTypes(client, appletHash, weServices))[
         request.attachmentType
       ].create(request.attachToHrl);
   }
@@ -436,10 +440,10 @@ function getRenderView(): RenderView | undefined {
   return queryStringToRenderView(queryString);
 }
 
-function appletId(): EntryHash {
+function appletHash(): EntryHash {
   const urlWithoutProtocol = window.location.href.split("://")[1];
-  const appletIdBase64 = urlWithoutProtocol.split("?")[0].split("/")[0];
-  return decodeHashFromBase64(appletIdBase64);
+  const appletId = urlWithoutProtocol.split("?")[0].split("/")[0];
+  return decodeHashFromBase64(appletId);
 }
 
 async function postMessage(request: AppletToParentRequest): Promise<any> {
@@ -448,7 +452,7 @@ async function postMessage(request: AppletToParentRequest): Promise<any> {
 
     const message: AppletToParentMessage = {
       request,
-      appletId: appletId(),
+      appletHash: appletHash(),
     };
 
     top!.postMessage(message, "*", [channel.port2]);
@@ -461,4 +465,8 @@ async function postMessage(request: AppletToParentRequest): Promise<any> {
       }
     };
   });
+}
+
+function appIdFromAppletHash(appletHash: EntryHash): string {
+  return `applet#${encodeHashToBase64(appletHash)}`
 }

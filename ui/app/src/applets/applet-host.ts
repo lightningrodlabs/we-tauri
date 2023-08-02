@@ -32,7 +32,7 @@ import { AppletStore } from "./applet-store.js";
 function getAppletIdFromOrigin(
   appletIframeProtocol: AppletIframeProtocol,
   origin: string
-): string {
+): AppletId {
   if (appletIframeProtocol === AppletIframeProtocol.Assets) {
     return origin.split("://")[1].split("?")[0].split("/")[0];
   } else {
@@ -45,6 +45,7 @@ export async function setupAppletMessageHandler(
   openViews: AppOpenViews
 ) {
   window.addEventListener("message", async (message) => {
+    console.log("Got message: ", message);
     try {
       const lowerCaseAppletId = getAppletIdFromOrigin(
         weStore.conductorInfo.applet_iframe_protocol,
@@ -58,6 +59,7 @@ export async function setupAppletMessageHandler(
       );
 
       if (!appletId) {
+        console.log("applet Id not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
         const iframeConfig: IframeConfig = {
           type: "not-installed",
           appletName: lowerCaseAppletId,
@@ -74,6 +76,8 @@ export async function setupAppletMessageHandler(
       );
       message.ports[0].postMessage({ type: "success", result });
     } catch (e) {
+      console.error("Error while handling applet iframe message. Error: ", e, "Message: ", message);
+      console.log("appletId: ", encodeHashToBase64(message.data.appletHash));
       message.ports[0].postMessage({ type: "error", error: (e as any).message });
     }
   });
@@ -114,7 +118,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       return groupProfile;
     },
     async appletInfo(appletHash: AppletHash) {
-      const applet = await toPromise(weStore.applets.get(appletHash));
+      const applet = await toPromise(weStore.appletStores.get(appletHash));
       if (!applet) return undefined;
       const groupsForApplet = await toPromise(
         weStore.groupsForApplet.get(appletHash)
@@ -182,7 +186,7 @@ export async function handleAppletIframeMessage(
       const isInstalled = await toPromise(
         weStore.appletBundlesStore.isInstalled.get(appletHash)
       );
-      const applet = await toPromise(weStore.applets.get(appletHash));
+      const applet = await toPromise(weStore.appletStores.get(appletHash));
 
       if (!isInstalled) {
         const iframeConfig: IframeConfig = {
@@ -236,10 +240,10 @@ export async function handleAppletIframeMessage(
     case "open-view":
       switch (message.request.type) {
         case "applet-main":
-          return openViews.openAppletMain(message.request.appletId);
+          return openViews.openAppletMain(message.request.appletHash);
         case "applet-block":
           return openViews.openAppletBlock(
-            message.request.appletId,
+            message.request.appletHash,
             message.request.block,
             message.request.context
           );
@@ -277,7 +281,7 @@ export async function handleAppletIframeMessage(
 
       let appletStore: AppletStore | undefined;
       try {
-        appletStore = await toPromise(weStore.applets.get(appletHash));
+        appletStore = await toPromise(weStore.appletStores.get(appletHash));
       } catch (e) {
         console.warn("Failed to fetch AppletStore in notify hook: ", (e as any).toString());
       }
@@ -313,7 +317,7 @@ export async function handleAppletIframeMessage(
     case "create-attachment":
       host = await toPromise(
         pipe(
-          weStore.applets.get(message.request.appletId),
+          weStore.appletStores.get(message.request.appletHash),
           (appletStore) => appletStore!.host
         )
       );

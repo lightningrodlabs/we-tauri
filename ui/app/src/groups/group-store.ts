@@ -175,7 +175,7 @@ export class GroupStore {
 
   allBlocks = pipe(
     this.installedApplets,
-    (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
+    (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets),
     (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
   );
 

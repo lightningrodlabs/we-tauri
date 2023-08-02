@@ -25,6 +25,10 @@ export class ViewFrame extends LitElement {
 
   render() {
     console.log("rendering viewframe for appletHash: ", encodeHashToBase64(this.appletHash));
+    console.log(`Querystring: ${appletOrigin(
+      this.weStore.conductorInfo,
+      this.appletHash
+    )}?${renderViewToQueryString(this.renderView)}`);
     return html`<iframe
       frameBorder="0"
       title="TODO"

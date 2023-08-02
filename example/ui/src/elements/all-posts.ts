@@ -18,6 +18,8 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "./post-summary.js";
 import { PostsStore } from "../posts-store.js";
 import { postsStoreContext } from "../context.js";
+import { EntryRecord } from "@holochain-open-dev/utils";
+import { Post } from "../types.js";
 
 /**
  * @element all-posts
@@ -40,8 +42,8 @@ export class AllPosts extends LitElement {
     () => []
   );
 
-  renderList(hashes: Array<ActionHash>) {
-    if (hashes.length === 0)
+  renderList(records: Array<EntryRecord<Post>>) {
+    if (records.length === 0)
       return html` <div class="column center-content">
         <sl-icon
           .src=${wrapPathInSvg(mdiInformationOutline)}
@@ -51,15 +53,15 @@ export class AllPosts extends LitElement {
       </div>`;
 
     return html`
-      <div style="display: flex; flex-direction: column; flex: 1">
-        ${hashes.map(
-          (hash) =>
+      <div style="display: flex; flex-direction: row; flex: 1; flex-wrap: wrap;">
+        ${records.sort((a, b) => b.action.timestamp - a.action.timestamp).map(
+          (record) =>
             html`<post-summary
               @notification=${(e: CustomEvent) => this.dispatchEvent(new CustomEvent('notification', {
                 detail: e.detail,
                 bubbles: true,
               }))}
-              .postHash=${hash}
+              .postHash=${record.actionHash}
               style="margin-bottom: 16px;"
             ></post-summary>`
         )}

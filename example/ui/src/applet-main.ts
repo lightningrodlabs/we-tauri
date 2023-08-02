@@ -77,8 +77,9 @@ export class AppletMain extends LitElement {
     return html`
       <div class="column">
         <div class="row">
-          <create-post></create-post>
+          <create-post style="margin: 16px;"></create-post>
           <all-posts
+              style="margin: 16px;"
               @notification=${(e: CustomEvent) => {
                 console.log("@applet-main: got notification event from all-posts: ", e);
                 this.dispatchEvent(new CustomEvent('notification', {

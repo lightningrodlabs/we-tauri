@@ -62,7 +62,7 @@ function wrapAppletView(
 
 async function appletViews(
   client: AppAgentClient,
-  appletId: EntryHash,
+  appletHash: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
 ): Promise<AppletViews> {
@@ -127,7 +127,7 @@ async function appletViews(
 }
 
 async function crossAppletViews(
-  applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletId
+  applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletHash
   weServices: WeServices
 ): Promise<CrossAppletViews> {
   return {
@@ -171,7 +171,7 @@ const applet: WeApplet = {
   }),
   search: async (
     appletClient: AppAgentClient,
-    _appletId,
+    _appletHash,
     _weServices,
     filter: string
   ) => {

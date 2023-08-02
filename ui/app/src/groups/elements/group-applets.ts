@@ -53,7 +53,7 @@ export class GroupApplets extends LitElement {
             )
         ),
         pipe(this._groupStore.allApplets, (allApplets) =>
-          sliceAndJoin(this.weStore.applets, allApplets)
+          sliceAndJoin(this.weStore.appletStores, allApplets)
         ),
       ]) as AsyncReadable<
         [

@@ -193,10 +193,12 @@ pub async fn read_asset(
             Some(String::from("text/html")),
         )));
     }
-
-    let applet_id = get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?;
-
-    let assets_path = we_fs.ui_store().ui_path(&applet_id);
+    println!("Got read_asset request with lowercase applet id: {}", applet_id_lowercase);
+    let applet_app_id = app_id_from_applet_id(
+        &get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?
+    );
+    println!("got applet id from lowercase: {}", applet_app_id);
+    let assets_path = we_fs.ui_store().ui_path(&applet_app_id);
     let asset_file = assets_path.join(asset_name);
 
     let mime_guess = mime_guess::from_path(asset_file.clone());

@@ -56,7 +56,7 @@ export class AppletViewEl extends LitElement {
     this,
     () =>
       join([
-        this.weStore.applets.get(this.appletHash),
+        this.weStore.appletStores.get(this.appletHash),
         this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
         this.weStore.groupsForApplet.get(this.appletHash),
         this.weStore.allGroupsProfiles,
