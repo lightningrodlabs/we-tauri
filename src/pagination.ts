@@ -1,10 +1,9 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import {property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
 import { sharedStyles } from "./sharedStyles";
 
-@customElement("nh-pagination")
 export class NHPagination extends NHComponent {
   @property()
   length!: number;

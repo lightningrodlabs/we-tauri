@@ -1,13 +1,12 @@
 import { unsafeCSS } from 'lit';
 import { css, CSSResult, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import {property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { SlAlert } from '@scoped-elements/shoelace';
 import { sharedStyles } from './sharedStyles';
 
 export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
-@customElement('nh-alert')
 export class NHAlert extends NHComponentShoelace {
   @property()
   open: boolean = true;

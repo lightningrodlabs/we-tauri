@@ -1,11 +1,9 @@
 import { css, CSSResult, html, PropertyValueMap, unsafeCSS } from "lit";
-import { customElement, property, query, queryAll } from "lit/decorators.js";
+import {property, query, queryAll } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { NHComponentShoelace } from "neighbourhoods-design-system-components";
-import "./polyfill";
+import { NHComponentShoelace } from "./ancestors/base";
 import { sharedStyles } from "./sharedStyles";
 
-@customElement("nh-assessment-widget")
 export class NHAssessmentWidget extends NHComponentShoelace {
   @property()
   name!: string;

@@ -1,7 +1,7 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
 import { html as litHtml, literal } from "lit/static-html.js";
-import { customElement, property } from "lit/decorators.js";
-import { NHComponentShoelace } from "neighbourhoods-design-system-components";
+import {property } from "lit/decorators.js";
+import { NHComponentShoelace } from "./ancestors/base";
 import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
@@ -11,7 +11,6 @@ import { plusIcon } from "./b64images";
 export const capitalize = (part: string) =>
   part[0].toUpperCase() + part.slice(1);
 
-@customElement("nh-menu")
 export class NHMenu extends NHComponentShoelace {
   @property()
   direction: "vertical" | "horizontal" = "horizontal";

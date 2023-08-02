@@ -1,12 +1,11 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import {property } from "lit/decorators.js";
 import { SlTextarea } from "@scoped-elements/shoelace";
 import "../card";
 import { sharedStyles } from "../sharedStyles";
 import { NHCard } from "../card";
 import { NHComponentShoelace } from "../ancestors/base";
 
-@customElement("nh-create-post")
 export class NHCreatePost extends NHComponentShoelace {
   @property()
   prompt!: string;

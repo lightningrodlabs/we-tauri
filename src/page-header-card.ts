@@ -1,11 +1,9 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
-import "./polyfill";
 import { sharedStyles } from "./sharedStyles";
 
-@customElement("nh-page-header-card")
 export class NHPageHeaderCard extends NHComponent {
   @property()
   heading!: string;

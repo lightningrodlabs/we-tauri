@@ -1,5 +1,5 @@
 import { css, CSSResult, html, unsafeCSS } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import {property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { SlDialog, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from "lit/directives/class-map.js";
@@ -14,7 +14,6 @@ export enum DialogType {
   appletUninstall = 'applet-uninstall',
 } 
 
-@customElement('nh-dialog')
 export class NHDialog extends NHComponentShoelace {
   @property()
   title!: string

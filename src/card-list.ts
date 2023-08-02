@@ -1,11 +1,9 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { NHComponentShoelace } from "neighbourhoods-design-system-components";
-import "./polyfill";
+import {property } from "lit/decorators.js";
+import { NHComponentShoelace } from "./ancestors/base";
 import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 
-@customElement("nh-card-list")
 export class NHCardList extends NHComponentShoelace {
   @property()
   direction!: 'vertical' | 'horizontal';

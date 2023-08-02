@@ -1,5 +1,5 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import {property } from "lit/decorators.js";
 import { NHComponent } from '../ancestors/base';
 import "../card";
 import "../assessment-widget";
@@ -13,7 +13,6 @@ const kebabCase = (str: string) => str
     ?.join('-')
     .toLowerCase();
 
-@customElement("nh-post-card")
 export class NHPostCard extends NHComponent {
   @property()
   title!: string;
