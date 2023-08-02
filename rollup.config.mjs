@@ -1,5 +1,6 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import css from "rollup-plugin-import-css";
+import postcss from "rollup-plugin-postcss";
 import typescript from '@rollup/plugin-typescript';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -19,7 +20,8 @@ export default {
   },
 
   plugins: [
-    css(),
+    css({include: ['build/dark/variables/css/_variables.css'], modules: true}),
+    postcss(),
     /** Resolve bare module imports */
     nodeResolve({
       browser: true,

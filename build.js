@@ -1,6 +1,7 @@
 const fs = require("fs")
 const { registerTransforms } = require('@tokens-studio/sd-transforms')
 const StyleDictionary = require('style-dictionary')
+const {RemoveFirstLine} = require('./remove-line')
 
 registerTransforms(StyleDictionary)
 
@@ -63,7 +64,7 @@ function writeThemeTokenFiles(tokenFile) {
         }
       }
     );
-    const tokenJSON = JSON.stringify(theme)
+    const tokenJSON = JSON.stringify(theme);
     fs.writeFileSync(`${kebabCase(themeName)}.json`, tokenJSON);
   }
   return themeNames.map(kebabCase);
@@ -124,4 +125,29 @@ themeNames.forEach((themeName) => {
   });
   sd.cleanAllPlatforms();
   sd.buildAllPlatforms();
+
+  removeComments(themeName);
 })
+
+
+function removeComments(themeName) {
+    const input = fs.createReadStream(`build/${themeName}/css/variables.css`)
+    const output = fs.createWriteStream(`build/${themeName}/css/_variables.css`)
+    input // take input
+      .pipe(RemoveFirstLine())
+      .pipe(RemoveFirstLine())
+      .pipe(RemoveFirstLine())
+      .pipe(RemoveFirstLine())
+      .pipe(output);
+}
+
+/* minify css */
+function minifyCSS(content) {
+  content = content.replace(/\/\*(?:(?!\*\/)[\s\S])*\*\/|[\r\n\t]+/g, "");
+  content = content.replace(/ {2,}/g, " ");
+  content = content.replace(/ ([{:}]) /g, "$1");
+  content = content.replace(/([{:}]) /g, "$1");
+  content = content.replace(/([;,]) /g, "$1");
+  content = content.replace(/ !/g, "!");
+  return content;
+}
