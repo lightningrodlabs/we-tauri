@@ -67,6 +67,9 @@ pub enum WeError {
 
     #[error("Attempted to call tauri command `{0}` from an unauthorized window")]
     UnauthorizedWindow(String),
+
+    #[error("`{0}`")]
+    CustomError(String),
 }
 
 impl From<ConductorApiError> for WeError {

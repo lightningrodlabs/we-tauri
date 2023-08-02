@@ -149,6 +149,17 @@ pub fn iframe() -> String {
     )
 }
 
+pub fn app_id_from_applet_id(applet_id: &String) -> String {
+    format!("applet#{}", applet_id)
+}
+
+pub fn applet_id_from_app_id(installed_app_id: &String) -> WeResult<String> {
+    match installed_app_id.strip_prefix("applet#") {
+        Some(id) => Ok(id.to_string()),
+        None => Err(WeError::CustomError(String::from("Failed to convert installed_app_id to applet id.")))
+    }
+}
+
 async fn get_applet_id_from_lowercase(
     lowercase_applet_id: &String,
     admin_ws: &mut AdminWebsocket,
@@ -158,19 +169,19 @@ async fn get_applet_id_from_lowercase(
     let app = apps
         .into_iter()
         .find(|app| {
-            app.installed_app_id.eq(lowercase_applet_id)
-                || app.installed_app_id.to_lowercase().eq(lowercase_applet_id)
+            app.installed_app_id.eq(&app_id_from_applet_id(lowercase_applet_id))
+                || app.installed_app_id.to_lowercase().eq(&app_id_from_applet_id(lowercase_applet_id))
         })
         .ok_or(WeError::AdminWebsocketError(String::from(
             "Applet is not installed",
         )))?;
-    Ok(app.installed_app_id.clone())
+    applet_id_from_app_id(&app.installed_app_id)
 }
 
 pub async fn read_asset(
     we_fs: &WeFileSystem,
     admin_ws: &mut AdminWebsocket,
-    applet_id: &String,
+    applet_id_lowercase: &String,
     mut asset_name: String,
 ) -> WeResult<Option<(Vec<u8>, Option<String>)>> {
     if asset_name.starts_with("/") {
@@ -183,7 +194,7 @@ pub async fn read_asset(
         )));
     }
 
-    let applet_id = get_applet_id_from_lowercase(applet_id, admin_ws).await?;
+    let applet_id = get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?;
 
     let assets_path = we_fs.ui_store().ui_path(&applet_id);
     let asset_file = assets_path.join(asset_name);

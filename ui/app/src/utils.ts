@@ -11,6 +11,8 @@ import {
   encodeHashToBase64,
   ClonedCell,
   DnaHashB64,
+  EntryHashB64,
+  decodeHashFromBase64,
 } from "@holochain/client";
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
@@ -80,6 +82,24 @@ export function findAppForDnaHash(
   }
   return undefined;
 }
+
+export function appIdFromAppletHash(appletHash: EntryHash): string {
+  return `applet#${encodeHashToBase64(appletHash)}`
+}
+
+export function appIdFromAppletId(appletId: EntryHashB64): string {
+  return `applet#${appletId}`
+}
+
+export function appletHashFromAppId(installedAppId: string): EntryHash {
+  return decodeHashFromBase64(installedAppId.slice(7))
+}
+
+export function appletIdFromAppId(installedAppId: string): string {
+  return installedAppId.slice(7);
+}
+
+
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
   return new Uint8Array([0x84, 0x21, 0x24, ...md5Hash, ...new Uint8Array(20)]);

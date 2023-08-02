@@ -22,7 +22,7 @@ import { Applet } from "../../applets/types.js";
 import { weStyles } from "../../shared-styles.js";
 import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
-import { dnaHashForCell, getProvisionedCells } from "../../utils.js";
+import { appIdFromAppletHash, dnaHashForCell, getProvisionedCells } from "../../utils.js";
 
 @customElement("applet-detail-card")
 export class AppletDetailCard extends LitElement {
@@ -45,7 +45,7 @@ export class AppletDetailCard extends LitElement {
   installationStatus: "installed" | "archived" = "installed"
 
   async firstUpdated() {
-    this.appInfo = await this.weStore.appWebsocket.appInfo({ installed_app_id: encodeHashToBase64(this.appletHash) })
+    this.appInfo = await this.weStore.appWebsocket.appInfo({ installed_app_id: appIdFromAppletHash(this.appletHash) })
   }
 
   render() {

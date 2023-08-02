@@ -36,7 +36,7 @@ import { GroupClient } from "./groups/group-client.js";
 import { GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 
 export class WeStore {
@@ -103,7 +103,7 @@ export class WeStore {
         if (
           applets.find(
             (appletHash) =>
-              app.installed_app_id === encodeHashToBase64(appletHash)
+              app.installed_app_id === appIdFromAppletHash(appletHash)
           )
         ) {
           await this.adminWebsocket.enableApp({
@@ -143,7 +143,7 @@ export class WeStore {
         );
         if (groupsForApplet.size === 1) {
           await this.adminWebsocket.disableApp({
-            installed_app_id: encodeHashToBase64(appletHash),
+            installed_app_id: appIdFromAppletHash(appletHash),
           });
         }
       })
@@ -153,12 +153,12 @@ export class WeStore {
   }
 
   groupsApps = asyncDerived(this.appletBundlesStore.installedApps, (apps) =>
-    apps.filter((app) => app.installed_app_id.startsWith("group-"))
+    apps.filter((app) => app.installed_app_id.startsWith("group#"))
   );
 
   groupsDnaHashes = asyncDerived(this.groupsApps, (apps) => {
     const groupApps = apps.filter((app) =>
-      app.installed_app_id.startsWith("group-")
+      app.installed_app_id.startsWith("group#")
     );
 
     const groupsDnaHashes = groupApps.map((app) => {
@@ -253,6 +253,7 @@ export class WeStore {
     )
   );
 
+
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
     asyncDerived(
       this.appletBundlesStore.installedApps,
@@ -260,9 +261,10 @@ export class WeStore {
         const app = findAppForDnaHash(installedApps, dnaHash);
 
         if (!app) throw new Error("The given dna is not installed");
+        if (!app.appInfo.installed_app_id.startsWith("applet#")) throw new Error("The given dna is part of an app that's not an applet.");
 
         return {
-          appletHash: decodeHashFromBase64(app.appInfo.installed_app_id),
+          appletHash: appletHashFromAppId(app.appInfo.installed_app_id),
           appInfo: app.appInfo,
           roleName: app.roleName,
         } as DnaLocation;

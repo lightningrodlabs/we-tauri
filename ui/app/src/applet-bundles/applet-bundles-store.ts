@@ -6,7 +6,7 @@ import {
   retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { hash, HashType, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   AdminWebsocket,
@@ -27,7 +27,7 @@ import {
   HostAvailability,
 } from "../processes/appstore/types.js";
 import { ConductorInfo } from "../tauri.js";
-import { isAppRunning } from "../utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, isAppRunning } from "../utils.js";
 
 export class AppletBundlesStore {
   constructor(
@@ -101,7 +101,7 @@ export class AppletBundlesStore {
   }
 
   async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
-    const appId = encodeHashToBase64(appletHash);
+    const appId = appIdFromAppletHash(appletHash);
 
     // Trigger the download of the icon
     await toPromise(this.appletBundleLogo.get(applet.appstore_app_hash));
@@ -112,6 +112,7 @@ export class AppletBundlesStore {
       (app) => app.installed_app_id === appId
     );
 
+    // TODO make this call in the Rust backend
     if (appletInfo) {
       await this.adminWebsocket.enableApp({
         installed_app_id: appId,
@@ -129,7 +130,8 @@ export class AppletBundlesStore {
       agentPubKey: encodeHashToBase64(this.appstoreClient.myPubKey),
     });
 
-    await this.installedApps.reload();
+    await this.runningApps.reload();
+    // TODO check whether reloading this.installedApps is required as well
 
     return appInfo;
   }
@@ -139,29 +141,48 @@ export class AppletBundlesStore {
     if (!installed) return;
 
     await this.adminWebsocket.disableApp({
-      installed_app_id: encodeHashToBase64(appletHash),
+      installed_app_id: appIdFromAppletHash(appletHash),
     });
 
-    await this.installedApps.reload();
+    await this.runningApps.reload();
   }
 
-  installedApps = manualReloadStore(async () => {
+  async enableApplet(appletHash: EntryHash) {
+    const installed = await toPromise(this.isInstalled.get(appletHash));
+    if (!installed) return;
+
+    await this.adminWebsocket.enableApp({
+      installed_app_id: appIdFromAppletHash(appletHash),
+    });
+
+    await this.runningApps.reload();
+  }
+
+  runningApps = manualReloadStore(async () => {
     const apps = await this.adminWebsocket.listApps({});
     return apps.filter((app) => isAppRunning(app));
   });
 
-  installedApplets = asyncDerived(this.installedApps, async (apps) => {
-    const nonAppletsApps = [
-      this.conductorInfo.devhub_app_id,
-      this.conductorInfo.appstore_app_id,
-    ];
+  installedApps = manualReloadStore(async () => {
+    return await this.adminWebsocket.listApps({});
+  });
+
+  runningApplets = asyncDerived(this.runningApps, async (apps) => {
     return apps
       .filter(
         (app) =>
-          !nonAppletsApps.includes(app.installed_app_id) &&
-          !app.installed_app_id.startsWith("group-")
+          app.installed_app_id.startsWith("applet#")
       )
-      .map((app) => decodeHashFromBase64(app.installed_app_id));
+      .map((app) => appletHashFromAppId(app.installed_app_id));
+  });
+
+  installedApplets = asyncDerived(this.installedApps, async (apps) => {
+    return apps
+      .filter(
+        (app) =>
+          app.installed_app_id.startsWith("applet#")
+      )
+      .map((app) => appletHashFromAppId(app.installed_app_id));
   });
 
   isInstalled = new LazyHoloHashMap((appletHash: EntryHash) =>
@@ -173,4 +194,16 @@ export class AppletBundlesStore {
         )
     )
   );
+
+  isRunning = new LazyHoloHashMap((appletHash: EntryHash) =>
+    asyncDerived(
+      this.runningApps,
+      (appletsHashes) =>
+        !!appletsHashes.find(
+          (hash) => hash.toString() === appletHash.toString()
+        )
+    )
+  );
 }
+
+

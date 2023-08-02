@@ -25,7 +25,7 @@ pub async fn join_group(
     let mut admin_ws = get_admin_ws(&conductor).await?;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
-    let group_app_id = format!("group-{}", network_seed);
+    let group_app_id = format!("group#{}", network_seed);
 
     let is_installed = apps
         .iter()
