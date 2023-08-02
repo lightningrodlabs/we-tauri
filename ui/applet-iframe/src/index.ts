@@ -40,6 +40,15 @@ function renderNotInstalled(appletName: string) {
 
 window.onload = async () => {
   const view = getRenderView();
+
+  // fetch localStorage for this applet from main window and override localStorage methods
+  overrideLocalStorage();
+  const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
+  let localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
+  if (localStorageJson) Object.keys(localStorage).forEach(
+    (key) => window.localStorage.setItem(key, localStorage[key])
+  );
+
   const crossApplet = view ? view.type === "cross-applet-view" : false;
 
   let iframeConfig: IframeConfig = await postMessage({
@@ -100,7 +109,6 @@ async function setupProfilesClient(
   appId: string,
   roleName: string
 ) {
-  console.log("### Trying to set up profiles client with app id: ", appId);
   const client = await setupAppAgentClient(appPort, appId);
 
   return new ProfilesClient(client, roleName);
@@ -109,7 +117,6 @@ async function setupProfilesClient(
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
   const m = await import("/index.js");
-  console.log("Fetched applet: ", m.default);
 
   return m.default;
 }
@@ -374,8 +381,6 @@ async function handleMessage(
       ].info(request.hrl);
     case "get-attachment-types":
       weServices = await buildWeServices(false);
-      console.log("@applet-iframe @get-attachment-types hook: build weServices: ", weServices);
-      console.log("@applet-iframe: @ get-attachment-types hook: got applet: ", applet);
       const types = await applet.attachmentTypes(
         client,
         appletHash,
@@ -438,6 +443,41 @@ function getRenderView(): RenderView | undefined {
   const queryString = window.location.search.slice(1);
 
   return queryStringToRenderView(queryString);
+}
+
+function overrideLocalStorage(): void {
+  let _setItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = async function(key, value) {
+    if (this === window.localStorage) {
+      setTimeout(async () => await postMessage({
+        type: "localStorage.setItem",
+        key,
+        value,
+      }), 100);
+    }
+    _setItem.apply(this, [key, value]);
+  }
+
+  let _removeItem = Storage.prototype.removeItem;
+  Storage.prototype.removeItem = async function(key): Promise<void> {
+    if (this === window.localStorage) {
+      setTimeout(async () => await postMessage({
+        type: "localStorage.removeItem",
+        key,
+      }), 100);
+    }
+    _removeItem.apply(this, [key]);
+  }
+
+  let _clear = Storage.prototype.clear;
+  Storage.prototype.clear = async function(): Promise<void> {
+    if (this === window.localStorage) {
+      setTimeout(async () => await postMessage({
+        type: "localStorage.clear",
+      }), 100);
+    }
+    _clear.apply(this, []);
+  }
 }
 
 function appletHash(): EntryHash {

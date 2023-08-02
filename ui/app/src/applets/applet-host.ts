@@ -45,7 +45,6 @@ export async function setupAppletMessageHandler(
   openViews: AppOpenViews
 ) {
   window.addEventListener("message", async (message) => {
-    console.log("Got message: ", message);
     try {
       const lowerCaseAppletId = getAppletIdFromOrigin(
         weStore.conductorInfo.applet_iframe_protocol,
@@ -181,6 +180,9 @@ export async function handleAppletIframeMessage(
 ) {
   let host: AppletHost;
   const services = buildHeadlessWeServices(weStore);
+
+  const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
+
   switch (message.type) {
     case "get-iframe-config":
       const isInstalled = await toPromise(
@@ -321,11 +323,34 @@ export async function handleAppletIframeMessage(
           (appletStore) => appletStore!.host
         )
       );
-
       return host.createAttachment(
         message.request.attachmentType,
         message.request.attachToHrl
       );
+    case "localStorage.setItem":
+      const appletLocalStorageJson: string | null = window.localStorage.getItem(appletLocalStorageKey);
+      const appletLocalStorage: Record<string, string> = appletLocalStorageJson ? JSON.parse(appletLocalStorageJson) : {};
+      appletLocalStorage[message.key] = message.value;
+      window.localStorage.setItem(appletLocalStorageKey, JSON.stringify(appletLocalStorage));
+      break
+    case "localStorage.removeItem":
+      const appletLocalStorageJson2: string | null = window.localStorage.getItem(appletLocalStorageKey);
+      const appletLocalStorage2: Record<string, string> = appletLocalStorageJson2 ? JSON.parse(appletLocalStorageJson2) : undefined;
+      if (appletLocalStorage2) {
+        const filteredStorage = {};
+        Object.keys(appletLocalStorage2).forEach((key) => {
+          if (key !== message.key) {
+            filteredStorage[key] = appletLocalStorage2[key]
+          }
+        })
+        window.localStorage.setItem(appletLocalStorageKey, JSON.stringify(filteredStorage));
+      }
+      break
+    case "localStorage.clear":
+      window.localStorage.removeItem(`appletLocalStorage#${encodeHashToBase64(appletHash)}`);
+      break
+    case "get-localStorage":
+      return window.localStorage.getItem(appletLocalStorageKey);
   }
 }
 

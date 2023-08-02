@@ -137,6 +137,21 @@ export type AppletToParentRequest =
   | {
       type: "get-entry-info";
       hrl: Hrl;
+    }
+  | {
+      type: "localStorage.setItem";
+      key: string;
+      value: string;
+    }
+  | {
+      type: "localStorage.removeItem";
+      key: string;
+    }
+  | {
+      type: "localStorage.clear";
+    }
+  | {
+      type: "get-localStorage";
     };
 
 

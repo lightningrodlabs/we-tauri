@@ -189,13 +189,9 @@ export class AppletBundlesStore {
     this.installedApps.reload(); // required after fresh installation of app
     return asyncDerived(
       this.installedApplets,
-      (appletsHashes) => {
-        console.log("installedApplets: ", appletsHashes.map((hash) => encodeHashToBase64(hash)));
-        console.log("requested hash: ", encodeHashToBase64(appletHash));
-        return !!appletsHashes.find(
+      (appletsHashes) => !!appletsHashes.find(
           (hash) => hash.toString() === appletHash.toString()
-        );
-      }
+        )
     );
   });
 

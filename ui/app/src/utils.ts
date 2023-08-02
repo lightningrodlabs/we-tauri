@@ -23,7 +23,6 @@ export async function initAppClient(
   appId: string,
   defaultTimeout?: number
 ): Promise<AppAgentWebsocket> {
-  console.log("initiating app client for app id: ", appId);
   const client = await AppAgentWebsocket.connect("", appId, defaultTimeout);
   client.installedAppId = appId;
   client.cachedAppInfo = undefined;
