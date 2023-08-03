@@ -273,6 +273,11 @@ export async function handleAppletIframeMessage(
         throw new Error(`Got notification message without notifications attribute: ${JSON.stringify(message)}`)
       }
 
+      // If the applet that the notification is coming from is already open, don't do anything
+      if (weStore.selectedAppletHash && weStore.selectedAppletHash.toString() === appletHash.toString()) {
+        return;
+      }
+
       // add notifications to unread messages and store them in the persisted notifications log
       const notifications: Array<WeNotification> = message.notifications;
       validateNotifications(notifications); // validate notifications to ensure not to corrupt localStorage

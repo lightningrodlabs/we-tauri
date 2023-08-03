@@ -16,6 +16,7 @@ import { Applet } from "./types.js";
 import { appletOrigin } from "../utils.js";
 import { ConductorInfo } from "../tauri.js";
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
+import { ViewFrame } from "../layout/views/view-frame.js";
 
 export class AppletStore {
   constructor(
@@ -26,6 +27,7 @@ export class AppletStore {
   ) {}
 
   host: AsyncReadable<AppletHost> = lazyLoad(async () => {
+    console.log("@AppletStore host. Being called.")
     const appletHashBase64 = encodeHashToBase64(this.appletHash);
 
     let iframe = document.getElementById(appletHashBase64) as
@@ -40,6 +42,21 @@ export class AppletStore {
     iframe.id = appletHashBase64;
     iframe.src = origin;
     iframe.style.display = "none";
+
+    // // add the applet main view into the container to receive notifications etc.
+    // const appletMainView: ViewFrame = document.createElement("view-frame") as ViewFrame;
+    // appletMainView.appletHash = this.appletHash;
+    // appletMainView.renderView = {
+    //   type: "applet-view",
+    //   view: {
+    //     type: "main",
+    //   }
+    // };
+
+    // iframe.appendChild(appletMainView);
+    // add the iframe inside the app-container (<we-app></we-app> tag in index.html) to have the WeStore context
+    // const appContainer = document.getElementById("app-container");
+    // appContainer!.appendChild(iframe);
     document.body.appendChild(iframe);
 
     return new Promise<AppletHost>((resolve) => {

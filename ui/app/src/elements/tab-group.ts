@@ -21,7 +21,6 @@ export class TabGroup extends LitElement {
 
   render() {
     if (!this.tabs || this.tabs.length === 0) {
-      console.log("no tabs...");
       return html`<span>No tabs</span>`
     } else {
       return html`

@@ -74,7 +74,7 @@ export class MainDashboard extends LitElement {
   }
 
   async handleOpenHrl(dnaHash: DnaHash, hash: AnyDhtHash) {
-    this.selectedGroupDnaHash = undefined;
+    this._weStore.selectedGroupDnaHash = undefined;
     this.dashboardMode = "browserView";
     this.dynamicLayout.openViews.openHrl([dnaHash, hash], {});
   }
@@ -106,7 +106,7 @@ export class MainDashboard extends LitElement {
   }
 
   async openGroup(groupDnaHash: DnaHash) {
-    this.selectedGroupDnaHash = groupDnaHash;
+    this._weStore.selectedGroupDnaHash = groupDnaHash;
     this.dynamicLayout.openTab({
       id: `group-home-${encodeHashToBase64(groupDnaHash)}`,
       type: "component",
@@ -123,40 +123,40 @@ export class MainDashboard extends LitElement {
         return html``
 
       case "groupView":
-        return this.selectedAppletHash
+        return this._weStore.selectedAppletHash
          ? html`
               <applet-main
-                .appletHash=${this.selectedAppletHash}
+                .appletHash=${this._weStore.selectedAppletHash}
                 style="flex: 1;"
               ></applet-main>
           `
 
         : html`
-          <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
+          <group-context .groupDnaHash=${this._weStore.selectedGroupDnaHash}>
             <group-home
               style="flex: 1"
               @group-left=${() => {
-                this.selectedGroupDnaHash = undefined;
+                this._weStore.selectedGroupDnaHash = undefined;
               }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);
-                this.selectedAppletHash = e.detail.appletHash;
+                this._weStore.selectedAppletHash = e.detail.appletHash;
               }}
               @applet-selected-open-tab=${(e: CustomEvent) => {
                 this.dashboardMode = "browserView";
-                this.selectedGroupDnaHash = undefined;
+                this._weStore.selectedGroupDnaHash = undefined;
                 this.dynamicLayout.openViews.openAppletMain(e.detail.appletHash);
               }}
               @custom-view-selected=${(e) => {
                 this.dashboardMode = "browserView";
                 this.dynamicLayout.openTab({
-                  id: `custom-view-${this.selectedGroupDnaHash}-${encodeHashToBase64(
+                  id: `custom-view-${this._weStore.selectedGroupDnaHash}-${encodeHashToBase64(
                     e.detail.customViewHash
                   )}`,
                   type: "component",
                   componentType: "custom-view",
                   componentState: {
-                    groupDnaHash: this.selectedGroupDnaHash,
+                    groupDnaHash: this._weStore.selectedGroupDnaHash,
                     customViewHash: encodeHashToBase64(e.detail.customViewHash),
                   },
                 });
@@ -164,13 +164,13 @@ export class MainDashboard extends LitElement {
               @custom-view-created=${(e) => {
                 this.dashboardMode = "browserView";
                 this.dynamicLayout.openTab({
-                  id: `custom-view-${this.selectedGroupDnaHash}-${encodeHashToBase64(
+                  id: `custom-view-${this._weStore.selectedGroupDnaHash}-${encodeHashToBase64(
                     e.detail.customViewHash
                   )}`,
                   type: "component",
                   componentType: "custom-view",
                   componentState: {
-                    groupDnaHash: this.selectedGroupDnaHash,
+                    groupDnaHash: this._weStore.selectedGroupDnaHash,
                     customViewHash: encodeHashToBase64(e.detail.customViewHash),
                   },
                 });
@@ -200,7 +200,7 @@ export class MainDashboard extends LitElement {
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout
           @open-tab-request=${() => {
-            this.selectedGroupDnaHash = undefined;
+            this._weStore.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
           }}
           id="dynamic-layout"
@@ -234,21 +234,21 @@ export class MainDashboard extends LitElement {
       <!-- left sidebar -->
       <div class="column" style="position: fixed; left: 0; top: 0; bottom: 0; ${this.dashboardMode === "browserView" || this.hoverBrowser ? "background: var(--sl-color-primary-900);" : "background: var(--sl-color-primary-600);"}">
         <div
-          class="column top-left-corner ${this.selectedGroupDnaHash ? "" : "selected"}"
+          class="column top-left-corner ${this._weStore.selectedGroupDnaHash ? "" : "selected"}"
           @mouseenter=${() => { this.hoverBrowser = true } }
           @mouseleave=${() => { this.hoverBrowser = false } }
         >
           <sidebar-button
             style="--size: 58px; --border-radius: 20px; --hover-color: transparent;"
-            .selected=${this.selectedGroupDnaHash === undefined}
+            .selected=${this._weStore.selectedGroupDnaHash === undefined}
             .logoSrc=${weLogoIcon}
             .tooltipText=${msg("Browser View")}
             placement="bottom"
             @click=${() => {
               this.hoverBrowser = false;
               this.dashboardMode = "browserView";
-              this.selectedAppletHash = undefined;
-              this.selectedGroupDnaHash = undefined;
+              this._weStore.selectedAppletHash = undefined;
+              this._weStore.selectedGroupDnaHash = undefined;
               this.dynamicLayout.openTab({
                 id: "welcome",
                 type: "component",
@@ -261,7 +261,7 @@ export class MainDashboard extends LitElement {
 
         <groups-sidebar
           class="left-sidebar"
-          .selectedGroupDnaHash=${this.selectedGroupDnaHash}
+          .selectedGroupDnaHash=${this._weStore.selectedGroupDnaHash}
           @home-selected=${() => {
             this.dynamicLayout.openTab({
               type: "component",
@@ -269,8 +269,8 @@ export class MainDashboard extends LitElement {
             });
           }}
           @group-selected=${(e: CustomEvent) => {
-            this.selectedAppletHash = undefined;
-            this.selectedGroupDnaHash = e.detail.groupDnaHash;
+            this._weStore.selectedAppletHash = undefined;
+            this._weStore.selectedGroupDnaHash = e.detail.groupDnaHash;
             this.dashboardMode = "groupView";
           }}
           @group-created=${(e: CustomEvent) => {
@@ -287,23 +287,23 @@ export class MainDashboard extends LitElement {
 
 
       <!-- top bar -->
-      <div class="top-bar row" style="${this.selectedGroupDnaHash ? "" : "display: none;"} flex: 1; position: fixed; left: var(--sidebar-width); top: 0; right: 0;">
+      <div class="top-bar row" style="${this._weStore.selectedGroupDnaHash ? "" : "display: none;"} flex: 1; position: fixed; left: var(--sidebar-width); top: 0; right: 0;">
         ${
-          this.selectedGroupDnaHash
+          this._weStore.selectedGroupDnaHash
             ? html`
-              <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
+              <group-context .groupDnaHash=${this._weStore.selectedGroupDnaHash}>
                 <group-applets-sidebar
-                  .selectedAppletHash=${this.selectedAppletHash}
+                  .selectedAppletHash=${this._weStore.selectedAppletHash}
                   @applet-selected=${(e: CustomEvent) => {
                     this.dashboardMode = "groupView";
                     // this.dashboardMode = "browserView";
-                    this.selectedAppletHash = e.detail.appletHash;
+                    this._weStore.selectedAppletHash = e.detail.appletHash;
                     // this.dynamicLayout.openViews.openAppletMain(
                     //   e.detail.appletHash
                     // );
                   }}
                   @applet-selected-open-tab=${(e: CustomEvent) => {
-                    this.selectedGroupDnaHash = undefined;
+                    this._weStore.selectedGroupDnaHash = undefined;
                     this.dashboardMode = "browserView";
                     this.dynamicLayout.openViews.openAppletMain(e.detail.appletHash);
                   }}
@@ -327,7 +327,7 @@ export class MainDashboard extends LitElement {
           field-label=""
           style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0;"
           @entry-selected=${(e) => {
-            this.selectedGroupDnaHash = undefined;
+            this._weStore.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
             this.dynamicLayout.openViews.openHrl(
               e.detail.hrlWithContext.hrl,

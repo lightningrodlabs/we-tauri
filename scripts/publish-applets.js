@@ -427,3 +427,25 @@ async function publishAppletsRetry() {
   }
 }
 publishAppletsRetry();
+
+// setInterval(async () => {
+//   try {
+//     await publishApplets();
+//   } catch (e) {
+//     if (e.toString().includes("could not connect to holochain conductor")) {
+//       console.log(
+//         "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
+//       );
+//     } else if (e.toString().includes("crypto.getRandomValues is not a function")) {
+//       console.log("Failed to publish applets: Error: ", e);
+//       console.log("\n\nMake sure to use a recent enough version of node (>18). Check your node version with 'node --version'.");
+//     } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
+//       console.log("Failed to publish applets: Error: ", e);
+//       console.log("\n\nYou probably haven't installed the DevHub yet.");
+//     } else {
+//       console.log("Failed to publish applets. Error: ", e);
+//     }
+
+//     console.log("Attempting applet publishing again in 15 seconds.")
+//   }
+// }, 10000);

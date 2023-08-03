@@ -38,14 +38,42 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
+import { AppletHash } from "./types.js";
 
 export class WeStore {
+
+
   constructor(
     public adminWebsocket: AdminWebsocket,
     public appWebsocket: AppWebsocket,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
-  ) {}
+  ) {
+    // add invisible iframes for applets for notifications etc.
+
+  }
+
+  private _selectedAppletHash: AppletHash | undefined;
+
+  private _selectedGroupDnaHash: DnaHash | undefined;
+
+  get selectedAppletHash() {
+    return this._selectedAppletHash;
+  }
+
+  set selectedAppletHash(appletHash: AppletHash | undefined) {
+    this._selectedAppletHash = appletHash;
+  }
+
+  get selectedGroupDnaHash() {
+    return this._selectedGroupDnaHash;
+  }
+
+  set selectedGroupDnaHash(dnaHash: DnaHash | undefined) {
+    this._selectedGroupDnaHash = dnaHash;
+  }
+
+
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
