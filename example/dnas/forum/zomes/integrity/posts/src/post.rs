@@ -1,4 +1,6 @@
 use hdi::prelude::*;
+
+use crate::LinkTypes;
 #[hdk_entry_helper]
 #[derive(Clone, PartialEq)]
 pub struct Post {
@@ -67,6 +69,17 @@ pub fn validate_delete_link_post_updates(
         "PostUpdates links cannot be deleted",
     )))
 }
+pub fn validate_delete_link_peer_subscription(
+    _action: DeleteLink,
+    _original_action: CreateLink,
+    _base: AnyLinkableHash,
+    _target: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    Ok(ValidateCallbackResult::Invalid(String::from(
+        "PostUpdates links cannot be deleted",
+    )))
+}
 pub fn validate_create_link_all_posts(
     _action: CreateLink,
     _base_address: AnyLinkableHash,
@@ -98,4 +111,42 @@ pub fn validate_delete_link_all_posts(
     Ok(ValidateCallbackResult::Invalid(String::from(
         "AllPosts links cannot be deleted",
     )))
+}
+pub fn validate_create_link_peer_subscription(
+    action: CreateLink,
+    base_address: AnyLinkableHash,
+    target_address: AnyLinkableHash,
+    _tag: LinkTag,
+) -> ExternResult<ValidateCallbackResult> {
+    // Check whether the link points to the correct anchor
+    // let peers_anchor = anchor(LinkTypes::PeerSubscription, String::from("PEER_SUBSCRIPTION"), String::from("PEER_SUBSCRIPTION"))?;
+    // let base_address = EntryHash::try_from(base_address);
+    // match base_address {
+    //     Ok(address) => {
+    //         if hash_entry(peers_anchor)? !=  address {
+    //             return Ok(ValidateCallbackResult::Invalid(String::from(
+    //                 "PeerSubscription link does not point to the correct anchor.",
+    //             )))
+    //         }
+    //     },
+    //     Err(e) =>  return Ok(ValidateCallbackResult::Invalid(String::from(
+    //         "PeerSubscription link base is not an EntryHash.",
+    //     )))
+    // }
+
+    // Check whether the target is the agent pubkey of the link creator
+    let target = AgentPubKey::try_from(target_address);
+    match target {
+        Ok(address) => {
+            if action.author != address {
+                return Ok(ValidateCallbackResult::Invalid(String::from(
+                    "PeerSubscription link does not point to the AgentPubKey of the link creator.",
+                )))
+            }
+        },
+        Err(_e) => return Ok(ValidateCallbackResult::Invalid(String::from(
+            "PeerSubscription link target is not an AgentPubKey.",
+        ))),
+    }
+    Ok(ValidateCallbackResult::Valid)
 }

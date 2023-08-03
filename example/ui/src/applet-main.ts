@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import { localized, msg } from "@lit/localize";
 import { sharedStyles } from "@holochain-open-dev/elements";
@@ -7,10 +7,14 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
 import { WeNotification } from "@lightningrodlabs/we-applet";
+import { AppAgentClient } from "@holochain/client";
 
 @localized()
 @customElement("applet-main")
 export class AppletMain extends LitElement {
+
+  @property()
+  client!: AppAgentClient;
 
   @state()
   mediumInterval: number | null = null;
@@ -20,6 +24,7 @@ export class AppletMain extends LitElement {
 
   firstUpdated() {
     console.log("@firstUpdated in example applet: Hello.");
+    this.client.on("signal", (signal) => console.log("Received signal: ", signal));
   }
 
   sendUrgentNotification(delay: number) {
