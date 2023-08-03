@@ -89,9 +89,12 @@ jobs:
 
       - name: build the app
         uses: tauri-apps/tauri-action@dev
+        args: --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.publish-happ.outputs.releaseId }}
+          releaseDraft: true
+
 
 
