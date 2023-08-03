@@ -1,8 +1,7 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
-import { sharedStyles } from "./sharedStyles";
 
 export class NHPagination extends NHComponent {
   @property()
@@ -97,9 +96,8 @@ export class NHPagination extends NHComponent {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-    ${unsafeCSS(sharedStyles)}
       .container {
         background-color: var(--nh-theme-bg-surface);
         padding: calc(1px * var(--nh-spacing-xs));

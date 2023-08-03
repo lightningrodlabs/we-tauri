@@ -1,9 +1,8 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponent } from '../ancestors/base';
 import "../card";
 import "../assessment-widget";
-import { sharedStyles } from "../sharedStyles";
 import { NHCard } from "../card";
 import { NHAssessmentWidget } from "../assessment-widget";
 import { pearImg } from "../b64images";
@@ -48,11 +47,8 @@ export class NHPostCard extends NHComponent {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-
-
       /* Layout */
       .content {
         display: flex;

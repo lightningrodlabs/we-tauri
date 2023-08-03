@@ -1,9 +1,7 @@
-import { unsafeCSS } from 'lit';
 import { css, CSSResult, html } from 'lit';
 import {property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { SlAlert } from '@scoped-elements/shoelace';
-import { sharedStyles } from './sharedStyles';
 
 export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
@@ -29,9 +27,8 @@ export class NHAlert extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
       #main::part(base) {
         --sl-color-primary-600: var(--nh-theme-accent-muted);
         background-color: var(--nh-theme-menu-sub-title);

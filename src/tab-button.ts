@@ -1,8 +1,7 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
-import { sharedStyles } from "./sharedStyles";
 
 export class NHTabButton extends NHComponent {
   @property()
@@ -36,9 +35,8 @@ export class NHTabButton extends NHComponent {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-    ${unsafeCSS(sharedStyles)}
     button {
         color: #D9D9D9;
         background-color: var(--nh-theme-bg-subtle);

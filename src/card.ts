@@ -1,8 +1,7 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
-import { sharedStyles } from "./sharedStyles";
 
 export class NHCard extends NHComponentShoelace {
   @property()
@@ -56,10 +55,8 @@ export class NHCard extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-
       /* Layout */
       :root {
         display: flex;

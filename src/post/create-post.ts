@@ -1,8 +1,7 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { SlTextarea } from "@scoped-elements/shoelace";
 import "../card";
-import { sharedStyles } from "../sharedStyles";
 import { NHCard } from "../card";
 import { NHComponentShoelace } from "../ancestors/base";
 
@@ -38,9 +37,8 @@ export class NHCreatePost extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
 
       /* Layout */
       :root {

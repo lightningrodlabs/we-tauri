@@ -1,13 +1,16 @@
 import { css, CSSResult, html } from "lit";
 import { html as litHtml, literal } from "lit/static-html.js";
-import {property } from "lit/decorators.js";
-import { NHComponentShoelace } from "./ancestors/base";
+import { property } from "lit/decorators.js";
+import { NHComponent } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
 import "./tab-button";
 import { plusIcon } from "./b64images";
 
-export class NHMenu extends NHComponentShoelace {
+export const capitalize = (part: string) =>
+  part[0].toUpperCase() + part.slice(1);
+
+export class NHButtonGroup extends NHComponent {
   @property()
   direction: "vertical" | "horizontal" = "horizontal";
   @property()
@@ -52,12 +55,11 @@ export class NHMenu extends NHComponentShoelace {
                     .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
                     .size=${this.itemComponentProps?.size || "md"}
                   >
-                    ${label !== "" ? label : label}
+                    ${label !== "" ? capitalize(label): label}
                   </${this.itemComponentTag}>`
               )
             : null}
-            ${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${plusIcon}></nh-button>`: null}
-          <slot name="extra-item"></slot>
+          <slot name="extra-item">${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${plusIcon}></nh-button>`: null}</slot>
         </div>
         <slot name="actions"></slot>
       </div>
