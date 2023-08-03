@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 
 @customElement('nh-dimension-slide')
 export class NHDimensionSlide extends NHComponentShoelace {

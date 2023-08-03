@@ -8,7 +8,7 @@ import { SelectAvatar } from "@holochain-open-dev/elements";
 
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { NHComponentShoelace } from "neighbourhoods-design-system-components";
+import { NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { NHDialog } from "../components/nh/layout/dialog";
 
 /**

@@ -26,6 +26,7 @@
     "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
     "@neighbourhoods/client": "0.0.4",
+    "@neighbourhoods/design-system-components": "^1.0.0",
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@open-wc/scoped-elements": "^2.1.5",
     "@scoped-elements/material-web": "^0.0.19",
@@ -37,7 +38,6 @@
     "lit": "^2.2.0",
     "lit-svelte-stores": "^0.2.5",
     "md5": "^2.3.0",
-    "neighbourhoods-design-system-components": "0.0.14",
     "svelte": "^3.59.1",
     "uuid": "^8.3.2"
   },

@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';

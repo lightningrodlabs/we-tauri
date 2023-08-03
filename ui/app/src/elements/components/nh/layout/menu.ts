@@ -1,10 +1,11 @@
 import { css, CSSResult, html, unsafeCSS } from "lit";
 import { html as litHtml, literal } from "lit/static-html.js";
 import { customElement, property } from "lit/decorators.js";
-import { NHComponentShoelace } from "neighbourhoods-design-system-components";
+import { NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { classMap } from "lit/directives/class-map.js";
 import { plusIcon } from "./b64images";
 import { NHButton } from "./button";
+import { NHTabButton } from "@neighbourhoods/design-system-components";
 import { ScopedElementsMixin } from '@open-wc/scoped-elements';
 
 export const capitalize = (part: string) =>
@@ -72,6 +73,7 @@ export class NHMenu extends NHComponentShoelace {
   static get elementDefinitions() {
     return {
       'nh-button': NHButton,
+      'nh-tab-button': NHTabButton,
     };
   }
 

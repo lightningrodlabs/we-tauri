@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { SlDialog, SlAlert, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType, NHAlert } from './alert';

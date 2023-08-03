@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { SlAlert } from '@scoped-elements/shoelace';
 
 export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';

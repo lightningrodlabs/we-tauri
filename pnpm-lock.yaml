@@ -1,4 +1,4 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
 
 settings:
   autoInstallPeers: true
@@ -89,6 +89,9 @@ importers:
       '@neighbourhoods/client':
         specifier: 0.0.4
         version: 0.0.4(ws@8.13.0)
+      '@neighbourhoods/design-system-components':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@neighbourhoods/nh-launcher-applet':
         specifier: workspace:*
         version: link:../libs/nh-launcher-applet
@@ -122,9 +125,6 @@ importers:
       md5:
         specifier: ^2.3.0
         version: 2.3.0
-      neighbourhoods-design-system-components:
-        specifier: 0.0.14
-        version: 0.0.14
       svelte:
         specifier: ^3.59.1
         version: 3.59.1
@@ -2654,6 +2654,20 @@ packages:
       - ws
     dev: false
 
+  /@neighbourhoods/design-system-components@1.0.0:
+    resolution: {integrity: sha512-Fm3N/BEbSpbpvCAnmkdD0pdjJxY21rTW1W8NmE7nt11SO4w5lGN+kGf2ENP4mz+e3TOIss8RyUBoKztkcbbf2Q==}
+    requiresBuild: true
+    dependencies:
+      '@lit-labs/scoped-registry-mixin': 1.0.1
+      '@neighbourhoods/design-system-styles': 0.0.1
+      '@scoped-elements/shoelace': 0.1.0
+      lit: 2.7.6
+    dev: false
+
+  /@neighbourhoods/design-system-styles@0.0.1:
+    resolution: {integrity: sha512-lzYpFQv0CFp0bFOWf67S2d4+iWD6k1vmBMgv6Q19at+mzNZV5P/JqpWVcqdEUGaNAuDAvGemZQsWSeNpo5+lyg==}
+    dev: false
+
   /@noble/ed25519@2.0.0:
     resolution: {integrity: sha512-/extjhkwFupyopDrt80OMWKdLgP429qLZj+z6sYJz90rF2Iz0gjZh2ArMKPImUl13Kx+0EXI2hN9T/KJV0/Zng==}
     dev: false
@@ -2810,6 +2824,15 @@ packages:
       '@open-wc/scoped-elements': 2.1.5
       '@shoelace-style/shoelace': 2.0.0-beta.60
       lit: 2.2.0
+    dev: false
+
+  /@scoped-elements/shoelace@0.1.0:
+    resolution: {integrity: sha512-xLRASKBOzqz08ePFsGtovmVT4Lf+xreo9pdW2SeVnsxSfUBvqAky9lVcetIhCnaoPURH6jhDICCYOEb4/a/Iig==}
+    dependencies:
+      '@open-wc/dedupe-mixin': 1.4.0
+      '@open-wc/scoped-elements': 2.2.0
+      '@shoelace-style/shoelace': 2.0.0-beta.60
+      lit: 2.7.6
     dev: false
 
   /@shoelace-style/animations@1.1.0:
@@ -5451,13 +5474,6 @@ packages:
     resolution: {integrity: sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==}
     engines: {node: '>= 0.6'}
     dev: true
-
-  /neighbourhoods-design-system-components@0.0.14:
-    resolution: {integrity: sha512-e6Bo10XpKGK6/QzBkKSSP6Y5h1Fu5Nliz/5UXH2Ez5PHibpEzmWBK/RkrVegTTxEXnXIq4/9eIttrVfi4784ww==}
-    dependencies:
-      '@lit-labs/scoped-registry-mixin': 1.0.1
-      lit: 2.2.0
-    dev: false
 
   /new-port-cli@1.0.0:
     resolution: {integrity: sha512-9uMPTw2loJJ5423n4GT2uW7y12IeqiLiuUsNaXHZb3pBWNQ/pCnSi8nJ/EHBEBO58FQszvH2YCMDoCh7pnXN4Q==}

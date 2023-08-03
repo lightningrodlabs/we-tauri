@@ -1,4 +1,4 @@
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { html, css } from 'lit';
 import { NHCard } from './nh/layout/card';
 
