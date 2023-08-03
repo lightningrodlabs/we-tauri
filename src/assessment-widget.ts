@@ -1,8 +1,7 @@
-import { css, CSSResult, html, PropertyValueMap, unsafeCSS } from "lit";
+import { css, CSSResult, html, PropertyValueMap } from "lit";
 import {property, query, queryAll } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
-import { sharedStyles } from "./sharedStyles";
 
 export class NHAssessmentWidget extends NHComponentShoelace {
   @property()
@@ -72,9 +71,8 @@ export class NHAssessmentWidget extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
       :root {
         /*Variables not defined as tokens*/
         --animation-short: 250ms;

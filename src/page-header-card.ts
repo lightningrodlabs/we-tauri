@@ -1,8 +1,7 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
-import { sharedStyles } from "./sharedStyles";
 
 export class NHPageHeaderCard extends NHComponent {
   @property()
@@ -32,10 +31,8 @@ export class NHPageHeaderCard extends NHComponent {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-
       /* Layout */
       :host {
         grid-column: 1 / -1;

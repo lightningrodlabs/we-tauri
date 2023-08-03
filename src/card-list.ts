@@ -1,7 +1,6 @@
-import { css, CSSResult, html, unsafeCSS } from "lit";
+import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
-import { sharedStyles } from "./sharedStyles";
 import { classMap } from "lit/directives/class-map.js";
 
 export class NHCardList extends NHComponentShoelace {
@@ -24,10 +23,8 @@ export class NHCardList extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-
       .list-container {
         background-color: var(--nh-theme-bg-canvas);
         padding: calc(1px * var(--nh-spacing-lg));

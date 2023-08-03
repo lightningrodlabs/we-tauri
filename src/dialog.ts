@@ -1,10 +1,9 @@
-import { css, CSSResult, html, unsafeCSS } from 'lit';
+import { css, CSSResult, html } from 'lit';
 import {property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { SlDialog, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType, NHAlert } from './alert';
-import { sharedStyles } from './sharedStyles';
 
 export enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
@@ -182,10 +181,8 @@ export class NHDialog extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    // super.styles as CSSResult,
+    super.styles as CSSResult,
     css`
-      ${unsafeCSS(sharedStyles)}
-      
       #main::part(base) {
         background-color: var(--nh-theme-bg-surface);
       }
