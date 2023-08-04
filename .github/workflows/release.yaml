@@ -37,6 +37,7 @@ jobs:
       - id: create-release
         uses: ncipollo/release-action@v1
         with:
+          tag: "debug-webview-freezing-0.0.1"
           artifacts: "workdir/we.happ"
           body: "See assets below to download and install this version."
           prerelease: true
