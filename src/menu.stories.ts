@@ -1,4 +1,4 @@
-import { cycleArrow, pearImg, planeArrow } from "./b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 import "./menu";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
@@ -69,7 +69,7 @@ export const DashboardIconButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: {
       variant: "primary",
-      iconImageB64: cycleArrow,
+      iconImageB64: b64images.icons.refresh,
       size: "icon",
     },
     fixedFirstItem: false,
@@ -84,7 +84,7 @@ export const HorizontalIconButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: {
       variant: "primary",
-      iconImageB64: cycleArrow,
+      iconImageB64: b64images.icons.refresh,
       size: "lg",
     },
     fixedFirstItem: false,
@@ -100,7 +100,7 @@ export const HorizontalIconButtonsNoLabel: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: {
       variant: "primary",
-      iconImageB64: cycleArrow,
+      iconImageB64: b64images.icons.refresh,
       size: "icon",
     },
     fixedFirstItem: false,
@@ -116,7 +116,7 @@ export const VerticalIconButtons: Story = {
     itemComponentTag: literal`nh-button`,
     itemComponentProps: {
       variant: "primary",
-      iconImageB64: planeArrow,
+      iconImageB64: b64images.icons.forwardArrow,
       size: "stretch",
     },
     fixedFirstItem: false,

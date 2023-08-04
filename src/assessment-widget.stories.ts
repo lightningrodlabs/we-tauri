@@ -1,4 +1,4 @@
-import { fireImg, pearImg } from './b64images';
+import { b64images } from '@neighbourhoods/design-system-styles';
 import './assessment-widget';
 import { html } from 'lit';
 import type { Meta, StoryObj } from '@storybook/web-components';
@@ -36,20 +36,13 @@ export const Pear: Story = {
   args: {
     name: 'Pear',
     iconAlt: 'a pear', 
-    iconImg: pearImg
+    iconImg: b64images.icons.pear
   },
 };
-export const Fire: Story = {
+export const Chili: Story = {
   args: {
     name: 'Fire',
     iconAlt: 'hot!', 
-    iconImg: fireImg
+    iconImg: b64images.icons.chili
   },
 };
-// export const Pear: Story = {
-  // args: {
-  //   name: 'Pear',
-  //   iconAlt: 'a pear', 
-  //   iconImg: pearImg
-  // },
-// };

@@ -3,7 +3,7 @@ import "./menu";
 import "./button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
-import { backArrow } from "./b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 import { DashboardIconButtons, HorizontalTabButtons } from "./menu.stories";
 
 export interface PageHeaderCardProps {
@@ -24,7 +24,7 @@ const meta: Meta<PageHeaderCardProps> = {
   >
     ${args.secondary == "back"
       ? html`<img
-          src="data:image/svg+xml;base64,${backArrow}"
+          src="data:image/svg+xml;base64,${b64images.icons.backCaret}"
           slot="secondary-action"
         />`
       : args.secondary == "dashboard-menu"

@@ -3,7 +3,7 @@ import "./button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { BasicWidget } from "./assessment-widget.stories";
-import { pearImg } from "./b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 export interface CardProps {
   title: string;
@@ -49,7 +49,7 @@ const meta: Meta<CardProps> = {
           ${(BasicWidget as any).render({
             name: "Pear",
             iconAlt: "a pear",
-            iconImg: pearImg,
+            iconImg: b64images.icons.pear,
           })}
         </div>`
       : null}

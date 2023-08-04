@@ -5,7 +5,7 @@ import "../card";
 import "../assessment-widget";
 import { NHCard } from "../card";
 import { NHAssessmentWidget } from "../assessment-widget";
-import { pearImg } from "../b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 const kebabCase = (str: string) => str
     .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
@@ -18,7 +18,7 @@ export class NHPostCard extends NHComponent {
   @property()
   textContent!: string;
   @property()
-  iconImg: string = pearImg;
+  iconImg: string = b64images.icons.pear;
 
   render() {
     return html`

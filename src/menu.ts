@@ -5,7 +5,7 @@ import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
 import "./tab-button";
-import { plusIcon } from "./b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 export class NHMenu extends NHComponentShoelace {
   @property()
@@ -56,7 +56,7 @@ export class NHMenu extends NHComponentShoelace {
                   </${this.itemComponentTag}>`
               )
             : null}
-            ${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${plusIcon}></nh-button>`: null}
+            ${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${b64images.icons.plus}></nh-button>`: null}
           <slot name="extra-item"></slot>
         </div>
         <slot name="actions"></slot>

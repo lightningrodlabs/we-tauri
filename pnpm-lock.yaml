@@ -9,8 +9,8 @@ dependencies:
     specifier: ^1.0.1
     version: 1.0.1
   '@neighbourhoods/design-system-styles':
-    specifier: ^0.0.1
-    version: 0.0.1
+    specifier: ^0.0.2
+    version: 0.0.2
   '@scoped-elements/shoelace':
     specifier: ^0.1.0
     version: 0.1.0
@@ -1821,8 +1821,8 @@ packages:
       glob-to-regexp: 0.3.0
     dev: true
 
-  /@neighbourhoods/design-system-styles@0.0.1:
-    resolution: {integrity: sha512-lzYpFQv0CFp0bFOWf67S2d4+iWD6k1vmBMgv6Q19at+mzNZV5P/JqpWVcqdEUGaNAuDAvGemZQsWSeNpo5+lyg==}
+  /@neighbourhoods/design-system-styles@0.0.2:
+    resolution: {integrity: sha512-6UCjKLyb4V40NUF943Orvp2hSxWTf6phA+tgSTsJTnTwUZC7ruwV/HeNqLm6qzWhfVG0CSToG269ViuXkCa+Fg==}
     dev: false
 
   /@nodelib/fs.scandir@2.1.5:

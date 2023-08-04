@@ -4,7 +4,7 @@ import "./page-header-card";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { Basic, CardProps } from "./card.stories";
-import { backArrow } from "./b64images";
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 interface CardListProps {
   cards: CardProps[];
@@ -32,7 +32,7 @@ const meta: Meta<CardListProps> = {
     >
       ${args.hasHeader
         ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
-        <img src="data:image/svg+xml;base64,${backArrow}" slot="secondary-action"/> 
+        <img src="data:image/svg+xml;base64,${b64images.icons.backCaret}" slot="secondary-action"/> 
         <nh-button label="Upload Applet File" slot="primary-action"></nh-button>
       </nh-page-header-card>`
         : null}
