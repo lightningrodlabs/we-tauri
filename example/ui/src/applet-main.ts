@@ -22,9 +22,16 @@ export class AppletMain extends LitElement {
   @state()
   highInterval: number | null = null;
 
+  @state()
+  unsubscribe: undefined | (() => void);
+
   firstUpdated() {
     console.log("@firstUpdated in example applet: Hello.");
-    this.client.on("signal", (signal) => console.log("Received signal: ", signal));
+    this.unsubscribe = this.client.on("signal", (signal) => console.log("Received signal: ", signal));
+  }
+
+  disconnectedCallback(): void {
+    this. unsubscribe ? this.unsubscribe() : undefined;
   }
 
   sendUrgentNotification(delay: number) {
