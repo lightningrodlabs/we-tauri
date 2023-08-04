@@ -23,7 +23,7 @@ import { HoloIdenticon } from '@holochain-open-dev/elements';
 import { CreateWeGroupDialog } from '../dialogs/create-we-group-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
-import { NHCard } from './nh/layout/card';
+import { NHCard } from '@neighbourhoods/design-system-components';
 
 export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -215,7 +215,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
     return html`
       <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
 
-      <nh-card heading="Joining A Neighbourhood">
+      <nh-card .heading=${"Joining A Neighbourhood"}>
         <div class="center-content">
           <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
             To join a neighbourhood, send your public key to a member of the neighbourhood you

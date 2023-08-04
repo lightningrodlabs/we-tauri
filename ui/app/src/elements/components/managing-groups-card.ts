@@ -1,11 +1,10 @@
-import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHCard, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { html, css } from 'lit';
-import { NHCard } from './nh/layout/card';
 
 export class ManagingGroupsCard extends NHComponentShoelace {
   render() {
     return html`
-      <nh-card heading="Managing Neighbourhoods">
+      <nh-card .heading=${"Managing Neighbourhoods"} .textSize=${"md"}>
         <ul>
           <li>
             To create a <b>new neighbourhood</b>, click on the "Add Neighbourhood"

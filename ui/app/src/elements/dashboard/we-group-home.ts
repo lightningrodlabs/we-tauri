@@ -19,13 +19,13 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
-import { NHCard } from "../components/nh/layout/card";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { NHDialog } from "../components/nh/layout/dialog";
 import { NHButton } from "../components/nh/layout/button";
 import { NHMenu } from "../components/nh/layout/menu";
 import { backArrow } from "../components/nh/layout/b64images";
 import { NHPageHeaderCard } from "../components/nh/layout/page-header-card";
+import { NHCard } from "@neighbourhoods/design-system-components";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -207,10 +207,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         </div>
                       </div>
 
-                      <div class="column center-content" style="margin-left: 30px; width: 50%; display:flex; flex-direction: column;">
-                        <invitations-block style="margin: 10px; display:flex;"></invitations-block>
+                      <div class="column center-content" style="margin-left: calc(1px * var(--nh-spacing-lg)); width: 50%; display:flex; flex-direction: column;">
+                        <invitations-block style="margin-bottom: calc(1px * var(--nh-spacing-lg)); display:flex;"></invitations-block>
 
-                        <nh-card heading="Initiate New Applet Instance" style="width: 440px;">
+                        <nh-card .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
                           <div style="margin: 20px;">
                             <div style="margin-top: 10px;">
                               Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
@@ -220,8 +220,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                             </div>
                           </div>
                         </nh-card>
-
-
                       </div>
                     </div>
 

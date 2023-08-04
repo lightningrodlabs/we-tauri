@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHCard, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';
@@ -9,7 +9,6 @@ import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
 import { NHDimensionSlide } from '../components/nh/layout/dimension-slide';
 import { classMap } from 'lit/directives/class-map.js';
-import { NHCard } from '../components/nh/layout/card';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
   @property()
@@ -76,8 +75,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       ${dimensionNames.map(
         (dimension, i) => html`
           <nh-card
-            title="Assessment"
-            heading=${'Dimension: ' + dimension}
+            .title=${"Assessment"}
+            .heading=${'Dimension: ' + dimension}
             class="widget-card ${classMap({
               active: i == this.selectedDimensionIndex,
             })}"

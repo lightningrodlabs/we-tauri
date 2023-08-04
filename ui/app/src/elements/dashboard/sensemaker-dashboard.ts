@@ -36,7 +36,7 @@ import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/fu
 import { NHTableHeader } from '../components/nh/typo/table-header';
 import { NHMenu } from '../components/nh/layout/menu';
 import { NHButton } from '../components/nh/layout/button';
-import { ContextSelector } from './context-selector';
+// import { ContextSelector } from './context-selector';
 
 @customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -381,7 +381,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       'nh-menu': NHMenu,
       'nh-button': NHButton,
       'nh-table-header': NHTableHeader,
-      'nh-context-selector': ContextSelector,
+      // 'nh-context-selector': ContextSelector,
       'dashboard-table': StatefulTable,
       'dashboard-filter-map': DashboardFilterMap,
     };
