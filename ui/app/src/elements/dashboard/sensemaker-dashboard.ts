@@ -22,7 +22,7 @@ import { DashboardFilterMap } from '../components/table-filter-map';
 import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
-import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHButton, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 
 import { classMap } from 'lit/directives/class-map.js';
 import {
@@ -33,8 +33,6 @@ import {
   AssessmentTableType,
 } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
-import { NHTableHeader } from '../components/nh/typo/table-header';
-import { NHButton } from '../components/nh/layout/button';
 // import { ContextSelector } from './context-selector';
 
 @customElement('sensemaker-dashboard')
@@ -379,7 +377,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
       'sl-alert': SlAlert,
       // 'nh-menu': NHMenu,
       'nh-button': NHButton,
-      'nh-table-header': NHTableHeader,
       // 'nh-context-selector': ContextSelector,
       'dashboard-table': StatefulTable,
       'dashboard-filter-map': DashboardFilterMap,

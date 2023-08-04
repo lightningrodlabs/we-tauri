@@ -1,13 +1,12 @@
 import { css, CSSResult, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { NHCard, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHCard, NHComponentShoelace, NHSlide } from '@neighbourhoods/design-system-components';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';
 import { get } from 'svelte/store';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
-import { NHDimensionSlide } from '../components/nh/layout/dimension-slide';
 import { classMap } from 'lit/directives/class-map.js';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
@@ -220,7 +219,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     return {
       'sl-tooltip': SlTooltip,
       'sl-button': SlButton,
-      'nh-dimension-slide': NHDimensionSlide,
+      'nh-dimension-slide': NHSlide,
       'nh-card': NHCard,
     };
   }

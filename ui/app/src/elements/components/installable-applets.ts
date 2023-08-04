@@ -21,8 +21,7 @@ import { AppletMetaData } from "../../types";
 import { CreateAppletDialog } from "../dialogs/create-applet-dialog";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { DnaHash, AgentPubKeyB64, EntryHashB64 } from "@holochain/client";
-import { NHProfileList } from "./nh/profile/nh-profile-list";
+import { DnaHash } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -116,7 +115,6 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
 
   static get scopedElements() {
     return {
-      "nh-list-profiles": NHProfileList,
       "mwc-button": Button,
       "mwc-textfield": TextField,
       "mwc-circular-progress": CircularProgress,

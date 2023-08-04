@@ -1,8 +1,8 @@
 import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NHProfile } from "../components/nh/profile/nh-profile";
-import { NHProfilePrompt } from "../components/nh/profile/nh-profile-prompt";
+// import { NHProfile } from "../components/profile/nh-profile";
+import { NHProfilePrompt } from "../components/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -20,9 +20,8 @@ import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
-import { NHButton } from "../components/nh/layout/button";
 import { b64images } from "@neighbourhoods/design-system-styles";
-import { NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
+import { NHButton, NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -316,7 +315,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "nh-profile-prompt": NHProfilePrompt,
-      "nh-profile": NHProfile,
+      // "nh-profile": NHProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,

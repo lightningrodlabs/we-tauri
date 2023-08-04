@@ -26,7 +26,7 @@
     "@lit-labs/task": "^1.1.2",
     "@msgpack/msgpack": "^2.7.2",
     "@neighbourhoods/client": "0.0.4",
-    "@neighbourhoods/design-system-components": "^0.0.1",
+    "@neighbourhoods/design-system-components": "^0.0.2",
     "@neighbourhoods/design-system-styles": "^0.0.2",
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@open-wc/scoped-elements": "^2.1.5",

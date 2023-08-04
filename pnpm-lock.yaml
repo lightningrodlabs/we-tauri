@@ -90,8 +90,8 @@ importers:
         specifier: 0.0.4
         version: 0.0.4(ws@8.13.0)
       '@neighbourhoods/design-system-components':
-        specifier: ^0.0.1
-        version: 0.0.1
+        specifier: ^0.0.2
+        version: 0.0.2
       '@neighbourhoods/design-system-styles':
         specifier: ^0.0.2
         version: 0.0.2
@@ -2647,14 +2647,14 @@ packages:
       - ws
     dev: false
 
-  /@neighbourhoods/design-system-components@0.0.1:
-    resolution: {integrity: sha512-THo6I6c13qGQV/Un/G5vN53E+7hRYT8mRtiDZSjclEUoy+35JnUD7uQRPuLD9ZEqGfDi1kKG/rHIY76BHtex+g==}
+  /@neighbourhoods/design-system-components@0.0.2:
+    resolution: {integrity: sha512-pu/L4Sb4WoWgWf7SsRwRiHKH15vC32NYLwveklGGSgHbLYwaZ8aVJvzz404pXg2SH3nzS4apW7a/pm33KFUkZw==}
     requiresBuild: true
     dependencies:
       '@lit-labs/scoped-registry-mixin': 1.0.1
       '@neighbourhoods/design-system-styles': 0.0.2
       '@scoped-elements/shoelace': 0.1.0
-      lit: 2.2.0
+      lit: 2.8.0
     dev: false
 
   /@neighbourhoods/design-system-styles@0.0.2:
@@ -2715,7 +2715,6 @@ packages:
     dependencies:
       '@lit/reactive-element': 1.6.3
       '@open-wc/dedupe-mixin': 1.4.0
-    dev: true
 
   /@open-wc/semantic-dom-diff@0.13.21:
     resolution: {integrity: sha512-BONpjHcGX2zFa9mfnwBCLEmlDsOHzT+j6Qt1yfK3MzFXFtAykfzFjAgaxPetu0YbBlCfXuMlfxI4vlRGCGMvFg==}
@@ -2824,9 +2823,9 @@ packages:
     resolution: {integrity: sha512-xLRASKBOzqz08ePFsGtovmVT4Lf+xreo9pdW2SeVnsxSfUBvqAky9lVcetIhCnaoPURH6jhDICCYOEb4/a/Iig==}
     dependencies:
       '@open-wc/dedupe-mixin': 1.4.0
-      '@open-wc/scoped-elements': 2.1.5
+      '@open-wc/scoped-elements': 2.2.0
       '@shoelace-style/shoelace': 2.0.0-beta.60
-      lit: 2.2.0
+      lit: 2.8.0
     dev: false
 
   /@shoelace-style/animations@1.1.0:
@@ -7215,7 +7214,7 @@ packages:
       '@lit-labs/context': 0.2.0
       '@lit-labs/react': 1.2.1
       '@lit-labs/scoped-registry-mixin': 1.0.1
-      lit: 2.2.0
+      lit: 2.8.0
       lit-svelte-stores: 0.2.5
       svelte: 3.59.1
     dev: false
