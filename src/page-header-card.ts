@@ -33,56 +33,45 @@ export class NHPageHeaderCard extends NHComponent {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-      /* Layout */
-      :host {
-        grid-column: 1 / -1;
-      }
-      
-      .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: var(--nh-theme-fg-default);
-        border-radius: calc(1px * var(--nh-radii-md));
-        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-md));
-        position: relative;
-      }
-      .container.light {
-        background-color: var(--nh-theme-bg-muted);
-      }
-      .container.dark {
-        background-color: var(--nh-theme-bg-subtle);
-      }
-      
-      /* Headings */
+    /* Layout */
+    :host {
+      grid-column: 1 / -1;
+    }
+    
+    .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--nh-theme-fg-default);
+      border-radius: calc(1px * var(--nh-radii-md));
+      padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-md));
+      position: relative;
+      height: 100%;
+    }
+    .container.light {
+      background-color: var(--nh-theme-bg-muted);
+    }
+    .container.dark {
+      background-color: var(--nh-theme-bg-subtle);
+    }
+    
+    /* Headings */
 
-      h1 {
-        font-family: var(--nh-font-families-menu);
-        font-size: calc(1px * var(--nh-font-size-3xl));
-        margin: auto;
-        padding: calc(1px * var(--nh-spacing-xxs)) calc(1px * var(--nh-spacing-xl));
-        line-height: var(--nh-line-heights-headlines-default);
-        font-weight: var(--nh-font-weights-body-regular);
-      }
-      
-      /* Content */
-      
-      .content {
-        
-      }
-      .content.noheading {
-        
-      }
-      
-      /* Actions */
-      
-      
-      /* Slot specific */
-      
-      :host([slot="top-menu"]) .container {
-        padding: 0;
-      }
-      
+    h1 {
+      font-family: var(--nh-font-families-menu);
+      font-size: calc(1px * var(--nh-font-size-3xl));
+      margin: auto;
+      padding: calc(1px * var(--nh-spacing-xxs)) calc(1px * var(--nh-spacing-xl));
+      line-height: var(--nh-line-heights-headlines-default);
+      font-weight: var(--nh-font-weights-body-regular);
+    }
+    
+    /* Slot specific */
+    
+    :host([slot="top-menu"]) .container {
+      padding: 0;
+      grid-template-area: "top";
+    }
     `,
   ];
 }
