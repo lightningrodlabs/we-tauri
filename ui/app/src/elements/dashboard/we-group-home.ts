@@ -22,7 +22,6 @@ import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { NHDialog } from "../components/nh/layout/dialog";
 import { NHButton } from "../components/nh/layout/button";
-import { NHMenu } from "../components/nh/layout/menu";
 import { backArrow } from "../components/nh/layout/b64images";
 import { NHCard, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
 
@@ -332,7 +331,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-linear-progress": LinearProgress,
       // "list-agents-by-status": ListAgentsByStatus,
       'nh-page-header-card': NHPageHeaderCard,
-      'nh-menu': NHMenu,
       'nh-button': NHButton,
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
