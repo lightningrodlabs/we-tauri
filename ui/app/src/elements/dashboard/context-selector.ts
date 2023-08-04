@@ -11,16 +11,17 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
   @contextProvided({ context: sensemakerStoreContext })
   sensemakerStore!: SensemakerStore;
 
-  config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>
-    this.sensemakerStore.flattenedAppletConfigs()
-  );
+  // config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>
+  //   this.sensemakerStore.flattenedAppletConfigs()
+  // );
+  config;
   @state()
   _selectedContext: string = "";
   @state()
   activeContextIndex!: number;
 
   render() {
-    const contexts = Object.keys(this.config?.value?.cultural_contexts);
+    const contexts = this.config ? Object.keys(this.config.value?.cultural_contexts) : [];
     if(!this.activeContextIndex){
       this.activeContextIndex = contexts.findIndex((contextName: string) => this._selectedContext == contextName);
       if(this.activeContextIndex == -1) {
