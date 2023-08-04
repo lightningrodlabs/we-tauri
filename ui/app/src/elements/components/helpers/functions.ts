@@ -1,5 +1,9 @@
 import { html } from "lit";
 
+
+export const cleanForUI = (propertyName: string) =>
+  propertyName.split('_').map(capitalize).join(' ');
+
 // Helpers for generating markup
 export function generateMockProfile(number: number) {
   return html` <img

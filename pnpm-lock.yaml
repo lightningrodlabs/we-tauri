@@ -90,8 +90,8 @@ importers:
         specifier: 0.0.4
         version: 0.0.4(ws@8.13.0)
       '@neighbourhoods/design-system-components':
-        specifier: ^0.0.2
-        version: 0.0.2
+        specifier: file:../../../design-system-components
+        version: file:../design-system-components
       '@neighbourhoods/design-system-styles':
         specifier: ^0.0.2
         version: 0.0.2
@@ -2647,16 +2647,6 @@ packages:
       - ws
     dev: false
 
-  /@neighbourhoods/design-system-components@0.0.2:
-    resolution: {integrity: sha512-pu/L4Sb4WoWgWf7SsRwRiHKH15vC32NYLwveklGGSgHbLYwaZ8aVJvzz404pXg2SH3nzS4apW7a/pm33KFUkZw==}
-    requiresBuild: true
-    dependencies:
-      '@lit-labs/scoped-registry-mixin': 1.0.1
-      '@neighbourhoods/design-system-styles': 0.0.2
-      '@scoped-elements/shoelace': 0.1.0
-      lit: 2.8.0
-    dev: false
-
   /@neighbourhoods/design-system-styles@0.0.2:
     resolution: {integrity: sha512-6UCjKLyb4V40NUF943Orvp2hSxWTf6phA+tgSTsJTnTwUZC7ruwV/HeNqLm6qzWhfVG0CSToG269ViuXkCa+Fg==}
     dev: false
@@ -2715,6 +2705,7 @@ packages:
     dependencies:
       '@lit/reactive-element': 1.6.3
       '@open-wc/dedupe-mixin': 1.4.0
+    dev: true
 
   /@open-wc/semantic-dom-diff@0.13.21:
     resolution: {integrity: sha512-BONpjHcGX2zFa9mfnwBCLEmlDsOHzT+j6Qt1yfK3MzFXFtAykfzFjAgaxPetu0YbBlCfXuMlfxI4vlRGCGMvFg==}
@@ -2823,9 +2814,9 @@ packages:
     resolution: {integrity: sha512-xLRASKBOzqz08ePFsGtovmVT4Lf+xreo9pdW2SeVnsxSfUBvqAky9lVcetIhCnaoPURH6jhDICCYOEb4/a/Iig==}
     dependencies:
       '@open-wc/dedupe-mixin': 1.4.0
-      '@open-wc/scoped-elements': 2.2.0
+      '@open-wc/scoped-elements': 2.1.5
       '@shoelace-style/shoelace': 2.0.0-beta.60
-      lit: 2.8.0
+      lit: 2.2.0
     dev: false
 
   /@shoelace-style/animations@1.1.0:
@@ -6069,8 +6060,8 @@ packages:
       glob: 7.2.3
     dev: true
 
-  /rollup@3.27.1:
-    resolution: {integrity: sha512-tXNDFwOkN6C2w5Blj1g6ForKeFw6c1mDu5jxoeDO3/pmYjgt+8yvIFjKzH5FQUq70OKZBkOt0zzv0THXL7vwzQ==}
+  /rollup@3.27.2:
+    resolution: {integrity: sha512-YGwmHf7h2oUHkVBT248x0yt6vZkYQ3/rvE5iQuVBh3WO8GcJ6BNeOkpoX1yMHIiBm18EMLjBPIoUDkhgnyxGOQ==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
     optionalDependencies:
@@ -6824,7 +6815,7 @@ packages:
       '@types/node': 20.4.7
       esbuild: 0.17.19
       postcss: 8.4.27
-      rollup: 3.27.1
+      rollup: 3.27.2
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
@@ -7204,6 +7195,18 @@ packages:
       readable-stream: 3.6.2
     dev: true
 
+  file:../design-system-components:
+    resolution: {directory: ../design-system-components, type: directory}
+    name: '@neighbourhoods/design-system-components'
+    version: 0.0.2
+    requiresBuild: true
+    dependencies:
+      '@lit-labs/scoped-registry-mixin': 1.0.1
+      '@neighbourhoods/design-system-styles': 0.0.2
+      '@scoped-elements/shoelace': 0.1.0
+      lit: 2.2.0
+    dev: false
+
   github.com/adaburrows/table-web-component/6ac0c957aed1e2233c2d98f20ec56a4f20e110d4:
     resolution: {tarball: https://codeload.github.com/adaburrows/table-web-component/tar.gz/6ac0c957aed1e2233c2d98f20ec56a4f20e110d4}
     name: '@adaburrows/table-web-component'
@@ -7214,7 +7217,7 @@ packages:
       '@lit-labs/context': 0.2.0
       '@lit-labs/react': 1.2.1
       '@lit-labs/scoped-registry-mixin': 1.0.1
-      lit: 2.8.0
+      lit: 2.2.0
       lit-svelte-stores: 0.2.5
       svelte: 3.59.1
     dev: false

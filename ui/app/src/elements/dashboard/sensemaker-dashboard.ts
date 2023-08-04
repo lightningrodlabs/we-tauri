@@ -22,7 +22,7 @@ import { DashboardFilterMap } from '../components/table-filter-map';
 import { Readable, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
-import { NHButton, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHButton, NHComponentShoelace, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 
 import { classMap } from 'lit/directives/class-map.js';
 import {
@@ -33,7 +33,8 @@ import {
   AssessmentTableType,
 } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
-// import { ContextSelector } from './context-selector';
+import { ContextSelector } from './context-selector';
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 @customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -92,7 +93,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
     store.subscribe(store => {
       (store?.appletConfigs() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
         appletConfigs => {
-          // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
           if(typeof appletConfigs !== 'object') return;
           Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
             this.appletDetails[installedAppId].appletRenderInfo = {
@@ -185,7 +185,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
           ${appletIds.map((id, i) => {
             const applet = this.appletDetails[id];
             const appletName = this.appletDetails[id]?.customName;
-            // TODO: link ids and stop relying on ordering like this
             return !!applet
               ? html`
                   <sl-menu-item
@@ -290,9 +289,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
           ${this.loading
             ? this.renderMainSkeleton()
             : html`<sl-tab-group class="dashboard-tab-group">
-                <div slot="nav" class="tab-nav">
-                  <div class="tabs">
+                <nh-page-header-card slot="nav" role="nav" .heading=${""}>
+                  <nh-context-selector slot="secondary-action">
                     <sl-tab
+                      slot="button-fixed"
                       panel="resource"
                       class="dashboard-tab resource ${classMap({
                         active: this.selectedContext === 'none',
@@ -303,26 +303,40 @@ export class SensemakerDashboard extends NHComponentShoelace {
                       }}
                       >${this.selectedResourceName}</sl-tab
                     >
-                    ${contexts &&
-                    contexts.map(
-                      context =>
-                        html`<sl-tab 
-                            panel="${context.toLowerCase()}" 
-                            class="dashboard-tab ${classMap({
-                              active:
-                                encodeHashToBase64(this.context_ehs[context]) ===
-                                this.selectedContext,
-                            })}"
-                            @click=${() => {
-                              this.loadingState = LoadingState.FirstRender;
-                              this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
-                            }}
-                          ><span>${context}</span></sl-tab-panel
-                        >`,
-                    )}
-                  </div>
-                  ${this.renderIcons()}
-                </div>
+                    <div
+                      slot="buttons"
+                      class="tabs">
+                        ${contexts &&
+                          contexts.map(
+                            context =>
+                              html`<sl-tab 
+                                  panel="${context.toLowerCase()}" 
+                                  class="dashboard-tab ${classMap({
+                                    active:
+                                      encodeHashToBase64(this.context_ehs[context]) ===
+                                      this.selectedContext,
+                                  })}"
+                                  @click=${() => {
+                                    this.loadingState = LoadingState.FirstRender;
+                                    this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
+                                  }}
+                                ><nh-tab-button>${context}</nh-tab-button></sl-tab-panel>`,
+                          )}
+                      </div>
+                    </nh-context-selector>
+                    <nh-button-group
+                      class="dashboard-action-buttons"
+                      .direction=${"horizontal"}
+                      .fixedFirstItem=${false}
+                      .addItemButton=${false}
+                      slot="primary-action"
+                    >
+                    <div slot="buttons">
+                      <nh-button .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
+                      <nh-button .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
+                    </div>
+                    </nh-button-group>
+                </nh-page-header-card>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
                   ${this.selectedContext !== 'none'
@@ -336,7 +350,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
                       >
                       </dashboard-filter-map>`}
                 </sl-tab-panel>
-                <nh-context-selector></nh-context-selector>
                 ${contexts &&
                 contexts.map(context =>
                   encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext
@@ -375,9 +388,9 @@ export class SensemakerDashboard extends NHComponentShoelace {
       'sl-tab-group': SlTabGroup,
       'sl-tab-panel': SlTabPanel,
       'sl-alert': SlAlert,
-      // 'nh-menu': NHMenu,
+      'nh-page-header-card': NHPageHeaderCard,
       'nh-button': NHButton,
-      // 'nh-context-selector': ContextSelector,
+      'nh-context-selector': ContextSelector,
       'dashboard-table': StatefulTable,
       'dashboard-filter-map': DashboardFilterMap,
     };
@@ -431,16 +444,20 @@ export class SensemakerDashboard extends NHComponentShoelace {
         overflow: auto;
       }
 
+      nh-page-header-card {
+        width: 100%;
+      }
+
       /** Tab Nav **/
+      .dashboard-action-buttons {
+        display: flex;
+        flex: 1;
+      }
       .tab-nav {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-
-        margin: calc(1px * var(--nh-spacing-sm));
-        margin-bottom: 0;
-        padding: calc(1px * var(--nh-spacing-xs));
 
         color: var(--nh-theme-fg-default);
         background-color: var(--nh-theme-bg-surface);
@@ -465,11 +482,11 @@ export class SensemakerDashboard extends NHComponentShoelace {
       }
       /* Tabs */
 
-      .dashboard-tab {
+      slot[name="button-fixed"]::slotted(*) {
         position: relative;
         margin-left: calc(1px * var(--nh-spacing-xxs));
       }
-      .dashboard-tab::part(base) {
+      slot[name="button-fixed"]::slotted(*)::part(base) {
         border-radius: 0;
         padding: calc(1px * var(--nh-spacing-xs)) calc(1px * var(--nh-spacing-lg));
 
