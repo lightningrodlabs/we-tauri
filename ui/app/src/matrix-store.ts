@@ -1280,12 +1280,6 @@ export class MatrixStore {
 
       try {
         const appInfo = await this.adminWebsocket.installApp(request);
-        const installedCells = appInfo.cell_info;
-        for (const [roleName, cells] of Object.entries(installedCells)) {
-          for (const cellInfo of cells) {
-            await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-          }
-        }
 
       } 
       catch (e: any) {
@@ -1321,6 +1315,12 @@ export class MatrixStore {
 
       const appInfo = enabledAppInfo.app;
       const anyPubKey = getCellId(Object.values(appInfo.cell_info)[0][0])![1];
+      const installedCells = appInfo.cell_info;
+      for (const [roleName, cells] of Object.entries(installedCells)) {
+        for (const cellInfo of cells) {
+          await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        }
+      }
 
       // register Applet entry in order to have it in the own source chain
       const registerAppletInput: RegisterAppletInput = {
@@ -1444,6 +1444,12 @@ export class MatrixStore {
       installed_app_id: installedAppId,
     });
     const appInfo = enabledApp.app;
+    const installedCells = appInfo.cell_info;
+    for (const [roleName, cells] of Object.entries(installedCells)) {
+      for (const cellInfo of cells) {
+        await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+      }
+    }
 
     // --- Commit UI in the lobby cell as private entry ---
 
