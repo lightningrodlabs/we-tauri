@@ -28,7 +28,7 @@ import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
-import { NHDialog } from "./nh/layout/dialog";
+import { NHDialog } from "@neighbourhoods/design-system-components";
 
 export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 

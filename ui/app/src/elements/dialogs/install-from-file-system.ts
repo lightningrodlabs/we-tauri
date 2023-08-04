@@ -20,9 +20,9 @@ import { MatrixStore } from '../../matrix-store';
 import { matrixContext, weGroupContext } from '../../context';
 import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
 import { fakeMd5SeededEntryHash } from '../../utils';
-import { NHDialog } from '../components/nh/layout/dialog';
 import { SlButton, SlInput, SlTextarea } from '@scoped-elements/shoelace';
 import { NHButton } from '../components/nh/layout/button';
+import { NHDialog } from '@neighbourhoods/design-system-components';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })

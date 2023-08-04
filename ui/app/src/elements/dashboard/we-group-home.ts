@@ -20,10 +20,9 @@ import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
-import { NHDialog } from "../components/nh/layout/dialog";
 import { NHButton } from "../components/nh/layout/button";
-import { backArrow } from "../components/nh/layout/b64images";
-import { NHCard, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
+import { b64images } from "@neighbourhoods/design-system-styles";
+import { NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -168,7 +167,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                   .heading=${"Applet Library"}
                   >
                     <img
-                      src="data:image/svg+xml;base64,${backArrow}"
+                      src="data:image/svg+xml;base64,${b64images.icons.backCaret}"
                       slot="secondary-action"
                       @click=${() => this._showLibrary = false}
                     />

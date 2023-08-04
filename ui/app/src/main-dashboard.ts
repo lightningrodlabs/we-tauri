@@ -38,8 +38,7 @@ import { nhLogoIcon } from './icons/nh-logo-icon';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
-import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
-import { NHDialog } from './elements/components/nh/layout/dialog';
+import { NHComponentShoelace, NHDialog } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 

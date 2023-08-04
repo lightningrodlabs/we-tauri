@@ -18,9 +18,7 @@ import { AppletNotInstalled } from "./applet-not-installed";
 import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
-import { NHDialog } from "../components/nh/layout/dialog";
-
-
+import { NHDialog } from "@neighbourhoods/design-system-components";
 
 export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
