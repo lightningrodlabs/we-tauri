@@ -4,7 +4,7 @@ import { html, css } from 'lit';
 export class ManagingGroupsCard extends NHComponentShoelace {
   render() {
     return html`
-      <nh-card .heading=${"Managing Neighbourhoods"} .textSize=${"md"}>
+      <nh-card .theme=${"light"} .heading=${"Managing Neighbourhoods"} .textSize=${"md"}>
         <ul>
           <li>
             To create a <b>new neighbourhood</b>, click on the "Add Neighbourhood"

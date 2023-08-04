@@ -206,7 +206,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       <div class="column center-content" style="margin-left: calc(1px * var(--nh-spacing-lg)); width: 50%; display:flex; flex-direction: column;">
                         <invitations-block style="margin-bottom: calc(1px * var(--nh-spacing-lg)); display:flex;"></invitations-block>
 
-                        <nh-card .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
+                        <nh-card .theme=${"light"} .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
                           <div style="margin: 20px;">
                             <div style="margin-top: 10px;">
                               Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.

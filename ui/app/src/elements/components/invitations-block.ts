@@ -65,7 +65,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
         labelText="Error. Public key may be invalid."
       ></mwc-snackbar>
 
-      <nh-card .heading=${"Invite New Member"} .textSize=${"md"}>
+      <nh-card .theme=${"light"} .heading=${"Invite New Member"} .textSize=${"md"}>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
               label="Public Key"

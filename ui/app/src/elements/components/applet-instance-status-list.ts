@@ -319,16 +319,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     let localStyles = css`
       .content-pane {
         padding: 30px;
-        font-family: Arial, sans-serif;
-      }
-
-      .default-font {
-        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
       }
 
       .title {
         align-items: center;
-        font-family: Roboto, "Open Sans", "Helvetica Neue", sans-serif;
         font-size: 1.2em;
         text-align: center;
       }
