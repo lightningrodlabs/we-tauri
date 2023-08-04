@@ -24,8 +24,7 @@ import { NHDialog } from "../components/nh/layout/dialog";
 import { NHButton } from "../components/nh/layout/button";
 import { NHMenu } from "../components/nh/layout/menu";
 import { backArrow } from "../components/nh/layout/b64images";
-import { NHPageHeaderCard } from "../components/nh/layout/page-header-card";
-import { NHCard } from "@neighbourhoods/design-system-components";
+import { NHCard, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
