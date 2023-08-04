@@ -53,25 +53,25 @@ export class WeStore {
 
   }
 
-  private _selectedAppletHash: AppletHash | undefined;
+  // private _selectedAppletHash: AppletHash | undefined;
 
-  private _selectedGroupDnaHash: DnaHash | undefined;
+  // private _selectedGroupDnaHash: DnaHash | undefined;
 
-  get selectedAppletHash() {
-    return this._selectedAppletHash;
-  }
+  // get selectedAppletHash() {
+  //   return this._selectedAppletHash;
+  // }
 
-  set selectedAppletHash(appletHash: AppletHash | undefined) {
-    this._selectedAppletHash = appletHash;
-  }
+  // set selectedAppletHash(appletHash: AppletHash | undefined) {
+  //   this._selectedAppletHash = appletHash;
+  // }
 
-  get selectedGroupDnaHash() {
-    return this._selectedGroupDnaHash;
-  }
+  // get selectedGroupDnaHash() {
+  //   return this._selectedGroupDnaHash;
+  // }
 
-  set selectedGroupDnaHash(dnaHash: DnaHash | undefined) {
-    this._selectedGroupDnaHash = dnaHash;
-  }
+  // set selectedGroupDnaHash(dnaHash: DnaHash | undefined) {
+  //   this._selectedGroupDnaHash = dnaHash;
+  // }
 
 
 

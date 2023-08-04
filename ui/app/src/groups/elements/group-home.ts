@@ -431,6 +431,8 @@ export class GroupHome extends LitElement {
         const groupProfile = this.groupProfile.value.value[0];
         const networkSeed = this.groupProfile.value.value[1];
 
+        console.log("Rendering group home for group with profile: ", groupProfile);
+
         if (!groupProfile)
           return html`<div class="column center-content" style="flex: 1">
             <h2>${msg("Out of sync")}</h2>
