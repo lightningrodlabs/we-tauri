@@ -254,6 +254,7 @@ export class MockFactory {
 
       case 'appletConfigs':
         const mockAppletDetailsWritable = writable<{ [appletInstanceId: string]: AppletConfig }>();
+        const mockFlattenedAppletDetailsWritable = writable<AppletConfig>();
         const mockAppletConfigsResponse = {
           store: () => mockAppletDetailsWritable,
           subscribe: mockAppletDetailsWritable.subscribe,
@@ -261,10 +262,19 @@ export class MockFactory {
           mockSetSubscribeValue: (value: { [appletInstanceId: string]: AppletConfig }): void =>
             mockAppletDetailsWritable.update(_ => value),
         };
+        const mockFlattenedAppletConfigsResponse = {
+          store: () => mockFlattenedAppletDetailsWritable,
+          subscribe: mockFlattenedAppletDetailsWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: AppletConfig): void =>
+            mockFlattenedAppletDetailsWritable.update(_ => value),
+        };
         function mockUpdateAppletConfigs(newValue) {
           mockAppletDetailsWritable.update(_ => newValue);
+          mockFlattenedAppletDetailsWritable.update(_ => Object.values(newValue).flat()[0] as AppletConfig);
         }
         mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
+        mockStore.flattenedAppletConfigs = vi.fn(() => mockFlattenedAppletConfigsResponse);
         mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
         mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions);};
       default:

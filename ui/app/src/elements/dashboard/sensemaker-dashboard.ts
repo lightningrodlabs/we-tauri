@@ -19,7 +19,7 @@ import {
 import { StatefulTable } from '../components/table';
 import { DashboardFilterMap } from '../components/table-filter-map';
 
-import { Readable, get } from '@holochain-open-dev/stores';
+import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
 import { NHButton, NHComponentShoelace, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
@@ -59,6 +59,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() dimensions: DimensionDict = {};
   @state() context_ehs: ContextEhDict = {};
 
+  // private _contextResults = new StoreSubscriber(this, () => this._sensemakerStore.contextResults());
+  
   async connectedCallback() {
     super.connectedCallback();
 
@@ -288,9 +290,9 @@ export class SensemakerDashboard extends NHComponentShoelace {
         <main>
           ${this.loading
             ? this.renderMainSkeleton()
-            : html`<sl-tab-group class="dashboard-tab-group">
+            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) {  }.bind(this)}>
                 <nh-page-header-card slot="nav" role="nav" .heading=${""}>
-                  <nh-context-selector slot="secondary-action">
+                  <nh-context-selector slot="secondary-action" .selectedContext=${this.selectedContext}>
                     <sl-tab
                       slot="button-fixed"
                       panel="resource"
