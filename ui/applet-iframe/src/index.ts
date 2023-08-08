@@ -66,9 +66,14 @@ window.onload = async () => {
   if (view) {
     await renderView(applet, iframeConfig, view);
   }
+
   window.addEventListener("message", async (m) => {
     try {
-      const result = await handleMessage(applet, iframeConfig, m.data);
+      if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
+      const client = await setupAppletClient(iframeConfig.appPort, iframeConfig.appletHash);
+      const result = await handleMessage(client, applet, iframeConfig, m.data);
+      // close websocket connection again to prevent insufficient resources error
+      (client as AppAgentWebsocket).appWebsocket.client.close();
       m.ports[0].postMessage({ type: "success", result });
     } catch (e) {
       m.ports[0].postMessage({ type: "error", error: (e as any).message });
@@ -81,10 +86,16 @@ window.onload = async () => {
 };
 
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
+
   const appletClient = await AppAgentWebsocket.connect(
     `ws://localhost:${appPort}`,
     installedAppId
   );
+
+  window.addEventListener('beforeunload', () => {
+    // close websocket connection again to prevent insufficient resources error
+    appletClient.appWebsocket.client.close();
+  })
 
   appletClient.appWebsocket.callZome = appletClient.appWebsocket._requester(
     "call_zome",
@@ -339,6 +350,7 @@ async function renderView(
 }
 
 async function handleMessage(
+  client: AppAgentClient,
   applet: WeApplet,
   iframeConfig: IframeConfig,
   request: ParentToAppletRequest
@@ -347,7 +359,6 @@ async function handleMessage(
 
   const appletHash = iframeConfig.appletHash;
 
-  let client = await setupAppletClient(iframeConfig.appPort, appletHash);
   let weServices: WeServices;
 
   switch (request.type) {
