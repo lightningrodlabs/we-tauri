@@ -304,6 +304,7 @@ export class GroupAppletsSettings extends LitElement {
               html`
                 <applet-detail-card
                   @unarchive-applet=${(e) => {this.appletToUnarchive = e.detail}}
+                  installationStatus="archived"
                   .appletHash=${appletHash}
                   .applet=${applet}
                   .federatedGroups=${federatedGroups}

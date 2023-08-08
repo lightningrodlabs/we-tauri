@@ -237,7 +237,15 @@ export function validateNotifications(notifications: Array<WeNotification>): voi
     })
 }
 
-export function storeAppletNotifications(notifications: Array<WeNotification>, appletId: AppletId): void {
+/**
+ * Stores applet notifications to localStorage - to the array of unread notifications
+ * as well as to a persistent (deduplicated) log of all received notifications
+ *
+ * @param notifications
+ * @param appletId
+ * @returns
+ */
+export function storeAppletNotifications(notifications: Array<WeNotification>, appletId: AppletId): Array<WeNotification> {
   // store them to unread messages
   const unreadNotificationsJson: string | null = window.localStorage.getItem(`appletNotificationsUnread#${appletId}`);
   let unreadNotifications: Array<WeNotification>;
@@ -265,6 +273,8 @@ export function storeAppletNotifications(notifications: Array<WeNotification>, a
     }
     window.localStorage.setItem(`appletNotifications#${daysSinceEpoch}#${appletId}`, JSON.stringify(notificationsOfSameDate));
   })
+
+  return unreadNotifications
 }
 
 function isMillisecondTimestamp(timestamp: number): boolean {
@@ -281,7 +291,7 @@ function isMillisecondTimestamp(timestamp: number): boolean {
  * @param appletId
  * @returns
  */
-export function getAppletNotificationState(
+export function getAppletNotificationStatus(
   appletId: AppletId
 ): [string | undefined, number | undefined] {
 
@@ -290,21 +300,32 @@ export function getAppletNotificationState(
 
   if (unreadNotificationsJson) {
     unreadNotifications = JSON.parse(unreadNotificationsJson);
-    const notificationCounts = { "low": 0, "medium": 0, "high": 0 }
-    unreadNotifications.forEach((notification) => {
-      notificationCounts[notification.urgency] += 1;
-    })
-    if (notificationCounts.high) {
-      return ["high", notificationCounts.high];
-    } else if (notificationCounts.medium) {
-      return ["medium", notificationCounts.medium];
-    } else if (notificationCounts.low) {
-      return ["low", notificationCounts.low];
-    }
-    return [undefined, undefined]
+    return getNotificationState(unreadNotifications);
   } else {
-    return [undefined, undefined]
+    return [undefined, undefined];
   }
+}
+
+/**
+ * Returns a notification state of the form [urgency, counts], e.g. ["high", 2] given
+ * an array of unread notifications
+ *
+ * @param unreadNotifications
+ * @returns
+ */
+export function getNotificationState(unreadNotifications: Array<WeNotification>): [string | undefined, number | undefined] {
+  const notificationCounts = { "low": 0, "medium": 0, "high": 0 }
+  unreadNotifications.forEach((notification) => {
+    notificationCounts[notification.urgency] += 1;
+  })
+  if (notificationCounts.high) {
+    return ["high", notificationCounts.high];
+  } else if (notificationCounts.medium) {
+    return ["medium", notificationCounts.medium];
+  } else if (notificationCounts.low) {
+    return ["low", notificationCounts.low];
+  }
+  return [undefined, undefined]
 }
 
 /**
@@ -312,7 +333,7 @@ export function getAppletNotificationState(
  * notification dots.
  * @param appletId
  */
-export function clearAppletNotificationState(appletId: AppletId): void {
+export function clearAppletNotificationStatus(appletId: AppletId): void {
   window.localStorage.setItem(`appletNotificationsUnread#${appletId}`, JSON.stringify([]));
 }
 

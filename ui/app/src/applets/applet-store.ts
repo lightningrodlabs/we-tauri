@@ -43,21 +43,21 @@ export class AppletStore {
     iframe.src = origin;
     iframe.style.display = "none";
 
-    // // add the applet main view into the container to receive notifications etc.
-    // const appletMainView: ViewFrame = document.createElement("view-frame") as ViewFrame;
-    // appletMainView.appletHash = this.appletHash;
-    // appletMainView.renderView = {
-    //   type: "applet-view",
-    //   view: {
-    //     type: "main",
-    //   }
-    // };
+    // add the applet main view into the container to receive notifications etc.
+    const appletMainView: ViewFrame = document.createElement("view-frame") as ViewFrame;
+    appletMainView.appletHash = this.appletHash;
+    appletMainView.renderView = {
+      type: "applet-view",
+      view: {
+        type: "main",
+      }
+    };
 
-    // iframe.appendChild(appletMainView);
+    iframe.appendChild(appletMainView);
     // add the iframe inside the app-container (<we-app></we-app> tag in index.html) to have the WeStore context
-    // const appContainer = document.getElementById("app-container");
-    // appContainer!.appendChild(iframe);
-    document.body.appendChild(iframe);
+    const appContainer = document.getElementById("app-container");
+    appContainer!.appendChild(iframe);
+    // document.body.appendChild(iframe);
 
     return new Promise<AppletHost>((resolve) => {
       window.addEventListener("message", (message) => {

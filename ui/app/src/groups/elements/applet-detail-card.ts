@@ -53,67 +53,72 @@ export class AppletDetailCard extends LitElement {
       case "installed":
         return html`
           <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
-            <div class="row" style="flex: 1; align-items: center">
-              <applet-logo
-                .appletHash=${this.appletHash}
-                style="margin-right: 16px"
-              ></applet-logo>
-              <span style="flex: 1">${this.applet.custom_name}</span>
+            <div class="column">
+              <div class="row" style="flex: 1; align-items: center">
+                <applet-logo
+                  .appletHash=${this.appletHash}
+                  style="margin-right: 16px"
+                ></applet-logo>
+                <span style="flex: 1">${this.applet.custom_name}</span>
 
-              ${Array.from(this.federatedGroups.get(this.appletHash)!).map(
-                (groupDnaHash) => html`
-                  <group-context .groupDnaHash=${groupDnaHash}>
-                    <group-logo
-                      style="margin-right: 8px; --size: 32px"
-                    ></group-logo
-                  ></group-context>
-                `
-              )}
+                ${Array.from(this.federatedGroups.get(this.appletHash)!).map(
+                  (groupDnaHash) => html`
+                    <group-context .groupDnaHash=${groupDnaHash}>
+                      <group-logo
+                        style="margin-right: 8px; --size: 32px"
+                      ></group-logo
+                    ></group-context>
+                  `
+                )}
 
-              <sl-tooltip .content=${msg("Federate")}>
-                <sl-icon-button
-                  .src=${wrapPathInSvg(mdiExportVariant)}
-                  style="font-size: 2rem"
-                  @click=${() => {
-                    this.dispatchEvent(new CustomEvent('federate-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                  @keypress.enter=${() => {
-                    this.dispatchEvent(new CustomEvent('federate-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                ></sl-icon-button>
-              </sl-tooltip>
-              <sl-tooltip .content=${msg("Archive")}>
-                <sl-icon-button
-                  .src=${wrapPathInSvg(mdiArchiveArrowDown)}
-                  style="font-size: 2rem;"
-                  @click=${() => {
-                    this.dispatchEvent(new CustomEvent('archive-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                  @keypress.enter=${() => {
-                    this.dispatchEvent(new CustomEvent('archive-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                ></sl-icon-button>
-              </sl-tooltip>
-            </div>
-            <div>
-              ${this.appInfo
-                ? getProvisionedCells(this.appInfo).map(([roleName, cellInfo]) =>
-                    html`<span><b>${roleName}</b></span><span>${dnaHashForCell(cellInfo)}</span>`
-                  )
-                : html``
-              }
+                <sl-tooltip .content=${msg("Federate")}>
+                  <sl-icon-button
+                    .src=${wrapPathInSvg(mdiExportVariant)}
+                    style="font-size: 2rem"
+                    @click=${() => {
+                      this.dispatchEvent(new CustomEvent('federate-applet', {
+                        detail: this.appletHash,
+                        bubbles: true,
+                      }));
+                    }}
+                    @keypress.enter=${() => {
+                      this.dispatchEvent(new CustomEvent('federate-applet', {
+                        detail: this.appletHash,
+                        bubbles: true,
+                      }));
+                    }}
+                  ></sl-icon-button>
+                </sl-tooltip>
+                <sl-tooltip .content=${msg("Archive")}>
+                  <sl-icon-button
+                    .src=${wrapPathInSvg(mdiArchiveArrowDown)}
+                    style="font-size: 2rem;"
+                    @click=${() => {
+                      this.dispatchEvent(new CustomEvent('archive-applet', {
+                        detail: this.appletHash,
+                        bubbles: true,
+                      }));
+                    }}
+                    @keypress.enter=${() => {
+                      this.dispatchEvent(new CustomEvent('archive-applet', {
+                        detail: this.appletHash,
+                        bubbles: true,
+                      }));
+                    }}
+                  ></sl-icon-button>
+                </sl-tooltip>
+              </div>
+              <div>
+                ${this.appInfo
+                  ? getProvisionedCells(this.appInfo).map(([roleName, cellInfo]) =>
+                      html`<span><b>${roleName}: </b></span><span>${dnaHashForCell(cellInfo)}</span>`
+                    )
+                  : html``
+                }
+              </div>
+              <div>
+                <span><b>appletHash: </b></span><span>${encodeHashToBase64(this.appletHash)}</span>
+              </div>
             </div>
           </sl-card>
         `

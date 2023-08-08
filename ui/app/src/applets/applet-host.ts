@@ -1,4 +1,4 @@
-import { pipe, toPromise } from "@holochain-open-dev/stores";
+import { get, pipe, toPromise } from "@holochain-open-dev/stores";
 import {
   AppletToParentMessage,
   AppletToParentRequest,
@@ -26,7 +26,7 @@ import { AppletIframeProtocol, notifyTauri, signZomeCallTauri } from "../tauri.j
 import { WeStore } from "../we-store.js";
 import { AppletNotificationSettings } from "./types.js";
 import { AppletHash, AppletId } from "../types.js";
-import { getAppletNotificationSettings, storeAppletNotifications, validateNotifications } from "../utils.js";
+import { getAppletNotificationSettings, getNotificationState, storeAppletNotifications, validateNotifications } from "../utils.js";
 import { AppletStore } from "./applet-store.js";
 
 function getAppletIdFromOrigin(
@@ -273,15 +273,20 @@ export async function handleAppletIframeMessage(
         throw new Error(`Got notification message without notifications attribute: ${JSON.stringify(message)}`)
       }
 
-      // If the applet that the notification is coming from is already open, don't do anything
-      if (weStore.selectedAppletHash && weStore.selectedAppletHash.toString() === appletHash.toString()) {
-        return;
-      }
+      // // If the applet that the notification is coming from is already open, don't do anything
+      // // Not working properly yet because the focus of the main window and the focus of the iframe window are distinct
+      // const selectedAppletHash = get(weStore.selectedAppletHash());
+      // if (selectedAppletHash && selectedAppletHash.toString() === appletHash.toString() && weStore.windowFocussed()) {
+      //   return;
+      // }
 
       // add notifications to unread messages and store them in the persisted notifications log
       const notifications: Array<WeNotification> = message.notifications;
       validateNotifications(notifications); // validate notifications to ensure not to corrupt localStorage
-      storeAppletNotifications(notifications, appletId);
+      const unreadNotifications = storeAppletNotifications(notifications, appletId);
+
+      // update the notifications store
+      weStore.updateNotificationStatus(appletId, getNotificationState(unreadNotifications));
 
       // trigger OS notification if allowed by the user and notification is fresh enough (less than 10 minutes old)
       const appletNotificationSettings: AppletNotificationSettings = getAppletNotificationSettings(appletId);
