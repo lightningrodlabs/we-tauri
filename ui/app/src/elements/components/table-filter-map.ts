@@ -1,4 +1,4 @@
-import { Readable, get } from '@holochain-open-dev/stores';
+import { Readable, derived, get } from '@holochain-open-dev/stores';
 import {
   Assessment,
   CulturalContext,
@@ -8,7 +8,7 @@ import {
 } from '@neighbourhoods/client';
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { AppInfo, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, EntryHash, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
@@ -44,9 +44,13 @@ export class DashboardFilterMap extends LitElement {
   @property({ type: String })
   selectedContext;
   @property()
-  selectedDimensions!: DimensionDict;
+  contextEhs!: EntryHash[];
+  @property()
+  contextEhsB64!: string[];
   @state()
   private _dimensionEntries!: Dimension[];
+  @state()
+  selectedDimensions!: DimensionDict;
   @state()
   private _objectiveDimensionNames: string[] = [];
   @state()
@@ -79,6 +83,11 @@ export class DashboardFilterMap extends LitElement {
     if (changedProps.has('selectedContext')) {
       await this.fetchCurrentContextEntry();
       this._allAssessments.unsubscribe();
+      this.setupAssessmentFilteringSubscription();
+    }
+    if (changedProps.has('contextEhs') && this.tableType == AssessmentTableType.Context) {
+      this._allAssessments.unsubscribe();
+      this.contextEhsB64 = this.contextEhs.map(eh => encodeHashToBase64(eh));
       this.setupAssessmentFilteringSubscription();
     }
     if (changedProps.has('resourceDefEh')) {
@@ -198,7 +207,7 @@ export class DashboardFilterMap extends LitElement {
       );
     }
 
-    // By context
+    // By context && context results
     let tripleFiltered;
     if (
       this.tableType === AssessmentTableType.Context &&
@@ -209,6 +218,17 @@ export class DashboardFilterMap extends LitElement {
         filteredByMethodType,
         encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh),
       );
+      // TODO: cache each context's results and extract this all to a method
+      tripleFiltered = tripleFiltered.filter(assessment => {
+        if(!this.contextEhsB64?.length) return false;
+        const matchingContextEntryDefHash = this.contextEhsB64.find((eHB64) => encodeHashToBase64(assessment.resource_eh) === eHB64)
+        if(matchingContextEntryDefHash) {
+          // Filter out the oldest objective dimension values (so we have the latest average)
+          const results = tripleFiltered.filter(assessment => encodeHashToBase64(assessment.resource_eh) === matchingContextEntryDefHash)
+          const latestAssessmentFromResults = results.sort((a, b) => b.timestamp > a.timestamp).slice(-1)
+          return latestAssessmentFromResults[0] == assessment
+        }
+      })
     }
     return tripleFiltered || filteredByMethodType;
   }
@@ -319,14 +339,17 @@ export class DashboardFilterMap extends LitElement {
                   ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
-                  const assessWidgetStyles = assessWidgetType.styles as any;
                   const displayWidgetStyles = displayWidgetType.styles as any;
 
                   return html`
                     <style>
-                      ${unsafeCSS(assessWidgetStyles[1])}
+                      ${unsafeCSS(displayWidgetStyles[1])}
+                      .display-box, .display-box-wrapper {
+                        display: grid;
+                        place-content: center;
+                      }
                     </style>
-                    <div class="widget-wrapper">${assessWidget.render()}</div>
+                    <div class="widget-wrapper">${displayWidget.render()}</div>
                   `;
                 } else {
                   return html`<div></div>`;
@@ -373,12 +396,14 @@ export class DashboardFilterMap extends LitElement {
                   ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
-                  const assessWidgetStyles = assessWidgetType.styles as any;
                   const displayWidgetStyles = displayWidgetType.styles as any;
                   return html`
                     <style>
-                      ${unsafeCSS(assessWidgetStyles[1])}
                       ${unsafeCSS(displayWidgetStyles[1])}
+                      .display-box, .display-box-wrapper {
+                        display: grid;
+                        place-content: center;
+                      }
                     </style>
                     <div class="widget-wrapper">${displayWidget.render()}</div>
                   `;

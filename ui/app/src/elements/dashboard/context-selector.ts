@@ -1,11 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { customElement, state } from 'lit/decorators.js';
-import { SensemakerStore, AppletConfig, sensemakerStoreContext, ComputeContextInput } from '@neighbourhoods/client';
+import { SensemakerStore, AppletConfig, sensemakerStoreContext, ComputeContextInput, ContextResult } from '@neighbourhoods/client';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 import { contextProvided } from '@lit-labs/context';
 import { NHButton, NHButtonGroup } from '@neighbourhoods/design-system-components';
 import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { get } from '@holochain-open-dev/stores';
 
 @customElement("context-selector")
 export class ContextSelector extends ScopedRegistryHost(LitElement) {
@@ -18,21 +19,22 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
 
   @state()
   selectedContext: string = "";
-  @state()
-  activeContextIndex: number = 0;
 
   private _resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
     
   async updated(_changedProperties: any,) {
-      const contexts = typeof this.config?.value !== 'undefined' ? Object.keys(this.config.value?.cultural_contexts) : [];
+      // const contexts = typeof this.config?.value !== 'undefined' ? Object.keys(this.config.value?.cultural_contexts) : [];
       if(_changedProperties.has("selectedContext") && _changedProperties.get("selectedContext") !== 'undefined') {
-        
-        if(!this.selectedContext || this.selectedContext === 'none' || typeof this.config?.value == 'undefined'|| typeof this._resourceAssessments?.value == 'undefined') return; //} === "" || typeof _changedProperties.get("selected") == 'undefined') return 
+        if(!this.selectedContext || this.selectedContext === 'none' || typeof this.config?.value == 'undefined'|| typeof this._resourceAssessments?.value == 'undefined') return;
         const resourceEhs : EntryHash[] = Object.keys(this._resourceAssessments.value).flat().map(b64eh => decodeHashFromBase64(b64eh));
         const input : ComputeContextInput = { resource_ehs: resourceEhs, context_eh: decodeHashFromBase64(this.selectedContext), can_publish_result: false};
-        const results = await this.sensemakerStore.computeContext(this.selectedContext, input);
-        console.log('results :>> ', results);
-        this.dispatchContextSelected(contexts[this.activeContextIndex])
+        
+        await this.sensemakerStore.computeContext(this.selectedContext, input);
+        
+        const results = get(this.sensemakerStore.contextResults())
+        const selectedContextName = Object.entries(this.config.value.cultural_contexts).filter(([contextName, contextHash]) => encodeHashToBase64(contextHash) == this.selectedContext)[0];
+        
+        this.dispatchContextSelected(selectedContextName[0], results)
       }
   }
   
@@ -49,9 +51,9 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
       `
   }
   
-  dispatchContextSelected(contextName: string) {
+  dispatchContextSelected(contextName: string, results: any) {
     this.dispatchEvent(new CustomEvent('context-selected', {
-      detail: {contextName},
+      detail: {contextName, results},
       bubbles: true,
       composed: true
     }));

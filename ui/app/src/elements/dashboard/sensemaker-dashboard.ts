@@ -19,7 +19,7 @@ import {
 import { StatefulTable } from '../components/table';
 import { DashboardFilterMap } from '../components/table-filter-map';
 
-import { Readable, StoreSubscriber, get } from '@holochain-open-dev/stores';
+import { Readable, StoreSubscriber, derived, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
 import { NHButton, NHComponentShoelace, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
@@ -290,7 +290,11 @@ export class SensemakerDashboard extends NHComponentShoelace {
         <main>
           ${this.loading
             ? this.renderMainSkeleton()
-            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) {  }.bind(this)}>
+            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) { ([...(e.currentTarget as any).querySelectorAll('sl-tab-panel')].forEach(tab =>{ tab.name === e.detail.contextName && tab.dispatchEvent(new CustomEvent('context-display', {
+              detail: e.detail,
+              bubbles: false,
+              composed: true
+            }))})) }.bind(this)}>
                 <nh-page-header-card slot="nav" role="nav" .heading=${""}>
                   <nh-context-selector slot="secondary-action" .selectedContext=${this.selectedContext}>
                     <sl-tab
@@ -311,7 +315,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                         ${contexts &&
                           contexts.map(
                             context =>
-                              html`<sl-tab 
+                              html`<sl-tab
                                   panel="${context.toLowerCase()}" 
                                   class="dashboard-tab ${classMap({
                                     active:
@@ -356,23 +360,29 @@ export class SensemakerDashboard extends NHComponentShoelace {
                 contexts.map(context =>
                   encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext
                     ? ''
-                    : html`<sl-tab-panel
-                        class="dashboard-tab-panel ${classMap({
-                          active:
-                            encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
-                        })}"
-                        name="${context.toLowerCase()}"
-                      >
-                        <dashboard-filter-map
-                          .resourceName=${this.selectedResourceName}
-                          .resourceDefEh=${this.selectedResourceDefEh}
-                          .tableType=${AssessmentTableType.Context}
-                          .selectedContext=${this.selectedContext}
-                          .selectedDimensions=${this.dimensions}
-                        >
-                        </dashboard-filter-map>
-                      </sl-tab-panel>`,
-                )}
+                    : html`<sl-tab-panel 
+                              @context-display=${function(e: CustomEvent) { 
+                                  const flatResults = typeof e.detail.results == "object" ? Object.values(e.detail.results).flat() : [];
+                                  const dashboardFilterComponent = (e.currentTarget as any).children[0];
+                                  dashboardFilterComponent.contextEhs = flatResults;
+                                  console.log("Context results: ", e.detail.results);
+                                }.bind(this)}
+                              class="dashboard-tab-panel ${classMap({
+                                active:
+                                  encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
+                              })}"
+                              name="${context.toLowerCase()}"
+                          >
+                            <dashboard-filter-map
+                              .resourceName=${this.selectedResourceName}
+                              .resourceDefEh=${this.selectedResourceDefEh}
+                              .tableType=${AssessmentTableType.Context}
+                              .selectedContext=${this.selectedContext}
+                              .selectedDimensions=${this.dimensions}
+                            >
+                            </dashboard-filter-map>
+                          </sl-tab-panel>`,
+                    )}
               </sl-tab-group>`}
         </main>
       </div>
@@ -420,9 +430,14 @@ export class SensemakerDashboard extends NHComponentShoelace {
       }
       .container main {
         flex-grow: 1;
+        height: 4rem;
         overflow-x: hidden;
         background: var(--nh-theme-bg-canvas);
         background: var(--nh-theme-bg-canvas);
+        
+      }
+      .container main::-webkit-scrollbar   {
+        width: 0;
       }
       .alert-wrapper {
         height: 100%;
@@ -622,7 +637,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         padding-left: calc(1px * var(--nh-spacing-sm));
       }
       .indented .nav-item::part(base) {
-        padding-left: calc(1px * var(--nh-spacing-2xl));
+        padding-left: calc(1px * var(--nh-spacing-3xl));
       }
       .nav-item.active::part(base) {
         background: var(--nh-colors-eggplant-950);
