@@ -22,7 +22,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
-      - run: npm run build:styles
       
       - name: Get Latest Tag
         id: get_latest_tag
@@ -34,4 +33,4 @@ jobs:
           name: build-artifacts
           path: build/**/*.css
       - name: Merge Build Artifacts
-        run: export $(cat latest_tag.env); git config user.name "GitHub Actions"; git config user.email "actions@users.noreply.github.com"; git add -A; git commit -m "Update built styles from commit ${{ github.sha }}"; npm version patch; git push origin $TAG
+        run: export $(cat latest_tag.env); git config user.name "GitHub Actions"; git config user.email "actions@users.noreply.github.com"; git add -A; git commit -m "Update built styles from commit ${{ github.sha }}"; npm version patch; git push origin v${{ env.TAG }}
