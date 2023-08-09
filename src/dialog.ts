@@ -185,12 +185,9 @@ export class NHDialog extends NHComponentShoelace {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-      #main::part(base) {
-        background-color: var(--nh-theme-bg-surface);
-      }
       #main::part(panel) {
         border-radius: calc(1px * var(--nh-radii-xl));
-        background-color: var(--nh-theme-bg-surface);
+        background-color: var(--nh-theme-bg-surface); 
         max-height: 16rem;
         --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-subtle);
       }
@@ -223,7 +220,9 @@ export class NHDialog extends NHComponentShoelace {
 
       #main::part(overlay),
       #main::part(base) {
-        background-color: var(--nh-theme-bg-subtle-50);
+        --sl-overlay-opacity: 0.75;
+        --sl-overlay-background-color: var(--nh-theme-bg-canvas);
+        background-color: var(--nh-theme-bg-canvas); 
         transition: opacity 1s ease-in-out;
       }
       #main::part(body),

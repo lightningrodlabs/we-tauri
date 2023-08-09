@@ -1,7 +1,8 @@
 import { css, CSSResult, html } from "lit";
-import {property } from "lit/decorators.js";
+import {property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
+import { NHButtonGroup } from "./button-group";
 
 export class NHCard extends NHComponentShoelace {
   @property()
@@ -19,6 +20,16 @@ export class NHCard extends NHComponentShoelace {
   @property()
   footerAlign: "l" | "r" | "c" = "c";
 
+  @state()
+  contextMenuVisible: boolean = false;
+  toggleContextMenu () {
+    
+    this.contextMenuVisible = !this.contextMenuVisible;
+    (this.renderRoot.querySelector(".context-menu") as HTMLElement).dataset.open = 'true';
+  }
+  @query(".context-menu-dots")
+  _contextMenu : any;
+
   render() {
     return html`
       <div
@@ -32,11 +43,16 @@ export class NHCard extends NHComponentShoelace {
         })}"
       >
         ${this.hasContextMenu
-          ? html`<nav class="dots-context-menu">
-              <div class="menu-dot"></div>
-              <div class="menu-dot"></div>
-              <div class="menu-dot"></div>
-            </nav>`
+          ? html`<div class="context-menu" data-open=${this.contextMenuVisible} placement="top-right">
+                  <nav class="context-menu-dots" @click=${() => {this.toggleContextMenu()}} >
+                    <div class="menu-dot"></div>
+                    <div class="menu-dot"></div>
+                    <div class="menu-dot"></div>
+                  </nav>
+                  <nh-menu @mouseleave=${() => {this.toggleContextMenu()}} .itemLabels=${["", "", ""]} .itemComponentProps=${{ size: "icon", iconImageB64: "" }} .direction=${"horizontal"}>
+                    <slot slot="menu-items" name="context-menu"></slot>
+                  </nh-menu>
+                </div>`
           : html``}
         <slot name="header">
           ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
@@ -53,10 +69,19 @@ export class NHCard extends NHComponentShoelace {
       </div>
     `;
   }
+  static get elementDefinitions() {
+    return {
+      'nh-menu': NHButtonGroup,
+    };
+  }
+
 
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
+    :host {
+      --nh-menu-subtitle: #A89CB0;
+    }
       /* Layout */
       :root {
         display: flex;
@@ -74,10 +99,10 @@ export class NHCard extends NHComponentShoelace {
 
       }
       .container.light {
-        background-color: var(--nh-theme-bg-neutral);
+        background-color: var(--nh-theme-bg-surface);  
       }
       .container.dark {
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-canvas);
       }
       
       /* Headings */
@@ -124,13 +149,34 @@ export class NHCard extends NHComponentShoelace {
       }
 
       /* Context Menu */
-      
-      .dots-context-menu {
+      div.context-menu {
+        overflow: inherit;
         position: absolute;
+        right: -20px;
+        top: 0px;
         display: flex;
-        top: calc(1px * var(--nh-spacing-xl));
-        right: calc(1px * var(--nh-spacing-xl));
-        height: 7px;
+        justify-content: center;
+        align-items: center;
+        background: transparent;
+        border: none;
+        width: 56px;
+        height: 40px;
+      }
+      .context-menu nh-menu {
+        transition: all 0.3s ease-in-out;
+        border: 1px solid transparent;
+      }
+      .context-menu[data-open=true] nh-menu {
+        border: 1px solid var(--nh-theme-bg-muted);
+        border-radius: calc(1px * var(--nh-radii-md));
+      }
+      .context-menu[data-open=false] nh-menu {
+        visibility: hidden;
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+      }
+      .context-menu-dots {
+        display: flex;
       }
       .menu-dot {
         width: 5px;

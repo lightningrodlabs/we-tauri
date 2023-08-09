@@ -14,7 +14,7 @@ export class NHButtonGroup extends NHComponent {
   @property()
   direction: "vertical" | "horizontal" = "horizontal";
   @property()
-  itemLabels: string[] = ["Button 1", "Button 2", "Button 3"];
+  itemLabels!: string[];
   @property()
   itemComponentTag: any = literal`nh-button`;
   @property()
@@ -39,26 +39,29 @@ export class NHButtonGroup extends NHComponent {
             [this.direction]: !!this.direction,
           })}"
         >
-          ${this.itemLabels
-            ? this.itemLabels.map(
-                (label, i) =>
-                  litHtml`<${
-                    this.itemComponentTag // Dynamically render passed in component tag
-                  }
-                    id=${`menu-${this.direction}-item-${i}`}
-                    name=${`menu-${this.direction}-${label.toLowerCase()}`}
-                    class="menu-item${classMap({
-                      fixed: this.fixedFirstItem && i == 0,
-                    })}"
-                    .fixed=${this.fixedFirstItem && i == 0}
-                    .label=${label}
-                    .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
-                    .size=${this.itemComponentProps?.size || "md"}
-                  >
-                    ${label !== "" ? capitalize(label): label}
-                  </${this.itemComponentTag}>`
-              )
-            : null}
+          <slot name="button-fixed"></slot>
+          <slot name="buttons">
+            ${this.itemLabels
+              ? this.itemLabels.map(
+                  (label, i) =>
+                    litHtml`<${
+                      this.itemComponentTag // Dynamically render passed in component tag
+                    }
+                      id=${`menu-${this.direction}-item-${i}`}
+                      name=${`menu-${this.direction}-${label.toLowerCase()}`}
+                      class="menu-item${classMap({
+                        fixed: this.fixedFirstItem && i == 0,
+                      })}"
+                      .fixed=${this.fixedFirstItem && i == 0}
+                      .label=${label}
+                      .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
+                      .size=${this.itemComponentProps?.size || "md"}
+                    >
+                      ${label !== "" ? capitalize(label): label}
+                    </${this.itemComponentTag}>`
+                )
+              : null}
+          </slot>
           <slot name="extra-item">${this.addItemButton ? html`<nh-button class="add-menu-item" .variant=${"primary"} .size=${"icon"} .iconImageB64=${b64images.icons.plus}></nh-button>`: null}</slot>
         </div>
         <slot name="actions"></slot>

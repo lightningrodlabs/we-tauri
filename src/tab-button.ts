@@ -37,7 +37,7 @@ export class NHTabButton extends NHComponent {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-    button {
+      button {
         color: #D9D9D9;
         background-color: var(--nh-theme-bg-subtle);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
