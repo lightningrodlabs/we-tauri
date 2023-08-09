@@ -4,8 +4,6 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+-holochain-[0-9]+.[0-9]+.[0-9]+'
-    branches:
-      - release-0.2
 
 jobs:
   publish-happ:
@@ -37,7 +35,6 @@ jobs:
       - id: create-release
         uses: ncipollo/release-action@v1
         with:
-          tag: "debug-webview-freezing-0.0.1"
           artifacts: "workdir/we.happ"
           body: "See assets below to download and install this version."
           prerelease: true
