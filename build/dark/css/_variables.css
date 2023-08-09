@@ -1,4 +1,4 @@
-:root {
+:host, :root {
   --nh-menu-subtitle: #A89CB0; --nh-theme-bg-neutral: #433A4A; --nh-font-families-menu: "Work Sans", "Open Sans";
   --nh-text-decoration-captions: none;
   --nh-text-decoration-buttons: none;

@@ -1,0 +1,17 @@
+/* Catch-all for shoelace base part styles */
+:host *::part(base) {
+  --sl-font-sans: var(--nh-font-families-headlines);
+  --sl-input-font-family: var(--nh-font-families-headlines);
+  --sl-tooltip-font-family: var(--nh-font-families-headlines);
+  --sl-font-weight-semibold: 600;
+  --sl-font-size-small: calc(1px * var(--nh-font-size-md));
+  --sl-font-size-medium: calc(1px * var(--nh-font-size-lg));
+  --sl-font-size-large: calc(1px * var(--nh-font-size-xl));
+}
+/* More specific shoelace base part styles */
+sl-input:host ::part(base) {
+  --sl-font-sans: var(--nh-font-families-body);
+  --sl-font-weight-semibold: 600;
+  --sl-input-background-color: var(--nh-theme-bg-subtle);
+  --sl-font-size-medium : calc(1px * var(--nh-font-size-xl)) !important;
+}
