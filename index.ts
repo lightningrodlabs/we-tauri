@@ -2,7 +2,7 @@ import { css, unsafeCSS } from 'lit';
 // @ts-ignore
 import DarkAsString from './build/dark/css/_variables.css';
 // @ts-ignore
-import b64fonts from './fonts.css';
+import b64fonts from './fonts.css' assert { type: 'css' };
 // @ts-ignore
 import b64images from './b64images.ts';
 // @ts-ignore
