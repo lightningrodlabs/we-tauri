@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Wed, 09 Aug 2023 15:02:07 GMT
+ * Generated on Wed, 09 Aug 2023 15:08:53 GMT
  */
 
 module.exports = {
@@ -1980,6 +1980,23 @@ module.exports = {
           "colors",
           "eggplant",
           "950"
+        ]
+      },
+      "1000": {
+        "value": "#000",
+        "type": "color",
+        "filePath": "dark.json",
+        "isSource": true,
+        "original": {
+          "value": "#000",
+          "type": "color"
+        },
+        "name": "nhColorsEggplant1000",
+        "attributes": {},
+        "path": [
+          "colors",
+          "eggplant",
+          "1000"
         ]
       }
     }
