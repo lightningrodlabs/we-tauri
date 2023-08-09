@@ -3,6 +3,8 @@ name: Merge to Main
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'tokens.json'
 
 jobs:
   build:
