@@ -6,3 +6,4 @@ pub mod join_group;
 pub mod notification;
 pub mod password;
 pub mod sign_zome_call;
+pub mod window;

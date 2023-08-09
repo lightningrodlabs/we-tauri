@@ -27,7 +27,6 @@ export class AppletStore {
   ) {}
 
   host: AsyncReadable<AppletHost> = lazyLoad(async () => {
-    console.log("@AppletStore host. Being called.")
     const appletHashBase64 = encodeHashToBase64(this.appletHash);
 
     let iframe = document.getElementById(appletHashBase64) as

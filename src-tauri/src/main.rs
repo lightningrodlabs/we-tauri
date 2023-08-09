@@ -38,6 +38,7 @@ use commands::{
     notification::{notify_tauri, IconState, clear_systray_notification_state},
     password::{create_password, enter_password, is_keystore_initialized},
     sign_zome_call::sign_zome_call, notification::SysTrayIconState,
+    window::main_window_focused,
 };
 use window::build_main_window;
 
@@ -77,6 +78,7 @@ fn main() {
             open_appstore,
             open_devhub,
             sign_zome_call,
+            main_window_focused,
         ])
         .setup(move |app| {
             let handle = app.handle();
