@@ -29,4 +29,4 @@ jobs:
           name: build-artifacts
           path: build/**/*.css
       - name: Merge Build Artifacts
-        run: git config user.name "GitHub Actions"; git config user.email "actions@users.noreply.github.com"; git add -A; git commit -m "Update built styles from commit ${{ github.sha }}"; npm version patch; git push --tags; git push origin $(git tag --sort=committerdate | tail -n1)
+        run: git config user.name "GitHub Actions"; git config user.email "actions@users.noreply.github.com"; git add -A; git commit -m "Update built styles from commit ${{ github.sha }}"; git push origin $(git tag --sort=committerdate | tail -n1)
