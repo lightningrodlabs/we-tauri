@@ -3394,8 +3394,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_client"
-version = "0.4.0"
-source = "git+https://github.com/holochain/holochain-client-rust/?branch=main#dcd54e0259b80b93052677ef823e7c99949e05e0"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97f51dc982527dca0459316b69ef94c0a1a9f72d8673bb18cc7fef760111bfac"
 dependencies = [
  "again",
  "anyhow",
@@ -3555,7 +3556,7 @@ name = "holochain_launcher_utils"
 version = "0.0.5"
 source = "git+https://github.com/holochain/launcher?branch=we-hc-0.2.1#f0b15fb8767689736274be6cf487d9ceff5bedcc"
 dependencies = [
- "holochain_client 0.4.0 (git+https://github.com/holochain/holochain-client-rust/?branch=holochain-0.2.1)",
+ "holochain_client 0.4.0",
  "holochain_conductor_api 0.2.1",
  "holochain_types 0.2.1",
  "holochain_zome_types 0.2.1",
@@ -5789,7 +5790,7 @@ dependencies = [
  "getrandom 0.2.7",
  "hdi 0.3.1",
  "serde",
- "sha2 0.9.9",
+ "sha2 0.10.7",
 ]
 
 [[package]]
@@ -10634,7 +10635,7 @@ dependencies = [
  "hc_crud_caps",
  "hc_portal_types",
  "holochain 0.2.1",
- "holochain_client 0.4.0 (git+https://github.com/holochain/holochain-client-rust/?branch=main)",
+ "holochain_client 0.4.1",
  "holochain_integrity_types 0.2.1",
  "holochain_launcher_utils",
  "holochain_state 0.2.1",

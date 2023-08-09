@@ -32,7 +32,7 @@ portpicker = "0.1"
 tempdir = "0.3.7"
 thiserror = "1"
 
-holochain_client = { git = "https://github.com/holochain/holochain-client-rust/", branch = "main"}
+holochain_client = "0.4.1"
 holochain_state = "=0.2.1"
 holochain_websocket = "=0.2.1"
 holochain = "=0.2.1"
