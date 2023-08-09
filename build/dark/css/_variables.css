@@ -1,4 +1,5 @@
 :root {
+  --nh-menu-subtitle: #A89CB0; --nh-theme-bg-neutral: #433A4A; --nh-font-families-menu: "Work Sans", "Open Sans";
   --nh-text-decoration-captions: none;
   --nh-text-decoration-buttons: none;
   --nh-text-decoration-none: none;
@@ -378,7 +379,7 @@
   --nh-spacing-xl: 20;
   --nh-radii-2xl: 30;
   --nh-font-size-5xl: 49;
-  --nh-spacing-2xl: 2var(--nh-spacing-base);
+  --nh-spacing-2xl: var(--nh-spacing-base);
   --nh-font-size-6xl: 59;
   --nh-spacing-3xl: 32;
   --nh-font-size-7xl: 71;
