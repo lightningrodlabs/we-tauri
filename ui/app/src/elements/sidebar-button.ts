@@ -62,7 +62,7 @@ export class SidebarButton extends LitElement {
           "
           style="${!this.notificationUrgency ? "display: none" : ""}"
           >
-          ${ this.notificationCount ? this.notificationCount : undefined }
+          ${ this.notificationCount && this.notificationUrgency === "high" ? this.notificationCount : undefined }
         </div>
         <img
           class="icon"

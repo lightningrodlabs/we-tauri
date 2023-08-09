@@ -20,6 +20,7 @@ import {
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
+import { appWindow } from "@tauri-apps/api/window";
 
 import { AppOpenViews } from "../layout/types.js";
 import { AppletIframeProtocol, notifyTauri, signZomeCallTauri } from "../tauri.js";
@@ -273,12 +274,18 @@ export async function handleAppletIframeMessage(
         throw new Error(`Got notification message without notifications attribute: ${JSON.stringify(message)}`)
       }
 
-      // // If the applet that the notification is coming from is already open, don't do anything
-      // // Not working properly yet because the focus of the main window and the focus of the iframe window are distinct
-      // const selectedAppletHash = get(weStore.selectedAppletHash());
-      // if (selectedAppletHash && selectedAppletHash.toString() === appletHash.toString() && weStore.windowFocussed()) {
-      //   return;
-      // }
+      const appletStore2 = await toPromise(weStore.appletStores.get(appletHash));
+
+      // const mainWindowFocused = await isMainWindowFocused();
+      const windowFocused = await appWindow.isFocused();
+      const windowVisible = await appWindow.isVisible();
+
+      // If the applet that the notification is coming from is already open, and the We main window
+      // itself is also open, don't do anything
+      const selectedAppletHash = get(weStore.selectedAppletHash());
+      if (selectedAppletHash && selectedAppletHash.toString() === appletHash.toString() && windowFocused) {
+        return;
+      }
 
       // add notifications to unread messages and store them in the persisted notifications log
       const notifications: Array<WeNotification> = message.notifications;
@@ -286,7 +293,7 @@ export async function handleAppletIframeMessage(
       const unreadNotifications = storeAppletNotifications(notifications, appletId);
 
       // update the notifications store
-      weStore.updateNotificationStatus(appletId, getNotificationState(unreadNotifications));
+      appletStore2.setUnreadNotifications(getNotificationState(unreadNotifications));
 
       // trigger OS notification if allowed by the user and notification is fresh enough (less than 10 minutes old)
       const appletNotificationSettings: AppletNotificationSettings = getAppletNotificationSettings(appletId);
@@ -298,8 +305,6 @@ export async function handleAppletIframeMessage(
         console.warn("Failed to fetch AppletStore in notify hook: ", (e as any).toString());
       }
 
-      console.log("Got notifications @applet-host: ", notifications);
-
       await Promise.all(notifications.map(async (notification) => {
         // check whether it's actually a new event or not. Events older than 5 minutes won't trigger an OS notification
         // because it is assumed that they are emitted by the Applet UI upon startup of We and occurred while the
@@ -308,7 +313,7 @@ export async function handleAppletIframeMessage(
           console.log("notifying tauri");
           await notifyTauri(
             notification,
-            appletNotificationSettings.showInSystray,
+            appletNotificationSettings.showInSystray && !windowVisible,
             appletNotificationSettings.allowOSNotification && notification.urgency === "high",
             // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
             appletStore ? appletStore.applet.custom_name : undefined

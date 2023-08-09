@@ -66,6 +66,7 @@ export class WeApp extends LitElement {
   }
 
   async connect() {
+
     this.state = { state: "loading" };
 
     const info = await getConductorInfo();

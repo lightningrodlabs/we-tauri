@@ -36,60 +36,24 @@ import { v4 as uuidv4 } from "uuid";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
-import { GroupClient } from "./groups/group-client.js";
 import { GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { appIdFromAppletHash, appletHashFromAppId, clearAppletNotificationStatus, findAppForDnaHash, getAppletNotificationStatus, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
 
 export class WeStore {
-
 
   constructor(
     public adminWebsocket: AdminWebsocket,
     public appWebsocket: AppWebsocket,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
-  ) {
-
-    window.onblur = (e) => {
-      this._windowFocussed = e.type === "focus";
-    }
-
-    window.onfocus = (e) => {
-      this._windowFocussed = e.type === "focus";
-    }
-
-  }
-
-  // public selectedAppletHash: AppletHash | undefined;
-
-  // public selectedGroupDnaHash: DnaHash | undefined;
-
-  // get selectedAppletHash() {
-  //   return this._selectedAppletHash;
-  // }
-
-  // set selectedAppletHash(appletHash: AppletHash | undefined) {
-  //   this._selectedAppletHash = appletHash;
-  //   console.log("Set selectedAppletHash to new hash: ", this._selectedAppletHash ? encodeHashToBase64(this._selectedAppletHash) : this._selectedAppletHash);
-  // }
-
-  // get selectedGroupDnaHash() {
-  //   return this._selectedGroupDnaHash;
-  // }
-
-  // set selectedGroupDnaHash(dnaHash: DnaHash | undefined) {
-  //   this._selectedGroupDnaHash = dnaHash;
-  // }
-
-  private _unreadNotifications: Writable<Record<AppletId, [string | undefined, number | undefined]>> = writable({});
+  ) {}
 
   private _selectedAppletHash: Writable<AppletHash | undefined> = writable(undefined);
 
-  private _windowFocussed: boolean = true;
 
   selectedAppletHash(): Readable<AppletHash | undefined> {
     return derived(this._selectedAppletHash, (hash) => hash);
@@ -99,46 +63,6 @@ export class WeStore {
     this._selectedAppletHash.update((_) => hash);
   }
 
-  /**
-   * Reads the notification status for an applet. If it is not defined, it will read it
-   * from localStorage.
-   *
-   * @param appletId
-   * @returns
-   */
-  notificationStatus(appletId: AppletId): Readable<[string | undefined, number | undefined]> {
-    return derived(this._unreadNotifications, (store) =>  store[appletId] ? store[appletId] : getAppletNotificationStatus(appletId))
-  }
-
-  /**
-   * Updates the notification status in the store. Intended to be called by the applet-host when
-   * it receives a "notify-we" message
-   *
-   * @param appletId
-   * @param notificationStatus
-   */
-  updateNotificationStatus(appletId: AppletId, notificationStatus: [string | undefined, number | undefined]) {
-    this._unreadNotifications.update((store) => {
-      store[appletId] = notificationStatus;
-      return store;
-    })
-  }
-
-  clearAppletNotificationStatus(appletId: AppletId): void {
-    clearAppletNotificationStatus(appletId);
-    this._unreadNotifications.update((unreadNotifications) => {
-      unreadNotifications[appletId] = [undefined, undefined];
-      return unreadNotifications;
-    })
-  }
-
-  unreadNotifications(): Readable<Record<AppletId, [string | undefined, number | undefined]>> {
-    return derived(this._unreadNotifications, (store) => store);
-  }
-
-  windowFocussed(): boolean {
-    return this._windowFocussed;
-  }
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
@@ -329,7 +253,7 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
-        console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
+        // console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -338,8 +262,8 @@ export class WeStore {
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
 
-        console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
-        console.log("groupDnaHashes: ", groupDnaHashes);
+        // console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
+        // console.log("groupDnaHashes: ", groupDnaHashes);
 
         if (groupDnaHashes.length === 0) {
           this.appletBundlesStore.disableApplet(appletHash);
@@ -485,4 +409,5 @@ export class WeStore {
       }
     )
   );
+
 }

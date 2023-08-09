@@ -1,8 +1,11 @@
 import {
   AsyncReadable,
+  Writable,
+  derived,
   lazyLoad,
   lazyLoadAndPoll,
   pipe,
+  writable,
 } from "@holochain-open-dev/stores";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import {
@@ -13,7 +16,7 @@ import {
 
 import { AppletHost } from "./applet-host.js";
 import { Applet } from "./types.js";
-import { appletOrigin } from "../utils.js";
+import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus } from "../utils.js";
 import { ConductorInfo } from "../tauri.js";
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
 import { ViewFrame } from "../layout/views/view-frame.js";
@@ -24,7 +27,9 @@ export class AppletStore {
     public applet: Applet,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
-  ) {}
+  ) {
+  this._unreadNotifications.set(loadAppletNotificationStatus(encodeHashToBase64(appletHash)));
+}
 
   host: AsyncReadable<AppletHost> = lazyLoad(async () => {
     const appletHashBase64 = encodeHashToBase64(this.appletHash);
@@ -83,4 +88,19 @@ export class AppletStore {
   logo = this.appletBundlesStore.appletBundleLogo.get(
     this.applet.appstore_app_hash
   );
+
+  _unreadNotifications: Writable<[string | undefined, number | undefined]> = writable([undefined, undefined]);
+
+  unreadNotifications() {
+    return derived(this._unreadNotifications, (store) => store)
+  }
+
+  setUnreadNotifications(unreadNotifications: [string | undefined, number | undefined]) {
+    this._unreadNotifications.set(unreadNotifications);
+  }
+
+  clearNotificationStatus() {
+    clearAppletNotificationStatus(encodeHashToBase64(this.appletHash));
+    this._unreadNotifications.set([undefined, undefined])
+  }
 }

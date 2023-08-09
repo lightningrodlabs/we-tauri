@@ -12,8 +12,7 @@ import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
-import "../applets/elements/applet-logo-raw.js";
-import "../elements/topbar-button.js";
+import "../elements/applet-topbar-button.js";
 import "./create-group-dialog.js";
 
 import { weStoreContext } from "../context.js";
@@ -45,12 +44,6 @@ export class GroupAppletsSidebar extends LitElement {
     () => [this._groupStore]
   );
 
-  _unreadNotifications = new StoreSubscriber(
-    this,
-    () => this.weStore.unreadNotifications(),
-    () => [this.weStore],
-  );
-
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
     if (Array.from(applets.entries()).length === 0) {
       return html`
@@ -69,17 +62,11 @@ export class GroupAppletsSidebar extends LitElement {
             a1[1].applet.custom_name.localeCompare(a2[1].applet.custom_name)
           )
           .map(
-            ([_appletBundleHash, appletStore]) =>
-            {
-
-              const appletNotificationStatus = this._unreadNotifications.value[encodeHashToBase64(appletStore.appletHash)]
-                ? this._unreadNotifications.value[encodeHashToBase64(appletStore.appletHash)]
-                : [undefined, undefined];
-
-              return html`
-                <topbar-button
+            ([_appletBundleHash, appletStore]) => html`
+                <applet-topbar-button
                   title="double-click to open in tab"
                   style="margin-left: -4px;"
+                  .appletStore=${appletStore}
                   .selected=${this.selectedAppletHash === appletStore.appletHash}
                   .tooltipText=${appletStore.applet.custom_name}
                   placement="bottom"
@@ -94,7 +81,7 @@ export class GroupAppletsSidebar extends LitElement {
                         composed: true,
                       })
                     );
-                    this.weStore.clearAppletNotificationStatus(encodeHashToBase64(appletStore.appletHash));
+                    appletStore.clearNotificationStatus();
                   }}
                   @dblclick=${() => {
                     this.dispatchEvent(
@@ -109,15 +96,8 @@ export class GroupAppletsSidebar extends LitElement {
                     );
                   }}
                 >
-                  <applet-logo-raw
-                    .appletHash=${appletStore.appletHash}
-                    .notificationUrgency=${appletNotificationStatus[0]}
-                    .notificationCount=${appletNotificationStatus[1]}
-                    style="z-index: 1; --size: 58px;"
-                  ></applet-logo-raw>
-                </topbar-button>
+                </applet-topbar-button>
               `
-            }
           )}
       </div>
     `;

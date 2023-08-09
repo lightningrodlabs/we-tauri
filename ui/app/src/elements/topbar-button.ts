@@ -6,9 +6,7 @@ import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.
 import { weStyles } from "../shared-styles.js";
 
 @customElement("topbar-button")
-export class SidebarButton extends LitElement {
-  @property()
-  logoSrc!: string;
+export class TopBarButton extends LitElement {
 
   @property()
   tooltipText!: string;

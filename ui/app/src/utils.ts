@@ -291,7 +291,7 @@ function isMillisecondTimestamp(timestamp: number): boolean {
  * @param appletId
  * @returns
  */
-export function getAppletNotificationStatus(
+export function loadAppletNotificationStatus(
   appletId: AppletId
 ): [string | undefined, number | undefined] {
 
@@ -305,6 +305,24 @@ export function getAppletNotificationStatus(
     return [undefined, undefined];
   }
 }
+
+/**
+ * Reads the current applet notification states from localStorage
+ *
+ * @returns
+ */
+export function loadAllNotificationStates(): Record<AppletId, [string | undefined, number | undefined]> {
+  const states = {};
+  Object.keys(localStorage).forEach((key) => {
+    if (key.includes("appletNotificationsUnread#")) {
+      const appletId = key.slice(26);
+      states[appletId] = loadAppletNotificationStatus(appletId);
+    }
+  })
+  return states;
+}
+
+
 
 /**
  * Returns a notification state of the form [urgency, counts], e.g. ["high", 2] given
@@ -357,3 +375,6 @@ export function getAppletNotificationSettings(appletId: AppletId): AppletNotific
 
   return appletNotificationSettings;
 }
+
+
+

@@ -6,8 +6,12 @@ import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   asyncDerived,
   AsyncReadable,
+  AsyncStatus,
   completed,
+  derived,
+  get,
   join,
+  joinMap,
   lazyLoad,
   lazyLoadAndPoll,
   mapAndJoin,
@@ -15,13 +19,14 @@ import {
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap, mapValues } from "@holochain-open-dev/utils";
 import {
   AgentPubKey,
   AppAgentWebsocket,
   CellType,
   DnaHash,
   EntryHash,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
@@ -173,9 +178,12 @@ export class GroupStore {
       )
   );
 
+  activeAppletStores = pipe(this.allApplets,
+    (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets)
+  );
+
   allBlocks = pipe(
-    this.installedApplets,
-    (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets),
+    this.activeAppletStores,
     (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
   );
 
@@ -183,4 +191,24 @@ export class GroupStore {
     () => this.groupClient.getRelatedGroups(),
     10000
   );
+
+  allUnreadNotifications = pipe(
+    this.activeAppletStores,
+    (allAppletStores) => derived(joinMap(mapValues(allAppletStores, (store) => store.unreadNotifications())), (map) => ({ status: "complete", value: map } as AsyncStatus<ReadonlyMap<Uint8Array, [string | undefined, number | undefined]>>) ),
+    (notificationsMap) => {
+      const notificationCounts = { "low": 0, "medium": 0, "high": 0 };
+      Array.from(notificationsMap.values()).forEach(([urgency, count]) => {
+        if(urgency) notificationCounts[urgency] += count;
+      })
+
+    if (notificationCounts.high) {
+      return completed(["high", notificationCounts.high] as [string | undefined, number | undefined]);
+    } else if (notificationCounts.medium) {
+      return completed(["medium", notificationCounts.medium] as [string | undefined, number | undefined]);
+    } else if (notificationCounts.low) {
+      return completed(["low", notificationCounts.low] as [string | undefined, number | undefined]);
+    }
+    return completed([undefined, undefined] as [string | undefined, number | undefined]);
+  });
+
 }

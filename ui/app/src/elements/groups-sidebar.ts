@@ -15,6 +15,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
 import "./sidebar-button.js";
+import "./group-sidebar-button.js";
 import "./create-group-dialog.js";
 
 import { weStoreContext } from "../context.js";
@@ -24,7 +25,7 @@ import { weStyles } from "../shared-styles.js";
 @localized()
 @customElement("groups-sidebar")
 export class GroupsSidebar extends LitElement {
-  @consume({ context: weStoreContext })
+  @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
   _groupsProfiles = new StoreSubscriber(
@@ -51,23 +52,25 @@ export class GroupsSidebar extends LitElement {
         .map(
           ([groupDnaHash, groupProfile]) =>
             html`
-              <sidebar-button
-                style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
-                .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
-                .logoSrc=${groupProfile.logo_src}
-                .tooltipText=${groupProfile.name}
-                @click=${() => {
-                  this.dispatchEvent(
-                    new CustomEvent("group-selected", {
-                      detail: {
-                        groupDnaHash,
-                      },
-                      bubbles: true,
-                      composed: true,
-                    })
-                  );
-                }}
-              ></sidebar-button>
+              <group-context .groupDnaHash=${groupDnaHash} .debug=${true}>
+                <group-sidebar-button
+                  style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
+                  .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
+                  .logoSrc=${groupProfile.logo_src}
+                  .tooltipText=${groupProfile.name}
+                  @click=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("group-selected", {
+                        detail: {
+                          groupDnaHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
+                ></group-sidebar-button>
+              </group-context>
             `
         )}
       ${unknownGroups.map(
