@@ -182,10 +182,6 @@ export async function notifyTauri(
   }
 }
 
-export async function isMainWindowFocussed(): Promise<boolean> {
-  return invoke("main_window_focussed", {})
-}
-
 /** Copied from https://github.com/holochain/holochain-client-js/blob/main/src/environments/launcher.ts */
 type TauriByteArray = number[]; // Tauri requires a number array instead of a Uint8Array
 
