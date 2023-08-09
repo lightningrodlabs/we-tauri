@@ -1,5 +1,4 @@
-:host, :root {
-  --nh-menu-subtitle: #A89CB0; --nh-theme-bg-neutral: #433A4A; --nh-font-families-menu: "Work Sans", "Open Sans";
+:root {
   --nh-text-decoration-captions: none;
   --nh-text-decoration-buttons: none;
   --nh-text-decoration-none: none;
@@ -93,6 +92,7 @@
   --nh-gradient-night-fade-left-to-right: linear-gradient(180deg, #a18cd1 0%, #fbc2eb 100%);
   --nh-gradient-warm-flame-top-to-bottom: linear-gradient(270deg, #ff9a9e 0%, #fad0c4 100%);
   --nh-gradient-warm-flame-left-to-right: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%);
+  --nh-colors-eggplant-1000: #000;
   --nh-colors-eggplant-950: #0c0a0d;
   --nh-colors-eggplant-900: #18151b;
   --nh-colors-eggplant-800: #251f28;
@@ -379,7 +379,7 @@
   --nh-spacing-xl: 20;
   --nh-radii-2xl: 30;
   --nh-font-size-5xl: 49;
-  --nh-spacing-2xl: var(--nh-spacing-base);
+  --nh-spacing-2xl: 2var(--nh-spacing-base);
   --nh-font-size-6xl: 59;
   --nh-spacing-3xl: 32;
   --nh-font-size-7xl: 71;
