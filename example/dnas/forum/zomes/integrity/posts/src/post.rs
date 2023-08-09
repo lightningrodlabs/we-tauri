@@ -136,17 +136,17 @@ pub fn validate_create_link_peer_subscription(
 
     // Check whether the target is the agent pubkey of the link creator
     let target = AgentPubKey::try_from(target_address);
-    match target {
-        Ok(address) => {
-            if action.author != address {
-                return Ok(ValidateCallbackResult::Invalid(String::from(
-                    "PeerSubscription link does not point to the AgentPubKey of the link creator.",
-                )))
-            }
-        },
-        Err(_e) => return Ok(ValidateCallbackResult::Invalid(String::from(
-            "PeerSubscription link target is not an AgentPubKey.",
-        ))),
-    }
+    // match target {
+    //     Ok(address) => {
+    //         if action.author != address {
+    //             return Ok(ValidateCallbackResult::Invalid(String::from(
+    //                 "PeerSubscription link does not point to the AgentPubKey of the link creator.",
+    //             )))
+    //         }
+    //     },
+    //     Err(_e) => return Ok(ValidateCallbackResult::Invalid(String::from(
+    //         "PeerSubscription link target is not an AgentPubKey.",
+    //     ))),
+    // }
     Ok(ValidateCallbackResult::Valid)
 }

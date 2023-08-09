@@ -44,14 +44,14 @@ export class PostSummary extends LitElement {
   );
 
   renderSummary(entryRecord: EntryRecord<Post>) {
-    console.log("@post-summary in example-applet: rendering summary.");
+    // console.log("@post-summary in example-applet: rendering summary.");
     // send notifications if necessary
     let knownPostsJSON: string | null = window.localStorage.getItem("knownPosts");
     let knownPosts: Array<ActionHashB64> = knownPostsJSON ? JSON.parse(knownPostsJSON) : [];
-    console.log("@post-summary in example-applet: known posts before notification if-statement: ", knownPosts);
+    // console.log("@post-summary in example-applet: known posts before notification if-statement: ", knownPosts);
     const actionHashB64 = encodeHashToBase64(entryRecord.actionHash);
-    console.log("@post-summary: actionHashB64: ", actionHashB64);
-    console.log("@post-summary: knownPosts.includes(actionHashB64): ", knownPosts.includes(actionHashB64));
+    // console.log("@post-summary: actionHashB64: ", actionHashB64);
+    // console.log("@post-summary: knownPosts.includes(actionHashB64): ", knownPosts.includes(actionHashB64));
     if (!knownPosts.includes(actionHashB64)) {
       const notification: WeNotification = {
         title: "New Post",
@@ -68,7 +68,7 @@ export class PostSummary extends LitElement {
       knownPosts.push(actionHashB64);
       window.localStorage.setItem("knownPosts", JSON.stringify(knownPosts));
     }
-    console.log("@post-summary in example-applet: known posts AFTER notification if-statement: ", window.localStorage.getItem("knownPosts"));
+    // console.log("@post-summary in example-applet: known posts AFTER notification if-statement: ", window.localStorage.getItem("knownPosts"));
 
     return html`
       <div style="display: flex; flex-direction: column">

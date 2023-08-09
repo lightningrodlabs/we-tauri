@@ -26,12 +26,12 @@ export class AppletMain extends LitElement {
   unsubscribe: undefined | (() => void);
 
   firstUpdated() {
-    console.log("@firstUpdated in example applet: Hello.");
+    // console.log("@firstUpdated in example applet: Hello.");
     this.unsubscribe = this.client.on("signal", (signal) => console.log("Received signal: ", signal));
   }
 
   disconnectedCallback(): void {
-    this. unsubscribe ? this.unsubscribe() : undefined;
+    this.unsubscribe ? this.unsubscribe() : undefined;
   }
 
   sendUrgentNotification(delay: number) {
@@ -93,7 +93,6 @@ export class AppletMain extends LitElement {
           <all-posts
               style="margin: 16px;"
               @notification=${(e: CustomEvent) => {
-                console.log("@applet-main: got notification event from all-posts: ", e);
                 this.dispatchEvent(new CustomEvent('notification', {
                   detail: e.detail,
                   bubbles: true,
