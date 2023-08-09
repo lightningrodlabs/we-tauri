@@ -32,3 +32,9 @@ jobs:
       - name: Merge Build Artifacts
         run: git config user.name "GitHub Actions"; git config user.email "actions@users.noreply.github.com"; git add -A; git commit -m "Update built styles from commit ${{ github.sha }}"; git push; # Merge the latest commit from the workflow run
   
+      - name: Extract Latest Tag
+        id: extract_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+
+      - name: Use Latest Tag
+        run: echo "Latest tag is ${{ steps.extract_tag.outputs.tag }}"
