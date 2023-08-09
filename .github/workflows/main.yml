@@ -23,7 +23,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run build:styles
-      - run: npm patch version
+      - run: npm version patch
 
       - name: Get Latest Tag
         id: get_latest_tag
