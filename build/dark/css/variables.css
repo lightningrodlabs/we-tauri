@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Wed, 09 Aug 2023 14:52:20 GMT
+ * Generated on Wed, 09 Aug 2023 15:02:07 GMT
  */
 
 :root {
@@ -97,7 +97,6 @@
   --nh-gradient-night-fade-left-to-right: linear-gradient(180deg, #a18cd1 0%, #fbc2eb 100%);
   --nh-gradient-warm-flame-top-to-bottom: linear-gradient(270deg, #ff9a9e 0%, #fad0c4 100%);
   --nh-gradient-warm-flame-left-to-right: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%);
-  --nh-colors-eggplant-1000: #000;
   --nh-colors-eggplant-950: #0c0a0d;
   --nh-colors-eggplant-900: #18151b;
   --nh-colors-eggplant-800: #251f28;

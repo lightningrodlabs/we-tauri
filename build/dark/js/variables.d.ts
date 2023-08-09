@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Wed, 09 Aug 2023 14:52:20 GMT
+ * Generated on Wed, 09 Aug 2023 15:02:07 GMT
  */
 
 export default tokens;
@@ -156,8 +156,7 @@ declare const tokens: {
       "700": DesignToken,
       "800": DesignToken,
       "900": DesignToken,
-      "950": DesignToken,
-      "1000": DesignToken
+      "950": DesignToken
     }
   },
   "gradient": {
