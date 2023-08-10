@@ -138,6 +138,16 @@ fn main() {
                     window
                         .request_user_attention(Some(UserAttentionType::Informational))
                         .unwrap();
+                    window.show().unwrap();
+                    window.unminimize().unwrap();
+                    window.set_focus().unwrap();
+
+                    if cfg!(target_os = "linux") { // remove dock icon wiggeling after 10 seconds
+                        std::thread::sleep(std::time::Duration::from_secs(10));
+                        window
+                        .request_user_attention(None)
+                        .unwrap();
+                    }
                 }) {
                     println!("Error registering the deep link plugin: {:?}", err);
                 }
