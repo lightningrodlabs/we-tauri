@@ -170,6 +170,8 @@ pub async fn install_applet_bundle(
 
     log::info!("Installing: app_id = {:?}", app_id);
 
+    window.emit("applet-install-progress", "checking for existing applets in conductor")?;
+
     let mut converted_membrane_proofs: HashMap<String, MembraneProof> = HashMap::new();
     for (dna_slot, proof) in membrane_proofs.iter() {
         converted_membrane_proofs.insert(
@@ -203,6 +205,8 @@ pub async fn install_applet_bundle(
         return Ok(app_info.app);
     }
 
+    window.emit("applet-install-progress", "fetching applet from peer host")?;
+
     let web_app_bundle: WebAppBundle = internal_fetch_applet_bundle(
         app_handle,
         &conductor,
@@ -220,6 +224,9 @@ pub async fn install_applet_bundle(
             Arc::new(SerializedBytes::from(UnsafeBytes::from(proof.clone()))),
         );
     }
+
+    window.emit("applet-install-progress", "installing")?;
+
 
     let app_info = admin_ws
         .install_app(InstallAppPayload {

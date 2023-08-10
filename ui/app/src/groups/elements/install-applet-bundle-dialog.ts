@@ -11,6 +11,7 @@ import {
 import { consume } from "@lit-labs/context";
 import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
 import { slice } from "@holochain-open-dev/utils";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -61,6 +62,9 @@ export class InstallAppletBundleDialog extends LitElement {
   _installing: boolean = false;
 
   @state()
+  _installationProgress: string | undefined;
+
+  @state()
   _appletInfo: Entity<AppEntry> | undefined;
 
   @state()
@@ -68,6 +72,8 @@ export class InstallAppletBundleDialog extends LitElement {
 
   @state()
   _pollInterval: number | null = null;
+
+  _unlisten: UnlistenFn | undefined;
 
   open(appletInfo: Entity<AppEntry>) {
     this._appletInfo = appletInfo;
@@ -78,6 +84,7 @@ export class InstallAppletBundleDialog extends LitElement {
   }
 
   async firstUpdated() {
+    this._unlisten = await listen("applet-install-progress", (event) => { this._installationProgress = event.payload as string });
     try {
       this._peerHostsStatus = this._appletInfo ? await this.groupStore.weStore.appletBundlesStore.getVisibleHosts(this._appletInfo) : undefined;
     } catch (e) {
@@ -92,6 +99,10 @@ export class InstallAppletBundleDialog extends LitElement {
     );
   }
 
+  disconnectedCallback(): void {
+    if (this._unlisten) this._unlisten();
+  }
+
   get publishDisabled() {
     return this._duplicateName;
   }
@@ -99,6 +110,7 @@ export class InstallAppletBundleDialog extends LitElement {
   async installApplet(customName: string) {
     if (this._installing) return;
     this._installing = true;
+    this._installationProgress = "fetching app icon...";
     try {
       const appletEntryHash = await this.groupStore.installAppletBundle(
         this._appletInfo!,
@@ -117,6 +129,7 @@ export class InstallAppletBundleDialog extends LitElement {
         })
       );
     } catch (e) {
+      this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
     }
@@ -172,6 +185,7 @@ export class InstallAppletBundleDialog extends LitElement {
           >
             ${msg("Install")}
           </sl-button>
+          <div>${this._installationProgress}</div>
         `;
 
       case "error":
