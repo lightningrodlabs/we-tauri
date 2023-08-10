@@ -31,7 +31,7 @@ export class AppletMain extends LitElement {
   }
 
   disconnectedCallback(): void {
-    this.unsubscribe ? this.unsubscribe() : undefined;
+    if (this.unsubscribe) this.unsubscribe();
   }
 
   sendUrgentNotification(delay: number) {

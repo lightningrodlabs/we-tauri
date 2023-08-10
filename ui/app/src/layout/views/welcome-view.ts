@@ -4,6 +4,7 @@ import { localized, msg } from "@lit/localize";
 
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
 import { mdiAccountMultiplePlus } from "@mdi/js";
@@ -82,6 +83,12 @@ export class WelcomeView extends LitElement {
   render() {
     return html`
       <div class="column" style="align-items: center; flex: 1; overflow: scroll; padding: 24px;">
+        <sl-button style="position: absolute; top: 20px; right: 20px;" @click=${(e) => this.dispatchEvent(new CustomEvent("request-join-group",
+          {
+            composed: true,
+            bubbles: true
+          }))}
+        >${msg("Join Group with Invite Link")}</sl-button>
         <div
           class="row center-content default-font"
           style="font-size: 3em; color: #2c3888; margin-top: 15px;"

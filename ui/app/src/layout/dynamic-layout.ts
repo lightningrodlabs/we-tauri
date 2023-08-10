@@ -171,7 +171,7 @@ export class DynamicLayout extends LitElement {
     >
       <golden-layout-register component-type="welcome">
         <template>
-          <welcome-view></welcome-view>
+          <welcome-view style="z-index: 1"></welcome-view>
         </template>
       </golden-layout-register>
       <golden-layout-register

@@ -225,6 +225,7 @@ export class MainDashboard extends LitElement {
           }}
           style="flex: 1; min-width: 0; height: 100%;"
           @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
+          @request-join-group=${(_e) => this.joinGroupDialog.open()}
         ></dynamic-layout>
       </div>
 
