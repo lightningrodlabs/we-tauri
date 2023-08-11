@@ -79,9 +79,6 @@ export class NHCard extends NHComponentShoelace {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-    :host {
-      --nh-menu-subtitle: #A89CB0;
-    }
       /* Layout */
       :root {
         display: flex;
@@ -89,10 +86,14 @@ export class NHCard extends NHComponentShoelace {
       
       .container {
         max-width: 45vw;
+        min-width: 264px;
         color: var(--nh-theme-fg-default);
         border-radius: calc(1px * var(--nh-radii-xl));
         padding: calc(1px * var(--nh-spacing-xl));
         position: relative;
+      }
+      :host(.nested-card) .container {
+        min-width: calc(264px - calc(2px * var(--nh-spacing-3xl)));
       }
       .container.text-sm {
         padding: calc(1px * var(--nh-spacing-lg)) calc(1px * var(--nh-spacing-3xl));
