@@ -10,6 +10,7 @@ import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
 
 import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 
@@ -39,6 +40,9 @@ export class JoinGroupDialog extends LitElement {
   /** Private properties */
   @query("#dialog")
   _dialog!: SlDialog;
+
+  @query("#invite-link-field")
+  _inviteLinkField: SlInput | undefined;
 
   @property()
   networkSeed: string | undefined;
@@ -79,6 +83,7 @@ export class JoinGroupDialog extends LitElement {
       );
       this._dialog.hide();
       this.networkSeed = undefined;
+      if (this._inviteLinkField) { this._inviteLinkField.value = "" };
     } catch (e) {
       notifyError(msg("Error joining the group."));
       console.error(e);
@@ -104,7 +109,7 @@ export class JoinGroupDialog extends LitElement {
             ${
               this._joinByPaste
                 ? html`
-                  <sl-input name="link" .label=${msg("Invite Link")} required></sl-input>
+                  <sl-input name="link" id="invite-link-field" .label=${msg("Invite Link")} required></sl-input>
                 `
                 : html`<span>${msg("You have been invited to join a group.")}</span>`
 
