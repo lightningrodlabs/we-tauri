@@ -34,6 +34,7 @@ import "./installable-applets.js";
 import "./group-applets.js";
 import "./group-applets-settings.js";
 import "./your-settings.js";
+import "./looking-for-peers.js";
 import "../../custom-views/elements/all-custom-views.js";
 import "./create-custom-group-view.js";
 import "./edit-custom-group-view.js";
@@ -432,14 +433,7 @@ export class GroupHome extends LitElement {
         const networkSeed = this.groupProfile.value.value[1];
 
         if (!groupProfile)
-          return html`<div class="column center-content" style="flex: 1">
-            <h2>${msg("Out of sync")}</h2>
-            <span style="max-width: 600px; text-align: center"
-              >${msg(
-                "Ask one of the members of this group to launch We so that you can synchronize with this group."
-              )}</span
-            >
-          </div>`;
+          return html`<looking-for-peers style="display: flex; flex: 1;"></looking-for-peers>`;
 
         return html`
           <profile-prompt

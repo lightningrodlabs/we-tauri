@@ -107,6 +107,7 @@ export class GroupsSidebar extends LitElement {
           <sl-skeleton effect="pulse" style="width: 60px; height: 58px; margin-bottom: 10px;"></sl-skeleton>
         `;
       case "error":
+        console.error("Error displaying the groups: ", this._groupsProfiles.value.error);
         return html`<display-error
           .headline=${msg("Error displaying the groups")}
           tooltip

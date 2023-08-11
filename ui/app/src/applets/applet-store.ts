@@ -64,6 +64,7 @@ export class AppletStore {
     // document.body.appendChild(iframe);
 
     return new Promise<AppletHost>((resolve) => {
+      console.log("\n@AppletStore @host: adding event listener.\n");
       window.addEventListener("message", (message) => {
         if (message.source === iframe?.contentWindow) {
           if (

@@ -146,6 +146,8 @@ export class MainDashboard extends LitElement {
               style="flex: 1"
               @group-left=${() => {
                 this.selectedGroupDnaHash = undefined;
+                this.dashboardMode = "browserView";
+                this._weStore.selectAppletHash(undefined);
               }}
               @applet-installed=${(e: CustomEvent) => {
                 this._weStore.selectAppletHash(e.detail);

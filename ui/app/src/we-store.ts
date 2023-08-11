@@ -155,6 +155,8 @@ export class WeStore {
 
     await Promise.all(
       applets.map(async (appletHash) => {
+        // TODO: Is this save? groupsForApplet depends on the network so it may not always
+        // actually return all groups that depend on this applet
         const groupsForApplet = await toPromise(
           this.groupsForApplet.get(appletHash)
         );
@@ -169,11 +171,11 @@ export class WeStore {
     await this.appletBundlesStore.installedApps.reload();
   }
 
-  groupsApps = asyncDerived(this.appletBundlesStore.installedApps, (apps) =>
+  runningGroupsApps = asyncDerived(this.appletBundlesStore.runningApps, (apps) =>
     apps.filter((app) => app.installed_app_id.startsWith("group#"))
   );
 
-  groupsDnaHashes = asyncDerived(this.groupsApps, (apps) => {
+  groupsDnaHashes = asyncDerived(this.runningGroupsApps, (apps) => {
     const groupApps = apps.filter((app) =>
       app.installed_app_id.startsWith("group#")
     );
@@ -188,7 +190,7 @@ export class WeStore {
   });
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
-    asyncDerived(this.groupsApps, async (apps) => {
+    asyncDerived(this.runningGroupsApps, async (apps) => {
       const groupApp = apps.find(
         (app) =>
           app.cell_info["group"][0][
