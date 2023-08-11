@@ -268,7 +268,6 @@ export class DashboardFilterMap extends LitElement {
           : this._objectiveDimensionNames.includes(dimensionName) &&
             this.filteredAssessments.every(a => a[dimensionName] !== ''),
     );
-    
     switch (this.tableType) {
       case AssessmentTableType.Resource:
         const fieldEntriesResource = contextFieldEntries.map(
@@ -403,6 +402,7 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
+    console.log('this.fieldDefs :>> ', this.fieldDefs);
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}

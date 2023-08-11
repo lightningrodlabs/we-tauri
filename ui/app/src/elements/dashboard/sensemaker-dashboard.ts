@@ -1,5 +1,5 @@
 import { CSSResult, css, html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
@@ -34,6 +34,7 @@ import {
 } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 
+@customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
@@ -71,7 +72,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
     );
 
     appletInstancesStream.subscribe(applets => {
-      console.log('applets in stream', applets);
       this.appletDetails = applets!.reduce((appletDetails, applet) => {
         const installedAppId = applet.appInfo.installed_app_id;
 
@@ -92,6 +92,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       (store?.appletConfigs() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
         appletConfigs => {
           // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
+          if(typeof appletConfigs !== 'object') return;
           Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
             this.appletDetails[installedAppId].appletRenderInfo = {
               resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
@@ -167,7 +168,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       </div>
     `;
   }
-  renderSidebar(appletRoleNames: string[]) {
+  renderSidebar(appletIds: string[]) {
     return html`
       <nav>
         <div>
@@ -180,36 +181,41 @@ export class SensemakerDashboard extends NHComponentShoelace {
         </sl-menu>
         <sl-menu class="dashboard-menu-section">
           <sl-menu-label class="nav-label">SENSEMAKER</sl-menu-label>
-          ${appletRoleNames.map(
-            (roleName, i) => html`
-              <sl-menu-item
-                class="nav-item ${classMap({
-                  active: this.selectedAppletIndex === i,
-                })}"
-                value="${this.appletDetails[roleName].customName.toLowerCase()}"
-                @click=${() => {
-                  this.selectedAppletIndex = i;
-                  this.selectedResourceDefIndex = -1;
-                  this.setupAssessmentsSubscription();
-                }}
-                >${this.appletDetails[roleName].customName}</sl-menu-item
-              >
-              <div role="navigation" class="sub-nav indented">
-                ${this.appletDetails[roleName]?.appletRenderInfo?.resourceNames &&
-                this.appletDetails[roleName]?.appletRenderInfo?.resourceNames.map(
-                  (resource, i) => html`<sl-menu-item
-                    class="nav-item"
-                    value="${resource.toLowerCase()}"
+          ${appletIds.map((id, i) => {
+            const applet = this.appletDetails[id];
+            const appletName = this.appletDetails[id]?.customName;
+            // TODO: link ids and stop relying on ordering like this
+            return !!applet
+              ? html`
+                  <sl-menu-item
+                    class="nav-item ${classMap({
+                      active: this.selectedAppletIndex === i,
+                    })}"
+                    value="${appletName}"
                     @click=${() => {
-                      this.selectedResourceDefIndex = i;
+                      this.selectedAppletIndex = i;
+                      this.selectedResourceDefIndex = -1;
                       this.setupAssessmentsSubscription();
                     }}
-                    >${resource}</sl-menu-item
-                  >`,
-                )}
-              </div>
-            `,
-          )}
+                    >${appletName}</sl-menu-item
+                  >
+                  <div role="navigation" class="sub-nav indented">
+                    ${applet?.appletRenderInfo?.resourceNames &&
+                    applet?.appletRenderInfo?.resourceNames.map(
+                      (resource, i) => html`<sl-menu-item
+                        class="nav-item"
+                        value="${resource.toLowerCase()}"
+                        @click=${() => {
+                          this.selectedResourceDefIndex = i;
+                          this.setupAssessmentsSubscription();
+                        }}
+                        >${resource}</sl-menu-item
+                      >`,
+                    )}
+                  </div>
+                `
+              : html``;
+          })}
         </sl-menu>
         <sl-menu class="dashboard-menu-section">
           <sl-menu-label class="nav-label">Member Management</sl-menu-label>
@@ -255,12 +261,12 @@ export class SensemakerDashboard extends NHComponentShoelace {
   }
 
   render() {
-    const roleNames = this?.appletDetails && Object.keys(this.appletDetails);
-    const appletDetails = Object.values(this.appletDetails);
-
+    const appletIds = this?.appletDetails ? Object.keys(this.appletDetails) : [];
+    const appletDetails =
+      typeof this.appletDetails == 'object' ? Object.values(this.appletDetails) : [];
     const appletConfig =
-      appletDetails?.length &&
-      ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[]); //hard-coded to first applet
+      appletDetails.length &&
+      ([appletDetails[this.selectedAppletIndex]?.appletRenderInfo] as AppletRenderInfo[]);
 
     if (appletConfig && appletDetails[this.selectedAppletIndex]) {
       this.selectedResourceName =
@@ -271,15 +277,14 @@ export class SensemakerDashboard extends NHComponentShoelace {
             ];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
-    if (!appletConfig[0] || !contexts) {
+    if (!appletConfig![0] || !contexts) {
       this.loadingState = LoadingState.FirstRender;
     }
-    // console.log('this.appletDetails, appletConfig, contexts, contextEhs  (from render function):>> ', this.appletDetails, appletConfig, contexts, this.context_ehs);
 
     return html`
       <div class="container">
         <slot name="configure-widget-button"></slot>
-        ${this.renderSidebar(roleNames as string[])}
+        ${this.renderSidebar(appletIds as string[])}
         <main>
           ${this.loading
             ? this.renderMainSkeleton()

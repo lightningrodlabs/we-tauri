@@ -1,10 +1,15 @@
 import { fixture, html } from '@open-wc/testing';
 import { AssessmentDict } from '../helpers/types';
 import { encodeHashToBase64 } from '@holochain/client';
-import { mockAssessments } from './test-harness';
+import { mockAssessments } from './sensemaker-store-test-harness';
+import { createContext } from '@lit-labs/context';
+import { SensemakerStore } from '@neighbourhoods/client';
+
+// Create a mock context with the mock store
+export const mockContext = createContext<Partial<SensemakerStore>>('sensemaker-store-context');
 
 export const stateful = async component =>
-  fixture(html` <test-harness>${component}</test-harness> `);
+  fixture(html`<sensemaker-store-test-harness>${component}</sensemaker-store-test-harness> `);
 
 export function addedAssessment(
   mockAssessments: AssessmentDict,

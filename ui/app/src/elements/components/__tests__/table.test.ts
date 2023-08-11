@@ -1,15 +1,15 @@
+import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
+import { MockFactory } from './../../__tests__/mock-factory';
 const { JSDOM } = require('jsdom');
 import { fixture, html } from '@open-wc/testing';
-import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest';
 
-import './test-harness';
+import './sensemaker-store-test-harness';
 import {
   mockAssessments,
   mockFieldDefsResourceTable,
-  mockSensemakerStore,
-} from './test-harness';
-import { addedAssessment, removedAssessment, mapMockedAssessment } from './helpers';
+} from './sensemaker-store-test-harness';
+import { addedAssessment, removedAssessment, mapMockedAssessment, stateful } from './helpers';
 import '../table';
 import { tableId } from '../table';
 import { AssessmentTableType } from '../helpers/types';
@@ -18,9 +18,6 @@ import { AssessmentTableType } from '../helpers/types';
  */
 
 export const mockResourceName = 'abc';
-
-export const stateful = async component =>
-  fixture(html` <test-harness>${component}</test-harness> `);
 
 describe('StatefulTable', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
@@ -51,14 +48,12 @@ describe('StatefulTable', () => {
         .tableType=${AssessmentTableType.Resource}
         .contextFieldDefs=${undefined}
       ></dashboard-table>`;
-      mockStore = mockSensemakerStore.resourceAssessments();
+      mockStore = MockFactory.mockStoreResponse('resourceAssessments').resourceAssessments();
       mockStore.mockSetSubscribeValue({ abc: [] });
       await initialRender(component);
     });
 
     test(`Then state is initialized`, async () => {
-      expect(mockSensemakerStore.resourceAssessments).toHaveBeenCalled();
-
       expect(mockStore.value[mockResourceName].length).toEqual(0);
 
       expect(componentDom.tableStore).toBeDefined();
@@ -77,7 +72,7 @@ describe('StatefulTable', () => {
 
   describe('Given a SensemakerStore with one resource and two assessments', () => {
     beforeEach(async () => {
-      mockStore = mockSensemakerStore.resourceAssessments();
+      mockStore = MockFactory.mockStoreResponse('resourceAssessments').resourceAssessments();
       mockStore.mockSetSubscribeValue(mockAssessments);
       const mappedAssessmentDict = { 'abc' : mockAssessments['abc'].map(mapMockedAssessment)};
 
@@ -93,8 +88,6 @@ describe('StatefulTable', () => {
     });
 
     test(`Then state is initialized`, async () => {
-      expect(mockSensemakerStore.resourceAssessments).toHaveBeenCalled();
-
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore).toBeDefined();
       expect(componentDom.tableStore.records.length).toEqual(2);
@@ -143,7 +136,7 @@ describe('StatefulTable', () => {
       expect(elements.length).toBe(2);
     });
 
-    test(`Then state can be mutated by adding an assessment`, async () => {
+    test(`When state is mutated by adding an assessment Then the TableStore state is changed`, async () => {
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore.records.length).toEqual(2);
       mockStore.mockSetSubscribeValue(addedAssessment(mockAssessments, mockResourceName));
@@ -167,7 +160,7 @@ describe('StatefulTable', () => {
       expect(elements.length).toBe(3);
     });
 
-    test(`Then state can be mutated by removing an assessment`, async () => {
+    test(`When state is mutated by removing an assessment Then the TableStore state is changed`, async () => {
       expect(mockStore.value[mockResourceName].length).toEqual(2);
       expect(componentDom.tableStore.records.length).toEqual(2);
       mockStore.mockSetSubscribeValue(removedAssessment(mockAssessments, mockResourceName));

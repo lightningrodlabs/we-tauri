@@ -1280,6 +1280,12 @@ export class MatrixStore {
 
       try {
         const appInfo = await this.adminWebsocket.installApp(request);
+        const installedCells = appInfo.cell_info;
+        for (const [roleName, cells] of Object.entries(installedCells)) {
+          for (const cellInfo of cells) {
+            await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+          }
+        }
 
       } 
       catch (e: any) {
