@@ -73,11 +73,11 @@ export class GroupClient {
     return this.callZome("unarchive_applet", appletHash);
   }
 
-  async federateApplet(
+  async registerAppletFederation(
     appletHash: EntryHash,
     groupDnaHash: DnaHash
   ): Promise<ActionHash> {
-    return this.callZome("federate_applet", {
+    return this.callZome("register_applet_federation", {
       applet_hash: appletHash,
       group_dna_hash: retype(groupDnaHash, HashType.ENTRY),
     });

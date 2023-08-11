@@ -1,4 +1,5 @@
 import {
+  ActionHash,
   CallZomeRequest,
   decodeHashFromBase64,
   DnaHash,
@@ -6,28 +7,28 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { Hrl } from "@lightningrodlabs/we-applet";
+import { Hrl, WeNotification } from "@lightningrodlabs/we-applet";
 import { encode, decode } from "@msgpack/msgpack";
 import { fromUint8Array, toUint8Array } from "js-base64";
 
 export type OpenViewRequest =
   | {
       type: "applet-main";
-      appletId: EntryHash;
+      appletHash: EntryHash;
     }
   | {
       type: "cross-applet-main";
-      appletBundleId: EntryHash;
+      appletBundleId: ActionHash;
     }
   | {
       type: "applet-block";
-      appletId: EntryHash;
+      appletHash: EntryHash;
       block: string;
       context: any;
     }
   | {
       type: "cross-applet-block";
-      appletBundleId: EntryHash;
+      appletBundleId: ActionHash;
       block: string;
       context: any;
     }
@@ -38,7 +39,7 @@ export type OpenViewRequest =
     };
 
 export interface CreateAttachmentRequest {
-  appletId: EntryHash;
+  appletHash: EntryHash;
   attachmentType: string;
   attachToHrl: Hrl;
 }
@@ -71,7 +72,7 @@ export type IframeConfig =
   | {
       type: "applet";
       appPort: number;
-      appletId: EntryHash;
+      appletHash: EntryHash;
 
       profilesLocation: ProfilesLocation;
     }
@@ -86,7 +87,7 @@ export type IframeConfig =
     };
 
 export interface AppletToParentMessage {
-  appletId: EntryHash;
+  appletHash: EntryHash;
   request: AppletToParentRequest;
 }
 
@@ -119,8 +120,12 @@ export type AppletToParentRequest =
       filter: string;
     }
   | {
+      type: "notify-we";
+      notifications: Array<WeNotification>;
+  }
+  | {
       type: "get-applet-info";
-      appletId: EntryHash;
+      appletHash: AppletHash;
     }
   | {
       type: "get-attachment-types";
@@ -132,7 +137,25 @@ export type AppletToParentRequest =
   | {
       type: "get-entry-info";
       hrl: Hrl;
+    }
+  | {
+      type: "localStorage.setItem";
+      key: string;
+      value: string;
+    }
+  | {
+      type: "localStorage.removeItem";
+      key: string;
+    }
+  | {
+      type: "localStorage.clear";
+    }
+  | {
+      type: "get-localStorage";
     };
+
+
+type AppletHash = EntryHash;
 
 export interface HrlLocation {
   roleName: string;

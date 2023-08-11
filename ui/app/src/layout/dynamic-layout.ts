@@ -60,6 +60,10 @@ export class DynamicLayout extends LitElement {
   @property()
   openViews: AppOpenViews = {
     openAppletMain: (appletHash) => {
+      this.dispatchEvent(new CustomEvent('open-tab-request', {
+        bubbles: true,
+        detail: "open-applet-main",
+      }));
       this.openTab({
         id: `applet-main-${encodeHashToBase64(appletHash)}`,
         type: "component",
@@ -70,6 +74,10 @@ export class DynamicLayout extends LitElement {
       });
     },
     openAppletBlock: (appletHash, block, context) => {
+      this.dispatchEvent(new CustomEvent('open-tab-request', {
+        bubbles: true,
+        detail: "open-applet-block",
+      }));
       this.openTab({
         id: `applet-block-${encodeHashToBase64(appletHash)}-${block}`,
         type: "component",
@@ -82,6 +90,10 @@ export class DynamicLayout extends LitElement {
       });
     },
     openCrossAppletMain: (appletBundleHash) => {
+      this.dispatchEvent(new CustomEvent('open-tab-request', {
+        bubbles: true,
+        detail: "open-cross-applet-main",
+      }));
       this.openTab({
         id: `cross-applet-main-${encodeHashToBase64(appletBundleHash)}`,
         type: "component",
@@ -92,6 +104,10 @@ export class DynamicLayout extends LitElement {
       });
     },
     openCrossAppletBlock: (appletBundleHash, block, context) => {
+      this.dispatchEvent(new CustomEvent('open-tab-request', {
+        bubbles: true,
+        detail: "open-cross-applet-block",
+      }));
       this.openTab({
         id: `cross-applet-block-${encodeHashToBase64(
           appletBundleHash
@@ -106,6 +122,10 @@ export class DynamicLayout extends LitElement {
       });
     },
     openHrl: async (hrl: Hrl, context: any) => {
+      this.dispatchEvent(new CustomEvent('open-tab-request', {
+        bubbles: true,
+        detail: "open-hrl",
+      }));
       this.openTab({
         id: `hrl://${encodeHashToBase64(hrl[0])}/${encodeHashToBase64(hrl[1])}`,
         type: "component",
@@ -119,6 +139,7 @@ export class DynamicLayout extends LitElement {
   };
 
   firstUpdated() {
+    console.log("\n### Setting up message handler for dynamic layout.\n");
     setupAppletMessageHandler(this.weStore, this.openViews);
   }
 
@@ -151,7 +172,7 @@ export class DynamicLayout extends LitElement {
     >
       <golden-layout-register component-type="welcome">
         <template>
-          <welcome-view></welcome-view>
+          <welcome-view style="z-index: 1"></welcome-view>
         </template>
       </golden-layout-register>
       <golden-layout-register

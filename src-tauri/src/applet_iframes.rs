@@ -1,16 +1,12 @@
-use std::{convert::Infallible, net::SocketAddr};
-
-use bytes::Bytes;
+use std::net::SocketAddr;
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
-use http_body_util::Full;
 use hyper::{
     service::{make_service_fn, service_fn},
-    Body, Request, Response, Server,
+    Body, Response, Server,
 };
 use tauri::{AppHandle, Manager};
-use tokio::net::TcpListener;
 
 use crate::{
     error::{WeError, WeResult},
@@ -134,9 +130,9 @@ pub fn iframe() -> String {
           <head>
             <style>
               body {{
-                margin: 0; 
-                height: 100%; 
-                width: 100%; 
+                margin: 0;
+                height: 100%;
+                width: 100%;
                 display: flex;
               }}
             </style>
@@ -153,6 +149,17 @@ pub fn iframe() -> String {
     )
 }
 
+pub fn app_id_from_applet_id(applet_id: &String) -> String {
+    format!("applet#{}", applet_id)
+}
+
+pub fn applet_id_from_app_id(installed_app_id: &String) -> WeResult<String> {
+    match installed_app_id.strip_prefix("applet#") {
+        Some(id) => Ok(id.to_string()),
+        None => Err(WeError::CustomError(String::from("Failed to convert installed_app_id to applet id.")))
+    }
+}
+
 async fn get_applet_id_from_lowercase(
     lowercase_applet_id: &String,
     admin_ws: &mut AdminWebsocket,
@@ -162,19 +169,19 @@ async fn get_applet_id_from_lowercase(
     let app = apps
         .into_iter()
         .find(|app| {
-            app.installed_app_id.eq(lowercase_applet_id)
-                || app.installed_app_id.to_lowercase().eq(lowercase_applet_id)
+            app.installed_app_id.eq(&app_id_from_applet_id(lowercase_applet_id))
+                || app.installed_app_id.to_lowercase().eq(&app_id_from_applet_id(lowercase_applet_id))
         })
         .ok_or(WeError::AdminWebsocketError(String::from(
             "Applet is not installed",
         )))?;
-    Ok(app.installed_app_id.clone())
+    applet_id_from_app_id(&app.installed_app_id)
 }
 
 pub async fn read_asset(
     we_fs: &WeFileSystem,
     admin_ws: &mut AdminWebsocket,
-    applet_id: &String,
+    applet_id_lowercase: &String,
     mut asset_name: String,
 ) -> WeResult<Option<(Vec<u8>, Option<String>)>> {
     if asset_name.starts_with("/") {
@@ -186,10 +193,12 @@ pub async fn read_asset(
             Some(String::from("text/html")),
         )));
     }
-
-    let applet_id = get_applet_id_from_lowercase(applet_id, admin_ws).await?;
-
-    let assets_path = we_fs.ui_store().ui_path(&applet_id);
+    println!("Got read_asset request with lowercase applet id: {}", applet_id_lowercase);
+    let applet_app_id = app_id_from_applet_id(
+        &get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?
+    );
+    println!("got applet id from lowercase: {}", applet_app_id);
+    let assets_path = we_fs.ui_store().ui_path(&applet_app_id);
     let asset_file = assets_path.join(asset_name);
 
     let mime_guess = mime_guess::from_path(asset_file.clone());

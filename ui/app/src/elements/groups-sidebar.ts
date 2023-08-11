@@ -15,6 +15,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import "../groups/elements/group-context.js";
 import "./sidebar-button.js";
+import "./group-sidebar-button.js";
 import "./create-group-dialog.js";
 
 import { weStoreContext } from "../context.js";
@@ -24,14 +25,17 @@ import { weStyles } from "../shared-styles.js";
 @localized()
 @customElement("groups-sidebar")
 export class GroupsSidebar extends LitElement {
-  @consume({ context: weStoreContext })
+  @consume({ context: weStoreContext, subscribe: true })
   _weStore!: WeStore;
 
   _groupsProfiles = new StoreSubscriber(
     this,
     () => this._weStore.allGroupsProfiles,
-    () => []
+    () => [this._weStore]
   );
+
+  @property(hashProperty("group-dna-hash"))
+  selectedGroupDnaHash!: DnaHash;
 
   renderGroups(groups: ReadonlyMap<DnaHash, GroupProfile | undefined>) {
     const knownGroups = Array.from(groups.entries()).filter(
@@ -42,34 +46,39 @@ export class GroupsSidebar extends LitElement {
     ) as Array<[DnaHash, GroupProfile]>;
 
     return html`
+      <div style="height: 10px;"></div>
       ${knownGroups
         .sort(([_, a], [__, b]) => a.name.localeCompare(b.name))
         .map(
           ([groupDnaHash, groupProfile]) =>
             html`
-              <sidebar-button
-                style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
-                .logoSrc=${groupProfile.logo_src}
-                .tooltipText=${groupProfile.name}
-                @click=${() => {
-                  this.dispatchEvent(
-                    new CustomEvent("group-selected", {
-                      detail: {
-                        groupDnaHash,
-                      },
-                      bubbles: true,
-                      composed: true,
-                    })
-                  );
-                }}
-              ></sidebar-button>
+              <group-context .groupDnaHash=${groupDnaHash} .debug=${true}>
+                <group-sidebar-button
+                  style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
+                  .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
+                  .logoSrc=${groupProfile.logo_src}
+                  .tooltipText=${groupProfile.name}
+                  @click=${() => {
+                    this.dispatchEvent(
+                      new CustomEvent("group-selected", {
+                        detail: {
+                          groupDnaHash,
+                        },
+                        bubbles: true,
+                        composed: true,
+                      })
+                    );
+                  }}
+                ></group-sidebar-button>
+              </group-context>
             `
         )}
       ${unknownGroups.map(
         ([groupDnaHash]) =>
           html`
             <sidebar-button
-              style="margin-bottom: 8px; border-radius: 50%; --size: 58px;"
+              style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
+              .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
               .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
               .tooltipText=${msg("Not synched")}
               @click=${() => {
@@ -98,6 +107,7 @@ export class GroupsSidebar extends LitElement {
           <sl-skeleton effect="pulse" style="width: 60px; height: 58px; margin-bottom: 10px;"></sl-skeleton>
         `;
       case "error":
+        console.error("Error displaying the groups: ", this._groupsProfiles.value.error);
         return html`<display-error
           .headline=${msg("Error displaying the groups")}
           tooltip
@@ -110,8 +120,7 @@ export class GroupsSidebar extends LitElement {
 
   render() {
     return html`
-
-      <div class="column" style="padding: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
+      <div class="column" style="padding-top: 12px; align-items: center; overflow-y: auto; overflow-x: hidden;">
         ${this.renderGroupsLoading()}
 
         <sl-tooltip placement="right" .content=${msg("Add Group")} hoist>
@@ -126,6 +135,7 @@ export class GroupsSidebar extends LitElement {
                   })
                 );
               }}
+            style="margin-top: 8px;"
           >
             <div class="column center-content" style="height: 100%;">
               <sl-icon style="width: 25px; height: 25px;" .src=${wrapPathInSvg(mdiAccountMultiplePlus)}></sl-icon>

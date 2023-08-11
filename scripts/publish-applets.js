@@ -128,7 +128,7 @@ async function publishApplets() {
             version: "0.1",
             ordering: 1,
             zome_bytes,
-            hdk_version: "v0.1.0",
+            hdk_version: "v0.2.1",
           },
         });
 
@@ -158,7 +158,7 @@ async function publishApplets() {
             version: "0.1",
             ordering: 1,
             zome_bytes,
-            hdk_version: "v0.1.0",
+            hdk_version: "v0.2.1",
           },
         });
         coordinatorZomeEntities.push([czomeEntity, czomeVersionEntity]);
@@ -181,7 +181,7 @@ async function publishApplets() {
           for_dna: dnaEntity.payload.id,
           version: "0.1",
           ordering: 1,
-          hdk_version: "v0.1.0",
+          hdk_version: "v0.2.1",
           integrity_zomes: integrityZomeEntities.map(([ze, zve]) => ({
             name: ze.payload.content.name,
             zome: zve.payload.content.for_zome,
@@ -252,7 +252,7 @@ async function publishApplets() {
         changelog: "",
         for_gui: guiEntity.payload.id,
         for_happ_releases: [],
-        web_asset_id: fileEntity.payload.address,
+        web_asset_id: fileEntity.payload.id,
       },
     });
     const appVersionEntity = await devhubClient.callZome({
@@ -427,3 +427,25 @@ async function publishAppletsRetry() {
   }
 }
 publishAppletsRetry();
+
+// setInterval(async () => {
+//   try {
+//     await publishApplets();
+//   } catch (e) {
+//     if (e.toString().includes("could not connect to holochain conductor")) {
+//       console.log(
+//         "Couldn't publish applets yet because the conductor is still setting up, have you entered your password and enabled the developer mode? Retrying again in a few seconds..."
+//       );
+//     } else if (e.toString().includes("crypto.getRandomValues is not a function")) {
+//       console.log("Failed to publish applets: Error: ", e);
+//       console.log("\n\nMake sure to use a recent enough version of node (>18). Check your node version with 'node --version'.");
+//     } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
+//       console.log("Failed to publish applets: Error: ", e);
+//       console.log("\n\nYou probably haven't installed the DevHub yet.");
+//     } else {
+//       console.log("Failed to publish applets. Error: ", e);
+//     }
+
+//     console.log("Attempting applet publishing again in 15 seconds.")
+//   }
+// }, 10000);

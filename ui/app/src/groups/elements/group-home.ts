@@ -1,13 +1,11 @@
 import {
   notify,
-  sharedStyles,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { ActionHash, encodeHashToBase64, EntryHash } from "@holochain/client";
-import { DnaHash } from "@holochain/client";
+import { ActionHash, EntryHash } from "@holochain/client";
 import {
   AsyncReadable,
   join,
@@ -36,10 +34,12 @@ import "./installable-applets.js";
 import "./group-applets.js";
 import "./group-applets-settings.js";
 import "./your-settings.js";
+import "./looking-for-peers.js";
 import "../../custom-views/elements/all-custom-views.js";
 import "./create-custom-group-view.js";
 import "./edit-custom-group-view.js";
 import "../../applet-bundles/elements/publish-applet-button.js";
+import "../../elements/tab-group.js";
 import { AddRelatedGroupDialog } from "./add-related-group-dialog.js";
 
 import { groupStoreContext } from "../context.js";
@@ -208,7 +208,7 @@ export class GroupHome extends LitElement {
           <sl-tab slot="nav" panel="your-settings"
             >${msg("Your Settings")}</sl-tab
           >
-          <sl-tab-panel name="applets"
+          <sl-tab-panel name="applets" style="display: flex; flex: 1;"
             ><group-applets-settings></group-applets-settings>
           </sl-tab-panel>
           <sl-tab-panel name="custom-views">
@@ -303,6 +303,87 @@ export class GroupHome extends LitElement {
     </div>`;
   }
 
+  renderNewSettings() {
+    const tabs = [
+      ["Applets", html`<group-applets-settings style="display: flex; flex: 1;"></group-applets-settings>`],
+      ["Custom Views", html`
+        <div class="column">
+          <span class="placeholder"
+            >${msg(
+              "You can add custom views to this group, combining the relevant blocks from each applet."
+            )}</span
+          >
+          <all-custom-views
+            style="margin-top: 8px"
+            @edit-custom-view=${(e) => {
+              this.view = {
+                view: "edit-custom-view",
+                customViewHash: e.detail.customViewHash,
+              };
+            }}
+          ></all-custom-views>
+          <div class="row" style="flex: 1">
+            <span style="flex: 1"></span>
+            <sl-button
+              variant="primary"
+              @click=${() => {
+                this.view = { view: "create-custom-view" };
+              }}
+              >${msg("Create Custom View")}</sl-button
+            >
+          </div>
+        </div>
+      `],
+      ["Related Groups", html`
+        <add-related-group-dialog
+          id="add-related-group-dialog"
+        ></add-related-group-dialog>
+        <div class="column">
+          <span style="margin-bottom: 8px" class="placeholder"
+            >${msg(
+              "You can add related groups to this group so that members of this group can see and join the related groups."
+            )}</span
+          >
+          <related-groups></related-groups>
+          <div class="row">
+            <span style="flex: 1"></span>
+            <sl-button
+              variant="primary"
+              @click=${() => {
+                (
+                  this.shadowRoot?.getElementById(
+                    "add-related-group-dialog"
+                  ) as AddRelatedGroupDialog
+                ).show();
+              }}
+              >${msg("Add a related group")}</sl-button
+            >
+          </div>
+        </div>
+      `],
+      ["Your Settings", html`<your-settings></your-settings>`]
+    ];
+
+    return html`
+      <div class="column" style="flex: 1; position: relative;">
+        <div class="row" style="height: 68px; align-items: center; background: var(--sl-color-primary-200)">
+          <sl-icon-button
+            .src=${wrapPathInSvg(mdiArrowLeft)}
+            @click=${() => {
+              this.view = { view: "main" };
+            }}
+            style="margin-left: 20px; font-size: 30px;"
+          ></sl-icon-button>
+          <span style="display: flex; flex: 1;"></span>
+          <span class="title" style="margin-right: 20px; font-weight: bold;">${msg("Group Settings")}</span>
+        </div>
+
+        <tab-group .tabs=${tabs} style="display: flex; flex: 1;">
+        <tab-group>
+      </div>
+    `
+  }
+
   renderContent(groupProfile: GroupProfile, networkSeed: string) {
     switch (this.view.view) {
       case "main":
@@ -325,6 +406,7 @@ export class GroupHome extends LitElement {
             </div>
 
             <installable-applets
+              style="display: flex; flex: 1; overflow-y: auto;"
               @applet-installed=${() => {
                 this.view = { view: "main" };
               }}
@@ -332,7 +414,7 @@ export class GroupHome extends LitElement {
           </div>
         `;
       case "settings":
-        return this.renderSettings();
+        return this.renderNewSettings();
       case "create-custom-view":
         return this.renderCreateCustomView();
       case "edit-custom-view":
@@ -351,14 +433,7 @@ export class GroupHome extends LitElement {
         const networkSeed = this.groupProfile.value.value[1];
 
         if (!groupProfile)
-          return html`<div class="column center-content" style="flex: 1">
-            <h2>${msg("Out of sync")}</h2>
-            <span style="max-width: 600px; text-align: center"
-              >${msg(
-                "Ask one of the members of this group to launch We so that you can synchronize with this group."
-              )}</span
-            >
-          </div>`;
+          return html`<looking-for-peers style="display: flex; flex: 1;"></looking-for-peers>`;
 
         return html`
           <profile-prompt

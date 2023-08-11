@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { encodeHashToBase64, EntryHashB64 } from "@holochain/client";
+import { ActionHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
 import {
@@ -11,6 +11,7 @@ import {
 import { consume } from "@lit-labs/context";
 import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
 import { slice } from "@holochain-open-dev/utils";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
@@ -45,10 +46,10 @@ export class InstallAppletBundleDialog extends LitElement {
   form!: HTMLFormElement;
 
   @state()
-  _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
+  _dnaBundle: { hash: ActionHashB64; file: File } | undefined = undefined;
 
   @state()
-  _uiBundle: { hash: EntryHashB64; setupRenderers: any } | undefined =
+  _uiBundle: { hash: ActionHashB64; setupRenderers: any } | undefined =
     undefined;
 
   @state()
@@ -61,6 +62,9 @@ export class InstallAppletBundleDialog extends LitElement {
   _installing: boolean = false;
 
   @state()
+  _installationProgress: string | undefined;
+
+  @state()
   _appletInfo: Entity<AppEntry> | undefined;
 
   @state()
@@ -68,6 +72,11 @@ export class InstallAppletBundleDialog extends LitElement {
 
   @state()
   _pollInterval: number | null = null;
+
+  @state()
+  _showAdvanced: boolean = false;
+
+  _unlisten: UnlistenFn | undefined;
 
   open(appletInfo: Entity<AppEntry>) {
     this._appletInfo = appletInfo;
@@ -78,6 +87,7 @@ export class InstallAppletBundleDialog extends LitElement {
   }
 
   async firstUpdated() {
+    this._unlisten = await listen("applet-install-progress", (event) => { this._installationProgress = event.payload as string });
     try {
       this._peerHostsStatus = this._appletInfo ? await this.groupStore.weStore.appletBundlesStore.getVisibleHosts(this._appletInfo) : undefined;
     } catch (e) {
@@ -92,17 +102,23 @@ export class InstallAppletBundleDialog extends LitElement {
     );
   }
 
+  disconnectedCallback(): void {
+    if (this._unlisten) this._unlisten();
+  }
+
   get publishDisabled() {
     return this._duplicateName;
   }
 
-  async installApplet(customName: string) {
+  async installApplet(fields: { custom_name: string, network_seed?: string }) {
     if (this._installing) return;
     this._installing = true;
+    this._installationProgress = "fetching app icon...";
     try {
       const appletEntryHash = await this.groupStore.installAppletBundle(
         this._appletInfo!,
-        customName
+        fields.custom_name,
+        fields.network_seed ? fields.network_seed : undefined,
       );
       notify("Installation successful");
 
@@ -117,6 +133,7 @@ export class InstallAppletBundleDialog extends LitElement {
         })
       );
     } catch (e) {
+      this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
     }
@@ -165,6 +182,44 @@ export class InstallAppletBundleDialog extends LitElement {
             .defaultValue=${this._appletInfo!.content.title}
           ></sl-input>
 
+          <span
+            style="text-decoration: underline; cursor: pointer;"
+            @click=${() => { this._showAdvanced = !this._showAdvanced }}
+          >${this._showAdvanced ? "Hide" : "Show"} Advanced
+          </span>
+
+          ${
+            this._showAdvanced
+              ? html`
+                <sl-input
+                  name="network_seed"
+                  id="network-seed-field"
+                  .label=${msg("Custom Network Seed")}
+                  style="margin-bottom: 16px"
+                  ${ref((input) => {
+                    if (!input) return;
+                    setTimeout(() => {
+                      if (allAppletsNames.includes(this._appletInfo!.content.title)) {
+                        (input as HTMLInputElement).setCustomValidity(
+                          "Name already exists"
+                        );
+                      } else {
+                        (input as HTMLInputElement).setCustomValidity("");
+                      }
+                    });
+                  })}
+                  @input=${(e) => {
+                    if (allAppletsNames.includes(e.target.value)) {
+                      e.target.setCustomValidity("Name already exists");
+                    } else {
+                      e.target.setCustomValidity("");
+                    }
+                  }}
+                  .defaultValue=${this._appletInfo!.content.title}
+                ></sl-input>
+              ` : html``
+          }
+
           <sl-button
             variant="primary"
             type="submit"
@@ -172,6 +227,7 @@ export class InstallAppletBundleDialog extends LitElement {
           >
             ${msg("Install")}
           </sl-button>
+          <div>${this._installationProgress}</div>
         `;
 
       case "error":
@@ -214,7 +270,7 @@ export class InstallAppletBundleDialog extends LitElement {
         </div>
         <form
           class="column"
-          ${onSubmit((f) => this.installApplet(f.custom_name))}
+          ${onSubmit((f) => this.installApplet(f))}
         >
           ${this.renderForm()}
         </form>

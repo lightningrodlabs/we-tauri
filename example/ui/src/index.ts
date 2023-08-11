@@ -62,7 +62,7 @@ function wrapAppletView(
 
 async function appletViews(
   client: AppAgentClient,
-  appletId: EntryHash,
+  appletHash: EntryHash,
   profilesClient: ProfilesClient,
   weServices: WeServices
 ): Promise<AppletViews> {
@@ -75,6 +75,7 @@ async function appletViews(
           weServices,
           html`
             <applet-main
+              .client=${client}
               @post-selected=${async (e: CustomEvent) => {
                 const appInfo = await client.appInfo();
                 const dnaHash = (appInfo.cell_info.forum[0] as any)[
@@ -83,6 +84,9 @@ async function appletViews(
                 weServices.openViews.openHrl([dnaHash, e.detail.postHash], {
                   detail: "asdf",
                 });
+              }}
+              @notification=${async (e: CustomEvent) => {
+                weServices.notifyWe(e.detail);
               }}
             ></applet-main>
           `
@@ -123,7 +127,7 @@ async function appletViews(
 }
 
 async function crossAppletViews(
-  applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletId
+  applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by appletHash
   weServices: WeServices
 ): Promise<CrossAppletViews> {
   return {
@@ -167,7 +171,7 @@ const applet: WeApplet = {
   }),
   search: async (
     appletClient: AppAgentClient,
-    _appletId,
+    _appletHash,
     _weServices,
     filter: string
   ) => {

@@ -1,4 +1,4 @@
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem};
+use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem, Icon};
 use crate::window::build_main_window;
 
 pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
@@ -10,6 +10,8 @@ pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
                 window.show().unwrap();
                 window.unminimize().unwrap();
                 window.set_focus().unwrap();
+                // tauri function to clear SysTrayIconState is routed via the frontend because the systray callback cannot be async
+                window.emit("clear-systray-notification-state", ()).unwrap();
             } else {
                 let _r = build_main_window(app);
             }

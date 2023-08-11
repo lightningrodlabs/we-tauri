@@ -11,7 +11,7 @@ import { msg } from "@lit/localize";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { EntryHash } from "@holochain/client";
+import { ActionHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 
 import { WeStore } from "../../we-store.js";
@@ -30,7 +30,7 @@ export class AppletBundleTitle extends LitElement {
   _weStore!: WeStore;
 
   @property(hashProperty("applet-bundle-hash"))
-  appletBundleHash!: EntryHash;
+  appletBundleHash!: ActionHash;
 
   appletBundle = new StoreSubscriber(
     this,

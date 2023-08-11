@@ -2,7 +2,7 @@ import { consume } from "@lit-labs/context";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 import { sharedStyles } from "@holochain-open-dev/elements";
 import { BlockType } from "applet-messages";
 import { BlockProperties } from "grapesjs";

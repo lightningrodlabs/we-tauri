@@ -30,7 +30,10 @@ pub fn setup_logs(fs: WeFileSystem) -> Result<(), String> {
 
 /// Tauri command to add a log from the UI via tauri's js API
 #[tauri::command]
-pub fn log(log: String) -> Result<(), String> {
+pub fn log(window: tauri::Window, log: String) -> Result<(), String> {
+  if window.label() != "main" {
+    return Err(String::from("Attempted to call tauri command 'log' from unauthorized window."))
+  }
 	log::info!("[We UI] {}", log);
 	Ok(())
 }

@@ -42,7 +42,7 @@ export class HrlLink extends LitElement {
 
         const { groupsProfiles, appletsInfos } =
           await getAppletsInfosAndGroupsProfiles(this.weServices, [
-            entryInfo.appletId,
+            entryInfo.appletHash,
           ]);
 
         return {
@@ -72,10 +72,10 @@ export class HrlLink extends LitElement {
                   ? html` <span>${entryInfo.entryInfo.name},&nbsp;</span> `
                   : html``}
                 <span>
-                  ${appletsInfos.get(entryInfo.appletId)?.appletName}
+                  ${appletsInfos.get(entryInfo.appletHash)?.appletName}
                   ${msg("in")}</span
                 >
-                ${appletsInfos.get(entryInfo.appletId)?.groupsIds.map(
+                ${appletsInfos.get(entryInfo.appletHash)?.groupsIds.map(
                   (groupId) => html`
                     <img
                       .src=${groupsProfiles.get(groupId)?.logo_src}

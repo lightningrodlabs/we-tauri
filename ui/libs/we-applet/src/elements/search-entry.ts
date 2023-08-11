@@ -175,7 +175,7 @@ export class SearchEntry extends LitElement implements FormField {
     const { appletsInfos, groupsProfiles } =
       await getAppletsInfosAndGroupsProfiles(
         this.services,
-        filteredHrls.map(([_, info]) => info.appletId)
+        filteredHrls.map(([_, info]) => info.appletHash)
       );
 
     return { hrlsWithInfo: filteredHrls, groupsProfiles, appletsInfos };
@@ -260,7 +260,7 @@ export class SearchEntry extends LitElement implements FormField {
                 <div slot="suffix" class="row" style="align-items: center">
                   <span class="placeholder">&nbsp;${msg("in")}&nbsp;</span>
                   ${searchResult.appletsInfos
-                    .get(info.appletId)
+                    .get(info.appletHash)
                     ?.groupsIds.map(
                       (groupId) => html`
                         <img
@@ -271,7 +271,7 @@ export class SearchEntry extends LitElement implements FormField {
                       `
                     )}
                   <span class="placeholder">
-                    ${searchResult.appletsInfos.get(info.appletId)
+                    ${searchResult.appletsInfos.get(info.appletHash)
                       ?.appletName}</span
                   >
                 </div>
@@ -297,7 +297,7 @@ export class SearchEntry extends LitElement implements FormField {
   render() {
     return html`
       <div style="flex: 1; display: flex;">
-        <sl-dropdown id="dropdown">
+        <sl-dropdown id="dropdown" hoist>
           <sl-input
             id="textfield"
             slot="trigger"

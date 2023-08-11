@@ -7,20 +7,25 @@ use holochain::{
 };
 use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, InstallAppPayload};
 
-use crate::{error::WeResult, launch::get_admin_ws};
+use crate::{error::{WeResult, WeError}, launch::get_admin_ws};
 
 #[tauri::command]
 pub async fn join_group(
+    window: tauri::Window,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     agent_pub_key: String, // TODO: remove when every applet has a different key
     network_seed: String,
 ) -> WeResult<AppInfo> {
+    if window.label() != "main" {
+      return Err(WeError::UnauthorizedWindow(String::from("join_group")));
+    }
+
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
-    let group_app_id = format!("group-{}", network_seed);
+    let group_app_id = format!("group#{}", network_seed);
 
     let is_installed = apps
         .iter()

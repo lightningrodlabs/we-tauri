@@ -4,9 +4,11 @@ use hdk::prelude::*;
 use posts_integrity::*;
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
+    let peers_anchor = anchor(LinkTypes::PeerSubscription, String::from("PEER_SUBSCRIPTION"), String::from("PEER_SUBSCRIPTION"))?;
+    create_link(peers_anchor, agent_info()?.agent_initial_pubkey, LinkTypes::PeerSubscription, ())?;
     Ok(InitCallbackResult::Pass)
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, SerializedBytes)]
 #[serde(tag = "type")]
 pub enum Signal {
     LinkCreated { action: SignedActionHashed, link_type: LinkTypes },
@@ -18,7 +20,9 @@ pub enum Signal {
         original_app_entry: EntryTypes,
     },
     EntryDeleted { action: SignedActionHashed, original_app_entry: EntryTypes },
+    NewPost { post: Post, timestamp: Timestamp },
 }
+
 #[hdk_extern(infallible)]
 pub fn post_commit(committed_actions: Vec<SignedActionHashed>) {
     for action in committed_actions {
@@ -73,12 +77,25 @@ fn signal_action(action: SignedActionHashed) -> ExternResult<()> {
                 }
             }
         }
-        Action::Create(_create) => {
+        Action::Create(create) => {
             if let Ok(Some(app_entry)) = get_entry_for_action(&action.hashed.hash) {
                 emit_signal(Signal::EntryCreated {
                     action,
-                    app_entry,
+                    app_entry: app_entry.clone(),
                 })?;
+
+                match app_entry {
+                    EntryTypes::Post(post) => {
+                        let signal = Signal::NewPost { post, timestamp: create.timestamp };
+                        let peers_anchor = anchor(LinkTypes::PeerSubscription, String::from("PEER_SUBSCRIPTION"), String::from("PEER_SUBSCRIPTION"))?;
+                        let peer_links = get_links(peers_anchor, LinkTypes::PeerSubscription, None)?;
+                        let peers = peer_links.iter()
+                            .filter_map(|link| AgentPubKey::try_from(link.target.clone()).ok())
+                            .collect::<Vec<AgentPubKey>>();
+                        remote_signal(ExternIO::encode(signal), peers)?;
+                    },
+                    _ => (),
+                }
             }
             Ok(())
         }
@@ -136,4 +153,20 @@ fn get_entry_for_action(action_hash: &ActionHash) -> ExternResult<Option<EntryTy
             entry,
         )?,
     )
+}
+
+
+#[hdk_extern]
+fn recv_remote_signal(signal: SerializedBytes) -> ExternResult<()> {
+
+  // decode and emit to the UI
+  let maybe_decoded_signal = Signal::try_from(signal.clone());
+  match maybe_decoded_signal {
+    Ok(signal) => {
+      debug!("💌💌💌💌 Agent {:?} RECEIVED SIGNAL: {:?}", agent_info()?.agent_initial_pubkey,  signal);
+      emit_signal(signal)?;
+      Ok(())
+    },
+    Err(e) => Err(wasm_error!(WasmErrorInner::Guest(format!("Failed to decode remote signal: {}", e))))
+  }
 }

@@ -10,10 +10,15 @@ import {
   retryUntilSuccess,
   sliceAndJoin,
   toPromise,
+  Readable,
+  Writable,
+  writable,
+  derived,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
   AppInfo,
+  AppWebsocket,
   decodeHashFromBase64,
   ProvisionedCell,
 } from "@holochain/client";
@@ -31,19 +36,33 @@ import { v4 as uuidv4 } from "uuid";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
-import { GroupClient } from "./groups/group-client.js";
-import { GroupStore } from "./groups/group-store.js";
+import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
+import { AppletHash, AppletId } from "./types.js";
 
 export class WeStore {
+
   constructor(
     public adminWebsocket: AdminWebsocket,
+    public appWebsocket: AppWebsocket,
     public conductorInfo: ConductorInfo,
     public appletBundlesStore: AppletBundlesStore
   ) {}
+
+  private _selectedAppletHash: Writable<AppletHash | undefined> = writable(undefined);
+
+
+  selectedAppletHash(): Readable<AppletHash | undefined> {
+    return derived(this._selectedAppletHash, (hash) => hash);
+  }
+
+  selectAppletHash(hash: AppletHash | undefined) {
+    this._selectedAppletHash.update((_) => hash);
+  }
+
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
@@ -101,7 +120,7 @@ export class WeStore {
         if (
           applets.find(
             (appletHash) =>
-              app.installed_app_id === encodeHashToBase64(appletHash)
+              app.installed_app_id === appIdFromAppletHash(appletHash)
           )
         ) {
           await this.adminWebsocket.enableApp({
@@ -136,12 +155,14 @@ export class WeStore {
 
     await Promise.all(
       applets.map(async (appletHash) => {
+        // TODO: Is this save? groupsForApplet depends on the network so it may not always
+        // actually return all groups that depend on this applet
         const groupsForApplet = await toPromise(
           this.groupsForApplet.get(appletHash)
         );
         if (groupsForApplet.size === 1) {
           await this.adminWebsocket.disableApp({
-            installed_app_id: encodeHashToBase64(appletHash),
+            installed_app_id: appIdFromAppletHash(appletHash),
           });
         }
       })
@@ -150,13 +171,13 @@ export class WeStore {
     await this.appletBundlesStore.installedApps.reload();
   }
 
-  groupsApps = asyncDerived(this.appletBundlesStore.installedApps, (apps) =>
-    apps.filter((app) => app.installed_app_id.startsWith("group-"))
+  runningGroupsApps = asyncDerived(this.appletBundlesStore.runningApps, (apps) =>
+    apps.filter((app) => app.installed_app_id.startsWith("group#"))
   );
 
-  groupsDnaHashes = asyncDerived(this.groupsApps, (apps) => {
+  groupsDnaHashes = asyncDerived(this.runningGroupsApps, (apps) => {
     const groupApps = apps.filter((app) =>
-      app.installed_app_id.startsWith("group-")
+      app.installed_app_id.startsWith("group#")
     );
 
     const groupsDnaHashes = groupApps.map((app) => {
@@ -169,7 +190,7 @@ export class WeStore {
   });
 
   groups = new LazyHoloHashMap((groupDnaHash: DnaHash) =>
-    asyncDerived(this.groupsApps, async (apps) => {
+    asyncDerived(this.runningGroupsApps, async (apps) => {
       const groupApp = apps.find(
         (app) =>
           app.cell_info["group"][0][
@@ -185,13 +206,20 @@ export class WeStore {
     })
   );
 
-  applets = new LazyHoloHashMap((appletHash: EntryHash) =>
+  appletStores = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(
       async () => {
-        const groups = await toPromise(this.groupsForApplet.get(appletHash));
+        let groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-        if (groups.size === 0)
-          throw new Error("Applet is not installed in any of the groups");
+        if (groups.size === 0) {
+          // retry after APPLETS_POLLING_FREQUENCY milliseconds in case the applet has just been
+          // freshly installed
+          setTimeout(async () => {
+            groups = await toPromise(this.groupsForApplet.get(appletHash));
+            if (groups.size === 0) throw new Error("Applet is not installed in any of the groups");
+          }, APPLETS_POLLING_FREQUENCY);
+        }
+
 
         const applet = await Promise.race(
           Array.from(groups.values()).map((groupStore) =>
@@ -219,8 +247,8 @@ export class WeStore {
 
   allInstalledApplets = pipe(
     this.appletBundlesStore.installedApplets,
-    (appletsIds) =>
-      sliceAndJoin(this.applets, appletsIds) as AsyncReadable<
+    (appletsHashes) =>
+      sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
       >
   );
@@ -234,6 +262,7 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
+        // console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -241,6 +270,9 @@ export class WeStore {
             )
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
+
+        // console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
+        // console.log("groupDnaHashes: ", groupDnaHashes);
 
         if (groupDnaHashes.length === 0) {
           this.appletBundlesStore.disableApplet(appletHash);
@@ -251,6 +283,7 @@ export class WeStore {
     )
   );
 
+
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
     asyncDerived(
       this.appletBundlesStore.installedApps,
@@ -258,9 +291,10 @@ export class WeStore {
         const app = findAppForDnaHash(installedApps, dnaHash);
 
         if (!app) throw new Error("The given dna is not installed");
+        if (!app.appInfo.installed_app_id.startsWith("applet#")) throw new Error("The given dna is part of an app that's not an applet.");
 
         return {
-          appletHash: decodeHashFromBase64(app.appInfo.installed_app_id),
+          appletHash: appletHashFromAppId(app.appInfo.installed_app_id),
           appInfo: app.appInfo,
           roleName: app.roleName,
         } as DnaLocation;
@@ -274,6 +308,7 @@ export class WeStore {
         asyncDerived(
           this.dnaLocations.get(dnaHash),
           async (dnaLocation: DnaLocation) => {
+            console.log("@hrlLocations: got dnaLocation: ", dnaLocation);
             const entryDefLocation = await locateHrl(
               this.adminWebsocket,
               dnaLocation,
@@ -296,7 +331,7 @@ export class WeStore {
         pipe(this.hrlLocations.get(dnaHash).get(hash), (location) =>
           location
             ? pipe(
-                this.applets.get(location.dnaLocation.appletHash),
+                this.appletStores.get(location.dnaLocation.appletHash),
                 (appletStore) => appletStore!.host,
                 (host) =>
                   lazyLoad(() =>
@@ -315,7 +350,7 @@ export class WeStore {
 
   appletsForBundleHash = new LazyHoloHashMap(
     (
-      appBundleHash: EntryHash // appletid
+      appletBundleHash: ActionHash // action hash of the AppEntry in the app store
     ) =>
       pipe(
         this.allInstalledApplets,
@@ -325,7 +360,7 @@ export class WeStore {
               installedApplets,
               (appletStore) =>
                 appletStore.applet.appstore_app_hash.toString() ===
-                appBundleHash.toString()
+                appletBundleHash.toString()
             )
           ),
         (appletsForThisBundleHash) =>
@@ -383,4 +418,5 @@ export class WeStore {
       }
     )
   );
+
 }

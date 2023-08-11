@@ -17,9 +17,9 @@ import { WeApplet, GroupServices, WeServices, Hrl } from "@lightningrodlabs/we-a
 function groupViews(
   client: AppAgentClient,        // The client for this applet, already set up
   groupId: DnaHash,              // The group id that this applet is installed in, usually used when opening views
-  appletId: EntryHash,   // The applet instance id, usually used when opening views
+  appletHash: EntryHash,   // The applet instance id, usually used when opening views
   groupServices: GroupServices,  // The services that this group offers, like the group's profile or the ProfilesClient for the agents
-  weServices: WeServices         // The services that "we" offers to this applet, to enable attachments, open views, search... 
+  weServices: WeServices         // The services that "we" offers to this applet, to enable attachments, open views, search...
 ): GroupViews {
   return {
     main: (element: HTMLElement) => element.innerHTML = "<span>This is the main view for this applet, which is going to be opened when the user clicks on the applet's icon</span>",

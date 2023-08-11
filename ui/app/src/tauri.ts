@@ -1,4 +1,5 @@
 import {
+  ActionHashB64,
   AgentPubKey,
   AppInfo,
   CallZomeRequestUnsigned,
@@ -11,6 +12,8 @@ import { getNonceExpiration } from "@holochain/client";
 import { CallZomeRequestSigned } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
+import { WeNotification } from "@lightningrodlabs/we-applet";
+
 import { isWindows } from "./utils.js";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
@@ -145,11 +148,11 @@ export async function createPassword(password: string): Promise<void> {
   return invoke("create_password", { password });
 }
 
-export async function openDevhub() {
+export async function openDevhub(): Promise<void> {
   return invoke("open_devhub");
 }
 
-export async function openAppStore() {
+export async function openAppStore(): Promise<void> {
   return invoke("open_appstore");
 }
 
@@ -157,12 +160,26 @@ export async function isDevModeEnabled(): Promise<boolean> {
   return invoke("is_dev_mode_enabled");
 }
 
-export async function enableDevMode() {
+export async function enableDevMode(): Promise<void> {
   return invoke("enable_dev_mode");
 }
 
-export async function disableDevMode() {
+export async function disableDevMode(): Promise<void> {
   return invoke("disable_dev_mode");
+}
+
+export async function notifyTauri(
+  message: WeNotification,
+  systray: boolean,
+  os: boolean,
+  // appstoreAppHashB64: ActionHashB64 | undefined,
+  appletName: string | undefined,
+): Promise<void> {
+  try {
+    await invoke('notify_tauri', { message, systray, os, appletName });
+  } catch (e) {
+    console.error("Failed to invoke tauri command 'notify': ", e);
+  }
 }
 
 /** Copied from https://github.com/holochain/holochain-client-js/blob/main/src/environments/launcher.ts */

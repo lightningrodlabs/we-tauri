@@ -1,4 +1,4 @@
-import { pipe, toPromise } from "@holochain-open-dev/stores";
+import { get, pipe, toPromise } from "@holochain-open-dev/stores";
 import {
   AppletToParentMessage,
   AppletToParentRequest,
@@ -15,19 +15,25 @@ import {
   EntryLocationAndInfo,
   Hrl,
   HrlWithContext,
+  WeNotification,
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
+import { appWindow } from "@tauri-apps/api/window";
 
 import { AppOpenViews } from "../layout/types.js";
-import { AppletIframeProtocol, signZomeCallTauri } from "../tauri.js";
+import { AppletIframeProtocol, notifyTauri, signZomeCallTauri } from "../tauri.js";
 import { WeStore } from "../we-store.js";
+import { AppletNotificationSettings } from "./types.js";
+import { AppletHash, AppletId } from "../types.js";
+import { getAppletNotificationSettings, getNotificationState, storeAppletNotifications, validateNotifications } from "../utils.js";
+import { AppletStore } from "./applet-store.js";
 
 function getAppletIdFromOrigin(
   appletIframeProtocol: AppletIframeProtocol,
   origin: string
-): string {
+): AppletId {
   if (appletIframeProtocol === AppletIframeProtocol.Assets) {
     return origin.split("://")[1].split("?")[0].split("/")[0];
   } else {
@@ -53,6 +59,7 @@ export async function setupAppletMessageHandler(
       );
 
       if (!appletId) {
+        console.log("applet Id not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
         const iframeConfig: IframeConfig = {
           type: "not-installed",
           appletName: lowerCaseAppletId,
@@ -69,7 +76,9 @@ export async function setupAppletMessageHandler(
       );
       message.ports[0].postMessage({ type: "success", result });
     } catch (e) {
-      message.ports[0].postMessage({ type: "error", error: e.message });
+      console.error("Error while handling applet iframe message. Error: ", e, "Message: ", message);
+      console.log("appletId: ", encodeHashToBase64(message.data.appletHash));
+      message.ports[0].postMessage({ type: "error", error: (e as any).message });
     }
   });
 }
@@ -92,7 +101,7 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       if (!entryInfo) return undefined;
 
       const entryAndAppletInfo: EntryLocationAndInfo = {
-        appletId: location.dnaLocation.appletHash,
+        appletHash: location.dnaLocation.appletHash,
         entryInfo,
       };
 
@@ -108,11 +117,11 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
 
       return groupProfile;
     },
-    async appletInfo(appletId: EntryHash) {
-      const applet = await toPromise(weStore.applets.get(appletId));
+    async appletInfo(appletHash: AppletHash) {
+      const applet = await toPromise(weStore.appletStores.get(appletHash));
       if (!applet) return undefined;
       const groupsForApplet = await toPromise(
-        weStore.groupsForApplet.get(appletId)
+        weStore.groupsForApplet.get(appletHash)
       );
 
       return {
@@ -150,6 +159,9 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
         .filter((h) => !!h);
       return hrls;
     },
+    async notifyWe(notifications: Array<WeNotification>) {
+      throw new Error("notify is not implemented on headless WeServices.");
+    },
     attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
     openViews: {
       openAppletMain: () => {},
@@ -164,17 +176,20 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
 export async function handleAppletIframeMessage(
   weStore: WeStore,
   openViews: AppOpenViews,
-  appletId: EntryHash,
+  appletHash: EntryHash,
   message: AppletToParentRequest
 ) {
   let host: AppletHost;
   const services = buildHeadlessWeServices(weStore);
+
+  const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
+
   switch (message.type) {
     case "get-iframe-config":
       const isInstalled = await toPromise(
-        weStore.appletBundlesStore.isInstalled.get(appletId)
+        weStore.appletBundlesStore.isInstalled.get(appletHash)
       );
-      const applet = await toPromise(weStore.applets.get(appletId));
+      const applet = await toPromise(weStore.appletStores.get(appletHash));
 
       if (!isInstalled) {
         const iframeConfig: IframeConfig = {
@@ -197,14 +212,14 @@ export async function handleAppletIframeMessage(
         return config;
       } else {
         const groupsStores = await toPromise(
-          weStore.groupsForApplet.get(appletId)
+          weStore.groupsForApplet.get(appletHash)
         );
 
         // TODO: change this when personas and profiles is integrated
         const groupStore = Array.from(groupsStores.values())[0];
         const config: IframeConfig = {
           type: "applet",
-          appletId,
+          appletHash,
           appPort: weStore.conductorInfo.app_port,
           profilesLocation: {
             profilesAppId: groupStore.groupClient.appAgentClient.installedAppId,
@@ -228,10 +243,10 @@ export async function handleAppletIframeMessage(
     case "open-view":
       switch (message.request.type) {
         case "applet-main":
-          return openViews.openAppletMain(message.request.appletId);
+          return openViews.openAppletMain(message.request.appletHash);
         case "applet-block":
           return openViews.openAppletBlock(
-            message.request.appletId,
+            message.request.appletHash,
             message.request.block,
             message.request.context
           );
@@ -252,8 +267,62 @@ export async function handleAppletIframeMessage(
       break;
     case "search":
       return services.search(message.filter);
+    case "notify-we":
+      const appletId: AppletId = encodeHashToBase64(appletHash);
+
+      if (!message.notifications) {
+        throw new Error(`Got notification message without notifications attribute: ${JSON.stringify(message)}`)
+      }
+
+      const appletStore2 = await toPromise(weStore.appletStores.get(appletHash));
+
+      // const mainWindowFocused = await isMainWindowFocused();
+      const windowFocused = await appWindow.isFocused();
+      const windowVisible = await appWindow.isVisible();
+
+      // If the applet that the notification is coming from is already open, and the We main window
+      // itself is also open, don't do anything
+      const selectedAppletHash = get(weStore.selectedAppletHash());
+      if (selectedAppletHash && selectedAppletHash.toString() === appletHash.toString() && windowFocused) {
+        return;
+      }
+
+      // add notifications to unread messages and store them in the persisted notifications log
+      const notifications: Array<WeNotification> = message.notifications;
+      validateNotifications(notifications); // validate notifications to ensure not to corrupt localStorage
+      const unreadNotifications = storeAppletNotifications(notifications, appletId);
+
+      // update the notifications store
+      appletStore2.setUnreadNotifications(getNotificationState(unreadNotifications));
+
+      // trigger OS notification if allowed by the user and notification is fresh enough (less than 10 minutes old)
+      const appletNotificationSettings: AppletNotificationSettings = getAppletNotificationSettings(appletId);
+
+      let appletStore: AppletStore | undefined;
+      try {
+        appletStore = await toPromise(weStore.appletStores.get(appletHash));
+      } catch (e) {
+        console.warn("Failed to fetch AppletStore in notify hook: ", (e as any).toString());
+      }
+
+      await Promise.all(notifications.map(async (notification) => {
+        // check whether it's actually a new event or not. Events older than 5 minutes won't trigger an OS notification
+        // because it is assumed that they are emitted by the Applet UI upon startup of We and occurred while the
+        // user was offline
+        if ((Date.now() - notification.timestamp) < 300000) {
+          console.log("notifying tauri");
+          await notifyTauri(
+            notification,
+            appletNotificationSettings.showInSystray && !windowVisible,
+            appletNotificationSettings.allowOSNotification && notification.urgency === "high",
+            // appletStore ? encodeHashToBase64(appletStore.applet.appstore_app_hash) : undefined,
+            appletStore ? appletStore.applet.custom_name : undefined
+          );
+        }
+      }))
+      return;
     case "get-applet-info":
-      return services.appletInfo(message.appletId);
+      return services.appletInfo(message.appletHash);
     case "get-group-profile":
       return services.groupProfile(message.groupId);
     case "get-entry-info":
@@ -265,15 +334,38 @@ export async function handleAppletIframeMessage(
     case "create-attachment":
       host = await toPromise(
         pipe(
-          weStore.applets.get(message.request.appletId),
+          weStore.appletStores.get(message.request.appletHash),
           (appletStore) => appletStore!.host
         )
       );
-
       return host.createAttachment(
         message.request.attachmentType,
         message.request.attachToHrl
       );
+    case "localStorage.setItem":
+      const appletLocalStorageJson: string | null = window.localStorage.getItem(appletLocalStorageKey);
+      const appletLocalStorage: Record<string, string> = appletLocalStorageJson ? JSON.parse(appletLocalStorageJson) : {};
+      appletLocalStorage[message.key] = message.value;
+      window.localStorage.setItem(appletLocalStorageKey, JSON.stringify(appletLocalStorage));
+      break
+    case "localStorage.removeItem":
+      const appletLocalStorageJson2: string | null = window.localStorage.getItem(appletLocalStorageKey);
+      const appletLocalStorage2: Record<string, string> = appletLocalStorageJson2 ? JSON.parse(appletLocalStorageJson2) : undefined;
+      if (appletLocalStorage2) {
+        const filteredStorage = {};
+        Object.keys(appletLocalStorage2).forEach((key) => {
+          if (key !== message.key) {
+            filteredStorage[key] = appletLocalStorage2[key]
+          }
+        })
+        window.localStorage.setItem(appletLocalStorageKey, JSON.stringify(filteredStorage));
+      }
+      break
+    case "localStorage.clear":
+      window.localStorage.removeItem(`appletLocalStorage#${encodeHashToBase64(appletHash)}`);
+      break
+    case "get-localStorage":
+      return window.localStorage.getItem(appletLocalStorageKey);
   }
 }
 

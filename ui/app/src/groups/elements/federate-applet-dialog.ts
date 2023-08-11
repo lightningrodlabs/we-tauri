@@ -91,7 +91,7 @@ export class FederateAppletDialog extends LitElement {
     this.federating = true;
     try {
       const appletStore = await toPromise(
-        this._weStore.applets.get(this.appletHash)
+        this._weStore.appletStores.get(this.appletHash)
       );
       const groupStore = await toPromise(
         this._weStore.groups.get(groupDnaHash)
@@ -104,11 +104,11 @@ export class FederateAppletDialog extends LitElement {
 
       // Two way link from one group to the other
       // TODO: what to do when the applet is uninstalled
-      await this._groupStore.groupClient.federateApplet(
+      await this._groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         groupDnaHash
       );
-      await groupStore.groupClient.federateApplet(
+      await groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         this._groupStore.groupDnaHash
       );

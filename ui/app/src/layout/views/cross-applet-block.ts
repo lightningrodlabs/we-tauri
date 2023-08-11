@@ -1,8 +1,8 @@
 import { hashProperty } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import {
+  ActionHash,
   decodeHashFromBase64,
-  EntryHash,
   EntryHashB64,
 } from "@holochain/client";
 import { html, LitElement } from "lit";
@@ -23,7 +23,7 @@ import { weStyles } from "../../shared-styles.js";
 @customElement("cross-applet-block")
 export class CrossAppletBlock extends LitElement {
   @property(hashProperty("app-bundle-hash"))
-  appletBundleHash!: EntryHash;
+  appletBundleHash!: ActionHash;
 
   @property()
   block!: string;

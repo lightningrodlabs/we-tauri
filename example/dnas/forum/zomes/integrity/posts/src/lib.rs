@@ -1,7 +1,7 @@
 pub mod post;
 use hdi::prelude::*;
 pub use post::*;
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(tag = "type")]
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
@@ -13,6 +13,7 @@ pub enum EntryTypes {
 pub enum LinkTypes {
     PostUpdates,
     AllPosts,
+    PeerSubscription,
 }
 #[hdk_extern]
 pub fn genesis_self_check(_data: GenesisSelfCheckData) -> ExternResult<ValidateCallbackResult> {
@@ -26,8 +27,8 @@ pub fn validate_agent_joining(
 }
 #[hdk_extern]
 pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
-    match op.to_type::<EntryTypes, LinkTypes>()? {
-        OpType::StoreEntry(store_entry) => match store_entry {
+    match op.flattened::<EntryTypes, LinkTypes>()? {
+        FlatOp::StoreEntry(store_entry) => match store_entry {
             OpEntry::CreateEntry { app_entry, action } => match app_entry {
                 EntryTypes::Post(post) => {
                     validate_create_post(EntryCreationAction::Create(action), post)
@@ -42,7 +43,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        OpType::RegisterUpdate(update_entry) => match update_entry {
+        FlatOp::RegisterUpdate(update_entry) => match update_entry {
             OpUpdate::Entry {
                 original_action,
                 original_app_entry,
@@ -58,7 +59,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        OpType::RegisterDelete(delete_entry) => match delete_entry {
+        FlatOp::RegisterDelete(delete_entry) => match delete_entry {
             OpDelete::Entry {
                 original_action,
                 original_app_entry,
@@ -68,7 +69,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             },
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        OpType::RegisterCreateLink {
+        FlatOp::RegisterCreateLink {
             link_type,
             base_address,
             target_address,
@@ -81,8 +82,11 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             LinkTypes::AllPosts => {
                 validate_create_link_all_posts(action, base_address, target_address, tag)
             }
+            LinkTypes::PeerSubscription => {
+                validate_create_link_peer_subscription(action, base_address, target_address, tag)
+            }
         },
-        OpType::RegisterDeleteLink {
+        FlatOp::RegisterDeleteLink {
             link_type,
             base_address,
             target_address,
@@ -104,8 +108,15 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 target_address,
                 tag,
             ),
+            LinkTypes::PeerSubscription => validate_delete_link_peer_subscription(
+                action,
+                original_action,
+                base_address,
+                target_address,
+                tag,
+            ),
         },
-        OpType::StoreRecord(store_record) => match store_record {
+        FlatOp::StoreRecord(store_record) => match store_record {
             OpRecord::CreateEntry { app_entry, action } => match app_entry {
                 EntryTypes::Post(post) => {
                     validate_create_post(EntryCreationAction::Create(action), post)
@@ -230,6 +241,9 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                 LinkTypes::AllPosts => {
                     validate_create_link_all_posts(action, base_address, target_address, tag)
                 }
+                LinkTypes::PeerSubscription => {
+                    validate_create_link_peer_subscription(action, base_address, target_address, tag)
+                }
             },
             OpRecord::DeleteLink {
                 original_action_hash,
@@ -269,6 +283,13 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
                         create_link.target_address,
                         create_link.tag,
                     ),
+                    LinkTypes::PeerSubscription => validate_delete_link_peer_subscription(
+                        action,
+                        create_link.clone(),
+                        base_address,
+                        create_link.target_address,
+                        create_link.tag,
+                    ),
                 }
             }
             OpRecord::CreatePrivateEntry { .. } => Ok(ValidateCallbackResult::Valid),
@@ -283,7 +304,7 @@ pub fn validate(op: Op) -> ExternResult<ValidateCallbackResult> {
             OpRecord::InitZomesComplete { .. } => Ok(ValidateCallbackResult::Valid),
             _ => Ok(ValidateCallbackResult::Valid),
         },
-        OpType::RegisterAgentActivity(agent_activity) => match agent_activity {
+        FlatOp::RegisterAgentActivity(agent_activity) => match agent_activity {
             OpActivity::CreateAgent { agent, action } => {
                 let previous_action = must_get_action(action.prev_action)?;
                 match previous_action.action() {

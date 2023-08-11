@@ -6,8 +6,12 @@ import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import {
   asyncDerived,
   AsyncReadable,
+  AsyncStatus,
   completed,
+  derived,
+  get,
   join,
+  joinMap,
   lazyLoad,
   lazyLoadAndPoll,
   mapAndJoin,
@@ -15,13 +19,14 @@ import {
   sliceAndJoin,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap, mapValues } from "@holochain-open-dev/utils";
 import {
   AgentPubKey,
   AppAgentWebsocket,
   CellType,
   DnaHash,
   EntryHash,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
@@ -34,6 +39,9 @@ import { CustomViewsClient } from "../custom-views/custom-views-client.js";
 import { WeStore } from "../we-store.js";
 import { AppEntry, Entity } from "../processes/appstore/types.js";
 import { Applet } from "../applets/types.js";
+
+export const APPLETS_POLLING_FREQUENCY = 4000;
+
 
 // Given a group, all the functionality related to that group
 export class GroupStore {
@@ -114,9 +122,13 @@ export class GroupStore {
   // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
   async installAppletBundle(
     appEntry: Entity<AppEntry>,
-    customName: string
+    customName: string,
+    networkSeed?: string,
   ): Promise<EntryHash> {
-    const networkSeed = uuidv4();
+
+    if (!networkSeed) {
+      networkSeed = uuidv4();
+    }
 
     const latestRelease =
       await this.weStore.appletBundlesStore.getLatestVersion(appEntry);
@@ -155,7 +167,7 @@ export class GroupStore {
     lazyLoad(async () => this.groupClient.getApplet(appletHash))
   );
 
-  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
+  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), APPLETS_POLLING_FREQUENCY);
 
   archivedApplets = lazyLoadAndPoll(
     async () => this.groupClient.getArchivedApplets(),
@@ -173,9 +185,12 @@ export class GroupStore {
       )
   );
 
+  activeAppletStores = pipe(this.allApplets,
+    (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets)
+  );
+
   allBlocks = pipe(
-    this.installedApplets,
-    (allApplets) => sliceAndJoin(this.weStore.applets, allApplets),
+    this.activeAppletStores,
     (appletsStores) => mapAndJoin(appletsStores, (s) => s.blocks)
   );
 
@@ -183,4 +198,24 @@ export class GroupStore {
     () => this.groupClient.getRelatedGroups(),
     10000
   );
+
+  allUnreadNotifications = pipe(
+    this.activeAppletStores,
+    (allAppletStores) => derived(joinMap(mapValues(allAppletStores, (store) => store.unreadNotifications())), (map) => ({ status: "complete", value: map } as AsyncStatus<ReadonlyMap<Uint8Array, [string | undefined, number | undefined]>>) ),
+    (notificationsMap) => {
+      const notificationCounts = { "low": 0, "medium": 0, "high": 0 };
+      Array.from(notificationsMap.values()).forEach(([urgency, count]) => {
+        if(urgency) notificationCounts[urgency] += count;
+      })
+
+    if (notificationCounts.high) {
+      return completed(["high", notificationCounts.high] as [string | undefined, number | undefined]);
+    } else if (notificationCounts.medium) {
+      return completed(["medium", notificationCounts.medium] as [string | undefined, number | undefined]);
+    } else if (notificationCounts.low) {
+      return completed(["low", notificationCounts.low] as [string | undefined, number | undefined]);
+    }
+    return completed([undefined, undefined] as [string | undefined, number | undefined]);
+  });
+
 }

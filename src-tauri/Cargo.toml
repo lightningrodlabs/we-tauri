@@ -1,6 +1,6 @@
 [package]
 name = "we-alpha"
-version = "0.1.0"
+version = "0.2.1"
 description = "An alternative Holochain runtime focused on groups."
 authors = [
   "eric@harris-braun.com",
@@ -17,7 +17,7 @@ edition = "2021"
 tauri-build = { version = "=1.4", features = [] }
 
 [dependencies]
-tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all", "process-command-api", "protocol-all", "shell-open", "system-tray"] }
+tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all", "icon-png", "notification", "process-command-api", "protocol-all", "shell-open", "system-tray"] }
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
@@ -32,15 +32,15 @@ portpicker = "0.1"
 tempdir = "0.3.7"
 thiserror = "1"
 
-holochain_client = "=0.3.1"
-holochain_state = "=0.1.3"
-holochain_websocket = "=0.1.0"
-holochain = "=0.1.3"
-holochain_types = "=0.1.3"
-holochain_zome_types = "=0.1.1"
-holochain_integrity_types = "=0.1.1"
-sodoken = "=0.0.7"
-mr_bundle = "=0.1.0"
+holochain_client = "0.4.1"
+holochain_state = "=0.2.1"
+holochain_websocket = "=0.2.1"
+holochain = "=0.2.1"
+holochain_types = "=0.2.1"
+holochain_zome_types = "=0.2.1"
+holochain_integrity_types = "=0.2.1"
+sodoken = "=0.0.9"
+mr_bundle = "=0.2.1"
 either = "*"
 url = "2.2"
 url2 = "0.0.6"
@@ -56,20 +56,15 @@ bytes = "1"
 
 zip = "0.5"
 
-hc_crud_caps = { git = "https://github.com/mjbrisebois/rust-hc-crud-caps.git", rev = "59752c8aad95bfe421f259a3b2a1cd547dd64457" }
-devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "10faff9c57af369f353330355eec5e0dac1c8f5d" }
-appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "a2dc60c80ddb1f82ae28817e6f9bca3416271b1d" }
-appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "a2dc60c80ddb1f82ae28817e6f9bca3416271b1d" }
-hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "4c2075ec54349f9d6a4e2de84d7846282a0938fd" }
+hc_crud_caps = "0.9.0"
+devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "8ad6faaaa965dfdaccbf25a6947086680acf0fa7" }
+appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
+appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
+hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "14ad357ae42ee7451848a249a7e32acb40519dbc" }
 
-# hc_crud_caps = "0.7"
-# devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "1b1ab2adfb67defd597b4a9a3995cf87bf1e1456" }
-# appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "a671385285b9833305bdee9f2226c9d4d9dd6f4e" }
-# appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "a671385285b9833305bdee9f2226c9d4d9dd6f4e" }
-# hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "66c846ad8695f16c0cfeefd96106ddc48442aaa8" }
 essence_payloads = "0.1"
 
-holochain_launcher_utils = { git = "https://github.com/holochain/launcher", rev = "a0cadf7683eb48ab01f0c34f8117bda4cc2fc348" }
+holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "we-hc-0.2.1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -13,7 +13,7 @@ import { msg } from "@lit/localize";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
-import { EntryInfo, GroupProfile, Hrl } from "@lightningrodlabs/we-applet";
+import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 import { mapValues } from "@holochain-open-dev/utils";
@@ -38,7 +38,7 @@ export class AppletTitle extends LitElement {
     this,
     () =>
       join([
-        this._weStore.applets.get(this.appletHash),
+        this._weStore.appletStores.get(this.appletHash),
         asyncDeriveStore(
           this._weStore.groupsForApplet.get(this.appletHash),
           (groupsStores) =>
@@ -65,7 +65,7 @@ export class AppletTitle extends LitElement {
           alt="${appletStore.applet.custom_name}"
           style="height: 25px; width: 25px; display: flex; margin-right: 4px; border-radius: 50%"
         />
-        <span style="color: rgb(119, 119, 119)"
+        <span
           >${appletStore.applet.custom_name}</span
         >
       </div>

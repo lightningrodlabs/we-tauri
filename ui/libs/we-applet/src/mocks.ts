@@ -15,4 +15,5 @@ export const weServicesMock: WeServices = {
     openHrl: () => {},
   },
   search: async () => [],
+  notifyWe: async () => console.log("Sending mock notification.")
 };

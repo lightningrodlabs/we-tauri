@@ -5,7 +5,7 @@ import { AppletInfo, GroupProfile, WeServices } from "./types";
 
 export async function getAppletsInfosAndGroupsProfiles(
   services: WeServices,
-  appletsIds: EntryHash[]
+  appletsHashes: EntryHash[]
 ): Promise<{
   appletsInfos: ReadonlyMap<EntryHash, AppletInfo>;
   groupsProfiles: ReadonlyMap<DnaHash, GroupProfile>;
@@ -13,10 +13,10 @@ export async function getAppletsInfosAndGroupsProfiles(
   const groupsProfiles = new HoloHashMap<DnaHash, GroupProfile>();
   const appletsInfos = new HoloHashMap<EntryHash, AppletInfo>();
 
-  for (const appletId of appletsIds) {
-    const appletInfo = await services.appletInfo(appletId);
+  for (const appletHash of appletsHashes) {
+    const appletInfo = await services.appletInfo(appletHash);
     if (appletInfo) {
-      appletsInfos.set(appletId, appletInfo);
+      appletsInfos.set(appletHash, appletInfo);
 
       for (const groupId of appletInfo.groupsIds) {
         if (!groupsProfiles.has(groupId)) {

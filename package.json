@@ -15,7 +15,7 @@
     "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\" \"DISABLE_DEEP_LINK=true ADMIN_PORT=10002 npm run start:agent\"",
     "start:ui": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we-alpha\"",
     "start:agent": "concurrently \"npm run tauri:dev\" \"npm run publish:applets\"",
-    "tauri:dev": "RUST_LOG=info WASM_LOG=warn npm run tauri dev --release -- -- -- --profile ${ADMIN_PORT}",
+    "tauri:dev": "RUST_LOG=info WASM_LOG=warn cargo tauri dev --release -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "build:libs": "npm run build -w @lightningrodlabs/we-applet -w applet-messages -w applet-iframe -w grapes-editor -w @lightningrodlabs/attachments",
     "build:ui": "npm run build:libs && npm run build -w we-alpha",
@@ -25,12 +25,13 @@
     "build:happ": "npm run build:zomes && hc app pack ./workdir --recursive",
     "build:zomes": "cargo build --release --target-dir target --target wasm32-unknown-unknown --workspace --exclude we-alpha",
     "build:example": "npm run build:libs && npm run build:zomes && npm run package -w example-applet && rimraf testing-applets/example-applet && cp example/workdir/example-applet.webhapp testing-applets ",
-    "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.12.2-holochain-v0.1.5/devhub.webhapp && curl -L --output AppStore.webhapp https://github.com/holochain/app-store-gui/releases/download/v0.0.1-holochain-v0.1.5/appstore.webhapp && npm run build:libs"
+    "build:ex": "npm run package -w example-applet && cp example/workdir/example-applet.webhapp testing-applets/$NAME.webhapp ",
+    "prepare": "curl -L --output DevHub.webhapp https://github.com/holochain/devhub-gui/releases/download/v0.16.1/devhub.webhapp && curl -L --output AppStore.webhapp https://github.com/holochain/app-store-gui/releases/download/v0.4.0/appstore.webhapp && npm run build:libs"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
     "@open-wc/eslint-config": "^12.0.0",
-    "@tauri-apps/cli": "^1.2.3",
+    "@tauri-apps/cli": "^1.4.0",
     "@typescript-eslint/parser": "^5.61.0",
     "adm-zip": "^0.5.10",
     "concurrently": "^6.2.1",

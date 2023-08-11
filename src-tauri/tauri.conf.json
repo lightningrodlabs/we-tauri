@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "We alpha",
-    "version": "0.1.0"
+    "version": "0.2.1"
   },
   "tauri": {
     "cli": {
@@ -54,6 +54,7 @@
       ],
       "externalBin": [],
       "identifier": "org.lightningrodlabs.we-alpha",
+      "resources": ["icons/icon_priority_high_32x32.png", "icons/icon_priority_medium_32x32.png", "icons/32x32.png"],
       "targets": "all"
     },
     "security": {

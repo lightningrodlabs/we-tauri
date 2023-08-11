@@ -110,7 +110,7 @@ export class CreateAttachment extends LitElement {
           HoloHashMap<EntryHash, AttachmentType>
         > = {};
 
-        for (const [appletId, attachmentTypes] of attachments) {
+        for (const [appletHash, attachmentTypes] of attachments) {
           for (const [name, attachmentType] of Object.entries(
             attachmentTypes
           )) {
@@ -123,7 +123,7 @@ export class CreateAttachment extends LitElement {
                 new HoloHashMap();
             }
             groupAttachmentTypes[stringifyedAttachmentType].set(
-              appletId,
+              appletHash,
               attachmentType
             );
           }
@@ -141,13 +141,13 @@ export class CreateAttachment extends LitElement {
               ></sl-icon>
               <md-menu slot="submenu">
                 ${Array.from(attachmentTypesByApplet.entries()).map(
-                  ([appletId, attachmentType]) => html`
+                  ([appletHash, attachmentType]) => html`
                     <md-menu-item
-                      .headline=${appletsInfos.get(appletId)?.appletName}
+                      .headline=${appletsInfos.get(appletHash)?.appletName}
                       @click=${() => this.createAttachment(attachmentType)}
                     >
                       ${appletsInfos
-                        .get(appletId)
+                        .get(appletHash)
                         ?.groupsIds.map(
                           (groupId) => html`
                             <img

@@ -1,4 +1,4 @@
-import { DnaHash, EntryHash } from "@holochain/client";
+import { ActionHash, EntryHash } from "@holochain/client";
 import { Hrl } from "@lightningrodlabs/we-applet";
 
 export interface AppOpenViews {
@@ -6,7 +6,7 @@ export interface AppOpenViews {
   openAppletBlock(appletHash: EntryHash, block: string, context: any): void;
   openCrossAppletMain(appletBundleHash: EntryHash): void;
   openCrossAppletBlock(
-    appletBundleHash: EntryHash,
+    appletBundleHash: ActionHash,
     block: string,
     context: any
   ): void;

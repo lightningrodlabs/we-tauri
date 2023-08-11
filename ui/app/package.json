@@ -1,6 +1,6 @@
 {
   "name": "we-alpha",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "scripts": {
     "start": "vite --clearScreen false --port 1420",
     "build": "vite build",
@@ -21,9 +21,9 @@
     "@lit/localize": "^0.11.4",
     "@mdi/js": "^7.2.96",
     "@msgpack/msgpack": "^2.7.2",
-    "@scoped-elements/golden-layout": "file:/home/matthias/code/holochain/matthme/scoped-golden-layout",
+    "@scoped-elements/golden-layout": "git://github.com/matthme/scoped-golden-layout.git#build",
     "@shoelace-style/shoelace": "^2.5.2",
-    "@tauri-apps/api": "^1.2.0",
+    "@tauri-apps/api": "^1.4.0",
     "applet-messages": "^0",
     "golden-layout": "^2.6.0",
     "grapes-editor": "^0.1.0",

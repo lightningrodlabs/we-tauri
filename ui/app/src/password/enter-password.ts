@@ -30,7 +30,11 @@ export class EnterPassword extends LitElement {
         })
       );
     } catch (e) {
-      notifyError(msg("Invalid password"));
+      if ((e as Error).toString().includes("InternalSodium")) {
+        notifyError(msg("Invalid password"));
+      } else {
+        notifyError((e as Error).toString());
+      }
       console.log(JSON.stringify(e));
     }
     this._entering = false;
