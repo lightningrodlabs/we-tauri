@@ -1,36 +1,67 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
-import '@holochain-open-dev/profiles/dist/elements/profile-prompt.js';
 import { contextProvided } from '@lit-labs/context';
 import { ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
+import { StoreSubscriber } from '@holochain-open-dev/stores';
+import './nh-create-profile';
 
 @customElement('nh-profile-prompt')
 export class NHProfilePrompt extends NHComponentShoelace {
   @contextProvided({ context: profilesStoreContext, subscribe: true })
   _profilesStore!: ProfilesStore;
 
+  _myProfile = new StoreSubscriber(this, () => this._profilesStore.myProfile, () => []);
+
   @state()
   private _hasCreatedProfile: boolean = false;
 
-  connectedCallback(): void {
-    super.connectedCallback();
-    this._profilesStore.myProfile.subscribe(emittedValue => {
-      this._hasCreatedProfile = typeof (emittedValue as any).value !== 'undefined';
-      
-      typeof (emittedValue as any).value !== 'undefined' && this.requestUpdate();
-    });
+  renderPrompt(myProfile) {
+    if (myProfile)
+        return html `<slot name="content"></slot>`;
+    return html `<div
+                  class="column"
+                  style="align-items: center; justify-content: center; flex: 1; padding-bottom: 10px;"
+                >
+                  <div class="column" style="align-items: center;">
+                    <slot name="hero"></slot>
+                    <nh-create-profile></nh-create-profile>
+                  </div>
+                </div>`;
   }
   render() {
-    return html`
-      <div>
-        <slot name="info"></slot>
-        ${!this._hasCreatedProfile
-          ? html`<slot name="hero"></slot><profile-prompt id="prompt"></profile-prompt>`
-          : html`<slot name="content"><slot></slot></slot>`}
-      </div>
-    `;
+    switch (this._myProfile.value.status) {
+        case "pending":
+            return html ` <div
+      class="column"
+      style="align-items: center; justify-content: center; flex: 1;"
+    >
+      Loading!
+    </div>`;
+        case "complete":
+          console.log('complete :>> ', this._myProfile.value);
+            return this.renderPrompt(this._myProfile.value.value);
+        case "error":
+            return html `<display-error
+      .headline=${"Error fetching your profile"}
+      .error=${this._myProfile.value.error}
+    ></display-error> `;
+    }
+}
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._myProfile.value.status && this.requestUpdate();
   }
+  // render() {
+  //   return html`
+  //     <div>
+  //       <slot name="info"></slot>
+  //       ${!this._hasCreatedProfile
+  //         ? html`<slot name="hero"></slot><profile-prompt id="prompt"></profile-prompt>`
+  //         : html`<slot name="content"><slot></slot></slot>`}
+  //     </div>
+  //   `;
+  // }
 
   static styles: CSSResult[] = [
     super.styles as CSSResult,
