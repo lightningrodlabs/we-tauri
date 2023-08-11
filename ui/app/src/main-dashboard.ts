@@ -41,6 +41,7 @@ import { IconDot } from './elements/components/icon-dot';
 import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -52,6 +53,11 @@ export class MainDashboard extends NHComponentShoelace {
     () => this._matrixStore.fetchMatrix(),
     () => [this._matrixStore],
   );
+
+  @contextProvided({ context: profilesStoreContext, subscribe: true })
+  _profilesStore!: ProfilesStore;
+
+  _myProfile = new StoreSubscriber(this, () => this._profilesStore?.myProfile, () => []);
 
   _allWeGroupInfos = new StoreSubscriber(this, () => this._matrixStore.weGroupInfos());
 
@@ -113,7 +119,10 @@ export class MainDashboard extends NHComponentShoelace {
     this.userProfileMenuVisible = !this.userProfileMenuVisible;
     (this.renderRoot.querySelector(".user-profile-menu .context-menu") as HTMLElement).dataset.open = 'true';
   }
-
+connectedCallback(): void {
+  super.connectedCallback()
+  console.log('_myProfile.value.value :>> ', this._myProfile.value);
+}
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
@@ -849,7 +858,7 @@ export class MainDashboard extends NHComponentShoelace {
                 placement="right"
                 .content="${"Your Profile"}"
               >
-                <button class="user-profile" type="button" @click=${this.toggleUserMenu}></button>
+                <button class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
                 </sl-tooltip>
               <nh-profile-card
                 class="context-menu" 

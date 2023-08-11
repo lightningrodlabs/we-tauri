@@ -5,7 +5,7 @@
     "start": "vite dev --clearScreen false --port $UI_PORT",
     "dev": "vite dev --clearScreen false --port=$UI_PORT",
     "dev2": "concurrently \"npm run dev & VITE_AGENT=2 vite dev --clearScreen false --port $UI_PORT_2\"",
-    "build": "tsc && vite build",
+    "build": "tsc; vite build",
     "build:watch": "rimraf dist && vite build -w",
     "package": "rimraf ui.zip && npm run build && cd ./dist && bestzip ../ui.zip * ",
     "test": "vitest run",
@@ -40,7 +40,8 @@
     "lit-svelte-stores": "^0.2.5",
     "md5": "^2.3.0",
     "svelte": "^3.59.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",

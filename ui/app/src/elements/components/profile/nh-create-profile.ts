@@ -1,10 +1,17 @@
 import { css, CSSResult, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { NHButton, NHCard, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { contextProvided } from '@lit-labs/context';
-import { ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
+import { Profile, ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
 import { StoreSubscriber } from '@holochain-open-dev/stores';
-import { SlInput } from '@scoped-elements/shoelace';
+import { SlInput, SlSpinner } from '@scoped-elements/shoelace';
+import { object, string, number, date, InferType } from 'yup';
+import { SelectAvatar } from '@holochain-open-dev/elements';
+
+function isDataURL(s) {
+  return !!s.match(isDataURL.regex);
+}
+isDataURL.regex = /^\s*data:([a-z]+\/[a-z0-9\-\+]+(;[a-z\-]+\=[a-z0-9\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i;
 
 @customElement('nh-create-profile')
 export class NHCreateProfile extends NHComponentShoelace {
@@ -17,15 +24,60 @@ export class NHCreateProfile extends NHComponentShoelace {
     () => [],
   );
 
-  @property()
-  nicknameValue!: string;
-  @property()
-  onChangeValue!: (e: CustomEvent) => void;
+  userSchema = object({
+    nickname: string().length(3, "Must be at least 3 characters").required(),
+    image: string().matches(
+      isDataURL.regex,
+      'Must be a valid image data URI',
+    ),
+  });
+
+  user: InferType<typeof this.userSchema> = { nickname: "" };
+
+  @query("nh-button")
+  btn;
+
+  onChangeValue(e: CustomEvent) {
+    const inputControl = (e.currentTarget as any);
+    switch (inputControl.name) {
+      case 'nickname':
+        this.user.nickname = inputControl.value; 
+        break;
+      default:
+        this.user.image = e.detail.avatar;
+        break;
+    }
+  }
+
+  onSubmit() {
+    const root = this.renderRoot;
+    this.userSchema.validate(this.user)
+    .then(valid => {
+      if(!valid) throw new Error("Profile data invalid");
+      this.btn.loading = true; this.btn.requestUpdate("loading");
+      this.createProfile(this.user)
+    })
+    .catch(function (err) {
+      console.log("Error validating profile for field: ", err.path);
+      
+      const errorDOM = root.querySelectorAll("label[name=" + err.path + "]")
+      if(errorDOM.length == 0) return;
+      errorDOM[0].textContent = '*';
+      const slInput : any = errorDOM[0].previousElementSibling;
+      slInput.setCustomValidity(err.message)
+      slInput.reportValidity()
+    })
+  }
   
-  /** Private properties */
-  async createProfile(profile) {
+  async createProfile(profile: typeof this.user) {
     try {
-      await this._profilesStore.client.createProfile(profile);
+      const payload : Profile = {
+        nickname: profile.nickname,
+        fields: {
+          avatar: profile.image || ''
+        }
+      }
+      await this._profilesStore.client.createProfile(payload);
       this.dispatchEvent(
         new CustomEvent('profile-created', {
           detail: {
@@ -38,30 +90,32 @@ export class NHCreateProfile extends NHComponentShoelace {
       await this._profilesStore.myProfile.reload();
     } catch (e) {
       console.error(e);
-      // notifyError(msg("Error creating the profile"));
     }
   }
+
   render() {
     return html`
       <nh-card .theme=${'light'} .textSize=${"md"} .hasPrimaryAction=${true} .title=${'Create Profile'} .footerAlign=${"r"}>
         <div class="content">
-          <sl-input required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.nicknameValue} filled placeholder=${"Enter a name"}></sl-input>
+          <select-avatar
+            name="image"
+            @avatar-selected=${(e: CustomEvent) => this.onChangeValue(e)}
+          ></select-avatar>
+          <sl-input name="nickname" required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.user.nickname} filled placeholder=${"Enter a name"}></sl-input>
+          <label class="error" for="nickname" name="nickname"></label>
         </div>
         <div slot="footer">
         <nh-button
           .label=${"Create Profile"} 
           .size=${"stretch"}
           .variant=${"neutral"}
-          .clickHandler=${() => {}}
-          ?disabled=${false}>
+          .clickHandler=${() => this.onSubmit()}
+          .disabled=${false}
+          .loading=${false}
+        >
         </nh-button>
         </div>
       </nh-card>
-      <edit-profile
-        .saveProfileLabel=${'Create Profile'}
-        .store=${this._profilesStore}
-        @save-profile=${e => this.createProfile(e.detail.profile)}
-      ></edit-profile>
     `;
   }
 
@@ -70,6 +124,8 @@ export class NHCreateProfile extends NHComponentShoelace {
       'nh-card': NHCard,
       'nh-button': NHButton,
       'sl-input': SlInput,
+      "select-avatar": SelectAvatar,
+      "sl-spinner": SlSpinner ,
     };
   }
 
@@ -85,6 +141,15 @@ export class NHCreateProfile extends NHComponentShoelace {
       .content {
         justify-content: space-around;
         min-width: 25vw;
+      }
+
+      label {
+        display: flex;
+        padding: 0 8px;
+        flex: 1;
+        flex-grow: 0;
+        flex-basis: 8px;
+        color: var(--nh-theme-error-default); 
       }
     `,
   ];
