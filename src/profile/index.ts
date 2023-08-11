@@ -1,0 +1,1 @@
+export { NHProfileCard } from './profile-card';
