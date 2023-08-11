@@ -114,14 +114,16 @@ export class MainDashboard extends LitElement {
 
   async openGroup(groupDnaHash: DnaHash) {
     this.selectedGroupDnaHash = groupDnaHash;
-    this.dynamicLayout.openTab({
-      id: `group-home-${encodeHashToBase64(groupDnaHash)}`,
-      type: "component",
-      componentType: "group-home",
-      componentState: {
-        groupDnaHash: encodeHashToBase64(groupDnaHash),
-      },
-    });
+    this._weStore.selectAppletHash(undefined);
+    this.dashboardMode = "groupView";
+    // this.dynamicLayout.openTab({
+    //   id: `group-home-${encodeHashToBase64(groupDnaHash)}`,
+    //   type: "component",
+    //   componentType: "group-home",
+    //   componentState: {
+    //     groupDnaHash: encodeHashToBase64(groupDnaHash),
+    //   },
+    // });
   }
 
   renderDashboard() {
@@ -144,6 +146,10 @@ export class MainDashboard extends LitElement {
               style="flex: 1"
               @group-left=${() => {
                 this.selectedGroupDnaHash = undefined;
+              }}
+              @applet-installed=${(e: CustomEvent) => {
+                this._weStore.selectAppletHash(e.detail);
+                this.dashboardMode = "groupView";
               }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);

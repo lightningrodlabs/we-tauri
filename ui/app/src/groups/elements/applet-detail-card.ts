@@ -22,7 +22,7 @@ import { Applet } from "../../applets/types.js";
 import { weStyles } from "../../shared-styles.js";
 import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
-import { appIdFromAppletHash, dnaHashForCell, getProvisionedCells } from "../../utils.js";
+import { appIdFromAppletHash, dnaHashForCell, getCellNetworkSeed, getProvisionedCells } from "../../utils.js";
 
 @customElement("applet-detail-card")
 export class AppletDetailCard extends LitElement {
@@ -108,16 +108,22 @@ export class AppletDetailCard extends LitElement {
                   ></sl-icon-button>
                 </sl-tooltip>
               </div>
+              <div style="margin-top: 5px;">
+                <span><b>appletHash: </b></span><span>${encodeHashToBase64(this.appletHash)}</span>
+              </div>
               <div>
                 ${this.appInfo
                   ? getProvisionedCells(this.appInfo).map(([roleName, cellInfo]) =>
-                      html`<span><b>${roleName}: </b></span><span>${dnaHashForCell(cellInfo)}</span>`
+                      html`
+                        <div style="border: 1px solid black; border-radius: 10px; padding: 8px 12px; margin-top: 5px;">
+                          <span><b>${roleName}: </b></span><br>
+                          <span><b>DNA hash:</b> </span><span>${dnaHashForCell(cellInfo)}</span><br>
+                          <span><b>network seed:</b> </span><span>${getCellNetworkSeed(cellInfo)}</span>
+                        </div>
+                      `
                     )
                   : html``
                 }
-              </div>
-              <div>
-                <span><b>appletHash: </b></span><span>${encodeHashToBase64(this.appletHash)}</span>
               </div>
             </div>
           </sl-card>

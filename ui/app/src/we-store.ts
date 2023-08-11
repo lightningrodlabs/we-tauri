@@ -36,7 +36,7 @@ import { v4 as uuidv4 } from "uuid";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
-import { GroupStore } from "./groups/group-store.js";
+import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
@@ -207,10 +207,17 @@ export class WeStore {
   appletStores = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(
       async () => {
-        const groups = await toPromise(this.groupsForApplet.get(appletHash));
+        let groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-        if (groups.size === 0)
-          throw new Error("Applet is not installed in any of the groups");
+        if (groups.size === 0) {
+          // retry after APPLETS_POLLING_FREQUENCY milliseconds in case the applet has just been
+          // freshly installed
+          setTimeout(async () => {
+            groups = await toPromise(this.groupsForApplet.get(appletHash));
+            if (groups.size === 0) throw new Error("Applet is not installed in any of the groups");
+          }, APPLETS_POLLING_FREQUENCY);
+        }
+
 
         const applet = await Promise.race(
           Array.from(groups.values()).map((groupStore) =>

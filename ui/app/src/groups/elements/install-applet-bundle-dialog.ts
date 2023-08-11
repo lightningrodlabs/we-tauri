@@ -73,6 +73,9 @@ export class InstallAppletBundleDialog extends LitElement {
   @state()
   _pollInterval: number | null = null;
 
+  @state()
+  _showAdvanced: boolean = false;
+
   _unlisten: UnlistenFn | undefined;
 
   open(appletInfo: Entity<AppEntry>) {
@@ -107,14 +110,15 @@ export class InstallAppletBundleDialog extends LitElement {
     return this._duplicateName;
   }
 
-  async installApplet(customName: string) {
+  async installApplet(fields: { custom_name: string, network_seed?: string }) {
     if (this._installing) return;
     this._installing = true;
     this._installationProgress = "fetching app icon...";
     try {
       const appletEntryHash = await this.groupStore.installAppletBundle(
         this._appletInfo!,
-        customName
+        fields.custom_name,
+        fields.network_seed ? fields.network_seed : undefined,
       );
       notify("Installation successful");
 
@@ -178,6 +182,44 @@ export class InstallAppletBundleDialog extends LitElement {
             .defaultValue=${this._appletInfo!.content.title}
           ></sl-input>
 
+          <span
+            style="text-decoration: underline; cursor: pointer;"
+            @click=${() => { this._showAdvanced = !this._showAdvanced }}
+          >${this._showAdvanced ? "Hide" : "Show"} Advanced
+          </span>
+
+          ${
+            this._showAdvanced
+              ? html`
+                <sl-input
+                  name="network_seed"
+                  id="network-seed-field"
+                  .label=${msg("Custom Network Seed")}
+                  style="margin-bottom: 16px"
+                  ${ref((input) => {
+                    if (!input) return;
+                    setTimeout(() => {
+                      if (allAppletsNames.includes(this._appletInfo!.content.title)) {
+                        (input as HTMLInputElement).setCustomValidity(
+                          "Name already exists"
+                        );
+                      } else {
+                        (input as HTMLInputElement).setCustomValidity("");
+                      }
+                    });
+                  })}
+                  @input=${(e) => {
+                    if (allAppletsNames.includes(e.target.value)) {
+                      e.target.setCustomValidity("Name already exists");
+                    } else {
+                      e.target.setCustomValidity("");
+                    }
+                  }}
+                  .defaultValue=${this._appletInfo!.content.title}
+                ></sl-input>
+              ` : html``
+          }
+
           <sl-button
             variant="primary"
             type="submit"
@@ -228,7 +270,7 @@ export class InstallAppletBundleDialog extends LitElement {
         </div>
         <form
           class="column"
-          ${onSubmit((f) => this.installApplet(f.custom_name))}
+          ${onSubmit((f) => this.installApplet(f))}
         >
           ${this.renderForm()}
         </form>

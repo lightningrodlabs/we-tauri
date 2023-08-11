@@ -40,6 +40,9 @@ import { WeStore } from "../we-store.js";
 import { AppEntry, Entity } from "../processes/appstore/types.js";
 import { Applet } from "../applets/types.js";
 
+export const APPLETS_POLLING_FREQUENCY = 4000;
+
+
 // Given a group, all the functionality related to that group
 export class GroupStore {
   profilesStore: ProfilesStore;
@@ -119,9 +122,13 @@ export class GroupStore {
   // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
   async installAppletBundle(
     appEntry: Entity<AppEntry>,
-    customName: string
+    customName: string,
+    networkSeed?: string,
   ): Promise<EntryHash> {
-    const networkSeed = uuidv4();
+
+    if (!networkSeed) {
+      networkSeed = uuidv4();
+    }
 
     const latestRelease =
       await this.weStore.appletBundlesStore.getLatestVersion(appEntry);
@@ -160,7 +167,7 @@ export class GroupStore {
     lazyLoad(async () => this.groupClient.getApplet(appletHash))
   );
 
-  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), 4000);
+  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), APPLETS_POLLING_FREQUENCY);
 
   archivedApplets = lazyLoadAndPoll(
     async () => this.groupClient.getArchivedApplets(),

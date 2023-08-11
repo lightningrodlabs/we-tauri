@@ -182,9 +182,21 @@ export function getCellName(cellInfo: CellInfo): string | undefined {
   }
 }
 
+export function getCellNetworkSeed(cellInfo: CellInfo): string | undefined {
+  if ("provisioned" in cellInfo) {
+    return cellInfo.provisioned.dna_modifiers.network_seed;
+  }
+  if ("cloned" in cellInfo) {
+    return cellInfo.cloned.dna_modifiers.network_seed;
+  }
+  return undefined;
+}
+
 export function dnaHashForCell(cell: CellInfo): DnaHashB64 {
   return encodeHashToBase64(new Uint8Array(getCellId(cell)![0]))
 }
+
+
 
 export function flattenCells(cell_info: Record<string, CellInfo[]>): [string, CellInfo][] {
   return Object.entries(cell_info).map(([roleName, cellInfos]) =>
