@@ -96,51 +96,17 @@ export class WeStore {
   }
 
   public async joinGroup(networkSeed: string): Promise<AppInfo> {
-    const appInfo = await joinGroup(
-      networkSeed,
-      this.appletBundlesStore.appstoreClient.myPubKey
-    );
     try {
-      const groupDnaHash: DnaHash =
-        appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
-      const groupAppAgentWebsocket = await initAppClient(
-        appInfo.installed_app_id
+      const appInfo = await joinGroup(
+        networkSeed,
+        this.appletBundlesStore.appstoreClient.myPubKey
       );
-      const groupStore = new GroupStore(
-        groupAppAgentWebsocket,
-        groupDnaHash,
-        this
-      );
-      const applets = await toPromise(groupStore.allApplets);
-
-      const apps = await this.adminWebsocket.listApps({});
-      const disabledApps = apps.filter((app) => isAppDisabled(app));
-
-      for (const app of disabledApps) {
-        if (
-          applets.find(
-            (appletHash) =>
-              app.installed_app_id === appIdFromAppletHash(appletHash)
-          )
-        ) {
-          await this.adminWebsocket.enableApp({
-            installed_app_id: app.installed_app_id,
-          });
-        }
-      }
-
       await this.appletBundlesStore.installedApps.reload();
+      await this.appletBundlesStore.runningApps.reload();
       return appInfo;
     } catch (e) {
-      try {
-        await this.adminWebsocket.uninstallApp({
-          installed_app_id: appInfo.installed_app_id,
-        });
-      } catch (e) {
-        console.warn(e);
-      }
-
-      throw e;
+      console.error("Error installing group app: ", e);
+      return Promise.reject(new Error(`Failed to install group app: ${e}`))
     }
   }
 

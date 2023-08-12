@@ -194,7 +194,7 @@ fn main() {
                 }
                 let mut admin_ws = get_admin_ws(&conductor).await?;
 
-                match read_asset(
+                let r = match read_asset(
                     &we_fs,
                     &mut admin_ws,
                     lowercase_applet_id,
@@ -218,7 +218,10 @@ fn main() {
                     Err(e) => ResponseBuilder::new()
                         .status(StatusCode::INTERNAL_SERVER_ERROR)
                         .body(format!("{:?}", e).as_bytes().to_vec()),
-                }
+                };
+
+                admin_ws.close();
+                r
             })
         })
         .build(tauri::generate_context!())

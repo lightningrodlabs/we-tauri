@@ -53,5 +53,7 @@ pub async fn join_group(
         .await?;
     admin_ws.enable_app(group_app_id).await?;
 
+    admin_ws.close();
+
     Ok(app_info)
 }
