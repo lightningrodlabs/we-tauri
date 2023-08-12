@@ -101,7 +101,6 @@ export class GroupSidebarButton extends LitElement {
           ></sidebar-button>
         `
       case "complete":
-        console.log("got notifications count for group: ", this.groupNotificationCount.value.value);
         return html`
           <sidebar-button
             .selected=${this.selected}

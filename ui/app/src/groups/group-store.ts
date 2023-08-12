@@ -37,7 +37,7 @@ import { GroupClient } from "./group-client.js";
 import { CustomViewsStore } from "../custom-views/custom-views-store.js";
 import { CustomViewsClient } from "../custom-views/custom-views-client.js";
 import { WeStore } from "../we-store.js";
-import { AppEntry, Entity } from "../processes/appstore/types.js";
+import { AppEntry, Entity, HappReleaseEntry } from "../processes/appstore/types.js";
 import { Applet } from "../applets/types.js";
 
 export const APPLETS_POLLING_FREQUENCY = 4000;
@@ -123,15 +123,13 @@ export class GroupStore {
   async installAppletBundle(
     appEntry: Entity<AppEntry>,
     customName: string,
+    happRelease: Entity<HappReleaseEntry>,
     networkSeed?: string,
   ): Promise<EntryHash> {
 
     if (!networkSeed) {
       networkSeed = uuidv4();
     }
-
-    const latestRelease =
-      await this.weStore.appletBundlesStore.getLatestVersion(appEntry);
 
     const applet: Applet = {
       custom_name: customName,
@@ -140,8 +138,9 @@ export class GroupStore {
       appstore_app_hash: appEntry.id,
 
       devhub_dna_hash: appEntry.content.devhub_address.dna,
-      devhub_happ_release_hash: latestRelease.id,
-      devhub_gui_release_hash: latestRelease.content.official_gui!,
+      devhub_happ_entry_action_hash: appEntry.content.devhub_address.happ,
+      devhub_happ_release_hash: happRelease.id,
+      initial_devhub_gui_release_hash: happRelease.content.official_gui,
       network_seed: networkSeed,
       properties: {},
     };

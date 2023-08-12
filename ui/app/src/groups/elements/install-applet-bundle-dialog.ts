@@ -7,6 +7,7 @@ import {
   joinAsyncMap,
   pipe,
   StoreSubscriber,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { notify, notifyError, onSubmit } from "@holochain-open-dev/elements";
@@ -23,10 +24,15 @@ import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { GroupStore } from "../group-store.js";
 import { AppEntry, Entity, HostAvailability } from "../../processes/appstore/types.js";
+import { weStoreContext } from "../../context.js";
+import { WeStore } from "../../we-store.js";
 
 @localized()
 @customElement("install-applet-bundle-dialog")
 export class InstallAppletBundleDialog extends LitElement {
+  @consume({ context: weStoreContext, subscribe: true })
+  weStore!: WeStore;
+
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
@@ -113,11 +119,21 @@ export class InstallAppletBundleDialog extends LitElement {
   async installApplet(fields: { custom_name: string, network_seed?: string }) {
     if (this._installing) return;
     this._installing = true;
-    this._installationProgress = "fetching app icon...";
     try {
+
+
+      // Trigger the download of the icon
+      this._installationProgress = "Fetching app icon...";
+      await toPromise(this.weStore.appletBundlesStore.appletBundleLogo.get(this._appletInfo!.id));
+
+      this._installationProgress = "Searching latest release...";
+      const latestRelease =
+        await this.weStore.appletBundlesStore.getLatestVersion(this._appletInfo!);
+
       const appletEntryHash = await this.groupStore.installAppletBundle(
         this._appletInfo!,
         fields.custom_name,
+        latestRelease,
         fields.network_seed ? fields.network_seed : undefined,
       );
       notify("Installation successful");
@@ -132,6 +148,8 @@ export class InstallAppletBundleDialog extends LitElement {
           bubbles: true,
         })
       );
+
+      this._installationProgress = undefined;
     } catch (e) {
       this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");

@@ -1,6 +1,6 @@
 [package]
 name = "we-alpha"
-version = "0.2.1"
+version = "0.3.0"
 description = "An alternative Holochain runtime focused on groups."
 authors = [
   "eric@harris-braun.com",
@@ -61,6 +61,8 @@ devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "8ad6fa
 appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
 appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
 hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "14ad357ae42ee7451848a249a7e32acb40519dbc" }
+mere_memory_types = "0.87.0"
+
 
 essence_payloads = "0.1"
 

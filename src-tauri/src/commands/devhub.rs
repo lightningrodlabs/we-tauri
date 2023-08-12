@@ -13,7 +13,9 @@ use crate::default_apps::devhub_app_id;
 use crate::default_apps::network_seed;
 use crate::error::WeError;
 use crate::error::WeResult;
+use crate::filesystem::UiIdentifier;
 use crate::filesystem::WeFileSystem;
+use crate::filesystem::create_dir_if_necessary;
 use crate::launch::get_admin_ws;
 
 #[tauri::command]
@@ -31,6 +33,8 @@ pub async fn is_dev_mode_enabled(
     let mut admin_ws = get_admin_ws(&conductor).await?;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
+
+    admin_ws.close();
 
     Ok(apps
         .iter()
@@ -84,8 +88,10 @@ pub async fn enable_dev_mode(
         .await?;
     admin_ws.enable_app(devhub_app_id(&app_handle)).await?;
 
+    admin_ws.close();
+
     fs.ui_store()
-        .extract_and_store_ui(&devhub_app_id(&app_handle), &dev_hub_bundle)
+        .extract_and_store_ui(UiIdentifier::Other(devhub_app_id(&app_handle)), &dev_hub_bundle)
         .await?;
 
     Ok(())
@@ -107,6 +113,8 @@ pub async fn disable_dev_mode(
 
     admin_ws.disable_app(devhub_app_id(&app_handle)).await?;
 
+    admin_ws.close();
+
     Ok(())
 }
 
@@ -123,7 +131,10 @@ pub async fn open_devhub(
 
     let devhub_app_id = devhub_app_id(&app_handle);
 
-    let ui_path = fs.ui_store().ui_path(&devhub_app_id);
+    let ui_dir = fs.ui_store().root_dir().join(&devhub_app_id);
+
+    let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
+    create_dir_if_necessary(&app_dir)?;
 
     let conductor = conductor.lock().await;
 
@@ -132,8 +143,8 @@ pub async fn open_devhub(
         devhub_app_id,
         String::from("devhub"),
         String::from("DevHub"),
-        holochain_launcher_utils::window_builder::UISource::Path(ui_path.clone()),
-        ui_path.join(".localstorage"),
+        holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
+        app_dir.join("localStorage"),
         conductor.list_app_interfaces().await?[0],
         conductor
             .get_arbitrary_admin_websocket_port()
@@ -158,7 +169,10 @@ pub async fn open_appstore(
 
     let appstore_app_id = appstore_app_id(&app_handle);
 
-    let ui_path = fs.ui_store().ui_path(&appstore_app_id);
+    let ui_dir = fs.ui_store().root_dir().join(&appstore_app_id);
+
+    let app_dir = fs.apps_store().root_dir().join(&appstore_app_id);
+    create_dir_if_necessary(&app_dir)?;
 
     let conductor = conductor.lock().await;
 
@@ -167,8 +181,8 @@ pub async fn open_appstore(
         appstore_app_id,
         String::from("appstore"),
         String::from("App Store"),
-        holochain_launcher_utils::window_builder::UISource::Path(ui_path.clone()),
-        ui_path.join(".localstorage"),
+        holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
+        app_dir.join("localStorage"),
         conductor.list_app_interfaces().await?[0],
         conductor
             .get_arbitrary_admin_websocket_port()

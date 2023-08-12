@@ -135,6 +135,7 @@ export class WeStore {
     );
 
     await this.appletBundlesStore.installedApps.reload();
+    await this.appletBundlesStore.runningApps.reload();
   }
 
   runningGroupsApps = asyncDerived(this.appletBundlesStore.runningApps, (apps) =>

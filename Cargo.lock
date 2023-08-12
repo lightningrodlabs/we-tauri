@@ -217,7 +217,7 @@ dependencies = [
  "hc_utils",
  "hdi 0.3.1",
  "hdk 0.2.1",
- "mere_memory_types",
+ "mere_memory_types 0.88.0",
  "serde",
  "serde_yaml 0.8.26",
  "thiserror",
@@ -5765,6 +5765,18 @@ dependencies = [
 
 [[package]]
 name = "mere_memory_types"
+version = "0.87.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7c2db054460c8d213654315ba67b4d5b4215903bbabcef75bf1b12de81dc266"
+dependencies = [
+ "getrandom 0.2.7",
+ "hdi 0.3.1",
+ "serde",
+ "sha2 0.10.7",
+]
+
+[[package]]
+name = "mere_memory_types"
 version = "0.88.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "501dd46ce313dd9a474c6a483d68b49f7b78572ff2025b78c74b994806311d3d"
@@ -10603,7 +10615,7 @@ dependencies = [
 
 [[package]]
 name = "we-alpha"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "appstore",
@@ -10628,6 +10640,7 @@ dependencies = [
  "hyper",
  "log",
  "log4rs",
+ "mere_memory_types 0.87.0",
  "mime_guess",
  "mr_bundle",
  "opener",

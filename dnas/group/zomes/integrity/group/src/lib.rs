@@ -30,8 +30,9 @@ pub struct Applet {
     pub appstore_app_hash: ActionHash,
 
     pub devhub_dna_hash: DnaHash,
+    pub devhub_happ_entry_action_hash: ActionHash,
     pub devhub_happ_release_hash: ActionHash,
-    pub devhub_gui_release_hash: ActionHash,
+    pub initial_devhub_gui_release_hash: Option<ActionHash>, // headless applets are possible as well
 
     pub network_seed: Option<String>,
 

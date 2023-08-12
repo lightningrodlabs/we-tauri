@@ -50,7 +50,7 @@ pub async fn execute_factory_reset(
     )?;
 
   } else {
-    // ATTENTION: ON Linux and Windows app_log_dir is a subdirectory of app_config_dir
+    // ATTENTION: On Linux and Windows app_log_dir is a subdirectory of app_config_dir
     // (https://docs.rs/tauri/latest/tauri/api/path/fn.app_log_dir.html)
     // Deleting app_config_dir must therefore not be deleted if logs are to be kept.
     remove_dir_if_exists(fs.conductor_dir())
@@ -65,10 +65,16 @@ pub async fn execute_factory_reset(
         format!("Could not remove keystore directory: {}", err)
       }
     )?;
-    remove_dir_if_exists(fs.webapp_store().root_dir())
+    remove_dir_if_exists(fs.apps_store().root_dir())
       .map_err(|err| {
-        log::error!("[tauri command / execute_factory_reset] Could not remove  webhapps directory: {}", err);
-        format!("Could not remove webhapps directory: {}", err)
+        log::error!("[tauri command / execute_factory_reset] Could not remove  apps directory: {}", err);
+        format!("Could not remove apps directory: {}", err)
+      }
+    )?;
+    remove_dir_if_exists(fs.happs_store().root_dir())
+      .map_err(|err| {
+        log::error!("[tauri command / execute_factory_reset] Could not remove  happs directory: {}", err);
+        format!("Could not remove happs directory: {}", err)
       }
     )?;
     remove_dir_if_exists(fs.ui_store().root_dir())
