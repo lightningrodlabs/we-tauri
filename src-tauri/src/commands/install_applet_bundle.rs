@@ -196,9 +196,11 @@ pub async fn install_applet_bundle_if_necessary(
 
     window.emit("applet-install-progress", "fetching happ and ui from peer host")?;
 
+    let mut success = false;
+
     for host in hosts {
 
-        match fetch_and_save_happ_and_ui_from_host_if_necessary(
+        match fetch_and_store_happ_and_ui_from_host_if_necessary(
             &mut app_agent_websocket,
             &we_fs,
             happ_release_action_hash.clone(),
@@ -210,9 +212,15 @@ pub async fn install_applet_bundle_if_necessary(
                 if let Some(info) = gui_release_info {
                     we_fs.apps_store().store_gui_release_info(&app_id, info)?;
                 }
+                success = true;
+                break;
             },
             Err(e) => errors.push(e)
         }
+    }
+
+    if !success {
+        return Err(WeError::NoAvailableHostsError(()));
     }
 
     // store HappEntry info
@@ -273,10 +281,165 @@ pub async fn install_applet_bundle_if_necessary(
 }
 
 
+#[tauri::command]
+pub async fn update_applet_ui(
+    window: tauri::Window,
+    app_handle: tauri::AppHandle,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    we_fs: tauri::State<'_, WeFileSystem>,
+    app_id: String,
+    devhub_dna_hash: String,
+    gui_release_hash: String,
+) -> WeResult<()> {
+
+    let dna_hash_b64 = DnaHashB64::from_b64_str(&devhub_dna_hash.as_str())
+        .map_err(|e| WeError::HashConversionError(format!("Failed to convert dna hash string to DnaHashB64: {}", e)))?;
+
+    let gui_release_hash_b64 = ActionHashB64::from_b64_str(gui_release_hash.as_str())
+        .map_err(|e| WeError::HashConversionError(format!("Failed to convert action hash string to ActionHashB64: {}", e)))?;
+
+    let gui_release_action_hash = ActionHash::from(gui_release_hash_b64.clone());
+
+    let ui_identifier = UiIdentifier::GuiReleaseHash(gui_release_hash_b64.clone());
+
+    match we_fs.ui_store().assets_dir(ui_identifier.clone()).exists() {
+        true => {
+            let version = we_fs.ui_store().get_gui_version(ui_identifier);
+            let gui_release_info = ReleaseInfo {
+                resource_locator: Some(
+                    ResourceLocatorB64 {
+                        dna_hash: dna_hash_b64,
+                        resource_hash: AnyDhtHash::try_from(ActionHash::from(gui_release_hash_b64))
+                            .map_err(|e| WeError::HashConversionError(format!("Failed to convert ActionHashB64 to AnyDhtHashB64: {}", e)))?
+                            .into(),
+                    }
+                ),
+                version,
+            };
+            we_fs.apps_store().store_gui_release_info(&app_id, gui_release_info)
+        },
+        false => {
+            let conductor = conductor.lock().await;
+
+            let mut app_agent_websocket = AppAgentWebsocket::connect(
+                format!(
+                    "ws://localhost:{}",
+                    conductor.list_app_interfaces().await?[0]
+                ),
+                appstore_app_id(&app_handle),
+                conductor.keystore().lair_client(),
+            )
+            .await?;
+
+            window.emit("applet-install-progress", "pinging available hosts")?;
+
+            let hosts = get_available_hosts_for_zome_function(
+                &mut app_agent_websocket,
+                &DnaHash::from(dna_hash_b64.clone()),
+                ZomeName::from(String::from("happ_library")),
+                FunctionName::from(String::from("get_webasset_file")),
+            ).await?;
+
+            if hosts.len() == 0 {
+                return Err(WeError::NoAvailableHostsError(()));
+            }
+
+            let mut errors = vec![];
+
+            window.emit("applet-install-progress", "fetching ui from available peer host")?;
+
+            let mut success = false;
+
+            for host in hosts {
+
+                match fetch_and_store_ui_from_host_if_necessary(
+                    &mut app_agent_websocket,
+                    &we_fs,
+                    gui_release_action_hash.clone(),
+                    host,
+                    DnaHash::from(dna_hash_b64.clone()),
+                ).await {
+                    Ok(gui_version) => {
+                        let gui_release_info = ReleaseInfo {
+                            resource_locator: Some(
+                                ResourceLocatorB64 {
+                                    dna_hash: dna_hash_b64,
+                                    resource_hash: AnyDhtHash::try_from(ActionHash::from(gui_release_hash_b64))
+                                        .map_err(|e| WeError::HashConversionError(format!("Failed to convert ActionHashB64 to AnyDhtHashB64: {}", e)))?
+                                        .into(),
+                                }
+                            ),
+                            version: Some(gui_version),
+                        };
+                        we_fs.apps_store().store_gui_release_info(&app_id, gui_release_info)?;
+                        success = true;
+                        break;
+                    },
+                    Err(e) => errors.push(e)
+                }
+            }
+
+            if !success {
+                return Err(WeError::NoAvailableHostsError(()))
+            }
+
+            Ok(())
+        }
+    }
+}
+
+async fn fetch_and_store_ui_from_host_if_necessary(
+    app_agent_websocket: &mut AppAgentWebsocket,
+    we_fs: &WeFileSystem,
+    gui_release_hash: ActionHash,
+    host: AgentPubKey,
+    devhub_dna: DnaHash,
+) -> WeResult<String> {
+
+    let gui_release_entry_entity: Entity<GUIReleaseEntry> = portal_remote_call(
+        app_agent_websocket,
+        host.clone(),
+        devhub_dna.clone(),
+        String::from("happ_library"),
+        String::from("get_webasset_file"),
+        GetEntityInput {
+            id: gui_release_hash.clone(),
+        }
+    ).await
+    .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get gui release entry: {}", e)))?;
+
+    let web_asset_file: Entity<FileEntry> = portal_remote_call(
+        app_agent_websocket,
+        host.clone(),
+        devhub_dna.clone(),
+        String::from("happ_library"),
+        String::from("get_webasset_file"),
+        GetEntityInput {
+            id: gui_release_entry_entity.content.web_asset_id,
+        }
+        ).await
+        .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
+
+    let ui_bytes = fetch_mere_memory(
+        app_agent_websocket,
+        host.clone(),
+        "web_assets",
+        devhub_dna.clone(),
+        web_asset_file.content.mere_memory_addr
+    ).await
+    .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
+
+    let ui_identifier = UiIdentifier::GuiReleaseHash(ActionHashB64::from(gui_release_hash.clone()));
+
+    // store gui
+    let  gui_version = gui_release_entry_entity.content.version;
+    we_fs.ui_store().store_ui(ui_identifier, ui_bytes, Some(gui_version.clone()));
+
+    Ok(gui_version)
+}
 
 
-
-async fn fetch_and_save_happ_and_ui_from_host_if_necessary(
+async fn fetch_and_store_happ_and_ui_from_host_if_necessary(
     app_agent_websocket: &mut AppAgentWebsocket,
     we_fs: &WeFileSystem,
     happ_release_hash: ActionHash,
@@ -336,45 +499,53 @@ async fn fetch_and_save_happ_and_ui_from_host_if_necessary(
                     (Some(gui_release_hash), gui_version)
                 },
                 false => {
-                    // fetch gui
-                    let gui_release_entry_entity: Entity<GUIReleaseEntry> = portal_remote_call(
+                    let gui_version = fetch_and_store_ui_from_host_if_necessary(
                         app_agent_websocket,
+                        we_fs,
+                        gui_release_hash.clone(),
                         host.clone(),
                         devhub_dna.clone(),
-                        String::from("happ_library"),
-                        String::from("get_gui_release"),
-                        GetEntityInput {
-                            id: gui_release_hash.clone(),
-                        }
-                    ).await
-                    .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get gui release entry: {}", e)))?;
-
-                    let web_asset_file: Entity<FileEntry> = portal_remote_call(
-                        app_agent_websocket,
-                        host.clone(),
-                        devhub_dna.clone(),
-                        String::from("happ_library"),
-                        String::from("get_webasset_file"),
-                        GetEntityInput {
-                            id: gui_release_entry_entity.content.web_asset_id,
-                        }
-                      ).await
-                      .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
-
-                    let ui_bytes = fetch_mere_memory(
-                        app_agent_websocket,
-                        host.clone(),
-                        "web_assets",
-                        devhub_dna.clone(),
-                        web_asset_file.content.mere_memory_addr
-                    ).await
-                    .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
-
-                    // store gui
-                    let  gui_version = gui_release_entry_entity.content.version;
-                    we_fs.ui_store().store_ui(gui_identifier, ui_bytes, Some(gui_version.clone()))?;
-
+                    ).await?;
                     (Some(gui_release_hash), Some(gui_version))
+                    // // fetch gui
+                    // let gui_release_entry_entity: Entity<GUIReleaseEntry> = portal_remote_call(
+                    //     app_agent_websocket,
+                    //     host.clone(),
+                    //     devhub_dna.clone(),
+                    //     String::from("happ_library"),
+                    //     String::from("get_gui_release"),
+                    //     GetEntityInput {
+                    //         id: gui_release_hash.clone(),
+                    //     }
+                    // ).await
+                    // .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get gui release entry: {}", e)))?;
+
+                    // let web_asset_file: Entity<FileEntry> = portal_remote_call(
+                    //     app_agent_websocket,
+                    //     host.clone(),
+                    //     devhub_dna.clone(),
+                    //     String::from("happ_library"),
+                    //     String::from("get_webasset_file"),
+                    //     GetEntityInput {
+                    //         id: gui_release_entry_entity.content.web_asset_id,
+                    //     }
+                    //   ).await
+                    //   .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
+
+                    // let ui_bytes = fetch_mere_memory(
+                    //     app_agent_websocket,
+                    //     host.clone(),
+                    //     "web_assets",
+                    //     devhub_dna.clone(),
+                    //     web_asset_file.content.mere_memory_addr
+                    // ).await
+                    // .map_err(|e| WeError::PortalRemoteCallError(format!("Failed to get webasset file: {}", e)))?;
+
+                    // // store gui
+                    // let  gui_version = gui_release_entry_entity.content.version;
+                    // we_fs.ui_store().store_ui(gui_identifier, ui_bytes, Some(gui_version.clone()))?;
+
+                    // (Some(gui_release_hash), Some(gui_version))
                 },
             }
         },

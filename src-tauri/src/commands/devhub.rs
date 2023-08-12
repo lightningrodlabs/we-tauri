@@ -131,7 +131,7 @@ pub async fn open_devhub(
 
     let devhub_app_id = devhub_app_id(&app_handle);
 
-    let ui_dir = fs.ui_store().root_dir().join(&devhub_app_id);
+    let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
 
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
@@ -169,7 +169,7 @@ pub async fn open_appstore(
 
     let appstore_app_id = appstore_app_id(&app_handle);
 
-    let ui_dir = fs.ui_store().root_dir().join(&appstore_app_id);
+    let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(appstore_app_id.clone()));
 
     let app_dir = fs.apps_store().root_dir().join(&appstore_app_id);
     create_dir_if_necessary(&app_dir)?;

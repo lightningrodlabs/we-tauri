@@ -33,7 +33,7 @@ use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
     factory_reset::execute_factory_reset,
-    install_applet_bundle::{fetch_icon, install_applet_bundle_if_necessary},
+    install_applet_bundle::{fetch_icon, install_applet_bundle_if_necessary, update_applet_ui},
     join_group::join_group,
     notification::{notify_tauri, IconState, clear_systray_notification_state},
     password::{create_password, enter_password, is_keystore_initialized},
@@ -77,6 +77,7 @@ fn main() {
             open_appstore,
             open_devhub,
             sign_zome_call,
+            update_applet_ui,
         ])
         .setup(move |app| {
             let handle = app.handle();

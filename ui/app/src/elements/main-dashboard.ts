@@ -2,7 +2,7 @@ import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
 import { encodeHashToBase64, DnaHash, AnyDhtHash, EntryHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
-import { listen } from "@tauri-apps/api/event";
+import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import {
   StoreSubscriber,
   asyncDeriveStore,
@@ -56,6 +56,8 @@ export class MainDashboard extends LitElement {
   @state()
   hoverBrowser: boolean = false;
 
+  _unlisten: UnlistenFn | undefined;
+
   selectedAppletHash = new StoreSubscriber(
     this,
     () => this._weStore.selectedAppletHash(),
@@ -87,7 +89,7 @@ export class MainDashboard extends LitElement {
   }
 
   async firstUpdated() {
-    const unlisten = await listen("deep-link-received", async (e) => {
+    this._unlisten = await listen("deep-link-received", async (e) => {
       const deepLink = e.payload as string;
       try {
         const split = deepLink.split("://");
@@ -106,6 +108,10 @@ export class MainDashboard extends LitElement {
         notifyError(msg("Error opening the link."));
       }
     });
+  }
+
+  disconnectedCallback(): void {
+      if (this._unlisten) this._unlisten();
   }
 
   get dynamicLayout() {
