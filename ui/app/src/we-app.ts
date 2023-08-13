@@ -94,6 +94,9 @@ export class WeApp extends LitElement {
       new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );
 
+    console.log("Fetching available UI updates");
+    await this._weStore.fetchAvailableUiUpdates();
+
     this.state = { state: "running" };
   }
 

@@ -4,6 +4,7 @@ import {
   AppInfo,
   CallZomeRequestUnsigned,
   CellType,
+  InstalledAppId,
   encodeHashToBase64,
 } from "@holochain/client";
 import { randomNonce } from "@holochain/client";
@@ -15,6 +16,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
 import { isWindows } from "./utils.js";
+import { ResourceLocator } from "./processes/appstore/get-happ-releases.js";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
   return invoke("is_keystore_initialized");
@@ -166,6 +168,10 @@ export async function enableDevMode(): Promise<void> {
 
 export async function disableDevMode(): Promise<void> {
   return invoke("disable_dev_mode");
+}
+
+export async function fetchAvailableUiUpdates(): Promise<Record<InstalledAppId, ResourceLocator>> {
+  return invoke("fetch_available_ui_updates");
 }
 
 export async function notifyTauri(

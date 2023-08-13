@@ -53,6 +53,11 @@ export class AppletDetailCard extends LitElement {
       case "installed":
         return html`
           <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
+            ${
+              this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(this.appletHash)}`]
+                ? html`Update available!`
+                : html``
+            }
             <div class="column">
               <div class="row" style="flex: 1; align-items: center">
                 <applet-logo

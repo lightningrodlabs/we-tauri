@@ -20,6 +20,7 @@ import {
   AppInfo,
   AppWebsocket,
   decodeHashFromBase64,
+  InstalledAppId,
   ProvisionedCell,
 } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
@@ -33,6 +34,7 @@ import {
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
+import { invoke } from "@tauri-apps/api";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
@@ -42,6 +44,7 @@ import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
+import { ResourceLocator } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
 
@@ -63,6 +66,11 @@ export class WeStore {
     this._selectedAppletHash.update((_) => hash);
   }
 
+  public availableUiUpdates: Record<InstalledAppId, ResourceLocator> = {};
+
+  public async fetchAvailableUiUpdates() {
+    this.availableUiUpdates = await invoke("fetch_available_ui_updates");
+  }
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA

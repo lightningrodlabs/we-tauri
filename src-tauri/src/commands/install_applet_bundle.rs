@@ -31,7 +31,7 @@ use holochain_client::{
 };
 use holochain_launcher_utils::zome_call_signing::sign_zome_call_with_client;
 use holochain_state::nonce::fresh_nonce;
-use holochain_types::prelude::{AnyDhtHash, EntryHash};
+use holochain_types::prelude::{AnyDhtHash, EntryHash, InstalledApp, AnyDhtHashB64};
 use holochain_websocket::{connect, WebsocketConfig, WebsocketSender};
 use mere_memory_types::{MemoryEntry, MemoryBlockEntry};
 use portal_types::{DnaZomeFunction, HostEntry, RemoteCallDetails};
@@ -220,7 +220,7 @@ pub async fn install_applet_bundle_if_necessary(
     }
 
     if !success {
-        return Err(WeError::NoAvailableHostsError(()));
+        return Err(WeError::PortalRemoteCallError(format!("Failed to fetch happ and UI from all available hosts: {:?}", errors)))
     }
 
     // store HappEntry info
@@ -380,12 +380,140 @@ pub async fn update_applet_ui(
             }
 
             if !success {
-                return Err(WeError::NoAvailableHostsError(()))
+                return Err(WeError::PortalRemoteCallError(format!("Failed to fetch UI from all available hosts: {:?}", errors)))
             }
 
             Ok(())
         }
     }
+}
+
+#[tauri::command]
+pub async fn fetch_available_ui_updates(
+    app_handle: tauri::AppHandle,
+    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    we_fs: tauri::State<'_, WeFileSystem>,
+) -> WeResult<HashMap<InstalledAppId, Option<ResourceLocator>>> {
+
+    let conductor = conductor.lock().await;
+    let mut admin_ws = get_admin_ws(&conductor).await?;
+
+    let mut happ_release_info_map: HashMap<DnaHashB64, HashMap<InstalledAppId, ResourceLocatorB64>> = HashMap::new();
+    let mut gui_release_info_map: HashMap<InstalledAppId, ActionHashB64> = HashMap::new();
+    let mut updates_map: HashMap<InstalledAppId, Option<ResourceLocator>> = HashMap::new();
+
+    let running_apps: Vec<AppInfo> = admin_ws.list_apps(Some(AppStatusFilter::Running)).await?;
+    let running_applet_app_ids: Vec<InstalledAppId> = running_apps
+        .into_iter()
+        .filter(|app_info| app_info.installed_app_id.starts_with("applet#"))
+        .map(|app_info| app_info.installed_app_id)
+        .collect::<Vec<InstalledAppId>>();
+
+    for applet in running_applet_app_ids {
+
+        let happ_release_info = we_fs.apps_store().get_happ_release_info(&applet)?;
+
+        if let Some(locator) = happ_release_info.resource_locator {
+
+            let happ_release_locator_map = happ_release_info_map.get(&locator.dna_hash);
+
+            match happ_release_locator_map {
+                Some(map) => {
+                    let mut owned_map = map.to_owned();
+                    owned_map.insert(applet.clone(), locator.clone());
+                    happ_release_info_map.insert(locator.dna_hash, map.to_owned());
+                },
+                None => {
+                    let mut map = HashMap::new();
+                    map.insert(applet.clone(), locator.clone());
+                    happ_release_info_map.insert(locator.dna_hash, map);
+                }
+            };
+
+            let gui_release_hashb64 = we_fs.apps_store().get_gui_release_hash(&applet)?;
+            if let Some(hash) = gui_release_hashb64 {
+                gui_release_info_map.insert(applet, hash);
+            }
+        }
+
+    }
+
+    let mut app_agent_websocket = AppAgentWebsocket::connect(
+        format!(
+            "ws://localhost:{}",
+            conductor.list_app_interfaces().await?[0]
+        ),
+        appstore_app_id(&app_handle),
+        conductor.keystore().lair_client(),
+    )
+    .await?;
+
+    for (dna_hash, locator_map) in happ_release_info_map.iter() {
+        let hosts = get_available_hosts_for_zome_function(
+            &mut app_agent_websocket,
+            &DnaHash::from(dna_hash.to_owned()),
+            ZomeName::from(String::from("happ_library")),
+            FunctionName::from(String::from("get_happ_release")),
+        ).await?;
+
+        for (applet, locator) in locator_map.iter() {
+
+            let happ_release_hash = ActionHash::try_from(AnyDhtHash::from(locator.resource_hash.to_owned()))
+                .map_err(|e| WeError::HashConversionError(
+                    format!("Failed to convert resource hash to ActionHash: {:?}", e))
+                )?;
+
+            // we assume that if a host responds with a happ release entry that it's the latest version of that
+            // entry and we don't query further hosts
+            for host in hosts.clone() {
+
+                match portal_remote_call::<GetEntityInput, Entity<HappReleaseEntry>>(
+                    &mut app_agent_websocket,
+                    host.clone(),
+                    DnaHash::from(dna_hash.to_owned()),
+                    String::from("happ_library"),
+                    String::from("get_happ_release"),
+                    GetEntityInput {
+                        id: happ_release_hash.clone(),
+                    }
+                ).await {
+                    Ok(entity) => {
+                        // check whether official_gui is newer than current gui and if yes, add to updates_map
+                        let existing_gui_release_hash = gui_release_info_map.get(applet);
+                        match existing_gui_release_hash {
+                            Some(hashb64) => {
+                                if let Some(latest_hash) = entity.content.official_gui {
+                                    if ActionHash::from(hashb64.to_owned()) != latest_hash {
+                                        updates_map.insert(applet.to_owned(), Some(
+                                            ResourceLocator {
+                                                dna_hash: DnaHash::from(dna_hash.to_owned()),
+                                                resource_hash: latest_hash.into(),
+                                            }
+                                        ));
+                                    }
+                                }
+                            },
+                            None => {
+                                if let Some(latest_hash) = entity.content.official_gui {
+                                    updates_map.insert(applet.to_owned(), Some(
+                                        ResourceLocator {
+                                            dna_hash: DnaHash::from(dna_hash.to_owned()),
+                                            resource_hash: latest_hash.into(),
+                                        }
+                                    ));
+                                }
+                            }
+                        }
+                        break;
+                    },
+                    Err(e) => (),
+                }
+            }
+
+        }
+    }
+
+    Ok(updates_map)
 }
 
 async fn fetch_and_store_ui_from_host_if_necessary(
@@ -571,72 +699,13 @@ async fn fetch_and_store_happ_and_ui_from_host_if_necessary(
 }
 
 
-#[derive(Debug, Serialize)]
-pub struct FetchWebHappRemoteCallInput {
-    host: AgentPubKey,
-    call: RemoteCallDetails<String, String, GetWebHappPackageInput>,
-}
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct WebHappBundle {
-    pub manifest: WebHappManifest,
-    pub resources: BTreeMap<String, Vec<u8>>,
-}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct HappBundle {
     pub manifest: HappManifest,
     pub resources: BTreeMap<String, Vec<u8>>,
 }
-#[derive(Debug, Serialize)]
-pub struct GetWebHappPackageInput {
-    pub name: String,
-    pub happ_release_id: ActionHash,
-    pub gui_release_id: ActionHash,
-}
 
-async fn get_webhapp_from_host(
-    app_store_client: &mut AppAgentWebsocket,
-    devhub_dna: &DnaHash,
-    host: &AgentPubKey,
-    payload: &GetWebHappPackageInput,
-) -> WeResult<Vec<u8>> {
-    let input = FetchWebHappRemoteCallInput {
-        host: host.clone(),
-        call: RemoteCallDetails {
-            dna: devhub_dna.clone(),
-            zome: String::from("happ_library"),
-            function: String::from("get_webhapp_package"),
-            payload: GetWebHappPackageInput {
-                name: payload.name.clone(),
-                happ_release_id: payload.happ_release_id.clone(),
-                gui_release_id: payload.gui_release_id.clone(),
-            },
-        },
-    };
-    let result = app_store_client
-        .call_zome_fn(
-            RoleName::from("portal"),
-            ZomeName::from("portal_api"),
-            FunctionName::from("custom_remote_call"),
-            ExternIO::encode(input)?,
-        )
-        .await?;
-
-    let response: DevHubResponse<DevHubResponse<Vec<u8>>> = result.decode()?;
-
-    let inner_response = match response {
-        DevHubResponse::Success(pack) => pack.payload,
-        DevHubResponse::Failure(error) => {
-            return Err(WeError::AppWebsocketError(format!(
-                "Received ErrorPayload: {:?}",
-                error.payload
-            )));
-        }
-    };
-
-    let bytes = inner_response.as_result()?;
-
-    Ok(bytes)
-}
 
 /// Fetch and assemble a happ from a devhub host
 async fn fetch_and_assemble_happ(

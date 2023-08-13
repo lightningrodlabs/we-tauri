@@ -6,7 +6,7 @@ import {
   retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   AdminWebsocket,

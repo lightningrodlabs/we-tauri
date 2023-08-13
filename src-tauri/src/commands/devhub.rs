@@ -133,6 +133,8 @@ pub async fn open_devhub(
 
     let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
 
+    println!("UI directory of devhub: {:?}", ui_dir);
+
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
 
