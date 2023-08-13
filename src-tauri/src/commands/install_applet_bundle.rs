@@ -220,7 +220,7 @@ pub async fn install_applet_bundle_if_necessary(
     }
 
     if !success {
-        return Err(WeError::PortalRemoteCallError(format!("Failed to fetch happ and UI from all available hosts: {:?}", errors)))
+        return Err(WeError::PortalRemoteCallError(format!("Failed to fetch happ and UI from all available hosts. All errors: {:?}", errors)))
     }
 
     // store HappEntry info
@@ -529,7 +529,7 @@ async fn fetch_and_store_ui_from_host_if_necessary(
         host.clone(),
         devhub_dna.clone(),
         String::from("happ_library"),
-        String::from("get_webasset_file"),
+        String::from("get_gui_release"),
         GetEntityInput {
             id: gui_release_hash.clone(),
         }
@@ -561,7 +561,7 @@ async fn fetch_and_store_ui_from_host_if_necessary(
 
     // store gui
     let  gui_version = gui_release_entry_entity.content.version;
-    we_fs.ui_store().store_ui(ui_identifier, ui_bytes, Some(gui_version.clone()));
+    we_fs.ui_store().store_ui(ui_identifier, ui_bytes, Some(gui_version.clone()))?;
 
     Ok(gui_version)
 }
