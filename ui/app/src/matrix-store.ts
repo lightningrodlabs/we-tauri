@@ -52,8 +52,8 @@ import {
   AppletRenderers,
   NhLauncherApplet,
   AppletInfo,
-  WeServices,
-  WeInfo,
+  NeighbourhoodServices,
+  NeighbourhoodInfo,
 } from "@neighbourhoods/nh-launcher-applet";
 import { SensemakerStore, SensemakerService } from "@neighbourhoods/client";
 import {
@@ -92,7 +92,7 @@ export interface WeGroupData {
 
 /**Info of a group */
 export interface WeGroupInfo {
-  info: WeInfo;
+  info: NeighbourhoodInfo;
   cell_id: CellId;
   dna_hash: DnaHash;
   cloneName: string;
@@ -112,6 +112,7 @@ export interface AppletInstanceInfo {
   applet: Applet;
   federatedGroups: DnaHash[];
   appAgentWebsocket?: AppAgentClient;
+  views?: AppletRenderers;
 }
 
 export interface UninstalledAppletInstanceInfo {
@@ -277,7 +278,7 @@ export class MatrixStore {
    * @param weGroupId : DnaHash
    * @returns : WeInfo
    */
-  public getWeGroupInfo(weGroupId): WeInfo | undefined {
+  public getWeGroupInfo(weGroupId): NeighbourhoodInfo | undefined {
     if (weGroupId) {
       return get(this._matrix).get(weGroupId)
         ? get(this._matrix).get(weGroupId)[0].info.info
@@ -291,7 +292,7 @@ export class MatrixStore {
    * @param weGroupId : DnaHash
    * @returns : Promise<Readable<WeInfo>>
    */
-  public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
+  public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<NeighbourhoodInfo>> {
     const appAgentWebsocket = get(this._matrix).get(weGroupId)[0].appAgentWebsocket;
     const info = await appAgentWebsocket.callZome({
       cell_id: [weGroupId, appAgentWebsocket.myPubKey],
@@ -410,7 +411,7 @@ export class MatrixStore {
    */
   async fetchAppletInstanceRenderers(
     appletInstanceId: EntryHash,
-    weServices: WeServices
+    weServices: NeighbourhoodServices
   ) {
     // // 1. check whether the renderers for this applet instance are already stored, if yes return them
     // const maybeRenderers = this._appletInstanceRenderers.get(appletInstanceId);
@@ -442,7 +443,7 @@ export class MatrixStore {
     if (!appInstanceInfo.appAgentWebsocket) {
 
       //instantiate the websocket
-      console.log('app agent websocket not instantiated yet');
+      console.log('app agent websocket being instantiated');
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
       this._matrix.update((matrix) => {
@@ -467,8 +468,17 @@ export class MatrixStore {
     const renderers = await gui.appletRenderers(
       appletAppAgentWebsocket,
       weServices,
-      [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
+      [{ neighbourhoodInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
     );
+
+    this._matrix.update((matrix) => {
+      matrix.get(weGroupId)[1].find(
+        (info) =>
+          JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
+      )!.views = renderers;
+      return matrix;
+    })
+    
 
     return renderers;
   }
@@ -704,7 +714,9 @@ export class MatrixStore {
       UninstalledAppletInstanceInfo[]
     >();
 
+    console.log("app info from matrix", this.weParentAppInfo);
     let weParentAppInfo: AppInfo = await this.appWebsocket.appInfo({ installed_app_id: this.weParentAppInfo.installed_app_id });
+    console.log("parent app info after fetch", weParentAppInfo);
 
     // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
@@ -1132,7 +1144,7 @@ export class MatrixStore {
       }, 1500);
     
     this._matrix.update((matrix) => {
-      const weInfo: WeInfo = {
+      const weInfo: NeighbourhoodInfo = {
         logoSrc: properties.logoSrc,
         name: properties.name,
       };
@@ -2017,7 +2029,7 @@ export class MatrixStore {
     const matrix = get(this._matrix);
     let appletInfosOfClass: AppletInfo[] = [];
     matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
-      const weInfo: WeInfo = weGroupData.info.info;
+      const weInfo: NeighbourhoodInfo = weGroupData.info.info;
       const relevantAppletInstanceInfos = appletInstanceInfos.filter(
         (info) =>
           JSON.stringify(info.applet.devhubHappReleaseHash) ===
@@ -2026,7 +2038,7 @@ export class MatrixStore {
       const relevantInstalledAppletInfos = relevantAppletInstanceInfos.map(
         (appletInstanceInfo) => {
           const installedAppletInfo: AppletInfo = {
-            weInfo,
+            neighbourhoodInfo:  weInfo,
             appInfo: appletInstanceInfo.appInfo,
           };
           return installedAppletInfo;
