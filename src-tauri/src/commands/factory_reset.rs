@@ -12,6 +12,9 @@ pub async fn execute_factory_reset(
   if window.label() != "main" {
     return Err(String::from("Attempted to call tauri command 'execute_factory_reset' from unauthorized window."))
   }
+  if cfg!(debug_assertions) {
+      println!("### Called tauri command 'execute_factory_reset'.");
+  }
 
   log::warn!("Factory reset requested.");
 

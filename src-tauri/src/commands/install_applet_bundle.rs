@@ -55,6 +55,9 @@ pub async fn fetch_icon(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("fetch_icon")));
     }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'fetch_icon'.");
+    }
 
     let app_action_hash =
         ActionHash::from(ActionHashB64::from_b64_str(app_action_hash_b64.as_str()).unwrap());
@@ -135,7 +138,10 @@ pub async fn install_applet_bundle_if_necessary(
     happ_release_hash: String,
 ) -> WeResult<AppInfo> {
     if window.label() != "main" {
-        return Err(WeError::UnauthorizedWindow(String::from("install_applet_bundle")));
+        return Err(WeError::UnauthorizedWindow(String::from("install_applet_bundle_if_necessary")));
+    }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'install_applet_bundle_if_necessary'.");
     }
 
     log::info!("Installing: app_id = {:?}", app_id);
@@ -291,6 +297,12 @@ pub async fn update_applet_ui(
     devhub_dna_hash: String,
     gui_release_hash: String,
 ) -> WeResult<()> {
+    if window.label() != "main" {
+        return Err(WeError::UnauthorizedWindow(String::from("update_applet_ui")));
+    }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'update_applet_ui'.");
+    }
 
     let dna_hash_b64 = DnaHashB64::from_b64_str(&devhub_dna_hash.as_str())
         .map_err(|e| WeError::HashConversionError(format!("Failed to convert dna hash string to DnaHashB64: {}", e)))?;
@@ -390,10 +402,17 @@ pub async fn update_applet_ui(
 
 #[tauri::command]
 pub async fn fetch_available_ui_updates(
+    window: tauri::Window,
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
 ) -> WeResult<HashMap<InstalledAppId, Option<ResourceLocator>>> {
+    if window.label() != "main" {
+        return Err(WeError::UnauthorizedWindow(String::from("fetch_available_ui_updates")));
+    }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'fetch_available_ui_updates'.");
+    }
 
     let conductor = conductor.lock().await;
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -484,6 +503,7 @@ pub async fn fetch_available_ui_updates(
                             Some(hashb64) => {
                                 if let Some(latest_hash) = entity.content.official_gui {
                                     if ActionHash::from(hashb64.to_owned()) != latest_hash {
+                                        println!("Got newer latest hash: {}", ActionHashB64::from(latest_hash.clone()));
                                         updates_map.insert(applet.to_owned(), Some(
                                             ResourceLocator {
                                                 dna_hash: DnaHash::from(dna_hash.to_owned()),

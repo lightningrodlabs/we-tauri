@@ -27,7 +27,9 @@ pub async fn is_dev_mode_enabled(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("is_dev_mode_enabled")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'is_dev_mode_enabled'.");
+    }
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -54,7 +56,9 @@ pub async fn enable_dev_mode(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("enable_dev_mode")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'enable_dev_mode'.");
+    }
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -106,7 +110,9 @@ pub async fn disable_dev_mode(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("disable_dev_mode")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'disable_dev_mode'.");
+    }
     let conductor = conductor.lock().await;
 
     let mut admin_ws = get_admin_ws(&conductor).await?;
@@ -128,12 +134,12 @@ pub async fn open_devhub(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("open_devhub")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'open_devhub'.");
+    }
     let devhub_app_id = devhub_app_id(&app_handle);
 
     let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
-
-    println!("UI directory of devhub: {:?}", ui_dir);
 
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
@@ -168,7 +174,9 @@ pub async fn open_appstore(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("open_appstore")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'open_appstore'.");
+    }
     let appstore_app_id = appstore_app_id(&app_handle);
 
     let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(appstore_app_id.clone()));

@@ -13,6 +13,9 @@ pub async fn is_keystore_initialized(window: tauri::Window, fs: tauri::State<'_,
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("is_keystore_initialized")));
     }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'is_keystore_initialized'.");
+    }
     let exists = fs
         .keystore_dir()
         .join("lair-keystore-config.yaml")
@@ -30,6 +33,9 @@ pub async fn create_password(
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("create_password")));
+    }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'create_password'.");
     }
     let conductor = launch(&app_handle, &config, &fs, password).await?;
 
@@ -51,6 +57,9 @@ pub async fn enter_password(
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("enter_password")));
+    }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'enter_password'.");
     }
     let conductor = launch(&app_handle, &config, &fs, password).await?;
 

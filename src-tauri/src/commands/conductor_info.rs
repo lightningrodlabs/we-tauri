@@ -14,6 +14,9 @@ pub fn is_launched(window: tauri::Window, app_handle: AppHandle) -> WeResult<boo
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("is_launched")));
     }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'is_launched'.");
+    }
     let connected_state: Option<tauri::State<'_, Mutex<ConductorHandle>>> = app_handle.try_state();
     Ok(connected_state.is_some())
 }
@@ -37,7 +40,9 @@ pub async fn get_conductor_info(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("get_conductor_info")));
     }
-
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'get_conductor_info'.");
+    }
     let conductor = conductor.lock().await;
 
     Ok(ConductorInfo {
