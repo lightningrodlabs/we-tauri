@@ -45,7 +45,7 @@ export interface NeighbourhoodApplet {
   widgetPairs: {
     assess: any,
     display: any,
-    compatibleDimension: string[],
+    compatibleDimensions: string[],
   }[]
 }
 
