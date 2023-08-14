@@ -4,8 +4,9 @@ import {
   AppWebsocket,
   AppInfo,
   AppAgentClient,
+  EntryHash,
 } from "@holochain/client";
-import { SensemakerStore } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, CreateAppletConfigInput, SensemakerStore } from "@neighbourhoods/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
@@ -17,30 +18,56 @@ export interface AppletBlock {
   render: Renderer;
 }
 
+export type ResourceView = (
+  rootElement: HTMLElement,
+  resourceHash: EntryHash,
+) => void;
+
 export interface AppletRenderers {
   full: Renderer;
-  blocks: Array<AppletBlock>;
+  resourceRenderers: {
+    [resourceDefName: string]: ResourceView;
+  }
 }
 
-export interface WeServices {
+export interface NeighbourhoodServices {
   profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
   sensemakerStore?: SensemakerStore;
 }
 
-export interface NhLauncherApplet {
+export interface NeighbourhoodApplet {
   appletRenderers: (
     appAgentWebsocket: AppAgentClient,
-    weStore: WeServices,
+    neighbourhoodStore: NeighbourhoodServices,
     appletInfo: AppletInfo[],
   ) => Promise<AppletRenderers>;
+  appletConfig: CreateAppletConfigInput;
+  widgetPairs: {
+    assess: any,
+    display: any,
+    compatibleDimension: string[],
+  }[]
 }
 
 
-export interface WeInfo {
+export interface NeighbourhoodInfo {
   logoSrc: string;
   name: string;
 }
 export interface AppletInfo {
-  weInfo: WeInfo,
+  neighbourhoodInfo: NeighbourhoodInfo,
   appInfo: AppInfo,
 }
+
+// componentStore.getViews(resourceEntryHash, resourceDefEh).{view-type} => html``
+// appletRenderers[${appletName}].
+
+// need a way to map from the resourceDefEh to get the right resource renderer
+
+/*
+{
+  [resourceDefEh: EntryHash]: ResourceView
+}
+
+*/
+
