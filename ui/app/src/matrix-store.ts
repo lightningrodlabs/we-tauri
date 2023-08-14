@@ -2152,4 +2152,36 @@ export class MatrixStore {
 
     return isSame;
   }
+
+  public async initializeViewsForGroup(weGroupId: DnaHash) {
+    const [weGroupData, appletInstanceInfos] = get(this._matrix).get(weGroupId);
+    appletInstanceInfos.forEach(async (appletInstanceInfo) => {
+      await this.fetchAppletInstanceRenderers(appletInstanceInfo.appletId, {
+        profilesStore: weGroupData.profilesStore,
+        sensemakerStore: weGroupData.sensemakerStore,
+      });
+      
+      const devhubHappReleaseHash =
+        this.releaseHashOfAppletInstance(appletInstanceInfo.appletId)!;
+
+      let gui = this._appletGuis.get(devhubHappReleaseHash);
+      if (!gui) {
+        gui = await this.queryAppletGui(devhubHappReleaseHash);
+      }
+
+      const appletConfig = gui.appletConfig;
+      const widgetPairs = gui.widgetPairs;
+      const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      const registeredConfig = await sensemakerStore!.registerApplet(appletConfig);
+      console.log('registeredConfig', registeredConfig)
+      widgetPairs.map((widgetPair) => {
+        console.log('registering widgets to SM store')
+        get(this.sensemakerStore(weGroupId))!.registerWidget(
+          widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
+          widgetPair.display,
+          widgetPair.assess,
+        ) 
+      });
+    });
+  }
 }
