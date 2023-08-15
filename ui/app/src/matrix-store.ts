@@ -1375,6 +1375,7 @@ export class MatrixStore {
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
       const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      appletConfig.applet_config_input.name = installedAppId;
       await sensemakerStore?.registerApplet(appletConfig);
       widgetPairs.map((widgetPair) => {
         console.log('registering widgets to SM store')
@@ -1576,6 +1577,7 @@ export class MatrixStore {
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
       const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      appletConfig.applet_config_input.name = installedAppId;
       const registeredConfig = await sensemakerStore!.registerApplet(appletConfig);
       console.log('registeredConfig', registeredConfig)
       widgetPairs.map((widgetPair) => {
@@ -2171,12 +2173,17 @@ export class MatrixStore {
 
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
-      const sensemakerStore = get(this.sensemakerStore(weGroupId));
-      const registeredConfig = await sensemakerStore!.registerApplet(appletConfig);
+      // const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      appletConfig.applet_config_input.name = appletInstanceInfo.appInfo.installed_app_id;
+      const registeredConfig = await weGroupData.sensemakerStore.registerApplet(appletConfig);
       console.log('registeredConfig', registeredConfig)
       widgetPairs.map((widgetPair) => {
         console.log('registering widgets to SM store')
         get(this.sensemakerStore(weGroupId))!.registerWidget(
+          // [
+          //   encodeHashToBase64(get(this.sensemakerStore.appletConfigs())[installAppId].dimensions["importance"]),
+          //   encodeHashToBase64(get(this.sensemakerStore.appletConfigs())[installAppId].dimensions["total_importance"]),
+          // ],
           widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
           widgetPair.display,
           widgetPair.assess,
