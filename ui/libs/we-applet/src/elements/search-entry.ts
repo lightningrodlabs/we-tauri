@@ -191,7 +191,7 @@ export class SearchEntry extends LitElement implements FormField {
     this.dropdown.show();
 
     const store = lazyLoad(() => this.search(filter));
-    this._searchEntries = new StoreSubscriber(this, () => store);
+    this._searchEntries = new StoreSubscriber(this, () => store, () => []);
   }
 
   onEntrySelected(hrlWithContext: HrlWithContext, info: EntryLocationAndInfo) {

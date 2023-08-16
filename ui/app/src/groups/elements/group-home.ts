@@ -1,15 +1,16 @@
 import {
   notify,
+  notifyError,
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { ActionHash, EntryHash } from "@holochain/client";
+import { ActionHash, EntryHash, encodeHashToBase64 } from "@holochain/client";
 import {
   AsyncReadable,
-  join,
   StoreSubscriber,
+  join,
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
@@ -40,6 +41,10 @@ import "./create-custom-group-view.js";
 import "./edit-custom-group-view.js";
 import "../../applet-bundles/elements/publish-applet-button.js";
 import "../../elements/tab-group.js";
+import "../../elements/loading-dialog.js";
+import { invoke } from "@tauri-apps/api";
+
+
 import { AddRelatedGroupDialog } from "./add-related-group-dialog.js";
 
 import { groupStoreContext } from "../context.js";
@@ -47,6 +52,8 @@ import { GroupStore } from "../group-store.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { weStyles } from "../../shared-styles.js";
+import { LoadingDialog } from "../../elements/loading-dialog.js";
+import { AppletHash } from "../../types.js";
 
 type View =
   | {
@@ -69,6 +76,12 @@ export class GroupHome extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
+  updatesAvailable = new StoreSubscriber(
+    this,
+    () => this.groupStore.appletUiUpdatesAvailable,
+    () => [this.weStore, this.groupStore]
+  );
+
   @state()
   view: View = { view: "main" };
 
@@ -81,6 +94,34 @@ export class GroupHome extends LitElement {
       ]) as AsyncReadable<[GroupProfile | undefined, string]>,
     () => [this.groupStore, this.weStore]
   );
+
+  async updateUi(e: CustomEvent) {
+    (this.shadowRoot!.getElementById("loading-dialog") as LoadingDialog).show();
+    console.log("appletHash: ", e.detail);
+    const appId = `applet#${encodeHashToBase64(e.detail as AppletHash)}`;
+    console.log("appletId: ", appId);
+
+    try {
+      const resourceLocatorB64 = this.weStore.availableUiUpdates[appId];
+      console.log("resourceLocatorB64: ", resourceLocatorB64);
+
+      const payload = {
+        appId,
+        devhubDnaHash: resourceLocatorB64.dna_hash,
+        guiReleaseHash: resourceLocatorB64.resource_hash,
+      };
+      console.log("Updating UI with payload: ", payload);
+      await invoke("update_applet_ui", payload);
+      await this.weStore.fetchAvailableUiUpdates();
+      (this.shadowRoot!.getElementById("loading-dialog") as LoadingDialog).hide();
+      notify(msg("Applet UI updated."));
+      this.requestUpdate();
+    } catch (e) {
+      console.error(`Failed to update UI: ${e}`);
+      notifyError(msg("Failed to update the UI."));
+      (this.shadowRoot!.getElementById("loading-dialog") as LoadingDialog).hide();
+    }
+  }
 
   renderMain(groupProfile: GroupProfile, networkSeed: string) {
     return html`
@@ -104,13 +145,21 @@ export class GroupHome extends LitElement {
               style="font-size: 2rem;"
             ></sl-icon-button>
 
-            <sl-icon-button
-              .src=${wrapPathInSvg(mdiCog)}
-              @click=${() => {
-                this.view = { view: "settings" };
-              }}
-              style="font-size: 2rem;"
-            ></sl-icon-button>
+            <div style="position: relative;">
+              ${
+                this.updatesAvailable.value.status === "complete" && this.updatesAvailable.value.value
+                  ? html`<div style="position: absolute; top: 6px; right: 4px; background-color: #21c607; height: 12px; width: 12px; border-radius: 50%; border: 2px solid white;"></div>`
+                  : html``
+              }
+              <sl-icon-button
+                .src=${wrapPathInSvg(mdiCog)}
+                title=${this.updatesAvailable.value.status === "complete" && this.updatesAvailable.value.value ? "Applet Updates available" : ""}
+                @click=${() => {
+                  this.view = { view: "settings" };
+                }}
+                style="font-size: 2rem;"
+              ></sl-icon-button>
+            </div>
           </div>
 
           <div class="row">
@@ -305,7 +354,7 @@ export class GroupHome extends LitElement {
 
   renderNewSettings() {
     const tabs = [
-      ["Applets", html`<group-applets-settings style="display: flex; flex: 1;"></group-applets-settings>`],
+      ["Applets", html`<group-applets-settings @update-ui=${async (e) => this.updateUi(e)} style="display: flex; flex: 1;"></group-applets-settings>`],
       ["Custom Views", html`
         <div class="column">
           <span class="placeholder"
@@ -365,6 +414,8 @@ export class GroupHome extends LitElement {
     ];
 
     return html`
+      <loading-dialog id="loading-dialog" loadingText="Updating UI..."></loading-dialog>
+
       <div class="column" style="flex: 1; position: relative;">
         <div class="row" style="height: 68px; align-items: center; background: var(--sl-color-primary-200)">
           <sl-icon-button

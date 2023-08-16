@@ -406,7 +406,7 @@ pub async fn fetch_available_ui_updates(
     app_handle: tauri::AppHandle,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     we_fs: tauri::State<'_, WeFileSystem>,
-) -> WeResult<HashMap<InstalledAppId, Option<ResourceLocator>>> {
+) -> WeResult<HashMap<InstalledAppId, Option<ResourceLocatorB64>>> {
     if window.label() != "main" {
         return Err(WeError::UnauthorizedWindow(String::from("fetch_available_ui_updates")));
     }
@@ -419,7 +419,7 @@ pub async fn fetch_available_ui_updates(
 
     let mut happ_release_info_map: HashMap<DnaHashB64, HashMap<InstalledAppId, ResourceLocatorB64>> = HashMap::new();
     let mut gui_release_info_map: HashMap<InstalledAppId, ActionHashB64> = HashMap::new();
-    let mut updates_map: HashMap<InstalledAppId, Option<ResourceLocator>> = HashMap::new();
+    let mut updates_map: HashMap<InstalledAppId, Option<ResourceLocatorB64>> = HashMap::new();
 
     let running_apps: Vec<AppInfo> = admin_ws.list_apps(Some(AppStatusFilter::Running)).await?;
     let running_applet_app_ids: Vec<InstalledAppId> = running_apps
@@ -440,7 +440,7 @@ pub async fn fetch_available_ui_updates(
                 Some(map) => {
                     let mut owned_map = map.to_owned();
                     owned_map.insert(applet.clone(), locator.clone());
-                    happ_release_info_map.insert(locator.dna_hash, map.to_owned());
+                    happ_release_info_map.insert(locator.dna_hash, owned_map);
                 },
                 None => {
                     let mut map = HashMap::new();
@@ -456,6 +456,7 @@ pub async fn fetch_available_ui_updates(
         }
 
     }
+
 
     let mut app_agent_websocket = AppAgentWebsocket::connect(
         format!(
@@ -482,6 +483,8 @@ pub async fn fetch_available_ui_updates(
                     format!("Failed to convert resource hash to ActionHash: {:?}", e))
                 )?;
 
+            // TODO Optimization: Only fetch a given happ release once if multiple applets depend on it
+
             // we assume that if a host responds with a happ release entry that it's the latest version of that
             // entry and we don't query further hosts
             for host in hosts.clone() {
@@ -503,11 +506,10 @@ pub async fn fetch_available_ui_updates(
                             Some(hashb64) => {
                                 if let Some(latest_hash) = entity.content.official_gui {
                                     if ActionHash::from(hashb64.to_owned()) != latest_hash {
-                                        println!("Got newer latest hash: {}", ActionHashB64::from(latest_hash.clone()));
                                         updates_map.insert(applet.to_owned(), Some(
-                                            ResourceLocator {
-                                                dna_hash: DnaHash::from(dna_hash.to_owned()),
-                                                resource_hash: latest_hash.into(),
+                                            ResourceLocatorB64 {
+                                                dna_hash: dna_hash.to_owned(),
+                                                resource_hash: AnyDhtHashB64::from(AnyDhtHash::from((latest_hash))),
                                             }
                                         ));
                                     }
@@ -516,9 +518,9 @@ pub async fn fetch_available_ui_updates(
                             None => {
                                 if let Some(latest_hash) = entity.content.official_gui {
                                     updates_map.insert(applet.to_owned(), Some(
-                                        ResourceLocator {
-                                            dna_hash: DnaHash::from(dna_hash.to_owned()),
-                                            resource_hash: latest_hash.into(),
+                                        ResourceLocatorB64 {
+                                            dna_hash: dna_hash.to_owned(),
+                                            resource_hash: AnyDhtHashB64::from(AnyDhtHash::from(latest_hash)),
                                         }
                                     ));
                                 }

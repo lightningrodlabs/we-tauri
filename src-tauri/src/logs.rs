@@ -34,6 +34,9 @@ pub fn log(window: tauri::Window, log: String) -> Result<(), String> {
   if window.label() != "main" {
     return Err(String::from("Attempted to call tauri command 'log' from unauthorized window."))
   }
+	if cfg!(debug_assertions) {
+			println!("### {:?} Called tauri command 'log'.", std::time::SystemTime::now());
+	}
 	log::info!("[We UI] {}", log);
 	Ok(())
 }

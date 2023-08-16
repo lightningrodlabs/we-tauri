@@ -16,7 +16,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
 import { isWindows } from "./utils.js";
-import { ResourceLocator } from "./processes/appstore/get-happ-releases.js";
+import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
   return invoke("is_keystore_initialized");
@@ -170,7 +170,7 @@ export async function disableDevMode(): Promise<void> {
   return invoke("disable_dev_mode");
 }
 
-export async function fetchAvailableUiUpdates(): Promise<Record<InstalledAppId, ResourceLocator>> {
+export async function fetchAvailableUiUpdates(): Promise<Record<InstalledAppId, ResourceLocatorB64>> {
   return invoke("fetch_available_ui_updates");
 }
 

@@ -71,6 +71,10 @@ export class AppletViewEl extends LitElement {
     () => [this.appletHash]
   );
 
+  firstUpdated() {
+    console.log("@applet-view: got this._applet.value: ", this._applet.value);
+  }
+
   async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
     if (this.registering) return;
 

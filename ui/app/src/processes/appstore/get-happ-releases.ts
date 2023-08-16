@@ -1,8 +1,10 @@
 import {
   AgentPubKey,
   AnyDhtHash,
+  AnyDhtHashB64,
   AppAgentClient,
   DnaHash,
+  DnaHashB64,
 } from "@holochain/client";
 import {
   CustomRemoteCallInput,
@@ -17,6 +19,10 @@ import {
 export interface ResourceLocator {
   dna_hash: DnaHash;
   resource_hash: AnyDhtHash;
+}
+export interface ResourceLocatorB64 {
+  dna_hash: DnaHashB64;
+  resource_hash: AnyDhtHashB64;
 }
 
 /**

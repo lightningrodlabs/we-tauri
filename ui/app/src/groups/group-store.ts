@@ -217,4 +217,13 @@ export class GroupStore {
     return completed([undefined, undefined] as [string | undefined, number | undefined]);
   });
 
+  appletUiUpdatesAvailable = asyncDerived(this.allApplets, (allApplets) => {
+    let updatesAvailable = false;
+    allApplets.forEach((applet) => {
+      if (this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(applet)}`]) {
+        updatesAvailable = true;
+      }
+    });
+    return updatesAvailable
+  });
 }

@@ -189,12 +189,13 @@ export async function handleAppletIframeMessage(
       const isInstalled = await toPromise(
         weStore.appletBundlesStore.isInstalled.get(appletHash)
       );
-      const applet = await toPromise(weStore.appletStores.get(appletHash));
+
+      const appletStore = await toPromise(weStore.appletStores.get(appletHash));
 
       if (!isInstalled) {
         const iframeConfig: IframeConfig = {
           type: "not-installed",
-          appletName: applet.applet.custom_name,
+          appletName: appletStore.applet.custom_name,
         };
         return iframeConfig;
       }
@@ -202,7 +203,7 @@ export async function handleAppletIframeMessage(
       const crossApplet = message.crossApplet;
       if (crossApplet) {
         const applets = await toPromise(
-          weStore.appletsForBundleHash.get(applet.applet.appstore_app_hash)
+          weStore.appletsForBundleHash.get(appletStore.applet.appstore_app_hash)
         );
         const config: IframeConfig = {
           type: "cross-applet",
@@ -297,13 +298,6 @@ export async function handleAppletIframeMessage(
 
       // trigger OS notification if allowed by the user and notification is fresh enough (less than 10 minutes old)
       const appletNotificationSettings: AppletNotificationSettings = getAppletNotificationSettings(appletId);
-
-      let appletStore: AppletStore | undefined;
-      try {
-        appletStore = await toPromise(weStore.appletStores.get(appletHash));
-      } catch (e) {
-        console.warn("Failed to fetch AppletStore in notify hook: ", (e as any).toString());
-      }
 
       await Promise.all(notifications.map(async (notification) => {
         // check whether it's actually a new event or not. Events older than 5 minutes won't trigger an OS notification

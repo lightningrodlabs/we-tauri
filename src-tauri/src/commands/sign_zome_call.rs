@@ -14,7 +14,7 @@ pub async fn sign_zome_call(
     zome_call_unsigned: ZomeCallUnsignedTauri,
 ) -> WeResult<ZomeCall> {
     if cfg!(debug_assertions) {
-        println!("### Called tauri command 'sign_zome_call'.");
+        println!("### {:?} Called tauri command 'sign_zome_call'.", std::time::SystemTime::now());
     }
     let zome_call_unsigned_converted: ZomeCallUnsigned = zome_call_unsigned.into();
 

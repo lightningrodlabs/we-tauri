@@ -19,7 +19,6 @@ import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
   AppInfo,
   AppWebsocket,
-  decodeHashFromBase64,
   InstalledAppId,
   ProvisionedCell,
 } from "@holochain/client";
@@ -44,7 +43,7 @@ import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
-import { ResourceLocator } from "./processes/appstore/get-happ-releases.js";
+import { ResourceLocator, ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
 
@@ -66,10 +65,10 @@ export class WeStore {
     this._selectedAppletHash.update((_) => hash);
   }
 
-  public availableUiUpdates: Record<InstalledAppId, ResourceLocator> = {};
+  public availableUiUpdates: Record<InstalledAppId, ResourceLocatorB64> = {};
 
   public async fetchAvailableUiUpdates() {
-    this.availableUiUpdates = await invoke("fetch_available_ui_updates");
+    this.availableUiUpdates = await invoke("fetch_available_ui_updates", {});
   }
 
   /**
@@ -237,7 +236,7 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
-        // console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
+        console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -246,10 +245,11 @@ export class WeStore {
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
 
-        // console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
-        // console.log("groupDnaHashes: ", groupDnaHashes);
+        console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
+        console.log("groupDnaHashes: ", groupDnaHashes);
 
         if (groupDnaHashes.length === 0) {
+          console.log("//////// Disabling applet with hash: ", encodeHashToBase64(appletHash));
           this.appletBundlesStore.disableApplet(appletHash);
         }
 

@@ -5,6 +5,8 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
 import { mdiArchiveArrowDown, mdiArchiveArrowUp, mdiExportVariant } from "@mdi/js";
+import { invoke } from "@tauri-apps/api";
+
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -48,24 +50,31 @@ export class AppletDetailCard extends LitElement {
     this.appInfo = await this.weStore.appWebsocket.appInfo({ installed_app_id: appIdFromAppletHash(this.appletHash) })
   }
 
+  async updateUi(){
+    this.dispatchEvent(new CustomEvent("update-ui", {
+      bubbles: true,
+      composed: true,
+      detail: this.appletHash,
+    }))
+  }
+
   render() {
     switch (this.installationStatus) {
       case "installed":
         return html`
           <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
-            ${
-              this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(this.appletHash)}`]
-                ? html`Update available!`
-                : html``
-            }
-            <div class="column">
+            <div class="column" style="flex: 1;">
               <div class="row" style="flex: 1; align-items: center">
                 <applet-logo
                   .appletHash=${this.appletHash}
                   style="margin-right: 16px"
                 ></applet-logo>
                 <span style="flex: 1">${this.applet.custom_name}</span>
-
+                ${
+                  this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(this.appletHash)}`]
+                    ? html`<sl-button variant="success" @click=${() => this.updateUi()} title="Update Applet">Update</sl-button>`
+                    : html``
+                }
                 ${Array.from(this.federatedGroups.get(this.appletHash)!).map(
                   (groupDnaHash) => html`
                     <group-context .groupDnaHash=${groupDnaHash}>
