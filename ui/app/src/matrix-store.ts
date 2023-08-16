@@ -471,6 +471,7 @@ export class MatrixStore {
       [{ neighbourhoodInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
     );
 
+    // now that the applet instance renderers have been fetched and instantiated, add them to the AppletInstanceInfo 
     this._matrix.update((matrix) => {
       matrix.get(weGroupId)[1].find(
         (info) =>
@@ -1369,7 +1370,7 @@ export class MatrixStore {
         gui = await this.queryAppletGui(devhubHappReleaseHash);
       }
 
-      // register applet config and widgets on applet join
+      // register applet config and sensemaker dimension widgets on applet join
       console.log('register applet config and widgets', gui);
 
       const appletConfig = gui.appletConfig;
