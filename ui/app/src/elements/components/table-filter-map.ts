@@ -8,7 +8,7 @@ import {
 } from '@neighbourhoods/client';
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { AppInfo, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
@@ -16,12 +16,22 @@ import { FieldDefinition } from '@adaburrows/table-web-component';
 import { AssessmentTableRecord, AssessmentTableType, DimensionDict } from './helpers/types';
 import { generateHeaderHTML, cleanResourceNameForUI } from './helpers/functions';
 import { decode } from '@msgpack/msgpack';
+import { MatrixStore } from '../../matrix-store';
+import { matrixContext, weGroupContext } from '../../context';
 
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore!: SensemakerStore;
+
+  @contextProvided({ context: matrixContext, subscribe: true })
+  @state()
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext, subscribe: true })
+  weGroupId!: DnaHash;
+
   @property()
   private _allAssessments;
 
@@ -235,10 +245,13 @@ export class DashboardFilterMap extends LitElement {
   // Mapping
   mapAssessmentToAssessmentTableRecord(assessment: Assessment): AssessmentTableRecord {
     // Base record with basic fields
+    
+    // get the view from the matrix store
+    const resourceView = this._matrixStore.getResourceView(this.weGroupId, assessment.resource_def_eh);
     const baseRecord = {
       neighbour: encodeHashToBase64(assessment.author),
       resource: {
-        eh: encodeHashToBase64(assessment.resource_eh),
+        eh: [assessment.resource_eh, resourceView],
         value: [Object.values(assessment.value)[0], assessment],
       },
     } as AssessmentTableRecord;

@@ -2178,4 +2178,19 @@ export class MatrixStore {
       });
     });
   }
+  getResourceView(weGroupId: DnaHash, resourceDefEh: EntryHash) {
+    const groupSenseMakerStore = get(this.sensemakerStore(weGroupId));
+    const appletConfigs = get(groupSenseMakerStore!.appletConfigs());
+    // find the applet config that contains the resource definition eh
+    const [appletName, appletConfig] = Object.entries(appletConfigs).find(([appletName, appletConfig]) => {
+      const resourceDefs = Object.values(appletConfig.resource_defs);
+      return resourceDefs.find((resourceDefEhFromConfig) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh));
+    }
+    )!;
+    // return the appplet app info for the appletName
+    const appletInstanceInfo = get(this._matrix).get(weGroupId)[1].find((appletInstanceInfo) => appletInstanceInfo.appInfo.installed_app_id === appletName);
+    // get the resource def name given the resource def eh
+    const resourceDefName = Object.entries(appletConfig.resource_defs).find(([resourceDefName, resourceDefEhFromConfig]) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh))![0];
+    return appletInstanceInfo!.views!.resourceRenderers[resourceDefName];
+  }
 }

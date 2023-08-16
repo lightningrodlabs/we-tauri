@@ -69,7 +69,7 @@ export class StatefulTable extends NHComponentShoelace {
         decorator: (resource: any) => html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
-          ${generateHashHTML(resource.eh)}
+          ${typeof resource.eh[1] === 'function' ? resource.eh[1](html``, resource.eh[0]) : generateHashHTML(resource.eh[0])}
         </div>`,
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({
