@@ -29,62 +29,70 @@ export class RelatedGroups extends LitElement {
     () => [this._groupStore]
   );
 
-  renderGroups(relatedGroups: Array<EntryRecord<RelatedGroup>>) {
-    if (relatedGroups.length === 0) return html``;
+  render() {
 
-    return html` <div class="column" style="flex: 1">
-      <div class="row" style="align-items: center">
-        <span class="title" style="flex: 1">${msg("Related Groups")}</span>
+    return html`
+      <div class="column" style="flex: 1;">
+        <div class="row" style="align-items: center">
+          <span class="title" style="flex: 1">${msg("Related Groups")}</span>
+        </div>
+        <sl-divider style="--color: grey"></sl-divider>
+        ${this.renderContent()}
       </div>
-      <sl-divider style="--color: grey"></sl-divider>
-      <div class="row">
-        ${relatedGroups.map(
-          (relatedGroup) => html` <div
-            class="column"
-            style="align-items: center; cursor: pointer"
-            @click=${() =>
-              this.dispatchEvent(
-                new CustomEvent("open-group", {
-                  bubbles: true,
-                  composed: true,
-                  detail: {
-                    networkSeed: relatedGroup.entry.network_seed,
-                  },
-                })
-              )}
-          >
-            <img
-              src="${relatedGroup.entry.group_profile.logo_src}"
-              style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 8px"
-              alt="${relatedGroup.entry.group_profile.name}"
-            /><span>${relatedGroup.entry.group_profile.name}</span>
-          </div>`
-        )}
-      </div>
-    </div>`;
+    `;
   }
 
-  render() {
+  renderContent() {
     switch (this._relatedGroups.value?.status) {
       case "pending":
-        return html`<sl-skeleton
-          style="height: 48px; width: 48px;"
-        ></sl-skeleton>`;
+        return html`
+          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+        `;
       case "error":
-        return html`<display-error
-          .headline=${msg("Error fetching the applets installed in this group")}
-          .error=${this._relatedGroups.value.error}
-        ></display-error>`;
+        return html`
+          <display-error
+            .headline=${msg("Error fetching the applets installed in this group")}
+            .error=${this._relatedGroups.value.error}
+          ></display-error>
+        `;
       case "complete":
-        return this.renderGroups(this._relatedGroups.value.value);
+        return html`
+          <div class="row">
+          ${this._relatedGroups.value.value.map(
+            (relatedGroup) => html` <div
+              class="column"
+              style="align-items: center; cursor: pointer"
+              @click=${() =>
+                this.dispatchEvent(
+                  new CustomEvent("open-group", {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                      networkSeed: relatedGroup.entry.network_seed,
+                    },
+                  })
+                )}
+            >
+              <img
+                src="${relatedGroup.entry.group_profile.logo_src}"
+                style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 8px"
+                alt="${relatedGroup.entry.group_profile.name}"
+              /><span>${relatedGroup.entry.group_profile.name}</span>
+            </div>`
+          )}
+        </div>
+        `
     }
   }
 
   static styles = [
     weStyles,
     css`
-      :host {
-        display: contents;
+
+      .title {
+        font-size: 25px;
       }
     `,
   ];
