@@ -214,26 +214,6 @@ export class InstallAppletBundleDialog extends LitElement {
                   id="network-seed-field"
                   .label=${msg("Custom Network Seed")}
                   style="margin-bottom: 16px"
-                  ${ref((input) => {
-                    if (!input) return;
-                    setTimeout(() => {
-                      if (allAppletsNames.includes(this._appletInfo!.content.title)) {
-                        (input as HTMLInputElement).setCustomValidity(
-                          "Name already exists"
-                        );
-                      } else {
-                        (input as HTMLInputElement).setCustomValidity("");
-                      }
-                    });
-                  })}
-                  @input=${(e) => {
-                    if (allAppletsNames.includes(e.target.value)) {
-                      e.target.setCustomValidity("Name already exists");
-                    } else {
-                      e.target.setCustomValidity("");
-                    }
-                  }}
-                  .defaultValue=${this._appletInfo!.content.title}
                 ></sl-input>
               ` : html``
           }
