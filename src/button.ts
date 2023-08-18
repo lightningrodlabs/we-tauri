@@ -2,6 +2,7 @@ import { css, CSSResult, html } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from "./ancestors/base";
+import { SlSpinner } from "@scoped-elements/shoelace";
 
 export class NHButton extends NHComponent {
   @property()
@@ -10,6 +11,8 @@ export class NHButton extends NHComponent {
   iconImageB64!: string;
   @property()
   disabled: boolean = false;
+  @property()
+  loading: boolean = false;
   @property()
   theme: string = "dark";
   @property()
@@ -21,8 +24,8 @@ export class NHButton extends NHComponent {
     | "neutral"
     | "warning"
     | "danger" =  "neutral";
-    @property()
-    clickHandler!: () => void;
+  @property()
+  clickHandler!: () => void;
   
     render() {
       return html`
@@ -38,13 +41,22 @@ export class NHButton extends NHComponent {
             [this.size]: !!this.size
           })}"
         >
-          <div class="button-inner">
-            ${this.iconImageB64
-              ? html`<img alt="button icon" src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
-              : null}<span>${this.label}</span>
-          </div>
+        ${this.loading
+          ?  html`<div class="button-inner" style="position: relative; cursor: wait;"><span style="opacity: 0;">${this.label}</span><sl-spinner style="position: absolute; left: calc(50% - 0.75rem); font-size: 1.5rem; --track-width: 3px; --track-color: var(--nh-theme-accent-default); --indicator-color: var(--nh-theme-accent-subtle);"></sl-spinner></div>`
+          :  html`<div class="button-inner">
+          ${this.iconImageB64
+            ? html`<img alt="button icon" src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
+            : null}<span>${this.label}</span>
+        </div>`
+        }
         </button>
       `;
+    }
+
+    static get elementDefinitions() {
+      return {
+        "sl-spinner": SlSpinner,
+      };
     }
   
     static styles: CSSResult[] = [
@@ -61,12 +73,16 @@ export class NHButton extends NHComponent {
           border: 1px solid transparent;
           cursor: pointer;
         }
-        button.icon {
+        button.icon, button.icon-sm {
           background-color: var(--nh-theme-bg-neutral);
           width: 45px;
           height: 45px;
           padding: 0;
           border: 0;
+        }
+        button.icon-sm { 
+          width: 24px;
+          height: 24px;
         }
         button.primary {
           background-color: var(--nh-theme-accent-default);
@@ -107,16 +123,21 @@ export class NHButton extends NHComponent {
           height: 32px;
           width: 32px;
         }
+        button.icon-sm .button-inner img {
+          width: 16px;
+          height: 16px;
+        }
         button.primary.icon img {
           height: 70%;
           width: 40px;
         }
         
-        button.icon .button-inner {
+        button.icon .button-inner, button.icon-sm .button-inner {
           display: grid;
           gap: 0;
           height: 100%;
           place-content: center;
+          cursor: pointer;
         }
         button:focus {
           border: 1px solid var(--nh-theme-accent-default);
