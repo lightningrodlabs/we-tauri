@@ -1,5 +1,5 @@
 import { css, CSSResult, html } from "lit";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import "../card";
 import { NHCard } from "../card";
 import { NHButton } from "../button";
@@ -7,16 +7,23 @@ import { NHComponentShoelace } from "../ancestors/base";
 
 export class NHProfileCard extends NHComponentShoelace {
   @property()
+  agentAvatarSrc!: string;
+  @property()
   agentName!: string;
   @property()
   agentHashB64!: string;
+  @query(".hash-container")
+  hashContainer!: HTMLElement;
+
+  // @query('#copied-snackbar')
+  // _copiedSnackbar!: HTMLElement; TODO implement this
 
   renderHash(hash: string) {
     return html`
       <div
         class="hash-container"
         style="color: var(--nh-theme-fg-default);
-        border: 1px solid var(--nh-menu-subtitle);
+        border: 1px solid var(--nh-theme-bg-detail);
         border-radius: calc(1px * var(--nh-radii-sm));
         font-family: var(--nh-font-families-body);
         font-size: calc(1px * var(--nh-font-size-sm));
@@ -24,8 +31,6 @@ export class NHProfileCard extends NHComponentShoelace {
         overflow: hidden;
         white-space: nowrap;
         padding: calc(1px * var(--nh-spacing-xs));
-        margin-top: calc(1px * var(--nh-spacing-sm));
-        margin-right: calc(1px * var(--nh-spacing-3xl));
         height: 1rem;
         min-width: 4rem;
         text-overflow: ellipsis;"
@@ -45,7 +50,7 @@ export class NHProfileCard extends NHComponentShoelace {
         .textSize=${"md"}
       >
         <div class="card-header">
-          <img class="identicon" src="icons/profile.svg" alt="user identicon" />
+          <img class="identicon" src=${this.agentAvatarSrc || "icons/profile.svg"} alt="user identicon" />
           </div>
           <div class="content">
           <nh-card
@@ -59,18 +64,22 @@ export class NHProfileCard extends NHComponentShoelace {
             >
             <hr />
             <h3 style="margin-top: calc(1px * var(--nh-spacing-lg));">HOLOCHAIN AGENT HASH</h3>
-            <div style="display: flex">
+            <div class="hash-flex">
             ${this.renderHash(this.agentHashB64)}
               <nh-button
                 .variant=${"primary"}
-                .size=${"icon"}
+                .size=${"icon-sm"}
                 .iconImageB64=${"PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyMSAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMSIgeT0iNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iNiIgeT0iMSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgZmlsbD0iIzI2MUYyQiIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cg=="}
+                .clickHandler=${() => {
+                  navigator.clipboard.writeText((this.hashContainer.textContent as string)?.trim());
+              }}
               >
                 <img class="copy-hash" src="icons/copy.svg" alt="user identicon" />
               </nh-button>       
             </div>
           </nh-card>
         </div>
+        <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
         <slot slot="footer" name="footer"></slot>
       </nh-card>
     `;
@@ -114,6 +123,13 @@ export class NHProfileCard extends NHComponentShoelace {
       }
       .identicon {
         height: 180%;
+        border-radius: 3rem;
+      }
+      .hash-flex {
+        display: flex;
+        align-items: center;
+        gap: calc(1px * var(--nh-spacing-xs));
+        margin-top: calc(1px * var(--nh-spacing-sm));
       }
       .card-header {
         padding-top: 23px;
