@@ -2,11 +2,6 @@ import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { localized, msg } from "@lit/localize";
-import { DnaHash } from "@holochain/client";
-import { CloneDnaRecipe } from "@holochain-open-dev/membrane-invitations";
-import { EntryRecord, mapValues } from "@holochain-open-dev/utils";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { decode } from "@msgpack/msgpack";
 import { consume } from "@lit-labs/context";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -15,7 +10,6 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { groupStoreContext } from "../context.js";
 import { GroupStore } from "../group-store.js";
 import { weStyles } from "../../shared-styles.js";
-import { RelatedGroup } from "../types.js";
 
 @localized()
 @customElement("related-groups")
@@ -46,9 +40,11 @@ export class RelatedGroups extends LitElement {
     switch (this._relatedGroups.value?.status) {
       case "pending":
         return html`
-          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
-          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
-          <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          <div class="row">
+            <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+            <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+            <sl-skeleton effect="pulse" style="height: 64px; width: 64px; margin-right: 25px; --border-radius: 50%; --color: var(--sl-color-primary-400);"></sl-skeleton>
+          </div>
         `;
       case "error":
         return html`
