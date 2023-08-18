@@ -32,7 +32,14 @@ export class WithProfile extends NHComponent {
     this.refreshed = false;
     switch (true) {
       case this.component == "card":
-        return this._selectedNeighbourhoodProfile.value.status != "complete" ? html`<div style="width: 4rem; height: 4rem; background: pink">LOADING PLACEHOLDER</div>` : html`<slot><nh-profile-card .agentAvatarSrc=${(this._selectedNeighbourhoodProfile.value as any).value.fields.avatar} .agentName=${(this._selectedNeighbourhoodProfile.value as any).value.nickname} .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}></nh-profile-card></slot>`;
+        return this._selectedNeighbourhoodProfile.value.status != "complete" 
+          ? html`<div style="width: 4rem; height: 4rem; background: pink">LOADING PLACEHOLDER</div>` 
+          : html`<slot><nh-profile-card
+                        .agentAvatarSrc=${(this._selectedNeighbourhoodProfile.value as any).value?.fields?.avatar} 
+                        .agentName=${(this._selectedNeighbourhoodProfile.value as any).value.nickname} 
+                        .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}>
+                      </nh-profile-card>
+                </slot>`;
       case this.component == "prompt":
         return (get((this._profilesStore.value as any).myProfile) as any).value
           ? html`<slot name="content"></slot>`
