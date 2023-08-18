@@ -219,8 +219,16 @@ export class WeStore {
     sliceAndJoin(this.groups, groupsDnaHahes)
   );
 
-  allInstalledApplets = pipe(
-    this.appletBundlesStore.installedApplets,
+  // allInstalledApplets = pipe(
+  //   this.appletBundlesStore.installedApplets,
+  //   (appletsHashes) =>
+  //     sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
+  //       ReadonlyMap<EntryHash, AppletStore>
+  //     >
+  // );
+
+  allRunningApplets = pipe(
+    this.appletBundlesStore.runningApplets,
     (appletsHashes) =>
       sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
@@ -236,7 +244,7 @@ export class WeStore {
       this.allGroups,
       (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
       (appletsByGroup) => {
-        console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
+        // console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
         const groupDnaHashes = Array.from(appletsByGroup.entries())
           .filter(([_groupDnaHash, appletsHashes]) =>
             appletsHashes.find(
@@ -245,11 +253,11 @@ export class WeStore {
           )
           .map(([groupDnaHash, _]) => groupDnaHash);
 
-        console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
-        console.log("groupDnaHashes: ", groupDnaHashes);
+        // console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
+        // console.log("groupDnaHashes: ", groupDnaHashes);
 
         if (groupDnaHashes.length === 0) {
-          console.log("//////// Disabling applet with hash: ", encodeHashToBase64(appletHash));
+          // console.log("//////// Disabling applet with hash: ", encodeHashToBase64(appletHash));
           this.appletBundlesStore.disableApplet(appletHash);
         }
 
@@ -328,11 +336,11 @@ export class WeStore {
       appletBundleHash: ActionHash // action hash of the AppEntry in the app store
     ) =>
       pipe(
-        this.allInstalledApplets,
-        (installedApplets) =>
+        this.allRunningApplets,
+        (runningApplets) =>
           completed(
             pickBy(
-              installedApplets,
+              runningApplets,
               (appletStore) =>
                 appletStore.applet.appstore_app_hash.toString() ===
                 appletBundleHash.toString()
@@ -362,7 +370,7 @@ export class WeStore {
       )
   );
 
-  allAppletsHosts = pipe(this.allInstalledApplets, (applets) =>
+  allAppletsHosts = pipe(this.allRunningApplets, (applets) =>
     mapAndJoin(applets, (appletStore) => appletStore.host)
   );
 
@@ -370,12 +378,11 @@ export class WeStore {
     Record<EntryHashB64, Record<string, InternalAttachmentType>>
   > = alwaysSubscribed(
     pipe(
-      this.allInstalledApplets,
-      (installedApplets) =>
-        mapAndJoin(
-          installedApplets,
+      this.allRunningApplets,
+      (runningApplets) => mapAndJoin(
+          runningApplets,
           (appletStore) => appletStore.attachmentTypes
-        ),
+      ),
       (allAttachmentTypes) => {
         const attachments: Record<
           EntryHashB64,
