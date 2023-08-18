@@ -1,5 +1,5 @@
 import { css, CSSResult, html } from 'lit';
-import { customElement, query, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { NHButton, NHCard, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { contextProvided } from '@lit-labs/context';
 import { Profile, ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
@@ -15,12 +15,12 @@ isDataURL.regex = /^\s*data:([a-z]+\/[a-z0-9\-\+]+(;[a-z\-]+\=[a-z0-9\-]+)?)?(;b
 
 @customElement('nh-create-profile')
 export class NHCreateProfile extends NHComponentShoelace {
-  @contextProvided({ context: profilesStoreContext, subscribe: true })
-  _profilesStore!: ProfilesStore;
+  @property()
+  profilesStore;
 
   _myProfile = new StoreSubscriber(
     this,
-    () => this._profilesStore.myProfile,
+    () => this.profilesStore.myProfile,
     () => [],
   );
 
@@ -77,7 +77,7 @@ export class NHCreateProfile extends NHComponentShoelace {
           avatar: profile.image || ''
         }
       }
-      await this._profilesStore.client.createProfile(payload);
+      await this.profilesStore!.value.client.createProfile(payload);
       this.dispatchEvent(
         new CustomEvent('profile-created', {
           detail: {
@@ -86,8 +86,8 @@ export class NHCreateProfile extends NHComponentShoelace {
           bubbles: true,
           composed: true,
         }),
-      );
-      await this._profilesStore.myProfile.reload();
+        );
+        await this.profilesStore!.value.myProfile.reload();
     } catch (e) {
       console.error(e);
     }

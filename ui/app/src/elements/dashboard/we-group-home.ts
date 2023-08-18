@@ -1,7 +1,6 @@
 import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-// import { NHProfile } from "../components/profile/nh-profile";
 import { NHProfilePrompt } from "../components/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
@@ -22,6 +21,7 @@ import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton, NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
+import { WithProfile } from "../components/profile/with-profile";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -276,46 +276,43 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         </div>
         `,
       complete: (info) => { return html`
-          <nh-profile-prompt>
-            <div slot="hero">
-              <div>
-                <div class="column center-content">
-                  <img
-                    class="we-logo"
-                    style="margin-top: 30px;"
-                    src=${info.logoSrc!}
-                  />
-                  <div
-                    style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
-                  >
-                    ${info.name}
+            <with-profile .component=${"prompt"} .weGroupId=${this.weGroupId} style="display: flex; flex: 1;">
+                <div slot="hero">
+                  <div class="column center-content">
+                    <img
+                      class="we-logo"
+                      style="margin-top: 30px;"
+                      src=${info.logoSrc!}
+                    />
+                    <div
+                      style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
+                    >
+                      ${info.name}
+                    </div>
+                    <div
+                      style="margin: calc(1px * var(--nh-spacing-md)); margin-top: calc(1px * var(--nh-spacing-sm)); font-size: calc(1px * var(--nh-font-size-lg))"
+                    >
+                      How would you like to appear in this neighbourhood?
+                    </div>
                   </div>
-                  <div
-                    style="margin: calc(1px * var(--nh-spacing-md)); margin-top: calc(1px * var(--nh-spacing-sm)); font-size: calc(1px * var(--nh-font-size-lg))"
-                  >
-                    How would you like to appear in this neighbourhood?
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div slot="info">
-              ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-              ${this.renderSuccessSnackbar()}
-            </div>
-            <div slot="content" class="profile-prompt-content">
-              ${this.renderContent()}
-            </div>
-            
-            </nh-profile-prompt>
+                            </div>
+                
+                            <div slot="info">
+                ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
+                ${this.renderSuccessSnackbar()}
+                            </div>
+                            <div slot="content" style="display: flex; flex: 1;">
+                ${this.renderContent()}
+                            </div>
+            </with-profile>
         `}
     })
   }
 
   static get scopedElements() {
     return {
+      'with-profile': WithProfile,
       "nh-profile-prompt": NHProfilePrompt,
-      // "nh-profile": NHProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
