@@ -1,5 +1,6 @@
 import { html, css, TemplateResult } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
+import { ref } from "lit/directives/ref.js";
 
 import {
   FieldDefinitions,
@@ -68,8 +69,8 @@ export class StatefulTable extends NHComponentShoelace {
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+          ${typeof resource.eh[1] === 'function' ? ref((e) => resource.eh[1](e as HTMLElement, resource.eh[0])) : null}
         >
-          ${typeof resource.eh[1] === 'function' ? resource.eh[1](html``, resource.eh[0]) : generateHashHTML(resource.eh[0])}
         </div>`,
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({

@@ -19,8 +19,9 @@ export interface AppletBlock {
 }
 
 export type ResourceView = (
+  element: HTMLElement,
   resourceIdentifier: EntryHash,
-) => any;
+) => void;
 
 export interface AppletRenderers {
   full: Renderer;
