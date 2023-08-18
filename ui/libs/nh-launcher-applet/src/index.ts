@@ -6,7 +6,7 @@ import {
   AppAgentClient,
   EntryHash,
 } from "@holochain/client";
-import { AppletConfig, AppletConfigInput, CreateAppletConfigInput, SensemakerStore } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, AssessDimensionWidget, CreateAppletConfigInput, DisplayDimensionWidget, SensemakerStore } from "@neighbourhoods/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
@@ -19,9 +19,8 @@ export interface AppletBlock {
 }
 
 export type ResourceView = (
-  rootElement: HTMLElement,
-  resourceHash: EntryHash,
-) => void;
+  resourceIdentifier: EntryHash,
+) => any;
 
 export interface AppletRenderers {
   full: Renderer;
@@ -43,8 +42,8 @@ export interface NeighbourhoodApplet {
   ) => Promise<AppletRenderers>;
   appletConfig: CreateAppletConfigInput;
   widgetPairs: {
-    assess: any,
-    display: any,
+    assess: AssessDimensionWidget,
+    display: DisplayDimensionWidget,
     compatibleDimensions: string[],
   }[]
 }
