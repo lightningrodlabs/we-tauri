@@ -15,7 +15,7 @@ import { sharedStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
-import { NHCard } from "./nh/layout/card";
+import { NHCard } from "@neighbourhoods/design-system-components";
 
 export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -65,8 +65,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
         labelText="Error. Public key may be invalid."
       ></mwc-snackbar>
 
-      <nh-card heading=${"Invite New Member"} style="width: 440px;">
-        <div style="margin: 20px;">
+      <nh-card .theme=${"light"} .heading=${"Invite New Member"} .textSize=${"md"}>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
               label="Public Key"
@@ -90,7 +89,6 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
           >
             ask a friend to send you their public key
           </div>
-        </div>
       </nh-card>
     `;
   }

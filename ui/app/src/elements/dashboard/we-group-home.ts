@@ -1,8 +1,8 @@
 import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NHProfile } from "../components/nh/profile/nh-profile";
-import { NHProfilePrompt } from "../components/nh/profile/nh-profile-prompt";
+// import { NHProfile } from "../components/profile/nh-profile";
+import { NHProfilePrompt } from "../components/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -19,9 +19,9 @@ import { InvitationsBlock } from "../components/invitations-block";
 import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 import { AppletNotInstalled } from "./applet-not-installed";
 import { WeGroupSettings } from "./we-group-settings";
-import { NHCard } from "../components/nh/layout/card";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
-import { NHDialog } from "../components/nh/layout/dialog";
+import { b64images } from "@neighbourhoods/design-system-styles";
+import { NHButton, NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -158,21 +158,27 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       <div class="flex-scrollable-parent">
       <slot name="applet-config"></slot>
         <div class="flex-scrollable-container">
-          <div class="flex-scrollable-y" style="display: flex; height: 100%;">
+          <div class="flex-scrollable-y" style="display: flex; height: 100%; padding: calc(1px * var(--nh-spacing-xl)); box-sizing: border-box">
             ${this._showLibrary
               ? html`
-                <div class="column" style="flex: 1; margin: 24px; position: relative">
-                  <sl-tooltip placement="right" content="Close Settings" hoist>
-                    <mwc-icon-button class="back-home" @click=${() => this._showLibrary = false} icon="arrow_back"></mwc-icon-button>
-                  </sl-tooltip>
+                <div class="column" style="display:grid;grid-template-rows: auto 1fr; width: 100%;">
+                  <nh-page-header-card
+                  .heading=${"Applet Library"}
+                  >
+                    <img
+                      src="data:image/svg+xml;base64,${b64images.icons.backCaret}"
+                      slot="secondary-action"
+                      @click=${() => this._showLibrary = false}
+                    />
+                    <nh-button
+                      .label=${"Upload Applet File"}
+                      .variant=${"primary"}
+                      .size=${"md"}
+                      .clickHandler=${() => this._installFromFsDialog.open()}
+                      slot="primary-action"
+                    ></nh-button>
+                  </nh-page-header-card>
 
-                  <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                      <mwc-button raised style="width: 250px;" label="Install Applet from Filesystem" @click=${() => this._installFromFsDialog.open()}></mwc-button>
-                  </div>
-
-                  <div class="row center-content" style="margin-top: 10px;"><h2>Applet Library</h2></div>
-
-                  <hr style="width: 100%" />
                   <installable-applets></installable-applets>
 
                   <install-from-fs-dialog id="install-from-fs-dialog"></install-from-fs-dialog>
@@ -197,10 +203,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                         </div>
                       </div>
 
-                      <div class="column center-content" style="margin-left: 30px; width: 50%; display:flex; flex-direction: column;">
-                        <invitations-block style="margin: 10px; display:flex;"></invitations-block>
+                      <div class="column center-content" style="margin-left: calc(1px * var(--nh-spacing-lg)); width: 50%; display:flex; flex-direction: column;">
+                        <invitations-block style="margin-bottom: calc(1px * var(--nh-spacing-lg)); display:flex;"></invitations-block>
 
-                        <nh-card heading="Initiate New Applet Instance" style="width: 440px;">
+                        <nh-card .theme=${"light"} .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
                           <div style="margin: 20px;">
                             <div style="margin-top: 10px;">
                               Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
@@ -210,8 +216,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                             </div>
                           </div>
                         </nh-card>
-
-
                       </div>
                     </div>
 
@@ -311,7 +315,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
   static get scopedElements() {
     return {
       "nh-profile-prompt": NHProfilePrompt,
-      "nh-profile": NHProfile,
+      // "nh-profile": NHProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
@@ -324,6 +328,8 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "mwc-icon-button-toggle": IconButtonToggle,
       "mwc-linear-progress": LinearProgress,
       // "list-agents-by-status": ListAgentsByStatus,
+      'nh-page-header-card': NHPageHeaderCard,
+      'nh-button': NHButton,
       "mwc-snackbar": Snackbar,
       "install-from-fs-dialog": InstallFromFsDialog,
       "we-group-settings": WeGroupSettings,

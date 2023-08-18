@@ -1,15 +1,13 @@
 import { css, CSSResult, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHCard, NHComponentShoelace, NHSlide } from '@neighbourhoods/design-system-components';
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';
 import { get } from 'svelte/store';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
-import { NHDimensionSlide } from '../components/nh/layout/dimension-slide';
 import { classMap } from 'lit/directives/class-map.js';
-import { NHCard } from '../components/nh/layout/card';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
   @property()
@@ -66,7 +64,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], currentResourceDefEh: any) {
     return html`<div class="container">
       <div style="display:flex; gap: 8px; flex-direction: column;">
-        <nh-card title=${'PREVIEW WITH POST'}>
+        <nh-card .theme=${"light"} title=${'PREVIEW WITH POST'}>
           <div class="preview-container">
             <img src="post-example.png" style="width: 100%; object-fit: cover" />
             ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
@@ -76,8 +74,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       ${dimensionNames.map(
         (dimension, i) => html`
           <nh-card
-            title="Assessment"
-            heading=${'Dimension: ' + dimension}
+            .title=${"Assessment"}
+            .heading=${'Dimension: ' + dimension}
             class="widget-card ${classMap({
               active: i == this.selectedDimensionIndex,
             })}"
@@ -221,7 +219,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     return {
       'sl-tooltip': SlTooltip,
       'sl-button': SlButton,
-      'nh-dimension-slide': NHDimensionSlide,
+      'nh-dimension-slide': NHSlide,
       'nh-card': NHCard,
     };
   }

@@ -9,7 +9,7 @@ import {
 } from '@adaburrows/table-web-component';
 
 import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 

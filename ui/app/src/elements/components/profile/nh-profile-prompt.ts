@@ -1,6 +1,6 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import '@holochain-open-dev/profiles/dist/elements/profile-prompt.js';
 import { contextProvided } from '@lit-labs/context';
 import { ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';

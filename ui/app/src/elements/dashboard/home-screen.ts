@@ -11,7 +11,7 @@ import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
 import { query } from "lit/decorators.js";
-import { NHComponentShoelace } from 'neighbourhoods-design-system-components';
+import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
 import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
