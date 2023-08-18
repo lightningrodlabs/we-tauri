@@ -95,12 +95,12 @@ export async function joinGroup(
           new Uint8Array(cell[CellType.Cloned].cell_id[1]),
         ];
       }
-      if (CellType.Stem in cell) {
-        cell[CellType.Stem].cell_id = [
-          new Uint8Array(cell[CellType.Stem].cell_id[0]),
-          new Uint8Array(cell[CellType.Stem].cell_id[1]),
-        ];
-      }
+      // if (CellType.Stem in cell) {
+      //   cell[CellType.Stem].cell_id = [
+      //     new Uint8Array(cell[CellType.Stem].cell_id[0]),
+      //     new Uint8Array(cell[CellType.Stem].cell_id[1]),
+      //   ];
+      // }
     }
   }
 
@@ -220,7 +220,7 @@ export const signZomeCallTauri = async (request: CallZomeRequest) => {
     zome_name: request.zome_name,
     fn_name: request.fn_name,
     payload: Array.from(encode(request.payload)),
-    nonce: Array.from(randomNonce()),
+    nonce: Array.from(await randomNonce()),
     expires_at: getNonceExpiration(),
   };
 

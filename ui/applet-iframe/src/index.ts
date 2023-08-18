@@ -88,7 +88,7 @@ window.onload = async () => {
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
 
   const appletClient = await AppAgentWebsocket.connect(
-    `ws://localhost:${appPort}`,
+    new URL(`ws://localhost:${appPort}`),
     installedAppId
   );
 
