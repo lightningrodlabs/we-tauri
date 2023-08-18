@@ -1,6 +1,6 @@
 import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
-import { encodeHashToBase64, DnaHash, AnyDhtHash, EntryHash } from "@holochain/client";
+import { encodeHashToBase64, DnaHash, AnyDhtHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import {

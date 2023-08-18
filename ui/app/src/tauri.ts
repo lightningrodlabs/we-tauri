@@ -6,11 +6,11 @@ import {
   CellType,
   InstalledAppId,
   encodeHashToBase64,
+  randomNonce,
+  CallZomeRequest,
+  getNonceExpiration,
+  CallZomeRequestSigned,
 } from "@holochain/client";
-import { randomNonce } from "@holochain/client";
-import { CallZomeRequest } from "@holochain/client";
-import { getNonceExpiration } from "@holochain/client";
-import { CallZomeRequestSigned } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
 import { WeNotification } from "@lightningrodlabs/we-applet";

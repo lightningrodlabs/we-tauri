@@ -63,10 +63,10 @@ export class GrapesEditor extends LitElement {
       storageManager: false,
       plugins: [plugin, blocksBasic, tabs],
       pluginsOpts: {
-        [plugin]: {
+        plugin: {
           blocks: [],
         },
-        [blocksBasic]: {
+        blocksBasic: {
           blocks: [
             "column1",
             "column2",

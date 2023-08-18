@@ -1,8 +1,7 @@
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
-import { asyncDerived, get, StoreSubscriber } from "@holochain-open-dev/stores";
-import { encodeHashToBase64 } from "@holochain/client";
+import { StoreSubscriber } from "@holochain-open-dev/stores";
 
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import { groupStoreContext } from "../groups/context.js";

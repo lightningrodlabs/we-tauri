@@ -43,7 +43,7 @@ import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
-import { ResourceLocator, ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
+import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
 

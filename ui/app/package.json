@@ -9,7 +9,7 @@
   "dependencies": {
     "@fontsource/aileron": "^5.0.5",
     "@holochain-open-dev/elements": "^0.7.0",
-    "@holochain-open-dev/peer-status": "^0.9.0",
+    "@holochain-open-dev/peer-status": "^0.9.1",
     "@holochain-open-dev/profiles": "^0.16.0",
     "@holochain-open-dev/stores": "^0.6.0",
     "@holochain-open-dev/utils": "^0.15.0",
