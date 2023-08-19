@@ -25,7 +25,7 @@ export class NHCreateProfile extends NHComponentShoelace {
   );
 
   userSchema = object({
-    nickname: string().length(3, "Must be at least 3 characters").required(),
+    nickname: string().min(3, "Must be at least 3 characters").required(),
     image: string().matches(
       isDataURL.regex,
       'Must be a valid image data URI',
