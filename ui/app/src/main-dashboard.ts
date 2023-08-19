@@ -112,6 +112,12 @@ export class MainDashboard extends NHComponentShoelace {
   @state()
   userProfileMenuVisible: boolean = false;
 
+  async refreshProfileCard() {
+    await this._withProfile._profilesStore.value.myProfile.reload();
+    this._withProfile.refreshed = true;
+    await this._withProfile.requestUpdate();
+  }
+
   toggleUserMenu () {
     this.userProfileMenuVisible = !this.userProfileMenuVisible;
     (this.renderRoot.querySelector(".user-profile-menu .context-menu") as HTMLElement).dataset.open = 'true';
@@ -239,7 +245,7 @@ export class MainDashboard extends NHComponentShoelace {
           <we-group-home
             style="display: flex; flex: 1;"
             id="we-home"
-            @profile-created=${() => { this._withProfile.requestUpdate();}}
+            @profile-created=${this.refreshProfileCard}
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           >
           </we-group-home>
@@ -306,7 +312,7 @@ export class MainDashboard extends NHComponentShoelace {
   }
 
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
-    this._withProfile.refreshed = true;
+    this.refreshProfileCard();
 
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {

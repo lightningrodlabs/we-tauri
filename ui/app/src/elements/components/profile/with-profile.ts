@@ -2,7 +2,7 @@ import { css, CSSResult, html, PropertyValueMap } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { NHButton, NHCard, NHComponent, NHComponentShoelace, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { contextProvided } from '@lit-labs/context';
-import { get, StoreSubscriber } from '@holochain-open-dev/stores';
+import { deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext } from '../../../context';
 import { DnaHash, encodeHashToBase64 } from '@holochain/client';
@@ -26,17 +26,21 @@ export class WithProfile extends NHComponent {
 
   _profilesStore = new StoreSubscriber(this, () => this._matrixStore?.profilesStore(this.weGroupId as DnaHash));
 
-  _selectedNeighbourhoodProfile = new StoreSubscriber(this, () => this._profilesStore.value!.myProfile, () => [this.refreshed]);
+  _selectedNeighbourhoodProfile = new StoreSubscriber(this, () => deriveStore(this._matrixStore.profilesStore(this.weGroupId as DnaHash), store => store!.myProfile), () => [this.refreshed]);
 
   render() {
     this.refreshed = false;
     switch (true) {
       case this.component == "card":
         return this._selectedNeighbourhoodProfile.value.status != "complete" 
-          ? html`<div style="width: 4rem; height: 4rem; background: pink">LOADING PLACEHOLDER</div>` 
+          ? html`<slot><nh-profile-card
+          .loading=${true}
+          .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}>
+        </nh-profile-card>
+  </slot>` 
           : html`<slot><nh-profile-card
                         .agentAvatarSrc=${(this._selectedNeighbourhoodProfile.value as any).value?.fields?.avatar} 
-                        .agentName=${(this._selectedNeighbourhoodProfile.value as any).value.nickname} 
+                        .agentName=${(this._selectedNeighbourhoodProfile.value as any).value?.nickname || "No Profile Created"} 
                         .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}>
                       </nh-profile-card>
                 </slot>`;
