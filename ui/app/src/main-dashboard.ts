@@ -239,6 +239,7 @@ export class MainDashboard extends NHComponentShoelace {
           <we-group-home
             style="display: flex; flex: 1;"
             id="we-home"
+            @profile-created=${() => { this._withProfile.requestUpdate();}}
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           >
           </we-group-home>
@@ -306,6 +307,7 @@ export class MainDashboard extends NHComponentShoelace {
 
   handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
     this._withProfile.refreshed = true;
+
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
       this._selectedAppletInstanceId = undefined;
@@ -716,7 +718,6 @@ export class MainDashboard extends NHComponentShoelace {
 
   handleWeGroupAdded(e: CustomEvent) {
     !this._selectedWeGroupId && location.reload(); // TEMP DWEB WORKAROUND
-
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
