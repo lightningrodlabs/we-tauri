@@ -79,11 +79,10 @@ export class WithProfile extends NHComponent {
               ></nh-profile-prompt>`;
       case this.component == 'identicon':
         return html`<nh-profile-identicon
-          .agentAvatarSrc=${(this._selectedNeighbourhoodProfile.value as any).value?.fields?.avatar}
-          .agentName=${(this._selectedNeighbourhoodProfile.value as any).value?.nickname ||
-          'No Profile Created'}
-          .agentHashB64=${this.forAgentHash}
-          .profilesStore=${this._profilesStore}
+          .agentAvatarSrc=${typeof this.forAgentHash !== 'undefined' ? "none" :(this._selectedNeighbourhoodProfile.value as any).value?.fields?.avatar}
+          .agentName=${typeof this.forAgentHash !== 'undefined' ? "agent" : ((this._selectedNeighbourhoodProfile.value as any).value?.nickname ||
+          'No Profile Created')}
+          .agentHashB64=${typeof this.forAgentHash !== 'undefined' ? this.forAgentHash : encodeHashToBase64(this._matrixStore.myAgentPubKey)}
         ></nh-profile-identicon>`;
     }
   }
