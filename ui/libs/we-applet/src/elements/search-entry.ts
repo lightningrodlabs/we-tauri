@@ -156,6 +156,19 @@ export class SearchEntry extends LitElement implements FormField {
   @query("#dropdown")
   private dropdown!: SlDropdown;
 
+  focus() {
+    this._textField.focus();
+    this._textField.select();
+  }
+
+  firstUpdated() {
+    this._textField.addEventListener('keydown', event => {
+      if (event.key === ' ') {
+        event.stopPropagation();
+      }
+    })
+  }
+
   async search(filter: string): Promise<SearchResult> {
     const hrls = await this.services.search(filter);
 
