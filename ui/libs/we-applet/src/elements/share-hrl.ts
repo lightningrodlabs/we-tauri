@@ -33,7 +33,9 @@ export class ShareHrl extends LitElement {
         <sl-icon-button
           .src=${wrapPathInSvg(mdiShareVariant)}
           .label=${msg("Share")}
+          tabindex="0"
           @click=${() => this.copyHrl()}
+          @keypress.enter=${() => this.copyHrl()}
         ></sl-icon-button>
       </sl-tooltip>
     `;

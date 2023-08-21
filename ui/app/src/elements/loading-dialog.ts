@@ -27,6 +27,7 @@ export class LoadingDialog extends LitElement {
         @sl-request-close=${(e) => {
           e.preventDefault();
         }}
+        no-header
       >
         <div class="column center-content">
           <sl-spinner style="font-size: 30px;"></sl-spinner>
