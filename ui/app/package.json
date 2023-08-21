@@ -2,7 +2,7 @@
   "name": "we-alpha",
   "version": "0.3.0",
   "scripts": {
-    "start": "vite --clearScreen false --port 1420",
+    "start": "vite --force --clearScreen false --port 1420",
     "build": "vite build",
     "build:watch": "vite build -w"
   },
@@ -10,7 +10,7 @@
     "@fontsource/aileron": "^5.0.5",
     "@holochain-open-dev/elements": "^0.7.0",
     "@holochain-open-dev/peer-status": "^0.9.1",
-    "@holochain-open-dev/profiles": "^0.16.0",
+    "@holochain-open-dev/profiles": "^0.16.1",
     "@holochain-open-dev/stores": "^0.6.0",
     "@holochain-open-dev/utils": "^0.15.0",
     "@holochain/client": "^0.16.0",
