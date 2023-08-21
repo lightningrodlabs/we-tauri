@@ -315,6 +315,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                         ${contexts &&
                           contexts.map(
                             context =>
+                            this.context_ehs[context] ? 
                               html`<sl-tab
                                   panel="${context.toLowerCase()}" 
                                   class="dashboard-tab ${classMap({
@@ -326,7 +327,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
                                     this.loadingState = LoadingState.FirstRender;
                                     this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
                                   }}
-                                ><nh-tab-button>${context}</nh-tab-button></sl-tab-panel>`,
+                                ><nh-tab-button>${context}</nh-tab-button></sl-tab-panel>`
+                                : null,
                           )}
                       </div>
                     </nh-context-selector>
@@ -430,7 +432,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
       }
       .container main {
         flex-grow: 1;
-        height: 4rem;
         overflow-x: hidden;
         background: var(--nh-theme-bg-canvas);
         background: var(--nh-theme-bg-canvas);

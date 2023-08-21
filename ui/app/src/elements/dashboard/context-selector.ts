@@ -8,7 +8,6 @@ import { NHButton, NHButtonGroup } from '@neighbourhoods/design-system-component
 import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { get } from '@holochain-open-dev/stores';
 
-@customElement("context-selector")
 export class ContextSelector extends ScopedRegistryHost(LitElement) {
   @contextProvided({ context: sensemakerStoreContext })
   sensemakerStore!: SensemakerStore;

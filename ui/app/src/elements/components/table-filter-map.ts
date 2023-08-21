@@ -252,6 +252,7 @@ export class DashboardFilterMap extends LitElement {
   filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]): Assessment[] {
     return resourceAssessments.filter((assessment: Assessment) => {
       for (let method of filteringMethods) {
+        if(!this.selectedDimensions[method]) return true;
         if (
           encodeHashToBase64(this.selectedDimensions[method]) ==
           encodeHashToBase64(assessment.dimension_eh)
