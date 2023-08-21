@@ -4,6 +4,7 @@ import "../card";
 import { NHCard } from "../card";
 import { NHButton } from "../button";
 import { NHComponentShoelace } from "../ancestors/base";
+import { SlSkeleton } from "@scoped-elements/shoelace";
 
 export class NHProfileCard extends NHComponentShoelace {
   @property()
@@ -12,6 +13,8 @@ export class NHProfileCard extends NHComponentShoelace {
   agentName!: string;
   @property()
   agentHashB64!: string;
+  @property()
+  loading: boolean = false;
   @query(".hash-container")
   hashContainer!: HTMLElement;
 
@@ -53,31 +56,50 @@ export class NHProfileCard extends NHComponentShoelace {
           <img class="identicon" src=${this.agentAvatarSrc || "icons/profile.svg"} alt="user identicon" />
           </div>
           <div class="content">
-          <nh-card
-          class="nested-card"
-          .theme=${"dark"}
-          .heading=${this.agentName}
-          .hasContextMenu=${false}
-            .hasPrimaryAction=${true}
-            .textSize=${"sm"}
-            .footerAlign=${"c"}
+          ${this.loading 
+            ? html`<nh-card
+            class="nested-card"
+            .theme=${"dark"}
             >
+            <sl-skeleton
+                  effect="pulse"
+                  class="skeleton-part"
+                  style="width: ${60}%; height: 1rem; margin-bottom: 8px;" 
+                ></sl-skeleton>
             <hr />
-            <h3 style="margin-top: calc(1px * var(--nh-spacing-lg));">HOLOCHAIN AGENT HASH</h3>
-            <div class="hash-flex">
-            ${this.renderHash(this.agentHashB64)}
-              <nh-button
-                .variant=${"primary"}
-                .size=${"icon-sm"}
-                .iconImageB64=${"PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyMSAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMSIgeT0iNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iNiIgeT0iMSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgZmlsbD0iIzI2MUYyQiIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cg=="}
-                .clickHandler=${() => {
-                  navigator.clipboard.writeText((this.hashContainer.textContent as string)?.trim());
-              }}
-              >
-                <img class="copy-hash" src="icons/copy.svg" alt="user identicon" />
-              </nh-button>       
+            <div style="width: 100%; gap: 8px; margin-top: 8px; display: flex; flex-direction: column">
+              <sl-skeleton effect="pulse" class="skeleton-part" style="height: 1rem; width: 30%" ></sl-skeleton>
+              <sl-skeleton effect="pulse" class="skeleton-part" style="height: 1rem; width: 60%" ></sl-skeleton>
+              <sl-skeleton effect="pulse" class="skeleton-part" style="height: 1rem; width: 40%" ></sl-skeleton>
             </div>
-          </nh-card>
+            </nh-card>` 
+            : html`<nh-card
+            class="nested-card"
+            .theme=${"dark"}
+            .heading=${this.agentName}
+            .hasContextMenu=${false}
+              .hasPrimaryAction=${true}
+              .textSize=${"sm"}
+              .footerAlign=${"c"}
+              >
+              <hr />
+              <h3 style="margin-top: calc(1px * var(--nh-spacing-lg));">HOLOCHAIN AGENT HASH</h3>
+              <div class="hash-flex">
+              ${this.renderHash(this.agentHashB64)}
+                <nh-button
+                  .variant=${"primary"}
+                  .size=${"icon-sm"}
+                  .iconImageB64=${"PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyMSAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMSIgeT0iNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iNiIgeT0iMSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgZmlsbD0iIzI2MUYyQiIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cg=="}
+                  .clickHandler=${() => {
+                    navigator.clipboard.writeText((this.hashContainer.textContent as string)?.trim());
+                }}
+                >
+                  <img class="copy-hash" src="icons/copy.svg" alt="user identicon" />
+                </nh-button>       
+              </div>
+            </nh-card>`
+          }
+          
         </div>
         <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
         <slot slot="footer" name="footer"></slot>
@@ -89,6 +111,7 @@ export class NHProfileCard extends NHComponentShoelace {
     return {
       "nh-card": NHCard,
       "nh-button": NHButton,
+      'sl-skeleton': SlSkeleton,
     };
   }
 
@@ -136,6 +159,15 @@ export class NHProfileCard extends NHComponentShoelace {
         margin-left: calc(-1px * var(--nh-spacing-xl));
         padding-left: calc(1px * var(--nh-spacing-xl));
         box-sizing: border-box;
+      }
+      .skeleton-part {
+        --color: var(--nh-theme-bg-canvas);
+        --sheen-color: var(--nh-theme-bg-surface);
+      }
+      .skeleton-part::part(indicator) {
+        background-color: var(--nh-theme-bg-muted);
+        border-radius: calc(1px * var(--nh-radii-base));
+        opacity: 0.2;
       }
     `,
   ];
