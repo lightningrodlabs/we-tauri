@@ -175,7 +175,7 @@ export class MainDashboard extends NHComponentShoelace {
             </button>
           </sl-tooltip>
         </div>
-
+        <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));"> 
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
           ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
               <button class="applet-add" @click=${() => this._weHome.appletAdd()}></button>
@@ -202,6 +202,8 @@ export class MainDashboard extends NHComponentShoelace {
               }}
             ></button>
           </sl-tooltip>`}
+
+        </div>
       `;
 
       // show all groups that have the currently selected applet class installed in NavigationMode.AppletCentric
@@ -996,16 +998,6 @@ export class MainDashboard extends NHComponentShoelace {
         position: relative;
         border: transparent 1px solid;
       }
-      .dashboard-icon.with-emoji {
-        position: relative;
-      }
-      .dashboard-icon.with-emoji::after {
-        position: absolute;
-        content: '⚙️';
-        bottom: -2px;
-        right: -2px;
-        font-size: 1rem;
-      }
 
       #nh-logo::after,
       .group-add::before,
@@ -1035,7 +1027,7 @@ export class MainDashboard extends NHComponentShoelace {
       .applet-add::before,
       .dashboard-icon::before {
         transform: rotate(-90deg);
-        left: calc(-2px * var(--nh-spacing-lg) - 7px);
+        left: calc(-2px * var(--nh-spacing-lg) - 2px);
         bottom: 16px;
         margin: 0;
       }
@@ -1047,8 +1039,6 @@ export class MainDashboard extends NHComponentShoelace {
       }
       .dashboard-icon,
       .applet-add {
-        margin-left: calc(1px * var(--nh-spacing-lg));
-        margin-right: calc(1px * var(--nh-spacing-md));
         margin-top: 0;
         margin-bottom: 0;
       }
