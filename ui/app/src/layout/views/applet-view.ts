@@ -68,7 +68,7 @@ export class AppletViewEl extends LitElement {
           ReadonlyMap<DnaHash, GroupProfile | undefined>
         ]
       >,
-    () => [this.appletHash]
+    () => [this.appletHash, this.weStore]
   );
 
   firstUpdated() {

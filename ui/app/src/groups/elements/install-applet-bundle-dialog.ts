@@ -92,6 +92,12 @@ export class InstallAppletBundleDialog extends LitElement {
     });
   }
 
+  close() {
+    this.form.reset();
+    this._appletInfo = undefined;
+    this._appletDialog.hide();
+  }
+
   async firstUpdated() {
     this._unlisten = await listen("applet-install-progress", (event) => { this._installationProgress = event.payload as string });
     try {
@@ -137,6 +143,8 @@ export class InstallAppletBundleDialog extends LitElement {
         fields.network_seed ? fields.network_seed : undefined,
       );
       notify("Installation successful");
+
+      this.close();
 
       this.dispatchEvent(
         new CustomEvent("applet-installed", {
