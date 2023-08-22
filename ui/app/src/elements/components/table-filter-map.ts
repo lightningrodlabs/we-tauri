@@ -69,7 +69,7 @@ export class DashboardFilterMap extends LitElement {
 
     this._allAssessments = new StoreSubscriber(this, () =>
       this._sensemakerStore.resourceAssessments(),
-      () => [this._subjectiveDimensionNames,this._objectiveDimensionNames]
+      () => [this._subjectiveDimensionNames, this._objectiveDimensionNames]
     );
 
     this.setupAssessmentFilteringSubscription();
@@ -231,6 +231,7 @@ export class DashboardFilterMap extends LitElement {
         }
       })
     }
+    console.log('tripleFiltered || filteredByMethodType :>> ', tripleFiltered || filteredByMethodType);
     return tripleFiltered || filteredByMethodType;
   }
 

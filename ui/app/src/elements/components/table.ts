@@ -40,8 +40,11 @@ export class StatefulTable extends NHComponentShoelace {
       console.warn('No data or field definitions to create table.');
       return;
     }
-
-    this.tableStore.records = this.assessments;
+    
+    // The following lines removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
+    this.tableStore.records = this.contextFieldDefs && Object.entries(this.contextFieldDefs).length 
+      ? this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) 
+      : this.assessments;
   }
   async connectedCallback() {
     super.connectedCallback();
