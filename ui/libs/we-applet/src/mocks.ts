@@ -7,6 +7,7 @@ export const weServicesMock: WeServices = {
   attachmentTypes: new HoloHashMap<EntryHash, Record<string, AttachmentType>>(),
   entryInfo: async () => undefined,
   groupProfile: async () => undefined,
+  hrlToClipboard: async () => undefined,
   openViews: {
     openAppletMain: () => {},
     openAppletBlock: () => {},
@@ -15,5 +16,6 @@ export const weServicesMock: WeServices = {
     openHrl: () => {},
   },
   search: async () => [],
+  userSelectHrl: async () => undefined,
   notifyWe: async () => console.log("Sending mock notification.")
 };

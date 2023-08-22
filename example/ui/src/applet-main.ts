@@ -6,7 +6,7 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
-import { WeNotification } from "@lightningrodlabs/we-applet";
+import { HrlWithContext, WeNotification, WeServices } from "@lightningrodlabs/we-applet";
 import { AppAgentClient } from "@holochain/client";
 
 @localized()
@@ -16,11 +16,17 @@ export class AppletMain extends LitElement {
   @property()
   client!: AppAgentClient;
 
+  @property()
+  weServices!: WeServices;
+
   @state()
   mediumInterval: number | null = null;
 
   @state()
   highInterval: number | null = null;
+
+  @state()
+  selectedHrl: HrlWithContext | undefined = undefined;
 
   @state()
   unsubscribe: undefined | (() => void);
@@ -85,6 +91,11 @@ export class AppletMain extends LitElement {
     }, delay);
   }
 
+  async userSelectHrl() {
+    const selectedHrl = await this.weServices.userSelectHrl();
+    this.selectedHrl = selectedHrl;
+  }
+
   render() {
     return html`
       <div class="column">
@@ -101,7 +112,11 @@ export class AppletMain extends LitElement {
           ></all-posts>
         </div>
 
+
         <div class="column center-content" style="margin-top: 50px;">
+          <button @click=${() => this.userSelectHrl()}>Select HRL</button>
+          ${this.selectedHrl ? html`<div>User selected HRL: ${JSON.stringify(this.selectedHrl)}</div>` : html``}
+
           <button @click=${() => this.sendLowNotification(0)}>Send Low Urgency Notification</button>
           <button @click=${() => this.sendMediumNotification(0)}>Send Medium Urgency Notification</button>
           <button @click=${() => this.sendUrgentNotification(0)}>Send High Urgency Notification</button>

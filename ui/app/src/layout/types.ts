@@ -1,5 +1,5 @@
 import { ActionHash, EntryHash } from "@holochain/client";
-import { Hrl } from "@lightningrodlabs/we-applet";
+import { Hrl, HrlWithContext } from "@lightningrodlabs/we-applet";
 
 export interface AppOpenViews {
   openAppletMain(appletHash: EntryHash): void;
@@ -11,4 +11,5 @@ export interface AppOpenViews {
     context: any
   ): void;
   openHrl(hrl: Hrl, context: any): void;
+  userSelectHrl(): Promise<HrlWithContext>;
 }

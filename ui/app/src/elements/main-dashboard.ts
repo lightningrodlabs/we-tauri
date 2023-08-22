@@ -17,12 +17,15 @@ import { msg } from "@lit/localize";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
+import { SearchEntry } from "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
 
 import "./groups-sidebar.js";
 import "./group-applets-sidebar.js";
 import "./join-group-dialog.js";
+import "./search-bar.js";
 import "../layout/dynamic-layout.js";
 import "../layout/views/applet-main.js";
 import { DynamicLayout } from "../layout/dynamic-layout.js";
@@ -35,6 +38,9 @@ import { weLogoIcon } from "../icons/we-logo-icon.js";
 import { buildHeadlessWeServices } from "../applets/applet-host.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
+import "./clipboard.js";
+import { WeClipboard } from "./clipboard.js";
+
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
   @consume({ context: weStoreContext })
@@ -43,6 +49,12 @@ export class MainDashboard extends LitElement {
 
   @query("join-group-dialog")
   joinGroupDialog!: JoinGroupDialog;
+
+  @query("#clipboard")
+  _clipboard!: WeClipboard;
+
+  @state()
+  showClipboard: boolean = false;
 
   @state(hashState())
   selectedGroupDnaHash: DnaHash | undefined;
@@ -108,10 +120,26 @@ export class MainDashboard extends LitElement {
         notifyError(msg("Error opening the link."));
       }
     });
+
+    // add eventlistener for clipboard
+    window.addEventListener ("keydown", (zEvent) => {
+      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+        switch (this.showClipboard) {
+          case false:
+            this.showClipboard = true;
+            this._clipboard.show("open");
+            this._clipboard.focus();
+            break;
+          case true:
+            this._clipboard.hide();
+            break;
+        }
+      }
+    });
   }
 
   disconnectedCallback(): void {
-      if (this._unlisten) this._unlisten();
+    if (this._unlisten) this._unlisten();
   }
 
   get dynamicLayout() {
@@ -131,6 +159,7 @@ export class MainDashboard extends LitElement {
     //   },
     // });
   }
+
 
   renderDashboard() {
     switch (this.dashboardMode) {
@@ -208,6 +237,32 @@ export class MainDashboard extends LitElement {
 
   render() {
     return html`
+      <we-clipboard
+        id="clipboard"
+        @open-hrl=${(e) => {
+          this.selectedGroupDnaHash = undefined;
+          this.dashboardMode = "browserView";
+          this.dynamicLayout.openViews.openHrl(
+            e.detail.hrlWithContext.hrl,
+            e.detail.hrlWithContext.context
+          );
+        }}
+        @hrl-selected=${(e) => {
+          this.dynamicLayout.dispatchEvent(new CustomEvent("hrl-selected", {
+            detail: e.detail,
+            bubbles: false,
+            composed: false,
+          }))
+        }}
+        @sl-hide=${() => {
+          console.log("@sl-hide bubbled up to we-clipboard.")
+          this.dynamicLayout.dispatchEvent(new CustomEvent("cancel-select-hrl", {
+            bubbles: false,
+            composed: false,
+          }));
+          this.showClipboard = false;
+        }}
+      ></we-clipboard>
       <join-group-dialog
         @group-joined=${(e) => this.openGroup(e.detail.groupDnaHash)}
       ></join-group-dialog>
@@ -223,6 +278,9 @@ export class MainDashboard extends LitElement {
           @open-tab-request=${() => {
             this.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
+          }}
+          @select-hrl-request=${() => {
+            this._clipboard.show("select");
           }}
           id="dynamic-layout"
           .rootItemConfig=${{

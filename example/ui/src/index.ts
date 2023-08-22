@@ -76,6 +76,7 @@ async function appletViews(
           html`
             <applet-main
               .client=${client}
+              .weServices=${weServices}
               @post-selected=${async (e: CustomEvent) => {
                 const appInfo = await client.appInfo();
                 const dnaHash = (appInfo.cell_info.forum[0] as any)[

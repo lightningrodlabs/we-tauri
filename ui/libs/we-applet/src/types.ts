@@ -116,7 +116,23 @@ export interface WeServices {
   groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
   appletInfo(appletHash: EntryHash): Promise<AppletInfo | undefined>;
   entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
+  /**
+   * Stores an HRL to the user's We "Clipboard" of HRLs for simple retrieval
+   * @param hrl
+   */
+  hrlToClipboard(hrl: HrlWithContext): Promise<void>;
+  /**
+   * Searches for HRLs across applets
+   *
+   * @param filter
+   */
   search(filter: string): Promise<Array<HrlWithContext>>;
+  /**
+   * Prompts the end-user with a dialog to select an HRL from his
+   * We clipboard or via search across applets
+   * applets.
+   */
+  userSelectHrl(): Promise<HrlWithContext | undefined>;
   /**
    * Send notifications to We
    * @param notifications Array of notifications to send to We

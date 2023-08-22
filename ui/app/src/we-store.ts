@@ -31,7 +31,7 @@ import {
   DnaHash,
   EntryHash,
 } from "@holochain/client";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { GroupProfile, HrlWithContext } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 import { invoke } from "@tauri-apps/api";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
@@ -400,5 +400,17 @@ export class WeStore {
       }
     )
   );
+
+
+  hrlToClipboard(hrl: HrlWithContext) {
+    const clipboardJSON = window.localStorage.getItem("clipboard");
+    let clipboardContent: Array<HrlWithContext> = [];
+    if (clipboardJSON) {
+      clipboardContent = JSON.parse(clipboardJSON);
+    }
+    clipboardContent.push(hrl);
+    clipboardContent = [...new Set(clipboardContent)];
+    window.localStorage.setItem("clipboard", JSON.stringify(clipboardContent));
+  }
 
 }

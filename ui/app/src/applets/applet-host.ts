@@ -170,6 +170,12 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       openCrossAppletBlock: () => {},
       openAppletBlock: () => {},
     },
+    async userSelectHrl() {
+      throw new Error("userSelectHrl is not supported in headless WeServices.")
+    },
+    async hrlToClipboard(hrl: HrlWithContext) {
+      throw new Error("hrlToClipboard is not supported in headless WeServices.")
+    }
   };
 }
 
@@ -266,8 +272,13 @@ export async function handleAppletIframeMessage(
           );
       }
       break;
+    case "hrl-to-clipboard":
+      weStore.hrlToClipboard(message.hrl);
+      break;
     case "search":
       return services.search(message.filter);
+    case "user-select-hrl":
+      return openViews.userSelectHrl();
     case "notify-we":
       const appletId: AppletId = encodeHashToBase64(appletHash);
 
