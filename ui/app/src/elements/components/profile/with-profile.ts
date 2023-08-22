@@ -8,7 +8,7 @@ import {
 import { contextProvided } from '@lit-labs/context';
 import { deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
-import { matrixContext } from '../../../context';
+import { matrixContext, weGroupContext } from '../../../context';
 import { AgentPubKeyB64, DnaHash, encodeHashToBase64 } from '@holochain/client';
 import { NHProfilePrompt } from './nh-profile-prompt';
 
@@ -18,8 +18,9 @@ export class WithProfile extends NHComponent {
   @state()
   _matrixStore!: MatrixStore;
 
-  @property()
-  weGroupId: DnaHash | undefined;
+  @contextProvided({ context: weGroupContext })
+  @state()
+  weGroupId!: DnaHash;
 
   @property()
   forAgentHash: AgentPubKeyB64 | undefined;

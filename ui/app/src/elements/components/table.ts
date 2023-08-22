@@ -13,6 +13,7 @@ import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
+import { WithProfile } from './profile/with-profile';
 
 export const tableId = 'assessmentsForResource';
 
@@ -75,12 +76,12 @@ export class StatefulTable extends NHComponentShoelace {
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Neighbour', 'Member'),
-        decorator: (agentPublicKeyB64: any) => html` <div
+        decorator: function(agentPublicKeyB64: any) {return html` <div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
         >
           ${generateHashHTML(agentPublicKeyB64)}
-          ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
-        </div>`,
+          <with-profile .component=${"identicon"} .forAgentHash=${agentPublicKeyB64}></with-profile>
+        </div>`},
       }),
     };
     return {
@@ -102,6 +103,7 @@ export class StatefulTable extends NHComponentShoelace {
   static elementDefinitions = {
     'wc-table': Table,
     'sl-alert': SlAlert,
+    'with-profile': WithProfile,
   };
 
   static styles = css`
