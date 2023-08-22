@@ -1114,7 +1114,7 @@ export class MainDashboard extends NHComponentShoelace {
       }
 
       .highlightedAppletCentric {
-        border: var(--nh-theme-bg-subtle) 1px solid;
+        border: var(--nh-theme-bg-surface) 1px solid;
         border-radius: calc(1px * var(--nh-radii-2xl)) !important;
       }
 

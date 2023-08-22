@@ -43,7 +43,7 @@ export class NHProfilePrompt extends NHComponentShoelace {
         display: flex;
       }
       #prompt {
-        --sl-color-primary-500: var(--nh-theme-bg-subtle);
+        --sl-color-primary-500: var(--nh-theme-bg-surface);
         
         --sl-color-primary-600: var(--nh-theme-bg-muted);
         --sl-color-neutral-500: var(--nh-theme-bg-surface);
@@ -57,7 +57,7 @@ export class NHProfilePrompt extends NHComponentShoelace {
         --sl-input-border-width: 2px;
         --sl-input-color: var(--nh-theme-fg-on-dark);
         --sl-input-border-color: transparent;
-        --sl-input-background-color: var(--nh-theme-bg-subtle);
+        --sl-input-background-color: var(--nh-theme-bg-surface);
         --sl-input-font-size-medium: calc(1px * var(--nh-font-size-lg));
         --sl-input-label-font-size-medium: calc(1px * var(--nh-font-size-xl));
 
