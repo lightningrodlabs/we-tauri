@@ -360,7 +360,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                 </sl-tab-panel>
                 ${contexts &&
                 contexts.map(context =>
-                  encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext
+                  {return !(this.context_ehs[context] && encodeHashToBase64(this.context_ehs[context]) == this.selectedContext)
                     ? ''
                     : html`<sl-tab-panel 
                               @context-display=${function(e: CustomEvent) { 
@@ -383,7 +383,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                               .selectedDimensions=${this.dimensions}
                             >
                             </dashboard-filter-map>
-                          </sl-tab-panel>`,
+                          </sl-tab-panel>`},
                     )}
               </sl-tab-group>`}
         </main>
@@ -531,7 +531,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       .dashboard-tab.resource::part(base),
       .dashboard-tab:hover {
         color: var(--nh-theme-accent-muted);
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
       }
 
       .dashboard-tab.resource.active {
@@ -550,7 +550,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         border-bottom-right-radius: 0 !important;
       }
       .dashboard-tab:hover {
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         border-top-right-radius: calc(2px * var(--nh-radii-md) - 0px);
         border-top-left-radius: calc(2px * var(--nh-radii-md) - 0px);
       }
@@ -565,7 +565,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       .dashboard-tab:hover::after,
       .dashboard-tab.active::after {
         position: absolute;
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         bottom: -10px;
         left: 0px;
         content: '';
@@ -579,7 +579,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       /* Divider after resource name */
       .dashboard-tab.resource::before {
         position: absolute;
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         bottom: 1px;
         right: -3px;
         content: '';
@@ -662,7 +662,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         background-color: var(--nh-theme-bg-canvas);
       }
       .skeleton-part {
-        --color: var(--nh-theme-bg-subtle);
+        --color: var(--nh-theme-bg-surface);
         --sheen-color: var(--nh-theme-bg-surface);
       }
       .skeleton-part::part(indicator) {

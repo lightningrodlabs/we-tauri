@@ -69,6 +69,7 @@ export class DashboardFilterMap extends LitElement {
 
     this._allAssessments = new StoreSubscriber(this, () =>
       this._sensemakerStore.resourceAssessments(),
+      () => [this._subjectiveDimensionNames,this._objectiveDimensionNames]
     );
 
     this.setupAssessmentFilteringSubscription();

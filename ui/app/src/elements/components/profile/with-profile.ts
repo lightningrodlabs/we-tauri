@@ -1,4 +1,5 @@
-import { css, CSSResult, html } from 'lit';
+import { Profile } from '@holochain-open-dev/profiles';
+import { css, CSSResult, html, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
   NHComponent,
@@ -6,10 +7,10 @@ import {
   NHProfileIdenticon,
 } from '@neighbourhoods/design-system-components';
 import { contextProvided } from '@lit-labs/context';
-import { deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
+import { AsyncReadable, deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext, weGroupContext } from '../../../context';
-import { AgentPubKeyB64, DnaHash, encodeHashToBase64 } from '@holochain/client';
+import { AgentPubKeyB64, DnaHash, decodeHashFromBase64 } from '@holochain/client';
 import { NHProfilePrompt } from './nh-profile-prompt';
 
 @customElement('with-profile')
@@ -23,7 +24,10 @@ export class WithProfile extends NHComponent {
   weGroupId!: DnaHash;
 
   @property()
-  forAgentHash: AgentPubKeyB64 | undefined;
+  forAgentHash!: AgentPubKeyB64;
+
+  @state()
+  forAgentProfile!: Profile;
 
   @property()
   component!: 'card' | 'prompt' | 'identicon';
@@ -45,28 +49,38 @@ export class WithProfile extends NHComponent {
     () => [this.refreshed],
   );
 
+  _forAgentProfile = new StoreSubscriber(
+    this,
+    () => this._profilesStore.value?.profiles.get(this.forAgentHash ? decodeHashFromBase64(this.forAgentHash) : this._matrixStore.myAgentPubKey) as AsyncReadable<Profile>,
+    () => [this.forAgentHash],
+  );
+
+  renderAgentIdenticon() {
+    const {status, value} : any = this._forAgentProfile.value;
+    return html`<nh-profile-identicon
+        .responsive=${true}
+        .loading=${status != 'complete'}
+        .agentAvatarSrc=${status == 'complete' ? value?.fields.avatar : null}
+        .agentName=${status == 'complete' ? (value?.nickname ||  "No Profile Found") : null}
+        .agentHashB64=${this.forAgentHash}
+      ></nh-profile-identicon>`
+  }
+
+  renderAgentCard() { 
+    const {status, value} : any = (this.forAgentHash ? this._forAgentProfile : this._selectedNeighbourhoodProfile).value;
+    return html`<nh-profile-card
+        .loading=${status != 'complete'}
+        .agentAvatarSrc=${status == 'complete' ? value?.fields.avatar : null}
+        .agentName=${status == 'complete' && value?.nickname || "No Profile Found"}
+        .agentHashB64=${this.forAgentHash || this._matrixStore.myAgentPubKey}
+      ></nh-profile-card>`
+  }
+
   render() {
     this.refreshed = false;
     switch (true) {
       case this.component == 'card':
-        return this._selectedNeighbourhoodProfile.value.status != 'complete'
-          ? html`<slot
-              ><nh-profile-card
-                .loading=${true}
-                .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}
-              >
-              </nh-profile-card>
-            </slot>`
-          : html`<slot
-              ><nh-profile-card
-                .agentAvatarSrc=${(this._selectedNeighbourhoodProfile.value as any).value?.fields
-                  ?.avatar}
-                .agentName=${(this._selectedNeighbourhoodProfile.value as any).value?.nickname ||
-                'No Profile Created'}
-                .agentHashB64=${encodeHashToBase64(this._matrixStore.myAgentPubKey)}
-              >
-              </nh-profile-card>
-            </slot>`;
+        return this.renderAgentCard();
       case this.component == 'prompt':
         return (get((this._profilesStore.value as any).myProfile) as any).value
           ? html`<slot name="content"></slot>`
@@ -79,12 +93,7 @@ export class WithProfile extends NHComponent {
                 }}
               ></nh-profile-prompt>`;
       case this.component == 'identicon':
-        return html`<nh-profile-identicon
-          .agentAvatarSrc=${typeof this.forAgentHash !== 'undefined' ? "none" :(this._selectedNeighbourhoodProfile.value as any).value?.fields?.avatar}
-          .agentName=${typeof this.forAgentHash !== 'undefined' ? "agent" : ((this._selectedNeighbourhoodProfile.value as any).value?.nickname ||
-          'No Profile Created')}
-          .agentHashB64=${typeof this.forAgentHash !== 'undefined' ? this.forAgentHash : encodeHashToBase64(this._matrixStore.myAgentPubKey)}
-        ></nh-profile-identicon>`;
+        return this.renderAgentIdenticon()
     }
   }
 
