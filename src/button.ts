@@ -143,7 +143,7 @@ export class NHButton extends NHComponent {
           border: 1px solid var(--nh-theme-accent-default);
         }
         button.icon:hover {
-          background-color: var(--nh-theme-bg-subtle);
+          background-color: var(--nh-theme-bg-surface);
         }
         button.secondary:hover {
           border-color: var(--nh-theme-accent-muted);

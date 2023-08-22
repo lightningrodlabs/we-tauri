@@ -91,7 +91,7 @@ export class NHAssessmentWidget extends NHComponentShoelace {
       }
 
       .assessment-widget {
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         padding: 4px;
         border: 1px solid var(--nh-theme-accent-default);
         border-radius: var(--border-r-tiny);

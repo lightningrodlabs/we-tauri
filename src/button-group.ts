@@ -105,7 +105,7 @@ export class NHButtonGroup extends NHComponent {
         background-color: var(--nh-theme-bg-muted);
       }
       .container.dark {
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
       }
 
       /* Content */

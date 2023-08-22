@@ -166,7 +166,7 @@ export class NHPagination extends NHComponent {
       }
 
       .pagination-number:hover:not(.active) {
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
       }
     `,
   ];

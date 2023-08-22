@@ -189,7 +189,7 @@ export class NHDialog extends NHComponentShoelace {
         border-radius: calc(1px * var(--nh-radii-xl));
         background-color: var(--nh-theme-bg-surface); 
         max-height: 16rem;
-        --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-subtle);
+        --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-surface);
       }
       @media (max-height: 767px) {
         .container {

@@ -39,7 +39,7 @@ export class NHTabButton extends NHComponent {
     css`
       button {
         color: #D9D9D9;
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
         height: 52px;
         position: relative;

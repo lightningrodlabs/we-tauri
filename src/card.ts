@@ -93,7 +93,14 @@ export class NHCard extends NHComponentShoelace {
       padding: calc(1px * var(--nh-spacing-xl));
       position: relative;
     }
+    .container.light {
+      background-color: var(--nh-theme-bg-element);
+    }
+    .container.dark {
+      background-color: var(--nh-theme-bg-surface);
+    }
     :host(.nested-card) .container {
+      background-color: var(--nh-theme-bg-surface);
       min-width: calc(264px - calc(2px * var(--nh-spacing-3xl)));
     }
     :host(.responsive) .container {
@@ -103,12 +110,6 @@ export class NHCard extends NHComponentShoelace {
       width: fit-content;
       box-sizing: border-box;
       padding: 15%;
-    }
-    .container.light {
-      background-color: var(--nh-theme-bg-neutral);
-    }
-    .container.dark {
-      background-color: var(--nh-theme-bg-subtle);
     }
     :host(.transparent) .container {
       background-color: transparent;
