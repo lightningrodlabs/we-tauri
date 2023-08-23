@@ -54,8 +54,8 @@ importers:
         specifier: ^0.6.3
         version: 0.6.3(ws@8.13.0)
       '@holochain-open-dev/elements':
-        specifier: ^0.2.3
-        version: 0.2.3(ws@8.13.0)
+        specifier: ^0.3.0
+        version: 0.3.0(ws@8.13.0)
       '@holochain-open-dev/membrane-invitations':
         specifier: ^0.0.10
         version: 0.0.10(ws@8.13.0)
@@ -63,8 +63,8 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
       '@holochain-open-dev/profiles':
-        specifier: 0.14.3
-        version: 0.14.3
+        specifier: 0.16.1
+        version: 0.16.1
       '@holochain-open-dev/stores':
         specifier: ^0.5.0
         version: 0.5.0
@@ -1576,14 +1576,13 @@ packages:
       - ws
     dev: false
 
-  /@holochain-open-dev/elements@0.2.3(ws@8.13.0):
-    resolution: {integrity: sha512-NzMrVJsQO2VTDHW0UKeG78XW5wMvxdRsHkCDmp8R7AoQFIZESqYTKxpwB383TQ54H8Da1Q8s2tLciYSa9eXIIA==}
+  /@holochain-open-dev/elements@0.3.0(ws@8.13.0):
+    resolution: {integrity: sha512-kNkGLkhLRZroaHnNRgudDW88PKZLtjfXfrKRxh3B1IeI67Yen+GO9Sntq9lngSjUWBDmKOmuACyOZWnhjwm2hA==}
     dependencies:
       '@holo-host/identicon': 0.1.0
       '@holochain/client': 0.12.0(ws@8.13.0)
-      '@open-wc/scoped-elements': 2.1.0
-      '@scoped-elements/material-web': 0.0.19
-      '@scoped-elements/shoelace': 0.0.10
+      '@lit/localize': 0.11.4
+      '@shoelace-style/shoelace': 2.7.0
       lit: 2.8.0
     transitivePeerDependencies:
       - ws
@@ -1594,6 +1593,24 @@ packages:
     dependencies:
       '@holo-host/identicon': 0.1.0
       '@holochain/client': 0.14.1
+      '@lit/localize': 0.11.4
+      '@mdi/js': 7.2.96
+      '@shoelace-style/shoelace': 2.7.0
+      lit: 2.8.0
+      prosemirror-commands: 1.5.2
+      prosemirror-keymap: 1.2.2
+      prosemirror-state: 1.4.3
+      prosemirror-view: 1.31.7
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@holochain-open-dev/elements@0.7.0:
+    resolution: {integrity: sha512-IW9mRlLywGTrT2v0SreQ/a32b3yqNIxEc+I+87++1BlvFAgohBVvo63/ot2c6/fEWx3Ot6pYn/7CqN5v3nf7lQ==}
+    dependencies:
+      '@holo-host/identicon': 0.1.0
+      '@holochain/client': 0.16.0
       '@lit/localize': 0.11.4
       '@mdi/js': 7.2.96
       '@shoelace-style/shoelace': 2.7.0
@@ -1651,6 +1668,22 @@ packages:
       - utf-8-validate
     dev: false
 
+  /@holochain-open-dev/profiles@0.16.1:
+    resolution: {integrity: sha512-tLGxH7dLOiwlw+ViIHJ2cls08/TbnbIgPyd8WjOQCAvY0a/bZSMe7aykZsj75OQDFziANpPLNgsUdLnmPFadfg==}
+    dependencies:
+      '@holochain-open-dev/elements': 0.7.0
+      '@holochain-open-dev/stores': 0.6.0
+      '@holochain-open-dev/utils': 0.15.0
+      '@holochain/client': 0.16.0
+      '@lit-labs/context': 0.2.0
+      '@lit/localize': 0.11.4
+      '@mdi/js': 7.2.96
+      '@shoelace-style/shoelace': 2.7.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@holochain-open-dev/stores@0.5.0:
     resolution: {integrity: sha512-pagAPIxOkvqik6xfsVrBrFSGT/eqqshTj+naGi79Evpc6F71BLFGH8CZ+QHWLGJ0iAratqrpxEbkiHN0UZGrkQ==}
     dependencies:
@@ -1663,10 +1696,36 @@ packages:
       - utf-8-validate
     dev: false
 
+  /@holochain-open-dev/stores@0.6.0:
+    resolution: {integrity: sha512-/j+VAym4/vjQA2ezbnQnvfkHRAVDU9CaLt4JalDskIKBlapEQaUmlPLCo2iyzrZ0pfQLQpuwOXVlVtOMN7MYcw==}
+    dependencies:
+      '@holochain-open-dev/utils': 0.15.0
+      '@holochain/client': 0.16.0
+      lit-svelte-stores: 0.2.5
+      svelte: 3.59.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@holochain-open-dev/utils@0.14.2:
     resolution: {integrity: sha512-mJscNII/s0ZuICnIpBynOxv4q0cSlSvdb3e7kHbvMncioRYLrnFIu0/AxZn2MpC4IpXgUKWO2i1biB4q1IKlVw==}
     dependencies:
       '@holochain/client': 0.14.1
+      '@msgpack/msgpack': 2.7.2
+      blakejs: 1.2.1
+      emittery: 1.0.1
+      lodash-es: 4.17.21
+      sort-keys: 5.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@holochain-open-dev/utils@0.15.0:
+    resolution: {integrity: sha512-h7xrsGPKPPkmH+8VM++w5wZ8wnGed9ZNt62iIfGaj1WnlcufB3YkbraGIgY1nU5LGf+r7pHqg6KRFjJPaPc5+w==}
+    dependencies:
+      '@holochain/client': 0.16.0
       '@msgpack/msgpack': 2.7.2
       blakejs: 1.2.1
       emittery: 1.0.1
@@ -1738,6 +1797,25 @@ packages:
       emittery: 1.0.1
       isomorphic-ws: 5.0.0(ws@8.13.0)
       js-base64: 3.7.5
+      lodash-es: 4.17.21
+      ws: 8.13.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@holochain/client@0.16.0:
+    resolution: {integrity: sha512-GJEl6F3OSlDX71H+rtyUXpEuor7O9MhvNIi+Tq6obrysu71JsbXfR1rtmSBiNb9fttHOZLW60EzY/Lj3I9dv8g==}
+    engines: {node: '>=16.0.0 || >=18.0.0'}
+    dependencies:
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.7.2
+      '@noble/ed25519': 2.0.0
+      '@tauri-apps/api': 1.4.0
+      emittery: 1.0.1
+      isomorphic-ws: 5.0.0(ws@8.13.0)
+      js-base64: 3.7.5
+      libsodium-wrappers: 0.7.11
       lodash-es: 4.17.21
       ws: 8.13.0
     transitivePeerDependencies:
@@ -2693,13 +2771,6 @@ packages:
   /@open-wc/dedupe-mixin@1.4.0:
     resolution: {integrity: sha512-Sj7gKl1TLcDbF7B6KUhtvr+1UCxdhMbNY5KxdU5IfMFWqL8oy1ZeAcCANjoB1TL0AJTcPmcCFsCbHf8X2jGDUA==}
 
-  /@open-wc/scoped-elements@2.1.0:
-    resolution: {integrity: sha512-Mf91jAW0j4MYYMz8PX8Rrk86sSKdiyKYK7RT1Ww84KSElwON0mDVGNlhJCbtw9cDJbfzL+fH1zJAaLyOY7GIMA==}
-    dependencies:
-      '@lit/reactive-element': 1.6.3
-      '@open-wc/dedupe-mixin': 1.4.0
-    dev: false
-
   /@open-wc/scoped-elements@2.1.5:
     resolution: {integrity: sha512-39v61EDXiFp+pBXdYmRCNIAimJU6MxaNwplW+5IqGU+z33hsSp5CVp2mH5lJVbwXGB7hIb5wDiJa+L5pOVypqw==}
     dependencies:
@@ -2795,15 +2866,6 @@ packages:
       '@material/mwc-top-app-bar-fixed': 0.25.3
       '@open-wc/scoped-elements': 2.1.5
       '@ui5/webcomponents': 1.16.0
-      lit: 2.2.0
-    dev: false
-
-  /@scoped-elements/shoelace@0.0.10:
-    resolution: {integrity: sha512-aCWRYBSd/0RWwK+V/7JiZiHm6Hg/0L9DReZkp7McNIbwrp+KdIFzBpFCKNP69A2w/tXuiBD/2HyHUvqkHjXxUA==}
-    dependencies:
-      '@open-wc/dedupe-mixin': 1.4.0
-      '@open-wc/scoped-elements': 2.1.5
-      '@shoelace-style/shoelace': 2.0.0-beta.60
       lit: 2.2.0
     dev: false
 
@@ -5114,6 +5176,16 @@ packages:
     dependencies:
       readable-stream: 2.3.8
     dev: true
+
+  /libsodium-wrappers@0.7.11:
+    resolution: {integrity: sha512-SrcLtXj7BM19vUKtQuyQKiQCRJPgbpauzl3s0rSwD+60wtHqSUuqcoawlMDheCJga85nKOQwxNYQxf/CKAvs6Q==}
+    dependencies:
+      libsodium: 0.7.11
+    dev: false
+
+  /libsodium@0.7.11:
+    resolution: {integrity: sha512-WPfJ7sS53I2s4iM58QxY3Inb83/6mjlYgcmZs7DJsvDlnmVUwNinBCi5vBT43P6bHRy01O4zsMU2CoVR6xJ40A==}
+    dev: false
 
   /lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
