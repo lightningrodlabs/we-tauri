@@ -4,13 +4,14 @@ import { FieldDefinition } from '@adaburrows/table-web-component';
 import { generateHeaderHTML } from '../components/helpers/functions';
 import { html } from 'lit';
 import { Applet } from '../../types';
-import { EntryHash, DnaHash } from '@holochain/client';
+import { EntryHash, DnaHash, HoloHash } from '@holochain/client';
 import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matrix-test-harness';
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
 import { Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { AppletInstanceInfo } from '../../matrix-store';
 import { encode } from '@msgpack/msgpack';
+import { Profile, ProfilesStore } from '@holochain-open-dev/profiles';
 
 export class MockFactory {
   static createAssessment(
@@ -190,6 +191,38 @@ export class MockFactory {
     mockStore.client = mockClient();
 
     switch (methodName) {
+      case 'profiles-inner':
+      case 'profiles':
+        const mockMyProfileWritable = writable<Profile>();
+        const mockAllProfilesDict = new Map<HoloHash,object>();
+        mockAllProfilesDict.get = vi.fn((key: HoloHash) => ({status: "complete", "value": {
+          nickname: "a mock name",
+        }}))
+        const mockProfilesStoreWritable = writable<{}>({
+          myProfile: {
+            subscribe: mockMyProfileWritable.subscribe,
+            unsubscribe: vi.fn(),
+            mockSetSubscribeValue: (value: Profile): void =>
+            mockMyProfileWritable.update(_ => value),
+          },
+          profiles: mockAllProfilesDict,
+        });
+        if(methodName == 'profiles-inner') return mockProfilesStoreWritable
+
+        const mockProfilesResponse = {
+          value: null,
+          store: () => mockProfilesStoreWritable,
+          subscribe: mockProfilesStoreWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: Profile): void => mockUpdateProfilesStore(value),
+        };
+        // Helper to make mockResourceAssessmentsResponse like a reactive StoreSubscriber
+        function mockUpdateProfilesStore(newValue) {
+          mockProfilesResponse.value = newValue;
+          mockProfilesStoreWritable.update(_ => newValue);
+        }
+        return mockProfilesResponse
+
       case 'matrix-sensemaker-for-we-group-id':
         // A nested mock Sensemaker store
         const mockSMStore = this.mockStoreResponse('all');

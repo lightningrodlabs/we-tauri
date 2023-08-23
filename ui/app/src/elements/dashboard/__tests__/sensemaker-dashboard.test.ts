@@ -36,7 +36,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 describe('SensemakerDashboard', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
   let mockStore;
-  let mockAppletConfigsResponse, mockFetchAppletsResponse, mockSensemakerResponse;
+  let mockAppletConfigsResponse, mockFetchAppletsResponse, mockSensemakerResponse, mockProfilesResponse;
 
   const initialRender = async testComponent => {
     harness = await stateful(component, mockStore);
@@ -76,11 +76,13 @@ describe('SensemakerDashboard', () => {
     mockAppletConfigsResponse = MockFactory.mockStoreResponse('appletConfigs').appletConfigs();
     mockFetchAppletsResponse = MockFactory.mockStoreResponse('getAppletInstanceInfosForGroup');
     mockSensemakerResponse = MockFactory.mockStoreResponse('matrix-sensemaker-for-we-group-id');
+    mockProfilesResponse = MockFactory.mockStoreResponse('profiles');
 
     // Make a reusable mock store object that has constituent mock data streams as created by the MockFactory
     mockStore = {
       getAppletInstanceInfosForGroup: vi.fn(() => mockFetchAppletsResponse),
       sensemakerStore: vi.fn((weGroupId: DnaHash | undefined) => mockSensemakerResponse),
+      profilesStore: vi.fn((weGroupId: DnaHash | undefined) => mockProfilesResponse),
     };
 
     component = html`<sensemaker-dashboard></sensemaker-dashboard>`;
@@ -314,7 +316,8 @@ describe('SensemakerDashboard', () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
       mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
-
+      // mockProfilesResponse.mockSetSubscribeValue(MockFactory.mockStoreResponse('profiles-inner'))
+      
       const mockSMStore: any = get(mockSensemakerResponse);
       subjective = MockFactory.createConfigDimensions(1, 'subjective');
       objective = MockFactory.createConfigDimensions(2, 'objective').slice(1);
