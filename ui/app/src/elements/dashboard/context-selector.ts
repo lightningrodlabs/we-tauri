@@ -22,12 +22,14 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
   private _resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
     
   async updated(_changedProperties: any,) {
-      // const contexts = typeof this.config?.value !== 'undefined' ? Object.keys(this.config.value?.cultural_contexts) : [];
       if(_changedProperties.has("selectedContext") && _changedProperties.get("selectedContext") !== 'undefined') {
-        if(!this.selectedContext || this.selectedContext === 'none' || typeof this.config?.value == 'undefined'|| typeof this._resourceAssessments?.value == 'undefined') return;
+        if(!this.selectedContext 
+          || this.selectedContext === 'none'
+          || typeof this.config?.value == 'undefined'
+          || typeof this._resourceAssessments?.value == 'undefined') return;
+
         const resourceEhs : EntryHash[] = Object.keys(this._resourceAssessments.value).flat().map(b64eh => decodeHashFromBase64(b64eh));
         const input : ComputeContextInput = { resource_ehs: resourceEhs, context_eh: decodeHashFromBase64(this.selectedContext), can_publish_result: false};
-        
         await this.sensemakerStore.computeContext(this.selectedContext, input);
         
         const results = get(this.sensemakerStore.contextResults())
