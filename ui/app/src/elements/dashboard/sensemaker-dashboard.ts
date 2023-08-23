@@ -1,4 +1,4 @@
-import { CSSResult, css, html } from 'lit';
+import { CSSResult, PropertyValueMap, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
@@ -56,6 +56,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() selectedWeGroupId!: Uint8Array;
 
   @state() appletDetails!: object;
+  @state() selectedAppletResourceDefs!: object;
   @state() dimensions: DimensionDict = {};
   @state() context_ehs: ContextEhDict = {};
 
@@ -90,6 +91,38 @@ export class SensemakerDashboard extends NHComponentShoelace {
     this.setupAssessmentsSubscription();
   }
 
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(typeof this.appletDetails !== 'object' || !Object.entries(this.appletDetails)[this.selectedAppletIndex]?.length) return;
+    const [installedAppId, appletDetails] = Object.entries(this.appletDetails)[this.selectedAppletIndex];
+
+    if(_changedProperties.has('selectedAppletIndex')) {
+      this.context_ehs = Object.fromEntries(
+        zip(this.appletDetails[installedAppId].contexts, appletDetails.context_ehs),
+        );
+      this.selectedAppletResourceDefs = this.appletDetails[installedAppId].resource_defs
+
+      this.dimensions = this.appletDetails[installedAppId].dimensions;
+      this.requestUpdate('selectedResourceDefIndex')
+    }
+    
+    if(_changedProperties.has('selectedResourceDefIndex')) {
+      const resourceName: string =
+        this.selectedResourceDefIndex >= 0 &&
+        snakeCase(this.appletDetails[installedAppId].appletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
+      
+      this.selectedResourceDefEh = resourceName
+        ? encodeHashToBase64(this.appletDetails[installedAppId].resource_defs[resourceName])
+        : 'none';
+
+      this.selectedResourceName =
+        this.selectedResourceDefIndex < 0
+          ? 'All Resources'
+          : appletDetails.appletRenderInfo.resourceNames[
+              this.selectedResourceDefIndex
+          ];
+    }
+  }
+
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
     store.subscribe(store => {
@@ -102,25 +135,14 @@ export class SensemakerDashboard extends NHComponentShoelace {
             };
 
             // Keep dimensions for dashboard table prop
-            this.dimensions = appletConfig.dimensions;
+            this.appletDetails[installedAppId].dimensions = appletConfig.dimensions;
             //Keep context names for display
             this.appletDetails[installedAppId].contexts = Object.keys(appletConfig.cultural_contexts).map(
               cleanResourceNameForUI,
             );
-
             // Keep context entry hashes and resource_def_eh for filtering in dashboard table
-            this.context_ehs = Object.fromEntries(
-              zip(this.appletDetails[installedAppId].contexts, Object.values(appletConfig.cultural_contexts)),
-            );
-            const currentAppletRenderInfo = Object.values(this.appletDetails)[
-              this.selectedAppletIndex
-            ]?.appletRenderInfo;
-            const resourceName: string =
-              this.selectedResourceDefIndex >= 0 &&
-              snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-            this.selectedResourceDefEh = resourceName
-              ? encodeHashToBase64(appletConfig.resource_defs[resourceName])
-              : 'none';
+            this.appletDetails[installedAppId].context_ehs = Object.values(appletConfig.cultural_contexts);
+            this.appletDetails[installedAppId].resource_defs = appletConfig.resource_defs;
           });
           this.loading = false;
         },
@@ -204,11 +226,12 @@ export class SensemakerDashboard extends NHComponentShoelace {
                   <div role="navigation" class="sub-nav indented">
                     ${applet?.appletRenderInfo?.resourceNames &&
                     applet?.appletRenderInfo?.resourceNames.map(
-                      (resource, i) => html`<sl-menu-item
+                      (resource, resourceIndex) => html`<sl-menu-item
                         class="nav-item"
                         value="${resource.toLowerCase()}"
                         @click=${() => {
-                          this.selectedResourceDefIndex = i;
+                          this.selectedAppletIndex = i;
+                          this.selectedResourceDefIndex = resourceIndex;
                           this.setupAssessmentsSubscription();
                         }}
                         >${resource}</sl-menu-item
@@ -261,7 +284,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
       </div>
     `;
   }
-
   render() {
     const appletIds = this?.appletDetails ? Object.keys(this.appletDetails) : [];
     const appletDetails =
@@ -282,7 +304,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
     if (!appletConfig![0] || !contexts) {
       this.loadingState = LoadingState.FirstRender;
     }
-
     return html`
       <div class="container">
         <slot name="configure-widget-button"></slot>
@@ -290,11 +311,17 @@ export class SensemakerDashboard extends NHComponentShoelace {
         <main>
           ${this.loading
             ? this.renderMainSkeleton()
-            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) { ([...(e.currentTarget as any).querySelectorAll('sl-tab-panel')].forEach(tab =>{ tab.name === e.detail.contextName && tab.dispatchEvent(new CustomEvent('context-display', {
-              detail: e.detail,
-              bubbles: false,
-              composed: true
-            }))})) }.bind(this)}>
+            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) {
+              ([...(e.currentTarget as any).querySelectorAll('sl-tab-panel')]
+                .forEach(tab =>{
+                  tab.name === snakeCase(e.detail.contextName) 
+                    && tab.dispatchEvent(new CustomEvent('context-display', 
+                    {
+                      detail: e.detail,
+                      bubbles: false,
+                      composed: true
+                    }
+              ))})) }.bind(this)}>
                 <nh-page-header-card slot="nav" role="nav" .heading=${""}>
                   <nh-context-selector slot="secondary-action" .selectedContext=${this.selectedContext}>
                     <sl-tab
@@ -317,7 +344,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                             context =>
                             this.context_ehs[context] ? 
                               html`<sl-tab
-                                  panel="${context.toLowerCase()}" 
+                                  panel="${snakeCase(context)}" 
                                   class="dashboard-tab ${classMap({
                                     active:
                                       encodeHashToBase64(this.context_ehs[context]) ===
@@ -350,6 +377,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                   ${this.selectedContext !== 'none'
                     ? ''
                     : html`<dashboard-filter-map
+                        .selectedAppletResourceDefs=${this.selectedAppletResourceDefs}
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
                         .tableType=${AssessmentTableType.Resource}
@@ -364,18 +392,18 @@ export class SensemakerDashboard extends NHComponentShoelace {
                     ? ''
                     : html`<sl-tab-panel 
                               @context-display=${function(e: CustomEvent) { 
-                                  const flatResults = typeof e.detail.results == "object" ? Object.values(e.detail.results).flat() : [];
-                                  const dashboardFilterComponent = (e.currentTarget as any).children[0];
-                                  dashboardFilterComponent.contextEhs = flatResults;
-                                  console.log("Context results: ", e.detail.results);
+                                const flatResults = typeof e.detail.results == "object" ? e.detail.results[this.selectedContext].flat() : [];
+                                const dashboardFilterComponent = (e.currentTarget as any).children[0];
+                                dashboardFilterComponent.contextEhs = flatResults;
                                 }.bind(this)}
                               class="dashboard-tab-panel ${classMap({
                                 active:
                                   encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
                               })}"
-                              name="${context.toLowerCase()}"
+                              name="${snakeCase(context)}"
                           >
                             <dashboard-filter-map
+                              .selectedAppletResourceDefs=${this.selectedAppletResourceDefs}
                               .resourceName=${this.selectedResourceName}
                               .resourceDefEh=${this.selectedResourceDefEh}
                               .tableType=${AssessmentTableType.Context}
