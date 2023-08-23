@@ -81,9 +81,9 @@ export class StatefulTable extends NHComponentShoelace {
         heading: generateHeaderHTML('Neighbour', 'Member'),
         decorator: function(agentPublicKeyB64: any) {return html` <div
           style="width: 100%; display: flex; flex-direction: column; align-items: start; height: 100%; justify-items: center;"
-        >
+          >
+          <with-profile .component=${"identicon"} .forAgentHash=${agentPublicKeyB64}></with-profile>
         </div>`},
-        // <with-profile .component=${"identicon"} .forAgentHash=${agentPublicKeyB64}></with-profile>
       }),
     };
     return {
@@ -105,7 +105,7 @@ export class StatefulTable extends NHComponentShoelace {
   static elementDefinitions = {
     'wc-table': Table,
     'sl-alert': SlAlert,
-    // 'with-profile': WithProfile,
+    'with-profile': WithProfile,
   };
 
   static styles = css`
