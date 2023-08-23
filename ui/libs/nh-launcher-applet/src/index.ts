@@ -1,22 +1,15 @@
 import { ProfilesStore } from "@holochain-open-dev/profiles";
 import {
-  AdminWebsocket,
-  AppWebsocket,
   AppInfo,
   AppAgentClient,
   EntryHash,
 } from "@holochain/client";
-import { AppletConfig, AppletConfigInput, AssessDimensionWidget, CreateAppletConfigInput, DisplayDimensionWidget, SensemakerStore } from "@neighbourhoods/client";
+import { AssessDimensionWidget, CreateAppletConfigInput, DisplayDimensionWidget, SensemakerStore } from "@neighbourhoods/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
   registry: CustomElementRegistry
 ) => void;
-
-export interface AppletBlock {
-  name: string;
-  render: Renderer;
-}
 
 export type ResourceView = (
   element: HTMLElement,
@@ -49,7 +42,6 @@ export interface NeighbourhoodApplet {
   }[]
 }
 
-
 export interface NeighbourhoodInfo {
   logoSrc: string;
   name: string;
@@ -58,16 +50,3 @@ export interface AppletInfo {
   neighbourhoodInfo: NeighbourhoodInfo,
   appInfo: AppInfo,
 }
-
-// componentStore.getViews(resourceEntryHash, resourceDefEh).{view-type} => html``
-// appletRenderers[${appletName}].
-
-// need a way to map from the resourceDefEh to get the right resource renderer
-
-/*
-{
-  [resourceDefEh: EntryHash]: ResourceView
-}
-
-*/
-

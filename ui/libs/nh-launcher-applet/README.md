@@ -11,16 +11,15 @@ You need to import the `NhLauncherApplet` type from `@neighbourhoods/nh-launcher
 > index.ts.
 
 ```ts
-import { AdminWebsocket, AppWebsocket, InstalledCell } from "@holochain/client";
-import { NhLauncherApplet, WeServices } from "@neighbourhoods/nh-launcher-applet";
+import { AppAgentClient, InstalledCell } from "@holochain/client";
+import { NhLauncherApplet, NeighbourhoodServices, AppletInfo, AppletRenderers } from "@neighbourhoods/nh-launcher-applet";
 import { HolochainClient } from "@holochain-open-dev/cell-client";
 
 const applet: NhLauncherApplet = {
   async appletRenderers(
-    appWebsocket: AppWebsocket,
-    adminWebsocket: AdminWebsocket,
-    weServices: WeServices,
-    appletInfo: InstalledAppletInfo[] // Contains info about which app instance(s) should be rendered. Potentially applets across different groups 
+    appAgentWebsocket: AppAgentClient,
+    neighbourhoodServices: NeighbourhoodServices,
+    appletInfo: AppletInfo[] // Contains info about which app instance(s) should be rendered. Potentially applets across different groups 
   ): Promise<AppletRenderers> {
     // Maybe instantiate a store?
 
@@ -30,12 +29,17 @@ const applet: NhLauncherApplet = {
         element.innerHTML = `<my-applet></my-applet>`;
         let appletElement = element.querySelector("my-applet") as any;
 
-        appletElement.appWebsocket = appWebsocket;
-        appletElement.profilesStore = weServices.profilesStore;
-        appletElement.cellData = appletInfo.cell_data[0];
-        appletElement.sensemakerStore = weServices.sensemakerStore;
+        appletElement.appAgentWebsocket = appAgentWebsocket;
+        appletElement.profilesStore = neighbourhoodServices.profilesStore;
+        appletElement.appletInfo = appletInfo;
+        appletElement.sensemakerStore = neighbourhoodServices.sensemakerStore;
       },
-      blocks: [],
+      appletConfig,
+      widgetPairs: [{
+        assess: assessDimensionWidget,
+        display: displayDimensionWidget,
+        compatibleDimensions: ['importance', 'total-importance']
+      }]
     };
   },
 };
@@ -46,72 +50,42 @@ export default applet;
 
 ## Building
 
-Use [rollup](https://rollupjs.org/guide/en/) to build a fully bundled javascript file that doesn't have any external imports.
+Use [vite](https://vitejs.dev/guide/) to build a fully bundled javascript file that doesn't have any external imports.
 
 This is an example configuration for it:
 
-> rollup.config.js
+> vite.config.js
 
 ```js
-import nodeResolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import replace from "@rollup/plugin-replace";
-import builtins from "rollup-plugin-node-builtins";
-import globals from "rollup-plugin-node-globals";
+import { defineConfig } from 'vite'
 
-import babel from "@rollup/plugin-babel";
-import { importMetaAssets } from "@web/rollup-plugin-import-meta-assets";
-import { terser } from "rollup-plugin-terser";
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production'
 
-export default {
-  input: "out-tsc/index.js", // This needs to be pointing to the file that has the `NhLauncherApplet` default export
-  output: {
-    format: "es",
-    dir: 'dist',
-  },
-  watch: {
-    clearScreen: false,
-  },
-
-  plugins: [
-    /** Resolve bare module imports */
-    nodeResolve({
-      browser: true,
-      preferBuiltins: false,
-    }),
-    replace({
-      "process.env.NODE_ENV": '"production"',
-    }),
-    builtins(),
-    commonjs({}),
-    globals(),
-    /** Minify JS */
-    terser(),
-    /** Bundle assets references via import.meta.url */
-    importMetaAssets(),
-    /** Compile JS to a lower language target */
-    babel({
-      exclude: /node_modules/,
-
-      babelHelpers: "bundled",
-      presets: [
-        [
-          require.resolve("@babel/preset-env"),
-          {
-            targets: [
-              "last 3 Chrome major versions",
-              "last 3 Firefox major versions",
-              "last 3 Edge major versions",
-              "last 3 Safari major versions",
-            ],
-            modules: false,
-            bugfixes: true,
-          },
-        ],
-      ],
-    }),
-  ],
-};
+  return isProduction ? {
+    plugins: [
+      {
+        name: 'copy-assets',
+        apply: 'build',
+        generateBundle() {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'icon.png',
+            source: require('fs').readFileSync('icon.png'),
+          });
+        },
+      },
+    ],
+    build: {
+      lib: {
+        entry: 'src/applet-index.ts',
+        name: 'applet',
+        fileName: (_format) => `index.js`,
+        formats: ['es'],
+      }
+    },
+  } : {}
+})
 ```
 
 Now you have it! You can use the generated `.js` file as a We Applet UI file.
