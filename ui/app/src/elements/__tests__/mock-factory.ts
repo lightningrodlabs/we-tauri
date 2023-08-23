@@ -38,7 +38,7 @@ export class MockFactory {
         'abc',
         [
           [{ Integer: 10 }, [1, 2, 3], [4, 5, 6], [4, 5, 6], [13, 14, 15], 32445],
-          [{ Float: 4.5 }, [16, 17, 18], [19, 20, 21], [19, 20, 21], [28, 29, 30], 32445],
+          [{ Float: 4.5 }, [16, 17, 18], [19, 20, 21],  [4, 5, 6],  [28, 29, 30], 32445],
         ],
       ],
     ],
@@ -59,10 +59,10 @@ export class MockFactory {
     role_name = testAppletBaseRoleName,
     // installed_app_id = testAppletBaseRoleName + (seed),
     ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
-    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed))),['my_dimension2']: new Uint8Array([3, 2, 1].map(x => x * (seed))), },
+    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),['my_dimension2']: new Uint8Array([16, 17, 18].map(x => x * (seed + 1))), },
     resource_defs = {
-      ['my_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
-      ['another_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
+      ['my_resource_def' + (seed)]: new Uint8Array([4, 5, 6].map(x => x * (seed + 1))),
+      ['another_resource_def' + (seed)]: new Uint8Array([19, 20, 21].map(x => x * (seed + 1))),
     },
     methods = { my_method: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
     cultural_contexts = { my_context: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
@@ -255,6 +255,7 @@ export class MockFactory {
       case 'appletConfigs':
         const mockAppletDetailsWritable = writable<{ [appletInstanceId: string]: AppletConfig }>();
         const mockFlattenedAppletDetailsWritable = writable<AppletConfig>();
+        const mockWidgetRegistryWritable = writable<any>({ 'uAQID' : vi.fn(() => { })});
         const mockAppletConfigsResponse = {
           store: () => mockAppletDetailsWritable,
           subscribe: mockAppletDetailsWritable.subscribe,
@@ -269,14 +270,22 @@ export class MockFactory {
           mockSetSubscribeValue: (value: AppletConfig): void =>
             mockFlattenedAppletDetailsWritable.update(_ => value),
         };
+        const mockWidgetRegistryResponse = {
+          store: () => mockWidgetRegistryWritable,
+          subscribe: mockWidgetRegistryWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: AppletConfig): void =>
+            mockWidgetRegistryWritable.update(_ => value),
+        };
         function mockUpdateAppletConfigs(newValue) {
           mockAppletDetailsWritable.update(_ => newValue);
           mockFlattenedAppletDetailsWritable.update(_ => Object.values(newValue).flat()[0] as AppletConfig);
         }
+        mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions);};
+        mockStore.widgetRegistry = vi.fn(() => mockWidgetRegistryResponse);
         mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
         mockStore.flattenedAppletConfigs = vi.fn(() => mockFlattenedAppletConfigsResponse);
         mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
-        mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions);};
       default:
         return mockStore;
     }

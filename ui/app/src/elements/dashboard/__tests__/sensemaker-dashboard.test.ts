@@ -328,7 +328,8 @@ describe('SensemakerDashboard', () => {
       await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
       
       expect(toBeTestedSubComponent.tableStore).toBeDefined();
-      expect(toBeTestedSubComponent.tableStore.records.length).toEqual(2);
+      // Since we only have one subjective dimension (resource view filters by this)
+      expect(toBeTestedSubComponent.tableStore.records.length).toEqual(1);
       expect(toBeTestedSubComponent.__tableType).toBeDefined();
       expect(toBeTestedSubComponent.__tableType).toBe('resource');
     });
@@ -392,11 +393,11 @@ describe('SensemakerDashboard', () => {
       ]);
     });
 
-    test('And it renders 2 rows', async () => {
+    test('And it renders 1 row for the subjective dimension assessment', async () => {
       const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
 
       const rowElements = dom.window.document.querySelectorAll('table tbody tr');
-      expect(rowElements.length).toBe(2);
+      expect(rowElements.length).toBe(1);
     });
   });
 });
