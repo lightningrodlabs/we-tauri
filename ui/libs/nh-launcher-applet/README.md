@@ -34,6 +34,16 @@ const applet: NhLauncherApplet = {
         appletElement.appletInfo = appletInfo;
         appletElement.sensemakerStore = neighbourhoodServices.sensemakerStore;
       },
+      resourceRenderers: {
+        "task_item": (element: HTMLElement, resourceHash: EntryHash) => {
+          render(html`
+            <task-display-wrapper
+              .resourceHash=${resourceHash}
+              .appAgentWebsocket=${appAgentWebsocket}
+            ></task-display-wrapper>
+          `, element)
+        }
+      }
       appletConfig,
       widgetPairs: [{
         assess: assessDimensionWidget,
