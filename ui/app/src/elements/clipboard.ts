@@ -119,10 +119,16 @@ export class WeClipboard extends LitElement {
           this._searchField.focus();
         }}
       >
-        <div class="column" style="align-items: center;">
+        <div class="column" style="align-items: center; position: relative; padding-bottom: 30px;">
           ${this.mode === "select"
             ? html`<div style = "font-size: 25px; margin-bottom: 30px;">${msg("Select Attachment:")}</div>`
             : html`<div style = "font-size: 25px; margin-bottom: 30px;">${msg("Your Clipboard")}</div>`
+          }
+          ${this.mode === "open"
+            ? html`<div style="position: absolute; bottom: -10px; right: -10px; color: gray;">
+                    <span style="background: #e0e0e0; padding: 2px 5px; border-radius: 4px; color: black;">Alt + S</span> to open Clipboard
+              </div>`
+            : html``
           }
 
           <we-services-context

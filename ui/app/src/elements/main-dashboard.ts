@@ -10,17 +10,19 @@ import {
   toPromise,
 } from "@holochain-open-dev/stores";
 import { mapValues } from "@holochain-open-dev/utils";
-import { hashState, notifyError } from "@holochain-open-dev/elements";
+import { hashState, notifyError, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { decodeHashFromBase64 } from "@holochain/client";
 import { msg } from "@lit/localize";
+import { mdiMagnify } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
-import { SearchEntry } from "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
 
 import "./groups-sidebar.js";
 import "./group-applets-sidebar.js";
@@ -136,6 +138,12 @@ export class MainDashboard extends LitElement {
         }
       }
     });
+  }
+
+  openClipboard() {
+    this.showClipboard = true;
+    this._clipboard.show("open");
+    this._clipboard.focus();
   }
 
   disconnectedCallback(): void {
@@ -400,24 +408,17 @@ export class MainDashboard extends LitElement {
       </div>
 
 
-      <we-services-context
-        .services=${buildHeadlessWeServices(this._weStore)}
+      <sl-button
+        variant="success"
+        style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0; font-size: 18px;"
+        @click=${() => this.openClipboard()}
+        @keypress.enter=${() => this.openClipboard()}
       >
-        <search-entry
-          field-label=""
-          style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0;"
-          @entry-selected=${(e) => {
-            this.selectedGroupDnaHash = undefined;
-            this.dashboardMode = "browserView";
-            this.dynamicLayout.openViews.openHrl(
-              e.detail.hrlWithContext.hrl,
-              e.detail.hrlWithContext.context
-            );
-            e.target.reset();
-          }}
-        ></search-entry>
-      </we-services-context>
-
+        <div class="row" style="align-items: center; font-size: 18px;">
+          <sl-icon .src=${wrapPathInSvg(mdiMagnify)} style="font-size: 28px;"></sl-icon>
+          <span style="margin-left: 10px;">${msg("Search")}</span>
+        </div>
+      </sl-button>
     `;
   }
 

@@ -280,8 +280,9 @@ export class ClipboardSearch extends LitElement implements FormField {
                   .src=${info.entryInfo.icon_src}
                   style="margin-right: 16px"
                 ></sl-icon>
-                ${info.entryInfo.name}
                 <div class="row" style="align-items: center">
+                  <span>${info.entryInfo.name}</span>
+                  <span style="flex: 1;"></span>
                   <span class="placeholder">&nbsp;${msg("in")}&nbsp;</span>
                   ${searchResult.appletsInfos
                     .get(info.appletHash)
@@ -296,7 +297,7 @@ export class ClipboardSearch extends LitElement implements FormField {
                         />
                       `
                     )}
-                  <span class="placeholder">
+                  <span class="placeholder" style="margin-right: 5px;">
                     ${searchResult.appletsInfos.get(info.appletHash)
                       ?.appletName}</span
                   >
@@ -379,7 +380,7 @@ export class ClipboardSearch extends LitElement implements FormField {
         .to-clipboard {
           background: #2eb2d7;
           border-radius: 5px;
-          padding: 3px 8px;
+          padding: 0 8px;
           box-shadow: 0 0 3px black;
         }
 
