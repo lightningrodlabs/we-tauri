@@ -146,6 +146,22 @@ export class MainDashboard extends LitElement {
     this._clipboard.focus();
   }
 
+  closeClipboard() {
+    this.showClipboard = false;
+    this._clipboard.hide();
+  }
+
+  toggleClipboard() {
+    switch (this.showClipboard) {
+      case true:
+        this.closeClipboard();
+        break;
+      case false:
+        this.openClipboard();
+        break;
+    }
+  }
+
   disconnectedCallback(): void {
     if (this._unlisten) this._unlisten();
   }
@@ -290,6 +306,7 @@ export class MainDashboard extends LitElement {
           @select-hrl-request=${() => {
             this._clipboard.show("select");
           }}
+          @toggle-clipboard=${() => this.toggleClipboard()}
           id="dynamic-layout"
           .rootItemConfig=${{
             type: "row",

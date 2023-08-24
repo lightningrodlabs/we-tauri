@@ -158,6 +158,12 @@ export class DynamicLayout extends LitElement {
         this.addEventListener("cancel-select-hrl", listener);
       })
 
+    },
+    toggleClipboard: () => {
+      this.dispatchEvent(new CustomEvent('toggle-clipboard', {
+        bubbles: true,
+        detail: "toggle-clipboard",
+      }));
     }
   };
 

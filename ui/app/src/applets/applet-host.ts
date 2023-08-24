@@ -279,6 +279,8 @@ export async function handleAppletIframeMessage(
       return services.search(message.filter);
     case "user-select-hrl":
       return openViews.userSelectHrl();
+    case "toggle-clipboard":
+      return openViews.toggleClipboard();
     case "notify-we":
       const appletId: AppletId = encodeHashToBase64(appletHash);
 

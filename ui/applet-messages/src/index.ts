@@ -146,6 +146,9 @@ export type AppletToParentRequest =
       type: "user-select-hrl";
     }
   | {
+      type: "toggle-clipboard";
+    }
+  | {
       type: "localStorage.setItem";
       key: string;
       value: string;

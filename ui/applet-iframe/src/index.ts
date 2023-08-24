@@ -68,6 +68,13 @@ window.onload = async () => {
     await renderView(applet, iframeConfig, view);
   }
 
+  // add eventlistener for clipboard
+  window.addEventListener ("keydown", async (zEvent) => {
+    if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+      await postMessage({ type: "toggle-clipboard" })
+    }
+  });
+
   window.addEventListener("message", async (m) => {
     try {
       if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");

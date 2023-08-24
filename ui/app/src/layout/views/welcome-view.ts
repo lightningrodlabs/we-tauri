@@ -83,7 +83,10 @@ export class WelcomeView extends LitElement {
   render() {
     return html`
       <div class="column" style="align-items: center; flex: 1; overflow: scroll; padding: 24px;">
-        <sl-button style="position: absolute; top: 20px; right: 20px;" @click=${(e) => this.dispatchEvent(new CustomEvent("request-join-group",
+        <sl-button
+          variant="primary"
+          style="position: absolute; top: 20px; right: 20px;"
+          @click=${(e) => this.dispatchEvent(new CustomEvent("request-join-group",
           {
             composed: true,
             bubbles: true

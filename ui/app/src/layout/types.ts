@@ -12,4 +12,5 @@ export interface AppOpenViews {
   ): void;
   openHrl(hrl: Hrl, context: any): void;
   userSelectHrl(): Promise<HrlWithContext | undefined>;
+  toggleClipboard(): void;
 }
