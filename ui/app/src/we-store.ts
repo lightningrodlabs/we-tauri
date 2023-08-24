@@ -31,18 +31,20 @@ import {
   DnaHash,
   EntryHash,
 } from "@holochain/client";
-import { GroupProfile, HrlWithContext } from "@lightningrodlabs/we-applet";
+import { GroupProfile, HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 import { invoke } from "@tauri-apps/api";
+import { notify } from "@holochain-open-dev/elements";
+import { msg } from "@lit/localize";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
-import { AppletHash, AppletId } from "./types.js";
+import { AppletHash } from "./types.js";
 import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
@@ -403,14 +405,34 @@ export class WeStore {
 
 
   hrlToClipboard(hrl: HrlWithContext) {
+    const hrlB64 = hrlWithContextToB64(hrl);
     const clipboardJSON = window.localStorage.getItem("clipboard");
-    let clipboardContent: Array<HrlWithContext> = [];
+    let clipboardContent: Array<HrlB64WithContext> = [];
     if (clipboardJSON) {
       clipboardContent = JSON.parse(clipboardJSON);
+      // Only add if it's not already there
+      if (clipboardContent.filter((hrlB64Stored) => JSON.stringify(hrlB64Stored) === JSON.stringify(hrlB64)).length === 0) {
+        clipboardContent.push(hrlB64);
+      }
     }
-    clipboardContent.push(hrl);
-    clipboardContent = [...new Set(clipboardContent)];
     window.localStorage.setItem("clipboard", JSON.stringify(clipboardContent));
+    notify(msg("Added to clipboard."));
+  }
+
+  removeHrlFromClipboard(hrlB64: HrlB64WithContext) {
+    const clipboardJSON = window.localStorage.getItem("clipboard");
+    let clipboardContent: Array<HrlB64WithContext> = [];
+    console.log("HRL B64: ", hrlB64);
+    if (clipboardJSON) {
+      clipboardContent = JSON.parse(clipboardJSON);
+      const newClipboardContent = clipboardContent.filter((hrlB64Stored) => JSON.stringify(hrlB64Stored) !== JSON.stringify(hrlB64));
+      window.localStorage.setItem("clipboard", JSON.stringify(newClipboardContent));
+      // const index = clipboardContent.indexOf(hrlB64);
+      // console.log("INDEX: ", index);
+      // if (index > -1) { // only splice array when item is found
+      //   clipboardContent.splice(index, 1);
+      // }
+    }
   }
 
 }

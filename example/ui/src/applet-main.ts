@@ -7,7 +7,7 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
 import { HrlWithContext, WeNotification, WeServices } from "@lightningrodlabs/we-applet";
-import { AppAgentClient } from "@holochain/client";
+import { AppAgentClient, encodeHashToBase64 } from "@holochain/client";
 
 @localized()
 @customElement("applet-main")
@@ -93,6 +93,7 @@ export class AppletMain extends LitElement {
 
   async userSelectHrl() {
     const selectedHrl = await this.weServices.userSelectHrl();
+    console.log("User selected HRL: ", selectedHrl);
     this.selectedHrl = selectedHrl;
   }
 
@@ -115,7 +116,15 @@ export class AppletMain extends LitElement {
 
         <div class="column center-content" style="margin-top: 50px;">
           <button @click=${() => this.userSelectHrl()}>Select HRL</button>
-          ${this.selectedHrl ? html`<div>User selected HRL: ${JSON.stringify(this.selectedHrl)}</div>` : html``}
+          ${this.selectedHrl ? html`<div>User selected HRL: ${JSON.stringify({
+            hrl: [encodeHashToBase64(this.selectedHrl.hrl[0]), encodeHashToBase64(this.selectedHrl.hrl[1])],
+            context: this.selectedHrl.context,
+            })
+            }</div>`
+            : html``
+          }
+
+          <button @click=${() => this.selectedHrl ? this.weServices.hrlToClipboard(this.selectedHrl) : alert("No HRL selected")}>Add selected HRL to We Clipboard</button>
 
           <button @click=${() => this.sendLowNotification(0)}>Send Low Urgency Notification</button>
           <button @click=${() => this.sendMediumNotification(0)}>Send Medium Urgency Notification</button>

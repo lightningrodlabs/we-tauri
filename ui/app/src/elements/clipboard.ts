@@ -1,7 +1,7 @@
 import { customElement, state, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { consume } from "@lit-labs/context";
-import { localized } from "@lit/localize";
+import { localized, msg } from "@lit/localize";
 import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
@@ -10,11 +10,12 @@ import { SearchEntry } from "@lightningrodlabs/we-applet/dist/elements/search-en
 
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlWithContext } from "@lightningrodlabs/we-applet";
+import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
 import { SlDialog } from "@shoelace-style/shoelace";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { buildHeadlessWeServices } from "../applets/applet-host.js";
+import "./hrl-element.js";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -43,7 +44,7 @@ export class WeClipboard extends LitElement {
   mode: "open" | "select" = "open";
 
   @state()
-  clipboardContent: Array<HrlWithContext> = [];
+  clipboardContent: Array<HrlB64WithContext> = [];
 
   show(mode: "open" | "select") {
     this.loadClipboardContent();
@@ -59,28 +60,23 @@ export class WeClipboard extends LitElement {
 
 
   loadClipboardContent() {
+    console.log("RELOADING CLIPBOARD.");
     const clipboardJSON: string | null = window.localStorage.getItem("clipboard");
-    let clipboardContent: Array<HrlWithContext> = [];
+    let clipboardContent: Array<HrlB64WithContext> = [];
     if (clipboardJSON) {
       clipboardContent = JSON.parse(clipboardJSON);
     }
     this.clipboardContent = clipboardContent;
+    console.log("Loaded clipboard content: ", this.clipboardContent);
+    console.log("First element's hrl: ", this.clipboardContent[0]);
   }
 
-  removeHrlFromClipboard(hrl: HrlWithContext) {
-    const clipboardJSON = window.localStorage.getItem("clipboard");
-    let clipboardContent: Array<HrlWithContext> = [];
-    if (clipboardJSON) {
-      clipboardContent = JSON.parse(clipboardJSON);
-      const index = clipboardContent.indexOf(hrl);
-      if (index > -1) { // only splice array when item is found
-        clipboardContent.splice(index, 1);
-      }
-    }
-    window.localStorage.setItem("clipboard", JSON.stringify(clipboardContent));
+  removeHrlFromClipboard(hrlB64: HrlB64WithContext) {
+    this._weStore.removeHrlFromClipboard(hrlB64);
+    this.loadClipboardContent();
   }
 
-  handleHrlSelected(e: { detail: HrlWithContext; target: { reset: () => void; }; }) {
+  handleHrlSelected(e: { detail: { hrlWithContext: HrlWithContext }; target: { reset: () => void; }; }) {
     switch (this.mode) {
       case "open":
         this.dispatchEvent(new CustomEvent("open-hrl", {
@@ -97,7 +93,12 @@ export class WeClipboard extends LitElement {
         }));
         break;
     }
-    e.target.reset();
+    try {
+      // if the event target was the search bar
+      e.target.reset();
+    } catch (e) {
+      // ignore
+    }
     this.hide();
   }
 
@@ -106,6 +107,7 @@ export class WeClipboard extends LitElement {
     return html`
       <sl-dialog
         id="clipboard-dialog"
+        style="--width: 800px;"
         no-header
         @sl-initial-focus=${(e: { preventDefault: () => void; }) => {
           e.preventDefault();
@@ -113,7 +115,10 @@ export class WeClipboard extends LitElement {
         }}
       >
         <div class="column" style="align-items: center;">
-          ${this.mode === "select" ? html`<div style = "font-size: 22px;">Select Attachment:</div>` : html``}
+          ${this.mode === "select"
+            ? html`<div style = "font-size: 25px; margin-bottom: 30px;">${msg("Select Attachment:")}</div>`
+            : html`<div style = "font-size: 25px; margin-bottom: 30px;">${msg("Your Clipboard")}</div>`
+          }
 
           <we-services-context
             .services=${buildHeadlessWeServices(this._weStore)}
@@ -126,7 +131,17 @@ export class WeClipboard extends LitElement {
             ></search-entry>
           </we-services-context>
 
-          <div style="margin-top: 30px;">${JSON.stringify(this.clipboardContent)}</div>
+          <div class="row" style="margin-top: 30px; flex-wrap: wrap;">
+            ${this.clipboardContent.map((hrlB64) => html`
+              <hrl-element
+                .hrlB64=${hrlB64}
+                .selectTitle=${this.mode === "open" ? msg("Click to open") : undefined}
+                @hrl-removed=${() => this.loadClipboardContent()}
+                @hrl-selected=${(e) => this.handleHrlSelected(e)}
+                style="margin: 0 7px 7px 0;"
+              ></hrl-element>
+            `)}
+          </div>
       </sl-dialog>
     `;
   }

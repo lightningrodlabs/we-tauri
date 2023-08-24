@@ -142,14 +142,14 @@ export class DynamicLayout extends LitElement {
         detail: "select-hrl",
       }));
 
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const listener = (e) => {
           switch (e.type) {
             case "cancel-select-hrl":
               this.removeEventListener("cancel-select-hrl", listener);
-              return reject(new Error("HRL selection cancelled by user"));
+              return resolve(undefined);
             case "hrl-selected":
-              const hrlWithContext: HrlWithContext = e.detail;
+              const hrlWithContext: HrlWithContext = e.detail.hrlWithContext;
               this.removeEventListener("hrl-selected", listener);
               return resolve(hrlWithContext)
           }

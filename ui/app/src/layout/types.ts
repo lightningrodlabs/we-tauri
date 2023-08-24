@@ -11,5 +11,5 @@ export interface AppOpenViews {
     context: any
   ): void;
   openHrl(hrl: Hrl, context: any): void;
-  userSelectHrl(): Promise<HrlWithContext>;
+  userSelectHrl(): Promise<HrlWithContext | undefined>;
 }

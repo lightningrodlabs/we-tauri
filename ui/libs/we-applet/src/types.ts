@@ -4,15 +4,24 @@ import {
   ActionHash,
   EntryHash,
   DnaHash,
+  EntryHashB64,
+  ActionHashB64,
+  DnaHashB64,
 } from "@holochain/client";
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
+export type HrlB64 = [DnaHashB64, ActionHashB64 | EntryHashB64];
 
 // Contextual reference to a Hrl
 // Useful use case: image we want to point to a specific section of a document
 // The document action hash would be the Hrl, and the context could be { section: "Second Paragraph" }
 export interface HrlWithContext {
   hrl: Hrl;
+  context: any;
+}
+
+export interface HrlB64WithContext {
+  hrl: HrlB64;
   context: any;
 }
 
