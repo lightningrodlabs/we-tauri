@@ -16,6 +16,8 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { buildHeadlessWeServices } from "../applets/applet-host.js";
 import "./hrl-element.js";
+import "./clipboard-search.js";
+import { ClipboardSearch } from "./clipboard-search.js";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -38,7 +40,7 @@ export class WeClipboard extends LitElement {
   _dialog!: SlDialog;
 
   @query("#clipboard-search")
-  _searchField!: SearchEntry;
+  _searchField!: ClipboardSearch;
 
   @state()
   mode: "open" | "select" = "open";
@@ -60,15 +62,12 @@ export class WeClipboard extends LitElement {
 
 
   loadClipboardContent() {
-    console.log("RELOADING CLIPBOARD.");
     const clipboardJSON: string | null = window.localStorage.getItem("clipboard");
     let clipboardContent: Array<HrlB64WithContext> = [];
     if (clipboardJSON) {
       clipboardContent = JSON.parse(clipboardJSON);
     }
     this.clipboardContent = clipboardContent;
-    console.log("Loaded clipboard content: ", this.clipboardContent);
-    console.log("First element's hrl: ", this.clipboardContent[0]);
   }
 
   removeHrlFromClipboard(hrlB64: HrlB64WithContext) {
@@ -102,6 +101,12 @@ export class WeClipboard extends LitElement {
     this.hide();
   }
 
+  hrlToClipboard(hrlWithContext: HrlWithContext) {
+    console.log("Adding hrl to clipboard: ", hrlWithContext);
+    this._weStore.hrlToClipboard(hrlWithContext);
+    this.loadClipboardContent();
+  }
+
 
   render() {
     return html`
@@ -123,12 +128,12 @@ export class WeClipboard extends LitElement {
           <we-services-context
             .services=${buildHeadlessWeServices(this._weStore)}
           >
-            <search-entry
+            <clipboard-search
               id="clipboard-search"
               field-label=""
-              style="width: 400px;"
               @entry-selected=${(e) => this.handleHrlSelected(e)}
-            ></search-entry>
+              @hrl-to-clipboard=${(e) => this.hrlToClipboard(e.detail.hrlWithContext)}
+            ></clipboard-search>
           </we-services-context>
 
           <div class="row" style="margin-top: 30px; flex-wrap: wrap;">
