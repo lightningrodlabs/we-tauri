@@ -11,6 +11,9 @@ pub enum WeError {
     #[error("Filesystem error: `{0}`")]
     FileSystemError(String),
 
+    #[error("Failed to serialize or deserialize: `{0}`")]
+    SerdeYamlError(String),
+
     #[error("Applets UI server error: `{0}`")]
     AppletsUIServerError(String),
 
@@ -58,6 +61,15 @@ pub enum WeError {
 
     #[error("Error signing zome call: `{0}`")]
     SignZomeCallError(String),
+
+    #[error("Portal remote call failed: `{0}`")]
+    PortalRemoteCallError(String),
+
+    #[error("Fetching mere memory failed: `{0}`")]
+    MereMemoryError(String),
+
+    #[error("Failed to convert hash: `{0}`")]
+    HashConversionError(String),
 
     #[error("No available DevHub host(s) found.")]
     NoAvailableHostsError(()),

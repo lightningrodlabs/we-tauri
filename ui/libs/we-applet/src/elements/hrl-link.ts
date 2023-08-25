@@ -89,8 +89,14 @@ export class HrlLink extends LitElement {
             <sl-tag
               pill
               style="cursor: pointer"
+              tabindex="0"
               @click=${() =>
                 this.weServices.openViews.openHrl(this.hrl, this.context)}
+              @keypress=${(e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  this.weServices.openViews.openHrl(this.hrl, this.context)}
+                }
+              }
             >
               <div class="row" style="align-items: center">
                 <sl-icon .src=${entryInfo.entryInfo.icon_src}></sl-icon>

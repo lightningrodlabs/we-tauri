@@ -82,58 +82,59 @@ export class PostDetail extends LitElement {
 
   renderDetail(entryRecord: EntryRecord<Post>) {
     return html`
-      <sl-card>
-        <div slot="header" style="display: flex; flex-direction: row">
-          <span style="font-size: 18px; flex: 1;">${msg("Post")}</span>
+      <div class="column" style="flex: 1;">
+        <sl-card style="flex: 1;">
+          <div slot="header" style="display: flex; flex-direction: row;">
+            <span style="font-size: 18px; flex: 1;">${msg("Post")}</span>
 
-          <sl-icon-button
-            style="margin-left: 8px"
-            .src=${wrapPathInSvg(mdiPencil)}
-            @click=${() => {
-              this._editing = true;
-            }}
-          ></sl-icon-button>
-          <sl-icon-button
-            style="margin-left: 8px"
-            .src=${wrapPathInSvg(mdiDelete)}
-            @click=${() => this.deletePost()}
-          ></sl-icon-button>
-        </div>
-
-        <attachments-bar .hash=${this.postHash}></attachments-bar>
-
-        <div style="display: flex; flex-direction: column">
-          <div
-            style="display: flex; flex-direction: column; margin-bottom: 16px"
-          >
-            <span style="margin-bottom: 8px"
-              ><strong>${msg("Title")}:</strong></span
-            >
-            <span style="white-space: pre-line"
-              >${entryRecord.entry.title}</span
-            >
+            <sl-icon-button
+              style="margin-left: 8px"
+              .src=${wrapPathInSvg(mdiPencil)}
+              @click=${() => {
+                this._editing = true;
+              }}
+            ></sl-icon-button>
+            <sl-icon-button
+              style="margin-left: 8px"
+              .src=${wrapPathInSvg(mdiDelete)}
+              @click=${() => this.deletePost()}
+            ></sl-icon-button>
           </div>
 
-          <div
-            style="display: flex; flex-direction: column; margin-bottom: 16px"
-          >
-            <span style="margin-bottom: 8px"
-              ><strong>${msg("Content")}:</strong></span
+
+          <div style="display: flex; flex-direction: column">
+            <div
+              style="display: flex; flex-direction: column; margin-bottom: 16px"
             >
-            <span style="white-space: pre-line"
-              >${entryRecord.entry.content}</span
+              <span style="margin-bottom: 8px"
+                ><strong>${msg("Title")}:</strong></span
+              >
+              <span style="white-space: pre-line"
+                >${entryRecord.entry.title}</span
+              >
+            </div>
+
+            <div
+              style="display: flex; flex-direction: column; margin-bottom: 16px"
             >
+              <span style="margin-bottom: 8px"
+                ><strong>${msg("Content")}:</strong></span
+              >
+              <span style="white-space: pre-line"
+                >${entryRecord.entry.content}</span
+              >
+            </div>
           </div>
-        </div>
-      </sl-card>
-      <attachments-card .hash=${this.postHash}></attachments-card>
+        </sl-card>
+        <attachments-card .hash=${this.postHash}></attachments-card>
+      </div>
     `;
   }
 
   render() {
     switch (this._post.value.status) {
       case "pending":
-        return html`<sl-card>
+        return html`<sl-card style="flex: 1;">
           <div
             style="display: flex; flex: 1; align-items: center; justify-content: center"
           >
@@ -162,7 +163,7 @@ export class PostDetail extends LitElement {
 
         return this.renderDetail(post);
       case "error":
-        return html`<sl-card>
+        return html`<sl-card style="flex: 1;">
           <display-error
             .headline=${msg("Error fetching the post")}
             .error=${this._post.value.error.data.data}

@@ -40,7 +40,7 @@ export class HolochainApp extends LitElement {
   _myProfile!: StoreSubscriber<AsyncStatus<Profile | undefined>>;
 
   async firstUpdated() {
-    this._client = await AppAgentWebsocket.connect('', '{{app_name}}');
+    this._client = await AppAgentWebsocket.connect(new URL(''), '{{app_name}}');
 
     await this.initStores(this._client);
 
@@ -48,17 +48,17 @@ export class HolochainApp extends LitElement {
   }
 
   async initStores(appAgentClient: AppAgentClient) {
-    // Don't change this  
+    // Don't change this
   }
 
   renderMyProfile() {
     switch (this._myProfile.value.status) {
-      case 'pending': 
+      case 'pending':
         return html`<profile-list-item-skeleton></profile-list-item-skeleton>`;
       case 'complete':
         const profile = this._myProfile.value.value;
         if (!profile) return html``;
-        
+
         return html`<div
               class="row"
               style="align-items: center;"
@@ -70,9 +70,9 @@ export class HolochainApp extends LitElement {
               <span style="margin: 0 16px;">${profile?.nickname}</span>
             </div>`;
       case 'error':
-        return html`<display-error 
+        return html`<display-error
             .headline=${msg("Error fetching the profile")}
-            .error=${this._myProfile.value.error.data.data} 
+            .error=${this._myProfile.value.error.data.data}
             tooltip
           ></display-error>`;
     }
@@ -82,7 +82,7 @@ export class HolochainApp extends LitElement {
   renderContent() {
     return html``;
   }
-  
+
   renderBackButton() {
     if (this._view.view === 'main') return html``;
 
@@ -114,7 +114,7 @@ export class HolochainApp extends LitElement {
 
           ${this.renderMyProfile()}
         </div>
-        
+
         <profile-prompt style="flex: 1;">
           ${this.renderContent()}
         </profile-prompt>

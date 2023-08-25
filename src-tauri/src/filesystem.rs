@@ -1,14 +1,18 @@
-use std::path::PathBuf;
+use std::fmt::Display;
+use std::path::{PathBuf, Path};
 use std::{fs, io::Write};
 
 use holochain::prelude::{ActionHash, ActionHashB64};
 use holochain_client::InstalledAppId;
+use holochain_types::prelude::{DnaHashB64, AnyDhtHash, DnaHash, AnyDhtHashB64, AppBundle};
 use holochain_types::web_app::WebAppBundle;
+use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
 use crate::error::{WeError, WeResult};
 
 pub type Profile = String;
+
 
 #[derive(Clone)]
 pub struct WeFileSystem {
@@ -46,8 +50,10 @@ impl WeFileSystem {
             .join(breaking_app_version(app_handle))
             .join(profile);
 
-        fs::create_dir_all(app_data_dir.join("webhapps"))?;
+        fs::create_dir_all(app_data_dir.join("happs"))?;
+        fs::create_dir_all(app_data_dir.join("apps"))?;
         fs::create_dir_all(app_data_dir.join("icons"))?;
+        fs::create_dir_all(app_data_dir.join("uis"))?;
 
         Ok(WeFileSystem {
             app_data_dir,
@@ -76,9 +82,15 @@ impl WeFileSystem {
         self.app_data_dir.join("conductor")
     }
 
-    pub fn webapp_store(&self) -> WebAppStore {
-        WebAppStore {
-            path: self.app_data_dir.join("webhapps"),
+    pub fn happs_store(&self) -> HappsStore {
+        HappsStore {
+            path: self.app_data_dir.join("happs"),
+        }
+    }
+
+    pub fn apps_store(&self) -> AppsStore {
+        AppsStore {
+            path: self.app_data_dir.join("apps"),
         }
     }
 
@@ -96,8 +108,175 @@ impl WeFileSystem {
 
 }
 
+pub struct AppsStore {
+    path: PathBuf,
+}
+
+impl AppsStore {
+    pub fn root_dir(&self) -> PathBuf {
+        self.path.clone()
+    }
+
+    pub fn store_gui_release_info(&self, installed_app_id: &InstalledAppId, info: ReleaseInfo) -> WeResult<()> {
+
+        let app_dir = &self.path.join(installed_app_id);
+
+        create_dir_if_necessary(app_dir)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing gui release info: {:?}", e)))?;
+
+        let gui_release_path = app_dir.join("gui-release.yaml");
+        // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
+        // to revert upgrades if necessary
+        if gui_release_path.exists() {
+          let gui_release_dot_previous_path = app_dir.join("gui-release.previous.yaml");
+
+          std::fs::rename(gui_release_path.clone(), gui_release_dot_previous_path)
+            .map_err(|e| WeError::FileSystemError(format!("Failed to rename gui-release.yaml file to gui-release.previous.yaml file: {:?}", e)))?;
+        }
+
+        let info_value = serde_yaml::to_value(info)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}", e)))?;
+
+        let info_string = serde_yaml::to_string(&info_value)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of GUI release from serde_yaml Value to string: {}", e)))?;
+
+        std::fs::write(gui_release_path, info_string)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to write GUI release info to gui-release.yaml file: {:?}", e)))
+    }
+
+    pub fn store_happ_release_info(&self, installed_app_id: &InstalledAppId, info: ReleaseInfo) -> WeResult<()> {
+
+        let app_dir = &self.path.join(installed_app_id);
+
+        create_dir_if_necessary(app_dir)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing happ release info: {:?}", e)))?;
+
+        let happ_release_path = app_dir.join("happ-release.yaml");
+        // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
+        // to revert upgrades if necessary
+        if happ_release_path.exists() {
+          let happ_release_dot_previous_path = app_dir.join("happ-release.previous.yaml");
+
+          std::fs::rename(happ_release_path.clone(), happ_release_dot_previous_path)
+            .map_err(|e| WeError::FileSystemError(format!("Failed to rename happ-release.yaml file to happ-release.previous.yaml file: {:?}", e)))?;
+        }
+
+        let info_value = serde_yaml::to_value(info)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of happ release info to serde_yaml Value: {}", e)))?;
+
+        let info_string = serde_yaml::to_string(&info_value)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of happ release from serde_yaml Value to string: {}", e)))?;
+
+        std::fs::write(happ_release_path, info_string)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to write happ release info to happ-release.yaml file: {:?}", e)))
+    }
+
+    pub fn store_happ_entry_locator(&self, installed_app_id: &InstalledAppId, locator: ResourceLocatorB64) -> WeResult<()> {
+
+        let app_dir = &self.path.join(installed_app_id);
+
+        create_dir_if_necessary(app_dir)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing HappEntry info: {:?}", e)))?;
+
+        let happ_entry_path = app_dir.join("happ-entry.yaml");
+        // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
+        // to revert upgrades if necessary
+        if happ_entry_path.exists() {
+          let happ_entry_dot_previous_path = app_dir.join("happ-entry.previous.yaml");
+
+          std::fs::rename(happ_entry_path.clone(), happ_entry_dot_previous_path)
+            .map_err(|e| WeError::FileSystemError(format!("Failed to rename happ-entry.yaml file to happ-entry.previous.yaml file: {:?}", e)))?;
+        }
+
+        let locator_value = serde_yaml::to_value(locator)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}", e)))?;
+
+        let locator_string = serde_yaml::to_string(&locator_value)
+          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of HappEntry from serde_yaml Value to string: {}", e)))?;
+
+        std::fs::write(happ_entry_path, locator_string)
+          .map_err(|e| WeError::FileSystemError(format!("Failed to write HappEntry info to happ-entry.yaml file: {:?}", e)))
+    }
+
+    pub fn get_gui_release_info(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
+        let s = fs::read_to_string(self.path.join(installed_app_id).join("gui-release.yaml"))
+            .map_err(|e| WeError::FileSystemError(format!("Failed to read gui-release.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
+            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize gui-release.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+    }
+
+    pub fn get_gui_release_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<ActionHashB64>> {
+        let gui_release_info = self.get_gui_release_info(installed_app_id)?;
+        match gui_release_info.resource_locator {
+            Some(locator) => {
+                Ok(Some(ActionHash::try_from(AnyDhtHash::from(locator.resource_hash))
+                .map_err(|e| WeError::CustomError(format!("Failed to convert AnyDhtHash to ActionHash: {:?}", e)))?
+                .into()))
+            },
+            None => Ok(None),
+        }
+    }
+
+    pub fn get_happ_release_info(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
+        let s = fs::read_to_string(self.path.join(installed_app_id).join("happ-release.yaml"))
+            .map_err(|e| WeError::FileSystemError(format!("Failed to read happ-release.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
+            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize happ-release.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+    }
+
+    pub fn get_happ_release_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<AnyDhtHashB64>> {
+        let happ_release_info = self.get_happ_release_info(installed_app_id)?;
+        match happ_release_info.resource_locator {
+            Some(locator) => Ok(Some(locator.resource_hash)),
+            None => Ok(None),
+        }
+    }
+
+    pub fn get_happ_entry_locator(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
+        let s = fs::read_to_string(self.path.join(installed_app_id).join("happ-entry.yaml"))
+            .map_err(|e| WeError::FileSystemError(format!("Failed to read happ-entry.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
+            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize happ-entry.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+    }
+
+    pub fn get_happ_entry_action_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<AnyDhtHashB64>> {
+        let happ_entry_info = self.get_happ_release_info(installed_app_id)?;
+        match happ_entry_info.resource_locator {
+            Some(locator) => Ok(Some(locator.resource_hash)),
+            None => Ok(None),
+        }
+    }
+
+}
+
+
+/// Stores ui assets by gui release hash
 pub struct UiStore {
     path: PathBuf,
+}
+
+#[derive(Clone, Debug)]
+pub enum UiIdentifier {
+    GuiReleaseHash(ActionHashB64),
+    Other(String),
+}
+
+impl Into<String> for UiIdentifier {
+    fn into(self) -> String {
+        match self {
+            UiIdentifier::GuiReleaseHash(hashb64) => hashb64.to_string(),
+            UiIdentifier::Other(string) => string,
+        }
+    }
+}
+
+impl std::fmt::Display for UiIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            UiIdentifier::GuiReleaseHash(hashb64) => write!(f, "{}", hashb64.to_string()),
+            UiIdentifier::Other(string) => write!(f, "{}", string),
+        }
+    }
 }
 
 impl UiStore {
@@ -105,27 +284,62 @@ impl UiStore {
         self.path.clone()
     }
 
-    pub fn ui_path(&self, installed_app_id: &InstalledAppId) -> PathBuf {
-        self.path.join(installed_app_id)
+    pub fn assets_dir(&self, ui_identifier: UiIdentifier) -> PathBuf {
+        self.path.join(ui_identifier.to_string())
+    }
+
+    pub fn get_gui_version(&self, ui_identifier: UiIdentifier) -> Option<String> {
+        let assets_dir = self.assets_dir(ui_identifier);
+        match fs::read_to_string(assets_dir.join(".guiVersion")) {
+            Ok(string) => Some(string),
+            Err(e) => None,
+        }
+    }
+
+    pub fn store_ui(
+        &self,
+        ui_identifier: UiIdentifier,
+        bytes: Vec<u8>,
+        gui_version: Option<String>,
+    ) -> WeResult<()> {
+
+        let assets_dir = self.assets_dir(ui_identifier);
+
+        fs::create_dir_all(&assets_dir)?;
+
+        let ui_zip_path = self.path.join("ui.zip");
+
+        fs::write(ui_zip_path.clone(), bytes)?;
+
+        let file = std::fs::File::open(ui_zip_path.clone())?;
+        unzip_file(file, assets_dir.clone())?;
+
+        fs::remove_file(ui_zip_path)?;
+
+        if let Some(version) = gui_version {
+            fs::write(assets_dir.join(".guiVersion"), version)?;
+        }
+
+        Ok(())
     }
 
     pub async fn extract_and_store_ui(
         &self,
-        installed_app_id: &InstalledAppId,
+        ui_identifier: UiIdentifier,
         web_app: &WebAppBundle,
     ) -> WeResult<()> {
         let ui_bytes = web_app.web_ui_zip_bytes().await?;
 
-        let ui_folder_path = self.ui_path(installed_app_id);
+        let assets_dir = self.assets_dir(ui_identifier);
 
-        fs::create_dir_all(&ui_folder_path)?;
+        fs::create_dir_all(&assets_dir)?;
 
         let ui_zip_path = self.path.join("ui.zip");
 
         fs::write(ui_zip_path.clone(), ui_bytes.into_owned().into_inner())?;
 
         let file = std::fs::File::open(ui_zip_path.clone())?;
-        unzip_file(file, ui_folder_path)?;
+        unzip_file(file, assets_dir)?;
 
         fs::remove_file(ui_zip_path)?;
 
@@ -133,52 +347,63 @@ impl UiStore {
     }
 }
 
-pub struct WebAppStore {
+pub struct HappsStore {
     path: PathBuf,
 }
 
-impl WebAppStore {
+#[derive(Clone, Debug)]
+pub enum HappIdentifier {
+    HappReleaseHash(ActionHashB64),
+    Other(String),
+}
+
+impl Into<String> for HappIdentifier {
+    fn into(self) -> String {
+        match self {
+            HappIdentifier::HappReleaseHash(hashb64) => hashb64.to_string(),
+            HappIdentifier::Other(string) => string,
+        }
+    }
+}
+
+impl std::fmt::Display for HappIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            HappIdentifier::HappReleaseHash(hashb64) => write!(f, "{}", hashb64.to_string()),
+            HappIdentifier::Other(string) => write!(f, "{}", string),
+        }
+    }
+}
+
+impl HappsStore {
     pub fn root_dir(&self) -> PathBuf {
         self.path.clone()
     }
 
-    fn webhapp_path(&self, web_app_action_hash: &ActionHash) -> PathBuf {
-        let web_app_action_hash_b64 = ActionHashB64::from(web_app_action_hash.clone()).to_string();
-        self.path.join(web_app_action_hash_b64)
+    pub fn happ_package_path(&self, happ_identifier: HappIdentifier) -> PathBuf {
+        self.path.join(format!("{}.happ", happ_identifier))
     }
 
-    pub fn webhapp_package_path(&self, web_app_action_hash: &ActionHash) -> PathBuf {
-        self.webhapp_path(web_app_action_hash)
-            .join("package.webhapp")
-    }
-
-    pub fn get_webapp(&self, web_app_action_hash: &ActionHash) -> WeResult<Option<WebAppBundle>> {
-        let path = self.webhapp_path(web_app_action_hash);
+    pub fn get_happ(&self, happ_identifier: HappIdentifier) -> WeResult<Option<AppBundle>> {
+        let path = self.happ_package_path(happ_identifier);
 
         if path.exists() {
-            let bytes = fs::read(self.webhapp_package_path(&web_app_action_hash))?;
-            let web_app = WebAppBundle::decode(bytes.as_slice())?;
+            let bytes = fs::read(path)?;
+            let happ = AppBundle::decode(bytes.as_slice())?;
 
-            return Ok(Some(web_app));
+            return Ok(Some(happ));
         } else {
             return Ok(None);
         }
     }
 
-    pub async fn store_webapp(
+    pub async fn store_happ(
         &self,
-        web_app_action_hash: &ActionHash,
-        web_app: &WebAppBundle,
+        happ_identifier: HappIdentifier,
+        happ_bytes: Vec<u8>,
     ) -> WeResult<()> {
-        let bytes = web_app.encode()?;
-
-        let path = self.webhapp_path(web_app_action_hash);
-
-        fs::create_dir_all(path.clone())?;
-
-        let mut file = std::fs::File::create(self.webhapp_package_path(web_app_action_hash))?;
-        file.write_all(bytes.as_slice())?;
-
+        let mut file = std::fs::File::create(self.happ_package_path(happ_identifier))?;
+        file.write_all(happ_bytes.as_slice())?;
         Ok(())
     }
 }
@@ -265,3 +490,62 @@ pub fn breaking_app_version(app_handle: &AppHandle) -> String {
         _ => format!("{}.x.x", app_version.major)
     }
 }
+
+
+pub fn create_dir_if_necessary(path: &PathBuf) -> WeResult<()> {
+    if !path_exists(path) {
+        fs::create_dir_all(path)?;
+    }
+
+    Ok(())
+}
+
+pub fn path_exists(path: &PathBuf) -> bool {
+    Path::new(path).exists()
+}
+
+
+
+
+
+//// NOTE: This is not necessarily an HRL. For example UI's stored on the
+/// DevHub need to be accessed via the `happs` cell despite being actually
+/// stored in the `web_assets` cell. The DevHub is making a bridge call
+/// internally.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ResourceLocator {
+    pub dna_hash: DnaHash,
+    pub resource_hash: AnyDhtHash,
+}
+
+impl Into<ResourceLocatorB64> for ResourceLocator {
+    fn into(self) -> ResourceLocatorB64 {
+        ResourceLocatorB64 {
+            dna_hash: DnaHashB64::from(self.dna_hash),
+            resource_hash: AnyDhtHashB64::from(self.resource_hash),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ResourceLocatorB64 {
+    pub dna_hash: DnaHashB64,
+    pub resource_hash: AnyDhtHashB64,
+}
+
+impl Into<ResourceLocator> for ResourceLocatorB64 {
+    fn into(self) -> ResourceLocator {
+        ResourceLocator {
+            dna_hash: DnaHash::from(self.dna_hash),
+            resource_hash: AnyDhtHash::from(self.resource_hash),
+        }
+    }
+}
+
+/// Info about happ or gui release
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ReleaseInfo {
+    pub resource_locator: Option<ResourceLocatorB64>,
+    pub version: Option<String>,
+}
+

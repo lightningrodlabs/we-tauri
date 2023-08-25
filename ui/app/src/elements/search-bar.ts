@@ -20,22 +20,16 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
+import "@shoelace-style/shoelace/dist/components/popup/popup.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import SlInput from "@shoelace-style/shoelace/dist/components/input/input";
-import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
+import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 
-import {
-  AppletInfo,
-  EntryLocationAndInfo,
-  GroupProfile,
-  HrlWithContext,
-  WeServices,
-} from "../types";
-import { weServicesContext } from "../context";
+
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { getAppletsInfosAndGroupsProfiles } from "../utils";
 import { mdiMagnify } from "@mdi/js";
+import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlWithContext, WeServices, getAppletsInfosAndGroupsProfiles, weServicesContext } from "@lightningrodlabs/we-applet";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -48,8 +42,8 @@ export interface SearchResult {
  * @fires entry-selected - Fired when the user selects some entry. Detail will have this shape: { hrl, context }
  */
 @localized()
-@customElement("search-entry")
-export class SearchEntry extends LitElement implements FormField {
+@customElement("search-bar")
+export class SearchBar extends LitElement implements FormField {
   /** Form field properties */
 
   /**
@@ -144,6 +138,9 @@ export class SearchEntry extends LitElement implements FormField {
     | StoreSubscriber<AsyncStatus<SearchResult>>
     | undefined;
 
+  @state()
+  showDropdown: boolean = false;
+
   /**
    * @internal
    */
@@ -154,19 +151,11 @@ export class SearchEntry extends LitElement implements FormField {
    * @internal
    */
   @query("#dropdown")
-  private dropdown!: SlDropdown;
+  private dropdown!: SlMenu;
 
   focus() {
     this._textField.focus();
     this._textField.select();
-  }
-
-  firstUpdated() {
-    this._textField.addEventListener('keydown', event => {
-      if (event.key === ' ') {
-        event.stopPropagation();
-      }
-    })
   }
 
   async search(filter: string): Promise<SearchResult> {
@@ -201,7 +190,7 @@ export class SearchEntry extends LitElement implements FormField {
       return;
     }
 
-    this.dropdown.show();
+    this.showDropdown = true;
 
     const store = lazyLoad(() => this.search(filter));
     this._searchEntries = new StoreSubscriber(this, () => store, () => []);
@@ -218,7 +207,7 @@ export class SearchEntry extends LitElement implements FormField {
     this.value = hrlWithContext;
     this.info = info;
 
-    this.dropdown.hide();
+    this.showDropdown = false;
   }
 
   renderEntryList() {
@@ -280,6 +269,7 @@ export class SearchEntry extends LitElement implements FormField {
                           .src=${searchResult.groupsProfiles.get(groupId)
                             ?.logo_src}
                           style="height: 16px; width: 16px; margin-right: 4px; border-radius: 50%"
+                          alt=${`Group icon of group ${searchResult.groupsProfiles.get(groupId)?.name}`}
                         />
                       `
                     )}
@@ -309,14 +299,33 @@ export class SearchEntry extends LitElement implements FormField {
 
   render() {
     return html`
-      <div style="flex: 1; display: flex;">
-        <sl-dropdown id="dropdown" hoist>
+      <div style="flex: 1; display: flex;" class="column" @keydown=${(e) => {
+        if (e.key === "Escape") {
+          this.showDropdown = false;
+          this._textField.blur();
+        }
+      }}>
+
+        <sl-popup placement="bottom" ?active=${this.showDropdown}>
           <sl-input
+            slot="anchor"
             id="textfield"
-            slot="trigger"
             .label=${this._label}
             .placeholder=${this.placeholder}
             @input=${() => this.onFilterChange()}
+            @keydown=${(e) => {
+              if (e.key === "ArrowDown") {
+                // this.dropdown.focus();
+                // this.dropdown.focusOnTrigger();
+                const menu = this.dropdown;
+                if (menu) {
+                  const menuItems = menu.getAllItems();
+                  const firstMenuItem = menuItems[0];
+                  menu.setCurrentItem(firstMenuItem);
+                  firstMenuItem.focus();
+                }
+              }}
+            }
             .value=${this.info ? this.info.entryInfo.name : ""}
           >
             ${this.info
@@ -329,14 +338,15 @@ export class SearchEntry extends LitElement implements FormField {
                   slot="prefix"
                 ></sl-icon> `}
           </sl-input>
-          <sl-menu
-            @sl-select=${(e: CustomEvent) => {
-              this.onEntrySelected(e.detail.item.hrl, e.detail.item.info);
-            }}
-          >
-            ${this.renderEntryList()}
-          </sl-menu>
-        </sl-dropdown>
+              <sl-menu
+                id="dropdown"
+                @sl-select=${(e: CustomEvent) => {
+                  this.onEntrySelected(e.detail.item.hrl, e.detail.item.info);
+                }}
+              >
+                ${this.renderEntryList()}
+              </sl-menu>
+        </sl-popup>
       </div>
     `;
   }

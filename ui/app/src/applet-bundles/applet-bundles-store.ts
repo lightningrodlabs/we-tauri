@@ -6,7 +6,7 @@ import {
   retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   AdminWebsocket,
@@ -103,31 +103,14 @@ export class AppletBundlesStore {
   async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
     const appId = appIdFromAppletHash(appletHash);
 
-    // Trigger the download of the icon
-    await toPromise(this.appletBundleLogo.get(applet.appstore_app_hash));
-
-    const installedApps = await toPromise(this.installedApps);
-
-    const appletInfo = installedApps.find(
-      (app) => app.installed_app_id === appId
-    );
-
-    // TODO make this call in the Rust backend
-    if (appletInfo) {
-      await this.adminWebsocket.enableApp({
-        installed_app_id: appId,
-      });
-      return appletInfo;
-    }
-
-    const appInfo: AppInfo = await invoke("install_applet_bundle", {
+    const appInfo: AppInfo = await invoke("install_applet_bundle_if_necessary", {
       appId,
       networkSeed: applet.network_seed,
       membraneProofs: {},
-      happReleaseHash: encodeHashToBase64(applet.devhub_happ_release_hash),
-      guiReleaseHash: encodeHashToBase64(applet.devhub_gui_release_hash),
-      devhubDnaHash: encodeHashToBase64(applet.devhub_dna_hash),
       agentPubKey: encodeHashToBase64(this.appstoreClient.myPubKey),
+      devhubDnaHash: encodeHashToBase64(applet.devhub_dna_hash),
+      happReleaseHash: encodeHashToBase64(applet.devhub_happ_release_hash),
+      happEntryActionHash: encodeHashToBase64(applet.devhub_happ_entry_action_hash),
     });
 
     await this.runningApps.reload();

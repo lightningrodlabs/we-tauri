@@ -1,8 +1,8 @@
 import { consume } from "@lit-labs/context";
 import { state, customElement, query } from "lit/decorators.js";
-import { encodeHashToBase64, DnaHash, AnyDhtHash, EntryHash } from "@holochain/client";
+import { encodeHashToBase64, DnaHash, AnyDhtHash } from "@holochain/client";
 import { LitElement, html, css } from "lit";
-import { listen } from "@tauri-apps/api/event";
+import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import {
   StoreSubscriber,
   asyncDeriveStore,
@@ -10,19 +10,25 @@ import {
   toPromise,
 } from "@holochain-open-dev/stores";
 import { mapValues } from "@holochain-open-dev/utils";
-import { hashState, notifyError } from "@holochain-open-dev/elements";
+import { hashState, notifyError, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { decodeHashFromBase64 } from "@holochain/client";
 import { msg } from "@lit/localize";
+import { mdiMagnify } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
+import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
+import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
 
 import "./groups-sidebar.js";
 import "./group-applets-sidebar.js";
 import "./join-group-dialog.js";
+import "./search-bar.js";
 import "../layout/dynamic-layout.js";
 import "../layout/views/applet-main.js";
 import { DynamicLayout } from "../layout/dynamic-layout.js";
@@ -35,6 +41,9 @@ import { weLogoIcon } from "../icons/we-logo-icon.js";
 import { buildHeadlessWeServices } from "../applets/applet-host.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
+import "./clipboard.js";
+import { WeClipboard } from "./clipboard.js";
+
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
   @consume({ context: weStoreContext })
@@ -43,6 +52,12 @@ export class MainDashboard extends LitElement {
 
   @query("join-group-dialog")
   joinGroupDialog!: JoinGroupDialog;
+
+  @query("#clipboard")
+  _clipboard!: WeClipboard;
+
+  @state()
+  showClipboard: boolean = false;
 
   @state(hashState())
   selectedGroupDnaHash: DnaHash | undefined;
@@ -55,6 +70,8 @@ export class MainDashboard extends LitElement {
 
   @state()
   hoverBrowser: boolean = false;
+
+  _unlisten: UnlistenFn | undefined;
 
   selectedAppletHash = new StoreSubscriber(
     this,
@@ -87,7 +104,7 @@ export class MainDashboard extends LitElement {
   }
 
   async firstUpdated() {
-    const unlisten = await listen("deep-link-received", async (e) => {
+    this._unlisten = await listen("deep-link-received", async (e) => {
       const deepLink = e.payload as string;
       try {
         const split = deepLink.split("://");
@@ -106,6 +123,48 @@ export class MainDashboard extends LitElement {
         notifyError(msg("Error opening the link."));
       }
     });
+
+    // add eventlistener for clipboard
+    window.addEventListener ("keydown", (zEvent) => {
+      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+        switch (this.showClipboard) {
+          case false:
+            this.showClipboard = true;
+            this._clipboard.show("open");
+            this._clipboard.focus();
+            break;
+          case true:
+            this._clipboard.hide();
+            break;
+        }
+      }
+    });
+  }
+
+  openClipboard() {
+    this.showClipboard = true;
+    this._clipboard.show("open");
+    this._clipboard.focus();
+  }
+
+  closeClipboard() {
+    this.showClipboard = false;
+    this._clipboard.hide();
+  }
+
+  toggleClipboard() {
+    switch (this.showClipboard) {
+      case true:
+        this.closeClipboard();
+        break;
+      case false:
+        this.openClipboard();
+        break;
+    }
+  }
+
+  disconnectedCallback(): void {
+    if (this._unlisten) this._unlisten();
   }
 
   get dynamicLayout() {
@@ -125,6 +184,7 @@ export class MainDashboard extends LitElement {
     //   },
     // });
   }
+
 
   renderDashboard() {
     switch (this.dashboardMode) {
@@ -202,6 +262,32 @@ export class MainDashboard extends LitElement {
 
   render() {
     return html`
+      <we-clipboard
+        id="clipboard"
+        @open-hrl=${(e) => {
+          this.selectedGroupDnaHash = undefined;
+          this.dashboardMode = "browserView";
+          this.dynamicLayout.openViews.openHrl(
+            e.detail.hrlWithContext.hrl,
+            e.detail.hrlWithContext.context
+          );
+        }}
+        @hrl-selected=${(e) => {
+          this.dynamicLayout.dispatchEvent(new CustomEvent("hrl-selected", {
+            detail: e.detail,
+            bubbles: false,
+            composed: false,
+          }))
+        }}
+        @sl-hide=${() => {
+          console.log("@sl-hide bubbled up to we-clipboard.")
+          this.dynamicLayout.dispatchEvent(new CustomEvent("cancel-select-hrl", {
+            bubbles: false,
+            composed: false,
+          }));
+          this.showClipboard = false;
+        }}
+      ></we-clipboard>
       <join-group-dialog
         @group-joined=${(e) => this.openGroup(e.detail.groupDnaHash)}
       ></join-group-dialog>
@@ -218,6 +304,10 @@ export class MainDashboard extends LitElement {
             this.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
           }}
+          @select-hrl-request=${() => {
+            this._clipboard.show("select");
+          }}
+          @toggle-clipboard=${() => this.toggleClipboard()}
           id="dynamic-layout"
           .rootItemConfig=${{
             type: "row",
@@ -335,25 +425,17 @@ export class MainDashboard extends LitElement {
         <span>Switch to browser view...</span>
       </div>
 
-
-      <we-services-context
-        .services=${buildHeadlessWeServices(this._weStore)}
+      <sl-button
+        variant="success"
+        style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0; font-size: 18px;"
+        @click=${() => this.openClipboard()}
+        @keypress.enter=${() => this.openClipboard()}
       >
-        <search-entry
-          field-label=""
-          style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0;"
-          @entry-selected=${(e) => {
-            this.selectedGroupDnaHash = undefined;
-            this.dashboardMode = "browserView";
-            this.dynamicLayout.openViews.openHrl(
-              e.detail.hrlWithContext.hrl,
-              e.detail.hrlWithContext.context
-            );
-            e.target.reset();
-          }}
-        ></search-entry>
-      </we-services-context>
-
+        <div class="row" style="align-items: center; font-size: 18px;">
+          <sl-icon .src=${wrapPathInSvg(mdiMagnify)} style="font-size: 24px;"></sl-icon>
+          <span style="margin-left: 10px;">${msg("Search")}</span>
+        </div>
+      </sl-button>
     `;
   }
 

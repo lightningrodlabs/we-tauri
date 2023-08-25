@@ -11,7 +11,7 @@ import {
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { consume, provide } from "@lit-labs/context";
-import { Hrl } from "@lightningrodlabs/we-applet";
+import { Hrl, HrlWithContext } from "@lightningrodlabs/we-applet";
 
 import "../groups/elements/group-context.js";
 import "../groups/elements/group-home.js";
@@ -136,6 +136,35 @@ export class DynamicLayout extends LitElement {
         },
       });
     },
+    userSelectHrl: async () => {
+      this.dispatchEvent(new CustomEvent('select-hrl-request', {
+        bubbles: true,
+        detail: "select-hrl",
+      }));
+
+      return new Promise((resolve) => {
+        const listener = (e) => {
+          switch (e.type) {
+            case "cancel-select-hrl":
+              this.removeEventListener("cancel-select-hrl", listener);
+              return resolve(undefined);
+            case "hrl-selected":
+              const hrlWithContext: HrlWithContext = e.detail.hrlWithContext;
+              this.removeEventListener("hrl-selected", listener);
+              return resolve(hrlWithContext)
+          }
+        }
+        this.addEventListener("hrl-selected", listener);
+        this.addEventListener("cancel-select-hrl", listener);
+      })
+
+    },
+    toggleClipboard: () => {
+      this.dispatchEvent(new CustomEvent('toggle-clipboard', {
+        bubbles: true,
+        detail: "toggle-clipboard",
+      }));
+    }
   };
 
   firstUpdated() {

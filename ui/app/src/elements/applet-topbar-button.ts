@@ -1,10 +1,8 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
-import { hashProperty } from "@holochain-open-dev/elements";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 
-import { AppletHash } from "../types.js";
 import { AppletStore } from "../applets/applet-store.js";
 import "../applets/elements/applet-logo-raw.js";
 import "../elements/topbar-button.js";

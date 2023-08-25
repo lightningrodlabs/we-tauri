@@ -19,6 +19,9 @@ pub async fn join_group(
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("join_group")));
     }
+    if cfg!(debug_assertions) {
+        println!("### Called tauri command 'join_group'.");
+    }
 
     let conductor = conductor.lock().await;
 
@@ -52,6 +55,8 @@ pub async fn join_group(
         })
         .await?;
     admin_ws.enable_app(group_app_id).await?;
+
+    admin_ws.close();
 
     Ok(app_info)
 }

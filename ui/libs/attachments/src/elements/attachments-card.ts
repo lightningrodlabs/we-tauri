@@ -8,6 +8,7 @@ import "@shoelace-style/shoelace/dist/components/card/card.js";
 
 import "./attachments-list.js";
 import "./create-attachment.js";
+import "./add-attachment.js";
 
 @localized()
 @customElement("attachments-card")
@@ -18,13 +19,15 @@ export class AttachmentsCard extends LitElement {
   render() {
     return html`
       <sl-card style="flex: 1">
-        <div class="row" style="align-items: center" slot="header">
-          <span style="flex: 1" class="title">${msg("Attachments")}</span>
+        <div class="column">
+          <div class="row" style="align-items: center; margin-bottom: 20px;" slot="header">
+            <span style="flex: 1; margin-right: 20px;" class="title">${msg("Attachments")}</span>
 
-          <create-attachment .hash=${this.hash}></create-attachment>
+            <add-attachment .hash=${this.hash} style="margin-right: 4px;"></add-attachment>
+            <create-attachment .hash=${this.hash}></create-attachment>
+          </div>
+          <attachments-list .hash=${this.hash} style="flex: 1"></attachments-list>
         </div>
-
-        <attachments-list .hash=${this.hash} style="flex: 1"></attachments-list>
       </sl-card>
     `;
   }

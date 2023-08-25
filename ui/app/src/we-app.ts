@@ -22,7 +22,7 @@ import {
   isKeystoreInitialized,
   isLaunched,
 } from "./tauri.js";
-import { initAppClient } from "./utils.js";
+import { getCellNetworkSeed, getProvisionedCells, initAppClient } from "./utils.js";
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 
 type State =
@@ -78,11 +78,11 @@ export class WeApp extends LitElement {
     };
 
     const adminWebsocket = await AdminWebsocket.connect(
-      `ws://localhost:${info.admin_port}`
+      new URL(`ws://localhost:${info.admin_port}`)
     );
 
     const appWebsocket = await AppWebsocket.connect(
-      `ws://localhost:${info.app_port}`
+      new URL(`ws://localhost:${info.app_port}`)
     );
 
     const appStoreClient = await initAppClient(info.appstore_app_id);
@@ -94,13 +94,28 @@ export class WeApp extends LitElement {
       new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );
 
+    const appStoreAppInfo = await appWebsocket.appInfo({"installed_app_id": "AppStore-0.3.x"});
+    const devhubAppInfo = await appWebsocket.appInfo({"installed_app_id": "DevHub-0.3.x"});
+
+    getProvisionedCells(appStoreAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
+    if (devhubAppInfo) getProvisionedCells(devhubAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
+
+    const allApps = await adminWebsocket.listApps({});
+    console.log("ALL APPS: ", allApps);
     this.state = { state: "running" };
+
+    console.log("Fetching available UI updates");
+    try {
+      await this._weStore.fetchAvailableUiUpdates();
+    } catch (e) {
+      console.error("Failed to fetch available applet updates: ", e);
+    }
   }
 
   render() {
     switch (this.state.state) {
       case "loading":
-        return html`<div class="row center-content" style="flex: 1;">
+        return html`<div class="column center-content" style="flex: 1;">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "password":

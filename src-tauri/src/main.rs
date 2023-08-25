@@ -33,7 +33,7 @@ use commands::{
     conductor_info::{get_conductor_info, is_launched},
     devhub::{disable_dev_mode, enable_dev_mode, is_dev_mode_enabled, open_appstore, open_devhub},
     factory_reset::execute_factory_reset,
-    install_applet_bundle::{fetch_icon, install_applet_bundle},
+    install_applet_bundle::{fetch_icon, install_applet_bundle_if_necessary, update_applet_ui, fetch_available_ui_updates},
     join_group::join_group,
     notification::{notify_tauri, IconState, clear_systray_notification_state},
     password::{create_password, enter_password, is_keystore_initialized},
@@ -67,8 +67,9 @@ fn main() {
             enter_password,
             execute_factory_reset,
             fetch_icon,
+            fetch_available_ui_updates,
             get_conductor_info,
-            install_applet_bundle,
+            install_applet_bundle_if_necessary,
             is_dev_mode_enabled,
             is_keystore_initialized,
             is_launched,
@@ -77,6 +78,7 @@ fn main() {
             open_appstore,
             open_devhub,
             sign_zome_call,
+            update_applet_ui,
         ])
         .setup(move |app| {
             let handle = app.handle();
@@ -194,7 +196,7 @@ fn main() {
                 }
                 let mut admin_ws = get_admin_ws(&conductor).await?;
 
-                match read_asset(
+                let r = match read_asset(
                     &we_fs,
                     &mut admin_ws,
                     lowercase_applet_id,
@@ -218,7 +220,10 @@ fn main() {
                     Err(e) => ResponseBuilder::new()
                         .status(StatusCode::INTERNAL_SERVER_ERROR)
                         .body(format!("{:?}", e).as_bytes().to_vec()),
-                }
+                };
+
+                admin_ws.close();
+                r
             })
         })
         .build(tauri::generate_context!())

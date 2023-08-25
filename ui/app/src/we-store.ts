@@ -19,7 +19,7 @@ import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
   AppInfo,
   AppWebsocket,
-  decodeHashFromBase64,
+  InstalledAppId,
   ProvisionedCell,
 } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
@@ -31,17 +31,21 @@ import {
   DnaHash,
   EntryHash,
 } from "@holochain/client";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { GroupProfile, HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
+import { invoke } from "@tauri-apps/api";
+import { notify } from "@holochain-open-dev/elements";
+import { msg } from "@lit/localize";
 import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
-import { AppletHash, AppletId } from "./types.js";
+import { AppletHash } from "./types.js";
+import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
 
@@ -63,6 +67,11 @@ export class WeStore {
     this._selectedAppletHash.update((_) => hash);
   }
 
+  public availableUiUpdates: Record<InstalledAppId, ResourceLocatorB64> = {};
+
+  public async fetchAvailableUiUpdates() {
+    this.availableUiUpdates = await invoke("fetch_available_ui_updates", {});
+  }
 
   /**
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
@@ -96,51 +105,17 @@ export class WeStore {
   }
 
   public async joinGroup(networkSeed: string): Promise<AppInfo> {
-    const appInfo = await joinGroup(
-      networkSeed,
-      this.appletBundlesStore.appstoreClient.myPubKey
-    );
     try {
-      const groupDnaHash: DnaHash =
-        appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
-      const groupAppAgentWebsocket = await initAppClient(
-        appInfo.installed_app_id
+      const appInfo = await joinGroup(
+        networkSeed,
+        this.appletBundlesStore.appstoreClient.myPubKey
       );
-      const groupStore = new GroupStore(
-        groupAppAgentWebsocket,
-        groupDnaHash,
-        this
-      );
-      const applets = await toPromise(groupStore.allApplets);
-
-      const apps = await this.adminWebsocket.listApps({});
-      const disabledApps = apps.filter((app) => isAppDisabled(app));
-
-      for (const app of disabledApps) {
-        if (
-          applets.find(
-            (appletHash) =>
-              app.installed_app_id === appIdFromAppletHash(appletHash)
-          )
-        ) {
-          await this.adminWebsocket.enableApp({
-            installed_app_id: app.installed_app_id,
-          });
-        }
-      }
-
       await this.appletBundlesStore.installedApps.reload();
+      await this.appletBundlesStore.runningApps.reload();
       return appInfo;
     } catch (e) {
-      try {
-        await this.adminWebsocket.uninstallApp({
-          installed_app_id: appInfo.installed_app_id,
-        });
-      } catch (e) {
-        console.warn(e);
-      }
-
-      throw e;
+      console.error("Error installing group app: ", e);
+      return Promise.reject(new Error(`Failed to install group app: ${e}`))
     }
   }
 
@@ -169,6 +144,7 @@ export class WeStore {
     );
 
     await this.appletBundlesStore.installedApps.reload();
+    await this.appletBundlesStore.runningApps.reload();
   }
 
   runningGroupsApps = asyncDerived(this.appletBundlesStore.runningApps, (apps) =>
@@ -209,16 +185,10 @@ export class WeStore {
   appletStores = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(
       async () => {
-        let groups = await toPromise(this.groupsForApplet.get(appletHash));
+        const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-        if (groups.size === 0) {
-          // retry after APPLETS_POLLING_FREQUENCY milliseconds in case the applet has just been
-          // freshly installed
-          setTimeout(async () => {
-            groups = await toPromise(this.groupsForApplet.get(appletHash));
-            if (groups.size === 0) throw new Error("Applet is not installed in any of the groups");
-          }, APPLETS_POLLING_FREQUENCY);
-        }
+        if (groups.size === 0)
+          throw new Error("Applet is not installed in any of the groups");
 
 
         const applet = await Promise.race(
@@ -237,7 +207,7 @@ export class WeStore {
         );
       },
       3000,
-      4
+      10
     )
   );
 
@@ -245,8 +215,16 @@ export class WeStore {
     sliceAndJoin(this.groups, groupsDnaHahes)
   );
 
-  allInstalledApplets = pipe(
-    this.appletBundlesStore.installedApplets,
+  // allInstalledApplets = pipe(
+  //   this.appletBundlesStore.installedApplets,
+  //   (appletsHashes) =>
+  //     sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
+  //       ReadonlyMap<EntryHash, AppletStore>
+  //     >
+  // );
+
+  allRunningApplets = pipe(
+    this.appletBundlesStore.runningApplets,
     (appletsHashes) =>
       sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
@@ -275,6 +253,7 @@ export class WeStore {
         // console.log("groupDnaHashes: ", groupDnaHashes);
 
         if (groupDnaHashes.length === 0) {
+          // console.log("//////// Disabling applet with hash: ", encodeHashToBase64(appletHash));
           this.appletBundlesStore.disableApplet(appletHash);
         }
 
@@ -353,11 +332,11 @@ export class WeStore {
       appletBundleHash: ActionHash // action hash of the AppEntry in the app store
     ) =>
       pipe(
-        this.allInstalledApplets,
-        (installedApplets) =>
+        this.allRunningApplets,
+        (runningApplets) =>
           completed(
             pickBy(
-              installedApplets,
+              runningApplets,
               (appletStore) =>
                 appletStore.applet.appstore_app_hash.toString() ===
                 appletBundleHash.toString()
@@ -387,7 +366,7 @@ export class WeStore {
       )
   );
 
-  allAppletsHosts = pipe(this.allInstalledApplets, (applets) =>
+  allAppletsHosts = pipe(this.allRunningApplets, (applets) =>
     mapAndJoin(applets, (appletStore) => appletStore.host)
   );
 
@@ -395,12 +374,11 @@ export class WeStore {
     Record<EntryHashB64, Record<string, InternalAttachmentType>>
   > = alwaysSubscribed(
     pipe(
-      this.allInstalledApplets,
-      (installedApplets) =>
-        mapAndJoin(
-          installedApplets,
+      this.allRunningApplets,
+      (runningApplets) => mapAndJoin(
+          runningApplets,
           (appletStore) => appletStore.attachmentTypes
-        ),
+      ),
       (allAttachmentTypes) => {
         const attachments: Record<
           EntryHashB64,
@@ -418,5 +396,37 @@ export class WeStore {
       }
     )
   );
+
+
+  hrlToClipboard(hrl: HrlWithContext) {
+    const hrlB64 = hrlWithContextToB64(hrl);
+    const clipboardJSON = window.localStorage.getItem("clipboard");
+    let clipboardContent: Array<HrlB64WithContext> = [];
+    if (clipboardJSON) {
+      clipboardContent = JSON.parse(clipboardJSON);
+      // Only add if it's not already there
+      if (clipboardContent.filter((hrlB64Stored) => JSON.stringify(hrlB64Stored) === JSON.stringify(hrlB64)).length === 0) {
+        clipboardContent.push(hrlB64);
+      }
+    }
+    window.localStorage.setItem("clipboard", JSON.stringify(clipboardContent));
+    notify(msg("Added to clipboard."));
+  }
+
+  removeHrlFromClipboard(hrlB64: HrlB64WithContext) {
+    const clipboardJSON = window.localStorage.getItem("clipboard");
+    let clipboardContent: Array<HrlB64WithContext> = [];
+    console.log("HRL B64: ", hrlB64);
+    if (clipboardJSON) {
+      clipboardContent = JSON.parse(clipboardJSON);
+      const newClipboardContent = clipboardContent.filter((hrlB64Stored) => JSON.stringify(hrlB64Stored) !== JSON.stringify(hrlB64));
+      window.localStorage.setItem("clipboard", JSON.stringify(newClipboardContent));
+      // const index = clipboardContent.indexOf(hrlB64);
+      // console.log("INDEX: ", index);
+      // if (index > -1) { // only splice array when item is found
+      //   clipboardContent.splice(index, 1);
+      // }
+    }
+  }
 
 }

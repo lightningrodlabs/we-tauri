@@ -5,7 +5,7 @@ import {
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mdiAttachmentPlus } from "@mdi/js";
 import { msg, localized } from "@lit/localize";
@@ -174,17 +174,30 @@ export class CreateAttachment extends LitElement {
 
   render() {
     return html`
-      <sl-icon-button
-        .src=${wrapPathInSvg(mdiAttachmentPlus)}
-        @click=${(e) => {
+      <sl-tooltip content="Create New Attachment">
+        <div
+          class="row btn"
+          tabindex="0"
+          @click=${(e) => {
           const menu = this.shadowRoot?.getElementById("menu") as any;
           menu.anchor = e.target;
           setTimeout(() => {
             menu.show();
           }, 10);
-        }}
-      >
-      </sl-icon-button>
+          }}
+          @keypress=${(e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+              const menu = this.shadowRoot?.getElementById("menu") as any;
+              menu.anchor = e.target;
+              setTimeout(() => {
+                menu.show();
+              }, 10);
+            }
+          }}
+        >
+          <sl-icon .src=${wrapPathInSvg(mdiAttachmentPlus)}></sl-icon>
+        </div>
+      </sl-tooltip>
 
       <md-menu fixed id="menu" has-overflow>
         ${this.renderMenuItems()}
@@ -192,5 +205,20 @@ export class CreateAttachment extends LitElement {
     `;
   }
 
-  static styles = [sharedStyles];
+  static styles = [sharedStyles,
+    css`
+      .btn {
+        align-items: center;
+        background: white;
+        padding: 9px;
+        border-radius: 50%;
+        box-shadow: 1px 1px 3px #6b6b6b;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #e4e4e4
+      }
+    `
+  ];
 }

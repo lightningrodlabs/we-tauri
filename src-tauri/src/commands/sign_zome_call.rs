@@ -13,6 +13,9 @@ pub async fn sign_zome_call(
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
     zome_call_unsigned: ZomeCallUnsignedTauri,
 ) -> WeResult<ZomeCall> {
+    if cfg!(debug_assertions) {
+        println!("### {:?} Called tauri command 'sign_zome_call'.", std::time::SystemTime::now());
+    }
     let zome_call_unsigned_converted: ZomeCallUnsigned = zome_call_unsigned.into();
 
     let conductor = conductor.lock().await;

@@ -68,8 +68,12 @@ export class AppletViewEl extends LitElement {
           ReadonlyMap<DnaHash, GroupProfile | undefined>
         ]
       >,
-    () => [this.appletHash]
+    () => [this.appletHash, this.weStore]
   );
+
+  firstUpdated() {
+    console.log("@applet-view: got this._applet.value: ", this._applet.value);
+  }
 
   async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
     if (this.registering) return;

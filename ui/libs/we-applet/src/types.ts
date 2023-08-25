@@ -4,15 +4,24 @@ import {
   ActionHash,
   EntryHash,
   DnaHash,
+  EntryHashB64,
+  ActionHashB64,
+  DnaHashB64,
 } from "@holochain/client";
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
+export type HrlB64 = [DnaHashB64, ActionHashB64 | EntryHashB64];
 
 // Contextual reference to a Hrl
 // Useful use case: image we want to point to a specific section of a document
 // The document action hash would be the Hrl, and the context could be { section: "Second Paragraph" }
 export interface HrlWithContext {
   hrl: Hrl;
+  context: any;
+}
+
+export interface HrlB64WithContext {
+  hrl: HrlB64;
   context: any;
 }
 
@@ -116,7 +125,23 @@ export interface WeServices {
   groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
   appletInfo(appletHash: EntryHash): Promise<AppletInfo | undefined>;
   entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
+  /**
+   * Stores an HRL to the user's We "Clipboard" of HRLs for simple retrieval
+   * @param hrl
+   */
+  hrlToClipboard(hrl: HrlWithContext): Promise<void>;
+  /**
+   * Searches for HRLs across applets
+   *
+   * @param filter
+   */
   search(filter: string): Promise<Array<HrlWithContext>>;
+  /**
+   * Prompts the end-user with a dialog to select an HRL from his
+   * We clipboard or via search across applets
+   * applets.
+   */
+  userSelectHrl(): Promise<HrlWithContext | undefined>;
   /**
    * Send notifications to We
    * @param notifications Array of notifications to send to We

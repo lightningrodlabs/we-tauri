@@ -13,7 +13,7 @@ import {
   DnaHashB64,
   decodeHashFromBase64,
 } from "@holochain/client";
-import { WeNotification } from "@lightningrodlabs/we-applet";
+import { HrlB64WithContext, HrlWithContext, WeNotification } from "@lightningrodlabs/we-applet";
 
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
 import { AppletNotificationSettings } from "./applets/types.js";
@@ -23,7 +23,7 @@ export async function initAppClient(
   appId: string,
   defaultTimeout?: number
 ): Promise<AppAgentWebsocket> {
-  const client = await AppAgentWebsocket.connect("", appId, defaultTimeout);
+  const client = await AppAgentWebsocket.connect(new URL('ws://UNUSED'), appId, defaultTimeout);
   client.installedAppId = appId;
   client.cachedAppInfo = undefined;
   client.appWebsocket.overrideInstalledAppId = appId;
@@ -386,6 +386,22 @@ export function getAppletNotificationSettings(appletId: AppletId): AppletNotific
     };
 
   return appletNotificationSettings;
+}
+
+
+
+export function hrlWithContextToB64(hrl: HrlWithContext): HrlB64WithContext {
+  return {
+    hrl: [encodeHashToBase64(hrl.hrl[0]), encodeHashToBase64(hrl.hrl[1])],
+    context: hrl.context,
+  }
+}
+
+export function hrlB64WithContextToRaw(hrlB64: HrlB64WithContext): HrlWithContext {
+  return {
+    hrl: [decodeHashFromBase64(hrlB64.hrl[0]), decodeHashFromBase64(hrlB64.hrl[1])],
+    context: hrlB64.context,
+  }
 }
 
 

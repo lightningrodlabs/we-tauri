@@ -6,8 +6,8 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
-import { WeNotification } from "@lightningrodlabs/we-applet";
-import { AppAgentClient } from "@holochain/client";
+import { HrlWithContext, WeNotification, WeServices } from "@lightningrodlabs/we-applet";
+import { AppAgentClient, encodeHashToBase64 } from "@holochain/client";
 
 @localized()
 @customElement("applet-main")
@@ -16,11 +16,17 @@ export class AppletMain extends LitElement {
   @property()
   client!: AppAgentClient;
 
+  @property()
+  weServices!: WeServices;
+
   @state()
   mediumInterval: number | null = null;
 
   @state()
   highInterval: number | null = null;
+
+  @state()
+  selectedHrl: HrlWithContext | undefined = undefined;
 
   @state()
   unsubscribe: undefined | (() => void);
@@ -85,30 +91,33 @@ export class AppletMain extends LitElement {
     }, delay);
   }
 
+  async userSelectHrl() {
+    const selectedHrl = await this.weServices.userSelectHrl();
+    console.log("User selected HRL: ", selectedHrl);
+    this.selectedHrl = selectedHrl;
+  }
+
   render() {
     return html`
       <div class="column">
         <div class="row">
-          <create-post style="margin: 16px;"></create-post>
-          <all-posts
-              style="margin: 16px;"
-              @notification=${(e: CustomEvent) => {
-                this.dispatchEvent(new CustomEvent('notification', {
-                  detail: e.detail,
-                  bubbles: true,
-                }))
-              }}
-          ></all-posts>
-        </div>
-
-        <div class="column center-content" style="margin-top: 50px;">
-          <button @click=${() => this.sendLowNotification(0)}>Send Low Urgency Notification</button>
-          <button @click=${() => this.sendMediumNotification(0)}>Send Medium Urgency Notification</button>
-          <button @click=${() => this.sendUrgentNotification(0)}>Send High Urgency Notification</button>
-
-          <button @click=${() => this.sendLowNotification(5000)}>Send Low Urgency Notification with 5 seconds delay</button>
-          <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Urgency Notification with 5 seconds delay</button>
-          <button @click=${() => this.sendUrgentNotification(5000)}>Send High Urgency Notification with 5 seconds delay</button>
+          <div class="column">
+            <create-post style="margin: 16px;"></create-post>
+            <button @click=${() => this.sendLowNotification(5000)}>Send Low Urgency Notification with 5 seconds delay</button>
+            <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Urgency Notification with 5 seconds delay</button>
+            <button @click=${() => this.sendUrgentNotification(5000)}>Send High Urgency Notification with 5 seconds delay</button>
+          </div>
+          <div class="row" style="flex-wrap: wrap;">
+            <all-posts
+                style="margin: 16px;"
+                @notification=${(e: CustomEvent) => {
+                  this.dispatchEvent(new CustomEvent('notification', {
+                    detail: e.detail,
+                    bubbles: true,
+                  }))
+                }}
+            ></all-posts>
+          </div>
         </div>
       </div>
     `;

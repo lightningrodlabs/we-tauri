@@ -4,17 +4,19 @@ import {
   AppInfo,
   CallZomeRequestUnsigned,
   CellType,
+  InstalledAppId,
   encodeHashToBase64,
+  randomNonce,
+  CallZomeRequest,
+  getNonceExpiration,
+  CallZomeRequestSigned,
 } from "@holochain/client";
-import { randomNonce } from "@holochain/client";
-import { CallZomeRequest } from "@holochain/client";
-import { getNonceExpiration } from "@holochain/client";
-import { CallZomeRequestSigned } from "@holochain/client";
 import { encode } from "@msgpack/msgpack";
 import { invoke } from "@tauri-apps/api/tauri";
 import { WeNotification } from "@lightningrodlabs/we-applet";
 
 import { isWindows } from "./utils.js";
+import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export async function isKeystoreInitialized(): Promise<boolean> {
   return invoke("is_keystore_initialized");
@@ -93,12 +95,12 @@ export async function joinGroup(
           new Uint8Array(cell[CellType.Cloned].cell_id[1]),
         ];
       }
-      if (CellType.Stem in cell) {
-        cell[CellType.Stem].cell_id = [
-          new Uint8Array(cell[CellType.Stem].cell_id[0]),
-          new Uint8Array(cell[CellType.Stem].cell_id[1]),
-        ];
-      }
+      // if (CellType.Stem in cell) {
+      //   cell[CellType.Stem].cell_id = [
+      //     new Uint8Array(cell[CellType.Stem].cell_id[0]),
+      //     new Uint8Array(cell[CellType.Stem].cell_id[1]),
+      //   ];
+      // }
     }
   }
 
@@ -168,6 +170,10 @@ export async function disableDevMode(): Promise<void> {
   return invoke("disable_dev_mode");
 }
 
+export async function fetchAvailableUiUpdates(): Promise<Record<InstalledAppId, ResourceLocatorB64>> {
+  return invoke("fetch_available_ui_updates");
+}
+
 export async function notifyTauri(
   message: WeNotification,
   systray: boolean,
@@ -214,7 +220,7 @@ export const signZomeCallTauri = async (request: CallZomeRequest) => {
     zome_name: request.zome_name,
     fn_name: request.fn_name,
     payload: Array.from(encode(request.payload)),
-    nonce: Array.from(randomNonce()),
+    nonce: Array.from(await randomNonce()),
     expires_at: getNonceExpiration(),
   };
 

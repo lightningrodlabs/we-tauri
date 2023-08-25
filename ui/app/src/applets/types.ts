@@ -8,8 +8,9 @@ export interface Applet {
 
   appstore_app_hash: ActionHash;
   devhub_dna_hash: DnaHash;
+  devhub_happ_entry_action_hash: ActionHash; // Potentially useful to check for newer happ releases
   devhub_happ_release_hash: ActionHash;
-  devhub_gui_release_hash: ActionHash;
+  initial_devhub_gui_release_hash: ActionHash | undefined;
 
   network_seed: string | undefined;
 

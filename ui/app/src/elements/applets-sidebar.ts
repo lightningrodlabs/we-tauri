@@ -28,7 +28,7 @@ export class AppletsSidebar extends LitElement {
 
   applets = new StoreSubscriber(
     this,
-    () => this._weStore.allInstalledApplets,
+    () => this._weStore.allRunningApplets,
     () => []
   );
 

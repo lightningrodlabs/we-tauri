@@ -1,4 +1,4 @@
-import { html, css, LitElement, PropertyValueMap } from "lit";
+import { html, LitElement } from "lit";
 import { state, query, property, customElement } from "lit/decorators.js";
 
 import { consume } from "@lit-labs/context";
@@ -9,8 +9,8 @@ import "@holochain-open-dev/elements/dist/elements/select-avatar.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import "@shoelace-style/shoelace/dist/components/button/button.js";
 import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
+import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { notifyError, onSubmit } from "@holochain-open-dev/elements";
 

@@ -6,6 +6,8 @@ import { customElement, property } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
+import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
+import "@lightningrodlabs/we-applet/dist/elements/share-hrl.js";
 
 import { Hrl } from "@lightningrodlabs/we-applet";
 
@@ -17,6 +19,7 @@ import {
 import { weStyles } from "../../shared-styles.js";
 import { WeStore } from "../../we-store.js";
 import "./applet-view.js";
+import { buildHeadlessWeServices } from "../../applets/applet-host.js";
 
 @customElement("entry-view")
 export class EntryView extends LitElement {
@@ -45,7 +48,7 @@ export class EntryView extends LitElement {
     dnaLocation: DnaLocation,
     entryTypeLocation: EntryDefLocation
   ) {
-    return html` <applet-view
+    return html`<applet-view
       style="flex: 1"
       .appletHash=${dnaLocation.appletHash}
       .view=${{
@@ -56,7 +59,14 @@ export class EntryView extends LitElement {
         hrl: this.hrl,
         context: this.context,
       }}
-    ></applet-view>`;
+    ></applet-view>
+    <div id="we-toolbar" class="column toolbar">
+      <we-services-context .services=${buildHeadlessWeServices(this._weStore)}>
+        <share-hrl .hrl=${this.hrl} class="toolbar-btn" style="margin-bottom: 10px;"></share-hrl>
+        <hrl-to-clipboard .hrl=${this.hrl} class="toolbar-btn" ></hrl-to-clipboard>
+      </we-services-context>
+    </div>
+    `;
   }
 
   render() {
@@ -86,6 +96,24 @@ export class EntryView extends LitElement {
       :host {
         display: flex;
         flex: 1;
+      }
+
+      .toolbar {
+        position: fixed;
+        bottom: 30px;
+        right: 0;
+        background: red;
+        padding: 10px;
+        border-radius: 20px 0 0 20px;
+        background: #eacbff83;
+        box-shadow: 0 0 6px #5804a8;
+      }
+
+      .toolbar-btn {
+        font-size: 36px;
+        --bg-color: #5804a8;
+        --bg-color-hover: #913ede;
+        color: white;
       }
     `,
     weStyles,

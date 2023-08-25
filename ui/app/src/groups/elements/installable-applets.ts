@@ -57,7 +57,17 @@ export class InstallableApplets extends LitElement {
   ) {
     return html`
       <sl-card class="applet-card" style="height: 200px">
-        <span slot="header">${appEntry.content.title}</span>
+        <div slot="header" class="row" style="align-items: center;">
+          ${ iconSrc
+            ? html`<img
+              src=${iconSrc}
+              alt="${appEntry.content.title} applet icon"
+              style="height: 50px; width: 50px; border-radius: 5px; margin-right: 15px;"
+            />`
+            : html``
+          }
+          <span style="font-size: 18px;">${appEntry.content.title}</span>
+        </div>
         <div class="column" style="flex: 1">
           <span style="flex: 1">${appEntry.content.subtitle}</span>
           <sl-button

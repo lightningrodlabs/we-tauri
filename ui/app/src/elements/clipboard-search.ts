@@ -21,8 +21,9 @@ import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import "@shoelace-style/shoelace/dist/components/menu-item/menu-item.js";
 import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import SlInput from "@shoelace-style/shoelace/dist/components/input/input";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
 import SlDropdown from "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
+import { mdiContentPaste } from "@mdi/js";
 
 import {
   AppletInfo,
@@ -30,11 +31,11 @@ import {
   GroupProfile,
   HrlWithContext,
   WeServices,
-} from "../types";
-import { weServicesContext } from "../context";
+} from "@lightningrodlabs/we-applet";
+import { weServicesContext } from "@lightningrodlabs/we-applet";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { getAppletsInfosAndGroupsProfiles } from "../utils";
+import { getAppletsInfosAndGroupsProfiles } from "@lightningrodlabs/we-applet";
 import { mdiMagnify } from "@mdi/js";
 
 export interface SearchResult {
@@ -48,8 +49,8 @@ export interface SearchResult {
  * @fires entry-selected - Fired when the user selects some entry. Detail will have this shape: { hrl, context }
  */
 @localized()
-@customElement("search-entry")
-export class SearchEntry extends LitElement implements FormField {
+@customElement("clipboard-search")
+export class ClipboardSearch extends LitElement implements FormField {
   /** Form field properties */
 
   /**
@@ -221,6 +222,16 @@ export class SearchEntry extends LitElement implements FormField {
     this.dropdown.hide();
   }
 
+  onCopyToClipboard(hrlWithContext: HrlWithContext, _info: EntryLocationAndInfo) {
+    this.dispatchEvent(
+      new CustomEvent("hrl-to-clipboard", {
+        detail: {
+          hrlWithContext,
+        },
+      })
+    );
+  }
+
   renderEntryList() {
     if (this._searchEntries === undefined)
       return html`<sl-menu-item disabled
@@ -269,8 +280,9 @@ export class SearchEntry extends LitElement implements FormField {
                   .src=${info.entryInfo.icon_src}
                   style="margin-right: 16px"
                 ></sl-icon>
-                ${info.entryInfo.name}
-                <div slot="suffix" class="row" style="align-items: center">
+                <div class="row" style="align-items: center">
+                  <span>${info.entryInfo.name}</span>
+                  <span style="flex: 1;"></span>
                   <span class="placeholder">&nbsp;${msg("in")}&nbsp;</span>
                   ${searchResult.appletsInfos
                     .get(info.appletHash)
@@ -279,14 +291,28 @@ export class SearchEntry extends LitElement implements FormField {
                         <img
                           .src=${searchResult.groupsProfiles.get(groupId)
                             ?.logo_src}
+                          alt=${`Group icon of group ${searchResult.groupsProfiles.get(groupId)
+                            ?.name}`}
                           style="height: 16px; width: 16px; margin-right: 4px; border-radius: 50%"
                         />
                       `
                     )}
-                  <span class="placeholder">
+                  <span class="placeholder" style="margin-right: 5px;">
                     ${searchResult.appletsInfos.get(info.appletHash)
                       ?.appletName}</span
                   >
+                </div>
+                <div
+                  slot="suffix"
+                  class="row center-content to-clipboard"
+                  title=${msg("Add to clipboard")}
+                  @click=${(e) => {
+                    e.stopPropagation();
+                    this.onCopyToClipboard(hrlWithContext, info)
+                  }}
+                >
+                  <span>+</span>
+                  <sl-icon .src=${wrapPathInSvg(mdiContentPaste)}></sl-icon>
                 </div>
               </sl-menu-item>
             `
@@ -309,11 +335,12 @@ export class SearchEntry extends LitElement implements FormField {
 
   render() {
     return html`
-      <div style="flex: 1; display: flex;">
-        <sl-dropdown id="dropdown" hoist>
+      <div style="flex: 1; display: flex; width: 600px;">
+        <sl-dropdown style="display: flex; flex: 1; width: 600px;" id="dropdown" hoist>
           <sl-input
             id="textfield"
             slot="trigger"
+            style="width: 600px;"
             .label=${this._label}
             .placeholder=${this.placeholder}
             @input=${() => this.onFilterChange()}
@@ -330,6 +357,7 @@ export class SearchEntry extends LitElement implements FormField {
                 ></sl-icon> `}
           </sl-input>
           <sl-menu
+              style="min-width: 600px;"
             @sl-select=${(e: CustomEvent) => {
               this.onEntrySelected(e.detail.item.hrl, e.detail.item.info);
             }}
@@ -347,6 +375,17 @@ export class SearchEntry extends LitElement implements FormField {
       css`
         :host {
           display: flex;
+        }
+
+        .to-clipboard {
+          background: #2eb2d7;
+          border-radius: 5px;
+          padding: 0 8px;
+          box-shadow: 0 0 3px black;
+        }
+
+        .to-clipboard:hover {
+          background: #7fd3eb;
         }
       `,
     ];

@@ -7,7 +7,7 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { Hrl, WeNotification } from "@lightningrodlabs/we-applet";
+import { Hrl, HrlWithContext, WeNotification } from "@lightningrodlabs/we-applet";
 import { encode, decode } from "@msgpack/msgpack";
 import { fromUint8Array, toUint8Array } from "js-base64";
 
@@ -137,6 +137,16 @@ export type AppletToParentRequest =
   | {
       type: "get-entry-info";
       hrl: Hrl;
+    }
+  | {
+      type: "hrl-to-clipboard";
+      hrl: HrlWithContext;
+    }
+  | {
+      type: "user-select-hrl";
+    }
+  | {
+      type: "toggle-clipboard";
     }
   | {
       type: "localStorage.setItem";

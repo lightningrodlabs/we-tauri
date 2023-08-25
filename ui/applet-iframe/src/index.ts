@@ -23,6 +23,7 @@ import {
 } from "applet-messages";
 import {
   AttachmentType,
+  HrlWithContext,
   WeApplet,
   WeNotification,
   WeServices,
@@ -44,14 +45,14 @@ window.onload = async () => {
   // fetch localStorage for this applet from main window and override localStorage methods
   overrideLocalStorage();
   const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
-  let localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
+  const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
   if (localStorageJson) Object.keys(localStorage).forEach(
     (key) => window.localStorage.setItem(key, localStorage[key])
   );
 
   const crossApplet = view ? view.type === "cross-applet-view" : false;
 
-  let iframeConfig: IframeConfig = await postMessage({
+  const iframeConfig: IframeConfig = await postMessage({
     type: "get-iframe-config",
     crossApplet,
   });
@@ -61,11 +62,18 @@ window.onload = async () => {
     return;
   }
 
-  let applet = await fetchApplet();
+  const applet = await fetchApplet();
 
   if (view) {
     await renderView(applet, iframeConfig, view);
   }
+
+  // add eventlistener for clipboard
+  window.addEventListener ("keydown", async (zEvent) => {
+    if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+      await postMessage({ type: "toggle-clipboard" })
+    }
+  });
 
   window.addEventListener("message", async (m) => {
     try {
@@ -88,7 +96,7 @@ window.onload = async () => {
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
 
   const appletClient = await AppAgentWebsocket.connect(
-    `ws://localhost:${appPort}`,
+    new URL(`ws://localhost:${appPort}`),
     installedAppId
   );
 
@@ -127,6 +135,7 @@ async function setupProfilesClient(
 
 async function fetchApplet(): Promise<WeApplet> {
   // @ts-ignore
+  // eslint-disable-next-line import/no-absolute-path
   const m = await import("/index.js");
 
   return m.default;
@@ -237,10 +246,19 @@ async function buildWeServices(requestAttachments = true): Promise<WeServices> {
         type: "get-group-profile",
         groupId,
       }),
+    hrlToClipboard: (hrl: HrlWithContext) =>
+      postMessage({
+        type: "hrl-to-clipboard",
+        hrl,
+      }),
     search: (filter: string) =>
       postMessage({
         type: "search",
         filter,
+      }),
+    userSelectHrl: () =>
+      postMessage({
+        type: "user-select-hrl",
       }),
     notifyWe: (notifications: Array<WeNotification>) =>
       postMessage({
@@ -260,12 +278,12 @@ async function renderView(
   if (view.type === "applet-view") {
     if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
-    let profilesClient = await setupProfilesClient(
+    const profilesClient = await setupProfilesClient(
       iframeConfig.appPort,
       iframeConfig.profilesLocation.profilesAppId,
       iframeConfig.profilesLocation.profilesRoleName
     );
-    let client = await setupAppletClient(
+    const client = await setupAppletClient(
       iframeConfig.appPort,
       iframeConfig.appletHash
     );
@@ -457,10 +475,10 @@ function getRenderView(): RenderView | undefined {
 }
 
 function overrideLocalStorage(): void {
-  let _setItem = Storage.prototype.setItem;
+  const _setItem = Storage.prototype.setItem;
   Storage.prototype.setItem = async function(key, value) {
     if (this === window.localStorage) {
-      setTimeout(async () => await postMessage({
+      setTimeout(async () => postMessage({
         type: "localStorage.setItem",
         key,
         value,
@@ -469,10 +487,10 @@ function overrideLocalStorage(): void {
     _setItem.apply(this, [key, value]);
   }
 
-  let _removeItem = Storage.prototype.removeItem;
+  const _removeItem = Storage.prototype.removeItem;
   Storage.prototype.removeItem = async function(key): Promise<void> {
     if (this === window.localStorage) {
-      setTimeout(async () => await postMessage({
+      setTimeout(async () => postMessage({
         type: "localStorage.removeItem",
         key,
       }), 100);
@@ -480,10 +498,10 @@ function overrideLocalStorage(): void {
     _removeItem.apply(this, [key]);
   }
 
-  let _clear = Storage.prototype.clear;
+  const _clear = Storage.prototype.clear;
   Storage.prototype.clear = async function(): Promise<void> {
     if (this === window.localStorage) {
-      setTimeout(async () => await postMessage({
+      setTimeout(async () => postMessage({
         type: "localStorage.clear",
       }), 100);
     }
@@ -506,6 +524,7 @@ async function postMessage(request: AppletToParentRequest): Promise<any> {
       appletHash: appletHash(),
     };
 
+    // eslint-disable-next-line no-restricted-globals
     top!.postMessage(message, "*", [channel.port2]);
 
     channel.port1.onmessage = (m) => {

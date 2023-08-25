@@ -25,7 +25,7 @@
       import Applet from '../src/index.ts';
 
       async function setup() {
-        const appWs = await AppAgentWebsocket.connect(``, '');
+        const appWs = await AppAgentWebsocket.connect(new URL(``), '');
 
         const views = await Applet.appletViews(
           appWs,

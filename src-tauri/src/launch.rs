@@ -82,6 +82,8 @@ pub async fn launch(
 
     install_default_apps_if_necessary(app_handle, we_config, &fs, &mut admin_ws).await?;
 
+    admin_ws.close();
+
     Ok(conductor)
 }
 

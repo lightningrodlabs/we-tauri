@@ -10,7 +10,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     error::{WeError, WeResult},
-    filesystem::WeFileSystem,
+    filesystem::{WeFileSystem, UiIdentifier},
     launch::get_admin_ws,
 };
 
@@ -102,6 +102,7 @@ pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> ()
                                 .body(format!("{:?}", e).into())
                                 .unwrap()),
                         };
+                        admin_ws.close();
                         r
                     }
                 }))
@@ -184,6 +185,7 @@ pub async fn read_asset(
     applet_id_lowercase: &String,
     mut asset_name: String,
 ) -> WeResult<Option<(Vec<u8>, Option<String>)>> {
+    println!("Reading asset from filesystem. Asset name: {}", asset_name);
     if asset_name.starts_with("/") {
         asset_name = asset_name.strip_prefix("/").unwrap().to_string();
     }
@@ -193,13 +195,22 @@ pub async fn read_asset(
             Some(String::from("text/html")),
         )));
     }
-    println!("Got read_asset request with lowercase applet id: {}", applet_id_lowercase);
     let applet_app_id = app_id_from_applet_id(
         &get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?
     );
     println!("got applet id from lowercase: {}", applet_app_id);
-    let assets_path = we_fs.ui_store().ui_path(&applet_app_id);
-    let asset_file = assets_path.join(asset_name);
+
+    let gui_release_hash_option = we_fs.apps_store().get_gui_release_hash(&applet_app_id)?;
+
+    let gui_release_hash = match gui_release_hash_option {
+        Some(hash) => hash,
+        None => return Ok(None)
+    };
+
+    let assets_dir = we_fs.ui_store().assets_dir(UiIdentifier::GuiReleaseHash(gui_release_hash));
+    let asset_file = assets_dir.join(asset_name);
+
+    println!("Reading asset file: {:?}", asset_file);
 
     let mime_guess = mime_guess::from_path(asset_file.clone());
 
@@ -214,6 +225,9 @@ pub async fn read_asset(
 
     match std::fs::read(asset_file.clone()) {
         Ok(asset) => Ok(Some((asset, mime_type))),
-        Err(_e) => Ok(None), // {
+        Err(e) => {
+            println!("Failed to read asset. Error: {}", e);
+            Ok(None)
+        },
     }
 }

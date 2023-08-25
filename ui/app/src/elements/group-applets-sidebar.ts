@@ -3,7 +3,7 @@ import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
-import { encodeHashToBase64, EntryHash } from "@holochain/client";
+import { EntryHash } from "@holochain/client";
 import { hashProperty } from "@holochain-open-dev/elements";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";

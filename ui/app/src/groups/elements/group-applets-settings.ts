@@ -19,9 +19,6 @@ import {
   wrapPathInSvg,
 } from "@holochain-open-dev/elements";
 import {
-  mdiArchiveArrowDown,
-  mdiArchiveArrowUp,
-  mdiExportVariant,
   mdiToyBrickPlus,
 } from "@mdi/js";
 
@@ -91,7 +88,7 @@ export class GroupAppletsSettings extends LitElement {
           ]
         ]
       >,
-    () => [this._groupStore]
+    () => [this._groupStore, this._weStore]
   );
 
   @state(hashState())
@@ -318,9 +315,12 @@ export class GroupAppletsSettings extends LitElement {
   render() {
     switch (this._groupApplets.value?.status) {
       case "pending":
-        return html`<sl-skeleton
-          style="height: 48px; width: 48px;"
-        ></sl-skeleton>`;
+        return html`
+          <div class="column center-content">
+            <sl-spinner
+              style="font-size: 30px;"
+            ></sl-spinner>
+          </div>`;
       case "error":
         return html`<display-error
           .headline=${msg("Error fetching the applets installed in this group")}
