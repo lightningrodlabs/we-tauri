@@ -31,11 +31,11 @@ export class EditPost extends LitElement {
   // REQUIRED. The hash of the original `Create` action for this Post
   @property(hashProperty('original-post-hash'))
   originalPostHash!: ActionHash;
-  
+
   // REQUIRED. The current Post record that should be updated
   @property()
   currentRecord!: EntryRecord<Post>;
-  
+
   /**
    * @internal
    */
@@ -47,14 +47,14 @@ export class EditPost extends LitElement {
    */
   @state()
   committing = false;
-   
+
 
   firstUpdated() {
     this.shadowRoot?.querySelector('form')!.reset();
   }
 
-  async updatePost(fields: any) {  
-    const post: Post = { 
+  async updatePost(fields: any) {
+    const post: Post = {
       title: fields.title,
       content: fields.content,
     };
@@ -66,7 +66,7 @@ export class EditPost extends LitElement {
         this.currentRecord.actionHash,
         post
       );
-  
+
       this.dispatchEvent(new CustomEvent('post-updated', {
         composed: true,
         bubbles: true,
@@ -80,19 +80,19 @@ export class EditPost extends LitElement {
       console.error(e);
       notifyError(msg("Error updating the post"));
     }
-    
+
     this.committing = false;
   }
 
   render() {
     return html`
-      <sl-card>
+      <sl-card style="flex: 1;">
         <span slot="header">${msg("Edit Post")}</span>
 
-        <form 
+        <form
           style="display: flex; flex: 1; flex-direction: column;"
           ${onSubmit(fields => this.updatePost(fields))}
-        >  
+        >
           <div style="margin-bottom: 16px">
         <sl-input name="title" .label=${msg("Title")}  required .defaultValue=${ this.currentRecord.entry.title }></sl-input>          </div>
 

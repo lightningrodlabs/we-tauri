@@ -101,38 +101,23 @@ export class AppletMain extends LitElement {
     return html`
       <div class="column">
         <div class="row">
-          <create-post style="margin: 16px;"></create-post>
-          <all-posts
-              style="margin: 16px;"
-              @notification=${(e: CustomEvent) => {
-                this.dispatchEvent(new CustomEvent('notification', {
-                  detail: e.detail,
-                  bubbles: true,
-                }))
-              }}
-          ></all-posts>
-        </div>
-
-
-        <div class="column center-content" style="margin-top: 50px;">
-          <button @click=${() => this.userSelectHrl()}>Select HRL</button>
-          ${this.selectedHrl ? html`<div>User selected HRL: ${JSON.stringify({
-            hrl: [encodeHashToBase64(this.selectedHrl.hrl[0]), encodeHashToBase64(this.selectedHrl.hrl[1])],
-            context: this.selectedHrl.context,
-            })
-            }</div>`
-            : html``
-          }
-
-          <button @click=${() => this.selectedHrl ? this.weServices.hrlToClipboard(this.selectedHrl) : alert("No HRL selected")}>Add selected HRL to We Clipboard</button>
-
-          <button @click=${() => this.sendLowNotification(0)}>Send Low Urgency Notification</button>
-          <button @click=${() => this.sendMediumNotification(0)}>Send Medium Urgency Notification</button>
-          <button @click=${() => this.sendUrgentNotification(0)}>Send High Urgency Notification</button>
-
-          <button @click=${() => this.sendLowNotification(5000)}>Send Low Urgency Notification with 5 seconds delay</button>
-          <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Urgency Notification with 5 seconds delay</button>
-          <button @click=${() => this.sendUrgentNotification(5000)}>Send High Urgency Notification with 5 seconds delay</button>
+          <div class="column">
+            <create-post style="margin: 16px;"></create-post>
+            <button @click=${() => this.sendLowNotification(5000)}>Send Low Urgency Notification with 5 seconds delay</button>
+            <button @click=${() => this.sendMediumNotification(5000)}>Send Medium Urgency Notification with 5 seconds delay</button>
+            <button @click=${() => this.sendUrgentNotification(5000)}>Send High Urgency Notification with 5 seconds delay</button>
+          </div>
+          <div class="row" style="flex-wrap: wrap;">
+            <all-posts
+                style="margin: 16px;"
+                @notification=${(e: CustomEvent) => {
+                  this.dispatchEvent(new CustomEvent('notification', {
+                    detail: e.detail,
+                    bubbles: true,
+                  }))
+                }}
+            ></all-posts>
+          </div>
         </div>
       </div>
     `;

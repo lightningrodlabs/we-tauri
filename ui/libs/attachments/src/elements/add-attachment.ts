@@ -71,7 +71,7 @@ export class AddAttachment extends LitElement {
 
   render() {
     return html`
-      <sl-tooltip content="Add to Clipboard">
+      <sl-tooltip content="Attach existing entry">
         <div
           class="row btn"
           tabindex="0"

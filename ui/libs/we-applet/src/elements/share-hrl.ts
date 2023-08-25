@@ -38,7 +38,6 @@ export class ShareHrl extends LitElement {
         >
           <sl-icon
             .src=${wrapPathInSvg(mdiShareVariantOutline)}
-            tabindex="0"
             style="padding-right: 10%;"
           ></sl-icon>
         </div>

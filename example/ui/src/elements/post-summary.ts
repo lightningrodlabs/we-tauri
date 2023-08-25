@@ -46,8 +46,8 @@ export class PostSummary extends LitElement {
   renderSummary(entryRecord: EntryRecord<Post>) {
     // console.log("@post-summary in example-applet: rendering summary.");
     // send notifications if necessary
-    let knownPostsJSON: string | null = window.localStorage.getItem("knownPosts");
-    let knownPosts: Array<ActionHashB64> = knownPostsJSON ? JSON.parse(knownPostsJSON) : [];
+    const knownPostsJSON: string | null = window.localStorage.getItem("knownPosts");
+    const knownPosts: Array<ActionHashB64> = knownPostsJSON ? JSON.parse(knownPostsJSON) : [];
     // console.log("@post-summary in example-applet: known posts before notification if-statement: ", knownPosts);
     const actionHashB64 = encodeHashToBase64(entryRecord.actionHash);
     // console.log("@post-summary: actionHashB64: ", actionHashB64);
@@ -102,7 +102,6 @@ export class PostSummary extends LitElement {
       case "complete":
         if (!this._post.value.value)
           return html`<span>${msg("The requested post doesn't exist")}</span>`;
-
         return this.renderSummary(this._post.value.value);
       case "error":
         return html`<display-error
@@ -114,7 +113,8 @@ export class PostSummary extends LitElement {
 
   render() {
     return html`<sl-card
-      style="flex: 1; cursor: grab;"
+      style="flex: 1; cursor: pointer;"
+      tabindex="0"
       @click=${() =>
         this.dispatchEvent(
           new CustomEvent("post-selected", {
@@ -125,6 +125,19 @@ export class PostSummary extends LitElement {
             },
           })
         )}
+      @keypress=${(e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          this.dispatchEvent(
+            new CustomEvent("post-selected", {
+              composed: true,
+              bubbles: true,
+              detail: {
+                postHash: this.postHash,
+              },
+            })
+          )}
+        }
+      }
     >
       ${this.renderPost()}
     </sl-card>`;

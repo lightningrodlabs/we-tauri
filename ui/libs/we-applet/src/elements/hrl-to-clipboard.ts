@@ -45,7 +45,11 @@ export class HrlToClipboard extends LitElement {
           class="row btn"
           tabindex="0"
           @click=${() => this.hrlToClipboard()}
-          @keypress.enter=${() => this.hrlToClipboard()}
+          @keypress=${(e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+              this.hrlToClipboard()}
+            }
+          }
         >
           <sl-icon .src=${wrapPathInSvg(mdiNotePlusOutline)}></sl-icon>
         </div>

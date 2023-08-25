@@ -15,6 +15,8 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 
+import "@lightningrodlabs/attachments/dist/elements/add-attachment.js";
+
 import "./post-summary.js";
 import { PostsStore } from "../posts-store.js";
 import { postsStoreContext } from "../context.js";
@@ -62,7 +64,7 @@ export class AllPosts extends LitElement {
                 bubbles: true,
               }))}
               .postHash=${record.actionHash}
-              style="margin-bottom: 16px;"
+              style="margin: 0 16px 16px 0; width: 300px; height: 200px;"
             ></post-summary>`
         )}
       </div>
