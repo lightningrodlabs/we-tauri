@@ -54,6 +54,7 @@ export class RelatedGroups extends LitElement {
           ></display-error>
         `;
       case "complete":
+        if (this._relatedGroups.value.value.length === 0) return html`<span>This group has no related groups.</span>`
         return html`
           <div class="row">
           ${this._relatedGroups.value.value.map(

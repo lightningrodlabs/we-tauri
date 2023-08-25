@@ -20,8 +20,8 @@ export class AttachmentsCard extends LitElement {
     return html`
       <sl-card style="flex: 1">
         <div class="column">
-          <div class="row" style="align-items: center" slot="header">
-            <span style="flex: 1" class="title">${msg("Attachments")}</span>
+          <div class="row" style="align-items: center; margin-bottom: 20px;" slot="header">
+            <span style="flex: 1; margin-right: 20px;" class="title">${msg("Attachments")}</span>
 
             <add-attachment .hash=${this.hash} style="margin-right: 4px;"></add-attachment>
             <create-attachment .hash=${this.hash}></create-attachment>

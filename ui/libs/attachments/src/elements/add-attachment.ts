@@ -76,7 +76,11 @@ export class AddAttachment extends LitElement {
           class="row btn"
           tabindex="0"
           @click=${() => this.addAttachment()}
-          @keypress.enter=${() => this.addAttachment()}
+          @keypress=${(e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+              this.addAttachment()
+            }
+          }}
         >
           <sl-icon .src=${wrapPathInSvg(mdiPaperclipPlus)}></sl-icon>
         </div>

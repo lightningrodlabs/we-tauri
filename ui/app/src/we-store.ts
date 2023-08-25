@@ -185,16 +185,10 @@ export class WeStore {
   appletStores = new LazyHoloHashMap((appletHash: EntryHash) =>
     retryUntilSuccess(
       async () => {
-        let groups = await toPromise(this.groupsForApplet.get(appletHash));
+        const groups = await toPromise(this.groupsForApplet.get(appletHash));
 
-        if (groups.size === 0) {
-          // retry after APPLETS_POLLING_FREQUENCY milliseconds in case the applet has just been
-          // freshly installed
-          setTimeout(async () => {
-            groups = await toPromise(this.groupsForApplet.get(appletHash));
-            if (groups.size === 0) throw new Error("Applet is not installed in any of the groups");
-          }, APPLETS_POLLING_FREQUENCY);
-        }
+        if (groups.size === 0)
+          throw new Error("Applet is not installed in any of the groups");
 
 
         const applet = await Promise.race(
@@ -213,7 +207,7 @@ export class WeStore {
         );
       },
       3000,
-      4
+      10
     )
   );
 

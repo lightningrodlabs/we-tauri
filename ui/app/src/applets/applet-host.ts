@@ -65,7 +65,9 @@ export async function setupAppletMessageHandler(
           appletName: lowerCaseAppletId,
         };
         message.ports[0].postMessage({ type: "success", result: iframeConfig });
-        throw new Error(`Requested applet is not installed`);
+        // throw new Error(`Requested applet is not installed`);
+        console.warn("Got a message from an applet that's not installed.");
+        return;
       }
 
       const result = await handleAppletIframeMessage(
