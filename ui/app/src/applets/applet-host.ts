@@ -173,8 +173,8 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
     async userSelectHrl() {
       throw new Error("userSelectHrl is not supported in headless WeServices.")
     },
-    async hrlToClipboard(hrl: HrlWithContext) {
-      throw new Error("hrlToClipboard is not supported in headless WeServices.")
+    async hrlToClipboard(hrl: HrlWithContext): Promise<void> {
+      weStore.hrlToClipboard(hrl);
     }
   };
 }

@@ -23,6 +23,7 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
+import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
 
 import "./groups-sidebar.js";
 import "./group-applets-sidebar.js";
@@ -424,7 +425,6 @@ export class MainDashboard extends LitElement {
         <span>Switch to browser view...</span>
       </div>
 
-
       <sl-button
         variant="success"
         style="margin-right: 8px; margin-top: 8px; position: fixed; top: 0; right: 0; font-size: 18px;"
@@ -432,7 +432,7 @@ export class MainDashboard extends LitElement {
         @keypress.enter=${() => this.openClipboard()}
       >
         <div class="row" style="align-items: center; font-size: 18px;">
-          <sl-icon .src=${wrapPathInSvg(mdiMagnify)} style="font-size: 28px;"></sl-icon>
+          <sl-icon .src=${wrapPathInSvg(mdiMagnify)} style="font-size: 24px;"></sl-icon>
           <span style="margin-left: 10px;">${msg("Search")}</span>
         </div>
       </sl-button>
