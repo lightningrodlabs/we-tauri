@@ -101,7 +101,7 @@ export class NHCreateProfile extends NHComponentShoelace {
             name="image"
             @avatar-selected=${(e: CustomEvent) => this.onChangeValue(e)}
           ></select-avatar>
-          <sl-input name="nickname" required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.user.nickname} filled placeholder=${"Enter a name"}></sl-input>
+          <sl-input name="nickname" required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.user.nickname} placeholder=${"Enter a name"}></sl-input>
           <label class="error" for="nickname" name="nickname"></label>
         </div>
         <div slot="footer">

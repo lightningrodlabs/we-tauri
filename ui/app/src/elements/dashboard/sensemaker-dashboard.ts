@@ -1,5 +1,5 @@
 import { CSSResult, PropertyValueMap, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
@@ -60,7 +60,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() dimensions: DimensionDict = {};
   @state() context_ehs: ContextEhDict = {};
 
-  // private _contextResults = new StoreSubscriber(this, () => this._sensemakerStore.contextResults());
+  @query("#select-context")
+  contextSelector;
   
   async connectedCallback() {
     super.connectedCallback();
@@ -323,7 +324,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                     }
               ))})) }.bind(this)}>
                 <nh-page-header-card slot="nav" role="nav" .heading=${""}>
-                  <nh-context-selector slot="secondary-action" .selectedContext=${this.selectedContext}>
+                  <nh-context-selector slot="secondary-action" id="select-context" .selectedContext=${this.selectedContext}>
                     <sl-tab
                       slot="button-fixed"
                       panel="resource"
@@ -343,7 +344,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                           contexts.map(
                             context =>
                             this.context_ehs[context] ? 
-                              html`<sl-tab
+                              html`<nh-tab-button><sl-tab
                                   panel="${snakeCase(context)}" 
                                   class="dashboard-tab ${classMap({
                                     active:
@@ -354,7 +355,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                                     this.loadingState = LoadingState.FirstRender;
                                     this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
                                   }}
-                                ><nh-tab-button>${context}</nh-tab-button></sl-tab-panel>`
+                                >${context}</sl-tab-panel></nh-tab-button>`
                                 : null,
                           )}
                       </div>
@@ -367,8 +368,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
                       slot="primary-action"
                     >
                     <div slot="buttons">
-                      <nh-button .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
-                      <nh-button .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
+                      <nh-button .clickHandler=${async () => { await this.contextSelector.requestUpdate("resourceAssessments");  // TODO test this
+                    }} .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
                     </div>
                     </nh-button-group>
                 </nh-page-header-card>
@@ -495,117 +496,71 @@ export class SensemakerDashboard extends NHComponentShoelace {
       }
 
       /** Tab Nav **/
-      .dashboard-action-buttons {
+      [slot="button-fixed"] {
+        background: var(--nh-theme-bg-detail);
+        border: 0;
+        border-radius: calc(1px * var(--nh-radii-lg));
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        font-family: "Work Sans", "Open Sans";
+      }
+
+      [slot="buttons"] {
         display: flex;
-        flex: 1;
-      }
-      .tab-nav {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        color: var(--nh-theme-fg-default);
-        background-color: var(--nh-theme-bg-surface);
-        border-color: var(--nh-theme-bg-surface);
-        border-width: 4px;
-        border-style: solid;
-        border-radius: var(--tab-nav-tab-radius);
-      }
-      .tab-nav .icon-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: calc(1px * var(--nh-spacing-lg));
-        margin-right: calc(1px * var(--nh-spacing-sm));
-      }
-      .tab-nav .mock-icon {
-        width: 1.5rem;
-        height: 1.5rem;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-      }
-      /* Tabs */
-
-      slot[name="button-fixed"]::slotted(*) {
-        position: relative;
-        margin-left: calc(1px * var(--nh-spacing-xxs));
-      }
-      slot[name="button-fixed"]::slotted(*)::part(base) {
-        border-radius: 0;
-        padding: calc(1px * var(--nh-spacing-xs)) calc(1px * var(--nh-spacing-lg));
-
-        color: var(--nh-theme-fg-default);
-        text-align: center;
-        letter-spacing: 0.2px;
-        font-family: var(--nh-font-families-headlines);
-        font-weight: var(--sl-font-weight-semibold);
-        line-height: var(--nh-line-heights-body-default);
-        letter-spacing: 0.5px !important;
-      }
-      .dashboard-tab:first-child::part(base),
-      .dashboard-tab:hover::part(base) {
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-bottom-left-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab:last-child::part(base) {
-        border-top-right-radius: var(--tab-nav-tab-radius);
-        border-bottom-right-radius: var(--tab-nav-tab-radius);
+        gap: 4px;
+        font-family: "Work Sans", "Open Sans";
       }
 
-      /* Resource(active) and Hover */
 
-      .dashboard-tab.resource::part(base),
-      .dashboard-tab:hover {
-        color: var(--nh-theme-accent-muted);
-        background-color: var(--nh-theme-bg-surface);
+      [slot="buttons"] :hover::part(base) {
+        background-color: var(--nh-theme-bg-canvas);
+        color: var(--nh-theme-accent-emphasis);
       }
 
-      .dashboard-tab.resource.active {
-        background-color: var(--nh-colors-eggplant-950);
-      }
-      .dashboard-tab.active {
-        color: var(--nh-theme-accent-muted);
-        background-color: var(--nh-colors-eggplant-950);
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-top-right-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab.active::part(base) {
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-top-right-radius: var(--tab-nav-tab-radius);
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-      }
-      .dashboard-tab:hover {
-        background-color: var(--nh-theme-bg-surface);
-        border-top-right-radius: calc(2px * var(--nh-radii-md) - 0px);
-        border-top-left-radius: calc(2px * var(--nh-radii-md) - 0px);
-      }
-      .dashboard-tab.resource:hover::part(base) {
-        border-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab.resource:hover::part(base),
-      .dashboard-tab.active::part(base):hover {
-        cursor: default;
-      }
       /* Tab hover effect */
-      .dashboard-tab:hover::after,
-      .dashboard-tab.active::after {
+       [slot="buttons"] :hover::part(base)::after,
+       [slot="buttons"] .active::part(base)::after {
         position: absolute;
-        background-color: var(--nh-theme-bg-surface);
-        bottom: -10px;
+        background-color: var(--nh-theme-bg-canvas);
+        bottom: calc(-1px * var(--nh-spacing-sm));
         left: 0px;
         content: '';
         width: 100%;
-        height: 10px;
+        height: calc(1px * var(--nh-spacing-sm));
       }
-      .dashboard-tab.active::after,
-      .dashboard-tab.active::part(base) {
+
+      sl-tab::part(base) {
+        color: #D9D9D9;
+        background-color: var(--nh-theme-bg-surface);
+        padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
+        height: 52px;
+        position: relative;
+        
+        border: 0;
+        border-radius: calc(1px * var(--nh-radii-lg));
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+
+        font-family: var(--nh-font-families-menu);
+        letter-spacing: var(--nh-letter-spacing-buttons);
+
+      }
+      [slot="button-fixed"]::part(base) {
+        color: var(--nh-theme-fg-default);
+        background-color: var(--nh-theme-bg-element);
+        border: 4px solid --nh-colors-eggplant-800;
+        border-radius: calc(1px * var(--nh-radii-lg) - 4px);
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+      [slot="button-fixed"].active::part(base),
+      sl-tab.active::part(base)::after,
+      sl-tab.active::part(base) {
         background-color: var(--nh-theme-bg-canvas);
       }
+  
       /* Divider after resource name */
-      .dashboard-tab.resource::before {
+      [slot="button-fixed"].resource::before {
         position: absolute;
         background-color: var(--nh-theme-bg-surface);
         bottom: 1px;
@@ -632,14 +587,16 @@ export class SensemakerDashboard extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-xs));
         font-weight: var(--nh-font-weights-body-bold);
       }
-
+      
       .search-input::part(form-control) {
         margin-top: calc(1px * var(--nh-spacing-md));
       }
       .search-input::part(base) {
+        cursor: not-allowed;
         border: 1px solid transparent;
         border-radius: calc(1px * var(--nh-radii-base) - 0px);
-        background-color: var(--nh-colors-eggplant-950);
+        background-color: var(--nh-theme-bg-backdrop);
+        height: 2rem;
       }
       .search-input:hover::part(base) {
         border-color: var(--nh-theme-accent-muted);
@@ -666,12 +623,15 @@ export class SensemakerDashboard extends NHComponentShoelace {
         padding-left: calc(1px * var(--nh-spacing-sm));
       }
       .indented .nav-item::part(base) {
-        padding-left: calc(1px * var(--nh-spacing-3xl));
+        margin-left: calc(1px * var(--nh-spacing-3xl));
       }
       .nav-item.active::part(base) {
-        background: var(--nh-colors-eggplant-950);
+        background: var(--nh-theme-bg-detail);
       }
-      .nav-item:hover::part(base) {
+      .nav-item.active + .indented  .nav-item::part(base) {
+        background: var(--nh-theme-bg-element);
+      }
+      .nav-item:not(.active):hover::part(base) {
         background: var(--nh-theme-bg-surface);
       }
 

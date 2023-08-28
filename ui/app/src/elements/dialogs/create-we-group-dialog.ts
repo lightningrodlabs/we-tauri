@@ -95,21 +95,6 @@ export class CreateWeGroupDialog extends NHComponentShoelace {
   static styles : CSSResult[] = [
       super.styles as CSSResult,
       css`
-        #name-field::part(base) {
-          border: none;
-          background-color: var(--nh-theme-bg-surface);
-          padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
-          height: calc(1rem * var(--nh-spacing-xs));
-        }
-        #name-field::part(input) {
-          color: var(--nh-theme-fg-default);
-          height: auto !important;
-          font-weight: 500;
-        }
-        #name-field::part(input)::placeholder {
-          color: var(--nh-theme-input-placeholder);
-          opacity: 1;
-        }
       `,
     ];
 }
