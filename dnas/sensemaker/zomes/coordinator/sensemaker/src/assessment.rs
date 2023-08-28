@@ -14,7 +14,6 @@ use crate::dimensions_typed_path;
 use crate::get_dimension;
 use crate::signals::Signal;
 use crate::utils::entry_from_record;
-use crate::utils::fetch_provider_resource;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
 
@@ -129,7 +128,7 @@ pub fn get_all_assessments(_:()) -> ExternResult<Vec<AssessmentWithDimensionAndR
                         None => None
                     };
                     // attempt a bridge call to the provider zome to get the resource
-                    let resource = fetch_provider_resource(assessment.resource_eh.clone(), assessment.resource_def_eh.clone())?;
+                    let resource = None;
                     Ok(Some(AssessmentWithDimensionAndResource {
                         assessment,
                         dimension,

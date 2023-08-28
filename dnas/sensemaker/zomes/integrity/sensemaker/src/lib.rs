@@ -8,7 +8,7 @@ mod properties;
 mod range;
 mod resource_def;
 
-pub use applet::{AppletConfig, AppletConfigInput};
+pub use applet::{AppletConfig, AppletConfigInput, HappZomeMap, ConfigResourceDef, flatten_config_resource_def_map};
 pub use assessment::Assessment;
 pub use cultural_context::{
     ContextResult, CulturalContext, OrderingKind, Threshold, ThresholdKind,
