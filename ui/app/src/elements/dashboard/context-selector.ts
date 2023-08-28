@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { SensemakerStore, AppletConfig, sensemakerStoreContext, ComputeContextInput, ContextResult } from '@neighbourhoods/client';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 import { contextProvided } from '@lit-labs/context';
@@ -18,17 +18,18 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
 
   @state()
   selectedContext: string = "";
-
-  private _resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
+  
+  @property()
+  resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
     
-  async updated(_changedProperties: any,) {
+  async updated(_changedProperties: any) {
       if(_changedProperties.has("selectedContext") && _changedProperties.get("selectedContext") !== 'undefined') {
         if(!this.selectedContext 
           || this.selectedContext === 'none'
           || typeof this.config?.value == 'undefined'
-          || typeof this._resourceAssessments?.value == 'undefined') return;
+          || typeof this.resourceAssessments?.value == 'undefined') return;
 
-        const resourceEhs : EntryHash[] = Object.keys(this._resourceAssessments.value).flat().map(b64eh => decodeHashFromBase64(b64eh));
+        const resourceEhs : EntryHash[] = Object.keys(this.resourceAssessments.value).flat().map(b64eh => decodeHashFromBase64(b64eh));
         const input : ComputeContextInput = { resource_ehs: resourceEhs, context_eh: decodeHashFromBase64(this.selectedContext), can_publish_result: false};
         await this.sensemakerStore.computeContext(this.selectedContext, input);
         
