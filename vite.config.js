@@ -1,7 +1,8 @@
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
-export default (UMDName, entryPath) => defineConfig({
+export const configure = (UMDName, entryPath) => defineConfig({
   build: {
     lib: {
       // the proper extensions will be added
@@ -15,3 +16,9 @@ export default (UMDName, entryPath) => defineConfig({
     },
   },
 })
+
+
+export default configure(
+  'NeighbourhoodsStorybook',
+  resolve(__dirname, 'src/index.ts'),
+)
