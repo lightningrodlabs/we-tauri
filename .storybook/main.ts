@@ -1,11 +1,16 @@
-module.exports = {
-  stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+import type { StorybookConfig } from "@storybook/web-components-vite";
+
+const config: StorybookConfig = {
+  stories: ['../**/src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: ['@storybook/addon-links', '@storybook/addon-essentials'],
-  framework: '@storybook/web-components',
-  core: {
-    builder: 'storybook-builder-vite',
+  framework: {
+    name: "@storybook/web-components-vite",
+    options: {},
   },
-  staticDirs: ['../public'],
+  docs: {
+    autodocs: "tag",
+  },
+  // staticDirs: ['../public'],
   async viteFinal(config, { configType }) {
     // customize the Vite config here
     config.optimizeDeps.include = [
@@ -17,4 +22,5 @@ module.exports = {
     // return the customized config
     return config
   },
-}
+};
+export default config;
