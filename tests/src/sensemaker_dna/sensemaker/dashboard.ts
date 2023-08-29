@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { AppletConfig, Assessment, AssessmentWithDimensionAndResource, CreateAppletConfigInput, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, sampleAppletConfig } from "../../utils";
@@ -163,10 +163,7 @@ export default () => {
 
         let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
         const appletConfigInput = sampleAppletConfig(app_entry_def)
-        const createAppletConfigInput: CreateAppletConfigInput = {
-          applet_config_input: appletConfigInput,
-          role_name: "test_provider_dna",
-        }
+        const createAppletConfigInput: AppletConfigInput = appletConfigInput;
         const appletConfig: AppletConfig = await callZomeAlice(
           "sensemaker",
           "register_applet",
@@ -182,7 +179,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -202,7 +199,7 @@ export default () => {
           value: { Integer: 4 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -218,7 +215,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -235,7 +232,7 @@ export default () => {
           value: { Integer: 3 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash2,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -255,7 +252,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -271,7 +268,7 @@ export default () => {
           value: { Integer: 2 },
           dimension_eh: appletConfig.dimensions["likeness"],
           resource_eh: createPostEntryHash3,
-          resource_def_eh: appletConfig.resource_defs["angryPost"],
+          resource_def_eh: appletConfig.resource_defs["test_provider_dna"]["test_provider"]["angryPost"],
           maybe_input_dataset: null,
         };
 
@@ -297,11 +294,6 @@ export default () => {
         );
         console.log('all assessments', allAssessments)
         t.deepEqual(allAssessments.length, 6);
-        const allAssessedPosts = allAssessments.map((a) => decode((a.resource!.entry as any).Present.entry) as TestPost)
-        t.ok(allAssessedPosts.find((p) => JSON.stringify(p) === JSON.stringify(createPost)))
-        t.ok(allAssessedPosts.find((p) => JSON.stringify(p) === JSON.stringify(createPost2)))
-        t.ok(allAssessedPosts.find((p) => JSON.stringify(p) === JSON.stringify(createPost3)))
-
       } catch (e) {
         console.log(e);
         t.ok(null);

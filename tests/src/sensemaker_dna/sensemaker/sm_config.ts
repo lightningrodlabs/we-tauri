@@ -3,6 +3,7 @@ import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
 import { setUpAliceandBob } from "./neighbourhood";
+import { AppletConfig } from "@neighbourhoods/client";
 const { test } = pkg;
 
 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
@@ -61,7 +62,7 @@ export default () =>
         t.equal(neighborhood_name, "Rated Agenda");
         t.equal(wizard_version, "v0.1");
 
-        const maybe_applet_config = await callZomeAlice(
+        const maybe_applet_config: AppletConfig = await callZomeAlice(
           "sensemaker",
           "check_if_applet_config_exists",
           "sample applet config",
@@ -72,7 +73,13 @@ export default () =>
         console.log(maybe_applet_config);
 
         let dimension_ehs: EntryHash[] = Object.values(maybe_applet_config.dimensions);
-        let resource_ehs: EntryHash[] = Object.values(maybe_applet_config.resource_defs);
+        // given maybe_applet_config.resource_defs return a flat list of the ehs
+        let resource_ehs: Uint8Array[] = [];
+        Object.values(maybe_applet_config.resource_defs).forEach((zome_list) => {
+          Object.values(zome_list).forEach((eh) => {
+            resource_ehs = [...Object.values(eh), ...resource_ehs];
+          })
+        });
         let method_ehs: EntryHash[] = Object.values(maybe_applet_config.methods);
         let context_ehs: EntryHash[] = Object.values(maybe_applet_config.cultural_contexts);
         t.equal(dimension_ehs.length, 2);
