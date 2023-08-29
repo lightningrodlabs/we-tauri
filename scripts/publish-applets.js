@@ -422,9 +422,9 @@ async function publishAppletsRetry() {
       console.log(
         "Check the name of the webhapp file. There might be unexpected syntax in the name."
       );
-    } else if (e.toString().includes("testing-apps")) {
+    } else if (e.toString().includes("testing-applets")) {
       console.log(
-        "You probably haven't add webhapp`s file to testing-apps directory"
+        "You probably haven't add webhapp`s file to testing-applets directory"
       );
     } else if (e.toString().includes("hc: command not found")) {
       console.log(
