@@ -129,19 +129,24 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
         computed: true,
       },
     ],
-    resource_defs: [
-      {
-        name: "angryPost",
-        base_types: [resource_base_def],
-        dimensions: [
+    resource_defs: {
+      "test_provider_dna": {
+        "test_provider":
+        [
           {
-            name: "likeness",
-            range: { name: "10-scale", kind: { Integer: { min: 0, max: 10 } } },
-            computed: false,
+            name: "angryPost",
+            base_types: [resource_base_def],
+            dimensions: [
+              {
+                name: "likeness",
+                range: { name: "10-scale", kind: { Integer: { min: 0, max: 10 } } },
+                computed: false,
+              },
+            ],
           },
         ],
-      },
-    ],
+      }
+    },
     methods: [
       {
         name: "total_likeness_method",

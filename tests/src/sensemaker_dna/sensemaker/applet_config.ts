@@ -205,40 +205,42 @@ export default () =>
                 t.ok(contextEh);
 
                 // create a config type
-                // const appletConfig: AppletConfig = {
-                const appletConfig: any = {
+                const appletConfig: AppletConfig = {
                     name: "todo",
                     ranges: {
                         "1-scale": rangeHash,
                         "1-scale-total": rangeHash2
 
                     },
-                    role_name: "test_provider_dna",
                     dimensions: {
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resource_defs: { task_item: resourceDefEh },
+                    resource_defs: {
+                        "test_provider_dna": {
+                            "test_provider": { task_item: resourceDefEh }
+                        }
+                    },
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
 
-                const appletConfigInput: CreateAppletConfigInput = {
-                    applet_config_input: {
-                        name: appletConfig.name,
-                        ranges: [integerRange, integerRange2],
-                        dimensions: [configDimension, configObjectiveDimension],
-                        resource_defs: [configResourceDef],
-                        methods: [configMethod],
-                        cultural_contexts: [configCulturalContext],
-                    },
-                    role_name: "test_provider_dna"
+                const appletConfigInput: AppletConfigInput = {
+                    name: appletConfig.name,
+                    ranges: [integerRange, integerRange2],
+                    dimensions: [configDimension, configObjectiveDimension],
+                    resource_defs: {
+                        "test_provider_dna": {
+                            "test_provider": [configResourceDef]
+                    }},
+                    methods: [configMethod],
+                    cultural_contexts: [configCulturalContext],
                 }
 
                 let maybeAppletConfig: any = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.applet_config_input.name,
+                    appletConfigInput.name,
                     true
                 );
                 t.ok(!maybeAppletConfig);
@@ -256,7 +258,7 @@ export default () =>
                 maybeAppletConfig = await callZomeAlice(
                     "sensemaker",
                     "check_if_applet_config_exists",
-                    appletConfigInput.applet_config_input.name,
+                    appletConfigInput.name,
                     true
                 );
                 t.ok(maybeAppletConfig);
