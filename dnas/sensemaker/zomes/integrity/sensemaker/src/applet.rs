@@ -14,7 +14,7 @@ pub struct AppletConfig {
     pub ranges: BTreeMap<String, EntryHash>,
     pub dimensions: BTreeMap<String, EntryHash>,
     // the base_type field in ResourceDef needs to be bridged call
-    pub resource_defs: BTreeMap<String, BTreeMap<String, BTreeMap<String, EntryHash>>>, // role name > zome name > resource def name > resource def EH
+    pub resource_defs: HappZomeMap<BTreeMap<String, EntryHash>>,
     pub methods: BTreeMap<String, EntryHash>,
     pub cultural_contexts: BTreeMap<String, EntryHash>,
 }
