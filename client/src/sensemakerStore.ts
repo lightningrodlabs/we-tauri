@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAppletConfigInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -246,7 +246,7 @@ export class SensemakerStore {
     return maybeAppletConfig;
   }
 
-  async registerApplet(appletConfigInput: CreateAppletConfigInput): Promise<AppletConfig> {
+  async registerApplet(appletConfigInput: AppletConfigInput): Promise<AppletConfig> {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
     this._appletConfigs.update((appletConfigs) => {
       appletConfigs[appletConfig.name] = appletConfig;
@@ -254,7 +254,7 @@ export class SensemakerStore {
     });
 
     this._methodDimensionMapping.update(methodDimensionMapping => {
-      appletConfigInput.applet_config_input.methods.forEach(method => {
+      appletConfigInput.methods.forEach(method => {
         methodDimensionMapping[encodeHashToBase64(appletConfig.methods[method.name])] = {
           inputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.input_dimensions[0].name],
           outputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.output_dimension.name],
@@ -264,11 +264,15 @@ export class SensemakerStore {
     });
 
     // initialize the active method to the first method for each resource def
-    Object.values(appletConfig.resource_defs).forEach(resourceDef => {
+    Object.values(appletConfig.resource_defs).forEach(dnaResourceDefMap => {
       // if the active method hasn't been set yet, set it.
-      if (!get(this._activeMethod)[encodeHashToBase64(resourceDef)]) {
-        this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
-      }
+      Object.values(dnaResourceDefMap).forEach(zomeResourceDefMap => {
+      Object.values(zomeResourceDefMap).forEach(resourceDef => {
+        if (!get(this._activeMethod)[encodeHashToBase64(resourceDef)]) {
+          this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
+        }
+      })
+    })
     });
     return appletConfig;
   }
