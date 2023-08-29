@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
-use sensemaker_integrity::{AppletConfig, Assessment, LinkTypes};
+use sensemaker_integrity::{Assessment, LinkTypes};
 
 use crate::{assessment_typed_path, get_assessment};
 

@@ -19,10 +19,7 @@ pub struct CreateAppletConfigInput {
 
 #[hdk_extern]
 pub fn register_applet(
-    CreateAppletConfigInput {
-        applet_config_input,
-        role_name,
-    }: CreateAppletConfigInput,
+    applet_config_input: AppletConfigInput
 ) -> ExternResult<AppletConfig> {
     // check the format of the applet config
     applet_config_input.clone().check_format()?;
@@ -34,7 +31,7 @@ pub fn register_applet(
     } else {
         // applet config doesn't exist, create it
         let (applet_config, _) =
-            create_entries_from_applet_config(applet_config_input.clone(), Some(role_name))?;
+            create_entries_from_applet_config(applet_config_input.clone())?;
         Ok(applet_config)
     }
 }
@@ -70,7 +67,6 @@ fn applet_config_typed_path(applet_name: String) -> ExternResult<TypedPath> {
 // create all entries specified in the config
 pub fn create_entries_from_applet_config(
     config: AppletConfigInput,
-    role_name: Option<String>,
 ) -> ExternResult<(AppletConfig, EntryHash)> {
     // ranges
     let mut ranges: BTreeMap<String, EntryHash> = BTreeMap::new();
