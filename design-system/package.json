@@ -13,7 +13,7 @@
         "require": "./dist/index.umd.js"
       }
     },
-    "./": {
+    "./*": {
       "types": "./dist/",
       "import": "./dist/"
     }

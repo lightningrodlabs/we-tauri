@@ -13,7 +13,7 @@
         "require": "./dist/index.cjs"
       }
     },
-    "./": {
+    "./*": {
       "types": "./dist/",
       "import": "./dist/"
     }
