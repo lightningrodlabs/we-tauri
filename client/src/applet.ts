@@ -8,16 +8,15 @@ import { ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget } from ".
 
 export interface AppletConfig {
     name: string,
-    role_name: string,
     ranges: {
         [rangeName: string]: EntryHash,
     },
     dimensions: {
         [dimensionName: string]: EntryHash,
     },
-    resource_defs: {
+    resource_defs: HappZomeMap<{
         [resourceDefName: string]: EntryHash,
-    },
+    }>,
     methods: {
         [methodName: string]: EntryHash,
     },
@@ -30,14 +29,15 @@ export interface AppletConfigInput {
     name: string,
     ranges: Array<Range>,
     dimensions: Array<ConfigDimension>,
-    resource_defs: Array<ConfigResourceDef>,
+    resource_defs: HappZomeMap<Array<ConfigResourceDef>>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,
 }
 
-export interface CreateAppletConfigInput {
-    applet_config_input: AppletConfigInput,
-    role_name: string,
+export interface HappZomeMap<T> {
+    [roleName: string]: {
+        [zomeName: string]: T,
+    }
 }
 
 export interface WidgetMappingConfig {
