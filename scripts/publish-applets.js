@@ -418,6 +418,18 @@ async function publishAppletsRetry() {
     } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
       console.log("Failed to publish applets: Error: ", e);
       console.log("\n\nYou probably haven't installed the DevHub yet.");
+    } else if (e.toString().includes("syntax error near unexpected token")) {
+      console.log(
+        "Check the name of the webhapp file. There might be unexpected syntax in the name."
+      );
+    } else if (e.toString().includes("testing-apps")) {
+      console.log(
+        "You probably haven't add webhapp`s file to testing-apps directory"
+      );
+    } else if (e.toString().includes("hc: command not found")) {
+      console.log(
+        "Remember to run this script from within a nix-shell. So the hc command will be available."
+      );
     } else {
       console.log("Failed to publish applets. Error: ", e);
     }
