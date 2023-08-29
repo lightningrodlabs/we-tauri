@@ -1,0 +1,38 @@
+{
+  "name": "@neighbourhoods/design-system-components",
+  "version": "0.0.4",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "require": "./dist/index.umd.js"
+      }
+    },
+    "./": {
+      "types": "./dist/",
+      "import": "./dist/"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.js",
+  "scripts": {
+    "build": "vite build; tsc -p ./tsconfig.json"
+  },
+  "devDependencies": {
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5",
+    "vite": "^2.8.0"
+  },
+  "dependencies": {
+    "@lit-labs/scoped-registry-mixin": "^1.0.1",
+    "@neighbourhoods/design-system-styles": "^0.0.3",
+    "@scoped-elements/shoelace": "^0.1.0",
+    "lit": "^2.2.0"
+  }
+}

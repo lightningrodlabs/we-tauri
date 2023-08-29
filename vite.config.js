@@ -1,15 +1,14 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default (UMDName, entryPath) => defineConfig({
   build: {
     lib: {
       // the proper extensions will be added
       fileName: 'index',
       // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'NeighbourhoodsDesignSystemComponents',
+      entry: entryPath,
+      name: UMDName,
     },
     rollupOptions: {
       // external: /^lit/
