@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.10-alpha - 2023-08-29
+- `AppletConfig` type has been updated. Now the `resource_defs` field is of type `HappZomeMap<BTreeMap<String, EntryHash>>` instead of `BTreeMap<String, EntryHash>` so that the resource defs are mapped by the happ role name and zome name. The `role_name` field as removed as this information is now contained in the `resource_defs` field.
+- new type `HappZomeMap<T>` created to represent the dnas (keyed by role name) and their zomes.
+- `registerApplet` function takes an `AppletConfigInput` as a parameter instead of a `CreateAppletConfigInput`.
 ## v0.0.9-alpha - 2023-06-15
 - context computations now support `Float` when checking against the threshold
 ## v0.0.8-alpha - 2023-06-13
