@@ -16,7 +16,7 @@ function getAppletsPaths() {
 
 async function publishApplets() {
   const adminWs = await AdminWebsocket.connect(
-    new URL(`ws://localhost:${process.env.ADMIN_PORT}`),
+    new URL(`ws://127.0.0.1:${process.env.ADMIN_PORT}`),
     100000
   );
 
@@ -32,12 +32,12 @@ async function publishApplets() {
 
   const appPorts = await adminWs.listAppInterfaces();
   const devhubClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     devhubAppId,
     100000
   );
   const appstoreClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     appstoreAppId,
     100000
   );
