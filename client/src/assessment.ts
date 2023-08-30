@@ -19,14 +19,8 @@ export type Assessment = CreateAssessmentInput & {
 }
 
 export interface GetAssessmentsForResourceInput {
-    resource_ehs: ResourceEh[],
-    dimension_ehs: Option<DimensionEh[]>,
-}
-
-export interface AssessmentWithDimensionAndResource {
-    assessment: Assessment,
-    dimension: Option<Dimension>,
-    resource: Option<Record>
+    resource_ehs?: ResourceEh[],
+    dimension_ehs?: DimensionEh[],
 }
 
 export type AssessmentEh = EntryHash
