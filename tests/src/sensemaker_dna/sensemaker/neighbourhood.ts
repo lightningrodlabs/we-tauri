@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat } from "@neighbourhoods/client";
+import { Assessment, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
@@ -304,7 +304,7 @@ export default () => {
           resource_ehs: [createPostEntryHash],
           dimension_ehs: [createDimensionEntryHash],
         }
-        const assessmentsForResources: { [resource_eh: EntryHashB64]: Assessment[] } = await callZomeBob(
+        let assessmentsForResources: { [resource_eh: EntryHashB64]: Assessment[] } = await callZomeBob(
           "sensemaker",
           "get_assessments_for_resources",
           getAssessmentsForResourceInput,
@@ -315,6 +315,19 @@ export default () => {
         t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key, timestamp: assessment.timestamp })))
         t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
 
+        const getAssessmentsForResourceInput2: GetAssessmentsForResourceInput = {};
+        
+        assessmentsForResources = await callZomeBob(
+          "sensemaker",
+          "get_assessments_for_resources",
+          getAssessmentsForResourceInput2,
+          true
+        );
+        t.equal(Object.keys(assessmentsForResources).length, 1)
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].length === 2)
+        console.log('assessments for resource', assessmentsForResources)
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key, timestamp: assessment.timestamp })))
+        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
         // define objective dimension
 
         const integerRange2 = {
@@ -405,9 +418,9 @@ export default () => {
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash,
           resource_def_eh: createResourceDefEntryHash,
-          maybe_input_dataset: null,
           author: alice_agent_key,
           timestamp: runMethodOutput.timestamp,
+          maybe_input_dataset: null,
         };
         t.deepEqual(
           objectiveAssessment,
@@ -1021,7 +1034,7 @@ export default () => {
         }
 
         // fetch all assessments
-        const allAssessments: Array<AssessmentWithDimensionAndResource> = await callZomeAlice(
+        const allAssessments: Array<Assessment> = await callZomeAlice(
           "sensemaker",
           "get_all_assessments",
           null,
