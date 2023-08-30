@@ -1,6 +1,8 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.6 - 2023-08-30
+- SensemakerStore method `getAssessmentsForResources` input type changed so that both `resource_ehs` and `dimension_ehs` properties are optional. If no resource hashes are provided, all assessments are fetched.
 ## v0.0.5 - 2023-08-29
 - `resource_defs` field of `AppletConfig` type changed to `HappZomeMap<{ [resourceDefName: string]: EntryHash }>`
 - `registerApplet()` method on `SensemakerStore` takes an `AppletConfigInput` as a parameter instead of a `CreateAppletConfigInput`.
