@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { AppletConfig, AppletConfigInput, Assessment, AssessmentWithDimensionAndResource, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, Assessment, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, sampleAppletConfig } from "../../utils";
@@ -286,7 +286,7 @@ export default () => {
         // define objective dimension
 
         // fetch all assessments
-        const allAssessments: Array<AssessmentWithDimensionAndResource> = await callZomeAlice(
+        const allAssessments: Array<Assessment> = await callZomeAlice(
           "sensemaker",
           "get_all_assessments",
           null,
