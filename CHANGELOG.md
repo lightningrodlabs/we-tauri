@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.11-alpha - 2023-08-30
+- `get_assessments_for_resources` input type `GetAssessmentsForResourcesInput` now optionally takes a vector of resource hashes. If no resource hashes are provided, all assessments are fetched.
+- `get_all_assessments` returns `ExternResult<Vec<Assessment>>` instead of `ExternResult<Vec<AssessmentWithDimensionAndResource>>`.
 ## v0.0.10-alpha - 2023-08-29
 - `AppletConfig` type has been updated. Now the `resource_defs` field is of type `HappZomeMap<BTreeMap<String, EntryHash>>` instead of `BTreeMap<String, EntryHash>` so that the resource defs are mapped by the happ role name and zome name. The `role_name` field as removed as this information is now contained in the `resource_defs` field.
 - new type `HappZomeMap<T>` created to represent the dnas (keyed by role name) and their zomes.
