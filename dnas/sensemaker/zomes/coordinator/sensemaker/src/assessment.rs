@@ -4,14 +4,12 @@ use hdk::prelude::*;
 use holo_hash::EntryHashB64;
 use sensemaker_integrity::Assessment;
 use sensemaker_integrity::DataSet;
-use sensemaker_integrity::Dimension;
 use sensemaker_integrity::EntryTypes;
 use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::RangeValue;
 
 use crate::agent::get_all_agents;
 use crate::dimensions_typed_path;
-use crate::get_dimension;
 use crate::signals::Signal;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
@@ -30,13 +28,6 @@ pub struct GetAssessmentsForResourceInput {
     dimension_ehs: Option<Vec<EntryHash>>,
 }
 
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AssessmentWithDimensionAndResource {
-    assessment: Assessment,
-    dimension: Option<Dimension>,
-    resource: Option<Record>
-}
 
 #[hdk_extern]
 pub fn get_assessments_for_resources(
