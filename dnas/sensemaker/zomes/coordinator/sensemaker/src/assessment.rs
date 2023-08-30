@@ -26,7 +26,7 @@ pub fn get_assessment(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetAssessmentsForResourceInput {
-    resource_ehs: Vec<EntryHash>,
+    resource_ehs: Option<Vec<EntryHash>>,
     dimension_ehs: Option<Vec<EntryHash>>,
 }
 
@@ -60,9 +60,22 @@ pub fn get_assessments_for_resources(
             .collect();
         }
     }
-    for resource_eh in resource_ehs {
-        let assessments = get_assessments_for_resource_inner(resource_eh.clone(), all_or_some_dimension_ehs.clone())?;
-        resource_assessments.insert(resource_eh.into(), flatten_btree_map(assessments));
+    match resource_ehs {
+        Some(resource_ehs) => {
+            for resource_eh in resource_ehs {
+                let assessments = get_assessments_for_resource_inner(resource_eh.clone(), all_or_some_dimension_ehs.clone())?;
+                resource_assessments.insert(resource_eh.into(), flatten_btree_map(assessments));
+            }
+        },
+        None => {
+            // TODO: handle the case where all resources are requested but only along specific dimensions
+            let all_assessments = get_all_assessments(())?;
+            all_assessments.into_iter().for_each(|assessment| {
+                let resource_eh = assessment.resource_eh.clone();
+                let assessments = resource_assessments.entry(resource_eh.into()).or_insert(vec![]);
+                assessments.push(assessment);
+            });
+        }
     }
     Ok(resource_assessments)
 }
@@ -108,10 +121,10 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
 }
 
 #[hdk_extern]
-pub fn get_all_assessments(_:()) -> ExternResult<Vec<AssessmentWithDimensionAndResource>> {
+pub fn get_all_assessments(_:()) -> ExternResult<Vec<Assessment>> {
     let base_path = all_assessments_typed_path()?;
     let assessed_resources_typed_paths = base_path.children_paths()?;
-    let mut all_assessments: Vec<Vec<AssessmentWithDimensionAndResource>> = vec![];
+    let mut all_assessments: Vec<Vec<Assessment>> = vec![];
 
     // for each resource that has been assessed, crawl all children to get each dimension that it has been assessed along
     for assessed_resource_path in assessed_resources_typed_paths {
@@ -123,24 +136,14 @@ pub fn get_all_assessments(_:()) -> ExternResult<Vec<AssessmentWithDimensionAndR
                 let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
                 if let Some(record) = maybe_assessment {
                     let assessment = entry_from_record::<Assessment>(record)?;
-                    let dimension = match get_dimension(assessment.dimension_eh.clone())? {
-                        Some(record) => Some(entry_from_record::<Dimension>(record)?),
-                        None => None
-                    };
-                    // attempt a bridge call to the provider zome to get the resource
-                    let resource = None;
-                    Ok(Some(AssessmentWithDimensionAndResource {
-                        assessment,
-                        dimension,
-                        resource
-                    }))
+                    Ok(Some(assessment))
                 }
                 else {
                     Ok(None)
                 }
-            }).collect::<ExternResult<Vec<Option<AssessmentWithDimensionAndResource>>>>()?.into_iter().filter_map(|maybe_assessment| {
+            }).collect::<ExternResult<Vec<Option<Assessment>>>>()?.into_iter().filter_map(|maybe_assessment| {
                 maybe_assessment
-            }).collect::<Vec<AssessmentWithDimensionAndResource>>();
+            }).collect::<Vec<Assessment>>();
             all_assessments.push(assessments);
         }
     }
