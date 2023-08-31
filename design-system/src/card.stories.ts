@@ -1,5 +1,4 @@
-import "./card";
-import "./button";
+import "./_shared_customElements";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { BasicWidget } from "./assessment-widget.stories";
@@ -19,7 +18,7 @@ export interface CardProps {
 
 const meta: Meta<CardProps> = {
   title: "NHComponent/Card",
-  component: "nh-card",
+  component: 'nh-card',
   argTypes: {
     title: { control: "text" },
     heading: { control: "text" },

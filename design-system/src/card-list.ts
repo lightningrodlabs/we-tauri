@@ -3,7 +3,7 @@ import {property } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
 
-export class NHCardList extends NHComponentShoelace {
+export default class NHCardList extends NHComponentShoelace {
   @property()
   direction!: 'vertical' | 'horizontal';
 

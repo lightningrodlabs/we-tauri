@@ -2,9 +2,9 @@ import { css, CSSResult, html } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from "./ancestors/base";
-import { SlSpinner } from "@scoped-elements/shoelace";
+import SlSpinner from "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 
-export class NHButton extends NHComponent {
+export default class NHButton extends NHComponent {
   @property()
   label!: string;
   @property()

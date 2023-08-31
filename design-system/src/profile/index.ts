@@ -1,2 +1,2 @@
-export { NHProfileCard } from './profile-card';
-export { NHProfileIdenticon } from './profile-identicon';
+export * from './profile-card';
+export * from './profile-identicon';

@@ -1,10 +1,8 @@
 import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponent } from '../ancestors/base';
-import "../card";
-import "../assessment-widget";
-import { NHCard } from "../card";
-import { NHAssessmentWidget } from "../assessment-widget";
+import NHCard from "../card";
+import NHAssessmentWidget from "../assessment-widget";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 const kebabCase = (str: string) => str
@@ -12,7 +10,12 @@ const kebabCase = (str: string) => str
     ?.join('-')
     .toLowerCase();
 
-export class NHPostCard extends NHComponent {
+export default class NHPostCard extends NHComponent {
+  static elementDefinitions: {
+    'nh-card': NHCard,
+    'nh-assessment-widget': NHAssessmentWidget,
+  }
+
   @property()
   title!: string;
   @property()

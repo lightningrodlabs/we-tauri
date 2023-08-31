@@ -1,8 +1,9 @@
-import "../card";
-import "../button";
-import "./create-post";
+import "../_shared_customElements";
+import NHCreatePost from "./create-post";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+
+customElements.define('nh-create-post', NHCreatePost)
 
 export interface CreatePostProps {
   theme: string;

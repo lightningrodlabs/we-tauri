@@ -1,7 +1,9 @@
-import "./dialog";
+import NHDialog from "./dialog";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { DialogType } from "./dialog";
+
+customElements.define('nh-dialog', NHDialog)
 
 export interface DialogProps {
   title: string;

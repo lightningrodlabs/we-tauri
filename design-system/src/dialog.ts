@@ -1,10 +1,13 @@
 import { css, CSSResult, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
-import { SlDialog, SlButtonGroup, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from "lit/directives/class-map.js";
-import { AlertType, NHAlert } from './alert';
-import { NHButton } from './button';
+import { AlertType } from './alert'
+import NHAlert from './alert';
+import NHButton from './button';
+import SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js'
+import SlButtonGroup from '@shoelace-style/shoelace/dist/components/button-group/button-group.js'
+import SlButton from '@shoelace-style/shoelace/dist/components/button/button.js'
 
 export enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
@@ -14,7 +17,7 @@ export enum DialogType {
   appletUninstall = 'applet-uninstall',
 } 
 
-export class NHDialog extends NHComponentShoelace {
+export default class NHDialog extends NHComponentShoelace {
   @property()
   title!: string
   @property()

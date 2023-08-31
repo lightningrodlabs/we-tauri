@@ -1,8 +1,8 @@
-import "../card";
-import "../button";
-import "./profile-card";
+import NHProfileCard from "./profile-card";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+
+customElements.define('nh-profile-card', NHProfileCard)
 
 export interface ProfileCardProps {
   agentName: string;

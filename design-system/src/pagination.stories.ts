@@ -1,6 +1,8 @@
-import "./pagination";
+import NHPagination from "./pagination";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+
+customElements.define('nh-pagination', NHPagination)
 
 export interface PaginationProps {
   length: number;

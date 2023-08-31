@@ -3,7 +3,7 @@ import {property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
 
-export class NHPagination extends NHComponent {
+export default class NHPagination extends NHComponent {
   @property()
   length!: number;
   @property()

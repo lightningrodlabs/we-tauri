@@ -1,11 +1,10 @@
 import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
-import { SlTextarea } from "@scoped-elements/shoelace";
-import "../card";
-import { NHCard } from "../card";
+import SlTextarea from "@shoelace-style/shoelace/dist/components/textarea/textarea.js";
+import NHCard from "../card";
 import { NHComponentShoelace } from "../ancestors/base";
 
-export class NHCreatePost extends NHComponentShoelace {
+export default class NHCreatePost extends NHComponentShoelace {
   @property()
   prompt!: string;
   @property()

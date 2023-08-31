@@ -3,7 +3,7 @@ import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
 
-export class NHTabButton extends NHComponent {
+export default class NHTabButton extends NHComponent {
   @property()
   label!: string;
   @property()

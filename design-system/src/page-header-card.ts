@@ -3,7 +3,7 @@ import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
 
-export class NHPageHeaderCard extends NHComponent {
+export default class NHPageHeaderCard extends NHComponent {
   @property()
   heading!: string;
   @property()

@@ -1,7 +1,9 @@
 import { b64images } from '@neighbourhoods/design-system-styles';
-import './assessment-widget';
 import { html } from 'lit';
 import type { Meta, StoryObj } from '@storybook/web-components';
+import NHAssessmentWidget from './assessment-widget';
+
+customElements.define('nh-assessment-widget', NHAssessmentWidget)
 
 interface AssessmentWidgetProps {
   name: string;
@@ -11,13 +13,12 @@ interface AssessmentWidgetProps {
 
 const meta: Meta<AssessmentWidgetProps> = {
   title: 'NHComponent/AssessmentWidget',
-  component: 'nh-card',
+  component: 'nh-assessment-widget',
   argTypes: {
     name: { control: 'text' },
     iconImg: { control: 'text' },
     iconAlt: { control: 'text' },
   },
-  render:  (args) => html`<nh-assessment-widget .name=${args.name} .iconAlt=${args.iconAlt} .iconImg=${args.iconImg}></nh-assessment-widget>`,
 };
 
 export default meta;

@@ -1,9 +1,9 @@
-import "../card";
-import "../button";
-import "./post-card";
+import NHPostCard from "./post-card";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { BasicWidget } from "../assessment-widget.stories";
+
+customElements.define('nh-post-card', NHPostCard)
 
 export interface PostCardProps {
   theme: string;

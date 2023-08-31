@@ -1,11 +1,11 @@
 import { css, CSSResult, html } from 'lit';
 import {property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
-import { SlAlert } from '@scoped-elements/shoelace';
+import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
 
 export type AlertType = 'danger' | 'warning' | 'neutral' | 'success' | 'primary';
 
-export class NHAlert extends NHComponentShoelace {
+export default class NHAlert extends NHComponentShoelace {
   @property()
   open: boolean = true;
   @property()

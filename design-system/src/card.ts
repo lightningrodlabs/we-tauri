@@ -2,9 +2,9 @@ import { css, CSSResult, html } from "lit";
 import {property, query, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
-import { NHButtonGroup } from "./button-group";
+import NHButtonGroup from "./button-group";
 
-export class NHCard extends NHComponentShoelace {
+export default class NHCard extends NHComponentShoelace {
   @property()
   title!: string;
   @property()

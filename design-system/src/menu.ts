@@ -3,11 +3,14 @@ import { html as litHtml, literal } from "lit/static-html.js";
 import {property } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
-import "./button";
-import "./tab-button";
+import NHButton from "./button";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
-export class NHMenu extends NHComponentShoelace {
+export default class NHMenu extends NHComponentShoelace {
+  static elementDefinitions: {
+    'nh-button': NHButton,
+  }
+
   @property()
   direction: "vertical" | "horizontal" = "horizontal";
   @property()

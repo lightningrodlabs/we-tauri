@@ -1,3 +1,6 @@
+// polyfills
+import '@webcomponents/scoped-custom-element-registry'
+
 import type { Preview } from "@storybook/web-components";
 
 const preview: Preview = {

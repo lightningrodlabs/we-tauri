@@ -3,7 +3,7 @@ import {property, query, queryAll } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
 
-export class NHAssessmentWidget extends NHComponentShoelace {
+export default class NHAssessmentWidget extends NHComponentShoelace {
   @property()
   name!: string;
   @property()

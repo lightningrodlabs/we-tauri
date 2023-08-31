@@ -3,14 +3,17 @@ import { html as litHtml, literal } from "lit/static-html.js";
 import { property } from "lit/decorators.js";
 import { NHComponent } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
-import "./button";
-import "./tab-button";
+import Button from "./button";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 export const capitalize = (part: string) =>
   part[0].toUpperCase() + part.slice(1);
 
-export class NHButtonGroup extends NHComponent {
+export default class NHButtonGroup extends NHComponent {
+  static elementDefinitions: {
+    'nh-button': Button,
+  }
+
   @property()
   direction: "vertical" | "horizontal" = "horizontal";
   @property()

@@ -1,13 +1,12 @@
 import { css, CSSResult, html, } from "lit";
 import { property } from "lit/decorators.js";
-import "../card";
-import { NHCard } from "../card";
-import { NHButton } from "../button";
-import { SlSkeleton } from "@scoped-elements/shoelace";
+import NHCard from "../card";
+import NHButton from "../button";
+import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "../ancestors/base";
 
-export class NHProfileIdenticon extends NHComponentShoelace {
+export default class NHProfileIdenticon extends NHComponentShoelace {
   @property()
   agentAvatarSrc!: string;
   @property()

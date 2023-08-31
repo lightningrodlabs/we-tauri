@@ -1,10 +1,11 @@
-import "./button";
-import "./card-list";
-import "./page-header-card";
+import "./_shared_customElements";
+import NHCardList from "./card-list";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { Basic, CardProps } from "./card.stories";
 import { b64images } from '@neighbourhoods/design-system-styles';
+
+customElements.define('nh-card-list', NHCardList)
 
 interface CardListProps {
   cards: CardProps[];

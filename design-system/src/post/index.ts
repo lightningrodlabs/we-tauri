@@ -1,1 +1,2 @@
-export { NHCreatePost } from './create-post';
+export * from './create-post';
+export * from './post-card';

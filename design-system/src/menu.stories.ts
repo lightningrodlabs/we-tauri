@@ -1,8 +1,10 @@
 import { b64images } from '@neighbourhoods/design-system-styles';
-import "./menu";
+import NHMenu from "./menu";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { StaticValue, literal } from "lit/static-html.js";
+
+customElements.define('nh-menu', NHMenu)
 
 export interface MenuProps {
   direction: "vertical" | "horizontal";

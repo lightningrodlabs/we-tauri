@@ -2,7 +2,7 @@ import { css, CSSResult, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 
-export class NHSlide extends NHComponentShoelace {
+export default class NHSlide extends NHComponentShoelace {
   @property()
   heading!: string;
 
