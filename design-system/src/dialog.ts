@@ -6,7 +6,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { AlertType, NHAlert } from './alert';
 import { NHButton } from './button';
 
-enum DialogType {
+export enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
   widgetConfig = 'widget-config',
   confirmation = 'confirmation',

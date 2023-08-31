@@ -1,7 +1,7 @@
 import "./dialog";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
-import type { DialogType } from "./dialog";
+import { DialogType } from "./dialog";
 
 export interface DialogProps {
   title: string;
