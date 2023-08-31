@@ -10,7 +10,7 @@ const config: StorybookConfig = {
   docs: {
     autodocs: "tag",
   },
-  // staticDirs: ['../public'],
+  staticDirs: ['../public'],
   async viteFinal(config, { configType }) {
     // customize the Vite config here
     config.optimizeDeps.include = [
