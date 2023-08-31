@@ -131,8 +131,13 @@ export class SensemakerDashboard extends NHComponentShoelace {
         appletConfigs => {
           if(typeof appletConfigs !== 'object') return;
           Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
+            // flatten resource defs by removing the role name and zome name keys
+            const flattenedResourceDefs = Object.values(appletConfig.resource_defs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+              (acc, curr) => ({...acc, ...curr}),
+              {}
+            );
             this.appletDetails[installedAppId].appletRenderInfo = {
-              resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+              resourceNames: Object.keys(flattenedResourceDefs)?.map(cleanResourceNameForUI),
             };
 
             // Keep dimensions for dashboard table prop

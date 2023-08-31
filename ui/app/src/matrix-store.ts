@@ -1376,7 +1376,7 @@ export class MatrixStore {
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
       const sensemakerStore = get(this.sensemakerStore(weGroupId));
-      appletConfig.applet_config_input.name = installedAppId;
+      appletConfig.name = installedAppId;
       await sensemakerStore?.registerApplet(appletConfig);
       widgetPairs.map((widgetPair) => {
         console.log('registering widgets to SM store')
@@ -1574,7 +1574,7 @@ export class MatrixStore {
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
       const sensemakerStore = get(this.sensemakerStore(weGroupId));
-      appletConfig.applet_config_input.name = installedAppId;
+      appletConfig.name = installedAppId;
       const registeredConfig = await sensemakerStore!.registerApplet(appletConfig);
       console.log('registeredConfig', registeredConfig)
       widgetPairs.map((widgetPair) => {
@@ -2148,8 +2148,11 @@ export class MatrixStore {
     return isSame;
   }
 
-  public async initializeViewsForGroup(weGroupId: DnaHash) {
+  public async initializeStateForGroup(weGroupId: DnaHash) {
     const [weGroupData, appletInstanceInfos] = get(this._matrix).get(weGroupId);
+    // initalize assessment data
+    await weGroupData.sensemakerStore.getAssessmentsForResources({});
+    // loop through each applet in the group
     appletInstanceInfos.forEach(async (appletInstanceInfo) => {
       await this.fetchAppletInstanceRenderers(appletInstanceInfo.appletId, {
         profilesStore: weGroupData.profilesStore,
@@ -2166,7 +2169,7 @@ export class MatrixStore {
 
       const appletConfig = gui.appletConfig;
       const widgetPairs = gui.widgetPairs;
-      appletConfig.applet_config_input.name = appletInstanceInfo.appInfo.installed_app_id;
+      appletConfig.name = appletInstanceInfo.appInfo.installed_app_id;
       const registeredConfig = await weGroupData.sensemakerStore.registerApplet(appletConfig);
       console.log('registeredConfig', registeredConfig)
       widgetPairs.map((widgetPair) => {
@@ -2184,14 +2187,19 @@ export class MatrixStore {
     const appletConfigs = get(groupSenseMakerStore!.appletConfigs());
     // find the applet config that contains the resource definition eh
     const [appletName, appletConfig] = Object.entries(appletConfigs).find(([appletName, appletConfig]) => {
-      const resourceDefs = Object.values(appletConfig.resource_defs);
+      const resourceDefs = Object.values(appletConfig.resource_defs)
+        .flatMap((zome) => Object.values(zome))
+        .flatMap((resource) => Object.values(resource));
       return resourceDefs.find((resourceDefEhFromConfig) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh));
     }
     )!;
     // return the appplet app info for the appletName
     const appletInstanceInfo = get(this._matrix).get(weGroupId)[1].find((appletInstanceInfo) => appletInstanceInfo.appInfo.installed_app_id === appletName);
     // get the resource def name given the resource def eh
-    const resourceDefName = Object.entries(appletConfig.resource_defs).find(([resourceDefName, resourceDefEhFromConfig]) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh))![0];
+    const resourceDefName = Object.values(appletConfig.resource_defs)
+      .flatMap((zome) => Object.values(zome))
+      .flatMap((resource) => Object.entries(resource))
+      .find(([resourceDefName, resourceDefEhFromConfig]) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh))![0];
     return appletInstanceInfo!.views!.resourceRenderers[resourceDefName];
   }
 }

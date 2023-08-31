@@ -327,7 +327,7 @@ export class MainDashboard extends NHComponentShoelace {
 
     // initialize widgets for group
     console.log("initializing views for group")
-    await this._matrixStore.initializeViewsForGroup(weGroupId);
+    await this._matrixStore.initializeStateForGroup(weGroupId);
   }
 
   handleWeGroupIconSecondaryClick(weGroupId: DnaHash, appletId: EntryHash) {

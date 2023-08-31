@@ -31,9 +31,15 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     store &&
       store.subscribe(appletConfig => {
         this.appletDetails = appletConfig;
-        if (Object.values(appletConfig.resource_defs).length < 1)
+        if (Object.values(appletConfig.resource_defs)
+            .flatMap((zome) => Object.values(zome))
+            .flatMap((resource) => Object.values(resource)).length < 1)
           return console.log("Didn't register the applet's resource defs yet");
-        this.activeMethodsDict = Object.entries(appletConfig.resource_defs)
+        this.activeMethodsDict = Object.entries(
+          Object.values(appletConfig.resource_defs)
+            .flatMap((zome) => Object.values(zome))
+            .flatMap((resource) => Object.values(resource)),
+          )
           .reduce(
             // Slice to remove Generic Resource
             (dict, [_, eH]): any => {
@@ -184,9 +190,12 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   render() {
     // for each resource def, have a dropdown, which is all the dimensions available
-
+    const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+      (acc, curr) => ({...acc, ...curr}),
+      {}
+    );
     return html`
-      ${Object.entries(this.appletDetails.resource_defs)
+      ${Object.entries(flattenedResourceDefs)
         .map(([key, eH]: any) => {
           const resourceDefEh = encodeHashToBase64(eH);
           const activeMethod = this.activeMethodsDict.get(resourceDefEh);
