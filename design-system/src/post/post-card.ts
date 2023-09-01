@@ -11,11 +11,6 @@ const kebabCase = (str: string) => str
     .toLowerCase();
 
 export default class NHPostCard extends NHComponent {
-  static elementDefinitions: {
-    'nh-card': NHCard,
-    'nh-assessment-widget': NHAssessmentWidget,
-  }
-
   @property()
   title!: string;
   @property()

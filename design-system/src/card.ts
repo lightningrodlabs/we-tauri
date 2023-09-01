@@ -20,16 +20,6 @@ export default class NHCard extends NHComponentShoelace {
   @property()
   footerAlign: "l" | "r" | "c" = "c";
 
-  @state()
-  contextMenuVisible: boolean = false;
-  toggleContextMenu () {
-    
-    this.contextMenuVisible = !this.contextMenuVisible;
-    (this.renderRoot.querySelector(".context-menu") as HTMLElement).dataset.open = 'true';
-  }
-  @query(".context-menu-dots")
-  _contextMenu : any;
-
   render() {
     return html`
       <div
@@ -43,16 +33,11 @@ export default class NHCard extends NHComponentShoelace {
         })}"
       >
         ${this.hasContextMenu
-          ? html`<div class="context-menu" data-open=${this.contextMenuVisible} placement="top-right">
-                  <nav class="context-menu-dots" @click=${() => {this.toggleContextMenu()}} >
-                    <div class="menu-dot"></div>
-                    <div class="menu-dot"></div>
-                    <div class="menu-dot"></div>
-                  </nav>
-                  <nh-menu @mouseleave=${() => {this.toggleContextMenu()}} .itemLabels=${["", "", ""]} .itemComponentProps=${{ size: "icon", iconImageB64: "" }} .direction=${"horizontal"}>
-                    <slot slot="menu-items" name="context-menu"></slot>
-                  </nh-menu>
-                </div>`
+          ? html`<nav class="dots-context-menu">
+              <div class="menu-dot"></div>
+              <div class="menu-dot"></div>
+              <div class="menu-dot"></div>
+            </nav>`
           : html``}
         <slot name="header">
           ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
@@ -69,12 +54,6 @@ export default class NHCard extends NHComponentShoelace {
       </div>
     `;
   }
-  static get elementDefinitions() {
-    return {
-      'nh-menu': NHButtonGroup,
-    };
-  }
-
 
   static styles: CSSResult[] = [
     super.styles as CSSResult,
@@ -93,14 +72,7 @@ export default class NHCard extends NHComponentShoelace {
       padding: calc(1px * var(--nh-spacing-xl));
       position: relative;
     }
-    .container.light {
-      background-color: var(--nh-theme-bg-element);
-    }
-    .container.dark {
-      background-color: var(--nh-theme-bg-surface);
-    }
     :host(.nested-card) .container {
-      background-color: var(--nh-theme-bg-surface);
       min-width: calc(264px - calc(2px * var(--nh-spacing-3xl)));
     }
     :host(.responsive) .container {
@@ -110,6 +82,12 @@ export default class NHCard extends NHComponentShoelace {
       width: fit-content;
       box-sizing: border-box;
       padding: 15%;
+    }
+    .container.light {
+      background-color: var(--nh-theme-bg-neutral);
+    }
+    .container.dark {
+      background-color: var(--nh-theme-bg-surface);
     }
     :host(.transparent) .container {
       background-color: transparent;
