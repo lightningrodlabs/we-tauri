@@ -55,7 +55,7 @@ export default class NHTabButton extends NHComponent {
       button:focus {
       }
       button:hover {
-        background-color: var(--nh-theme-bg-neutral);
+        background-color: var(--nh-theme-bg-detail);
         color: var(--nh-theme-accent-emphasis);
       }
 
@@ -63,7 +63,7 @@ export default class NHTabButton extends NHComponent {
       button:not(.fixed):hover::after,
       button:not(.fixed):active::after {
         position: absolute;
-        background-color: var(--nh-theme-bg-neutral);
+        background-color: var(--nh-theme-bg-detail);
         bottom: calc(-1px * var(--nh-spacing-sm));
         left: 0px;
         content: '';
@@ -73,7 +73,7 @@ export default class NHTabButton extends NHComponent {
       
       button.fixed {
         color: var(--nh-theme-fg-default);
-        background-color: var(--nh-theme-bg-neutral);
+        background-color: var(--nh-theme-bg-detail);
         border: 4px solid --nh-colors-eggplant-800;
         border-radius: calc(1px * var(--nh-radii-md));
         border-bottom-right-radius: 0;

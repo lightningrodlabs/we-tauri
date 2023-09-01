@@ -84,7 +84,7 @@ export default class NHCard extends NHComponentShoelace {
       padding: 15%;
     }
     .container.light {
-      background-color: var(--nh-theme-bg-neutral);
+      background-color: var(--nh-theme-bg-detail);
     }
     .container.dark {
       background-color: var(--nh-theme-bg-surface);

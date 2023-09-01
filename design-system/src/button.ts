@@ -74,7 +74,7 @@ export default class NHButton extends NHComponent {
           cursor: pointer;
         }
         button.icon, button.icon-sm {
-          background-color: var(--nh-theme-bg-neutral);
+          background-color: var(--nh-theme-bg-detail);
           width: 45px;
           height: 45px;
           padding: 0;
