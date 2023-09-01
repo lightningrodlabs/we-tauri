@@ -19,6 +19,9 @@ const meta: Meta<AssessmentWidgetProps> = {
     iconImg: { control: 'text' },
     iconAlt: { control: 'text' },
   },
+  parameters: { 
+    backgrounds: { default: 'surface' },
+  },
 };
 
 export default meta;

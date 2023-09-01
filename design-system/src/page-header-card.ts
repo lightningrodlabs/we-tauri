@@ -46,10 +46,9 @@ export default class NHPageHeaderCard extends NHComponent {
       border-radius: calc(1px * var(--nh-radii-md));
       padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-md));
       position: relative;
-      height: 100%;
     }
     .container.light {
-      background-color: var(--nh-theme-bg-muted);
+      background-color: var(--nh-theme-bg-detail);
     }
     .container.dark {
       background-color: var(--nh-theme-bg-surface);

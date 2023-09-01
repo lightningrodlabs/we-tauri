@@ -100,7 +100,7 @@ export default class NHMenu extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-sm));
       }
       .container.light {
-        background-color: var(--nh-theme-bg-muted);
+        background-color: var(--nh-theme-bg-detail);
       }
       .container.dark {
         background-color: var(--nh-theme-bg-surface);

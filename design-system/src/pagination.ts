@@ -129,7 +129,7 @@ export default class NHPagination extends NHComponent {
         background-color: var(--nh-theme-bg-surface);
         border-radius: calc(1px * var(--nh-radii-base));
         color: var(--nh-theme-fg-default);
-        border: 2px solid var(--nh-theme-bg-muted);
+        border: 2px solid var(--nh-theme-bg-detail);
         
         text-decoration: none;
         -webkit-transition: background-color 0.4s;

@@ -26,7 +26,6 @@ export default class NHCardList extends NHComponentShoelace {
     super.styles as CSSResult,
     css`
       .list-container {
-        background-color: var(--nh-theme-bg-canvas);
         padding: calc(1px * var(--nh-spacing-lg));
         gap: calc(1px * var(--nh-spacing-lg));
       }

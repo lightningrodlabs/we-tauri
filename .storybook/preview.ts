@@ -6,11 +6,18 @@ import type { Preview } from "@storybook/web-components";
 const preview: Preview = {
   parameters: {
     backgrounds: {
-      default: 'surface',
+    // For where to use each of these, see: 
+    // https://github.com/orgs/neighbour-hoods/projects/1/views/1?filterQuery=depth&pane=issue&itemId=33428362
+    
+      default: 'canvas',
       values: [
         {
           name: 'backdrop',
           value: '#0c0a0d',
+        },
+        {
+          name: 'canvas',
+          value: '#18151b',
         },
         {
           name: 'surface',

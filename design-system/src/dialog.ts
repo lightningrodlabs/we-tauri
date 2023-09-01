@@ -278,7 +278,7 @@ export default class NHDialog extends NHComponentShoelace {
         margin-right: calc(1px * var(--nh-spacing-md));
       }
       #primary-action-button::part(base) {
-        background-color: var(--nh-theme-bg-muted);
+        background-color: var(--nh-theme-bg-detail);
       }
     `,
   ];

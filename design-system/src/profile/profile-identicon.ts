@@ -107,7 +107,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
       --sheen-color: var(--nh-theme-bg-surface);
     }
     .skeleton-part::part(indicator) {
-      background-color: var(--nh-theme-bg-muted);
+      background-color: var(--nh-theme-bg-detail);
       border-radius: calc(1px * var(--nh-radii-base));
       opacity: 0.2;
     }

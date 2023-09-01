@@ -121,7 +121,7 @@ export default class NHAssessmentWidget extends NHComponentShoelace {
       }
 
       .assessment-icon-container {
-        background-color: var(--nh-theme-bg-muted);
+        background-color: var(--nh-theme-bg-detail);
         border-radius: var(--border-r-tiny);
         width: 40px;
         height: 40px;
