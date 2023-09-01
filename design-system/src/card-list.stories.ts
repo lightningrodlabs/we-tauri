@@ -27,7 +27,7 @@ const meta: Meta<CardListProps> = {
     grid: { control: "boolean" },
   },
   parameters: { 
-    backgrounds: { default: 'backdrop' },
+    backgrounds: { default: 'canvas' },
   },
   render: (args) => {
     return html`<nh-card-list

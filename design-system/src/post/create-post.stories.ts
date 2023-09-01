@@ -10,6 +10,7 @@ export interface CreatePostProps {
   prompt: string;
   placeholder: string;
   sampleInput: string;
+  valid: boolean;
 }
 
 const meta: Meta<CreatePostProps> = {
@@ -27,7 +28,7 @@ const meta: Meta<CreatePostProps> = {
     .textAreaValue=${args.sampleInput}
     .placeholder=${args.placeholder}
   >
-    <nh-button .disabled=${() => {return args.sampleInput == ""}} slot="footer" .variant=${"primary"} .size=${"md"} .label=${"Post"} .onClick=${() =>  {debugger;}}></nh-button>
+    <nh-button .disabled=${!args.valid} slot="footer" .variant=${"primary"} .size=${"md"} .label=${"Post"} .onClick=${() =>  {debugger;}}></nh-button>
   </nh-create-post>`,
 };
 
@@ -40,13 +41,25 @@ export const Blank: Story = {
     prompt: "What's on your mind?",
     placeholder: "Type something...",
     sampleInput: "",
+    valid: false,
   },
 };
 
-export const SampleInput: Story = {
+export const SampleInputInvalid: Story = {
   args: {
     prompt: "What's on your mind?",
     placeholder: "Type something...",
     sampleInput: "here we go",
+    valid: false,
+  },
+};
+
+
+export const SampleInputValid: Story = {
+  args: {
+    prompt: "What's on your mind?",
+    placeholder: "Type something...",
+    sampleInput: "here we go with some valid input!",
+    valid: true,
   },
 };

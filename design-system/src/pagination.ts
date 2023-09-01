@@ -99,6 +99,7 @@ export default class NHPagination extends NHComponent {
     super.styles as CSSResult,
     css`
       .container {
+        font-family:  var(--nh-font-families-body);
         background-color: var(--nh-theme-bg-surface);
         padding: calc(1px * var(--nh-spacing-xs));
       }

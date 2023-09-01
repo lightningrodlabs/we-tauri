@@ -47,11 +47,11 @@ export default class NHCreatePost extends NHComponentShoelace {
       sl-textarea::part(textarea) {
         padding: calc(1px * var(--nh-spacing-sm));
         color:  var(--nh-theme-fg-default);
-        background: var(--nh-theme-bg-surface);
+        background: var(--nh-theme-bg-element);
       }
 
       sl-textarea::part(textarea):active {
-        border: 1px solid var(--nh-theme-bg-surface);
+        border: 1px solid var(--nh-theme-bg-element);
       }
     `,
   ];
