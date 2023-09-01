@@ -128,7 +128,7 @@ export default class NHButton extends NHComponent {
           height: 16px;
         }
         button.primary.icon img {
-          height: 70%;
+          height: 50%;
           width: 40px;
         }
         

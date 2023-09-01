@@ -60,6 +60,7 @@ export default class NHTabButton extends NHComponent {
       }
 
       /* Tab hover effect */
+      
       button:not(.fixed):hover::after,
       button:not(.fixed):active::after {
         position: absolute;
@@ -70,6 +71,9 @@ export default class NHTabButton extends NHComponent {
         width: 100%;
         height: calc(1px * var(--nh-spacing-sm));
       }
+      button:not(.fixed):active::after {
+        background-color: var(--nh-theme-bg-element); 
+      } 
       
       button.fixed {
         color: var(--nh-theme-fg-default);
@@ -81,10 +85,10 @@ export default class NHTabButton extends NHComponent {
       }
       button:active::after,
       button:active::part(base) {
-        background-color: var(--nh-theme-bg-surface);
+        background-color: var(--nh-theme-bg-element);
       }
       button:active {
-        background-color: var(--nh-theme-bg-surface);
+        background-color: var(--nh-theme-bg-element);
       }
 
       button.disabled {
