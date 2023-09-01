@@ -120,7 +120,7 @@ export default class NHCard extends NHComponentShoelace {
     h1,
     *::slotted(*) {
       margin: 0;
-      font-family: var(--nh-font-families-menu);
+      font-family: var(--nh-font-families-body);
     }
     h1 {
       font-weight: var(--nh-font-weights-body-regular);

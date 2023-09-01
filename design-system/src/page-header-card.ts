@@ -58,7 +58,7 @@ export default class NHPageHeaderCard extends NHComponent {
     /* Headings */
 
     h1 {
-      font-family: var(--nh-font-families-menu);
+      font-family: var(--nh-font-families-body);
       font-size: calc(1px * var(--nh-font-size-3xl));
       margin: auto;
       padding: calc(1px * var(--nh-spacing-xxs)) calc(1px * var(--nh-spacing-xl));

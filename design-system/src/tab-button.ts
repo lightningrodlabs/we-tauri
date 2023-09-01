@@ -49,7 +49,7 @@ export default class NHTabButton extends NHComponent {
         border-bottom-right-radius: 0;
         border-bottom-left-radius: 0;
 
-        font-family: var(--nh-font-families-menu);
+        font-family: var(--nh-font-families-body);
         letter-spacing: var(--nh-letter-spacing-buttons);
       }
       button:focus {
