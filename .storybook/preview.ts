@@ -3,6 +3,8 @@ import '@webcomponents/scoped-custom-element-registry'
 
 import type { Preview } from "@storybook/web-components";
 
+import { b64fonts } from '@neighbourhoods/design-system-styles';
+
 const preview: Preview = {
   parameters: {
     backgrounds: {
