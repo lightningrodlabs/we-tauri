@@ -18,6 +18,7 @@
     "@babel/core": "^7.17.2",
     "@base2/pretty-print-object": "^1.0.2",
     "@mdx-js/react": "^2.3.0",
+    "@neighbourhoods/design-system-styles": "^0.0.3",
     "@storybook/addon-actions": "^7.4.0",
     "@storybook/addon-essentials": "^7.4.0",
     "@storybook/addon-links": "^7.4.0",
