@@ -1,15 +1,13 @@
 import { css, CSSResult, html } from "lit";
 import { property, query } from "lit/decorators.js";
-import NHCard from "../card";
-import NHButton from "../button";
 import { NHComponentShoelace } from "../ancestors/base";
-import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
 export default class NHProfileCard extends NHComponentShoelace {
   @property()
   agentAvatarSrc!: string;
   @property()
-  agentName!: string;
+  agentName: string = "No Profile";
   @property()
   agentHashB64!: string;
   @property()
@@ -106,14 +104,6 @@ export default class NHProfileCard extends NHComponentShoelace {
     `;
   }
 
-  static get elementDefinitions() {
-    return {
-      "nh-card": NHCard,
-      "nh-button": NHButton,
-      'sl-skeleton': SlSkeleton,
-    };
-  }
-
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
@@ -159,8 +149,9 @@ export default class NHProfileCard extends NHComponentShoelace {
         padding-left: calc(1px * var(--nh-spacing-xl));
         box-sizing: border-box;
       }
+
       .skeleton-part {
-        --color: var(--nh-theme-bg-canvas);
+        --color: var(--nh-theme-bg-element);
         --sheen-color: var(--nh-theme-bg-surface);
       }
       .skeleton-part::part(indicator) {

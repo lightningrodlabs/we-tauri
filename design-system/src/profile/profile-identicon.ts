@@ -1,10 +1,8 @@
 import { css, CSSResult, html, } from "lit";
 import { property } from "lit/decorators.js";
-import NHCard from "../card";
-import NHButton from "../button";
-import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
-import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "../ancestors/base";
+import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import { classMap } from "lit/directives/class-map.js";
 
 export default class NHProfileIdenticon extends NHComponentShoelace {
   @property()
@@ -60,14 +58,6 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
           
         </div>
     `;
-  }
-
-  static get elementDefinitions() {
-    return {
-      "nh-card": NHCard,
-      "nh-button": NHButton,
-      'sl-skeleton': SlSkeleton,
-    };
   }
 
   static styles: CSSResult[] = [
