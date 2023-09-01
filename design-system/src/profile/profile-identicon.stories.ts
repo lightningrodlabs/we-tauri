@@ -17,6 +17,9 @@ const meta: Meta<ProfileIdenticonProps> = {
   argTypes: {
     agentName: { control: "text" },
   },
+  parameters: { 
+    backgrounds: { default: 'backdrop' },
+  },
   render: (args) => html`<nh-profile-identicon
     .agentName=${args.agentName}
     .agentHashB64=${args.agentHashB64}
