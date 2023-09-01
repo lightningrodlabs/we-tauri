@@ -14,11 +14,14 @@ export interface PostCardProps {
 }
 
 const meta: Meta<PostCardProps> = {
-  title: "NHComponent/PostCard",
+  title: "NHComponent/Post/Card",
   component: "nh-post-card",
   argTypes: {
     title: { control: "text" },
     textContent: { control: "text" },
+  },
+  parameters: { 
+    backgrounds: { default: 'backdrop' },
   },
   render: (args) => html`<nh-post-card
     .theme=${args.theme}

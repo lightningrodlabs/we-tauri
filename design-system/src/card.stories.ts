@@ -19,6 +19,9 @@ export interface CardProps {
 const meta: Meta<CardProps> = {
   title: "NHComponent/Card",
   component: 'nh-card',
+  parameters: { 
+    backgrounds: { default: 'backdrop' },
+  },
   argTypes: {
     title: { control: "text" },
     heading: { control: "text" },
@@ -70,6 +73,7 @@ export const Basic: Story = {
     textSize: "md",
     footerAlign: "c",
   },
+
   render: meta.render,
 };
 

@@ -13,10 +13,13 @@ export interface CreatePostProps {
 }
 
 const meta: Meta<CreatePostProps> = {
-  title: "NHComponent/CreatePost",
+  title: "NHComponent/Post/Create",
   component: "nh-create-post",
   argTypes: {
     prompt: { control: "text" },
+  },
+  parameters: { 
+    backgrounds: { default: 'backdrop' },
   },
   render: (args) => html`<nh-create-post
     .theme=${args.theme}
