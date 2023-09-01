@@ -127,7 +127,7 @@ export default class NHCard extends NHComponentShoelace {
     /* Content */
     
     .text-sm ::slotted(*) {
-      color: var(--nh-menu-subtitle);
+      color: var(--nh-theme-bg-detail);
       line-height: var(--nh-line-heights-headlines-default);
       font-weight: var(--nh-font-weights-body-regular);
       font-size: calc(1px * var(--nh-font-size-sm));
@@ -150,7 +150,7 @@ export default class NHCard extends NHComponentShoelace {
       height: 5px;
       margin: 2px;
       border-radius: 100%;
-      background: var(--nh-menu-subtitle);
+      background: var(--nh-theme-bg-detail);
     }
     
     /* Footer */
