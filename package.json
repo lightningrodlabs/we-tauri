@@ -1,49 +1,42 @@
 {
-  "name": "@neighbourhoods/design-system-components",
-  "version": "0.0.4",
+  "name": "@neighbourhoods/component-storybook",
+  "private": true,
   "type": "module",
-  "files": [
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-      }
-    }
-  },
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "prepare": "npm run build",
     "start": "npm run storybook",
-    "build": "vite build; tsc",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build": "npm run build:design-system",
+    "build:design-system": "cd design-system && npm run build",
+    "build:dev-utils": "cd dev-util && npm run build",
+    "clean": "npm run clean:build && npm run clean:modules",
+    "clean:build": "rimraf storybook-static; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
+    "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",
     "@base2/pretty-print-object": "^1.0.2",
-    "@emotion/core": "^11.0.0",
     "@mdx-js/react": "^2.3.0",
-    "@storybook/addon-actions": "^6.4.19",
-    "@storybook/addon-essentials": "^6.4.19",
-    "@storybook/addon-links": "^6.4.19",
-    "@storybook/web-components": "^6.4.19",
+    "@neighbourhoods/design-system-styles": "^0.0.3",
+    "@storybook/addon-actions": "^7.4.0",
+    "@storybook/addon-essentials": "^7.4.0",
+    "@storybook/addon-links": "^7.4.0",
+    "@storybook/blocks": "^7.4.0",
+    "@storybook/builder-vite": "^7.4.0",
+    "@storybook/web-components": "^7.4.0",
+    "@storybook/web-components-vite": "^7.4.0",
+    "@webcomponents/scoped-custom-element-registry": "^0.0.9",
     "babel-loader": "^8.2.3",
     "react": "^17.0.0",
-    "storybook-builder-vite": "^0.1.15",
-    "typescript": "^4.5.4",
-    "vite": "^2.8.0"
+    "react-dom": "^18.2.0",
+    "rimraf": "^5.0.1",
+    "storybook": "^7.4.0",
+    "tslib": "^2.3.1",
+    "typescript": "^4.5.5",
+    "vite": "^4.4.9"
   },
   "dependencies": {
-    "@lit-labs/scoped-registry-mixin": "^1.0.1",
-    "@neighbourhoods/design-system-styles": "^0.0.3",
-    "@scoped-elements/shoelace": "^0.1.0",
     "lit": "^2.2.0"
   }
 }

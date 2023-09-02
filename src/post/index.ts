@@ -1,1 +1,0 @@
-export { NHCreatePost } from './create-post';
