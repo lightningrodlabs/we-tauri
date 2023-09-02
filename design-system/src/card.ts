@@ -127,7 +127,7 @@ export default class NHCard extends NHComponentShoelace {
     /* Content */
     
     .text-sm ::slotted(*) {
-      color: var(--nh-theme-bg-detail);
+      color: var(--nh-theme-fg-subtle);
       line-height: var(--nh-line-heights-headlines-default);
       font-weight: var(--nh-font-weights-body-regular);
       font-size: calc(1px * var(--nh-font-size-sm));

@@ -15,6 +15,9 @@ const meta: Meta<ProfileCardProps> = {
   argTypes: {
     agentName: { control: "text" },
   },
+  parameters: { 
+    backgrounds: { default: 'surface' },
+  },
   render: (args) => html`<nh-profile-card
     .agentName=${args.agentName}
     .agentHashB64=${args.agentHashB64}
