@@ -15,5 +15,5 @@ if (!loaded) {
   customElements.define('nh-card', NHCard)
   customElements.define('nh-tab-button', NHTabButton)
   customElements.define('nh-page-header-card', NHPageHeaderCard)
+  loaded = true
 }
-loaded = true
