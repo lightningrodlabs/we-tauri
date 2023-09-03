@@ -99,6 +99,7 @@ export class NHCreateProfile extends NHComponentShoelace {
         <div class="content">
           <select-avatar
             name="image"
+            style="margin-left: 1rem; width: 6rem; transform: scale(1.5, 1.2); margin-top: 1rem; }"
             @avatar-selected=${(e: CustomEvent) => this.onChangeValue(e)}
           ></select-avatar>
           <sl-input name="nickname" required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.user.nickname} placeholder=${"Enter a name"}></sl-input>
@@ -130,7 +131,7 @@ export class NHCreateProfile extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    super.styles as CSSResult,
+    ...super.styles as CSSResult[],
     css`
       :host, .content {
         display: flex;

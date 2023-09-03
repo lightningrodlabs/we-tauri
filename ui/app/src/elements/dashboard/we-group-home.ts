@@ -188,7 +188,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               : html`
                   <div class="column" style="flex: 1; margin: 24px; position: relative">
                     <div class="row" style="margin-top: 20px">
-                      <div class="column center-content" style="width: 50%;">
+                      <div class="column center-content" style="width: 50%">
                         ${this._info.value
                           ? html`<img
                               class="logo-large"
@@ -277,7 +277,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
         `,
       complete: (info) => { return html`
             <with-profile .component=${"prompt"} .weGroupId=${this.weGroupId} style="display: flex; flex: 1;">
-                <div slot="hero">
+                <div slot="hero" style="color: var(--nh-theme-fg-default)">
                   <div class="column center-content">
                     <img
                       class="we-logo"

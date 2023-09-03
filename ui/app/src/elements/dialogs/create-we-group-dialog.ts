@@ -68,6 +68,7 @@ export class CreateWeGroupDialog extends NHComponentShoelace {
         <div slot="inner-content" class="row">
           <select-avatar
             id="select-avatar"
+            style="margin-top: 2rem;"
             @avatar-selected=${(e) => {this._logoSrc = e.detail.avatar; this._primaryButtonDisabled = (!this._logoSrc || !this._name ); this.requestUpdate(); }}
           ></select-avatar>
 
