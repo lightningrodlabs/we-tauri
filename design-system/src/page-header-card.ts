@@ -66,7 +66,11 @@ export default class NHPageHeaderCard extends NHComponent {
     }
     
     /* Slot specific */
-    
+      
+    :host([slot="nav"]) .container {
+      padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-sm));
+      background-color: transparent;
+    }
     :host([slot="top-menu"]) .container {
       padding: 0;
       grid-template-area: "top";

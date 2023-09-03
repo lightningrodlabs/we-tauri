@@ -36,6 +36,7 @@ export default class NHAlert extends NHComponentShoelace {
     #main::part(base) {
         --nh-menu-sub-title: #eeebef;
 
+        color: var(--nh-theme-bg-backdrop);
         --sl-color-primary-600: var(--nh-theme-accent-muted);
         background-color: var(--nh-menu-sub-title);
         margin-bottom: calc(1px * var(--nh-spacing-xl));

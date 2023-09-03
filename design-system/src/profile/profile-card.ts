@@ -43,6 +43,7 @@ export default class NHProfileCard extends NHComponentShoelace {
   render() {
     return html`
       <nh-card
+        class="squarish"
         .theme=${"light"}
         .heading=${""}
         .hasContextMenu=${false}

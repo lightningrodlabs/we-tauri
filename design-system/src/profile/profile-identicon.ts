@@ -78,6 +78,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
       display: flex;
       align-items: center;
       justify-content: space-around;
+      gap: calc(1px * var(--nh-spacing-lg));
     }
 
     .responsive .content > img {
