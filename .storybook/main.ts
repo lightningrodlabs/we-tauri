@@ -12,6 +12,8 @@ const config: StorybookConfig = {
   },
   // staticDirs: ['../public'],
   async viteFinal(config, { configType }) {
+    config.optimizeDeps || (config.optimizeDeps = {})
+
     // customize the Vite config here
     config.optimizeDeps.include = [
       ...(config.optimizeDeps?.include ?? []),
