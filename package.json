@@ -5,7 +5,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "npm run storybook",
-    "build": "npm run build:design-system",
+    "build": "npm run build:design-system && npm run build:dev-utils",
     "build:design-system": "cd design-system && npm run build",
     "build:dev-utils": "cd dev-util && npm run build",
     "test": "npm run test:storybook:ci",
