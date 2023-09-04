@@ -16,13 +16,19 @@ pnpm install
 ## Storybook
 
 ```bash
-pnpm run storybook
+npm start
 ```
 
 ## Build
 
 ```bash
-pnpm run build
+npm run build
+```
+
+## Test
+
+```bash
+npm test
 ```
 
 ## Publish
