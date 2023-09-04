@@ -12,7 +12,7 @@
     "test:storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook --quiet && npx http-server storybook-static --port 6006 --silent\" \"wait-on tcp:6006 && npm run test-storybook\"",
     "test:storybook:manual": "test-storybook",
     "clean": "npm run clean:build && npm run clean:modules",
-    "clean:build": "rimraf storybook-static; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
+    "clean:build": "rm tsconfig.tsbuildinfo; rimraf storybook-static; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
