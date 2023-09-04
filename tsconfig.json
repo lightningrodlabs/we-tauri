@@ -1,8 +1,16 @@
 {
-  "composite": true,
   "extends": "./tsconfig.base.json",
-  "include": ["./design-system", "./dev-util"],
   "compilerOptions": {
-    "outDir": "./dist"
+    "composite": true,
+    "sourceRoot": "./",
+    "paths": {
+      "@neighbourhoods/design-system-components": [
+        "./design-system/src/index"
+      ],
+      "@neighbourhoods/design-system-components/*": [
+        "./design-system/src/*"
+      ]
+    },
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   }
 }
