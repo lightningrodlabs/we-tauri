@@ -1,7 +1,7 @@
 {
   "composite": true,
   "extends": "./tsconfig.base.json",
-  "exclude": ["vite.config.ts"],
+  "include": ["./design-system", "./dev-util"],
   "compilerOptions": {
     "outDir": "./dist"
   }

@@ -3,9 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.stories.ts", "vite.config.ts"],
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.stories.ts"],
   "references": [
-    { "path": "../" }
+    { "path": "../tsconfig.json" }
   ]
 }

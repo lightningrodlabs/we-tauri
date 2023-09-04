@@ -3,10 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.stories.ts", "vite.config.ts"],
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.stories.ts"],
   "references": [
-    { "path": "../" },
-    { "path": "../design-system", "prepend": true }
+    { "path": "../tsconfig.json" },
+    { "path": "../design-system/tsconfig.json" }
   ]
 }
