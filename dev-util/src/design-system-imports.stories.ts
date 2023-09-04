@@ -28,14 +28,14 @@ interface Void {}
 const meta: Meta<Void> = {
   title: 'NHDevUtil/DesignSystemImports',
   component: 'nh-assessment-widget',
-  render: (args) => html`
+  render: () => html`
     <p>[compiler-level test only] <test-1 /></p>
   `
 };
 
 export default meta;
 
-type Story = StoryObj<CreatePostProps>;
+type Story = StoryObj<Void>;
 export const Test: Story = {
   args: {},
 };
