@@ -10,12 +10,13 @@
     "build:dev-utils": "cd dev-util && npm run build",
     "test": "npm run test:storybook:ci",
     "test:storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook --quiet && npx http-server storybook-static --port 6006 --silent\" \"wait-on tcp:6006 && npm run test-storybook\"",
-    "test:storybook:manual": "test-storybook",
+    "test:storybook:manual": "echo \"Ensure Storybook is running on port 6006 prior to executing this command...\" && npm run test-storybook",
     "clean": "npm run clean:build && npm run clean:modules",
-    "clean:build": "rm tsconfig.tsbuildinfo; rimraf storybook-static; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
+    "clean:build": "rm tsconfig.tsbuildinfo; rimraf storybook-static; rimraf dist; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test-storybook": "test-storybook"
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",
