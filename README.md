@@ -19,23 +19,15 @@ pnpm install
 npm start
 ```
 
-## Build
-
-```bash
-npm run build
-```
-
 ## Test
 
 ```bash
 npm test
 ```
 
-## Publish
+## Technical Documentation
 
-- Ensure all packages requiring publication have their `version` field in `package.json` updated to reflect the next version to be published.
-- Ensure a successful `pnpm run build` completes after the version updates are made.
-- Run `pnpm -r publish --access public` from the root directory to publish all packages with updated versions.
+See [docs](./docs/).
 
 ## Credits
 
