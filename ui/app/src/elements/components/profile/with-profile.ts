@@ -1,4 +1,4 @@
-import { Profile } from '@holochain-open-dev/profiles';
+import { Profile, ProfilesSignal } from '@holochain-open-dev/profiles';
 import { css, CSSResult, html, PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
@@ -10,7 +10,7 @@ import { contextProvided } from '@lit-labs/context';
 import { AsyncReadable, deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext, weGroupContext } from '../../../context';
-import { AgentPubKeyB64, DnaHash, decodeHashFromBase64 } from '@holochain/client';
+import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64 } from '@holochain/client';
 import { NHProfilePrompt } from './nh-profile-prompt';
 
 @customElement('with-profile')
@@ -54,6 +54,18 @@ export class WithProfile extends NHComponent {
     () => this._profilesStore.value?.profiles.get(this.forAgentHash ? decodeHashFromBase64(this.forAgentHash) : this._matrixStore.myAgentPubKey) as AsyncReadable<Profile>,
     () => [this.forAgentHash],
   );
+
+  firstUpdated() {
+      this._profilesStore.value?.client.client.on("signal", (signal: AppSignal) => {
+        console.log("received signal: ", signal)
+        if (signal.zome_name !== 'profiles') return; 
+        const payload = signal.payload as ProfilesSignal;
+        if (payload.type !== 'EntryCreated') return;
+        if (payload.app_entry.type !== 'Profile') return;
+        this._selectedNeighbourhoodProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
+        this.requestUpdate()
+      })
+  }
 
   renderAgentIdenticon() {
     const {status, value} : any = this._forAgentProfile.value;
