@@ -88,7 +88,7 @@ export class WithProfile extends NHComponent {
         .loading=${status != 'complete'}
         .agentAvatarSrc=${status == 'complete' ? value?.fields.avatar : null}
         .agentName=${status == 'complete' && value?.nickname || "No Profile Found"}
-        .agentHashB64=${this.forAgentHash || this._matrixStore.myAgentPubKey}
+        .agentHashB64=${this.forAgentHash || encodeHashToBase64(this._matrixStore.myAgentPubKey)}
       ></nh-profile-card>`
   }
 
