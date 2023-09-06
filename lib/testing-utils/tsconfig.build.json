@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "paths": {
+      "@neighbourhoods/testing-utils": [
+        "../testing-utils/dist/index"
+      ],
+      "@neighbourhoods/testing-utils/*": [
+        "../testing-utils/dist/*"
+      ]
+    },
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.d.ts", "**/*.stories.*"]
+}
