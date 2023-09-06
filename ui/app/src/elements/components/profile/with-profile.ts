@@ -10,7 +10,7 @@ import { contextProvided } from '@lit-labs/context';
 import { AsyncReadable, deriveStore, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext, weGroupContext } from '../../../context';
-import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64 } from '@holochain/client';
+import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { NHProfilePrompt } from './nh-profile-prompt';
 
 @customElement('with-profile')
@@ -63,11 +63,15 @@ export class WithProfile extends NHComponent {
         if (payload.type !== 'EntryCreated') return;
         if (payload.app_entry.type !== 'Profile') return;
         this._selectedNeighbourhoodProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
+        if(this.forAgentHash && this.forAgentHash == encodeHashToBase64(this._matrixStore.myAgentPubKey)) {
+          this._forAgentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}};
+        }
         this.requestUpdate()
       })
   }
 
   renderAgentIdenticon() {
+    if(!this._forAgentProfile?.value) return html``
     const {status, value} : any = this._forAgentProfile.value;
     return html`<nh-profile-identicon
         .responsive=${true}
