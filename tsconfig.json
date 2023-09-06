@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@neighbourhoods/design-system-components": [
+        "./design-system/src/index"
+      ],
+      "@neighbourhoods/design-system-components/*": [
+        "./design-system/src/*"
+      ],
+      "@neighbourhoods/dev-util-components": [
+        "./dev-util/src/index"
+      ],
+      "@neighbourhoods/dev-util-components/*": [
+        "./dev-util/src/*"
+      ]
+    },
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+  },
+  "exclude": ["./dist"],
+}

@@ -4,8 +4,5 @@
     "outDir": "./dist"
   },
   "include": ["./src/**/*.ts"],
-  "exclude": ["./src/**/*.d.ts"],
-  "references": [
-    { "path": "../tsconfig.json" }
-  ]
+  "exclude": ["./src/**/*.d.ts", "**/*.stories.*"]
 }

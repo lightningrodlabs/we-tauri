@@ -5,14 +5,18 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "start": "npm run storybook",
-    "build": "npm run build:design-system",
+    "build": "npm run build:design-system && npm run build:dev-utils",
     "build:design-system": "cd design-system && npm run build",
     "build:dev-utils": "cd dev-util && npm run build",
+    "test": "npm run test:storybook:ci",
+    "test:storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"npm run build-storybook --quiet && npx http-server storybook-static --port 6006 --silent\" \"wait-on tcp:6006 && npm run test-storybook\"",
+    "test:storybook:manual": "echo \"Ensure Storybook is running on port 6006 prior to executing this command...\" && npm run test-storybook",
     "clean": "npm run clean:build && npm run clean:modules",
-    "clean:build": "rimraf storybook-static; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
+    "clean:build": "rm tsconfig.tsbuildinfo; rimraf storybook-static; rimraf dist; rimraf design-system/dist; rimraf dev-util/dist; exit 0",
     "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do echo \"  Remove $DIR\"; rm -Rf \"$DIR\"; done",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test-storybook": "test-storybook"
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",
@@ -24,17 +28,22 @@
     "@storybook/addon-links": "^7.4.0",
     "@storybook/blocks": "^7.4.0",
     "@storybook/builder-vite": "^7.4.0",
+    "@storybook/test-runner": "^0.13.0",
     "@storybook/web-components": "^7.4.0",
     "@storybook/web-components-vite": "^7.4.0",
     "@webcomponents/scoped-custom-element-registry": "^0.0.9",
     "babel-loader": "^8.2.3",
+    "concurrently": "^8.2.1",
+    "http-server": "^14.1.1",
     "react": "^17.0.0",
     "react-dom": "^18.2.0",
     "rimraf": "^5.0.1",
     "storybook": "^7.4.0",
-    "tslib": "^2.3.1",
-    "typescript": "^4.5.5",
-    "vite": "^4.4.9"
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9",
+    "vite-tsconfig-paths": "^4.2.0",
+    "wait-on": "^7.0.1"
   },
   "dependencies": {
     "lit": "^2.2.0"

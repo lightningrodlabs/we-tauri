@@ -1,2 +1,7 @@
-export * from './profile-card';
-export * from './profile-identicon';
+import NHProfileCard from './profile-card';
+import NHProfileIdenticon from './profile-identicon';
+
+export {
+  NHProfileCard,
+  NHProfileIdenticon,
+}

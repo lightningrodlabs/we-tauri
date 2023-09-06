@@ -1,5 +1,4 @@
 import { b64images } from '@neighbourhoods/design-system-styles';
-import { html } from 'lit';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import NHAssessmentWidget from './assessment-widget';
 
