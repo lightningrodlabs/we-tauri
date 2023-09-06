@@ -63,7 +63,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], currentResourceDefEh: any) {
     return html`<div class="container">
       <div style="display:flex; gap: 8px; flex-direction: column;">
-        <nh-card .theme=${"light"} title=${'PREVIEW WITH POST'}>
+        <nh-card .theme=${"dark"} title=${'PREVIEW WITH POST'}>
           <div class="preview-container">
             <img src="post-example.png" style="width: 100%; object-fit: cover" />
             ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}

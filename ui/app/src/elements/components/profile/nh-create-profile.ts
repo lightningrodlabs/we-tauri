@@ -95,7 +95,7 @@ export class NHCreateProfile extends NHComponentShoelace {
 
   render() {
     return html`
-      <nh-card .theme=${'light'} .textSize=${"md"} .hasPrimaryAction=${true} .title=${'Create Profile'} .footerAlign=${"r"}>
+      <nh-card .theme=${'dark'} .textSize=${"md"} .hasPrimaryAction=${true} .title=${'Create Profile'} .footerAlign=${"r"}>
         <div class="content">
           <select-avatar
             name="image"
