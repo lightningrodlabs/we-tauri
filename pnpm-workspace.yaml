@@ -1,4 +1,5 @@
 packages:
   - "./"
-  - "design-system"
-  - "dev-util"
+  - "components/design-system"
+  - "components/dev-util"
+  - "lib/testing-utils"
