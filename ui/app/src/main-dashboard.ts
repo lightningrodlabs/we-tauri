@@ -313,7 +313,7 @@ export class MainDashboard extends NHComponentShoelace {
     }
   }
 
-  handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
+  async handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
     this.refreshProfileCard();
 
     this._navigationMode = NavigationMode.GroupCentric;
