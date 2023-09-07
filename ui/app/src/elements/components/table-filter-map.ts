@@ -35,6 +35,11 @@ export class DashboardFilterMap extends LitElement {
   @property()
   private _allAssessments;
 
+  @property()
+  private _allAssessmentsSubscriber = new StoreSubscriber(this, () =>
+    this._sensemakerStore.resourceAssessments()
+  );
+
   @property({ type: String })
   resourceName;
   @property({ type: String })
@@ -453,10 +458,13 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
+    const flatAssessments = Object.values(this._allAssessmentsSubscriber.value).flat();
+    const dashboardAssessments = flatAssessments.length ? flatAssessments.map(this.mapAssessmentToAssessmentTableRecord.bind(this)) : [];
+    
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}
-        .assessments=${this.filteredAssessments}
+        .assessments=${dashboardAssessments}
         .tableType=${this.tableType}
         .contextFieldDefs=${this.fieldDefs}
       ></dashboard-table>

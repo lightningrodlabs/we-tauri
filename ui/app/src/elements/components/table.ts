@@ -73,7 +73,7 @@ export class StatefulTable extends NHComponentShoelace {
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-          ${typeof resource.eh[1] === 'function' ? ref((e) => resource.eh[1](e as HTMLElement, resource.eh[0])) : null}
+          ${typeof resource.eh[1] === 'function' ? ref((e) => e ? resource.eh[1](e as HTMLElement, resource.eh[0]): null) : null}
         >
         </div>`,
       }),
