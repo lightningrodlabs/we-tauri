@@ -35,11 +35,6 @@ export class DashboardFilterMap extends LitElement {
   @property()
   private _allAssessments;
 
-  @property()
-  private _allAssessmentsSubscriber = new StoreSubscriber(this, () =>
-    this._sensemakerStore.resourceAssessments()
-  );
-
   @property({ type: String })
   resourceName;
   @property({ type: String })
