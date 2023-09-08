@@ -458,13 +458,10 @@ export class DashboardFilterMap extends LitElement {
   }
 
   render() {
-    const flatAssessments = Object.values(this._allAssessmentsSubscriber.value).flat();
-    const dashboardAssessments = flatAssessments.length ? flatAssessments.map(this.mapAssessmentToAssessmentTableRecord.bind(this)) : [];
-    
     return html`
       <dashboard-table
         .resourceName=${this.resourceName}
-        .assessments=${dashboardAssessments}
+        .assessments=${this.filteredAssessments}
         .tableType=${this.tableType}
         .contextFieldDefs=${this.fieldDefs}
       ></dashboard-table>
