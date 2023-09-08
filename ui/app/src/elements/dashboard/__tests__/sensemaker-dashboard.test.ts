@@ -17,6 +17,7 @@ import { get } from 'svelte/store';
 import { AppletTuple } from './matrix-test-harness';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { cleanResourceNameForUI } from '../../components/helpers/functions';
+import { flattenRoleAndZomeIndexedResourceDefs } from '../../../utils';
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -191,7 +192,7 @@ describe('SensemakerDashboard', () => {
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
 
-      const resourceDefsLength = Object.values(config.resource_defs).length;
+      const resourceDefsLength = Object.values(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)).length;
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
       );
@@ -205,7 +206,7 @@ describe('SensemakerDashboard', () => {
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
 
-      const resourceDefNames = Object.keys(config.resource_defs);
+      const resourceDefNames = Object.keys(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs));
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
       );
@@ -279,7 +280,7 @@ describe('SensemakerDashboard', () => {
       const dom = await renderAndReturnDom(component, false);
       const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
       const resourceDefsLengths = appletConfigs.map(
-        config => Object.entries(config.resource_defs).length,
+        config => Object.entries(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)).length,
       );
 
       const subnavs = dom.window.document.querySelectorAll(
@@ -294,7 +295,7 @@ describe('SensemakerDashboard', () => {
     test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
       const dom = await renderAndReturnDom(component, false);
       const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs);
-      const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
+      const resourceDefNames = appletConfigs.map(config => Object.keys(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)));
 
       const subnavs = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
