@@ -33,6 +33,7 @@ import {
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
 import { ContextSelector } from './context-selector';
 import { b64images } from '@neighbourhoods/design-system-styles';
+import { flattenRoleAndZomeIndexedResourceDefs } from '../../utils';
 
 @customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -98,7 +99,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       this.context_ehs = Object.fromEntries(
         zip(this.appletDetails[installedAppId].contexts, appletDetails.context_ehs),
         );
-      this.selectedAppletResourceDefs = this.appletDetails[installedAppId].resource_defs
+      this.selectedAppletResourceDefs = flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)
 
       this.dimensions = this.appletDetails[installedAppId].dimensions;
       this.requestUpdate('selectedResourceDefIndex')
@@ -110,7 +111,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         snakeCase(this.appletDetails[installedAppId].appletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
       
       this.selectedResourceDefEh = resourceName
-        ? encodeHashToBase64(this.appletDetails[installedAppId].resource_defs[resourceName])
+        ? encodeHashToBase64(flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)[resourceName])
         : 'none';
 
       this.selectedResourceName =
