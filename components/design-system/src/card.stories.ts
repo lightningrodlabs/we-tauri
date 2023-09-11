@@ -1,8 +1,55 @@
-import "./_shared_customElements";
 import { html } from "lit";
+import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
-import { BasicWidget } from "./assessment-widget.stories";
+
 import { b64images } from '@neighbourhoods/design-system-styles';
+
+import { BasicWidget } from "./assessment-widget.stories";
+import NHButton from './button'
+import NHCard from './card'
+
+import { NHComponent } from './ancestors/base'
+
+class TestRoot extends NHComponent {
+  static elementDefinitions = {
+    'nh-button': NHButton,
+    'nh-card': NHCard,
+  }
+
+  render() {
+    return html`<nh-card
+    .theme=${this.theme}
+    .title=${this.title}
+    .heading=${this.heading}
+    .hasContextMenu=${this.hasContextMenu}
+    .hasPrimaryAction=${this.hasPrimaryAction}
+    .textSize=${this.textSize}
+    .footerAlign=${this.footerAlign}
+  >
+    <p>
+      ${this.contentText || `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
+      auctor vitae viverra et, consequat vulputate felis. Integer congue leo
+      quis urna vestibulum varius. Duis vehicula ligula id leo.`}
+    </p>
+    ${this.hasWidget && !this.hasPrimaryAction
+      ? html`<div slot="footer">
+          ${(BasicWidget as any).render({
+            name: "Pear",
+            iconAlt: "a pear",
+            iconImg: b64images.icons.pear,
+          })}
+        </div>`
+      : null}
+    ${this.hasPrimaryAction && !this.hasWidget
+      ? html`<div slot="footer">
+          <nh-button ?disabled=${false} label="Install" type="primary"></nh-button>
+        </div>`
+      : null}
+  </nh-card>`
+  }
+}
+
+customElements.define('card--test-root', TestRoot)
 
 export interface CardProps {
   title: string;
@@ -18,8 +65,8 @@ export interface CardProps {
 
 const meta: Meta<CardProps> = {
   title: "NHComponent/Card",
-  component: 'nh-card',
-  parameters: { 
+  component: 'card--test-root',
+  parameters: {
     backgrounds: { default: 'backdrop' },
   },
   argTypes: {
@@ -32,35 +79,7 @@ const meta: Meta<CardProps> = {
     hasPrimaryAction: { control: "boolean" },
     // textSize: { options: ["md", "sm"], control: { type: "radio" } },
   },
-  render: (args) => html`<nh-card
-    .theme=${args.theme}
-    .title=${args.title}
-    .heading=${args.heading}
-    .hasContextMenu=${args.hasContextMenu}
-    .hasPrimaryAction=${args.hasPrimaryAction}
-    .textSize=${args.textSize}
-    .footerAlign=${args.footerAlign}
-  >
-    <p>
-      ${args.contentText || `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
-      auctor vitae viverra et, consequat vulputate felis. Integer congue leo
-      quis urna vestibulum varius. Duis vehicula ligula id leo.`}
-    </p>
-    ${args.hasWidget && !args.hasPrimaryAction
-      ? html`<div slot="footer">
-          ${(BasicWidget as any).render({
-            name: "Pear",
-            iconAlt: "a pear",
-            iconImg: b64images.icons.pear,
-          })}
-        </div>`
-      : null}
-    ${args.hasPrimaryAction && !args.hasWidget
-      ? html`<div slot="footer">
-          <nh-button ?disabled=${false} label="Install" type="primary"></nh-button>
-        </div>`
-      : null}
-  </nh-card>`,
+  render: (args) => html`<card--test-root ${spreadProps(args)} />`,
 };
 
 export default meta;

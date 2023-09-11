@@ -1,31 +1,33 @@
-import "./_shared_customElements";
 import { html } from "lit";
+import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { b64images } from '@neighbourhoods/design-system-styles';
+
 import { DashboardIconButtons, HorizontalTabButtons } from "./menu.stories";
+import NHButton from './button'
+import NHMenu from './menu'
+import NHPageHeaderCard from './page-header-card'
 
-export interface PageHeaderCardProps {
-  header: string;
-  secondary: string;
-  primary: string;
-  primaryText: string;
-  slotName: string;
-}
+import { NHComponent } from './ancestors/base'
 
-const meta: Meta<PageHeaderCardProps> = {
-  title: "NHComponent/PageHeaderCard",
-  component: "nh-page-header-card",
-  argTypes: {},
-  render: (args) => html`<nh-page-header-card
-    slot=${args.slotName}
-    .heading=${args.header}
+class TestRoot extends NHComponent {
+  static elementDefinitions = {
+    'nh-button': NHButton,
+    'nh-menu': NHMenu,
+    'nh-page-header-card': NHPageHeaderCard,
+  }
+
+  render() {
+    return html`<nh-page-header-card
+    slot=${this.slotName}
+    .heading=${this.header}
   >
-    ${args.secondary == "back"
+    ${this.secondary == "back"
       ? html`<img
           src="data:image/svg+xml;base64,${b64images.icons.backCaret}"
           slot="secondary-action"
         />`
-      : args.secondary == "dashboard-menu"
+      : this.secondary == "dashboard-menu"
       ? html`<nh-menu
           .direction=${(HorizontalTabButtons.args as any).direction}
           .itemLabels=${(HorizontalTabButtons.args as any).itemLabels}
@@ -38,7 +40,7 @@ const meta: Meta<PageHeaderCardProps> = {
         >
         </nh-menu>`
       : null}
-    ${args.primary == "dashboard-buttons"
+    ${this.primary == "dashboard-buttons"
       ? html`<nh-menu
       .direction=${(DashboardIconButtons.args as any).direction}
       .itemLabels=${(DashboardIconButtons.args as any).itemLabels}
@@ -50,15 +52,33 @@ const meta: Meta<PageHeaderCardProps> = {
       slot="primary-action"
     >
     </nh-menu>`
-      : args.primary == "button"
+      : this.primary == "button"
       ? html`<nh-button
-          .label=${args.primaryText}
+          .label=${this.primaryText}
           .variant=${"primary"}
           .size=${"stretch"}
           slot="primary-action"
         ></nh-button>`
       : null}
-  </nh-page-header-card>`,
+  </nh-page-header-card>`
+  }
+}
+
+customElements.define('page-header-card--test-root', TestRoot)
+
+export interface PageHeaderCardProps {
+  header: string;
+  secondary: string;
+  primary: string;
+  primaryText: string;
+  slotName: string;
+}
+
+const meta: Meta<PageHeaderCardProps> = {
+  title: "NHComponent/PageHeaderCard",
+  component: "page-header-card--test-root",
+  argTypes: {},
+  render: (args) => html`<page-header-card--test-root ${spreadProps(args)} />`,
 };
 
 export default meta;
