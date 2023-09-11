@@ -1,5 +1,34 @@
 # Neighbourhoods Storybook repository developer documentation
 
+<!-- MarkdownTOC -->
+
+- [Testing](#testing)
+    - [Writing interaction tests](#writing-interaction-tests)
+- [Publishing to NPM and other package registries](#publishing-to-npm-and-other-package-registries)
+- [Developing locally within downstream projects](#developing-locally-within-downstream-projects)
+- [Understanding compilation targets and the build system](#understanding-compilation-targets-and-the-build-system)
+    - [Registering a new ESModule with the build system](#registering-a-new-esmodule-with-the-build-system)
+    - [Configuring cross-module dependencies](#configuring-cross-module-dependencies)
+
+<!-- /MarkdownTOC -->
+
+
+
+
+## Testing
+
+### Writing interaction tests
+
+The documentation on these APIs is currently pretty sparse. See:
+
+- [all available assertion methods](https://jestjs.io/docs/expect)
+- [DOM element querying](https://testing-library.com/docs/queries/about)
+    - `getByRole`, `getByShadowRole` etc infer role IDs based on the [W3C ARIA spec](https://www.w3.org/TR/html-aria/#docconformance)
+- [core testing library functions](https://testing-library.com/docs/dom-testing-library/api)
+    - (but actually [the code](https://github.com/storybookjs/testing-library/blob/next/src/index.ts) is the best place to see the comprehensive list)
+- [utility methods](https://testing-library.com/docs/user-event/utility/) including user event simulation helpers
+
+
 
 ## Publishing to NPM and other package registries
 
