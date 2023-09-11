@@ -94,7 +94,7 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
 
-  design-system:
+  components/design-system:
     dependencies:
       '@lit-labs/scoped-registry-mixin':
         specifier: ^1.0.1
@@ -107,7 +107,7 @@ importers:
         version: 2.8.0(@types/react@18.2.21)
       lit:
         specifier: ^2.2.0
-        version: 2.2.0
+        version: 2.8.0
     devDependencies:
       tslib:
         specifier: ^2.6.2
@@ -119,7 +119,7 @@ importers:
         specifier: ^4.4.9
         version: 4.4.9
 
-  dev-util:
+  components/dev-util:
     dependencies:
       '@lit-labs/scoped-registry-mixin':
         specifier: ^1.0.1
@@ -135,7 +135,35 @@ importers:
         version: 0.1.0
       lit:
         specifier: ^2.2.0
-        version: 2.2.0
+        version: 2.8.0
+    devDependencies:
+      tslib:
+        specifier: ^2.6.2
+        version: 2.6.2
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+      vite:
+        specifier: ^4.4.9
+        version: 4.4.9
+
+  lib/testing-utils:
+    dependencies:
+      '@lit-labs/scoped-registry-mixin':
+        specifier: ^1.0.1
+        version: 1.0.1
+      '@neighbourhoods/design-system-components':
+        specifier: workspace:*
+        version: link:../../components/design-system
+      '@neighbourhoods/design-system-styles':
+        specifier: ^0.0.3
+        version: 0.0.3
+      '@scoped-elements/shoelace':
+        specifier: ^0.1.0
+        version: 0.1.0
+      lit:
+        specifier: ^2.2.0
+        version: 2.8.0
     devDependencies:
       tslib:
         specifier: ^2.6.2
