@@ -13,10 +13,9 @@ function isDataURL(s) {
 }
 isDataURL.regex = /^\s*data:([a-z]+\/[a-z0-9\-\+]+(;[a-z\-]+\=[a-z0-9\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i;
 
-@customElement('nh-create-profile')
 export class NHCreateProfile extends NHComponentShoelace {
   @property()
-  profilesStore;
+  profilesStore!: ProfilesStore;
 
   _myProfile = new StoreSubscriber(
     this,
@@ -77,7 +76,7 @@ export class NHCreateProfile extends NHComponentShoelace {
           avatar: profile.image || ''
         }
       }
-      await this.profilesStore!.value.client.createProfile(payload);
+      await this.profilesStore!.client.createProfile(payload);
       this.dispatchEvent(
         new CustomEvent('profile-created', {
           detail: {
@@ -87,7 +86,7 @@ export class NHCreateProfile extends NHComponentShoelace {
           composed: true,
         }),
         );
-        await this.profilesStore!.value.myProfile.reload();
+        await this.profilesStore!.myProfile.reload();
     } catch (e) {
       console.error(e);
     }
