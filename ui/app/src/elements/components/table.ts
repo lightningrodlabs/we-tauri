@@ -82,7 +82,7 @@ export class StatefulTable extends NHComponentShoelace {
         decorator: function(agentPublicKeyB64: any) {return html` <div
           style="width: 100%; display: flex; flex-direction: column; align-items: start; height: 100%; justify-items: center;"
           >
-          <with-profile .component=${"identicon"} .forAgentHash=${agentPublicKeyB64}></with-profile>
+          <with-profile .component=${"identicon"} .agentHash=${agentPublicKeyB64}></with-profile>
         </div>`},
       }),
     };
