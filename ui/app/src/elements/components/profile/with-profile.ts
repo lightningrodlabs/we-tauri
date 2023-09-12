@@ -11,7 +11,6 @@ import { AsyncStatus, get, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext, weGroupContext } from '../../../context';
 import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { NHProfilePrompt } from './nh-profile-prompt';
 
 export class WithProfile extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -104,7 +103,6 @@ export class WithProfile extends NHComponent {
   static elementDefinitions() {
     return {
       'nh-profile-card': NHProfileCard,
-      'nh-profile-prompt': NHProfilePrompt,
       'nh-profile-identicon': NHProfileIdenticon,
     };
   }

@@ -1,7 +1,6 @@
 import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NHProfilePrompt } from "../components/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedElementsMixin } from "@open-wc/scoped-elements";
@@ -21,7 +20,8 @@ import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton, NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
-import { WithProfile } from "../components/profile/with-profile";
+import { NHCreateProfile } from "../components/profile/nh-create-profile";
+import { get } from "@holochain-open-dev/stores";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -275,8 +275,15 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
         </div>
         `,
-      complete: (info) => { return html`
-            <with-profile .component=${"prompt"} .weGroupId=${this.weGroupId} style="display: flex; flex: 1;">
+        complete: (info) => { 
+          const nhProfilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash)) as ProfilesStore;
+          return typeof (get(nhProfilesStore.myProfile) as any)?.value !== 'undefined' 
+          ? this.renderContent() 
+          : html`<div
+            class="column"
+            style="align-items: center; justify-content: start; flex: 1; padding-bottom: 10px;"
+                    >
+              <div class="column" style="align-items: center;">
                 <div slot="hero" style="color: var(--nh-theme-fg-default)">
                   <div class="column center-content">
                     <img
@@ -294,25 +301,21 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     >
                       How would you like to appear in this neighbourhood?
                     </div>
-                  </div>
-                            </div>
-                
-                            <div slot="info">
-                ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-                ${this.renderSuccessSnackbar()}
-                            </div>
-                            <div slot="content" style="display: flex; flex: 1;">
-                ${this.renderContent()}
-                            </div>
-            </with-profile>
+                  </div>  
+                </div>
+                <nh-create-profile .profilesStore=${this._profilesStore} style="display: flex; flex: 1;"
+                  @profile-created=${async () => {
+                    
+                }}></nh-create-profile>
+                </div>
+              </div>
         `}
     })
   }
 
-  static get scopedElements() {
+  static scopedElements() {
     return {
-      'with-profile': WithProfile,
-      "nh-profile-prompt": NHProfilePrompt,
+      "nh-create-profile": NHCreateProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
