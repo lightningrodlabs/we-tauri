@@ -4,7 +4,7 @@ import { EntryHash } from "@holochain/client";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";

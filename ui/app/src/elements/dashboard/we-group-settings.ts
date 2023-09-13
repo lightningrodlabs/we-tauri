@@ -1,7 +1,7 @@
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Button, CircularProgress, Icon, IconButton, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
@@ -30,7 +30,7 @@ export class WeGroupSettings extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
-  
+
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 

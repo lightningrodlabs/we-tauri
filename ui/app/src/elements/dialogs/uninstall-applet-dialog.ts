@@ -1,6 +1,6 @@
 import { html, LitElement } from "lit";
 import { property, query } from "lit/decorators.js";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
   TextField,
   Button,

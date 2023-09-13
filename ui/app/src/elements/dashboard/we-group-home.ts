@@ -3,7 +3,7 @@ import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profile
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
@@ -275,10 +275,10 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
         </div>
         `,
-        complete: (info) => { 
+        complete: (info) => {
           const nhProfilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash)) as ProfilesStore;
-          return typeof (get(nhProfilesStore.myProfile) as any)?.value !== 'undefined' 
-          ? this.renderContent() 
+          return typeof (get(nhProfilesStore.myProfile) as any)?.value !== 'undefined'
+          ? this.renderContent()
           : html`<div
             class="column"
             style="align-items: center; justify-content: start; flex: 1; padding-bottom: 10px;"
@@ -301,11 +301,11 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     >
                       How would you like to appear in this neighbourhood?
                     </div>
-                  </div>  
+                  </div>
                 </div>
                 <nh-create-profile .profilesStore=${this._profilesStore} style="display: flex; flex: 1;"
                   @profile-created=${async () => {
-                    
+
                 }}></nh-create-profile>
                 </div>
               </div>
@@ -370,7 +370,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
       .members-sidebar {
         display:none;
-        
+
         width: 224px;
         background-color: #ecebff;
         padding: 24px;

@@ -1,5 +1,5 @@
 import { ref } from "lit/directives/ref.js";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { Renderer } from "@neighbourhoods/nh-launcher-applet";

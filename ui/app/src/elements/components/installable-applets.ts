@@ -1,5 +1,5 @@
 import { html, LitElement, css } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
   Button,
   TextField,
