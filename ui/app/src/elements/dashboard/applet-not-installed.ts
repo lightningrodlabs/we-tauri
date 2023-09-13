@@ -228,7 +228,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
   }
 
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "render-block": RenderBlock,
       "mwc-circular-progress": CircularProgress,

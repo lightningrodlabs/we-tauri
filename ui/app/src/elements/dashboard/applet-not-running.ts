@@ -35,7 +35,7 @@ export class AppletNotRunning extends ScopedElementsMixin(LitElement) {
   }
 
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-icon": Icon,
     };

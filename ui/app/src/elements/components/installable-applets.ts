@@ -113,7 +113,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
     });
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-textfield": TextField,

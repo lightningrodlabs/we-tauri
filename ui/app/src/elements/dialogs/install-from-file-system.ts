@@ -234,7 +234,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-textarea': SlTextarea,
       'sl-input': SlInput,

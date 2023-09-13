@@ -26,7 +26,7 @@ export class TotalThumbsUpDimensionDisplay extends DisplayDimensionWidget {
                     </div>
                 `
     }
-    static get scopedElements() {
+    static get elementDefinitions() {
         return {
         }
     }
@@ -37,4 +37,3 @@ export class TotalThumbsUpDimensionDisplay extends DisplayDimensionWidget {
         }
     `
 }
-

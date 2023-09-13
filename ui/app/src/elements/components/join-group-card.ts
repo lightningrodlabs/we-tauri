@@ -255,7 +255,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'mwc-button': Button,
       'mwc-list': List,

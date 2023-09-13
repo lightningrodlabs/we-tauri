@@ -295,7 +295,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-icon-button": IconButton,

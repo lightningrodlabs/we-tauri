@@ -48,7 +48,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return html` <main-dashboard style="flex: 1;"></main-dashboard> `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "main-dashboard": MainDashboard,
     };

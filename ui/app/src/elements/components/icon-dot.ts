@@ -27,7 +27,7 @@ export class IconDot extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-icon": Icon,
     }

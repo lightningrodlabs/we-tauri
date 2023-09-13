@@ -148,7 +148,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-list": List,

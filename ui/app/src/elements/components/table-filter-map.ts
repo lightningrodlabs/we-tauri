@@ -194,7 +194,7 @@ export class DashboardFilterMap extends LitElement {
         ? Object.values(assessments)
         : this.filterByResourceDefEh(assessments, this.resourceDefEh)
     ).flat() as Assessment[];
-    
+
     filteredByResourceDef = this.selectedAppletResourceDefs ? this.filterByAppletResourceDefEhs(filteredByResourceDef, this.selectedAppletResourceDefs)  as Assessment[] : filteredByResourceDef;
     // By objective/subjective dimension names
     let filteredByMethodType;
@@ -278,7 +278,7 @@ export class DashboardFilterMap extends LitElement {
   // Mapping
   mapAssessmentToAssessmentTableRecord(assessment: Assessment): AssessmentTableRecord {
     // Base record with basic fields
-    
+
     // get the view from the matrix store
     const resourceView = this._matrixStore.getResourceView(this.weGroupId, assessment.resource_def_eh);
     const baseRecord = {
@@ -432,7 +432,7 @@ export class DashboardFilterMap extends LitElement {
     return {};
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'dashboard-table': StatefulTable,
     };

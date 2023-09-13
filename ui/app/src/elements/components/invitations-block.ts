@@ -93,7 +93,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-textfield": TextField,

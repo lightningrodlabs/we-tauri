@@ -313,7 +313,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
     })
   }
 
-  static scopedElements() {
+  static elementDefinitions() {
     return {
       "nh-create-profile": NHCreateProfile,
       "installable-applets": InstallableApplets,

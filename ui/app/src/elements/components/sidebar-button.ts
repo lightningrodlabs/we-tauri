@@ -48,7 +48,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     </sl-tooltip>`;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "sl-tooltip": SlTooltip,
     };

@@ -66,7 +66,7 @@ export class UninstallAppletDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-textfield": TextField,
       "mwc-button": Button,
