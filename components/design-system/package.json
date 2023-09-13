@@ -1,6 +1,6 @@
 {
   "name": "@neighbourhoods/design-system-components",
-  "version": "0.0.4",
+  "version": "0.0.9",
   "type": "module",
   "files": [
     "dist"
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@lit-labs/scoped-registry-mixin": "^1.0.1",
-    "@neighbourhoods/design-system-styles": "^0.0.3",
+    "@neighbourhoods/design-system-styles": "^0.0.5",
     "@shoelace-style/shoelace": "^2.8.0",
     "lit": "^2.2.0"
   }
