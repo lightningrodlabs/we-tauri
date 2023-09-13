@@ -38,7 +38,7 @@ export class WithProfile extends NHComponent {
   firstUpdated() {
       this._profilesStore!.client.client.on("signal", (signal: AppSignal) => {
         console.log("received signal: ", signal)
-        if (signal.zome_name !== 'profiles') return; 
+        if (signal.zome_name !== 'profiles') return;
         const payload = signal.payload as ProfilesSignal;
         if (payload.type !== 'EntryCreated') return;
         if (payload.app_entry.type !== 'Profile') return;
@@ -100,11 +100,9 @@ export class WithProfile extends NHComponent {
     }
   }
 
-  static elementDefinitions() {
-    return {
-      'nh-profile-card': NHProfileCard,
-      'nh-profile-identicon': NHProfileIdenticon,
-    };
+  static elementDefinitions = {
+    'nh-profile-card': NHProfileCard,
+    'nh-profile-identicon': NHProfileIdenticon,
   }
 
   static styles: CSSResult[] = [
