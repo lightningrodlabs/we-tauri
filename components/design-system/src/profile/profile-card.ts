@@ -1,7 +1,9 @@
 import { css, CSSResult, html } from "lit";
 import { property, query } from "lit/decorators.js";
-import { NHComponentShoelace } from "../ancestors/base";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import { NHComponentShoelace } from "../ancestors/base";
+import NHCard from "../card";
+import NHButton from "../button";
 
 export default class NHProfileCard extends NHComponentShoelace {
   @property()
@@ -14,6 +16,11 @@ export default class NHProfileCard extends NHComponentShoelace {
   loading: boolean = false;
   @query(".hash-container")
   hashContainer!: HTMLElement;
+
+  static elementDefinitions = {
+    'nh-card': NHCard,
+    'nh-button': NHButton,
+  }
 
   // @query('#copied-snackbar')
   // _copiedSnackbar!: HTMLElement; TODO implement this
