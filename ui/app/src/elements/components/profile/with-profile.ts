@@ -22,26 +22,37 @@ export class WithProfile extends NHComponent {
   weGroupId!: DnaHash;
 
   @property()
+  refreshed: boolean = false;
+
+  @property()
   agentHash!: AgentPubKeyB64;
 
   @property()
   component!: 'card' | 'prompt' | 'identicon';
 
-  _profilesStore;
+  profilesStore;
 
   #agentProfile = new StoreSubscriber(
     this,
-    () => (this._profilesStore as ProfilesStore).profiles.get(decodeHashFromBase64(this.agentHash)),
-    () => [this.agentHash, this._profilesStore]
+    () => (this.profilesStore as ProfilesStore).profiles.get(decodeHashFromBase64(this.agentHash)),
+    () => [this.agentHash, this.profilesStore, this.refreshed]
   );
 
   connectedCallback(): void {
       super.connectedCallback()
-      this._profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
+      this.profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
+      this.refreshed = false;
+    }
+    
+    protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+      if(_changedProperties.has('weGroupId') && typeof this.weGroupId !== 'undefined') {
+        this.profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
+        this.refreshed = true;
+    }
   }
 
   firstUpdated() {
-      this._profilesStore!.client.client.on("signal", (signal: AppSignal) => {
+      this.profilesStore!.client.client.on("signal", (signal: AppSignal) => {
         console.log("received signal: ", signal)
         if (signal.zome_name !== 'profiles') return;
         const payload = signal.payload as ProfilesSignal;
@@ -50,11 +61,11 @@ export class WithProfile extends NHComponent {
 
         // TODO: reimplement if needed.
 
-        // this._selectedNeighbourhoodProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
-        // if(this.forAgentHash && this.forAgentHash == encodeHashToBase64(this._matrixStore.myAgentPubKey)) {
-        //   this._forAgentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}};
-        // }
-        // this.requestUpdate()
+        this.#agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
+        if(this.agentHash && this.agentHash == encodeHashToBase64(this._matrixStore.myAgentPubKey)) {
+          this.#agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}};
+        }
+        this.requestUpdate()
       })
   }
 

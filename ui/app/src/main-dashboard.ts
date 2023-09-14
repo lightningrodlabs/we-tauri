@@ -108,16 +108,16 @@ export class MainDashboard extends NHComponentShoelace {
 
   @query('#component-card')
   _withProfile!: any;
-
+  
   @state()
   userProfileMenuVisible: boolean = false;
-
-  // async refreshProfileCard() {
-  //   await this._withProfile._profilesStore.value.myProfile.reload();
-  //   this._withProfile.refreshed = true;
-  //   await this._withProfile.requestUpdate();
-  // }
-
+  
+  async refreshProfileCard() {
+    if(!this._withProfile?._profilesStore) return;
+    await this._withProfile._profilesStore.value.myProfile.reload();
+    this._withProfile.refreshed = true;
+  }
+  
   toggleUserMenu () {
     this.userProfileMenuVisible = !this.userProfileMenuVisible;
     (this.renderRoot.querySelector(".user-profile-menu .context-menu") as HTMLElement).dataset.open = 'true';
@@ -313,6 +313,7 @@ export class MainDashboard extends NHComponentShoelace {
   }
 
   async handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
+    await this.refreshProfileCard();
 
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
@@ -862,7 +863,11 @@ export class MainDashboard extends NHComponentShoelace {
               >
                 <button class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
                 </sl-tooltip>
-                <with-profile id="component-card" .component=${"card"} .weGroupId=${this._selectedWeGroupId} class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}></with-profile>
+                ${this._selectedWeGroupId 
+                  ? html`<we-group-context .weGroupId=${this._selectedWeGroupId}><with-profile id="component-card" .agentHash=${encodeHashToBase64(this._matrixStore.myAgentPubKey)} .component=${"card"} class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}></with-profile></we-group-context>`
+                  : html`<div id="component-card" class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}>No profile</div>`
+                }
+                
             </div>
           </div>
         </div>
