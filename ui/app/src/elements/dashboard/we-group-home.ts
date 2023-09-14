@@ -280,9 +280,9 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           return typeof (get(nhProfilesStore.myProfile) as any)?.value !== 'undefined'
           ? this.renderContent()
           : html`<div
-            class="column"
-            style="align-items: center; justify-content: start; flex: 1; padding-bottom: 10px;"
-                    >
+              class="column"
+              style="align-items: center; justify-content: start; flex: 1; padding-bottom: 10px;"
+            >
               <div class="column" style="align-items: center;">
                 <div slot="hero" style="color: var(--nh-theme-fg-default)">
                   <div class="column center-content">
@@ -303,18 +303,14 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                     </div>
                   </div>
                 </div>
-                <nh-create-profile .profilesStore=${this._profilesStore} style="display: flex; flex: 1;"
-                  @profile-created=${async () => {
-
-                }}></nh-create-profile>
-                </div>
+                <nh-create-profile .profilesStore=${nhProfilesStore}></nh-create-profile>
               </div>
+            </div>
         `}
     })
   }
 
-  static elementDefinitions() {
-    return {
+  static elementDefinitions = {
       "nh-create-profile": NHCreateProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
@@ -336,7 +332,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "applet-not-installed": AppletNotInstalled,
       "nh-sensemaker-settings": NHSensemakerSettings,
       'nh-dialog': NHDialog,
-    };
   }
 
 
