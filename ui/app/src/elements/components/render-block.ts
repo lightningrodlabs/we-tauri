@@ -22,7 +22,7 @@ export class RenderBlock extends ScopedElementsMixin(LitElement) {
 
   renderRenderer(element: Element | undefined) {
     if (element) {
-      this.renderer(element as HTMLElement, this.registry);
+      this.renderer(element as HTMLElement, customElements);
     }
   }
 
