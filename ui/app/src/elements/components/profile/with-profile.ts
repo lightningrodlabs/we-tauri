@@ -17,7 +17,7 @@ export class WithProfile extends NHComponent {
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext })
+  @contextProvided({ context: weGroupContext, subscribe: true  })
   @state()
   weGroupId!: DnaHash;
 
@@ -27,13 +27,18 @@ export class WithProfile extends NHComponent {
   @property()
   component!: 'card' | 'prompt' | 'identicon';
 
-  _profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
+  _profilesStore;
 
-  private _agentProfile = new StoreSubscriber(
+  #agentProfile = new StoreSubscriber(
     this,
     () => (this._profilesStore as ProfilesStore).profiles.get(decodeHashFromBase64(this.agentHash)),
     () => [this.agentHash, this._profilesStore]
   );
+
+  connectedCallback(): void {
+      super.connectedCallback()
+      this._profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
+  }
 
   firstUpdated() {
       this._profilesStore!.client.client.on("signal", (signal: AppSignal) => {
@@ -90,8 +95,7 @@ export class WithProfile extends NHComponent {
   }
 
   render() {
-    debugger;
-    const status = this._agentProfile.value as AsyncStatus<Profile>;
+    const status = this.#agentProfile.value as AsyncStatus<Profile>;
     switch (this.component) {
       case 'card':
         return this.renderAgentCard(status);
