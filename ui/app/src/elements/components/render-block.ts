@@ -8,21 +8,9 @@ export class RenderBlock extends ScopedElementsMixin(LitElement) {
   @property()
   renderer!: Renderer;
 
-  //@ts-ignore
-  get registry() {
-    //@ts-ignore
-    return this.__registry;
-  }
-
-  //@ts-ignore
-  set registry(registry) {
-    //@ts-ignore
-    this.__registry = registry;
-  }
-
   renderRenderer(element: Element | undefined) {
     if (element) {
-      this.renderer(element as HTMLElement, customElements);
+      this.renderer(element as HTMLElement, this.constructor.registry || customElements);
     }
   }
 
