@@ -42,15 +42,6 @@ function renderNotInstalled(appletName: string) {
 window.onload = async () => {
   const view = getRenderView();
 
-  // fetch localStorage for this applet from main window and override localStorage methods
-  overrideLocalStorage();
-  const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
-  console.warn("GOT localstorage via postMessage: ", localStorageJson);
-  const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
-  if (localStorageJson) Object.keys(localStorage).forEach(
-    (key) => window.localStorage.setItem(key, localStorage[key])
-  );
-
   const crossApplet = view ? view.type === "cross-applet-view" : false;
 
   const iframeConfig: IframeConfig = await postMessage({
@@ -62,6 +53,15 @@ window.onload = async () => {
     renderNotInstalled(iframeConfig.type);
     return;
   }
+
+  // fetch localStorage for this applet from main window and override localStorage methods
+  overrideLocalStorage();
+  const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
+  console.warn("GOT localStorage via postMessage: ", localStorageJson);
+  const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
+  if (localStorageJson) Object.keys(localStorage).forEach(
+    (key) => window.localStorage.setItem(key, localStorage[key])
+  );
 
   const applet = await fetchApplet();
 
