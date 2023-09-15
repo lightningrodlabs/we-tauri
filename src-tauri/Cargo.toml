@@ -32,15 +32,15 @@ portpicker = "0.1"
 tempdir = "0.3.7"
 thiserror = "1"
 
-holochain_client = "0.4.1"
-holochain_state = "=0.2.1"
-holochain_websocket = "=0.2.1"
-holochain = "=0.2.1"
-holochain_types = "=0.2.1"
-holochain_zome_types = "=0.2.1"
-holochain_integrity_types = "=0.2.1"
+holochain_client = "0.4.2"
+holochain_state = "=0.2.2"
+holochain_websocket = "=0.2.2"
+holochain = "=0.2.2"
+holochain_types = "=0.2.2"
+holochain_zome_types = "=0.2.2"
+holochain_integrity_types = "=0.2.2"
 sodoken = "=0.0.9"
-mr_bundle = "=0.2.1"
+mr_bundle = "=0.2.2"
 either = "*"
 url = "2.2"
 url2 = "0.0.6"
@@ -56,17 +56,17 @@ bytes = "1"
 
 zip = "0.5"
 
-hc_crud_caps = "0.9.0"
-devhub_types = { git = "https://github.com/holochain/devhub-dnas", rev = "8ad6faaaa965dfdaccbf25a6947086680acf0fa7" }
-appstore_types = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
-appstore = { git = "https://github.com/holochain/app-store-dnas", rev = "893a83a774d129eaa556da5fd46cce9a6bb88b4b" }
-hc_portal_types = { git = "https://github.com/holochain/portal-dna", rev = "14ad357ae42ee7451848a249a7e32acb40519dbc" }
-mere_memory_types = "0.87.0"
+hc_crud_caps = { git = "https://github.com/mrruby/rust-hc-crud-caps", rev = "2c5494834d8ba55bb3f5d1f30352e35cee947513"}
+devhub_types = { git = "https://github.com/mrruby/devhub-dnas" }
+appstore_types = { git = "https://github.com/matthme/app-store-dnas", branch = "holochain-0.2.2" }
+appstore = { git = "https://github.com/matthme/app-store-dnas", branch = "holochain-0.2.2" }
+hc_portal_types = { git = "https://github.com/matthme/portal-dna", branch = "holochain-0.2.2" }
+mere_memory_types = { git = "https://github.com/mrruby/hc-zome-mere-memory" }
 
 
 essence_payloads = "0.1"
 
-holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "we-hc-0.2.1" }
+holochain_launcher_utils = { git = "https://github.com/holochain/launcher", branch = "we-hc-0.2.2" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

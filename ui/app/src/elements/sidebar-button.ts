@@ -66,7 +66,7 @@ export class SidebarButton extends LitElement {
         </div>
         <img
           class="icon"
-          src="${this.logoSrc}"
+          src=${this.logoSrc}
           alt="TODO"
         />
       </div>

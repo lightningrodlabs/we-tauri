@@ -6,7 +6,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 import { localized, msg } from "@lit/localize";
 import { DnaHash } from "@holochain/client";
-import { mdiAccountMultiplePlus, mdiHelpCircleOutline } from "@mdi/js";
+import { mdiAccountMultiplePlus, mdiTimerSand } from "@mdi/js";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -79,8 +79,8 @@ export class GroupsSidebar extends LitElement {
             <sidebar-button
               style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
               .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
-              .logoSrc=${wrapPathInSvg(mdiHelpCircleOutline)}
-              .tooltipText=${msg("Not synched")}
+              .logoSrc=${mdiTimerSand}
+              .tooltipText=${msg("Waiting for peers...")}
               @click=${() => {
                 this.dispatchEvent(
                   new CustomEvent("group-selected", {
