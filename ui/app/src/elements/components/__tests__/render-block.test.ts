@@ -1,7 +1,7 @@
 import '@webcomponents/scoped-custom-element-registry'
 
-import { describe, expect, test, beforeAll, beforeEach } from 'vitest'
-import { fixture, html as testHtml } from '@open-wc/testing'
+import { describe, test, beforeAll, beforeEach } from 'vitest'
+import { fixture, html as testHtml, expect } from '@open-wc/testing'
 
 import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement } from "lit"
@@ -32,27 +32,36 @@ class Child2 extends ScopedRegistryHost(LitElement) {
   }
 }
 
+// :TODO: This should really be wrapped up into a helper generator fn in some
+//        shared @neighbourhoods/applet-framework module.
+const renderer = (tagName, classDef) => (i: HTMLElement, r: CustomElementRegistry) => {
+  r.define(tagName, classDef)
+  i.innerHTML = `<${tagName} />`
+}
+
 describe('RenderBlock', () => {
-  let harness, componentDom
+  let harness
 
   const initialRender = async () => {
     // :TODO: unsure how to assign renderer from target components here
-    harness = fixture(testHtml`<div>
-      <render-block .renderer=${Child1} />
-      <render-block .renderer=${Child2} />
+    harness = await fixture(testHtml`<div>
+      <render-block .renderer=${renderer('child-1', Child1)}></render-block>
+      <render-block .renderer=${renderer('child-2', Child2)}></render-block>
     </div>`)
-    componentDom = harness.querySelector('div')
-    await componentDom.updateComplete
   }
 
   describe('Given two components sharing a nested child CustomElement ', () => {
     beforeEach(async () => {
       await initialRender()
-    });
+    })
 
     test(`They should be able to render same child elements`, async () => {
-      // :TODO: assert that both render-blocks were able to render child nh-button elements
-    });
-  });
+      const children = harness.querySelectorAll('render-block')
+
+      expect(children.length).to.equal(2)
+      expect(children[0].shadowRoot.querySelector('child-1')).shadowDom.to.equal('<nh-button label="Child 1" />')
+      expect(children[1].shadowRoot.querySelector('child-2')).shadowDom.to.equal('<nh-button label="Child 2" />')
+    })
+  })
 
 })
