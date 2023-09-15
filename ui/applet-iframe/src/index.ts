@@ -45,6 +45,7 @@ window.onload = async () => {
   // fetch localStorage for this applet from main window and override localStorage methods
   overrideLocalStorage();
   const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
+  console.warn("GOT localstorage via postMessage: ", localStorageJson);
   const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
   if (localStorageJson) Object.keys(localStorage).forEach(
     (key) => window.localStorage.setItem(key, localStorage[key])

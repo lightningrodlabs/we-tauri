@@ -142,29 +142,31 @@ export class InstallAppletBundleDialog extends LitElement {
         latestRelease,
         fields.network_seed ? fields.network_seed : undefined,
       );
-      notify("Installation successful");
 
-      this.close();
-
-      this.dispatchEvent(
-        new CustomEvent("applet-installed", {
-          detail: {
-            appletEntryHash,
-            groupDnaHash: this.groupStore.groupDnaHash,
-          },
-          composed: true,
-          bubbles: true,
-        })
-      );
-
-      this._installationProgress = undefined;
+      setTimeout(() => {
+        notify("Installation successful");
+        this.close();
+        this.dispatchEvent(
+          new CustomEvent("applet-installed", {
+            detail: {
+              appletEntryHash,
+              groupDnaHash: this.groupStore.groupDnaHash,
+            },
+            composed: true,
+            bubbles: true,
+          })
+        );
+        this._appletDialog.hide();
+        this._installing = false;
+        this._installationProgress = undefined;
+      }, 6000);
     } catch (e) {
       this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");
       console.log("Installation error:", e);
+      this._appletDialog.hide();
+      this._installing = false;
     }
-    this._appletDialog.hide();
-    this._installing = false;
   }
 
   renderForm() {

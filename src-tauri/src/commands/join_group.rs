@@ -54,6 +54,7 @@ pub async fn join_group(
             membrane_proofs: HashMap::new(),
         })
         .await?;
+
     admin_ws.enable_app(group_app_id).await?;
 
     admin_ws.close();

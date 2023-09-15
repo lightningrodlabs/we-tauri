@@ -109,6 +109,11 @@ export class AppletViewEl extends LitElement {
     ReadonlyMap<DnaHash, GroupStore>,
     ReadonlyMap<DnaHash, GroupProfile | undefined>
   ]) {
+    console.log("#########\nRendering applet frame:");
+    console.log("|-- isInstalled: ", isInstalled);
+    console.log("|-- appletStore: ", appletStore);
+    console.log("|-- groupsForThisApplet: ", groupsForThisApplet);
+    console.log("|-- allGroups: ", allGroups);
     if (!appletStore)
       return html`
         <div class="row center-content" style="flex: 1">
