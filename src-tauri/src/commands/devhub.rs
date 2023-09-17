@@ -17,6 +17,8 @@ use crate::error::WeResult;
 use crate::filesystem::UiIdentifier;
 use crate::filesystem::WeFileSystem;
 use crate::filesystem::create_dir_if_necessary;
+use crate::launch::AdminPort;
+use crate::launch::AppPort;
 
 #[tauri::command]
 pub async fn is_dev_mode_enabled(
@@ -48,7 +50,6 @@ pub async fn enable_dev_mode(
     admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("enable_dev_mode")));
@@ -122,7 +123,7 @@ pub async fn open_devhub(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("open_devhub")));
@@ -137,8 +138,6 @@ pub async fn open_devhub(
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
 
-    let conductor = conductor.lock().await;
-
     happ_window_builder(
         &app_handle,
         devhub_app_id,
@@ -146,10 +145,8 @@ pub async fn open_devhub(
         String::from("DevHub"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
-        conductor.list_app_interfaces().await?[0],
-        conductor
-            .get_arbitrary_admin_websocket_port()
-            .expect("Cannot get admin_port"),
+        ports.1,
+        ports.0,
         true,
     )
     .build()?;
@@ -162,7 +159,7 @@ pub async fn open_appstore(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
     fs: tauri::State<'_, WeFileSystem>,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("open_appstore")));
@@ -177,8 +174,6 @@ pub async fn open_appstore(
     let app_dir = fs.apps_store().root_dir().join(&appstore_app_id);
     create_dir_if_necessary(&app_dir)?;
 
-    let conductor = conductor.lock().await;
-
     happ_window_builder(
         &app_handle,
         appstore_app_id,
@@ -186,10 +181,8 @@ pub async fn open_appstore(
         String::from("App Store"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
-        conductor.list_app_interfaces().await?[0],
-        conductor
-            .get_arbitrary_admin_websocket_port()
-            .expect("Cannot get admin_port"),
+        ports.1,
+        ports.0,
         true,
     )
     .build()?;

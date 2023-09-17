@@ -1,16 +1,14 @@
 use futures::lock::Mutex;
-use holochain::conductor::ConductorHandle;
 use holochain_client::ZomeCall;
-use holochain_launcher_utils::zome_call_signing::{
-    sign_zome_call_with_client, ZomeCallUnsignedTauri,
-};
+use holochain_keystore::MetaLairClient;
+use holochain_launcher_utils::zome_call_signing::ZomeCallUnsignedTauri;
 use holochain_types::prelude::ZomeCallUnsigned;
 
 use crate::error::{WeError, WeResult};
 
 #[tauri::command]
 pub async fn sign_zome_call(
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    meta_lair_client: tauri::State<'_, Mutex<MetaLairClient>>,
     zome_call_unsigned: ZomeCallUnsignedTauri,
 ) -> WeResult<ZomeCall> {
     if cfg!(debug_assertions) {
@@ -18,13 +16,13 @@ pub async fn sign_zome_call(
     }
     let zome_call_unsigned_converted: ZomeCallUnsigned = zome_call_unsigned.into();
 
-    let conductor = conductor.lock().await;
-    let signed_zome_call = sign_zome_call_with_client(
+    let keystore = meta_lair_client.lock().await;
+    let signed_zome_call = ZomeCall::try_from_unsigned_zome_call(
+        &keystore,
         zome_call_unsigned_converted,
-        &conductor.keystore().lair_client(),
     )
     .await
-    .map_err(|err| WeError::SignZomeCallError(err))?;
+    .map_err(|err| WeError::SignZomeCallError(err.to_string()))?;
 
     Ok(signed_zome_call)
 }

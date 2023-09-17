@@ -48,7 +48,8 @@ use crate::{
 pub async fn fetch_icon(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
+    meta_lair_client: tauri::State<'_, Mutex<MetaLairClient>>,
     we_fs: tauri::State<'_, WeFileSystem>,
     app_action_hash_b64: String, // ActionHash of the entry of the applet's webassets in the DevHub
 ) -> WeResult<String> {
@@ -66,15 +67,13 @@ pub async fn fetch_icon(
         return Ok(icon);
     }
 
-    let conductor = conductor.lock().await;
-
     let mut app_agent_client = AppAgentWebsocket::connect(
         format!(
             "ws://localhost:{}",
-            conductor.list_app_interfaces().await?[0]
+            ports.1,
         ),
         appstore_app_id(&app_handle),
-        conductor.keystore().lair_client(),
+        meta_lair_client.lock().await.lair_client(),
     )
     .await?;
     let r = app_agent_client
@@ -292,7 +291,8 @@ pub async fn install_applet_bundle_if_necessary(
 pub async fn update_applet_ui(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    meta_lair_client: tauri::State<'_, Mutex<MetaLairClient>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
     we_fs: tauri::State<'_, WeFileSystem>,
     app_id: String,
     devhub_dna_hash: String,
@@ -332,15 +332,14 @@ pub async fn update_applet_ui(
             we_fs.apps_store().store_gui_release_info(&app_id, gui_release_info)
         },
         false => {
-            let conductor = conductor.lock().await;
 
             let mut app_agent_websocket = AppAgentWebsocket::connect(
                 format!(
                     "ws://localhost:{}",
-                    conductor.list_app_interfaces().await?[0]
+                    ports.1,
                 ),
                 appstore_app_id(&app_handle),
-                conductor.keystore().lair_client(),
+                meta_lair_client.lock().await.lair_client(),
             )
             .await?;
 

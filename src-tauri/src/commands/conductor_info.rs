@@ -1,12 +1,12 @@
 use futures::lock::Mutex;
-use holochain::conductor::ConductorHandle;
+use holochain_client::AdminWebsocket;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
     default_apps::{appstore_app_id, devhub_app_id},
-    error::{WeResult, WeError},
+    error::{WeResult, WeError}, launch::{AdminPort, AppPort},
 };
 
 #[tauri::command]
@@ -17,7 +17,7 @@ pub fn is_launched(window: tauri::Window, app_handle: AppHandle) -> WeResult<boo
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'is_launched'.");
     }
-    let connected_state: Option<tauri::State<'_, Mutex<ConductorHandle>>> = app_handle.try_state();
+    let connected_state: Option<tauri::State<'_, Mutex<AdminWebsocket>>> = app_handle.try_state();
     Ok(connected_state.is_some())
 }
 
@@ -34,7 +34,7 @@ pub struct ConductorInfo {
 pub async fn get_conductor_info(
     window: tauri::Window,
     app_handle: AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
     config: tauri::State<'_, WeConfig>,
 ) -> WeResult<ConductorInfo> {
     if window.label() != "main" {
@@ -43,13 +43,10 @@ pub async fn get_conductor_info(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'get_conductor_info'.");
     }
-    let conductor = conductor.lock().await;
 
     Ok(ConductorInfo {
-        app_port: conductor.list_app_interfaces().await?[0],
-        admin_port: conductor
-            .get_arbitrary_admin_websocket_port()
-            .expect("Couldn't get admin port"),
+        app_port: ports.1,
+        admin_port: ports.0,
         applets_ui_port: config.applets_ui_port,
         appstore_app_id: appstore_app_id(&app_handle),
         devhub_app_id: devhub_app_id(&app_handle),
