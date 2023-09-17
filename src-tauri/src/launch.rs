@@ -1,5 +1,6 @@
 use std::{time::Duration, path::PathBuf, collections::HashMap};
 
+use futures::lock::Mutex;
 use holochain::{
     conductor::{
         config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
@@ -11,7 +12,7 @@ use holochain::{
 };
 use holochain_client::AdminWebsocket;
 use holochain_keystore::MetaLairClient;
-use tauri::api::process::{Command, CommandChild, CommandEvent};
+use tauri::{api::process::{Command, CommandChild, CommandEvent}, Manager};
 use url2::Url2;
 
 
@@ -141,6 +142,12 @@ pub async fn launch(
     };
 
     install_default_apps_if_necessary(app_handle, we_config, &fs,&mut admin_ws).await?;
+
+    app_handle.manage((admin_port, app_port));
+    app_handle.manage(Mutex::new(admin_ws));
+    app_handle.manage(Mutex::new(meta_lair_client.clone()));
+
+    println!("############\nLaunched holochain with app port {} and admin port {}", app_port, admin_port);
 
     Ok((meta_lair_client, admin_port, app_port))
 }

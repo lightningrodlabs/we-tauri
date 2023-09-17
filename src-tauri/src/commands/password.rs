@@ -34,20 +34,7 @@ pub async fn create_password(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'create_password'.");
     }
-    let (meta_lair_client, app_port, admin_port) = launch(&app_handle, &config, &fs, password).await?;
-
-	let admin_ws = AdminWebsocket::connect(format!(
-		"ws://localhost:{}",
-		admin_port
-	))
-	.await
-	.map_err(|err| {
-		WeError::AdminWebsocketError(format!("Could not connect to the admin interface: {}", err))
-	})?;
-
-    app_handle.manage(Mutex::new(meta_lair_client));
-    app_handle.manage((admin_port, app_port));
-    app_handle.manage(admin_ws);
+    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }
@@ -66,20 +53,7 @@ pub async fn enter_password(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'enter_password'.");
     }
-    let (meta_lair_client, app_port, admin_port) = launch(&app_handle, &config, &fs, password).await?;
-
-	let admin_ws = AdminWebsocket::connect(format!(
-		"ws://localhost:{}",
-		admin_port
-	))
-	.await
-	.map_err(|err| {
-		WeError::AdminWebsocketError(format!("Could not connect to the admin interface: {}", err))
-	})?;
-
-    app_handle.manage(Mutex::new(meta_lair_client));
-    app_handle.manage((admin_port, app_port));
-    app_handle.manage(admin_ws);
+    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }
