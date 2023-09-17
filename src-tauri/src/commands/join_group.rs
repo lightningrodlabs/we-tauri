@@ -2,17 +2,16 @@ use std::collections::HashMap;
 
 use futures::lock::Mutex;
 use holochain::{
-    conductor::ConductorHandle,
     prelude::{AgentPubKeyB64, AppBundle},
 };
-use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, InstallAppPayload};
+use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, InstallAppPayload, AdminWebsocket};
 
-use crate::{error::{WeResult, WeError}, launch::get_admin_ws};
+use crate::{error::{WeResult, WeError}};
 
 #[tauri::command]
 pub async fn join_group(
     window: tauri::Window,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
     agent_pub_key: String, // TODO: remove when every applet has a different key
     network_seed: String,
 ) -> WeResult<AppInfo> {
@@ -23,9 +22,7 @@ pub async fn join_group(
         println!("### Called tauri command 'join_group'.");
     }
 
-    let conductor = conductor.lock().await;
-
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
     let group_app_id = format!("group#{}", network_seed);

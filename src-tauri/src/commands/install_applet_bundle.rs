@@ -6,7 +6,7 @@ use std::{
 use appstore_types::AppEntry;
 use base64::Engine;
 use devhub_types::{
-    happ_entry_types::{HappManifest, WebHappManifest, GUIReleaseEntry},
+    happ_entry_types::{HappManifest, GUIReleaseEntry},
     DevHubResponse, encode_bundle, DnaVersionEntry, HappReleaseEntry, FileEntry,
 };
 use essence::EssenceResponse;
@@ -27,11 +27,12 @@ use holochain::{
 };
 use holochain_client::{
     AgentPubKey, AppInfo, AppRequest, AppResponse, ConductorApiError,
-    ConductorApiResult, InstallAppPayload, InstalledAppId, ZomeCall, AppStatusFilter,
+    ConductorApiResult, InstallAppPayload, InstalledAppId, ZomeCall, AppStatusFilter, AdminWebsocket,
 };
+use holochain_keystore::MetaLairClient;
 use holochain_launcher_utils::zome_call_signing::sign_zome_call_with_client;
 use holochain_state::nonce::fresh_nonce;
-use holochain_types::prelude::{AnyDhtHash, EntryHash, InstalledApp, AnyDhtHashB64};
+use holochain_types::prelude::{AnyDhtHash, EntryHash, AnyDhtHashB64};
 use holochain_websocket::{connect, WebsocketConfig, WebsocketSender};
 use mere_memory_types::{MemoryEntry, MemoryBlockEntry};
 use portal_types::{DnaZomeFunction, HostEntry, RemoteCallDetails};
@@ -40,8 +41,7 @@ use serde::{Deserialize, de::DeserializeOwned};
 use crate::{
     default_apps::appstore_app_id,
     error::{WeError, WeResult},
-    filesystem::{WeFileSystem, UiIdentifier, HappIdentifier, ReleaseInfo, ResourceLocator, ResourceLocatorB64},
-    launch::get_admin_ws,
+    filesystem::{WeFileSystem, UiIdentifier, HappIdentifier, ReleaseInfo, ResourceLocator, ResourceLocatorB64}, launch::{AdminPort, AppPort},
 };
 
 #[tauri::command]
@@ -127,7 +127,9 @@ pub struct GetEntityInput {
 pub async fn install_applet_bundle_if_necessary(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
+    meta_lair_client: tauri::State<'_, Mutex<MetaLairClient>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
     we_fs: tauri::State<'_, WeFileSystem>,
     app_id: String,
     network_seed: Option<String>,
@@ -148,9 +150,7 @@ pub async fn install_applet_bundle_if_necessary(
 
     window.emit("applet-install-progress", "Checking for existing applets in conductor")?;
 
-    let conductor = conductor.lock().await;
-
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Disabled)).await?;
 
@@ -177,13 +177,14 @@ pub async fn install_applet_bundle_if_necessary(
             .map_err(|e| WeError::HashConversionError(format!("Failed to convert action hash string to ActionHashB64: {}", e)))?
     );
 
+
     let mut app_agent_websocket = AppAgentWebsocket::connect(
         format!(
             "ws://localhost:{}",
-            conductor.list_app_interfaces().await?[0]
+            ports.0,
         ),
         appstore_app_id(&app_handle),
-        conductor.keystore().lair_client(),
+        meta_lair_client.lock().await.lair_client(),
     )
     .await?;
 
@@ -404,7 +405,9 @@ pub async fn update_applet_ui(
 pub async fn fetch_available_ui_updates(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    meta_lair_client: tauri::State<'_, Mutex<MetaLairClient>>,
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
+    ports: tauri::State<'_, (AdminPort, AppPort)>,
     we_fs: tauri::State<'_, WeFileSystem>,
 ) -> WeResult<HashMap<InstalledAppId, Option<ResourceLocatorB64>>> {
     if window.label() != "main" {
@@ -414,8 +417,7 @@ pub async fn fetch_available_ui_updates(
         println!("### Called tauri command 'fetch_available_ui_updates'.");
     }
 
-    let conductor = conductor.lock().await;
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     let mut happ_release_info_map: HashMap<DnaHashB64, HashMap<InstalledAppId, ResourceLocatorB64>> = HashMap::new();
     let mut gui_release_info_map: HashMap<InstalledAppId, ActionHashB64> = HashMap::new();
@@ -461,10 +463,10 @@ pub async fn fetch_available_ui_updates(
     let mut app_agent_websocket = AppAgentWebsocket::connect(
         format!(
             "ws://localhost:{}",
-            conductor.list_app_interfaces().await?[0]
+            ports.1,
         ),
         appstore_app_id(&app_handle),
-        conductor.keystore().lair_client(),
+        meta_lair_client.lock().await.lair_client(),
     )
     .await?;
 
@@ -509,7 +511,7 @@ pub async fn fetch_available_ui_updates(
                                         updates_map.insert(applet.to_owned(), Some(
                                             ResourceLocatorB64 {
                                                 dna_hash: dna_hash.to_owned(),
-                                                resource_hash: AnyDhtHashB64::from(AnyDhtHash::from((latest_hash))),
+                                                resource_hash: AnyDhtHashB64::from(AnyDhtHash::from(latest_hash)),
                                             }
                                         ));
                                     }

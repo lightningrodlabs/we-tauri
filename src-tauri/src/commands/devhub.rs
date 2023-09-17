@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use futures::lock::Mutex;
 use holochain::conductor::ConductorHandle;
+use holochain_client::AdminWebsocket;
 use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
 use holochain_launcher_utils::window_builder::happ_window_builder;
@@ -16,13 +17,12 @@ use crate::error::WeResult;
 use crate::filesystem::UiIdentifier;
 use crate::filesystem::WeFileSystem;
 use crate::filesystem::create_dir_if_necessary;
-use crate::launch::get_admin_ws;
 
 #[tauri::command]
 pub async fn is_dev_mode_enabled(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>,
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
 ) -> WeResult<bool> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("is_dev_mode_enabled")));
@@ -30,13 +30,9 @@ pub async fn is_dev_mode_enabled(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'is_dev_mode_enabled'.");
     }
-    let conductor = conductor.lock().await;
-
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
-
-    admin_ws.close();
 
     Ok(apps
         .iter()
@@ -49,6 +45,7 @@ pub async fn is_dev_mode_enabled(
 pub async fn enable_dev_mode(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
     fs: tauri::State<'_, WeFileSystem>,
     config: tauri::State<'_, WeConfig>,
     conductor: tauri::State<'_, Mutex<ConductorHandle>>,
@@ -59,9 +56,7 @@ pub async fn enable_dev_mode(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'enable_dev_mode'.");
     }
-    let conductor = conductor.lock().await;
-
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Disabled)).await?;
 
@@ -105,7 +100,7 @@ pub async fn enable_dev_mode(
 pub async fn disable_dev_mode(
     window: tauri::Window,
     app_handle: tauri::AppHandle,
-    conductor: tauri::State<'_, Mutex<ConductorHandle>>
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
 ) -> WeResult<()> {
     if window.label() != "main" {
       return Err(WeError::UnauthorizedWindow(String::from("disable_dev_mode")));
@@ -113,9 +108,7 @@ pub async fn disable_dev_mode(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'disable_dev_mode'.");
     }
-    let conductor = conductor.lock().await;
-
-    let mut admin_ws = get_admin_ws(&conductor).await?;
+    let mut admin_ws = admin_ws.lock().await;
 
     admin_ws.disable_app(devhub_app_id(&app_handle)).await?;
 

@@ -21,6 +21,7 @@ tauri = { version = "=1.4", features = ["cli", "clipboard-write-text", "http-all
 tauri-plugin-deep-link = "0.1"
 
 anyhow = "1"
+nanoid = "0.4.0"
 opener = "0.5.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8.17"
@@ -29,10 +30,12 @@ futures = "0.3"
 log = "0.4.14"
 log4rs = "1.0.0"
 portpicker = "0.1"
+symlink = "0.1.0"
 tempdir = "0.3.7"
 thiserror = "1"
 
 holochain_client = "0.4.2"
+holochain_keystore = "=0.2.2"
 holochain_state = "=0.2.2"
 holochain_websocket = "=0.2.2"
 holochain = "=0.2.2"
