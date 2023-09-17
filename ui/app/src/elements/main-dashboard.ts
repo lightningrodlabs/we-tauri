@@ -192,6 +192,7 @@ export class MainDashboard extends LitElement {
         return html``
 
       case "groupView":
+        console.log("Rendering dashboard");
         return this.selectedAppletHash.value
          ? html`
               <applet-main
@@ -212,6 +213,7 @@ export class MainDashboard extends LitElement {
               @applet-installed=${(e: CustomEvent) => {
                 this._weStore.selectAppletHash(e.detail);
                 this.dashboardMode = "groupView";
+                this.requestUpdate();
               }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);

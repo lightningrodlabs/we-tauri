@@ -52,6 +52,7 @@ export class AppletViewEl extends LitElement {
   @property()
   view!: AppletView;
 
+  @state()
   _applet = new StoreSubscriber(
     this,
     () =>

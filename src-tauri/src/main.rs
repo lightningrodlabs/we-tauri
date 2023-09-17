@@ -190,6 +190,7 @@ fn main() {
                     .map(|s| s.to_string())
                     .collect();
                 let lowercase_applet_id = uri_components.get(0).unwrap();
+                println!("Got applet request for applet with id: {}", lowercase_applet_id);
                 let mut asset_file = PathBuf::new();
                 for i in 1..uri_components.len() {
                     asset_file = asset_file.join(uri_components[i].clone());
@@ -205,6 +206,7 @@ fn main() {
                 .await
                 {
                     Ok(Some((asset, mime_type))) => {
+                        println!("Got asset for applet with id: {}", lowercase_applet_id);
                         let mut response = ResponseBuilder::new().status(StatusCode::ACCEPTED);
                         if let Some(mime_type) = mime_type {
                             response = response.header("Content-Type", format!("{};charset=utf-8", mime_type))
