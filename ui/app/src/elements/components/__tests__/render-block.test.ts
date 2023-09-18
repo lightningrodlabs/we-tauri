@@ -106,4 +106,60 @@ describe('RenderBlock', () => {
     })
   })
 
+  describe('Given multiple RenderBlocks of the same renderer at different levels in the Shadow DOM hierarchy ', () =>
+  {
+    class Child4 extends ScopedRegistryHost(LitElement) {
+      static elementDefinitions = {
+        'nh-button': NHButton,
+      }
+
+      render() {
+        return html`<nh-button label="Child 4" />`
+      }
+    }
+
+    class DynamicRenderingChild1 extends ScopedRegistryHost(LitElement) {
+      static elementDefinitions = {
+        'render-block': RenderBlock,
+      }
+
+      render() {
+        return html`<render-block .renderer=${renderer('child-4', Child4)}></render-block>`
+      }
+    }
+
+    class DynamicRenderingChild2 extends ScopedRegistryHost(LitElement) {
+      static elementDefinitions = {
+        'render-block': RenderBlock,
+      }
+
+      render() {
+        return html`<render-block .renderer=${renderer('child-4', Child4)}></render-block>`
+      }
+    }
+
+    class DynamicRenderingParent2 extends ScopedRegistryHost(LitElement) {
+      static elementDefinitions = {
+        'dynamic-child': DynamicRenderingChild2,
+      }
+
+      render() {
+        return html`<dynamic-child></dynamic-child>`
+      }
+    }
+
+    test(`RenderBlocks should safely register and render elements with appropriate container Shadow DOM`, async () => {
+      customElements.define('test-dynamic-child-1', DynamicRenderingChild1)
+      customElements.define('test-dynamic-parent-2', DynamicRenderingParent2)
+
+      const harness = await initialRender(testHtml`<div>
+        <test-dynamic-child-1></test-dynamic-child-1>
+        <test-dynamic-parent-2></test-dynamic-parent-2>
+      </div>`)
+
+      // :TODO: finish assertions
+    })
+
+  })
+
 })
