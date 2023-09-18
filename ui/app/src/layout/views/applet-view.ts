@@ -232,6 +232,16 @@ export class AppletViewEl extends LitElement {
                       this.appletHash,
                       appletStore.applet
                     );
+                    this.dispatchEvent(
+                      new CustomEvent("applet-installed", {
+                        detail: {
+                          appletEntryHash: this.appletHash,
+                          groupDnaHash: groupsForThisApplet.keys()[0],
+                        },
+                        composed: true,
+                        bubbles: true,
+                      })
+                    );
                   } catch (e) {
                     notifyError(msg("Couldn't install applet"));
                     console.error(e);

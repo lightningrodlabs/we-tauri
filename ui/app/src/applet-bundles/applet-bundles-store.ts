@@ -114,6 +114,7 @@ export class AppletBundlesStore {
     });
 
     await this.runningApps.reload();
+    await this.installedApps.reload();
     // TODO check whether reloading this.installedApps is required as well
 
     return appInfo;
