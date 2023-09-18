@@ -2,10 +2,11 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    versions.url  = "github:holochain/holochain?dir=versions/0_1";
-
-    holochain-flake.url = "github:holochain/holochain";
-    holochain-flake.inputs.versions.follows = "versions";
+    holochain-nix-versions.url  = "github:holochain/holochain/?dir=versions/0_2";
+    holochain-flake = {
+      url = "github:holochain/holochain";
+      inputs.versions.follows = "holochain-nix-versions";
+    };
 
     nixpkgs.follows = "holochain-flake/nixpkgs";
     flake-parts.follows = "holochain-flake/flake-parts";
@@ -34,7 +35,7 @@
                 cargo-nextest
                 xvfb-run
               ];
-              
+
               buildInputs = (with pkgs; [
                 openssl
 
