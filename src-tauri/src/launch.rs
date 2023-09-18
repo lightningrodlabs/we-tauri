@@ -62,7 +62,10 @@ pub async fn launch(
     config.environment_path = fs.conductor_dir().into();
     config.keystore = KeystoreConfig::LairServer { connection_url: lair_url };
 
-    let admin_port = portpicker::pick_unused_port().expect("Cannot find any unused port");
+    let admin_port = match option_env!("ADMIN_PORT") {
+        Some(p) => p.parse().unwrap(),
+        None => portpicker::pick_unused_port().expect("No ports free"),
+    };
 
     config.admin_interfaces = Some(vec![AdminInterfaceConfig {
         driver: InterfaceDriver::Websocket {

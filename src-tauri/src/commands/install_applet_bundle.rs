@@ -180,7 +180,7 @@ pub async fn install_applet_bundle_if_necessary(
     let mut app_agent_websocket = AppAgentWebsocket::connect(
         format!(
             "ws://localhost:{}",
-            ports.0,
+            ports.1,
         ),
         appstore_app_id(&app_handle),
         meta_lair_client.lock().await.lair_client(),
