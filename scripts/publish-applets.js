@@ -239,7 +239,7 @@ async function publishApplets() {
       zome_name: "happ_library",
       fn_name: "create_gui",
       payload: {
-        name: "UI",
+        name: appletName,
         description: "",
       },
     });

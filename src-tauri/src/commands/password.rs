@@ -1,11 +1,12 @@
 use futures::lock::Mutex;
+use holochain_client::AdminWebsocket;
 use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
     error::{WeResult, WeError},
     filesystem::WeFileSystem,
-    launch::{get_admin_ws, launch},
+    launch::launch,
 };
 
 #[tauri::command]
@@ -16,11 +17,7 @@ pub async fn is_keystore_initialized(window: tauri::Window, fs: tauri::State<'_,
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'is_keystore_initialized'.");
     }
-    let exists = fs
-        .keystore_dir()
-        .join("lair-keystore-config.yaml")
-        .exists();
-    Ok(exists)
+    Ok(fs.keystore_initialized())
 }
 
 #[tauri::command]
@@ -37,12 +34,7 @@ pub async fn create_password(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'create_password'.");
     }
-    let conductor = launch(&app_handle, &config, &fs, password).await?;
-
-    let admin_ws = get_admin_ws(&conductor).await?;
-
-    app_handle.manage(Mutex::new(conductor));
-    app_handle.manage(admin_ws);
+    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }
@@ -61,9 +53,7 @@ pub async fn enter_password(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'enter_password'.");
     }
-    let conductor = launch(&app_handle, &config, &fs, password).await?;
-
-    app_handle.manage(Mutex::new(conductor));
+    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }

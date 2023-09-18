@@ -78,6 +78,10 @@ impl WeFileSystem {
         self.app_data_dir.join("keystore")
     }
 
+    pub fn keystore_initialized(&self) -> bool {
+        self.keystore_dir().join("lair-keystore-config.yaml").exists()
+    }
+
     pub fn conductor_dir(&self) -> PathBuf {
         self.app_data_dir.join("conductor")
     }

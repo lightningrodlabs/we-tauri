@@ -11,7 +11,6 @@ use tauri::{AppHandle, Manager};
 use crate::{
     error::{WeError, WeResult},
     filesystem::{WeFileSystem, UiIdentifier},
-    launch::get_admin_ws,
 };
 
 pub fn pong_iframe() -> String {
@@ -70,9 +69,8 @@ pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> ()
                         let file_name = request.uri().path();
 
                         let fs = app_handle.state::<WeFileSystem>();
-                        let mutex = app_handle.state::<Mutex<ConductorHandle>>();
-                        let conductor = mutex.lock().await;
-                        let mut admin_ws = get_admin_ws(&conductor).await?;
+                        let mutex = app_handle.state::<Mutex<AdminWebsocket>>();
+                        let mut admin_ws = mutex.lock().await;
 
                         let r: WeResult<Response<Body>> = match read_asset(
                             &fs,

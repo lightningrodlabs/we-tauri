@@ -8811,6 +8811,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "symlink"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7973cce6668464ea31f176d85b13c7ab3bba2cb3b77a2ed26abd7801688010a"
+
+[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10695,6 +10701,7 @@ dependencies = [
  "holochain 0.2.2",
  "holochain_client",
  "holochain_integrity_types 0.2.2",
+ "holochain_keystore 0.2.2",
  "holochain_launcher_utils",
  "holochain_state 0.2.2",
  "holochain_types 0.2.2",
@@ -10707,12 +10714,14 @@ dependencies = [
  "mere_memory_types",
  "mime_guess",
  "mr_bundle",
+ "nanoid 0.4.0",
  "opener",
  "portpicker",
  "serde",
  "serde_json",
  "serde_yaml 0.8.26",
  "sodoken",
+ "symlink",
  "tauri",
  "tauri-build",
  "tauri-plugin-deep-link",
