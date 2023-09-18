@@ -15,7 +15,9 @@ customElements.define('render-block', RenderBlock)
 // :TODO: This should really be wrapped up into a helper generator fn in some
 //        shared @neighbourhoods/applet-framework module.
 const renderer = (tagName, classDef) => (i: HTMLElement, r: CustomElementRegistry) => {
-  r.define(tagName, classDef)
+  if (r.get(tagName) !== classDef) {
+    r.define(tagName, classDef)
+  }
   i.innerHTML = `<${tagName} />`
 }
 
