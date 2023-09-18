@@ -234,6 +234,12 @@ fn main() {
                 // The app is prevented from exiting to keep it running in the background with the system tray
                 RunEvent::ExitRequested { api, .. } => api.prevent_exit(),
 
+                // This event is emitted upon quitting the App via cmq+Q on macOS.
+                // Sidecar binaries need to get explicitly killed in this case (https://github.com/holochain/launcher/issues/141)
+                RunEvent::Exit => {
+                    tauri::api::process::kill_children();
+                },
+
                 // also let the window run in the background to have the UI keep listening to notifications
                 RunEvent::WindowEvent { label, event, .. } => {
                     if label == "main" {

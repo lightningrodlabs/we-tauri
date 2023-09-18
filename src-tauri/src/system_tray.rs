@@ -1,4 +1,4 @@
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem};
+use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem, api::process};
 use crate::window::build_main_window;
 
 pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
