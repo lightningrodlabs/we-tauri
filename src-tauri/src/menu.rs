@@ -67,8 +67,14 @@ pub fn handle_menu_event(event_id: &str, window: &Window<Wry>) {
         "open_logs" => open_logs_folder(fs.inner().to_owned()),
         "devtools" => window.open_devtools(),
         "factory_reset" => window.emit("request-factory-reset", ()).unwrap(),
-        "restart" => app_handle.restart(),
-        "quit" => app_handle.exit(0),
+        "restart" => {
+            process::kill_children();
+            app_handle.restart();
+        },
+        "quit" => {
+            process::kill_children();
+            app_handle.exit(0)
+        },
         _ => {}
     }
 }
