@@ -28,4 +28,7 @@ export class RenderBlock extends ScopedElementsMixin(LitElement) {
       }
     `,
   ];
+
+  // :IMPORTANT: must be defined or the component's locally scoped CustomElementRegistry will not be inited
+  static elementDefinitions = {}
 }
