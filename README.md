@@ -1,6 +1,6 @@
 # We
 
-*We* is a Holochain runtime that makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs. 
+*We* is a Holochain runtime that makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs.
 
 *We* is composed of a group management DNA, together with a defined pattern on how to build *applet* DNAs that are can be installed into a *We* group. Each such group as well as each *applet* used within a group is its own private peer-to-peer network.
 
@@ -26,6 +26,8 @@ Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and d
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`.
 3. Enter the nix shell: `nix develop`.
 4. Run: `npm install`.
+5. Compile holochain and lair, following the commands in the [release.yaml](.github/workflows/release.yaml) for your platform.
+6. Run `npm run start`.
 
 ### Running the DNA tests
 
