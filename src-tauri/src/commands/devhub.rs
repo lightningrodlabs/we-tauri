@@ -7,6 +7,7 @@ use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
 use holochain_launcher_utils::window_builder::happ_window_builder;
 use holochain_types::web_app::WebAppBundle;
+use tauri::Manager;
 
 use crate::config::WeConfig;
 use crate::default_apps::appstore_app_id;
@@ -131,6 +132,14 @@ pub async fn open_devhub(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'open_devhub'.");
     }
+
+    let devhub_window_label = String::from("devhub");
+    if let Some(devhub_window) = app_handle.get_window(&devhub_window_label) {
+        devhub_window.show().unwrap();
+        devhub_window.unminimize().unwrap();
+        devhub_window.set_focus().unwrap();
+    }
+
     let devhub_app_id = devhub_app_id(&app_handle);
 
     let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
@@ -141,7 +150,7 @@ pub async fn open_devhub(
     happ_window_builder(
         &app_handle,
         devhub_app_id,
-        String::from("devhub"),
+        devhub_window_label,
         String::from("DevHub"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
@@ -167,6 +176,14 @@ pub async fn open_appstore(
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'open_appstore'.");
     }
+
+    let appstore_window_label = String::from("appstore");
+    if let Some(appstore_window) = app_handle.get_window(&appstore_window_label) {
+        appstore_window.show().unwrap();
+        appstore_window.unminimize().unwrap();
+        appstore_window.set_focus().unwrap();
+    }
+
     let appstore_app_id = appstore_app_id(&app_handle);
 
     let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(appstore_app_id.clone()));
@@ -177,7 +194,7 @@ pub async fn open_appstore(
     happ_window_builder(
         &app_handle,
         appstore_app_id,
-        String::from("appstore"),
+        appstore_window_label,
         String::from("App Store"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
