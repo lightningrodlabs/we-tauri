@@ -172,8 +172,8 @@ export class MainDashboard extends LitElement {
   }
 
   async openGroup(groupDnaHash: DnaHash) {
-    this.selectedGroupDnaHash = groupDnaHash;
     this._weStore.selectAppletHash(undefined);
+    this.selectedGroupDnaHash = groupDnaHash;
     this.dashboardMode = "groupView";
     // this.dynamicLayout.openTab({
     //   id: `group-home-${encodeHashToBase64(groupDnaHash)}`,
@@ -294,7 +294,12 @@ export class MainDashboard extends LitElement {
         @group-joined=${(e) => this.openGroup(e.detail.groupDnaHash)}
       ></join-group-dialog>
 
-      <create-group-dialog id="create-group-dialog"></create-group-dialog>
+      <create-group-dialog
+        id="create-group-dialog"
+        @group-created=${(e: CustomEvent) => {
+          this.openGroup(e.detail.groupDnaHash);
+        }}
+      ></create-group-dialog>
 
 
       <!-- dashboard -->
@@ -377,11 +382,6 @@ export class MainDashboard extends LitElement {
             });
           }}
           @group-selected=${(e: CustomEvent) => {
-            this._weStore.selectAppletHash(undefined);
-            this.selectedGroupDnaHash = e.detail.groupDnaHash;
-            this.dashboardMode = "groupView";
-          }}
-          @group-created=${(e: CustomEvent) => {
             this.openGroup(e.detail.groupDnaHash);
           }}
           @request-create-group=${() =>

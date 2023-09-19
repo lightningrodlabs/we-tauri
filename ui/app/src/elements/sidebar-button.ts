@@ -49,8 +49,6 @@ export class SidebarButton extends LitElement {
   }
 
   render() {
-
-    console.log("this.slIcon: ", this.slIcon);
     return html` <sl-tooltip
       hoist
       id="tooltip"
