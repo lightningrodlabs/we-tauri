@@ -210,10 +210,10 @@ export class MainDashboard extends LitElement {
                 this.dashboardMode = "browserView";
                 this._weStore.selectAppletHash(undefined);
               }}
-              @applet-installed=${(e: CustomEvent) => {
-                this._weStore.selectAppletHash(e.detail);
+              @applet-installed=${(_e: CustomEvent) => {
+                // console.log("GOT APPLET INSTALLED EVENT");
+                // this._weStore.selectAppletHash(e.detail);
                 this.dashboardMode = "groupView";
-                this.requestUpdate();
               }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);

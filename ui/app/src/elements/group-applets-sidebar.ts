@@ -66,7 +66,7 @@ export class GroupAppletsSidebar extends LitElement {
                 <applet-topbar-button
                   title="double-click to open in tab"
                   .appletStore=${appletStore}
-                  .selected=${this.selectedAppletHash === appletStore.appletHash}
+                  .selected=${JSON.stringify(this.selectedAppletHash) === JSON.stringify(appletStore.appletHash)}
                   .tooltipText=${appletStore.applet.custom_name}
                   placement="bottom"
                   @click=${() => {

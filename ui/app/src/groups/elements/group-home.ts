@@ -457,8 +457,17 @@ export class GroupHome extends LitElement {
 
             <installable-applets
               style="display: flex; flex: 1; overflow-y: auto;"
-              @applet-installed=${() => {
-                this.view = { view: "main" };
+              @applet-installed=${(e) => {
+                // console.log("@group-home: GOT APPLET INSTALLED EVENT.");
+                // this.view = { view: "main" };
+                // re-dispatch event since for some reason it doesn't bubble further
+                this.dispatchEvent(
+                  new CustomEvent("applet-installed", {
+                    detail: e.detail,
+                    composed: true,
+                    bubbles: true,
+                  })
+                );
               }}
             ></installable-applets>
           </div>
