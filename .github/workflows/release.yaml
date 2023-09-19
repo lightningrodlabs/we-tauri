@@ -6,42 +6,42 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-holochain-[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  publish-happ:
-    permissions:
-      contents: write
-    runs-on: ubuntu-20.04
-    outputs:
-      releaseId: ${{ steps.create-release.outputs.id }}
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      # Checks out a copy of your repository on the ubuntu-latest machine
-      - uses: actions/checkout@v3
+  # publish-happ:
+  #   permissions:
+  #     contents: write
+  #   runs-on: ubuntu-20.04
+  #   outputs:
+  #     releaseId: ${{ steps.create-release.outputs.id }}
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     # Checks out a copy of your repository on the ubuntu-latest machine
+  #     - uses: actions/checkout@v3
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v18
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.12.0/install
-          extra_nix_config: |
-            experimental-features = flakes nix-command
+  #     - name: Install nix
+  #       uses: cachix/install-nix-action@v18
+  #       with:
+  #         install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+  #         extra_nix_config: |
+  #           experimental-features = flakes nix-command
 
-      - uses: cachix/cachix-action@v12
-        with:
-          name: holochain-ci
+  #     - uses: cachix/cachix-action@v12
+  #       with:
+  #         name: holochain-ci
 
-      - name: Install and test
-        run: |
-          nix develop --command bash -c "npm i && npm run build:happ"
+  #     - name: Install and test
+  #       run: |
+  #         nix develop --command bash -c "npm i && npm run build:happ"
 
-      - id: create-release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "workdir/we.happ"
-          body: "See assets below to download and install this version."
-          prerelease: true
-          draft: false
+  #     - id: create-release
+  #       uses: ncipollo/release-action@v1
+  #       with:
+  #         artifacts: "workdir/we.happ"
+  #         body: "See assets below to download and install this version."
+  #         prerelease: true
+  #         draft: false
 
   publish-tauri:
-    needs: publish-happ
+    # needs: publish-happ
     strategy:
       fail-fast: false
       matrix:
@@ -126,7 +126,7 @@ jobs:
       - name: Install and prepare
         run: |
           rustup target add wasm32-unknown-unknown
-          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${{ github.ref_name }}/we.happ
+          curl -L --output workdir/we.happ https://drive.switch.ch/index.php/s/ciiJFPP4jeH99no/download
           npm install
           npm run build:zomes
 
