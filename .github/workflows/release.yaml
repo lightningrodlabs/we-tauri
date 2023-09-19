@@ -130,12 +130,20 @@ jobs:
           npm install
           npm run build:zomes
 
+      - id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          body: "See assets below to download and install this version."
+          prerelease: true
+          draft: true
+
       - name: build the app
         uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # releaseId: ${{ needs.publish-happ.outputs.releaseId }}
+          releaseId: ${{ steps.create-release.outputs.id }}
           releaseDraft: true
           prerelease: true
           args: --verbose
