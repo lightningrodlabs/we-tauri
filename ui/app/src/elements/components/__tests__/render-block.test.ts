@@ -88,7 +88,7 @@ describe('RenderBlock', () => {
       }
     }
 
-    test.skip(`RenderBlock children should be able to be rendered recursively no matter their parent elements`, async () => {
+    test(`RenderBlock children should be able to be rendered recursively no matter their parent elements`, async () => {
       const harness = await initialRender(testHtml`<div>
         <render-block .renderer=${renderer('dynamic-child', DynamicRenderingChild)}></render-block>
         <render-block .renderer=${renderer('child-3', Child3)}></render-block>
