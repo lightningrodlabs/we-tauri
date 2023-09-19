@@ -1,5 +1,6 @@
 import { CellId, CellInfo, DisabledAppReason, AppInfo } from "@holochain/client";
 import { EntryHash } from "@holochain/client";
+import { HappZomeMap } from "@neighbourhoods/client";
 
 
 export function fakeMd5SeededEntryHash(md5Hash: Uint8Array): EntryHash {
@@ -91,4 +92,13 @@ export function flattenCells(cell_info: Record<string, CellInfo[]>): [string, Ce
   return Object.entries(cell_info).map(([roleName, cellInfos]) => {
     return cellInfos.map((CellInfo) => [roleName, CellInfo])
   }).flat() as any
+}
+
+export function flattenRoleAndZomeIndexedResourceDefs(appletResourceDefs: HappZomeMap<{
+  [resourceDefName: string]: EntryHash,
+}>) {
+  return Object.values(appletResourceDefs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+      (acc, curr) => ({...acc, ...curr}),
+      {}
+    )
 }

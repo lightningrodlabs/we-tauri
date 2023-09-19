@@ -17,6 +17,7 @@ import { get } from 'svelte/store';
 import { AppletTuple } from './matrix-test-harness';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { cleanResourceNameForUI } from '../../components/helpers/functions';
+import { flattenRoleAndZomeIndexedResourceDefs } from '../../../utils';
 
 const intersectionObserverMock = () => ({
   observe: () => null,
@@ -36,7 +37,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 describe('SensemakerDashboard', () => {
   let component, harness, componentDom, toBeTestedSubComponent;
   let mockStore;
-  let mockAppletConfigsResponse, mockFetchAppletsResponse, mockSensemakerResponse;
+  let mockAppletConfigsResponse, mockFetchAppletsResponse, mockSensemakerResponse, mockProfilesResponse;
 
   const initialRender = async testComponent => {
     harness = await stateful(component, mockStore);
@@ -76,11 +77,13 @@ describe('SensemakerDashboard', () => {
     mockAppletConfigsResponse = MockFactory.mockStoreResponse('appletConfigs').appletConfigs();
     mockFetchAppletsResponse = MockFactory.mockStoreResponse('getAppletInstanceInfosForGroup');
     mockSensemakerResponse = MockFactory.mockStoreResponse('matrix-sensemaker-for-we-group-id');
+    mockProfilesResponse = MockFactory.mockStoreResponse('profiles');
 
     // Make a reusable mock store object that has constituent mock data streams as created by the MockFactory
     mockStore = {
       getAppletInstanceInfosForGroup: vi.fn(() => mockFetchAppletsResponse),
       sensemakerStore: vi.fn((weGroupId: DnaHash | undefined) => mockSensemakerResponse),
+      profilesStore: vi.fn((weGroupId: DnaHash | undefined) => mockProfilesResponse),
     };
 
     component = html`<sensemaker-dashboard></sensemaker-dashboard>`;
@@ -189,7 +192,7 @@ describe('SensemakerDashboard', () => {
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
 
-      const resourceDefsLength = Object.values(config.resource_defs).length;
+      const resourceDefsLength = Object.values(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)).length;
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
       );
@@ -203,7 +206,7 @@ describe('SensemakerDashboard', () => {
         get(mockAppletConfigsResponse);
       const config = Object.values(appletConfigs)[0];
 
-      const resourceDefNames = Object.keys(config.resource_defs);
+      const resourceDefNames = Object.keys(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs));
       const elements = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav .nav-item`,
       );
@@ -277,7 +280,7 @@ describe('SensemakerDashboard', () => {
       const dom = await renderAndReturnDom(component, false);
       const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs).flat();
       const resourceDefsLengths = appletConfigs.map(
-        config => Object.entries(config.resource_defs).length,
+        config => Object.entries(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)).length,
       );
 
       const subnavs = dom.window.document.querySelectorAll(
@@ -292,7 +295,7 @@ describe('SensemakerDashboard', () => {
     test(`And the 2 sub-navs each have the same text values as the Resource Definitions in the AppletConfigs`, async () => {
       const dom = await renderAndReturnDom(component, false);
       const appletConfigs: AppletConfig[] = Object.values(mockAppletConfigs);
-      const resourceDefNames = appletConfigs.map(config => Object.keys(config.resource_defs));
+      const resourceDefNames = appletConfigs.map(config => Object.keys(flattenRoleAndZomeIndexedResourceDefs(config.resource_defs)));
 
       const subnavs = dom.window.document.querySelectorAll(
         `.dashboard-menu-section:nth-of-type(2) > .sub-nav`,
@@ -314,7 +317,8 @@ describe('SensemakerDashboard', () => {
       mockFetchAppletsResponse.mockSetSubscribeValue(MockFactory.createAppletInstanceInfos(1));
       mockSensemakerResponse.mockSetStoreAppConfigs(mockAppletConfig);
       mockAppletConfigsResponse.mockSetSubscribeValue(mockAppletConfig);
-
+      // mockProfilesResponse.mockSetSubscribeValue(MockFactory.mockStoreResponse('profiles-inner'))
+      
       const mockSMStore: any = get(mockSensemakerResponse);
       subjective = MockFactory.createConfigDimensions(1, 'subjective');
       objective = MockFactory.createConfigDimensions(2, 'objective').slice(1);
@@ -328,7 +332,8 @@ describe('SensemakerDashboard', () => {
       await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table');
       
       expect(toBeTestedSubComponent.tableStore).toBeDefined();
-      expect(toBeTestedSubComponent.tableStore.records.length).toEqual(2);
+      // Since we only have one subjective dimension (resource view filters by this)
+      expect(toBeTestedSubComponent.tableStore.records.length).toEqual(1);
       expect(toBeTestedSubComponent.__tableType).toBeDefined();
       expect(toBeTestedSubComponent.__tableType).toBe('resource');
     });
@@ -392,11 +397,11 @@ describe('SensemakerDashboard', () => {
       ]);
     });
 
-    test('And it renders 2 rows', async () => {
+    test('And it renders 1 row for the subjective dimension assessment', async () => {
       const dom = await renderAndReturnDom(component, 'dashboard-filter-map', 'dashboard-table', 'wc-table');
 
       const rowElements = dom.window.document.querySelectorAll('table tbody tr');
-      expect(rowElements.length).toBe(2);
+      expect(rowElements.length).toBe(1);
     });
   });
 });

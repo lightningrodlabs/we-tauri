@@ -9,7 +9,7 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
-    
+
     @property()
     resourceEh!: EntryHash
 
@@ -27,7 +27,7 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
 
     @state()
     rating = 0;
-   
+
     async firstUpdated() {
         console.log("the latest assessment for the star rating", this.latestAssessment)
         if(this.latestAssessment) {
@@ -35,15 +35,15 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
         }
     }
     render() {
-        
+
         return html`
                     <div class="star-rating">
-                        <input 
-                            type="checkbox" 
-                            name="myCheckbox" 
-                            value="important" 
+                        <input
+                            type="checkbox"
+                            name="myCheckbox"
+                            value="important"
                             ?checked=${this.rating > 0 ? true : false}
-                            ?disabled=${this.latestAssessment} 
+                            ?disabled=${this.latestAssessment}
                             @click=${() => {
                                 if(!this.latestAssessment) {
                                     this.rating = 1;
@@ -53,12 +53,12 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
                                 }
                             }}
                         >
-                        <input 
-                            type="checkbox" 
-                            name="myCheckbox" 
-                            value="important" 
+                        <input
+                            type="checkbox"
+                            name="myCheckbox"
+                            value="important"
                             ?checked=${this.rating > 1 ? true : false}
-                            ?disabled=${this.latestAssessment} 
+                            ?disabled=${this.latestAssessment}
                             @click=${() => {
                                 if(!this.latestAssessment) {
                                     this.rating = 2;
@@ -68,12 +68,12 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
                                 }
                             }}
                         >
-                        <input 
-                            type="checkbox" 
-                            name="myCheckbox" 
-                            value="important" 
+                        <input
+                            type="checkbox"
+                            name="myCheckbox"
+                            value="important"
                             ?checked=${this.rating > 2 ? true : false}
-                            ?disabled=${this.latestAssessment} 
+                            ?disabled=${this.latestAssessment}
                             @click=${() => {
                                 if(!this.latestAssessment) {
                                     this.rating = 3;
@@ -83,12 +83,12 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
                                 }
                             }}
                         >
-                        <input 
-                            type="checkbox" 
-                            name="myCheckbox" 
-                            value="important" 
+                        <input
+                            type="checkbox"
+                            name="myCheckbox"
+                            value="important"
                             ?checked=${this.rating > 3 ? true : false}
-                            ?disabled=${this.latestAssessment} 
+                            ?disabled=${this.latestAssessment}
                             @click=${() => {
                                 if(!this.latestAssessment) {
                                     this.rating = 4;
@@ -98,12 +98,12 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
                                 }
                             }}
                         >
-                        <input 
-                            type="checkbox" 
-                            name="myCheckbox" 
-                            value="important" 
+                        <input
+                            type="checkbox"
+                            name="myCheckbox"
+                            value="important"
                             ?checked=${this.rating > 4 ? true : false}
-                            ?disabled=${this.latestAssessment} 
+                            ?disabled=${this.latestAssessment}
                             @click=${() => {
                                 if(!this.latestAssessment) {
                                     this.rating = 5;
@@ -117,7 +117,7 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
                 `
     }
 
-    static get scopedElements() {
+    static get elementDefinitions() {
         return {
         }
     }
@@ -128,4 +128,3 @@ export class StarDimensionAssessment extends AssessDimensionWidget {
         }
     `
 }
-

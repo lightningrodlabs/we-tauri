@@ -1,5 +1,6 @@
 import { html, css, TemplateResult } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
+import { ref } from "lit/directives/ref.js";
 
 import {
   FieldDefinitions,
@@ -12,6 +13,7 @@ import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
+import { WithProfile } from './profile/with-profile';
 
 export const tableId = 'assessmentsForResource';
 
@@ -38,8 +40,11 @@ export class StatefulTable extends NHComponentShoelace {
       console.warn('No data or field definitions to create table.');
       return;
     }
-
-    this.tableStore.records = this.assessments;
+    
+    // The following lines removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
+    this.tableStore.records = this.contextFieldDefs && Object.entries(this.contextFieldDefs).length 
+      ? this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) 
+      : this.assessments;
   }
   async connectedCallback() {
     super.connectedCallback();
@@ -68,18 +73,17 @@ export class StatefulTable extends NHComponentShoelace {
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
+          ${typeof resource.eh[1] === 'function' ? ref((e) => e ? resource.eh[1](e as HTMLElement, resource.eh[0]): null) : null}
         >
-          ${generateHashHTML(resource.eh)}
         </div>`,
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Neighbour', 'Member'),
-        decorator: (agentPublicKeyB64: any) => html` <div
-          style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-        >
-          ${generateHashHTML(agentPublicKeyB64)}
-          ${generateMockProfile(Math.floor(Math.random() * 5) + 1)}
-        </div>`,
+        decorator: function(agentPublicKeyB64: any) {return html` <div
+          style="width: 100%; display: flex; flex-direction: column; align-items: start; height: 100%; justify-items: center;"
+          >
+          <with-profile .component=${"identicon"} .agentHash=${agentPublicKeyB64}></with-profile>
+        </div>`},
       }),
     };
     return {
@@ -101,6 +105,7 @@ export class StatefulTable extends NHComponentShoelace {
   static elementDefinitions = {
     'wc-table': Table,
     'sl-alert': SlAlert,
+    'with-profile': WithProfile,
   };
 
   static styles = css`
@@ -122,7 +127,7 @@ export class StatefulTable extends NHComponentShoelace {
       --border-color: #7d7087;
       --menuSubTitle: #a89cb0;
       --column-min-width: calc(1rem * var(--nh-spacing-sm));
-      --column-max-width: calc(2rem * var(--nh-spacing-md));
+      --column-max-width: calc(1rem * var(--nh-spacing-md));
 
       /** Header Cells **/
       --table-assessmentsForResource-heading-background-color: var(--nh-theme-bg-surface);
@@ -162,7 +167,7 @@ export class StatefulTable extends NHComponentShoelace {
       /** First Two Columns **/
       --table-assessmentsForResource-resource-width: var(--column-max-width);
       --table-assessmentsForResource-neighbour-width: var(--column-max-width);
-      --table-assessmentsForResource-resource-vertical-align: top;
+      --table-assessmentsForResource-resource-vertical-align: middle;
       --table-assessmentsForResource-neighbour-vertical-align: top;
 
       --table-assessmentsForResource-row-even-background-color: var(---nh-theme-bg-surface);

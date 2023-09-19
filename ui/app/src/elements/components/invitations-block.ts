@@ -1,5 +1,5 @@
 import { css, html, LitElement } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
   Button,
   TextField,
@@ -65,7 +65,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
         labelText="Error. Public key may be invalid."
       ></mwc-snackbar>
 
-      <nh-card .theme=${"light"} .heading=${"Invite New Member"} .textSize=${"md"}>
+      <nh-card .theme=${"dark"} .heading=${"Invite New Member"} .textSize=${"md"}>
           <div class="row" style="align-items: center; margin-top: 20px;">
             <mwc-textfield
               label="Public Key"
@@ -93,7 +93,7 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-textfield": TextField,

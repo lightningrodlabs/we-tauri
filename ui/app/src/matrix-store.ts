@@ -50,10 +50,10 @@ import {
 } from "@holochain-open-dev/utils";
 import {
   AppletRenderers,
-  NhLauncherApplet,
+  NeighbourhoodApplet,
   AppletInfo,
-  WeServices,
-  WeInfo,
+  NeighbourhoodServices,
+  NeighbourhoodInfo,
 } from "@neighbourhoods/nh-launcher-applet";
 import { SensemakerStore, SensemakerService } from "@neighbourhoods/client";
 import {
@@ -92,7 +92,7 @@ export interface WeGroupData {
 
 /**Info of a group */
 export interface WeGroupInfo {
-  info: WeInfo;
+  info: NeighbourhoodInfo;
   cell_id: CellId;
   dna_hash: DnaHash;
   cloneName: string;
@@ -112,6 +112,7 @@ export interface AppletInstanceInfo {
   applet: Applet;
   federatedGroups: DnaHash[];
   appAgentWebsocket?: AppAgentClient;
+  views?: AppletRenderers;
 }
 
 export interface UninstalledAppletInstanceInfo {
@@ -170,7 +171,7 @@ export class MatrixStore {
   private _installedAppletClasses: Writable<EntryHashMap<AppletClassInfo>> =
     writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
 
-  private _appletGuis: EntryHashMap<NhLauncherApplet> = new EntryHashMap<NhLauncherApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+  private _appletGuis: EntryHashMap<NeighbourhoodApplet> = new EntryHashMap<NeighbourhoodApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
   private _appletInstanceRenderers: EntryHashMap<AppletRenderers> =
     new EntryHashMap<AppletRenderers>(); // EntryHash of Applet entries in the respective we DNA as keys
   private _appletClassRenderers: EntryHashMap<AppletRenderers> =
@@ -277,7 +278,7 @@ export class MatrixStore {
    * @param weGroupId : DnaHash
    * @returns : WeInfo
    */
-  public getWeGroupInfo(weGroupId): WeInfo | undefined {
+  public getWeGroupInfo(weGroupId): NeighbourhoodInfo | undefined {
     if (weGroupId) {
       return get(this._matrix).get(weGroupId)
         ? get(this._matrix).get(weGroupId)[0].info.info
@@ -291,7 +292,7 @@ export class MatrixStore {
    * @param weGroupId : DnaHash
    * @returns : Promise<Readable<WeInfo>>
    */
-  public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<WeInfo>> {
+  public async fetchWeGroupInfo(weGroupId: DnaHash): Promise<Readable<NeighbourhoodInfo>> {
     const appAgentWebsocket = get(this._matrix).get(weGroupId)[0].appAgentWebsocket;
     const info = await appAgentWebsocket.callZome({
       cell_id: [weGroupId, appAgentWebsocket.myPubKey],
@@ -410,7 +411,7 @@ export class MatrixStore {
    */
   async fetchAppletInstanceRenderers(
     appletInstanceId: EntryHash,
-    weServices: WeServices
+    weServices: NeighbourhoodServices
   ) {
     // // 1. check whether the renderers for this applet instance are already stored, if yes return them
     // const maybeRenderers = this._appletInstanceRenderers.get(appletInstanceId);
@@ -442,7 +443,7 @@ export class MatrixStore {
     if (!appInstanceInfo.appAgentWebsocket) {
 
       //instantiate the websocket
-      console.log('app agent websocket not instantiated yet');
+      console.log('app agent websocket being instantiated');
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
       this._matrix.update((matrix) => {
@@ -465,11 +466,20 @@ export class MatrixStore {
     }
 
     const renderers = await gui.appletRenderers(
-      weServices,
-      [{ weInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
-      this.appWebsocket,
       appletAppAgentWebsocket,
+      weServices,
+      [{ neighbourhoodInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
     );
+
+    // now that the applet instance renderers have been fetched and instantiated, add them to the AppletInstanceInfo 
+    this._matrix.update((matrix) => {
+      matrix.get(weGroupId)[1].find(
+        (info) =>
+          JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
+      )!.views = renderers;
+      return matrix;
+    })
+    
 
     return renderers;
   }
@@ -510,7 +520,7 @@ export class MatrixStore {
    * @param devhubHappReleaseHash
    * @returns
    */
-  async queryAppletGui(devhubHappReleaseHash): Promise<NhLauncherApplet> {
+  async queryAppletGui(devhubHappReleaseHash): Promise<NeighbourhoodApplet> {
 
     const appletGui = await this.appletsService.queryAppletGui(devhubHappReleaseHash);
 
@@ -705,7 +715,9 @@ export class MatrixStore {
       UninstalledAppletInstanceInfo[]
     >();
 
+    console.log("app info from matrix", this.weParentAppInfo);
     let weParentAppInfo: AppInfo = await this.appWebsocket.appInfo({ installed_app_id: this.weParentAppInfo.installed_app_id });
+    console.log("parent app info after fetch", weParentAppInfo);
 
     // fetch all apps from the conductor
     let allApps = await this.adminWebsocket.listApps({});
@@ -1133,7 +1145,7 @@ export class MatrixStore {
       }, 1500);
     
     this._matrix.update((matrix) => {
-      const weInfo: WeInfo = {
+      const weInfo: NeighbourhoodInfo = {
         logoSrc: properties.logoSrc,
         name: properties.name,
       };
@@ -1347,6 +1359,34 @@ export class MatrixStore {
 
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      
+      
+      const devhubHappReleaseHash =
+        this.releaseHashOfAppletInstance(appletInstanceId)!;
+      // ATTENTION: IT IS ASSUMED HERE THAT THE APPLET IS ALREADY IN THE MATRIX!!
+
+      let gui = this._appletGuis.get(devhubHappReleaseHash);
+      if (!gui) {
+        gui = await this.queryAppletGui(devhubHappReleaseHash);
+      }
+
+      // register applet config and sensemaker dimension widgets on applet join
+      console.log('register applet config and widgets', gui);
+
+      const appletConfig = gui.appletConfig;
+      const widgetPairs = gui.widgetPairs;
+      const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      appletConfig.name = installedAppId;
+      await sensemakerStore?.registerApplet(appletConfig);
+      widgetPairs.map((widgetPair) => {
+        console.log('registering widgets to SM store')
+        sensemakerStore!.registerWidget(
+          widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(get(sensemakerStore!.appletConfigs())[installedAppId].dimensions[dimensionName])),
+          widgetPair.display,
+          widgetPair.assess,
+        ) 
+      });
+
       const appInstanceInfo: AppletInstanceInfo = {
         appletId: appletInstanceId,
         appInfo: appInfo,
@@ -1519,6 +1559,32 @@ export class MatrixStore {
 
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
     const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+
+      // const devhubHappReleaseHash =
+      //   this.releaseHashOfAppletInstance(appletInstanceId)!;
+      // ATTENTION: IT IS ASSUMED HERE THAT THE APPLET IS ALREADY IN THE MATRIX!!
+
+      // let gui = this._appletGuis.get(devhubHappReleaseHash);
+      // if (!gui) {
+      const  gui = await this.queryAppletGui(applet.devhubHappReleaseHash);
+      // }
+      // register applet config and widgets on applet join
+      console.log('register applet config and widgets', gui);
+
+      const appletConfig = gui.appletConfig;
+      const widgetPairs = gui.widgetPairs;
+      const sensemakerStore = get(this.sensemakerStore(weGroupId));
+      appletConfig.name = installedAppId;
+      const registeredConfig = await sensemakerStore!.registerApplet(appletConfig);
+      console.log('registeredConfig', registeredConfig)
+      widgetPairs.map((widgetPair) => {
+        console.log('registering widgets to SM store')
+        get(this.sensemakerStore(weGroupId))!.registerWidget(
+          widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
+          widgetPair.display,
+          widgetPair.assess,
+        ) 
+      });
     const appInstanceInfo: AppletInstanceInfo = {
       appletId: appletInstanceId,
       appInfo: appInfo,
@@ -2018,7 +2084,7 @@ export class MatrixStore {
     const matrix = get(this._matrix);
     let appletInfosOfClass: AppletInfo[] = [];
     matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
-      const weInfo: WeInfo = weGroupData.info.info;
+      const weInfo: NeighbourhoodInfo = weGroupData.info.info;
       const relevantAppletInstanceInfos = appletInstanceInfos.filter(
         (info) =>
           JSON.stringify(info.applet.devhubHappReleaseHash) ===
@@ -2027,7 +2093,7 @@ export class MatrixStore {
       const relevantInstalledAppletInfos = relevantAppletInstanceInfos.map(
         (appletInstanceInfo) => {
           const installedAppletInfo: AppletInfo = {
-            weInfo,
+            neighbourhoodInfo:  weInfo,
             appInfo: appletInstanceInfo.appInfo,
           };
           return installedAppletInfo;
@@ -2080,5 +2146,60 @@ export class MatrixStore {
     });
 
     return isSame;
+  }
+
+  public async initializeStateForGroup(weGroupId: DnaHash) {
+    const [weGroupData, appletInstanceInfos] = get(this._matrix).get(weGroupId);
+    // initalize assessment data
+    await weGroupData.sensemakerStore.getAssessmentsForResources({});
+    // loop through each applet in the group
+    appletInstanceInfos.forEach(async (appletInstanceInfo) => {
+      await this.fetchAppletInstanceRenderers(appletInstanceInfo.appletId, {
+        profilesStore: weGroupData.profilesStore,
+        sensemakerStore: weGroupData.sensemakerStore,
+      });
+      
+      const devhubHappReleaseHash =
+        this.releaseHashOfAppletInstance(appletInstanceInfo.appletId)!;
+
+      let gui = this._appletGuis.get(devhubHappReleaseHash);
+      if (!gui) {
+        gui = await this.queryAppletGui(devhubHappReleaseHash);
+      }
+
+      const appletConfig = gui.appletConfig;
+      const widgetPairs = gui.widgetPairs;
+      appletConfig.name = appletInstanceInfo.appInfo.installed_app_id;
+      const registeredConfig = await weGroupData.sensemakerStore.registerApplet(appletConfig);
+      console.log('registeredConfig', registeredConfig)
+      widgetPairs.map((widgetPair) => {
+        console.log('registering widgets to SM store')
+        get(this.sensemakerStore(weGroupId))!.registerWidget(
+          widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
+          widgetPair.display,
+          widgetPair.assess,
+        ) 
+      });
+    });
+  }
+  getResourceView(weGroupId: DnaHash, resourceDefEh: EntryHash) {
+    const groupSenseMakerStore = get(this.sensemakerStore(weGroupId));
+    const appletConfigs = get(groupSenseMakerStore!.appletConfigs());
+    // find the applet config that contains the resource definition eh
+    const [appletName, appletConfig] = Object.entries(appletConfigs).find(([appletName, appletConfig]) => {
+      const resourceDefs = Object.values(appletConfig.resource_defs)
+        .flatMap((zome) => Object.values(zome))
+        .flatMap((resource) => Object.values(resource));
+      return resourceDefs.find((resourceDefEhFromConfig) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh));
+    }
+    )!;
+    // return the appplet app info for the appletName
+    const appletInstanceInfo = get(this._matrix).get(weGroupId)[1].find((appletInstanceInfo) => appletInstanceInfo.appInfo.installed_app_id === appletName);
+    // get the resource def name given the resource def eh
+    const resourceDefName = Object.values(appletConfig.resource_defs)
+      .flatMap((zome) => Object.values(zome))
+      .flatMap((resource) => Object.entries(resource))
+      .find(([resourceDefName, resourceDefEhFromConfig]) => encodeHashToBase64(resourceDefEhFromConfig) === encodeHashToBase64(resourceDefEh))![0];
+    return appletInstanceInfo!.views!.resourceRenderers[resourceDefName];
   }
 }

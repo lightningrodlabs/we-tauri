@@ -1,6 +1,6 @@
 import { EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { property, state } from "lit/decorators.js";
@@ -42,7 +42,7 @@ export class NoMergeEyeView extends ScopedElementsMixin(LitElement) {
     `
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-icon": Icon,
     };

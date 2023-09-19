@@ -38,9 +38,9 @@ import { nhLogoIcon } from './icons/nh-logo-icon';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
-import { NHComponentShoelace, NHDialog } from '@neighbourhoods/design-system-components';
+import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
-import { SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { WithProfile } from './elements/components/profile/with-profile';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -106,6 +106,23 @@ export class MainDashboard extends NHComponentShoelace {
   @query('#open-create-we-group-dialog')
   _createWeGroupDialogButton!: HTMLElement;
 
+  @query('#component-card')
+  _withProfile!: any;
+  
+  @state()
+  userProfileMenuVisible: boolean = false;
+  
+  async refreshProfileCard() {
+    if(!this._withProfile?._profilesStore) return;
+    await this._withProfile._profilesStore.value.myProfile.reload();
+    this._withProfile.refreshed = true;
+  }
+  
+  toggleUserMenu () {
+    this.userProfileMenuVisible = !this.userProfileMenuVisible;
+    (this.renderRoot.querySelector(".user-profile-menu .context-menu") as HTMLElement).dataset.open = 'true';
+  }
+
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
@@ -158,7 +175,7 @@ export class MainDashboard extends NHComponentShoelace {
             </button>
           </sl-tooltip>
         </div>
-
+        <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));"> 
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
           ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
               <button class="applet-add" @click=${() => this._weHome.appletAdd()}></button>
@@ -185,6 +202,8 @@ export class MainDashboard extends NHComponentShoelace {
               }}
             ></button>
           </sl-tooltip>`}
+
+        </div>
       `;
 
       // show all groups that have the currently selected applet class installed in NavigationMode.AppletCentric
@@ -215,7 +234,7 @@ export class MainDashboard extends NHComponentShoelace {
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
-      return html` ${this.renderAppletClassListSecondary(this._allAppletClasses.value.values())} `;
+      return html``;
     }
   }
 
@@ -293,7 +312,9 @@ export class MainDashboard extends NHComponentShoelace {
     }
   }
 
-  handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
+  async handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
+    await this.refreshProfileCard();
+
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
       this._selectedAppletInstanceId = undefined;
@@ -301,6 +322,11 @@ export class MainDashboard extends NHComponentShoelace {
     }
     this._dashboardMode = DashboardMode.WeGroupHome;
     this._selectedWeGroupId = weGroupId;
+
+
+    // initialize widgets for group
+    console.log("initializing views for group")
+    await this._matrixStore.initializeStateForGroup(weGroupId);
   }
 
   handleWeGroupIconSecondaryClick(weGroupId: DnaHash, appletId: EntryHash) {
@@ -364,7 +390,7 @@ export class MainDashboard extends NHComponentShoelace {
         this._selectedAppletClassId = this._allAppletClasses.value.keys()[0];
         // this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
         this._selectedAppletInstanceId = get(
-          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId),
+          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId as any),
         )[0][1].appletId;
         this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
       }
@@ -374,7 +400,7 @@ export class MainDashboard extends NHComponentShoelace {
       if (this._dashboardMode === DashboardMode.WeGroupHome) {
         //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
         this._selectedAppletInstanceId = get(
-          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId),
+          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId as any),
         )[0][1].appletId;
         this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
       }
@@ -400,8 +426,9 @@ export class MainDashboard extends NHComponentShoelace {
                       style="overflow: hidden; margin-top: 2px; margin-bottom: 2px;"
                       .logoSrc=${weGroupInfo.info.logoSrc}
                       .tooltipText=${weGroupInfo.info.name}
-                      @click=${() => {
-                        this.handleWeGroupIconPrimaryClick(weGroupInfo.dna_hash);
+                      @click=${async () => {
+                        console.log("clicked to enter group!");
+                        await this.handleWeGroupIconPrimaryClick(weGroupInfo.dna_hash);
                         this.requestUpdate();
                       }}
                       class=${classMap({
@@ -698,7 +725,6 @@ export class MainDashboard extends NHComponentShoelace {
 
   handleWeGroupAdded(e: CustomEvent) {
     !this._selectedWeGroupId && location.reload(); // TEMP DWEB WORKAROUND
-
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
@@ -829,13 +855,20 @@ export class MainDashboard extends NHComponentShoelace {
             style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center; overflow:hidden;"
           >
             ${this.renderPrimaryNavigation()}
-            <sl-tooltip
-              hoist
-              placement="right"
-              .content="${encodeHashToBase64(this._matrixStore.myAgentPubKey).slice(0, 15) + '...'}"
-            >
-              <button class="user-profile"></button>
-            </sl-tooltip>
+            <div class="user-profile-menu">
+              <sl-tooltip
+                hoist
+                placement="right"
+                .content="${"Your Profile"}"
+              >
+                <button class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
+                </sl-tooltip>
+                ${this._selectedWeGroupId 
+                  ? html`<we-group-context .weGroupId=${this._selectedWeGroupId}><with-profile id="component-card" .agentHash=${encodeHashToBase64(this._matrixStore.myAgentPubKey)} .component=${"card"} class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}></with-profile></we-group-context>`
+                  : html`<div id="component-card" class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}>No profile</div>`
+                }
+                
+            </div>
           </div>
         </div>
 
@@ -881,6 +914,8 @@ export class MainDashboard extends NHComponentShoelace {
       'applet-class-home': AppletClassHome,
       'we-group-home': WeGroupHome,
       'nh-dialog': NHDialog,
+      'with-profile': WithProfile,
+      'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
       'nh-sensemaker-settings': NHSensemakerSettings,
       'applet-class-renderer': AppletClassRenderer,
@@ -966,16 +1001,6 @@ export class MainDashboard extends NHComponentShoelace {
         position: relative;
         border: transparent 1px solid;
       }
-      .dashboard-icon.with-emoji {
-        position: relative;
-      }
-      .dashboard-icon.with-emoji::after {
-        position: absolute;
-        content: '⚙️';
-        bottom: -2px;
-        right: -2px;
-        font-size: 1rem;
-      }
 
       #nh-logo::after,
       .group-add::before,
@@ -1005,7 +1030,7 @@ export class MainDashboard extends NHComponentShoelace {
       .applet-add::before,
       .dashboard-icon::before {
         transform: rotate(-90deg);
-        left: calc(-2px * var(--nh-spacing-lg) - 7px);
+        left: calc(-2px * var(--nh-spacing-lg) - 2px);
         bottom: 16px;
         margin: 0;
       }
@@ -1017,15 +1042,36 @@ export class MainDashboard extends NHComponentShoelace {
       }
       .dashboard-icon,
       .applet-add {
-        margin-left: calc(1px * var(--nh-spacing-lg));
-        margin-right: calc(1px * var(--nh-spacing-md));
         margin-top: 0;
         margin-bottom: 0;
+      }
+
+      user-profile-menu {
+        display: relaive;
       }
       .user-profile {
         background: url(./icons/user-icon.png);
         background-size: contain;
         background-repeat: no-repeat;
+      }
+
+      .context-menu {
+        overflow: inherit;
+        position: absolute;
+        left: calc(72px + calc(1px * var(--nh-spacing-md)));
+        bottom: calc(1px * var(--nh-spacing-md));
+        transition: all 0.3s ease-in-out;
+        border: 1px solid transparent;
+        box-shadow: var(--nh-50);
+      }
+      .context-menu[data-open=true] {
+        border: 1px solid var(--nh-theme-bg-muted);
+        border-radius: calc(1px * var(--nh-radii-md));
+      }
+      .context-menu[data-open=false] {
+        visibility: hidden;
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
       }
       .dashboard-icon {
         background: url(./icons/dashboard-icon.png);
@@ -1044,9 +1090,8 @@ export class MainDashboard extends NHComponentShoelace {
 
       .dashboard-content {
         background-color: var(--nh-theme-bg-canvas);
-        color: var(--nh-theme-fg-on-dark);
+        color: var(--nh-theme-bg-detail);
         overflow: auto;
-        font-size: 14px;
       }
 
       .navBarGroupCentric,
@@ -1072,7 +1117,7 @@ export class MainDashboard extends NHComponentShoelace {
       }
 
       .highlightedAppletCentric {
-        border: var(--nh-theme-bg-subtle) 1px solid;
+        border: var(--nh-theme-bg-surface) 1px solid;
         border-radius: calc(1px * var(--nh-radii-2xl)) !important;
       }
 

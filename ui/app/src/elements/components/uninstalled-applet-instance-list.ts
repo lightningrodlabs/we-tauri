@@ -1,7 +1,7 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
 import {
@@ -148,7 +148,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-list": List,

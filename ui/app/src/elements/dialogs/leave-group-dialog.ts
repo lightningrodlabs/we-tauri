@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { contextProvided } from "@lit-labs/context";
 import {
   TextField,
@@ -127,7 +127,7 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-textfield": TextField,
       "mwc-button": Button,

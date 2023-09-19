@@ -10,7 +10,7 @@ export class ThumbsUpDimenionAssessment extends AssessDimensionWidget {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
-    
+
     @property()
     resourceEh!: EntryHash
 
@@ -35,7 +35,7 @@ export class ThumbsUpDimenionAssessment extends AssessDimensionWidget {
         `
     }
 
-    static get scopedElements() {
+    static get elementDefinitions() {
         return {
             'mwc-checkbox': Checkbox,
         }

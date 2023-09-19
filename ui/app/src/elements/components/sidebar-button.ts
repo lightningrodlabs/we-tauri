@@ -6,7 +6,7 @@
 
 
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
@@ -48,7 +48,7 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     </sl-tooltip>`;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "sl-tooltip": SlTooltip,
     };
@@ -70,4 +70,3 @@ export class SidebarButton extends ScopedElementsMixin(LitElement) {
     `;
   }
 }
-

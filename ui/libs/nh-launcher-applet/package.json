@@ -1,6 +1,6 @@
 {
   "name": "@neighbourhoods/nh-launcher-applet",
-  "version": "0.0.10",
+  "version": "0.0.13",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -16,8 +16,8 @@
   "type": "module",
   "dependencies": {
     "@holochain/client": "0.12.0",
-    "@holochain-open-dev/profiles": "0.14.3",
-    "@neighbourhoods/client": "0.0.4"
+    "@holochain-open-dev/profiles": "0.16.1",
+    "@neighbourhoods/client": "0.0.6"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.4",

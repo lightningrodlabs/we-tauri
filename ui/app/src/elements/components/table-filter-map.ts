@@ -1,4 +1,4 @@
-import { Readable, get } from '@holochain-open-dev/stores';
+import { Readable, derived, get } from '@holochain-open-dev/stores';
 import {
   Assessment,
   CulturalContext,
@@ -8,7 +8,7 @@ import {
 } from '@neighbourhoods/client';
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { AppInfo, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, EntryHash, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
@@ -16,12 +16,22 @@ import { FieldDefinition } from '@adaburrows/table-web-component';
 import { AssessmentTableRecord, AssessmentTableType, DimensionDict } from './helpers/types';
 import { generateHeaderHTML, cleanResourceNameForUI } from './helpers/functions';
 import { decode } from '@msgpack/msgpack';
+import { MatrixStore } from '../../matrix-store';
+import { matrixContext, weGroupContext } from '../../context';
 
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore!: SensemakerStore;
+
+  @contextProvided({ context: matrixContext, subscribe: true })
+  @state()
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext, subscribe: true })
+  weGroupId!: DnaHash;
+
   @property()
   private _allAssessments;
 
@@ -31,12 +41,18 @@ export class DashboardFilterMap extends LitElement {
   resourceDefEh;
   @property({ type: AssessmentTableType })
   tableType;
+  @property({ type: Object })
+  selectedAppletResourceDefs;
   @property({ type: String })
   selectedContext;
   @property()
-  selectedDimensions!: DimensionDict;
+  contextEhs!: EntryHash[];
+  @property()
+  contextEhsB64!: string[];
   @state()
   private _dimensionEntries!: Dimension[];
+  @state()
+  selectedDimensions!: DimensionDict;
   @state()
   private _objectiveDimensionNames: string[] = [];
   @state()
@@ -55,6 +71,7 @@ export class DashboardFilterMap extends LitElement {
 
     this._allAssessments = new StoreSubscriber(this, () =>
       this._sensemakerStore.resourceAssessments(),
+      () => [this._subjectiveDimensionNames, this._objectiveDimensionNames]
     );
 
     this.setupAssessmentFilteringSubscription();
@@ -66,13 +83,19 @@ export class DashboardFilterMap extends LitElement {
   }
 
   async updated(changedProps) {
+    if ((changedProps.has('selectedAppletResourceDefs') || changedProps.has('resourceDefEh')) && this.resourceDefEh) {
+      this._allAssessments.unsubscribe();
+      this.setupAssessmentFilteringSubscription();
+      this.requestUpdate('selectedDimensions')
+    }
     if (changedProps.has('selectedContext')) {
       await this.fetchCurrentContextEntry();
       this._allAssessments.unsubscribe();
       this.setupAssessmentFilteringSubscription();
     }
-    if (changedProps.has('resourceDefEh')) {
+    if (changedProps.has('contextEhs') && this.tableType == AssessmentTableType.Context) {
       this._allAssessments.unsubscribe();
+      this.contextEhsB64 = this.contextEhs.map(eh => encodeHashToBase64(eh));
       this.setupAssessmentFilteringSubscription();
     }
     if (changedProps.has('selectedDimensions')) {
@@ -172,6 +195,7 @@ export class DashboardFilterMap extends LitElement {
         : this.filterByResourceDefEh(assessments, this.resourceDefEh)
     ).flat() as Assessment[];
 
+    filteredByResourceDef = this.selectedAppletResourceDefs ? this.filterByAppletResourceDefEhs(filteredByResourceDef, this.selectedAppletResourceDefs)  as Assessment[] : filteredByResourceDef;
     // By objective/subjective dimension names
     let filteredByMethodType;
 
@@ -188,7 +212,7 @@ export class DashboardFilterMap extends LitElement {
       );
     }
 
-    // By context
+    // By context && context results
     let tripleFiltered;
     if (
       this.tableType === AssessmentTableType.Context &&
@@ -199,7 +223,19 @@ export class DashboardFilterMap extends LitElement {
         filteredByMethodType,
         encodeHashToBase64(this._contextEntry.thresholds[0].dimension_eh),
       );
+      // TODO: cache each context's results and extract this all to a method
+      tripleFiltered = tripleFiltered.filter(assessment => {
+        if(!this.contextEhsB64?.length) return false;
+        const matchingContextEntryDefHash = this.contextEhsB64.find((eHB64) => encodeHashToBase64(assessment.resource_eh) === eHB64)
+        if(matchingContextEntryDefHash) {
+          // Filter out the oldest objective dimension values (so we have the latest average)
+          const results = tripleFiltered.filter(assessment => encodeHashToBase64(assessment.resource_eh) === matchingContextEntryDefHash)
+          const latestAssessmentFromResults = results.sort((a, b) => b.timestamp > a.timestamp).slice(-1)
+          return latestAssessmentFromResults[0] == assessment
+        }
+      })
     }
+// console.log('tripleFiltered || filteredByMethodType :>> ', tripleFiltered || filteredByMethodType);
     return tripleFiltered || filteredByMethodType;
   }
 
@@ -213,6 +249,12 @@ export class DashboardFilterMap extends LitElement {
     );
   }
 
+  filterByAppletResourceDefEhs(resourceAssessments: Assessment[], selectedAppletResourceDefEhs: EntryHash[]) {
+    if(!selectedAppletResourceDefEhs || typeof selectedAppletResourceDefEhs !== 'object') return;
+    const appletResourceDefs = Object.values(selectedAppletResourceDefEhs).map(eh => encodeHashToBase64(eh));
+    return resourceAssessments.filter((assessment: Assessment) => appletResourceDefs.includes(encodeHashToBase64(assessment.resource_def_eh)))
+  }
+
   filterByDimensionEh(resourceAssessments: Assessment[], filteringHash: string) {
     return resourceAssessments.filter((assessment: Assessment) => {
       return encodeHashToBase64(assessment.dimension_eh) === filteringHash;
@@ -222,6 +264,7 @@ export class DashboardFilterMap extends LitElement {
   filterByMethodNames(resourceAssessments: Assessment[], filteringMethods: string[]): Assessment[] {
     return resourceAssessments.filter((assessment: Assessment) => {
       for (let method of filteringMethods) {
+        if(!this.selectedDimensions[method]) return true;
         if (
           encodeHashToBase64(this.selectedDimensions[method]) ==
           encodeHashToBase64(assessment.dimension_eh)
@@ -235,10 +278,13 @@ export class DashboardFilterMap extends LitElement {
   // Mapping
   mapAssessmentToAssessmentTableRecord(assessment: Assessment): AssessmentTableRecord {
     // Base record with basic fields
+
+    // get the view from the matrix store
+    const resourceView = this._matrixStore.getResourceView(this.weGroupId, assessment.resource_def_eh);
     const baseRecord = {
       neighbour: encodeHashToBase64(assessment.author),
       resource: {
-        eh: encodeHashToBase64(assessment.resource_eh),
+        eh: [assessment.resource_eh, resourceView],
         value: [Object.values(assessment.value)[0], assessment],
       },
     } as AssessmentTableRecord;
@@ -248,7 +294,6 @@ export class DashboardFilterMap extends LitElement {
     for (let dimensionName of Object.keys(this.selectedDimensions)) {
       baseRecord[dimensionName] = '';
     }
-
     // If dimension_eh in assessment matches a dimensionUint8 in the dictionary
     // populate the corresponding dimension field in the base record with the assessment value
     for (let [dimensionName, dimensionUint8] of Object.entries(this.selectedDimensions)) {
@@ -281,6 +326,7 @@ export class DashboardFilterMap extends LitElement {
                   const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[
                     encodeHashToBase64(assessment.dimension_eh)
                   ].assess;
+                  if(!assessWidgetType) return  html`<div></div>`;
                   const assessWidget = new assessWidgetType();
                   assessWidget.resourceEh = assessment.resource_eh;
                   assessWidget.dimensionEh = assessment.dimension_eh;
@@ -306,14 +352,17 @@ export class DashboardFilterMap extends LitElement {
                   ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
-                  const assessWidgetStyles = assessWidgetType.styles as any;
                   const displayWidgetStyles = displayWidgetType.styles as any;
 
                   return html`
                     <style>
-                      ${unsafeCSS(assessWidgetStyles[1])}
+                      ${unsafeCSS(displayWidgetStyles[1])}
+                      .display-box, .display-box-wrapper {
+                        display: grid;
+                        place-content: center;
+                      }
                     </style>
-                    <div class="widget-wrapper">${assessWidget.render()}</div>
+                    <div class="widget-wrapper">${displayWidget.render()}</div>
                   `;
                 } else {
                   return html`<div></div>`;
@@ -360,12 +409,14 @@ export class DashboardFilterMap extends LitElement {
                   ].display;
                   const displayWidget = new displayWidgetType();
                   displayWidget.assessment = assessment;
-                  const assessWidgetStyles = assessWidgetType.styles as any;
                   const displayWidgetStyles = displayWidgetType.styles as any;
                   return html`
                     <style>
-                      ${unsafeCSS(assessWidgetStyles[1])}
                       ${unsafeCSS(displayWidgetStyles[1])}
+                      .display-box, .display-box-wrapper {
+                        display: grid;
+                        place-content: center;
+                      }
                     </style>
                     <div class="widget-wrapper">${displayWidget.render()}</div>
                   `;
@@ -381,7 +432,7 @@ export class DashboardFilterMap extends LitElement {
     return {};
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'dashboard-table': StatefulTable,
     };

@@ -31,10 +31,15 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     store &&
       store.subscribe(appletConfig => {
         this.appletDetails = appletConfig;
-        if (Object.values(appletConfig.resource_defs).length <= 1)
+        if (Object.values(appletConfig.resource_defs)
+            .flatMap((zome) => Object.values(zome))
+            .flatMap((resource) => Object.values(resource)).length < 1)
           return console.log("Didn't register the applet's resource defs yet");
-        this.activeMethodsDict = Object.entries(appletConfig.resource_defs)
-          .slice(1)
+        this.activeMethodsDict = Object.entries(
+          Object.values(appletConfig.resource_defs)
+            .flatMap((zome) => Object.values(zome))
+            .flatMap((resource) => Object.values(resource)),
+          )
           .reduce(
             // Slice to remove Generic Resource
             (dict, [_, eH]): any => {
@@ -64,7 +69,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   renderDimensionSlides(slideSubtitle: string, dimensionNames: string[], currentResourceDefEh: any) {
     return html`<div class="container">
       <div style="display:flex; gap: 8px; flex-direction: column;">
-        <nh-card .theme=${"light"} title=${'PREVIEW WITH POST'}>
+        <nh-card .theme=${"dark"} title=${'PREVIEW WITH POST'}>
           <div class="preview-container">
             <img src="post-example.png" style="width: 100%; object-fit: cover" />
             ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
@@ -96,7 +101,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
                   })} select-widget-link" @click=${() => {this.selectedMethodIndex = i; this.handleUpdateActiveMethod(dimension,  currentResourceDefEh)}}>
                     <span class="widget-display">${this.renderAssessmentEmoji(dimension)}</span>
                     <sl-button size="large" class="choose-widget-button" label=${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}>
-                      ${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}   
+                      ${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}
                     </sl-button>
                   </a>
                 </div>
@@ -185,10 +190,12 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   render() {
     // for each resource def, have a dropdown, which is all the dimensions available
-
+    const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+      (acc, curr) => ({...acc, ...curr}),
+      {}
+    );
     return html`
-      ${Object.entries(this.appletDetails.resource_defs)
-        .slice(1)
+      ${Object.entries(flattenedResourceDefs)
         .map(([key, eH]: any) => {
           const resourceDefEh = encodeHashToBase64(eH);
           const activeMethod = this.activeMethodsDict.get(resourceDefEh);
@@ -215,7 +222,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       (this.parentElement!.parentElement as any).setPrimaryActionEnabled(!!this.selectedMethod) // TODO: Make this not a hacky shortcut for DWEB!
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-tooltip': SlTooltip,
       'sl-button': SlButton,
@@ -271,12 +278,12 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     .choose-assessment-widget > div:first-of-type {
       cursor: pointer;
       display: flex;
-      
+
       background-color: var(--nh-theme-bg-surface);
       border-radius: calc(1px * var(--nh-radii-base));
       color: var(--nh-theme-fg-default);
     }
-    
+
     .choose-widget-button::part(base){
       border-radius: calc(1px * var(--nh-radii-md));
       background-color: var(--nh-theme-bg-surface);
@@ -313,7 +320,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     border-radius: calc(1px * var(--nh-radii-base));
     color: var(--nh-theme-fg-default);
     border: 2px solid var(--nh-theme-bg-muted);
-    
+
     text-decoration: none;
     -webkit-transition: background-color 0.4s;
     transition: background-color 0.4s
@@ -346,7 +353,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   }
 
   .pagination-number:hover:not(.active) {
-    background-color: var(--nh-theme-bg-subtle);
+    background-color: var(--nh-theme-bg-surface);
   }
 
   .widget-display, .widget-choice, .choose-assessment-widget {
@@ -362,7 +369,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     transition: 0.4s all ease-in;
     cursor: pointer;
     font-family: var(--nh-font-families-headlines);
-  } 
+  }
   .select-widget-link:hover .widget-display {
     --nh-theme-accent-default: #A179FF;
     border-color: var(--nh-theme-accent-default);
@@ -404,10 +411,10 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   }
   .widget-card {
     display:none;
-  } 
+  }
   .widget-card.active {
     display:block;
-  } 
+  }
 
   .preview-container span {
     position: absolute;
@@ -460,4 +467,3 @@ function generateAssessmentTypeImg(selectedDimensionIndex: number) {
       return html`<img src="assessment-type-example-3.png" style="width: 100%; object-fit: cover" />`
   }
 }
-

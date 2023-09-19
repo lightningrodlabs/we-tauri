@@ -4,13 +4,14 @@ import { FieldDefinition } from '@adaburrows/table-web-component';
 import { generateHeaderHTML } from '../components/helpers/functions';
 import { html } from 'lit';
 import { Applet } from '../../types';
-import { EntryHash, DnaHash } from '@holochain/client';
+import { EntryHash, DnaHash, HoloHash } from '@holochain/client';
 import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matrix-test-harness';
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
 import { Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { AppletInstanceInfo } from '../../matrix-store';
 import { encode } from '@msgpack/msgpack';
+import { Profile, ProfilesStore } from '@holochain-open-dev/profiles';
 
 export class MockFactory {
   static createAssessment(
@@ -38,7 +39,7 @@ export class MockFactory {
         'abc',
         [
           [{ Integer: 10 }, [1, 2, 3], [4, 5, 6], [4, 5, 6], [13, 14, 15], 32445],
-          [{ Float: 4.5 }, [16, 17, 18], [19, 20, 21], [19, 20, 21], [28, 29, 30], 32445],
+          [{ Float: 4.5 }, [16, 17, 18], [19, 20, 21],  [4, 5, 6],  [28, 29, 30], 32445],
         ],
       ],
     ],
@@ -59,10 +60,10 @@ export class MockFactory {
     role_name = testAppletBaseRoleName,
     // installed_app_id = testAppletBaseRoleName + (seed),
     ranges = { my_range: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
-    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed))),['my_dimension2']: new Uint8Array([3, 2, 1].map(x => x * (seed))), },
+    dimensions = { ['my_dimension1']: new Uint8Array([1, 2, 3].map(x => x * (seed + 1))),['my_dimension2']: new Uint8Array([16, 17, 18].map(x => x * (seed + 1))), },
     resource_defs = {
-      ['my_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
-      ['another_resource_def' + (seed)]: new Uint8Array([1, 2, 3].map(x => x * (seed))),
+      ['my_resource_def' + (seed)]: new Uint8Array([4, 5, 6].map(x => x * (seed + 1))),
+      ['another_resource_def' + (seed)]: new Uint8Array([19, 20, 21].map(x => x * (seed + 1))),
     },
     methods = { my_method: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
     cultural_contexts = { my_context: new Uint8Array([1, 2, 3].map(x => x * (seed))) },
@@ -190,6 +191,38 @@ export class MockFactory {
     mockStore.client = mockClient();
 
     switch (methodName) {
+      case 'profiles-inner':
+      case 'profiles':
+        const mockMyProfileWritable = writable<Profile>();
+        const mockAllProfilesDict = new Map<HoloHash,object>();
+        mockAllProfilesDict.get = vi.fn((key: HoloHash) => ({status: "complete", "value": {
+          nickname: "a mock name",
+        }}))
+        const mockProfilesStoreWritable = writable<{}>({
+          myProfile: {
+            subscribe: mockMyProfileWritable.subscribe,
+            unsubscribe: vi.fn(),
+            mockSetSubscribeValue: (value: Profile): void =>
+            mockMyProfileWritable.update(_ => value),
+          },
+          profiles: mockAllProfilesDict,
+        });
+        if(methodName == 'profiles-inner') return mockProfilesStoreWritable
+
+        const mockProfilesResponse = {
+          value: null,
+          store: () => mockProfilesStoreWritable,
+          subscribe: mockProfilesStoreWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: Profile): void => mockUpdateProfilesStore(value),
+        };
+        // Helper to make mockResourceAssessmentsResponse like a reactive StoreSubscriber
+        function mockUpdateProfilesStore(newValue) {
+          mockProfilesResponse.value = newValue;
+          mockProfilesStoreWritable.update(_ => newValue);
+        }
+        return mockProfilesResponse
+
       case 'matrix-sensemaker-for-we-group-id':
         // A nested mock Sensemaker store
         const mockSMStore = this.mockStoreResponse('all');
@@ -254,6 +287,8 @@ export class MockFactory {
 
       case 'appletConfigs':
         const mockAppletDetailsWritable = writable<{ [appletInstanceId: string]: AppletConfig }>();
+        const mockFlattenedAppletDetailsWritable = writable<AppletConfig>();
+        const mockWidgetRegistryWritable = writable<any>({ 'uAQID' : vi.fn(() => { })});
         const mockAppletConfigsResponse = {
           store: () => mockAppletDetailsWritable,
           subscribe: mockAppletDetailsWritable.subscribe,
@@ -261,12 +296,29 @@ export class MockFactory {
           mockSetSubscribeValue: (value: { [appletInstanceId: string]: AppletConfig }): void =>
             mockAppletDetailsWritable.update(_ => value),
         };
+        const mockFlattenedAppletConfigsResponse = {
+          store: () => mockFlattenedAppletDetailsWritable,
+          subscribe: mockFlattenedAppletDetailsWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: AppletConfig): void =>
+            mockFlattenedAppletDetailsWritable.update(_ => value),
+        };
+        const mockWidgetRegistryResponse = {
+          store: () => mockWidgetRegistryWritable,
+          subscribe: mockWidgetRegistryWritable.subscribe,
+          unsubscribe: vi.fn(),
+          mockSetSubscribeValue: (value: AppletConfig): void =>
+            mockWidgetRegistryWritable.update(_ => value),
+        };
         function mockUpdateAppletConfigs(newValue) {
           mockAppletDetailsWritable.update(_ => newValue);
+          mockFlattenedAppletDetailsWritable.update(_ => Object.values(newValue).flat()[0] as AppletConfig);
         }
-        mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
-        mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
         mockStore.setAppletConfigDimensions = (dimensions: any) => { mockStore.client = mockClient(dimensions);};
+        mockStore.widgetRegistry = vi.fn(() => mockWidgetRegistryResponse);
+        mockStore.appletConfigs = vi.fn(() => mockAppletConfigsResponse);
+        mockStore.flattenedAppletConfigs = vi.fn(() => mockFlattenedAppletConfigsResponse);
+        mockStore.setAppletConfigs = mockUpdateAppletConfigs.bind(mockAppletConfigsResponse);
       default:
         return mockStore;
     }

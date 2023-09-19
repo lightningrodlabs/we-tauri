@@ -30,7 +30,7 @@ export default defineConfig({
     /* for example, use global to avoid globals imports (describe, test, expect): */
     globals: true,
     deps: {
-        inline: [/@neighbourhoods/, /@scoped-elements\/shoelace/]
+        inline: [/@neighbourhoods/, /@scoped-elements\/shoelace/, /@holochain-open-dev\/elements/], 
       },
     environment: 'jsdom',
     include: ['./src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],

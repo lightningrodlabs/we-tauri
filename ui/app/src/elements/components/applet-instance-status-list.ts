@@ -1,7 +1,7 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
@@ -34,7 +34,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
-  
+
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -55,7 +55,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @query("#federate-applet-dialog")
   _federateAppletDialog!: FederateAppletDialog;
-  
+
   @state()
   private _widgetConfigDialogActivated: boolean = false;
 
@@ -295,7 +295,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-icon-button": IconButton,

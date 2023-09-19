@@ -1,5 +1,5 @@
-import { CSSResult, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { CSSResult, PropertyValueMap, css, html } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
@@ -13,16 +13,14 @@ import {
   SlTab,
   SlMenuLabel,
   SlInput,
-  SlAlert,
-  SlIcon,
 } from '@scoped-elements/shoelace';
 import { StatefulTable } from '../components/table';
 import { DashboardFilterMap } from '../components/table-filter-map';
 
-import { Readable, get } from '@holochain-open-dev/stores';
+import { Readable, StoreSubscriber, derived, get } from '@holochain-open-dev/stores';
 import { encodeHashToBase64 } from '@holochain/client';
 
-import { NHButton, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHAlert, NHButton, NHComponentShoelace, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 
 import { classMap } from 'lit/directives/class-map.js';
 import {
@@ -33,7 +31,9 @@ import {
   AssessmentTableType,
 } from '../components/helpers/types';
 import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/functions';
-// import { ContextSelector } from './context-selector';
+import { ContextSelector } from './context-selector';
+import { b64images } from '@neighbourhoods/design-system-styles';
+import { flattenRoleAndZomeIndexedResourceDefs } from '../../utils';
 
 @customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -55,9 +55,13 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() selectedWeGroupId!: Uint8Array;
 
   @state() appletDetails!: object;
+  @state() selectedAppletResourceDefs!: object;
   @state() dimensions: DimensionDict = {};
   @state() context_ehs: ContextEhDict = {};
 
+  @query("#select-context")
+  contextSelector;
+  
   async connectedCallback() {
     super.connectedCallback();
 
@@ -87,38 +91,63 @@ export class SensemakerDashboard extends NHComponentShoelace {
     this.setupAssessmentsSubscription();
   }
 
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(typeof this.appletDetails !== 'object' || !Object.entries(this.appletDetails)[this.selectedAppletIndex]?.length) return;
+    const [installedAppId, appletDetails] = Object.entries(this.appletDetails)[this.selectedAppletIndex];
+
+    if(_changedProperties.has('selectedAppletIndex')) {
+      this.context_ehs = Object.fromEntries(
+        zip(this.appletDetails[installedAppId].contexts, appletDetails.context_ehs),
+        );
+      this.selectedAppletResourceDefs = flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)
+
+      this.dimensions = this.appletDetails[installedAppId].dimensions;
+      this.requestUpdate('selectedResourceDefIndex')
+    }
+    
+    if(_changedProperties.has('selectedResourceDefIndex')) {
+      const resourceName: string =
+        this.selectedResourceDefIndex >= 0 &&
+        snakeCase(this.appletDetails[installedAppId].appletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
+      
+      this.selectedResourceDefEh = resourceName
+        ? encodeHashToBase64(flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)[resourceName])
+        : 'none';
+
+      this.selectedResourceName =
+        this.selectedResourceDefIndex < 0
+          ? 'All Resources'
+          : appletDetails.appletRenderInfo.resourceNames[
+              this.selectedResourceDefIndex
+          ];
+    }
+  }
+
   setupAssessmentsSubscription() {
     let store = this._matrixStore.sensemakerStore(this.selectedWeGroupId);
     store.subscribe(store => {
       (store?.appletConfigs() as Readable<{ [appletName: string]: AppletConfig }>).subscribe(
         appletConfigs => {
-          // TODO: fix edge case of repeat install of same dna/cloned ? make unique id
           if(typeof appletConfigs !== 'object') return;
           Object.entries(appletConfigs).forEach(([installedAppId, appletConfig]) => {
+            // flatten resource defs by removing the role name and zome name keys
+            const flattenedResourceDefs = Object.values(appletConfig.resource_defs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+              (acc, curr) => ({...acc, ...curr}),
+              {}
+            );
             this.appletDetails[installedAppId].appletRenderInfo = {
-              resourceNames: Object.keys(appletConfig.resource_defs)?.map(cleanResourceNameForUI),
+              resourceNames: Object.keys(flattenedResourceDefs)?.map(cleanResourceNameForUI),
             };
 
             // Keep dimensions for dashboard table prop
-            this.dimensions = appletConfig.dimensions;
+            this.appletDetails[installedAppId].dimensions = appletConfig.dimensions;
             //Keep context names for display
             this.appletDetails[installedAppId].contexts = Object.keys(appletConfig.cultural_contexts).map(
               cleanResourceNameForUI,
             );
-
             // Keep context entry hashes and resource_def_eh for filtering in dashboard table
-            this.context_ehs = Object.fromEntries(
-              zip(this.appletDetails[installedAppId].contexts, Object.values(appletConfig.cultural_contexts)),
-            );
-            const currentAppletRenderInfo = Object.values(this.appletDetails)[
-              this.selectedAppletIndex
-            ]?.appletRenderInfo;
-            const resourceName: string =
-              this.selectedResourceDefIndex >= 0 &&
-              snakeCase(currentAppletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-            this.selectedResourceDefEh = resourceName
-              ? encodeHashToBase64(appletConfig.resource_defs[resourceName])
-              : 'none';
+            this.appletDetails[installedAppId].context_ehs = Object.values(appletConfig.cultural_contexts);
+            this.appletDetails[installedAppId].resource_defs = appletConfig.resource_defs;
           });
           this.loading = false;
         },
@@ -185,7 +214,6 @@ export class SensemakerDashboard extends NHComponentShoelace {
           ${appletIds.map((id, i) => {
             const applet = this.appletDetails[id];
             const appletName = this.appletDetails[id]?.customName;
-            // TODO: link ids and stop relying on ordering like this
             return !!applet
               ? html`
                   <sl-menu-item
@@ -203,11 +231,12 @@ export class SensemakerDashboard extends NHComponentShoelace {
                   <div role="navigation" class="sub-nav indented">
                     ${applet?.appletRenderInfo?.resourceNames &&
                     applet?.appletRenderInfo?.resourceNames.map(
-                      (resource, i) => html`<sl-menu-item
+                      (resource, resourceIndex) => html`<sl-menu-item
                         class="nav-item"
                         value="${resource.toLowerCase()}"
                         @click=${() => {
-                          this.selectedResourceDefIndex = i;
+                          this.selectedAppletIndex = i;
+                          this.selectedResourceDefIndex = resourceIndex;
                           this.setupAssessmentsSubscription();
                         }}
                         >${resource}</sl-menu-item
@@ -230,6 +259,11 @@ export class SensemakerDashboard extends NHComponentShoelace {
     return html`
       <div class="container skeleton-overview">
         <main>
+        <div class="alert-wrapper">
+          <nh-alert style="display: flex; flex: 1; gap: 8px;">
+            <span>There are no applets installed - go to your Neighbourhood Home to install them, then visit the applets and return here for data.</span>
+          </nh-alert>
+        </div>
           <div class="skeleton-nav-container">
             ${[50, 40, 40, 55].map(
               width =>
@@ -245,22 +279,15 @@ export class SensemakerDashboard extends NHComponentShoelace {
               style="width: 80%; height: 2rem; opacity: 0"
             ></sl-skeleton>
           </div>
-          ${this.loadingState == LoadingState.NoAppletSensemakerData
-            ? html`<div class="alert-wrapper" style="width: 80%;">
-                <sl-alert open class="alert">
-                  There is no sensemaking data for this tab; go to your applet to generate some.
-                </sl-alert>
-              </div>`
-            : html`<div class="skeleton-main-container">
+          <div class="skeleton-main-container">
                 ${Array.from(Array(24)).map(
                   () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
                 )}
-              </div>`}
+          </div>
         </main>
       </div>
     `;
   }
-
   render() {
     const appletIds = this?.appletDetails ? Object.keys(this.appletDetails) : [];
     const appletDetails =
@@ -278,21 +305,31 @@ export class SensemakerDashboard extends NHComponentShoelace {
             ];
     }
     const contexts = appletConfig && appletDetails[this.selectedAppletIndex]?.contexts;
-    if (!appletConfig![0] || !contexts) {
-      this.loadingState = LoadingState.FirstRender;
+    if (!appletConfig![0] || contexts == 0) {
+      this.loadingState = LoadingState.NoAppletSensemakerData;
     }
-
     return html`
       <div class="container">
         <slot name="configure-widget-button"></slot>
         ${this.renderSidebar(appletIds as string[])}
         <main>
-          ${this.loading
+          ${this.loadingState === LoadingState.NoAppletSensemakerData
             ? this.renderMainSkeleton()
-            : html`<sl-tab-group class="dashboard-tab-group">
-                <div slot="nav" class="tab-nav">
-                  <div class="tabs">
+            : html`<sl-tab-group class="dashboard-tab-group" @context-selected=${function(e: CustomEvent) {
+              ([...(e.currentTarget as any).querySelectorAll('sl-tab-panel')]
+                .forEach(tab =>{
+                  tab.name === snakeCase(e.detail.contextName) 
+                    && tab.dispatchEvent(new CustomEvent('context-display', 
+                    {
+                      detail: e.detail,
+                      bubbles: false,
+                      composed: true
+                    }
+              ))})) }.bind(this)}>
+                <nh-page-header-card slot="nav" role="nav" .heading=${""}>
+                  <nh-context-selector slot="secondary-action" id="select-context" .selectedContext=${this.selectedContext}>
                     <sl-tab
+                      slot="button-fixed"
                       panel="resource"
                       class="dashboard-tab resource ${classMap({
                         active: this.selectedContext === 'none',
@@ -301,33 +338,49 @@ export class SensemakerDashboard extends NHComponentShoelace {
                         this.loadingState = LoadingState.FirstRender;
                         this.selectedContext = 'none';
                       }}
-                      >${this.selectedResourceName}</sl-tab
+                      >${this.selectedResourceName || "No Applets Installed"}</sl-tab
                     >
-                    ${contexts &&
-                    contexts.map(
-                      context =>
-                        html`<sl-tab 
-                            panel="${context.toLowerCase()}" 
-                            class="dashboard-tab ${classMap({
-                              active:
-                                encodeHashToBase64(this.context_ehs[context]) ===
-                                this.selectedContext,
-                            })}"
-                            @click=${() => {
-                              this.loadingState = LoadingState.FirstRender;
-                              this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
-                            }}
-                          ><span>${context}</span></sl-tab-panel
-                        >`,
-                    )}
-                  </div>
-                  ${this.renderIcons()}
-                </div>
+                    <div
+                      slot="buttons"
+                      class="tabs">
+                        ${contexts ?
+                          html`<div style="display: flex">${contexts.map(
+                            context =>
+                            this.context_ehs[context] ? 
+                              html`<nh-tab-button><sl-tab
+                                  panel="${snakeCase(context)}" 
+                                  class="dashboard-tab ${classMap({
+                                    active:
+                                      encodeHashToBase64(this.context_ehs[context]) ===
+                                      this.selectedContext,
+                                  })}"
+                                  @click=${() => {
+                                    this.loadingState = LoadingState.FirstRender;
+                                    this.selectedContext = encodeHashToBase64(this.context_ehs[context]);
+                                  }}
+                                >${context}</sl-tab-panel></nh-tab-button>`
+                                : null,
+                          )}
+                          <nh-button-group
+                            class="dashboard-action-buttons"
+                            .direction=${"horizontal"}
+                            .fixedFirstItem=${false}
+                            .addItemButton=${false}
+                          >
+                          <div slot="buttons">
+                            <nh-button .clickHandler=${async () => { await this.contextSelector.requestUpdate("resourceAssessments");  // TODO test this
+                          }} .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
+                          </div>
+                          </nh-button-group></div>` : html``}
+                      </div>
+                    </nh-context-selector>
+                </nh-page-header-card>
 
                 <sl-tab-panel active class="dashboard-tab-panel" name="resource">
                   ${this.selectedContext !== 'none'
                     ? ''
                     : html`<dashboard-filter-map
+                        .selectedAppletResourceDefs=${this.selectedAppletResourceDefs}
                         .resourceName=${this.selectedResourceName}
                         .resourceDefEh=${this.selectedResourceDefEh}
                         .tableType=${AssessmentTableType.Resource}
@@ -336,28 +389,33 @@ export class SensemakerDashboard extends NHComponentShoelace {
                       >
                       </dashboard-filter-map>`}
                 </sl-tab-panel>
-                <nh-context-selector></nh-context-selector>
-                ${contexts &&
+                ${contexts ?
                 contexts.map(context =>
-                  encodeHashToBase64(this.context_ehs[context]) !== this.selectedContext
+                  {return !(this.context_ehs[context] && encodeHashToBase64(this.context_ehs[context]) == this.selectedContext)
                     ? ''
-                    : html`<sl-tab-panel
-                        class="dashboard-tab-panel ${classMap({
-                          active:
-                            encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
-                        })}"
-                        name="${context.toLowerCase()}"
-                      >
-                        <dashboard-filter-map
-                          .resourceName=${this.selectedResourceName}
-                          .resourceDefEh=${this.selectedResourceDefEh}
-                          .tableType=${AssessmentTableType.Context}
-                          .selectedContext=${this.selectedContext}
-                          .selectedDimensions=${this.dimensions}
-                        >
-                        </dashboard-filter-map>
-                      </sl-tab-panel>`,
-                )}
+                    : html`<sl-tab-panel 
+                              @context-display=${function(e: CustomEvent) { 
+                                const flatResults = typeof e.detail.results == "object" ? e.detail.results[this.selectedContext].flat() : [];
+                                const dashboardFilterComponent = (e.currentTarget as any).children[0];
+                                dashboardFilterComponent.contextEhs = flatResults;
+                                }.bind(this)}
+                              class="dashboard-tab-panel ${classMap({
+                                active:
+                                  encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,
+                              })}"
+                              name="${snakeCase(context)}"
+                          >
+                            <dashboard-filter-map
+                              .selectedAppletResourceDefs=${this.selectedAppletResourceDefs}
+                              .resourceName=${this.selectedResourceName}
+                              .resourceDefEh=${this.selectedResourceDefEh}
+                              .tableType=${AssessmentTableType.Context}
+                              .selectedContext=${this.selectedContext}
+                              .selectedDimensions=${this.dimensions}
+                            >
+                            </dashboard-filter-map>
+                          </sl-tab-panel>`},
+                    ) : html``}
               </sl-tab-group>`}
         </main>
       </div>
@@ -374,10 +432,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
       'sl-tab': SlTab,
       'sl-tab-group': SlTabGroup,
       'sl-tab-panel': SlTabPanel,
-      'sl-alert': SlAlert,
-      // 'nh-menu': NHMenu,
+      'nh-alert': NHAlert,
+      'nh-page-header-card': NHPageHeaderCard,
       'nh-button': NHButton,
-      // 'nh-context-selector': ContextSelector,
+      'nh-context-selector': ContextSelector,
       'dashboard-table': StatefulTable,
       'dashboard-filter-map': DashboardFilterMap,
     };
@@ -408,17 +466,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
         overflow-x: hidden;
         background: var(--nh-theme-bg-canvas);
         background: var(--nh-theme-bg-canvas);
+        
       }
-      .alert-wrapper {
-        height: 100%;
-        display: grid;
-        place-content: center;
-        align-content: start;
-        padding: 4rem calc(1px * var(--nh-spacing-lg));
-      }
-      .alert::part(base) {
-        height: 8rem;
-        width: 100%;
+      .container main::-webkit-scrollbar   {
+        width: 0;
       }
 
       /* Side scrolling **/
@@ -431,120 +482,84 @@ export class SensemakerDashboard extends NHComponentShoelace {
         overflow: auto;
       }
 
-      /** Tab Nav **/
-      .tab-nav {
+      nh-page-header-card {
         width: 100%;
+      }
+
+      .alert-wrapper {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        margin: calc(1px * var(--nh-spacing-sm));
-        margin-bottom: 0;
-        padding: calc(1px * var(--nh-spacing-xs));
-
-        color: var(--nh-theme-fg-default);
-        background-color: var(--nh-theme-bg-surface);
-        border-color: var(--nh-theme-bg-surface);
-        border-width: 4px;
-        border-style: solid;
-        border-radius: var(--tab-nav-tab-radius);
+        width: 100%;
+        padding-top: calc(1px * var(--nh-spacing-md));
       }
-      .tab-nav .icon-container {
+
+      /** Tab Nav **/
+      [slot="button-fixed"] {
+        background: var(--nh-theme-bg-detail);
+        border: 0;
+        border-radius: calc(1px * var(--nh-radii-lg));
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        font-family: "Work Sans", "Open Sans";
+      }
+
+      [slot="buttons"] {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: calc(1px * var(--nh-spacing-lg));
-        margin-right: calc(1px * var(--nh-spacing-sm));
-      }
-      .tab-nav .mock-icon {
-        width: 1.5rem;
-        height: 1.5rem;
-        display: grid;
-        place-items: center;
-        cursor: pointer;
-      }
-      /* Tabs */
-
-      .dashboard-tab {
-        position: relative;
-        margin-left: calc(1px * var(--nh-spacing-xxs));
-      }
-      .dashboard-tab::part(base) {
-        border-radius: 0;
-        padding: calc(1px * var(--nh-spacing-xs)) calc(1px * var(--nh-spacing-lg));
-
-        color: var(--nh-theme-fg-default);
-        text-align: center;
-        letter-spacing: 0.2px;
-        font-family: var(--nh-font-families-headlines);
-        font-weight: var(--sl-font-weight-semibold);
-        line-height: var(--nh-line-heights-body-default);
-        letter-spacing: 0.5px !important;
-      }
-      .dashboard-tab:first-child::part(base),
-      .dashboard-tab:hover::part(base) {
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-bottom-left-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab:last-child::part(base) {
-        border-top-right-radius: var(--tab-nav-tab-radius);
-        border-bottom-right-radius: var(--tab-nav-tab-radius);
+        gap: 4px;
+        font-family: "Work Sans", "Open Sans";
       }
 
-      /* Resource(active) and Hover */
 
-      .dashboard-tab.resource::part(base),
-      .dashboard-tab:hover {
-        color: var(--nh-theme-accent-muted);
-        background-color: var(--nh-theme-bg-subtle);
+      [slot="buttons"] :hover::part(base) {
+        background-color: var(--nh-theme-bg-canvas);
+        color: var(--nh-theme-accent-emphasis);
       }
 
-      .dashboard-tab.resource.active {
-        background-color: var(--nh-colors-eggplant-950);
-      }
-      .dashboard-tab.active {
-        color: var(--nh-theme-accent-muted);
-        background-color: var(--nh-colors-eggplant-950);
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-top-right-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab.active::part(base) {
-        border-top-left-radius: var(--tab-nav-tab-radius);
-        border-top-right-radius: var(--tab-nav-tab-radius);
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-      }
-      .dashboard-tab:hover {
-        background-color: var(--nh-theme-bg-subtle);
-        border-top-right-radius: calc(2px * var(--nh-radii-md) - 0px);
-        border-top-left-radius: calc(2px * var(--nh-radii-md) - 0px);
-      }
-      .dashboard-tab.resource:hover::part(base) {
-        border-radius: var(--tab-nav-tab-radius);
-      }
-      .dashboard-tab.resource:hover::part(base),
-      .dashboard-tab.active::part(base):hover {
-        cursor: default;
-      }
       /* Tab hover effect */
-      .dashboard-tab:hover::after,
-      .dashboard-tab.active::after {
+      [slot="buttons"] :hover::part(base)::after,
+      [slot="buttons"] .active::part(base)::after {
         position: absolute;
-        background-color: var(--nh-theme-bg-subtle);
-        bottom: -10px;
+        background-color: var(--nh-theme-bg-canvas);
+        bottom: calc(-1px * var(--nh-spacing-sm));
         left: 0px;
         content: '';
         width: 100%;
-        height: 10px;
+        height: calc(1px * var(--nh-spacing-sm));
       }
-      .dashboard-tab.active::after,
-      .dashboard-tab.active::part(base) {
+
+      sl-tab::part(base) {
+        color: #D9D9D9;
+        background-color: var(--nh-theme-bg-surface);
+        padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-xl));
+        height: 52px;
+        position: relative;
+        
+        border: 0;
+        border-radius: calc(1px * var(--nh-radii-lg));
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+
+        font-family: var(--nh-font-families-menu);
+        letter-spacing: var(--nh-letter-spacing-buttons);
+
+      }
+      [slot="button-fixed"]::part(base) {
+        color: var(--nh-theme-fg-default);
+        background-color: var(--nh-theme-bg-element);
+        border: 4px solid --nh-colors-eggplant-800;
+        border-radius: calc(1px * var(--nh-radii-lg) - 4px);
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+      }
+      [slot="button-fixed"].active::part(base),
+      sl-tab.active::part(base)::after,
+      sl-tab.active::part(base) {
         background-color: var(--nh-theme-bg-canvas);
       }
+  
       /* Divider after resource name */
-      .dashboard-tab.resource::before {
+      [slot="button-fixed"].resource::before {
         position: absolute;
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-surface);
         bottom: 1px;
         right: -3px;
         content: '';
@@ -569,14 +584,16 @@ export class SensemakerDashboard extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-xs));
         font-weight: var(--nh-font-weights-body-bold);
       }
-
+      
       .search-input::part(form-control) {
         margin-top: calc(1px * var(--nh-spacing-md));
       }
       .search-input::part(base) {
+        cursor: not-allowed;
         border: 1px solid transparent;
         border-radius: calc(1px * var(--nh-radii-base) - 0px);
-        background-color: var(--nh-colors-eggplant-950);
+        background-color: var(--nh-theme-bg-backdrop);
+        height: 2rem;
       }
       .search-input:hover::part(base) {
         border-color: var(--nh-theme-accent-muted);
@@ -603,12 +620,15 @@ export class SensemakerDashboard extends NHComponentShoelace {
         padding-left: calc(1px * var(--nh-spacing-sm));
       }
       .indented .nav-item::part(base) {
-        padding-left: calc(1px * var(--nh-spacing-2xl));
+        margin-left: calc(1px * var(--nh-spacing-3xl));
       }
       .nav-item.active::part(base) {
-        background: var(--nh-colors-eggplant-950);
+        background: var(--nh-theme-bg-detail);
       }
-      .nav-item:hover::part(base) {
+      .nav-item.active + .indented  .nav-item::part(base) {
+        background: var(--nh-theme-bg-element);
+      }
+      .nav-item:not(.active):hover::part(base) {
         background: var(--nh-theme-bg-surface);
       }
 
@@ -627,7 +647,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         background-color: var(--nh-theme-bg-canvas);
       }
       .skeleton-part {
-        --color: var(--nh-theme-bg-subtle);
+        --color: var(--nh-theme-bg-surface);
         --sheen-color: var(--nh-theme-bg-surface);
       }
       .skeleton-part::part(indicator) {

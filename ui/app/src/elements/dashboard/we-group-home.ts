@@ -1,11 +1,9 @@
 import {  PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-// import { NHProfile } from "../components/profile/nh-profile";
-import { NHProfilePrompt } from "../components/profile/nh-profile-prompt";
 import { decodeHashFromBase64, DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Button, Card, CircularProgress, Fab, Icon, IconButton, IconButtonToggle, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { css, html, LitElement } from "lit";
@@ -22,6 +20,8 @@ import { WeGroupSettings } from "./we-group-settings";
 import { NHSensemakerSettings } from "./nh-sensemaker-settings";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton, NHCard, NHDialog, NHPageHeaderCard } from "@neighbourhoods/design-system-components";
+import { NHCreateProfile } from "../components/profile/nh-create-profile";
+import { get } from "@holochain-open-dev/stores";
 
 export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
@@ -188,7 +188,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
               : html`
                   <div class="column" style="flex: 1; margin: 24px; position: relative">
                     <div class="row" style="margin-top: 20px">
-                      <div class="column center-content" style="width: 50%;">
+                      <div class="column center-content" style="width: 50%">
                         ${this._info.value
                           ? html`<img
                               class="logo-large"
@@ -206,7 +206,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       <div class="column center-content" style="margin-left: calc(1px * var(--nh-spacing-lg)); width: 50%; display:flex; flex-direction: column;">
                         <invitations-block style="margin-bottom: calc(1px * var(--nh-spacing-lg)); display:flex;"></invitations-block>
 
-                        <nh-card .theme=${"light"} .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
+                        <nh-card .theme=${"dark"} .heading=${"Initiate New Applet Instance"} .textSize=${"md"}>
                           <div style="margin: 20px;">
                             <div style="margin-top: 10px;">
                               Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
@@ -275,47 +275,43 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
           <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
         </div>
         `,
-      complete: (info) => { return html`
-          <nh-profile-prompt>
-            <div slot="hero">
-              <div>
-                <div class="column center-content">
-                  <img
-                    class="we-logo"
-                    style="margin-top: 30px;"
-                    src=${info.logoSrc!}
-                  />
-                  <div
-                    style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
-                  >
-                    ${info.name}
-                  </div>
-                  <div
-                    style="margin: calc(1px * var(--nh-spacing-md)); margin-top: calc(1px * var(--nh-spacing-sm)); font-size: calc(1px * var(--nh-font-size-lg))"
-                  >
-                    How would you like to appear in this neighbourhood?
+        complete: (info) => {
+          const nhProfilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash)) as ProfilesStore;
+          return typeof (get(nhProfilesStore.myProfile) as any)?.value !== 'undefined'
+          ? this.renderContent()
+          : html`<div
+              class="column"
+              style="align-items: center; justify-content: start; flex: 1; padding-bottom: 10px;"
+            >
+              <div class="column" style="align-items: center;">
+                <div slot="hero" style="color: var(--nh-theme-fg-default)">
+                  <div class="column center-content">
+                    <img
+                      class="we-logo"
+                      style="margin-top: 30px;"
+                      src=${info.logoSrc!}
+                    />
+                    <div
+                      style="font-weight: bold; margin-top: 20px; font-size: 1.2em;"
+                    >
+                      ${info.name}
+                    </div>
+                    <div
+                      style="margin: calc(1px * var(--nh-spacing-md)); margin-top: calc(1px * var(--nh-spacing-sm)); font-size: calc(1px * var(--nh-font-size-lg))"
+                    >
+                      How would you like to appear in this neighbourhood?
+                    </div>
                   </div>
                 </div>
+                <nh-create-profile .profilesStore=${nhProfilesStore}></nh-create-profile>
               </div>
             </div>
-
-            <div slot="info">
-              ${this.renderJoinErrorSnackbar()} ${this.renderInstallingProgress()}
-              ${this.renderSuccessSnackbar()}
-            </div>
-            <div slot="content" class="profile-prompt-content">
-              ${this.renderContent()}
-            </div>
-            
-            </nh-profile-prompt>
         `}
     })
   }
 
-  static get scopedElements() {
-    return {
-      "nh-profile-prompt": NHProfilePrompt,
-      // "nh-profile": NHProfile,
+  static elementDefinitions = {
+      "nh-create-profile": NHCreateProfile,
       "installable-applets": InstallableApplets,
       "mwc-button": Button,
       "mwc-fab": Fab,
@@ -336,7 +332,6 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
       "applet-not-installed": AppletNotInstalled,
       "nh-sensemaker-settings": NHSensemakerSettings,
       'nh-dialog': NHDialog,
-    };
   }
 
 
@@ -370,7 +365,7 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
 
       .members-sidebar {
         display:none;
-        
+
         width: 224px;
         background-color: #ecebff;
         padding: 24px;

@@ -1,31 +1,30 @@
 import { ref } from "lit/directives/ref.js";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { Renderer } from "@neighbourhoods/nh-launcher-applet";
 
-export class RenderBlock extends ScopedElementsMixin(LitElement) {
+export class RenderBlock extends LitElement {
   @property()
   renderer!: Renderer;
 
-  //@ts-ignore
-  get registry() {
-    //@ts-ignore
-    return this.__registry;
-  }
-
-  //@ts-ignore
-  set registry(registry) {
-    //@ts-ignore
-    this.__registry = registry;
-  }
+  registry?: CustomElementRegistry;
 
   renderRenderer(element: Element | undefined) {
     if (element) {
-      this.renderer(element as HTMLElement, this.registry);
+      this.renderer(element as HTMLElement, this.registry || customElements);
     }
   }
 
+  override createRenderRoot() {
+    this.registry = new CustomElementRegistry()
+
+    const renderRoot = (this.renderOptions.creationScope = this.attachShadow({
+      mode: 'open',
+      customElements: this.registry,
+    }));
+
+    return renderRoot;
+  }
   render() {
     return html`<div
       style="display: contents"

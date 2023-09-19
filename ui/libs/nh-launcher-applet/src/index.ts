@@ -1,47 +1,52 @@
 import { ProfilesStore } from "@holochain-open-dev/profiles";
 import {
-  AdminWebsocket,
-  AppWebsocket,
   AppInfo,
   AppAgentClient,
+  EntryHash,
 } from "@holochain/client";
-import { SensemakerStore } from "@neighbourhoods/client";
+import { AppletConfigInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, SensemakerStore } from "@neighbourhoods/client";
 
 export type Renderer = (
   rootElement: HTMLElement,
   registry: CustomElementRegistry
 ) => void;
 
-export interface AppletBlock {
-  name: string;
-  render: Renderer;
-}
+export type ResourceView = (
+  element: HTMLElement,
+  resourceIdentifier: EntryHash,
+) => void;
 
 export interface AppletRenderers {
   full: Renderer;
-  blocks: Array<AppletBlock>;
+  resourceRenderers: {
+    [resourceDefName: string]: ResourceView;
+  }
 }
 
-export interface WeServices {
+export interface NeighbourhoodServices {
   profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
   sensemakerStore?: SensemakerStore;
 }
 
-export interface NhLauncherApplet {
+export interface NeighbourhoodApplet {
   appletRenderers: (
-    weStore: WeServices,
+    appAgentWebsocket: AppAgentClient,
+    neighbourhoodStore: NeighbourhoodServices,
     appletInfo: AppletInfo[],
-    appWebsocket?: AppWebsocket,
-    appAgentWebsocket?: AppAgentClient,
   ) => Promise<AppletRenderers>;
+  appletConfig: AppletConfigInput;
+  widgetPairs: {
+    assess: typeof ConcreteAssessDimensionWidget,
+    display: typeof ConcreteDisplayDimensionWidget,
+    compatibleDimensions: string[],
+  }[]
 }
 
-
-export interface WeInfo {
+export interface NeighbourhoodInfo {
   logoSrc: string;
   name: string;
 }
 export interface AppletInfo {
-  weInfo: WeInfo,
+  neighbourhoodInfo: NeighbourhoodInfo,
   appInfo: AppInfo,
 }

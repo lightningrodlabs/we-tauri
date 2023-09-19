@@ -1,4 +1,4 @@
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Icon } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
@@ -27,7 +27,7 @@ export class IconDot extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-icon": Icon,
     }
@@ -59,4 +59,3 @@ export class IconDot extends ScopedElementsMixin(LitElement) {
     ];
   }
 }
-

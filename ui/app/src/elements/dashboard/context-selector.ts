@@ -1,69 +1,76 @@
-// import { LitElement, html, css } from 'lit';
-// import { StoreSubscriber } from 'lit-svelte-stores';
-// import { customElement, state } from 'lit/decorators.js';
-// import { SensemakerStore, AppletConfig, sensemakerStoreContext } from '@neighbourhoods/client';
-// import { NHButton } from '../components/nh/layout/button';
-// import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
-// import { contextProvided } from '@lit-labs/context';
-// import { NHButtonGroup } from '@neighbourhoods/design-system-components';
-// import { literal } from 'lit/static-html.js';
+import { LitElement, html, css } from 'lit';
+import { StoreSubscriber } from 'lit-svelte-stores';
+import { customElement, property, state } from 'lit/decorators.js';
+import { SensemakerStore, AppletConfig, sensemakerStoreContext, ComputeContextInput, ContextResult } from '@neighbourhoods/client';
+import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
+import { contextProvided } from '@lit-labs/context';
+import { NHButton, NHButtonGroup } from '@neighbourhoods/design-system-components';
+import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import { get } from '@holochain-open-dev/stores';
 
-// export const cleanForUI = (propertyName: string) =>
-//   propertyName.split('_').map(capitalize).join(' ');
+export class ContextSelector extends ScopedRegistryHost(LitElement) {
+  @contextProvided({ context: sensemakerStoreContext })
+  sensemakerStore!: SensemakerStore;
 
-// export const capitalize = (part: string) => part[0].toUpperCase() + part.slice(1);
+  config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>
+    this.sensemakerStore.flattenedAppletConfigs()
+  );
 
-// @customElement("context-selector")
-// export class ContextSelector extends ScopedRegistryHost(LitElement) {
-//   @contextProvided({ context: sensemakerStoreContext })
-//   sensemakerStore!: SensemakerStore;
-
-//   config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>
-//     this.sensemakerStore.flattenedAppletConfigs()
-//   );
-//   @state()
-//   _selectedContext: string = "";
-//   @state()
-//   activeContextIndex!: number;
-
-//   render() {
-//     const contexts = Object.keys(this.config?.value?.cultural_contexts);
-//     console.log('contexts.map(c => capitalize(c) :>> ', contexts.map(c => capitalize(c)))
-//     if(!this.activeContextIndex){
-//       this.activeContextIndex = contexts.findIndex((contextName: string) => this._selectedContext == contextName);
-//       if(this.activeContextIndex == -1) {
-//         this.activeContextIndex = 0;
-//       }
-//       this.dispatchContextSelected(contexts[this.activeContextIndex])
-//     }
-    
-//     return html`
-//         <nh-button-group
-//           .direction=${"horizonal"}
-//           .itemLabels=${contexts.map(c => capitalize(c))}
-//           .itemComponentTag=${literal`nh-tab-button`}
-//           .itemComponentProps=${{ size: "lg" }}
-//           .fixedFirstItem=${true}
-//           .addItemButton=${true}
-//         >
-        
-//         </nh-button-group>
-//       `
-    
-//   }
+  @state()
+  selectedContext: string = "";
   
-//   dispatchContextSelected(contextName: string) {
-//     this.dispatchEvent(new CustomEvent('context-selected', {
-//       detail: {contextName},
-//       bubbles: true,
-//       composed: true
-//   }));
-//   }
-//   static get elementDefinitions() {
-//     return {
-//       'nh-button': NHButton,
-//       'nh-button-group': NHButtonGroup,
-//     };
-//   }
+  @property()
+  resourceAssessments = new StoreSubscriber(this, () => this.sensemakerStore.resourceAssessments());
+    
+  async updated(_changedProperties: any) {
+      if(_changedProperties.has("selectedContext") && _changedProperties.get("selectedContext") !== 'undefined') {
+        if(!this.selectedContext 
+          || this.selectedContext === 'none'
+          || typeof this.config?.value == 'undefined'
+          || typeof this.resourceAssessments?.value == 'undefined') return;
 
-// }
+        const resourceEhs : EntryHash[] = Object.keys(this.resourceAssessments.value).flat().map(b64eh => decodeHashFromBase64(b64eh));
+        const input : ComputeContextInput = { resource_ehs: resourceEhs, context_eh: decodeHashFromBase64(this.selectedContext), can_publish_result: false};
+        await this.sensemakerStore.computeContext(this.selectedContext, input);
+        
+        const results = get(this.sensemakerStore.contextResults())
+        const selectedContextName = Object.entries(this.config.value.cultural_contexts).filter(([contextName, contextHash]) => encodeHashToBase64(contextHash) == this.selectedContext)[0];
+        
+        this.dispatchContextSelected(selectedContextName[0], results)
+      }
+  }
+  
+  render() {    
+    return html`
+        <nh-button-group
+          .direction=${"horizonal"}
+          .fixedFirstItem=${true}
+          .addItemButton=${true}
+        >
+          <slot slot="button-fixed" name="button-fixed"></slot>
+          <slot slot="buttons" name="buttons"></slot>
+        </nh-button-group>
+      `
+  }
+  
+  dispatchContextSelected(contextName: string, results: any) {
+    this.dispatchEvent(new CustomEvent('context-selected', {
+      detail: {contextName, results},
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+    static get elementDefinitions() {
+    return {
+      'nh-button': NHButton,
+      'nh-button-group': NHButtonGroup,
+    };
+  }
+  static styles = css`
+    :host {
+      display: flex;
+      flex: 9;
+    }
+  `
+}

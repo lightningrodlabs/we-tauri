@@ -1,5 +1,5 @@
 import { html, LitElement, css } from "lit";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
   Button,
   TextField,
@@ -113,7 +113,7 @@ export class InstallableApplets extends ScopedElementsMixin(LitElement) {
     });
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "mwc-button": Button,
       "mwc-textfield": TextField,

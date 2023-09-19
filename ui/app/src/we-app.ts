@@ -1,7 +1,7 @@
 import { ContextProvider } from "@lit-labs/context";
 import { state, query, customElement } from "lit/decorators.js";
 import { AppWebsocket, AdminWebsocket, InstalledCell, ProvisionedCell } from "@holochain/client";
-import { ScopedElementsMixin } from "@open-wc/scoped-elements";
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { LitElement, html, css } from "lit";
 
 import { sharedStyles } from "./sharedStyles";
@@ -24,9 +24,9 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     const appWebsocket = await AppWebsocket.connect(`ws://localhost:${hcPort}`);
     console.log("Hello World!", hcPort, adminPort);
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-    
+
     // authorize signing credentials for all cells
-    
+
     for (const roleName in weAppInfo.cell_info) {
       for (const cellInfo of weAppInfo.cell_info[roleName]) {
         await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
@@ -35,7 +35,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
-    
+
     this.loading = false;
   }
 
@@ -48,7 +48,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     return html` <main-dashboard style="flex: 1;"></main-dashboard> `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       "main-dashboard": MainDashboard,
     };

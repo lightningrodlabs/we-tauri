@@ -1,7 +1,7 @@
 import { JoinMembraneInvitation } from '@holochain-open-dev/membrane-invitations';
 import { contextProvided } from '@lit-labs/context';
 import { decode } from '@msgpack/msgpack';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from 'lit';
 import { TaskSubscriber } from 'lit-svelte-stores';
 import {
@@ -215,7 +215,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
     return html`
       <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
 
-      <nh-card .theme=${"light"} .heading=${"Joining A Neighbourhood"}>
+      <nh-card .theme=${"dark"} .heading=${"Joining A Neighbourhood"}>
         <div class="center-content">
           <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
             To join a neighbourhood, send your public key to a member of the neighbourhood you
@@ -255,7 +255,7 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'mwc-button': Button,
       'mwc-list': List,

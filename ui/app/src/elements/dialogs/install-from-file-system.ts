@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ScopedElementsMixin } from '@open-wc/scoped-elements';
+import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { contextProvided } from '@lit-labs/context';
 import {
   TextField,
@@ -201,7 +201,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
               size="medium"
               @sl-input=${e => this.requestUpdate()}
               required
-              autofocus
               @sl-change=${(e) => this.checkValidity(e.target.value)}
             ></sl-input>
             ${this._duplicateName
@@ -235,7 +234,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get scopedElements() {
+  static get elementDefinitions() {
     return {
       'sl-textarea': SlTextarea,
       'sl-input': SlInput,
@@ -261,6 +260,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         width: fit-content;
         margin: 0 auto;
         overflow: auto !important;
+        color: var(--nh-theme-fg-on-dark);
       }
       @media (max-height: 767px) {
         .column {
@@ -271,7 +271,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       sl-input::part(base),
       sl-textarea::part(base) {
         border: none;
-        background-color: var(--nh-theme-bg-subtle);
+        background-color: var(--nh-theme-bg-detail);
         padding: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
       }
       sl-input::part(base) {
