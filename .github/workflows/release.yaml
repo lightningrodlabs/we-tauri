@@ -135,8 +135,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          releaseId: ${{ needs.publish-happ.outputs.releaseId }}
+          # releaseId: ${{ needs.publish-happ.outputs.releaseId }}
           releaseDraft: true
+          prerelease: true
           args: --verbose
 
 
