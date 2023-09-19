@@ -724,7 +724,6 @@ export class MainDashboard extends NHComponentShoelace {
   }
 
   handleWeGroupAdded(e: CustomEvent) {
-    !this._selectedWeGroupId && location.reload(); // TEMP DWEB WORKAROUND
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
