@@ -56,9 +56,8 @@ export class JoinGroupDialog extends LitElement {
   private async joinGroup(fields: any) {
     if (this.joining) return;
 
-    const networkSeed = this._joinByPaste && fields.link ? networkSeedFromInviteLink(fields.link) : this.networkSeed;
+    const networkSeed = (this._joinByPaste && fields.link) ? networkSeedFromInviteLink(fields.link) : this.networkSeed;
     console.log("got fields: ", fields);
-    console.log("networkseedfromdeeplink: ", networkSeedFromInviteLink(fields.link));
 
     if (!networkSeed) {
       notifyError(msg("Invalid invitation link."));
