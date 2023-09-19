@@ -21,6 +21,7 @@ import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { mdiAlertOutline, mdiInformationOutline } from "@mdi/js";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -72,8 +73,19 @@ export class AppletViewEl extends LitElement {
     () => [this.appletHash, this.weStore]
   );
 
-  firstUpdated() {
+  @state()
+  _installationProgress: string | undefined;
+
+  _unlisten: UnlistenFn | undefined;
+
+  async firstUpdated() {
     console.log("@applet-view: got this._applet.value: ", this._applet.value);
+    // TODO it's inefficient to have this event listener by default in the applet-view also if applet is already installed
+    this._unlisten = await listen("applet-install-progress", (event) => { this._installationProgress = event.payload as string });
+  }
+
+  disconnectedCallback(): void {
+    if (this._unlisten) this._unlisten();
   }
 
   async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
@@ -110,11 +122,11 @@ export class AppletViewEl extends LitElement {
     ReadonlyMap<DnaHash, GroupStore>,
     ReadonlyMap<DnaHash, GroupProfile | undefined>
   ]) {
-    console.log("#########\nRendering applet frame:");
-    console.log("|-- isInstalled: ", isInstalled);
-    console.log("|-- appletStore: ", appletStore);
-    console.log("|-- groupsForThisApplet: ", groupsForThisApplet);
-    console.log("|-- allGroups: ", allGroups);
+    // console.log("#########\nRendering applet frame:");
+    // console.log("|-- isInstalled: ", isInstalled);
+    // console.log("|-- appletStore: ", appletStore);
+    // console.log("|-- groupsForThisApplet: ", groupsForThisApplet);
+    // console.log("|-- allGroups: ", allGroups);
     if (!appletStore)
       return html`
         <div class="row center-content" style="flex: 1">
@@ -248,8 +260,9 @@ export class AppletViewEl extends LitElement {
                   }
                   this.installing = false;
                 }}
-                >${msg("Install Applet")}</sl-button
-              >
+              >${msg("Install Applet")}
+              </sl-button>
+              <div>${this._installationProgress}</div>
             </div></sl-card
           >
         </div>
