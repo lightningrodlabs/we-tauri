@@ -2,6 +2,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 
 import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 import { weStyles } from "../shared-styles.js";
 
@@ -9,6 +10,9 @@ import { weStyles } from "../shared-styles.js";
 export class SidebarButton extends LitElement {
   @property()
   logoSrc!: string;
+
+  @property()
+  slIcon: boolean = false;
 
   @property()
   tooltipText!: string;
@@ -45,6 +49,8 @@ export class SidebarButton extends LitElement {
   }
 
   render() {
+
+    console.log("this.slIcon: ", this.slIcon);
     return html` <sl-tooltip
       hoist
       id="tooltip"
@@ -64,11 +70,27 @@ export class SidebarButton extends LitElement {
           >
           ${ this.notificationCount && this.notificationUrgency === "high" ? this.notificationCount : undefined }
         </div>
-        <img
-          class="icon"
-          src=${this.logoSrc}
-          alt="TODO"
-        />
+        ${
+          this.slIcon
+            ? html`
+              <div
+                class="icon column center-content"
+                style="opacity: 0.2; background: white;"
+              >
+                <sl-icon
+                  .src=${this.logoSrc}
+                  alt=${this.tooltipText}
+                  style="height: 30px; width: 30px;"
+                ></sl-icon>
+              </div>`
+            : html`
+              <img
+                class="icon"
+                src=${this.logoSrc}
+                alt=${this.tooltipText}
+              />
+              `
+        }
       </div>
     </sl-tooltip>`;
   }

@@ -79,7 +79,8 @@ export class GroupsSidebar extends LitElement {
             <sidebar-button
               style="margin-bottom: -4px; border-radius: 50%; --size: 58px;"
               .selected=${JSON.stringify(this.selectedGroupDnaHash) === JSON.stringify(groupDnaHash)}
-              .logoSrc=${mdiTimerSand}
+              .logoSrc=${wrapPathInSvg(mdiTimerSand)}
+              .slIcon=${true}
               .tooltipText=${msg("Waiting for peers...")}
               @click=${() => {
                 this.dispatchEvent(

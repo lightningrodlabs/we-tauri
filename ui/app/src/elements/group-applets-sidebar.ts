@@ -65,7 +65,6 @@ export class GroupAppletsSidebar extends LitElement {
             ([_appletBundleHash, appletStore]) => html`
                 <applet-topbar-button
                   title="double-click to open in tab"
-                  style="margin-left: -4px;"
                   .appletStore=${appletStore}
                   .selected=${this.selectedAppletHash === appletStore.appletHash}
                   .tooltipText=${appletStore.applet.custom_name}
