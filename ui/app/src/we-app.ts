@@ -94,8 +94,8 @@ export class WeApp extends LitElement {
       new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );
 
-    const appStoreAppInfo = await appWebsocket.appInfo({"installed_app_id": "AppStore-0.3.x"});
-    const devhubAppInfo = await appWebsocket.appInfo({"installed_app_id": "DevHub-0.3.x"});
+    const appStoreAppInfo = await appWebsocket.appInfo({"installed_app_id": "AppStore-0.4.x"});
+    const devhubAppInfo = await appWebsocket.appInfo({"installed_app_id": "DevHub-0.4.x"});
 
     getProvisionedCells(appStoreAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
     if (devhubAppInfo) getProvisionedCells(devhubAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
