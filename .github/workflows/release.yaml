@@ -51,6 +51,8 @@ jobs:
     steps:
       - name: Retrieve version
         run: |
+          pwd
+          ls
           echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
         id: version
 
