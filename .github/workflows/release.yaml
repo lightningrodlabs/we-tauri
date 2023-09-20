@@ -55,6 +55,8 @@ jobs:
           echo ls
           pwd
           echo pwd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Retrieve version
         run: |
           echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
