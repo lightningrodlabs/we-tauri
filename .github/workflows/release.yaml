@@ -55,8 +55,7 @@ jobs:
 
 
   publish-tauri:
-    # needs: publish-happ
-    needs: create-empty-release
+    needs: publish-happ
     strategy:
       fail-fast: false
       matrix:
