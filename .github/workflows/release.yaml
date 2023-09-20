@@ -124,7 +124,7 @@ jobs:
 
 
       - name: setup binaries (macos only)
-        if: matrix.platform == 'macos-11'
+        if: matrix.platform == 'macos-latest'
         run: |
           mkdir src-tauri/bins
 

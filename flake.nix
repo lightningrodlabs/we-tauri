@@ -12,13 +12,13 @@
     };
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
+  outputs = inputs @ { ... }:
+    inputs.holochain.inputs.flake-parts.lib.mkFlake
       {
         inherit inputs;
       }
       {
-        systems = builtins.attrNames inputs.holochain-flake.devShells;
+        systems = builtins.attrNames inputs.holochain.devShells;
         perSystem =
           { inputs'
           , config
@@ -29,7 +29,7 @@
           , ...
           }: {
             devShells.default = pkgs.mkShell {
-              inputsFrom = [ inputs'.holochain-flake.devShells.holonix ];
+              inputsFrom = [ inputs'.holochain.devShells.holonix ];
               packages = with pkgs; [
                 nodejs-18_x
                 cargo-nextest
