@@ -65,7 +65,7 @@ jobs:
 
   publish-tauri:
     # needs: publish-happ
-    # needs: create-empty-release # The create-empty-release job should always be way faster anyway, so not used atm to speed things up
+    needs: create-empty-release
     strategy:
       fail-fast: false
       matrix:
@@ -159,7 +159,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          releaseId: ${{ create-empty-release.outputs.releaseId }}
+          releaseId: ${{ needs.create-empty-release.outputs.releaseId }}
           releaseDraft: true
           prerelease: true
           args: --verbose
