@@ -48,20 +48,20 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       releaseId: ${{ steps.create-release.outputs.id }}
+    steps:
+      - name: Retrieve version
+        run: |
+          echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
+        id: version
 
-    - name: Retrieve version
-      run: |
-        echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
-      id: version
-
-    - id: create-release
-      uses: ncipollo/release-action@v1
-      with:
-        body: "See assets below to download and install this version."
-        # NEW_RELEASE change the holochain version here if necessary
-        name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2
-        prerelease: true
-        draft: true
+      - id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          body: "See assets below to download and install this version."
+          # NEW_RELEASE change the holochain version here if necessary
+          name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2
+          prerelease: true
+          draft: true
 
   publish-tauri:
     # needs: publish-happ
