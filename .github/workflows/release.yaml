@@ -56,8 +56,8 @@ jobs:
   #       with:
   #         body: "See assets below to download and install this version."
   #         # NEW_RELEASE change the holochain version here if necessary
-  #         name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2-debug
-  #         tag: we-alpha-v${{ steps.version.outputs.APP_VERSION }}-debug
+  #         name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2
+  #         tag: we-alpha-v${{ steps.version.outputs.APP_VERSION }}
   #         prerelease: true
   #         draft: true
 
@@ -83,8 +83,8 @@ jobs:
         with:
           body: "See assets below to download and install this version."
           # NEW_RELEASE change the holochain version here if necessary
-          name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2-debug
-          tag: we-alpha-v${{ steps.version.outputs.APP_VERSION }}-debug
+          name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2
+          tag: we-alpha-v${{ steps.version.outputs.APP_VERSION }}
           prerelease: true
           draft: true
 
