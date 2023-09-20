@@ -1,9 +1,11 @@
 name: "release"
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-holochain-[0-9]+.[0-9]+.[0-9]+'
+    branches:
+      - release
+    # tags:
+    #   - 'v[0-9]+.[0-9]+.[0-9]+'
+    #   - 'v[0-9]+.[0-9]+.[0-9]+-holochain-[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   # publish-happ:
@@ -40,8 +42,30 @@ jobs:
   #         prerelease: true
   #         draft: false
 
+  create-empty-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-20.04
+    outputs:
+      releaseId: ${{ steps.create-release.outputs.id }}
+
+    - name: Retrieve version
+      run: |
+        echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
+      id: version
+
+    - id: create-release
+      uses: ncipollo/release-action@v1
+      with:
+        body: "See assets below to download and install this version."
+        # NEW_RELEASE change the holochain version here if necessary
+        name: We alpha v${{ steps.version.outputs.APP_VERSION }}-holochain-0.2.2
+        prerelease: true
+        draft: true
+
   publish-tauri:
     # needs: publish-happ
+    # needs: create-empty-release # The create-empty-release job should always be way faster anyway, so not used atm to speed things up
     strategy:
       fail-fast: false
       matrix:
@@ -130,20 +154,12 @@ jobs:
           npm install
           npm run build:zomes
 
-      - id: create-release
-        uses: ncipollo/release-action@v1
-        with:
-          body: "See assets below to download and install this version."
-          prerelease: true
-          draft: true
-
       - name: build the app
         uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # releaseId: ${{ needs.publish-happ.outputs.releaseId }}
-          releaseId: ${{ steps.create-release.outputs.id }}
+          releaseId: ${{ create-empty-release.outputs.releaseId }}
           releaseDraft: true
           prerelease: true
           args: --verbose
