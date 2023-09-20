@@ -49,14 +49,10 @@ jobs:
     outputs:
       releaseId: ${{ steps.create-release.outputs.id }}
     steps:
-      - name: look around
-        run: |
-          ls
-          echo ls
-          pwd
-          echo pwd
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - uses: actions/checkout@v3
+
       - name: Retrieve version
         run: |
           echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
