@@ -49,10 +49,14 @@ jobs:
     outputs:
       releaseId: ${{ steps.create-release.outputs.id }}
     steps:
+      - name: look around
+        run: |
+          ls
+          echo ls
+          pwd
+          echo pwd
       - name: Retrieve version
         run: |
-          pwd
-          ls
           echo "APP_VERSION=$(cat src-tauri/tauri.conf.json | grep -oP '(?<="version": ")[^"]*')" >> $GITHUB_OUTPUT
         id: version
 
