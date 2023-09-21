@@ -59,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest]
+        platform: [macos-11]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
 
@@ -89,7 +89,7 @@ jobs:
 
 
       - name: setup binaries (macos only)
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-11'
         run: |
           mkdir src-tauri/bins
 
