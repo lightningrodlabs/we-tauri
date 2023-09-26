@@ -5,9 +5,14 @@ use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
 use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
+use holochain_launcher_utils::window_builder;
 use holochain_launcher_utils::window_builder::happ_window_builder;
 use holochain_types::web_app::WebAppBundle;
+use tauri::CustomMenuItem;
 use tauri::Manager;
+use tauri::Menu;
+use tauri::Submenu;
+use tauri::WindowBuilder;
 
 use crate::config::WeConfig;
 use crate::default_apps::appstore_app_id;
@@ -147,18 +152,27 @@ pub async fn open_devhub(
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
 
-    happ_window_builder(
+    let mut window_builder = happ_window_builder(
         &app_handle,
         devhub_app_id,
-        devhub_window_label,
+        devhub_window_label.clone(),
         String::from("DevHub"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
         ports.1,
         ports.0,
         true,
-    )
-    .build()?;
+    );
+
+    window_builder = add_window_menu(window_builder);
+
+    let window = window_builder.build()?;
+
+    window.on_menu_event(move |_| {
+        if let Some(w) = app_handle.get_window(devhub_window_label.as_str()) {
+            w.open_devtools();
+        }
+    });
 
     Ok(())
 }
@@ -191,18 +205,45 @@ pub async fn open_appstore(
     let app_dir = fs.apps_store().root_dir().join(&appstore_app_id);
     create_dir_if_necessary(&app_dir)?;
 
-    happ_window_builder(
+    let mut window_builder = happ_window_builder(
         &app_handle,
         appstore_app_id,
-        appstore_window_label,
+        appstore_window_label.clone(),
         String::from("App Store"),
         holochain_launcher_utils::window_builder::UISource::Path(ui_dir.clone()),
         app_dir.join("localStorage"),
         ports.1,
         ports.0,
         true,
-    )
-    .build()?;
+    );
+
+    window_builder = add_window_menu(window_builder);
+
+    let window = window_builder.build()?;
+
+    window.on_menu_event(move |_| {
+        if let Some(w) = app_handle.get_window(appstore_window_label.as_str()) {
+            w.open_devtools();
+        }
+    });
 
     Ok(())
+}
+
+
+fn add_window_menu(mut window_builder: WindowBuilder) -> WindowBuilder {
+    if cfg!(not(target_os = "macos")) {
+        window_builder = window_builder.menu(Menu::new().add_submenu(Submenu::new(
+            // This overwrites the global menu on macOS (https://github.com/tauri-apps/tauri/issues/5768)
+            "Settings",
+            Menu::new().add_item(CustomMenuItem::new("show-devtools", "Show DevTools")),
+        )));
+    }
+
+    // Window opens weirdly out of bounds on windows if not centered.
+    if cfg!(target_os = "windows") {
+        window_builder = window_builder.center();
+    }
+
+    window_builder
 }
