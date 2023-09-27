@@ -57,7 +57,7 @@ export const Rounded: Story = {
     name: 'User Avatar',
     shape: 'rounded',
     label: 'User Avatar',
-    required: false,
+    required: true,
     defaultValue: b64images.icons.pear,
   },
 };

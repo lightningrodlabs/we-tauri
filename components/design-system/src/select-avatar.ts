@@ -1,8 +1,7 @@
 import { CSSResult, css, html } from "lit";
 import { property, query, state } from "lit/decorators.js";
-import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHComponent } from "./ancestors/base.js";
-import { SlAvatar, SlButton } from "@shoelace-style/shoelace";
+import { SlAvatar, SlTooltip } from "@shoelace-style/shoelace";
 import NHButton from "./button.js";
 
 export default class NHSelectAvatar extends NHComponent {
@@ -22,16 +21,18 @@ export default class NHSelectAvatar extends NHComponent {
     @state()
     value!: string | undefined;
 
+    @query('span.required')
+    _errorDOM!: any;
     @query('#avatar-file-picker')
     _avatarFilePicker!: any;
 
     reportValidity() {
-        // const invalid = this.required !== false && !this.value;
-        // if (invalid) {
-        //     this._errorInput.setCustomValidity("Avatar is required");
-        //     this._errorInput.reportValidity();
-        // }
-        // return !invalid;
+        const invalid = this.required !== false && !this.value;
+        if (invalid) {
+          if(this._errorDOM) return;
+          this._errorDOM.textContent = '*';
+        }
+        return !invalid;
     }
 
     reset() {
@@ -63,13 +64,11 @@ export default class NHSelectAvatar extends NHComponent {
         if (this.value)
             return html `
         <div
-          class="column"
-          style="align-items: center; height: 50px"
           @click=${() => {
                 this.value = undefined;
             }}
         >
-          <sl-tooltip .content=${"Clear"}>
+          <sl-tooltip content=${"Clear"} placement="bottom">
             <sl-avatar style="--sl-border-radius-medium: 1rem; --sl-border-radius-circle: ${this.shape == 'circle' ? '100%' : ''}"
               image="${this.value}"
               alt="Avatar"
@@ -80,7 +79,7 @@ export default class NHSelectAvatar extends NHComponent {
         </div>
       `;
         else
-            return html ` <div class="column" style="align-items: center;">
+            return html `
         <nh-button
           .disabled=${this.disabled}
           variant="icon"
@@ -88,31 +87,28 @@ export default class NHSelectAvatar extends NHComponent {
           .iconImageB64=${"PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NiA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC41IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjNDMzQTRBIi8+CjxtYXNrIGlkPSJtYXNrMF8xMTMzXzk1NDAiIHN0eWxlPSJtYXNrLXR5cGU6YWxwaGEiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NSI+CjxyZWN0IHg9IjAuNSIgd2lkdGg9IjU1IiBoZWlnaHQ9IjU1IiByeD0iMjcuNSIgZmlsbD0iIzQzM0E0QSIvPgo8L21hc2s+CjxnIG1hc2s9InVybCgjbWFzazBfMTEzM185NTQwKSI+CjxyZWN0IHg9IjAuNDE2NTA0IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjMjUxRjI4Ii8+CjxyZWN0IHg9Ii0xMS41IiB5PSIzNS4wODM1IiB3aWR0aD0iNzguODMzMyIgaGVpZ2h0PSI3OC44MzMzIiByeD0iMzkuNDE2NyIgZmlsbD0iI0ExNzlGRiIvPgo8cmVjdCB4PSIxNC4xNjY1IiB5PSI5LjQxNjUiIHdpZHRoPSIyNy41IiBoZWlnaHQ9IjI3LjUiIHJ4PSIxMy43NSIgZmlsbD0iI0ExNzlGRiIvPgo8L2c+Cjwvc3ZnPgo="}
           @click=${() => this._avatarFilePicker.click()}
         >
-        </nh-button>
-      </div>`;
+        </nh-button>`;
     }
     render() {
         return html `<input
         type="file"
+        name="avatar"
         id="avatar-file-picker"
         style="display: none"
         @change=${this.onAvatarUploaded}
       />
-      <div class="column" style="position: relative; align-items: center">
+      <div class="container">
         ${this.label !== ""
-            ? html `
-              <span
-                style="font-size: var(--sl-input-label-font-size-medium); margin-bottom: 4px"
-                >${this.label}${this.required !== false ? " *" : ""}</span
-              >
-            `
-            : html ``}
+          ? html `<label class="error" for="avatar" name="avatar">${this.label}${this.required !== false ? html`<span class='required'></span>` : ""}</label>`
+          : null
+        }
         ${this.renderAvatar()}
       </div>`;
     }
 
   static get elementDefinitions() {
     return {
+      'sl-tooltip': SlTooltip,
       'sl-avatar': SlAvatar,
       'nh-button': NHButton,
     };
@@ -121,77 +117,23 @@ export default class NHSelectAvatar extends NHComponent {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-      .row {
+      div.container {
         display: flex;
-        flex-direction: row;
-      }
-      .column {
-        display: flex;
-        flex-direction: column;
-      }
-      .small-margin {
-        margin-top: 6px;
-      }
-      .big-margin {
-        margin-top: 23px;
-      }
-
-      .fill {
-        flex: 1;
-        height: 100%;
-      }
-
-      .title {
-        font-size: 20px;
-      }
-
-      .center-content {
-        align-items: center;
         justify-content: center;
+        align-items: center;
       }
 
-      .placeholder {
-        color: var(--sl-color-gray-700);
-      }
-
-      .flex-scrollable-parent {
-        position: relative;
+      label {
         display: flex;
+        padding: 0 8px;
         flex: 1;
+        flex-grow: 0;
+        flex-basis: 8px;
+        color: var(--nh-theme-fg-default); 
+        font-family: var(--nh-font-families-body); 
       }
-
-      .flex-scrollable-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-
-      .flex-scrollable-x {
-        max-width: 100%;
-        overflow-x: auto;
-      }
-      .flex-scrollable-y {
-        max-height: 100%;
-        overflow-y: auto;
-      }
-      :host {
-        color: var(--sl-color-neutral-1000);
-      }
-
-      sl-card {
-        display: flex;
-      }
-      sl-card::part(base) {
-        flex: 1;
-      }
-      sl-card::part(body) {
-        display: flex;
-        flex: 1;
-      }
-      sl-drawer::part(body) {
-        display: flex;
+      label span.required {
+        color: var(--nh-theme-error-default); 
       }
     `
   ]
