@@ -1,17 +1,11 @@
 import { css, CSSResult, html } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { NHButton, NHCard, NHComponentShoelace, NHSelectAvatar } from '@neighbourhoods/design-system-components';
-import { contextProvided } from '@lit-labs/context';
 import { Profile, ProfilesStore, profilesStoreContext } from '@holochain-open-dev/profiles';
 import { StoreSubscriber } from '@holochain-open-dev/stores';
 import { SlInput, SlSpinner } from '@scoped-elements/shoelace';
 import { object, string, number, date, InferType } from 'yup';
-import { SelectAvatar } from '@holochain-open-dev/elements';
-
-function isDataURL(s) {
-  return !!s.match(isDataURL.regex);
-}
-isDataURL.regex = /^\s*data:([a-z]+\/[a-z0-9\-\+]+(;[a-z\-]+\=[a-z0-9\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i;
+import { isDataURL } from '../helpers/functions';
 
 export class NHCreateProfile extends NHComponentShoelace {
   @property()
