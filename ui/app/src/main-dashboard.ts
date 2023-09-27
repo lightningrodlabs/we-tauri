@@ -21,7 +21,7 @@ import { get } from 'svelte/store';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { DashboardMode, NavigationMode, RenderingMode } from './types';
 import { SidebarButton } from './elements/components/sidebar-button';
-import { CreateWeGroupDialog } from './elements/dialogs/create-we-group-dialog';
+import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
 import { DnaHashMap } from '@holochain-open-dev/utils';
 import { WeGroupContext } from './elements/we-group-context';
 import { AppletClassHome } from './elements/dashboard/applet-class-home';
@@ -103,8 +103,8 @@ export class MainDashboard extends NHComponentShoelace {
   @state()
   private _widgetConfigDialogActivated: boolean = false;
 
-  @query('#open-create-we-group-dialog')
-  _createWeGroupDialogButton!: HTMLElement;
+  @query('#open-create-nh-dialog')
+  _createNHDialogButton!: HTMLElement;
 
   @query('#component-card')
   _withProfile!: any;
@@ -446,7 +446,7 @@ export class MainDashboard extends NHComponentShoelace {
         : html`<div id="placeholder"></div>`}
 
       <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
-        <button id="open-create-we-group-dialog" class="group-add"></button>
+        <button id="open-create-nh-dialog" class="group-add"></button>
       </sl-tooltip> `;
   }
 
@@ -724,7 +724,6 @@ export class MainDashboard extends NHComponentShoelace {
   }
 
   handleWeGroupAdded(e: CustomEvent) {
-    !this._selectedWeGroupId && location.reload(); // TEMP DWEB WORKAROUND
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
     this._selectedAppletClassId = undefined;
@@ -762,14 +761,14 @@ export class MainDashboard extends NHComponentShoelace {
 
   render() {
     return html`
-      <create-we-group-dialog
+      <create-nh-dialog
         @we-added=${e => {
           this.handleWeGroupAdded(e);
         }}
-        @creating-we=${e => this.showLoading()}
-        id="create-we-group-dialog"
-        button=${this._createWeGroupDialogButton}
-      ></create-we-group-dialog>
+        @creating-we=${_e => this.showLoading()}
+        id="create-nh-dialog"
+        .openDialogButton=${this._createNHDialogButton}
+      ></create-nh-dialog>
       ${this._widgetConfigDialogActivated
         ? html`
             <nh-dialog
@@ -907,7 +906,7 @@ export class MainDashboard extends NHComponentShoelace {
       'mwc-snackbar': Snackbar,
       'sidebar-button': SidebarButton,
       'holo-identicon': HoloIdenticon,
-      'create-we-group-dialog': CreateWeGroupDialog,
+      'create-nh-dialog': CreateNeighbourhoodDialog,
       'home-screen': HomeScreen,
       'sl-tooltip': SlTooltip,
       'we-group-context': WeGroupContext,

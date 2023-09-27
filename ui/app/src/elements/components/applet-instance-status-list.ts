@@ -20,7 +20,7 @@ import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
-import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
+import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
@@ -305,7 +305,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "holo-identicon": HoloIdenticon,
-      "create-we-group-dialog": CreateWeGroupDialog,
+      "create-we-group-dialog": CreateNeighbourhoodDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "uninstall-applet-dialog": UninstallAppletDialog,

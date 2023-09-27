@@ -12,7 +12,7 @@ import { MatrixStore } from "../../matrix-store";
 
 import { query } from "lit/decorators.js";
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
-import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
+import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { JoinGroupCard } from "../components/join-group-card";
 import { ManagingGroupsCard } from "../components/managing-groups-card";
 
@@ -22,7 +22,7 @@ export class HomeScreen extends NHComponentShoelace {
   matrixStore!: MatrixStore;
 
   @query("#we-dialog")
-  _weGroupDialog!: CreateWeGroupDialog;
+  _weGroupDialog!: CreateNeighbourhoodDialog;
 
   @query("#join-group-dialog")
   _joinGroupDialog!: Dialog;
@@ -66,7 +66,7 @@ export class HomeScreen extends NHComponentShoelace {
   static get elementDefinitions() {
     return {
       "mwc-snackbar": Snackbar,
-      "create-we-group-dialog": CreateWeGroupDialog,
+      "create-we-group-dialog": CreateNeighbourhoodDialog,
       "join-group-card": JoinGroupCard,
       "managing-groups-card": ManagingGroupsCard,
     };
