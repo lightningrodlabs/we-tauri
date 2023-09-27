@@ -1,11 +1,47 @@
-import "./_shared_customElements";
-import NHCardList from "./card-list";
 import { html } from "lit";
+import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
-import { Basic, CardProps } from "./card.stories";
+
 import { b64images } from '@neighbourhoods/design-system-styles';
 
-customElements.define('nh-card-list', NHCardList)
+import { CardProps } from "./card.stories";
+import NHButton from './button'
+import NHCard from "./card";
+import NHCardList from "./card-list";
+import NHPageHeaderCard from "./page-header-card";
+
+import { NHComponent } from './ancestors/base'
+
+class TestRoot extends NHComponent {
+  static elementDefinitions = {
+    'nh-button': NHButton,
+    'nh-card': NHCard,
+    'nh-card-list': NHCardList,
+    'nh-page-header-card': NHPageHeaderCard,
+  }
+
+  render() {
+    return html`<nh-card-list
+      .type=${this.grid ? "grid" : "linear"}
+      .direction=${this.vertical ? "vertical" : "horizontal"}
+    >
+      ${this.hasHeader
+        ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
+        <img src="data:image/svg+xml;base64,${b64images.icons.backCaret}" slot="secondary-action"/>
+        <nh-button label="Upload Applet File" slot="primary-action"></nh-button>
+      </nh-page-header-card>`
+        : null}
+      ${this.cards.map((card) => {
+        card.hasWidget = this.widgets;
+        card.hasPrimaryAction = this.buttons;
+        card.contentText = this.contentText;
+        return html`<nh-card ${spreadProps(card)} />`;
+      })}</nh-card-list
+    >`
+  }
+}
+
+customElements.define('card-list--test-root', TestRoot)
 
 interface CardListProps {
   cards: CardProps[];
@@ -18,7 +54,7 @@ interface CardListProps {
 }
 const meta: Meta<CardListProps> = {
   title: "NHComponent/CardList",
-  component: "nh-card-list",
+  component: "card-list--test-root",
   argTypes: {
     cards: { control: "none" },
     widgets: { control: "boolean" },
@@ -29,25 +65,7 @@ const meta: Meta<CardListProps> = {
   parameters: { 
     backgrounds: { default: 'canvas' },
   },
-  render: (args) => {
-    return html`<nh-card-list
-      .type=${args.grid ? "grid" : "linear"}
-      .direction=${args.vertical ? "vertical" : "horizontal"}
-    >
-      ${args.hasHeader
-        ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
-        <img src="data:image/svg+xml;base64,${b64images.icons.backCaret}" slot="secondary-action"/> 
-        <nh-button label="Upload Applet File" slot="primary-action"></nh-button>
-      </nh-page-header-card>`
-        : null}
-      ${args.cards.map((card) => {
-        card.hasWidget = args.widgets;
-        card.hasPrimaryAction = args.buttons;
-        card.contentText = args.contentText;
-        return (Basic as any).render(card);
-      })}</nh-card-list
-    >`;
-  },
+  render: (args) => html`<card-list--test-root ${spreadProps(args)} />`,
 };
 
 export default meta;

@@ -1,9 +1,31 @@
-import "../_shared_customElements";
-import NHCreatePost from "./create-post";
 import { html } from "lit";
+import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 
-customElements.define('nh-create-post', NHCreatePost)
+import NHButton from '../button'
+import NHCreatePost from "./create-post";
+
+import { NHComponent } from '../ancestors/base'
+
+class TestRoot extends NHComponent {
+  static elementDefinitions = {
+    'nh-button': NHButton,
+    'nh-create-post': NHCreatePost,
+  }
+
+  render() {
+    return html`<nh-create-post
+    .theme=${this.theme}
+    .prompt=${this.prompt}
+    .textAreaValue=${this.sampleInput}
+    .placeholder=${this.placeholder}
+  >
+    <nh-button .disabled=${!this.valid} slot="footer" .variant=${"primary"} .size=${"md"} .label=${"Post"} .onClick=${() => {}}></nh-button>
+  </nh-create-post>`
+  }
+}
+
+customElements.define('create-post--test-root', TestRoot)
 
 export interface CreatePostProps {
   theme: string;
@@ -22,14 +44,7 @@ const meta: Meta<CreatePostProps> = {
   parameters: { 
     backgrounds: { default: 'backdrop' },
   },
-  render: (args) => html`<nh-create-post
-    .theme=${args.theme}
-    .prompt=${args.prompt}
-    .textAreaValue=${args.sampleInput}
-    .placeholder=${args.placeholder}
-  >
-    <nh-button .disabled=${!args.valid} slot="footer" .variant=${"primary"} .size=${"md"} .label=${"Post"} .onClick=${() =>  {debugger;}}></nh-button>
-  </nh-create-post>`,
+  render: (args) => html`<create-post--test-root ${spreadProps(args)} />`,
 };
 
 export default meta;
