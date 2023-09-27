@@ -10,7 +10,7 @@ export interface SelectAvatarProps {
   shape: string;
   required: boolean;
   label: string;
-  defaultValue: string;
+  defaultValue?: string;
 }
 
 const meta: Meta<SelectAvatarProps> = {
@@ -18,11 +18,18 @@ const meta: Meta<SelectAvatarProps> = {
   component: "nh-select-avatar",
   argTypes: {
   },
-  render: (args) => html`<nh-select-avatar
+  render: (args) => args?.defaultValue ? html`<nh-select-avatar
     .name=${args.name}
     .shape=${args.shape}
     .label=${args.label}
     .defaultValue=${args.defaultValue}
+    ?required=${true}
+  >
+  </nh-select-avatar>`
+  : html`<nh-select-avatar
+    .name=${args.name}
+    .shape=${args.shape}
+    .label=${args.label}
     ?required=${true}
   >
   </nh-select-avatar>`,
@@ -38,7 +45,6 @@ export const Circle: Story = {
     shape: 'circle',
     label: 'User Avatar',
     required: true,
-    defaultValue: b64images.icons.pear,
   },
 }
 
@@ -48,7 +54,6 @@ export const Square: Story = {
     shape: 'square',
     label: 'User Avatar',
     required: true,
-    defaultValue: b64images.icons.pear,
   },
 }
 
@@ -58,6 +63,15 @@ export const Rounded: Story = {
     shape: 'rounded',
     label: 'User Avatar',
     required: true,
-    defaultValue: b64images.icons.pear,
+  },
+};
+
+export const DefaultValue: Story = {
+  args: {
+    name: 'User Avatar',
+    shape: 'rounded',
+    label: 'User Avatar',
+    required: true,
+    defaultValue: b64images.icons.backCaret
   },
 };

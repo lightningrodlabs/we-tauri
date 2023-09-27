@@ -167,9 +167,6 @@ export default class NHButton extends NHComponent {
         button:focus {
           border: 1px solid var(--nh-theme-accent-default);
         }
-        button.icon:hover {
-          background-color: var(--nh-theme-bg-surface);
-        }
         button.secondary:hover {
           border-color: var(--nh-theme-accent-muted);
           color: var(--nh-theme-accent-muted);
@@ -187,6 +184,9 @@ export default class NHButton extends NHComponent {
           background-color: var(--nh-theme-error-muted);
         }
         button.neutral:hover {
+          background-color: var(--nh-theme-bg-element);
+        }
+        button.icon:hover {
           background-color: var(--nh-theme-bg-element);
         }
         button:active {
