@@ -9,6 +9,7 @@ import NHMenu from './menu'
 import NHPageHeaderCard from './page-header-card'
 import NHPagination from './pagination'
 import NHSlide from './slide'
+import NHSelectAvatar from './select-avatar'
 import NHTabButton from './tab-button'
 
 export * from './ancestors/base'
@@ -25,6 +26,7 @@ export {
   NHMenu,
   NHPageHeaderCard,
   NHPagination,
+  NHSelectAvatar,
   NHSlide,
   NHTabButton,
 }
