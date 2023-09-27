@@ -16,7 +16,7 @@ export default class NHButton extends NHComponent {
   @property()
   theme: string = "dark";
   @property()
-  size: "stretch" | "lg" | "md" | "sm" | "icon" = "md";
+  size: "stretch" | "lg" | "md" | "sm" | "icon"| "icon-lg"| "icon-sm" = "md";
   @property()
   variant:
     | "primary"
@@ -138,6 +138,10 @@ export default class NHButton extends NHComponent {
           height: 100%;
           place-content: center;
           cursor: pointer;
+        }
+        button.icon-lg .button-inner img {
+          width: 80%;
+          margin: 0 auto;
         }
         button:focus {
           border: 1px solid var(--nh-theme-accent-default);
