@@ -19,7 +19,7 @@ import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
-import { CreateWeGroupDialog } from "../dialogs/create-we-group-dialog";
+import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
@@ -157,7 +157,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "holo-identicon": HoloIdenticon,
-      "create-we-group-dialog": CreateWeGroupDialog,
+      "create-we-group-dialog": CreateNeighbourhoodDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "uninstall-applet-dialog": UninstallAppletDialog,
