@@ -1,5 +1,5 @@
 import { css, CSSResult, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType } from './alert'
@@ -29,8 +29,8 @@ export default class NHDialog extends NHComponentShoelace {
   @property()
   handleOk!: () => void;
 
-  @property({ attribute: false })
-  onDialogClosed!: () => void;
+  @property()
+  handleClose!: () => void;
 
   @property({ type: Boolean })
   isOpen = false;
@@ -47,21 +47,31 @@ export default class NHDialog extends NHComponentShoelace {
   @property()
   openButtonRef!: HTMLElement;
 
-  connectedCallback() {
-    super.connectedCallback();
-  }
+  @query('sl-dialog')
+  _dialog!: HTMLElement;
 
   disconnectedCallback() {
-    this.openButtonRef?.removeEventListener('click', this.showDialog);
     super.disconnectedCallback();
+    this.openButtonRef?.removeEventListener('click', this.showDialog);
   }
 
   updated(changedProperties: any) {
     if (changedProperties.has('openButtonRef')) {
+      // Bind the open event to the appropriate button in the UI
       if (typeof changedProperties.get('openButtonRef') !== 'undefined') {
         this.openButtonRef?.addEventListener('click', this.showDialog);
       }
     }
+  }
+
+  firstUpdated() {
+    if(!this._dialog) return
+    this._dialog.addEventListener('sl-request-close', event => {
+      if (event.detail.source === 'overlay') {
+        event.preventDefault();
+      }
+    })
+    this.handleClose && this._dialog.addEventListener('sl-after-hide', this.handleClose);
   }
     
   chooseButtonText() {
@@ -96,14 +106,14 @@ export default class NHDialog extends NHComponentShoelace {
     switch (true) {
       case ['applet-install', 'create-neighbourhood'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
-          <sl-button
+          <nh-button
             id="secondary-action-button"
-            size="large"
-            variant="neutral"
-            @click=${this.hideDialog}
+            .size=${"md"}
+            variant=${"neutral"}
+            .clickHandler=${this.hideDialog}
+            .label=${this.chooseButtonText().secondary}
           >
-            ${this.chooseButtonText().secondary}
-          </sl-button>
+          </nh-button>
           <nh-button
             id="primary-action-button"
             .size=${"md"}
@@ -142,7 +152,7 @@ export default class NHDialog extends NHComponentShoelace {
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
-        @sl-after-hide=${this.onDialogClosed}
+        @sl-hide=${() => this.handleClose()}
       >
         <div class="container">
           ${this.alertMessage
@@ -235,8 +245,7 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-md));
         align-items: flex-start;
       }
-      #main::part(title),
-      #main::part(close-button) {
+      #main::part(title) {
         text-transform: uppercase;
         font-weight: var(--nh-font-weights-body-bold);
         font-family: var(--nh-font-families-headlines);
@@ -247,13 +256,8 @@ export default class NHDialog extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-sm));
         letter-spacing: 0.5px;
       }
-      #main::part(close-button):hover {
-        color: var(--nh-theme-bg-canvas);
-      }
       #main::part(close-button) {
-        position: absolute;
-        right: 0;
-        top: 0;
+        display: none;
       }
       ::slotted(div), #buttons {
         display: flex;
