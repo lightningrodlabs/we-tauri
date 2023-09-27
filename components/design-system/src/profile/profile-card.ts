@@ -113,7 +113,6 @@ export default class NHProfileCard extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    super.styles as CSSResult,
     css`
       :host {
         --top-color: #D9D9D9;

@@ -56,7 +56,6 @@ export default class NHCard extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    super.styles as CSSResult,
     css`
 
     /* Layout */
