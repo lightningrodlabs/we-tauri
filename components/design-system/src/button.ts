@@ -68,6 +68,7 @@ export default class NHButton extends NHComponent {
             calc(1px * var(--nh-spacing-xl));
           border-radius: calc(1px * var(--nh-radii-sm));
           font-family: var(--nh-font-families-body);
+          font-weight: 600;
           letter-spacing: var(--nh-letter-spacing-buttons);
           background-color: var(--nh-theme-accent-default);
           border: 1px solid transparent;
@@ -92,8 +93,28 @@ export default class NHButton extends NHComponent {
           border: 2px solid var(--nh-theme-accent-default);
           color: var(--nh-theme-accent-default);
         }
+        button:active {
+          background-color: var(--nh-theme-accent-emphasis);
+        }
+        button.disabled {
+          color: var(--nh-theme-fg-on-disabled);
+          background-color: var(--nh-theme-fg-disabled);
+        }
+        button.success {
+          color: var(--nh-theme-fg-on-disabled);
+          background-color: var(--nh-theme-success-default);
+        }
+        button.warning {
+          color: var(--nh-theme-bg-backdrop);
+          background-color: var(--nh-theme-warning-default);
+        }
         button.danger {
-          background-color: var(--nh-theme-error-emphasis);
+          color: var(--nh-theme-bg-backdrop);
+          background-color: var(--nh-theme-error-default);
+        }
+        button.neutral {
+          color: var(--nh-theme-fg-default);
+          background-color: var(--nh-theme-bg-detail);
         }
         button.stretch {
           width: 100%;
@@ -156,13 +177,22 @@ export default class NHButton extends NHComponent {
         button:hover, button.primary.icon:hover {
           background-color: var(--nh-theme-accent-muted);
         }
+        button.success:hover {
+          background-color: var(--nh-theme-success-muted);
+        }
+        button.warning:hover {
+          background-color: var(--nh-theme-warning-muted);
+        }
         button.danger:hover {
           background-color: var(--nh-theme-error-muted);
+        }
+        button.neutral:hover {
+          background-color: var(--nh-theme-bg-element);
         }
         button:active {
           background-color: var(--nh-theme-accent-emphasis);
         }
-        button.disabled, button.disabled:hover {
+        button.disabled:hover {
           color: var(--nh-theme-fg-on-disabled);
           background-color: var(--nh-theme-fg-disabled);
           border: 1px solid var(--nh-theme-fg-disabled);
