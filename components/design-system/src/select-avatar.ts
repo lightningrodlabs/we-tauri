@@ -15,8 +15,8 @@ export default class NHSelectAvatar extends NHComponent {
     disabled = false;
     @property()
     label = "Avatar";
-    @property()
-    defaultValue = "Avatar";
+    @property() // Purple Neighbourhoods user
+    defaultValue = "PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NiA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC41IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjNDMzQTRBIi8+CjxtYXNrIGlkPSJtYXNrMF8xMTMzXzk1NDAiIHN0eWxlPSJtYXNrLXR5cGU6YWxwaGEiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NSI+CjxyZWN0IHg9IjAuNSIgd2lkdGg9IjU1IiBoZWlnaHQ9IjU1IiByeD0iMjcuNSIgZmlsbD0iIzQzM0E0QSIvPgo8L21hc2s+CjxnIG1hc2s9InVybCgjbWFzazBfMTEzM185NTQwKSI+CjxyZWN0IHg9IjAuNDE2NTA0IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjMjUxRjI4Ii8+CjxyZWN0IHg9Ii0xMS41IiB5PSIzNS4wODM1IiB3aWR0aD0iNzguODMzMyIgaGVpZ2h0PSI3OC44MzMzIiByeD0iMzkuNDE2NyIgZmlsbD0iI0ExNzlGRiIvPgo8cmVjdCB4PSIxNC4xNjY1IiB5PSI5LjQxNjUiIHdpZHRoPSIyNy41IiBoZWlnaHQ9IjI3LjUiIHJ4PSIxMy43NSIgZmlsbD0iI0ExNzlGRiIvPgo8L2c+Cjwvc3ZnPgo=";
 
     @state()
     value!: string | undefined;
@@ -29,7 +29,7 @@ export default class NHSelectAvatar extends NHComponent {
     reportValidity() {
         const invalid = this.required !== false && !this.value;
         if (invalid) {
-          if(this._errorDOM) return;
+          if(!this._errorDOM) return;
           this._errorDOM.textContent = '*';
         }
         return !invalid;
@@ -38,6 +38,7 @@ export default class NHSelectAvatar extends NHComponent {
     reset() {
         this.value = this.defaultValue;
     }
+
     onAvatarUploaded() {
         if (this._avatarFilePicker.files && this._avatarFilePicker.files[0]) {
             const reader = new FileReader();
@@ -60,6 +61,7 @@ export default class NHSelectAvatar extends NHComponent {
             reader.readAsDataURL(this._avatarFilePicker.files[0]);
         }
     }
+    
     renderAvatar() {
         if (this.value)
             return html `
@@ -84,7 +86,7 @@ export default class NHSelectAvatar extends NHComponent {
           .disabled=${this.disabled}
           variant="icon"
           size="icon-lg"
-          .iconImageB64=${"PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NiA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC41IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjNDMzQTRBIi8+CjxtYXNrIGlkPSJtYXNrMF8xMTMzXzk1NDAiIHN0eWxlPSJtYXNrLXR5cGU6YWxwaGEiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSI1NiIgaGVpZ2h0PSI1NSI+CjxyZWN0IHg9IjAuNSIgd2lkdGg9IjU1IiBoZWlnaHQ9IjU1IiByeD0iMjcuNSIgZmlsbD0iIzQzM0E0QSIvPgo8L21hc2s+CjxnIG1hc2s9InVybCgjbWFzazBfMTEzM185NTQwKSI+CjxyZWN0IHg9IjAuNDE2NTA0IiB3aWR0aD0iNTUiIGhlaWdodD0iNTUiIHJ4PSIyNy41IiBmaWxsPSIjMjUxRjI4Ii8+CjxyZWN0IHg9Ii0xMS41IiB5PSIzNS4wODM1IiB3aWR0aD0iNzguODMzMyIgaGVpZ2h0PSI3OC44MzMzIiByeD0iMzkuNDE2NyIgZmlsbD0iI0ExNzlGRiIvPgo8cmVjdCB4PSIxNC4xNjY1IiB5PSI5LjQxNjUiIHdpZHRoPSIyNy41IiBoZWlnaHQ9IjI3LjUiIHJ4PSIxMy43NSIgZmlsbD0iI0ExNzlGRiIvPgo8L2c+Cjwvc3ZnPgo="}
+          .iconImageB64=${this.defaultValue}
           @click=${() => this._avatarFilePicker.click()}
         >
         </nh-button>`;
@@ -98,10 +100,7 @@ export default class NHSelectAvatar extends NHComponent {
         @change=${this.onAvatarUploaded}
       />
       <div class="container">
-        ${this.label !== ""
-          ? html `<label class="error" for="avatar" name="avatar">${this.label}${this.required !== false ? html`<span class='required'></span>` : ""}</label>`
-          : null
-        }
+        <label class="error" for="avatar" name="avatar">${this.label}${this.required !== false ? html`<span class='required'></span>` : ""}</label>
         ${this.renderAvatar()}
       </div>`;
     }
