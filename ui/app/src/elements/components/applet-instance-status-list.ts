@@ -174,7 +174,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
                 id="applet-widget-config"
                 size="large"
                 dialogType="widget-config"
-                handleOk=${() => {console.log("dialog closed"); this._widgetConfigDialogActivated = false}}
+                handleOk=${() => { this._widgetConfigDialogActivated = false}}
                 isOpen=${true}
                 title="Configure Applet Widgets"
                 .primaryButtonDisabled=${true}
