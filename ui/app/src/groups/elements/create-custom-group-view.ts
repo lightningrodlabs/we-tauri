@@ -4,7 +4,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { EntryHash } from "@holochain/client";
 import { sharedStyles } from "@holochain-open-dev/elements";
-import { BlockType } from "applet-messages";
+import { BlockType } from "@lightningrodlabs/we-applet";
 import { BlockProperties } from "grapesjs";
 import {
   asyncDeriveAndJoin,

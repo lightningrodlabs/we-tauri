@@ -38,7 +38,6 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
 import { weLogoIcon } from "../icons/we-logo-icon.js";
-import { buildHeadlessWeServices } from "../applets/applet-host.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
 import "./clipboard.js";

@@ -1,7 +1,7 @@
 import { LitElement, css, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 
-import { localized, msg } from "@lit/localize";
+import { localized } from "@lit/localize";
 import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
@@ -19,16 +19,17 @@ import "./cross-applet-main.js";
 import { PostsClient } from "./posts-client.js";
 import { PostsStore } from "./posts-store.js";
 import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
+import { CellType } from "@holochain/client";
 
 @localized()
 @customElement("example-applet")
 export class ExampleApplet extends LitElement {
 
   @state()
-  weClient!: WeClient;
+  weClient!: WeClient | undefined;
 
   @state()
-  renderInfo!: RenderInfo;
+  renderInfo!: RenderInfo | undefined;
 
   @state()
   postsStore: PostsStore | undefined;
@@ -37,8 +38,26 @@ export class ExampleApplet extends LitElement {
   attachmentsStore: AttachmentsStore | undefined;
 
   async firstUpdated() {
-    this.weClient = await WeClient.connect();
-    this.renderInfo = await getRenderInfo();
+    console.log("HELLO FROM FIRSTUPDATED.");
+    // setupAppletServices( {
+
+    // })
+    try {
+      this.weClient = await WeClient.connect(false);
+      console.log("Got WeClient: ", this.weClient);
+    } catch (e) {
+      console.error("Failed to connect WeClient: ", e);
+    }
+    try {
+      const renderInfo = await getRenderInfo();
+      this.renderInfo = renderInfo;
+      console.log("Got RenderInfo: ", renderInfo);
+    } catch (e) {
+      console.error("Failed to get render Info: ", e);
+    }
+
+    if (!this.renderInfo) throw new Error("Failed to get RenderInfo.");
+
     if (this.renderInfo.type === "applet-view") {
       this.postsStore = new PostsStore(new PostsClient(this.renderInfo.appletClient, "forum"));
       this.attachmentsStore = new AttachmentsStore(new AttachmentsClient(this.renderInfo.appletClient, "forum"));
@@ -46,15 +65,29 @@ export class ExampleApplet extends LitElement {
   }
 
   render() {
+    if (!this.renderInfo) return html`loading...`;
     switch (this.renderInfo.type) {
       case "applet-view":
         switch (this.renderInfo.view.type) {
           case "main":
+            const client = this.renderInfo.appletClient;
             return html`
               <posts-context .store=${this.postsStore}>
                 <we-client-context .weClient=${this.weClient}>
                   <attachments-context .store=${this.attachmentsStore}>
-                    <applet-main .client=${this.renderInfo.appletClient} .weClient=${this.weClient}></applet-main>
+                    <applet-main
+                      .client=${this.renderInfo.appletClient}
+                      .weClient=${this.weClient}
+                      @post-selected=${async (e: CustomEvent) => {
+                        const appInfo = await client.appInfo();
+                        const dnaHash = (appInfo.cell_info.forum[0] as any)[
+                          CellType.Provisioned
+                        ].cell_id[0];
+                        this.weClient!.openHrl([dnaHash, e.detail.postHash], {
+                          detail: "post",
+                        });
+                      }}
+                    ></applet-main>
                   </attachments-context>
                 </we-client-context>
               </we-client-context>
@@ -66,13 +99,13 @@ export class ExampleApplet extends LitElement {
               case "forum":
                 switch (this.renderInfo.view.integrityZomeName) {
                   case "posts_integrity":
-                    switch (this.renderInfo.view.entryDefId) {
+                    switch (this.renderInfo.view.entryType) {
                       case "post":
                         return html`
                           <posts-context .store=${this.postsStore}>
                             <we-client-context .weClient=${this.weClient}>
                               <attachments-context .store=${this.attachmentsStore}>
-                                <post-detail .hash=${this.renderInfo.view.hrl[1]}></post-detail>
+                                <post-detail .postHash=${this.renderInfo.view.hrl[1]}></post-detail>
                               </attachments-context>
                             </we-client-context>
                           </we-client-context>

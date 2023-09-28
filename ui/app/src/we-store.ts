@@ -31,12 +31,11 @@ import {
   DnaHash,
   EntryHash,
 } from "@holochain/client";
-import { GroupProfile, HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
+import { GroupProfile, HrlB64WithContext, HrlWithContext, InternalAttachmentType, ProfilesLocation } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 import { invoke } from "@tauri-apps/api";
 import { notify } from "@holochain-open-dev/elements";
 import { msg } from "@lit/localize";
-import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";

@@ -12,7 +12,7 @@ import {
   AppletToParentMessage,
   BlockType,
   InternalAttachmentType,
-} from "applet-messages";
+} from "@lightningrodlabs/we-applet";
 
 import { AppletHost } from "./applet-host.js";
 import { Applet } from "./types.js";

@@ -7,10 +7,15 @@ import {
   EntryHashB64,
   ActionHashB64,
   DnaHashB64,
+  CallZomeRequest,
 } from "@holochain/client";
+
+
+type AppletHash = EntryHash;
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 export type HrlB64 = [DnaHashB64, ActionHashB64 | EntryHashB64];
+
 
 // Contextual reference to a Hrl
 // Useful use case: image we want to point to a specific section of a document
@@ -130,7 +135,7 @@ export type AppletView =
       type: "entry";
       roleName: string;
       integrityZomeName: string;
-      entryDefId: string;
+      entryType: string;
       hrl: Hrl;
       context: any;
     };
@@ -170,4 +175,152 @@ export type RenderView =
   | {
       type: "cross-applet-view";
       view: CrossAppletView;
-    };
+};
+
+
+export interface AppletToParentMessage {
+  appletHash: EntryHash;
+  request: AppletToParentRequest;
+}
+
+export type AppletToParentRequest =
+  | {
+      type: "ready";
+    }
+  | {
+      type: "get-iframe-config";
+      crossApplet: boolean;
+    }
+  | {
+      type: "get-hrl-location";
+      hrl: Hrl;
+    }
+  | {
+      type: "sign-zome-call";
+      request: CallZomeRequest;
+    }
+  | {
+      type: "open-view";
+      request: OpenViewRequest;
+    }
+  | {
+      type: "create-attachment";
+      request: CreateAttachmentRequest;
+    }
+  | {
+      type: "search";
+      filter: string;
+    }
+  | {
+      type: "notify-we";
+      notifications: Array<WeNotification>;
+  }
+  | {
+      type: "get-applet-info";
+      appletHash: AppletHash;
+    }
+  | {
+      type: "get-attachment-types";
+    }
+  | {
+      type: "get-group-profile";
+      groupId: DnaHash;
+    }
+  | {
+      type: "get-entry-info";
+      hrl: Hrl;
+    }
+  | {
+      type: "hrl-to-clipboard";
+      hrl: HrlWithContext;
+    }
+  | {
+      type: "user-select-hrl";
+    }
+  | {
+      type: "toggle-clipboard";
+    }
+  | {
+      type: "localStorage.setItem";
+      key: string;
+      value: string;
+    }
+  | {
+      type: "localStorage.removeItem";
+      key: string;
+    }
+  | {
+      type: "localStorage.clear";
+    }
+  | {
+      type: "get-localStorage";
+};
+
+
+
+export type OpenViewRequest =
+  | {
+      type: "applet-main";
+      appletHash: EntryHash;
+    }
+  | {
+      type: "cross-applet-main";
+      appletBundleId: ActionHash;
+    }
+  | {
+      type: "applet-block";
+      appletHash: EntryHash;
+      block: string;
+      context: any;
+    }
+  | {
+      type: "cross-applet-block";
+      appletBundleId: ActionHash;
+      block: string;
+      context: any;
+    }
+  | {
+      type: "hrl";
+      hrl: Hrl;
+      context: any;
+};
+
+export interface CreateAttachmentRequest {
+  appletHash: EntryHash;
+  attachmentType: string;
+  attachToHrl: Hrl;
+}
+
+export interface InternalAttachmentType {
+  label: string;
+  icon_src: string;
+}
+
+export type IframeConfig =
+  | {
+      type: "applet";
+      appPort: number;
+      appletHash: EntryHash;
+
+      profilesLocation: ProfilesLocation;
+    }
+  | {
+      type: "cross-applet";
+      appPort: number;
+      applets: Record<EntryHashB64, ProfilesLocation>;
+    }
+  | {
+      type: "not-installed";
+      appletName: string;
+};
+
+export interface ProfilesLocation {
+  profilesAppId: string;
+  profilesRoleName: string;
+}
+
+export interface HrlLocation {
+  roleName: string;
+  integrityZomeName: string;
+  entryType: string;
+}

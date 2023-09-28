@@ -14,7 +14,7 @@ import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlB64WithContext, HrlW
 import { SlDialog } from "@shoelace-style/shoelace";
 import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
-import { buildHeadlessWeServices } from "../applets/applet-host.js";
+import { buildHeadlessWeClient } from "../applets/applet-host.js";
 import "./hrl-element.js";
 import "./clipboard-search.js";
 import { ClipboardSearch } from "./clipboard-search.js";
@@ -132,7 +132,7 @@ export class WeClipboard extends LitElement {
           }
 
           <we-services-context
-            .services=${buildHeadlessWeServices(this._weStore)}
+            .services=${buildHeadlessWeClient(this._weStore)}
           >
             <clipboard-search
               id="clipboard-search"

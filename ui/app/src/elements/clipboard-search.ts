@@ -30,9 +30,9 @@ import {
   EntryLocationAndInfo,
   GroupProfile,
   HrlWithContext,
-  WeServices,
+  WeClient,
 } from "@lightningrodlabs/we-applet";
-import { weServicesContext } from "@lightningrodlabs/we-applet";
+import { weClientContext } from "@lightningrodlabs/we-applet";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { getAppletsInfosAndGroupsProfiles } from "@lightningrodlabs/we-applet";
@@ -97,9 +97,9 @@ export class ClipboardSearch extends LitElement implements FormField {
   @property({ type: Number, attribute: "min-chars" })
   minChars: number = 3;
 
-  @consume({ context: weServicesContext, subscribe: true })
+  @consume({ context: weClientContext, subscribe: true })
   @property()
-  services!: WeServices;
+  weClient!: WeClient;
 
   /**
    * @internal
@@ -171,11 +171,11 @@ export class ClipboardSearch extends LitElement implements FormField {
   }
 
   async search(filter: string): Promise<SearchResult> {
-    const hrls = await this.services.search(filter);
+    const hrls = await this.weClient.search(filter);
 
     const hrlsWithInfo = await Promise.all(
       hrls.map(async (hrlWithContext) => {
-        const info = await this.services.entryInfo(hrlWithContext.hrl);
+        const info = await this.weClient.entryInfo(hrlWithContext.hrl);
         return [hrlWithContext, info] as [
           HrlWithContext,
           EntryLocationAndInfo | undefined
@@ -188,7 +188,7 @@ export class ClipboardSearch extends LitElement implements FormField {
 
     const { appletsInfos, groupsProfiles } =
       await getAppletsInfosAndGroupsProfiles(
-        this.services,
+        this.weClient,
         filteredHrls.map(([_, info]) => info.appletHash)
       );
 

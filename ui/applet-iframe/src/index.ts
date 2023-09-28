@@ -404,15 +404,15 @@ async function handleMessage(
         );
       if (
         !appletViews.entries[request.roleName][request.integrityZomeName][
-          request.entryDefId
+          request.entryType
         ]
       )
         throw new Error(
-          `The requested applet doesn't implement entry views for entry type ${request.entryDefId} in integrity zome ${request.integrityZomeName} and role ${request.roleName}`
+          `The requested applet doesn't implement entry views for entry type ${request.entryType} in integrity zome ${request.integrityZomeName} and role ${request.roleName}`
         );
 
       return appletViews.entries[request.roleName][request.integrityZomeName][
-        request.entryDefId
+        request.entryType
       ].info(request.hrl);
     case "get-attachment-types":
       weServices = await buildWeServices(false);

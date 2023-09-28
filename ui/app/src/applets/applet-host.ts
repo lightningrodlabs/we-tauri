@@ -1,11 +1,5 @@
 import { get, pipe, toPromise } from "@holochain-open-dev/stores";
 import {
-  AppletToParentMessage,
-  AppletToParentRequest,
-  BlockType,
-  HrlLocation,
-  IframeConfig,
-  InternalAttachmentType,
   ParentToAppletRequest,
 } from "applet-messages";
 import {
@@ -14,9 +8,14 @@ import {
   EntryInfo,
   EntryLocationAndInfo,
   Hrl,
+  HrlLocation,
   HrlWithContext,
   WeNotification,
   WeClient,
+  AppletToParentRequest,
+  IframeConfig,
+  InternalAttachmentType,
+  BlockType,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
@@ -166,11 +165,11 @@ export function buildHeadlessWeClient(weStore: WeStore): WeClient {
     },
     attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
     appletHash: new Uint8Array(),
-    openAppletMain: () => {},
-    openCrossAppletMain: () => {},
-    openHrl: () => {},
-    openCrossAppletBlock: () => {},
-    openAppletBlock: () => {},
+    openAppletMain: async () => {},
+    openCrossAppletMain: async () => {},
+    openHrl: async () => {},
+    openCrossAppletBlock: async () => {},
+    openAppletBlock: async () => {},
     async userSelectHrl() {
       throw new Error("userSelectHrl is not supported in headless WeServices.")
     },
@@ -247,6 +246,7 @@ export async function handleAppletIframeMessage(
         integrityZomeName: location0.entryDefLocation.integrity_zome,
         entryType: location0.entryDefLocation.entry_def,
       };
+      console.log("Got HrlLocation: ", hrlLocation);
       return hrlLocation;
     case "open-view":
       switch (message.request.type) {
@@ -336,6 +336,7 @@ export async function handleAppletIframeMessage(
     case "get-entry-info":
       return weClient.entryInfo(message.hrl);
     case "get-attachment-types":
+      console.log("@HOST: got get-attachment-types message");
       return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":
       return signZomeCallTauri(message.request);
@@ -383,14 +384,14 @@ export class AppletHost {
   async getEntryInfo(
     roleName: string,
     integrityZomeName: string,
-    entryDefId: string,
+    entryType: string,
     hrl: Hrl
   ): Promise<EntryInfo | undefined> {
     return this.postMessage({
       type: "get-entry-info",
       roleName,
       integrityZomeName,
-      entryDefId,
+      entryType,
       hrl,
     });
   }
