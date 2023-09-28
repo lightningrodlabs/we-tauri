@@ -1,7 +1,8 @@
 import { css, CSSResult, html, } from "lit";
 import { property } from "lit/decorators.js";
 import { NHComponentShoelace } from "../ancestors/base";
-import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import NHCard from "../card";
+import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { classMap } from "lit/directives/class-map.js";
 
 export default class NHProfileIdenticon extends NHComponentShoelace {
@@ -17,6 +18,11 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
   background: boolean = true;
   @property()
   responsive: boolean = true;
+
+  static elementDefinitions = {
+    'nh-card': NHCard,
+    'sl-skeleton': SlSkeleton,
+  }
 
   render() {
     return html`
@@ -79,6 +85,10 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
       align-items: center;
       justify-content: space-around;
       gap: calc(1px * var(--nh-spacing-lg));
+    }
+    
+    .content > * {
+      display: flex;
     }
 
     .responsive .content > img {

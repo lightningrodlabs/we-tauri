@@ -34,29 +34,29 @@ const meta: Meta<ProfileIdenticonProps> = {
 export default meta;
 
 type Story = StoryObj<ProfileIdenticonProps>;
-export const Blank: Story = {
+export const BlankLarge: Story = {
   args: {
-    agentName: "Dave",
+    agentName: "",
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
     background: true,
   },
 };
 
-export const SampleInput: Story = {
+export const SampleInputLarge: Story = {
   args: {
     agentName: "Muhammad",
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
     background: true,
   },
 };
-export const Loading: Story = {
+export const LoadingLarge: Story = {
   args: {
     loading: true,
     background: true,
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
   },
 };
-export const Transparent: Story = {
+export const TransparentLarge: Story = {
   args: {
     agentName: "Miranda",
     background: false,
@@ -64,14 +64,14 @@ export const Transparent: Story = {
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
   },
 };
-export const TransparentLoading: Story = {
+export const TransparentLoadingLarge: Story = {
   args: {
     background: false,
     loading: true,
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
   },
 };
-export const Responsive: Story = {
+export const SmallResponsive: Story = {
   args: {
     agentName: "Muhammad",
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
@@ -79,7 +79,7 @@ export const Responsive: Story = {
     responsive: true,
   },
 };
-export const TransparentResponsive: Story = {
+export const TransparentSmallResponsive: Story = {
   args: {
     agentName: "Muhammad",
     agentHashB64: "uhC0kLS6hx9Nzxi0scJdhMwNYrApyDb5iFTVehaKpa9JN5BKAauOV",
