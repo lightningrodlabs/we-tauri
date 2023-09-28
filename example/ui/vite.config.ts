@@ -1,7 +1,6 @@
 import path from "path";
 import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const components = [
   "dialog",
@@ -39,30 +38,8 @@ export default defineConfig({
     checker({
       typescript: true,
     }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: path.resolve(
-            __dirname,
-            "../../node_modules/@shoelace-style/shoelace/dist/themes/light.css"
-          ),
-          dest: path.resolve(__dirname, "dist"),
-          rename: "styles.css",
-        },
-        {
-          src: path.resolve(__dirname, "./icon.png"),
-          dest: path.resolve(__dirname, "dist"),
-        },
-      ],
-    }),
   ],
   build: {
     target: "es2020",
-    lib: {
-      formats: ["es"],
-      entry: path.resolve(__dirname, "src/index.ts"),
-      name: "index",
-      fileName: () => "index.js",
-    },
   },
 });

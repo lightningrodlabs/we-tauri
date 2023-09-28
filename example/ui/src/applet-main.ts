@@ -6,8 +6,8 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
-import { HrlWithContext, WeNotification, WeServices } from "@lightningrodlabs/we-applet";
-import { AppAgentClient, encodeHashToBase64 } from "@holochain/client";
+import { type HrlWithContext, type WeNotification, WeClient } from "@lightningrodlabs/we-applet";
+import { AppAgentClient } from "@holochain/client";
 
 @localized()
 @customElement("applet-main")
@@ -17,7 +17,7 @@ export class AppletMain extends LitElement {
   client!: AppAgentClient;
 
   @property()
-  weServices!: WeServices;
+  weClient!: WeClient;
 
   @state()
   mediumInterval: number | null = null;
@@ -92,7 +92,7 @@ export class AppletMain extends LitElement {
   }
 
   async userSelectHrl() {
-    const selectedHrl = await this.weServices.userSelectHrl();
+    const selectedHrl = await this.weClient.userSelectHrl();
     console.log("User selected HRL: ", selectedHrl);
     this.selectedHrl = selectedHrl;
   }

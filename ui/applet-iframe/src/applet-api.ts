@@ -12,9 +12,9 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import { ActionHash, AppAgentClient, AppAgentWebsocket, CallZomeRequest, CallZomeRequestSigned, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
-import { AppletInfo, AttachmentType, EntryLocationAndInfo, GroupProfile, Hrl, HrlWithContext, RenderInfo, WeNotification, WeApi } from "@lightningrodlabs/we-applet";
+import { AttachmentType, Hrl, HrlWithContext, RenderInfo, WeNotification, WeApi } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
-import { AppletToParentMessage, AppletToParentRequest, IframeConfig, InternalAttachmentType, RenderView, queryStringToRenderView } from "applet-messages";
+import { AppletToParentMessage, AppletToParentRequest, IframeConfig, InternalAttachmentType, queryStringToRenderView } from "applet-messages";
 
 declare global {
   interface Window {
@@ -245,10 +245,7 @@ export async function internalGetRenderInfo(): Promise<RenderInfo> {
 
 async function internalGetAttachmentTypes() {
 
-  const attachmentTypes = new HoloHashMap<
-    EntryHash,
-    Record<string, AttachmentType>
-  >();
+  const attachmentTypes = new EntryHashMap<Record<string, AttachmentType>>();
 
   const internalAttachmentTypesByGroups: Record<
     EntryHashB64,

@@ -1,7 +1,7 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap } from "@holochain-open-dev/utils";
 import { ActionHash, AppAgentClient,DnaHash, EntryHash } from "@holochain/client";
-import { AppletView, CrossAppletView, BlockType, AppletClients, AppletInfo, AttachmentType, EntryInfo, EntryLocationAndInfo, GroupProfile, Hrl, HrlWithContext, WeNotification, RenderView } from "./types";
+import { AppletView, CrossAppletView, BlockType, AppletClients, AppletInfo, AttachmentType, EntryInfo, EntryLocationAndInfo, GroupProfile, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo } from "./types";
 
 
 declare global {
@@ -15,6 +15,7 @@ export interface WeApi {
   getAttachmentTypes(): EntryHashMap<Record<string, AttachmentType>>;
   appletHash(): EntryHash,
   getRenderView(): RenderView | undefined;
+  getRenderInfo(): Promise<RenderInfo>;
   openAppletMain(appletHash: EntryHash): void;
   openAppletBlock(appletHash: EntryHash, block: string, context: any): void;
   openHrl(hrl: Hrl, context: any): void;
@@ -98,4 +99,6 @@ export class WeClient {
   notifyWe = (notifications: Array<WeNotification>) => window.__HC_WE_API__.notifyWe(notifications);
 }
 
-
+export async function getRenderInfo() {
+  return window.__HC_WE_API__.getRenderInfo();
+}

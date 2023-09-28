@@ -20,6 +20,7 @@
     "@holochain-open-dev/stores": "^0.6.0",
     "@holochain-open-dev/utils": "^0.15.0",
     "@holochain/client": "^0.16.0",
+    "@lightningrodlabs/applet-api": "file:../../ui/libs/applet-api",
     "@lightningrodlabs/we-applet": "file:../../ui/libs/we-applet",
     "@lightningrodlabs/attachments": "file:../../ui/libs/attachments",
     "@lit-labs/context": "^0.2.0",
