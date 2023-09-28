@@ -4,6 +4,7 @@ import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { NHComponentShoelace } from "../ancestors/base";
 import NHCard from "../card";
 import NHButton from "../button";
+import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
 export default class NHProfileCard extends NHComponentShoelace {
   @property()
@@ -20,6 +21,7 @@ export default class NHProfileCard extends NHComponentShoelace {
   static elementDefinitions = {
     'nh-card': NHCard,
     'nh-button': NHButton,
+    'sl-skeleton': SlSkeleton,
   }
 
   // @query('#copied-snackbar')

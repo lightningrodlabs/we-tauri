@@ -3,6 +3,7 @@ import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 customElements.define('nh-profile-identicon', NHProfileIdenticon)
+
 export interface ProfileIdenticonProps {
   agentName: string;
   agentHashB64: string;

@@ -1,9 +1,11 @@
 import { b64images } from '@neighbourhoods/design-system-styles';
 import NHButtonGroup from "./button-group";
+import NHTabButton from "./tab-button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { StaticValue, literal } from "lit/static-html.js";
 
+customElements.define('nh-tab-button', NHTabButton)
 customElements.define('nh-button-group', NHButtonGroup)
 
 export interface ButtonGroupProps {

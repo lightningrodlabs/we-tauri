@@ -61,6 +61,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
+    super.styles as CSSResult,
     css`
     /* Layout */
     nh-card {

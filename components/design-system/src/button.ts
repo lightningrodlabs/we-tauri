@@ -23,7 +23,7 @@ export default class NHButton extends NHComponent {
     | "success"
     | "neutral"
     | "warning"
-    | "danger" =  "neutral";
+    | "danger" =  "primary";
   @property()
   clickHandler!: () => void;
   

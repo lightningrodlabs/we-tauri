@@ -1,7 +1,9 @@
 import { b64images } from "@neighbourhoods/design-system-styles"; 
-import "./button";
+import NHButton from "./button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+
+customElements.define('nh-button', NHButton)
 
 export interface ButtonProps {
   label: string;
