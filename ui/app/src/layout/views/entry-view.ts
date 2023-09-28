@@ -53,9 +53,9 @@ export class EntryView extends LitElement {
       .appletHash=${dnaLocation.appletHash}
       .view=${{
         type: "entry",
-        role: dnaLocation.roleName,
-        zome: entryTypeLocation.integrity_zome,
-        entryType: entryTypeLocation.entry_def,
+        roleName: dnaLocation.roleName,
+        integrityZomeName: entryTypeLocation.integrity_zome,
+        entryDefId: entryTypeLocation.entry_def,
         hrl: this.hrl,
         context: this.context,
       }}

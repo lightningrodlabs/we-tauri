@@ -118,107 +118,56 @@ export interface AppletInfo {
   groupsIds: Array<DnaHash>;
 }
 
-export interface WeServices {
-  openViews: OpenViews;
-  attachmentTypes: ReadonlyMap<EntryHash, Record<string, AttachmentType>>; // Segmented by groupId
-
-  groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
-  appletInfo(appletHash: EntryHash): Promise<AppletInfo | undefined>;
-  entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
-  /**
-   * Stores an HRL to the user's We "Clipboard" of HRLs for simple retrieval
-   * @param hrl
-   */
-  hrlToClipboard(hrl: HrlWithContext): Promise<void>;
-  /**
-   * Searches for HRLs across applets
-   *
-   * @param filter
-   */
-  search(filter: string): Promise<Array<HrlWithContext>>;
-  /**
-   * Prompts the end-user with a dialog to select an HRL from his
-   * We clipboard or via search across applets
-   * applets.
-   */
-  userSelectHrl(): Promise<HrlWithContext | undefined>;
-  /**
-   * Send notifications to We
-   * @param notifications Array of notifications to send to We
-   */
-  notifyWe(notifications: Array<WeNotification>): Promise<void>;
-  // /**
-  //  * Clear notification indicators associated to this message
-  //  * (e.g. notification dot on the applet icon in We)
-  //  * Use this method, if you want to have internal logic on keeping
-  //  * track of which events have been seen by the user.
-  //  * We by default takes care of this by clearing all notification
-  //  * dots of an applet upon opening the applet.
-  //  *
-  //  * @param notificationCount Either a specific notification Id or all
-  //  */
-  // clearNotification(notificationId: NotificationId | "all"): Promise<void>;
-}
-
-export type MainView = (rootElement: HTMLElement) => void;
-export interface BlockView {
-  label: string;
-  icon_src: string;
-  view: (rootElement: HTMLElement, context: any) => void;
-}
-export type EntryTypeView = (
-  rootElement: HTMLElement,
-  hrl: Hrl,
-  context: any
-) => void;
-
-export interface ReferenceableEntryType {
-  info: (hrl: Hrl) => Promise<EntryInfo | undefined>;
-  view: EntryTypeView;
-}
-
-export interface AppletViews {
-  main: MainView;
-  blocks: Record<string, BlockView>; // all events -> schedule
-  entries: Record<
-    string,
-    Record<string, Record<string, ReferenceableEntryType>>
-  >; // Segmented by RoleName, integrity ZomeName and EntryType
-}
-
-export interface CrossAppletViews {
-  main: MainView;
-  blocks: Record<string, BlockView>;
-}
-
 export interface AppletClients {
   appletClient: AppAgentClient;
   profilesClient: ProfilesClient;
 }
 
-export interface WeApplet {
-  appletViews: (
-    client: AppAgentClient,
-    appletHash: EntryHash,
-    profilesClient: ProfilesClient,
-    weServices: WeServices
-  ) => Promise<AppletViews>;
+export type AppletView =
+  | { type: "main" }
+  | { type: "block"; block: string; context: any }
+  | {
+      type: "entry";
+      roleName: string;
+      integrityZomeName: string;
+      entryDefId: string;
+      hrl: Hrl;
+      context: any;
+    };
 
-  crossAppletViews: (
-    applets: ReadonlyMap<EntryHash, AppletClients>,
-    weServices: WeServices
-  ) => Promise<CrossAppletViews>;
+export type CrossAppletView =
+  | {
+      type: "main";
+    }
+  | {
+      type: "block";
+      block: string;
+      context: any;
+    };
 
-  attachmentTypes: (
-    appletClient: AppAgentClient,
-    appletHash: EntryHash,
-    weServices: WeServices
-  ) => Promise<Record<string, AttachmentType>>;
 
-  search: (
-    appletClient: AppAgentClient,
-    appletHash: EntryHash,
-    weServices: WeServices,
-    searchFilter: string
-  ) => Promise<Array<HrlWithContext>>;
+export interface BlockType {
+  label: string;
+  icon_src: string;
 }
+
+export type RenderInfo = {
+  type: "applet-view",
+  view: AppletView,
+  appletClient: AppAgentClient,
+  profilesClient: ProfilesClient,
+} | {
+  type: "cross-applet-view",
+  view: CrossAppletView,
+  applets: ReadonlyMap<EntryHash, AppletClients>,
+}
+
+export type RenderView =
+  | {
+      type: "applet-view";
+      view: AppletView;
+    }
+  | {
+      type: "cross-applet-view";
+      view: CrossAppletView;
+    };

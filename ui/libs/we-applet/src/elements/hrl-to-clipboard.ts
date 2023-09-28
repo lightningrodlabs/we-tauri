@@ -13,8 +13,9 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 
-import { weServicesContext } from "../context";
-import { Hrl, WeServices } from "../types";
+import { weClientContext } from "../context";
+import { Hrl } from "../types";
+import { WeClient } from "../api";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
 import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { mdiNotePlusOutline } from "@mdi/js";
@@ -28,11 +29,11 @@ export class HrlToClipboard extends LitElement {
   @property()
   context: any = {};
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   async hrlToClipboard() {
-    await this.weServices.hrlToClipboard({
+    await this.weClient.hrlToClipboard({
       hrl: this.hrl,
       context: this.context,
     });

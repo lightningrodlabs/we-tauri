@@ -16,7 +16,7 @@ import {
   Hrl,
   HrlWithContext,
   WeNotification,
-  WeServices,
+  WeClient,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { HoloHashMap } from "@holochain-open-dev/utils";
@@ -85,7 +85,7 @@ export async function setupAppletMessageHandler(
   });
 }
 
-export function buildHeadlessWeServices(weStore: WeStore): WeServices {
+export function buildHeadlessWeClient(weStore: WeStore): WeClient {
   return {
     async entryInfo(hrl: Hrl) {
       const dnaHash = hrl[0];
@@ -165,13 +165,12 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       throw new Error("notify is not implemented on headless WeServices.");
     },
     attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
-    openViews: {
-      openAppletMain: () => {},
-      openCrossAppletMain: () => {},
-      openHrl: () => {},
-      openCrossAppletBlock: () => {},
-      openAppletBlock: () => {},
-    },
+    appletHash: new Uint8Array(),
+    openAppletMain: () => {},
+    openCrossAppletMain: () => {},
+    openHrl: () => {},
+    openCrossAppletBlock: () => {},
+    openAppletBlock: () => {},
     async userSelectHrl() {
       throw new Error("userSelectHrl is not supported in headless WeServices.")
     },
@@ -188,7 +187,7 @@ export async function handleAppletIframeMessage(
   message: AppletToParentRequest
 ) {
   let host: AppletHost;
-  const services = buildHeadlessWeServices(weStore);
+  const weClient = buildHeadlessWeClient(weStore);
 
   const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
 
@@ -278,7 +277,7 @@ export async function handleAppletIframeMessage(
       weStore.hrlToClipboard(message.hrl);
       break;
     case "search":
-      return services.search(message.filter);
+      return weClient.search(message.filter);
     case "user-select-hrl":
       return openViews.userSelectHrl();
     case "toggle-clipboard":
@@ -331,11 +330,11 @@ export async function handleAppletIframeMessage(
       }))
       return;
     case "get-applet-info":
-      return services.appletInfo(message.appletHash);
+      return weClient.appletInfo(message.appletHash);
     case "get-group-profile":
-      return services.groupProfile(message.groupId);
+      return weClient.groupProfile(message.groupId);
     case "get-entry-info":
-      return services.entryInfo(message.hrl);
+      return weClient.entryInfo(message.hrl);
     case "get-attachment-types":
       return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":

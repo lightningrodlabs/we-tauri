@@ -29,6 +29,10 @@ import {
   WeServices,
 } from "@lightningrodlabs/we-applet";
 import { decode } from "@msgpack/msgpack";
+import { setupWeApi } from "./applet-api.js";
+
+
+export * from './applet-api.js';
 
 function renderNotInstalled(appletName: string) {
   document.body.innerHTML = `<div
@@ -38,6 +42,8 @@ function renderNotInstalled(appletName: string) {
     <span>Install it from the group's home, and refresh this view.</span>
   </div>`;
 }
+
+setupWeApi();
 
 window.onload = async () => {
   const view = getRenderView();

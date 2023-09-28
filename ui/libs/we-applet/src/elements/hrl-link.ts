@@ -13,8 +13,9 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 
-import { weServicesContext } from "../context";
-import { Hrl, WeServices } from "../types";
+import { weClientContext } from "../context";
+import { Hrl } from "../types";
+import { WeClient } from "../api";
 import { getAppletsInfosAndGroupsProfiles } from "../utils";
 import { sharedStyles } from "@holochain-open-dev/elements";
 
@@ -27,8 +28,8 @@ export class HrlLink extends LitElement {
   @property()
   context: any;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   @property()
   onlyIcon = false;
@@ -37,11 +38,11 @@ export class HrlLink extends LitElement {
     this,
     () =>
       lazyLoad(async () => {
-        const entryInfo = await this.weServices.entryInfo(this.hrl);
+        const entryInfo = await this.weClient.entryInfo(this.hrl);
         if (!entryInfo) return undefined;
 
         const { groupsProfiles, appletsInfos } =
-          await getAppletsInfosAndGroupsProfiles(this.weServices, [
+          await getAppletsInfosAndGroupsProfiles(this.weClient, [
             entryInfo.appletHash,
           ]);
 
@@ -91,10 +92,10 @@ export class HrlLink extends LitElement {
               style="cursor: pointer"
               tabindex="0"
               @click=${() =>
-                this.weServices.openViews.openHrl(this.hrl, this.context)}
+                this.weClient.openHrl(this.hrl, this.context)}
               @keypress=${(e: KeyboardEvent) => {
                 if (e.key === "Enter") {
-                  this.weServices.openViews.openHrl(this.hrl, this.context)}
+                  this.weClient.openHrl(this.hrl, this.context)}
                 }
               }
             >

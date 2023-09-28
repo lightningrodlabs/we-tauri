@@ -1,10 +1,11 @@
 import { HoloHashMap } from "@holochain-open-dev/utils";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { AppletInfo, GroupProfile, WeServices } from "./types";
+import { AppletInfo, GroupProfile } from "./types";
+import { WeClient } from "./api";
 
 export async function getAppletsInfosAndGroupsProfiles(
-  services: WeServices,
+  weClient: WeClient,
   appletsHashes: EntryHash[]
 ): Promise<{
   appletsInfos: ReadonlyMap<EntryHash, AppletInfo>;
@@ -14,13 +15,13 @@ export async function getAppletsInfosAndGroupsProfiles(
   const appletsInfos = new HoloHashMap<EntryHash, AppletInfo>();
 
   for (const appletHash of appletsHashes) {
-    const appletInfo = await services.appletInfo(appletHash);
+    const appletInfo = await weClient.appletInfo(appletHash);
     if (appletInfo) {
       appletsInfos.set(appletHash, appletInfo);
 
       for (const groupId of appletInfo.groupsIds) {
         if (!groupsProfiles.has(groupId)) {
-          const groupProfile = await services.groupProfile(groupId);
+          const groupProfile = await weClient.groupProfile(groupId);
 
           if (groupProfile) {
             groupsProfiles.set(groupId, groupProfile);

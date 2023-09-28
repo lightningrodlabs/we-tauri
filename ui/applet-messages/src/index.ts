@@ -7,7 +7,7 @@ import {
   EntryHash,
   EntryHashB64,
 } from "@holochain/client";
-import { Hrl, HrlWithContext, WeNotification } from "@lightningrodlabs/we-applet";
+import { Hrl, HrlWithContext, WeNotification, AppletView, CrossAppletView, RenderView } from "@lightningrodlabs/we-applet";
 import { encode, decode } from "@msgpack/msgpack";
 import { fromUint8Array, toUint8Array } from "js-base64";
 
@@ -173,30 +173,6 @@ export interface HrlLocation {
   entryType: string;
 }
 
-export type AppletView =
-  | { type: "main" }
-  | { type: "block"; block: string; context: any }
-  | {
-      type: "entry";
-      hrl: Hrl;
-      context: any;
-    };
-
-export type CrossAppletView =
-  | {
-      type: "main";
-    }
-  | {
-      type: "block";
-      block: string;
-      context: any;
-    };
-
-export interface BlockType {
-  label: string;
-  icon_src: string;
-}
-
 export interface InternalAttachmentType {
   label: string;
   icon_src: string;
@@ -206,16 +182,6 @@ export interface ProfilesLocation {
   profilesAppId: string;
   profilesRoleName: string;
 }
-
-export type RenderView =
-  | {
-      type: "applet-view";
-      view: AppletView;
-    }
-  | {
-      type: "cross-applet-view";
-      view: CrossAppletView;
-    };
 
 export function renderViewToQueryString(renderView: RenderView): string {
   let base = `view=${renderView.type}&view-type=${renderView.view.type}`;

@@ -30,8 +30,8 @@ import "@material/web/menu/sub-menu-item.js";
 import "@material/web/menu/menu-item.js";
 
 import {
-  weServicesContext,
-  WeServices,
+  weClientContext,
+  WeClient,
   AttachmentType,
   getAppletsInfosAndGroupsProfiles,
 } from "@lightningrodlabs/we-applet";
@@ -46,8 +46,8 @@ export class CreateAttachment extends LitElement {
   @consume({ context: attachmentsStoreContext, subscribe: true })
   attachmentsStore!: AttachmentsStore;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   @property(hashProperty("hash"))
   hash!: AnyDhtHash;
@@ -57,8 +57,8 @@ export class CreateAttachment extends LitElement {
     () =>
       lazyLoad(async () =>
         getAppletsInfosAndGroupsProfiles(
-          this.weServices,
-          Array.from(this.weServices.attachmentTypes.keys())
+          this.weClient,
+          Array.from(this.weClient.attachmentTypes.keys())
         )
       ),
     () => []
@@ -73,7 +73,7 @@ export class CreateAttachment extends LitElement {
         this.hash,
         hrlWithContext
       );
-      this.weServices.openViews.openHrl(
+      this.weClient.openHrl(
         hrlWithContext.hrl,
         hrlWithContext.context
       );
@@ -98,7 +98,7 @@ export class CreateAttachment extends LitElement {
           this.appletsInfosAndGroupsProfiles.value.value;
 
         const attachments = Array.from(
-          this.weServices.attachmentTypes.entries()
+          this.weClient.attachmentTypes.entries()
         );
         if (attachments.length === 0)
           return html`<md-menu-item disabled
