@@ -1,24 +1,18 @@
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
-import { Button, CircularProgress, Icon, IconButton, LinearProgress, Snackbar } from "@scoped-elements/material-web";
-import { SlTooltip } from "@scoped-elements/shoelace";
-import { css, html, LitElement } from "lit";
+import {  CircularProgress, LinearProgress, Snackbar } from "@scoped-elements/material-web";
+import { css, html } from "lit";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { property, query, state } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
-import { sharedStyles } from "../../sharedStyles";
 import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
 import { UninstalledAppletInstanceList } from "../components/uninstalled-applet-instance-list";
-import { InvitationsBlock } from "../components/invitations-block";
 import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
-import { AppletNotInstalled } from "./applet-not-installed";
 import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NHSensemakerSettings } from "./nh-sensemaker-settings";
-import { NHComponent, NHDialog } from "@neighbourhoods/design-system-components";
+import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 
 export class NeighbourhoodSettings extends NHComponent {
 
@@ -34,7 +28,7 @@ export class NeighbourhoodSettings extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 
-  _info = new TaskSubscriber(
+  _neighbourhoodInfo = new TaskSubscriber(
     this,
     () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
     () => [this._matrixStore, this.weGroupId]
@@ -45,7 +39,6 @@ export class NeighbourhoodSettings extends NHComponent {
 
   @query("#leave-group-dialog")
   _leaveGroupDialog!: LeaveGroupDialog;
-
 
   renderJoinErrorSnackbar() {
     return html`
@@ -117,36 +110,36 @@ export class NeighbourhoodSettings extends NHComponent {
         <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
 
         <slot name="to-join">
-          <h2>Applets to Join</h2>
-          <hr style="width: 100%" />
+          <h3>Applets to Join</h3>
+          <hr />
           <joinable-applet-instance-list></joinable-applet-instance-list>
         </slot>
 
         <slot name="installed">
-          <h2>Installed Applets</h2>
-          <hr style="width: 100%" />
+          <h3>Installed Applets</h3>
+          <hr />
           <applet-instance-status-list></applet-instance-status-list>
         </slot>
 
         <slot name="uninstalled">
-          <h2>Uninstalled Applets</h2>
-          <hr style="width: 100%" />
+          <h3>Uninstalled Applets</h3>
+          <hr />
           <uninstalled-applet-instance-list></uninstalled-applet-instance-list>
         </slot>
 
         <slot name="danger-zone">
-          <h2>Danger Zone</h2>
-          <hr style="width: 100%" />
+          <h3>Danger Zone</h3>
+          <hr />
 
-          <div style="display: flex; align-items: center; margin-top: 20px; margin-bottom: 50px;">
-            <div>Leave neighbourhood and delete all applets: </div>
+          <div style="display: flex; align-items: center;">
+            <p>Leave neighbourhood and delete all applets: </p>
             <span style="flex: 1"></span>
-            <mwc-button
-              raised
-              style="--mdc-theme-primary: #cf0000"
+            <nh-button
+              .size=${"stretch"}
+              .variant=${"danger"}
               label="Leave Neighbourhood"
               @click=${() => this._leaveGroupDialog.open()}
-            ></mwc-button>
+            ></nh-button>
           </div>
         </slot>
     `;
@@ -154,13 +147,13 @@ export class NeighbourhoodSettings extends NHComponent {
 
 
   render() {
-    return this._info.render({
+    return this._neighbourhoodInfo.render({
       pending: () => html`
         <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
         `,
-      complete: (info) => html`
+      complete: (_neighbourhoodInfo) => html`
           ${this.renderContent()}
         `
     })
@@ -168,20 +161,14 @@ export class NeighbourhoodSettings extends NHComponent {
 
   static get elementDefinitions() {
     return {
-      "mwc-button": Button,
-      "mwc-icon-button": IconButton,
-      "mwc-icon": Icon,
+      "nh-button": NHButton,
       "mwc-circular-progress": CircularProgress,
-      "sl-tooltip": SlTooltip,
-      "invitations-block": InvitationsBlock,
-      "mwc-linear-progress": LinearProgress,
       "mwc-snackbar": Snackbar,
+      "mwc-linear-progress": LinearProgress,
       "leave-group-dialog": LeaveGroupDialog,
+      "joinable-applet-instance-list": JoinableAppletInstanceList,
       "applet-instance-status-list": AppletInstanceStatusList,
       "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
-      "joinable-applet-instance-list": JoinableAppletInstanceList,
-      "nh-sensemaker-settings": NHSensemakerSettings,
-      'nh-dialog': NHDialog,
     };
   }
 
@@ -192,9 +179,20 @@ export class NeighbourhoodSettings extends NHComponent {
       display: flex;
     }
 
+    hr {
+      border-color: var(--nh-theme-bg-detail); 
+      border-style: double;
+      width: 100%;
+    }
+
     /** Typo **/
-    h2 {
+    p {
       color: var(--nh-theme-fg-default);
+    }
+    h3 {
+      font-weight: 400;
+      color: var(--nh-theme-fg-default);
+      margin: calc(1px * var(--nh-spacing-xs)) 0;
     }
   `;
   }
