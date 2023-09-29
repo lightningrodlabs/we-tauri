@@ -2,7 +2,7 @@ import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
 import { html, css } from "lit";
-import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber   } from "lit-svelte-stores";
 import {
   Button,
   List,
@@ -29,6 +29,7 @@ import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client"
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { NHButton, NHComponent, NHDialog } from "@neighbourhoods/design-system-components";
 import { b64images } from "@neighbourhoods/design-system-styles";
+import { AppletListItem } from "./applet-list-item";
 
 export class AppletInstanceStatusList extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -88,28 +89,6 @@ export class AppletInstanceStatusList extends NHComponent {
       });
   }
 
-  async disableApp(appInfo: AppInfo) {
-    this.matrixStore.disableApp(appInfo)
-      .then(() => {
-        (this.shadowRoot?.getElementById("app-disabled-snackbar") as Snackbar).show();
-        this.requestUpdate();
-      }).catch((e) => {
-        console.log("Error: ", e);
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      });
-  }
-
-  async enableApp(appInfo: AppInfo) {
-    this.matrixStore.enableApp(appInfo)
-      .then(() => {
-        (this.shadowRoot?.getElementById("app-enabled-snackbar") as Snackbar).show();
-        this.requestUpdate();
-      }).catch((e) => {
-        console.log("Error: ", e);
-        (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      });
-  }
-
   async uninstallApp(appInfo: AppInfo) {
     console.log("Uninstalling applet: ", appInfo);
     this.matrixStore.uninstallApp(appInfo)
@@ -152,7 +131,6 @@ export class AppletInstanceStatusList extends NHComponent {
               }
             })
             .map((appletInfo) => {
-              const appStatus = getStatus(appletInfo.appInfo);
               return html`
               ${this._widgetConfigDialogActivated ? html`
                 <nh-dialog
@@ -170,67 +148,7 @@ export class AppletInstanceStatusList extends NHComponent {
                     ></nh-sensemaker-settings>
                   </div>
                 </nh-dialog>` : html``}
-                <div class="column" style="align-items: right; width: 100%;">
-                  <mwc-card style="margin: 5px;">
-                    <div
-                      class="row"
-                      style="background: #645d69; color: white; align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
-                    >
-                      <img
-                          style="margin-right: 10px;"
-                          class="applet-image"
-                          src=${appletInfo.applet.logoSrc!}
-                        />
-                      <strong>${appletInfo.applet.customName}</strong>
-                      <div class="row" style="margin-left: auto; align-items: center;">
-                        <span style="color: gray; margin-right: 25px;">${appStatus}</span>
-  
-                        <sl-tooltip placement="top" content="configure widgets" hoist>
-                          <mwc-button
-                            icon="share"
-                            style="margin-right: 10px;"
-                            @click=${() => {console.log("federate clicked"); this._widgetConfigDialogActivated = true}}
-                            label="configure widgets"
-                          >
-                          </mwc-button>
-                        </sl-tooltip>
-  
-                        ${appStatus === "RUNNING"
-                          ? html`
-                            <mwc-button
-                              class="disable-button"
-                              raised
-                              label="DISABLE"
-                              icon="stop"
-                              @click=${async () => await this.disableApp(appletInfo.appInfo)}
-                            ></mwc-button>
-                            `
-                          : html`
-                            <mwc-button
-                              class="start-button"
-                              raised
-                              label="START"
-                              icon="play_arrow"
-                              @click=${async () => await this.enableApp(appletInfo.appInfo)}
-                            ></mwc-button>
-                            `
-                        }
-                        <mwc-button
-                          class="delete-button"
-                          raised
-                          label="UNINSTALL"
-                          icon="delete"
-                          @click=${() => {
-                            this._uninstallAppletDialog.installedAppInfo = appletInfo.appInfo;
-                            this._uninstallAppletDialog.open();
-                            }
-                          }
-                        >
-                        </mwc-button>
-                      </div>
-                    </div>
-                  </mwc-card>
-                </div>
+                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }}></applet-list-item>
               `;
             })}`
       }
@@ -297,6 +215,7 @@ export class AppletInstanceStatusList extends NHComponent {
       "create-we-group-dialog": CreateNeighbourhoodDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
+      "applet-list-item": AppletListItem,
       "uninstall-applet-dialog": UninstallAppletDialog,
       "federate-applet-dialog": FederateAppletDialog,
       "nh-sensemaker-settings": NHSensemakerSettings,
