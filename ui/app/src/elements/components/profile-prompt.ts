@@ -78,7 +78,6 @@ export class ProfilePrompt extends NHComponent {
           border-radius: 100%;
         }
       `,
-      sharedStyles
     ];
   }
 }
