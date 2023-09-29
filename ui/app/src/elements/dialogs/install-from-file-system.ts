@@ -185,6 +185,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         size="medium"
         dialogType="applet-install"
         handleOk=${this.createApplet.bind(this)}
+        handleClose=${null}
         title="Install Applet"
         .openButtonRef=${this._openAppletDialogButton}
         .primaryButtonDisabled=${this.publishDisabled}

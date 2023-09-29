@@ -1,6 +1,4 @@
-import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
-import { decode } from "@msgpack/msgpack";
 import { html, css, CSSResult } from "lit";
 
 import { matrixContext } from "../../context";
@@ -8,12 +6,10 @@ import { MatrixStore } from "../../matrix-store";
 
 import { query, state } from "lit/decorators.js";
 import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
-import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
-import { JoinGroupCard } from "../components/join-group-card";
-import { ManagingGroupsCard } from "../components/managing-groups-card";
 import { SlTooltip } from "@scoped-elements/shoelace";
-import { InstallableApplets } from "../components/installable-applets";
 import { InvitationsBlock } from "../components/invitations-block";
+import { AppletLibrary } from "../components/applet-library";
+import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
 
 
 export class NeighbourhoodHome extends NHComponentShoelace {
@@ -23,28 +19,33 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   @state()
   private _showLibrary: boolean = false;
 
-
   render() {
-    return html`
-      <div class="container">
-        <div class="nh-image"></div>
-        <div class="card-block">
-          <invitations-block></invitations-block>
-
-          <nh-card .theme=${"dark"} .title=${""} .heading=${"Add new applet"} .textSize=${"sm"} .hasPrimaryAction=${true}>
-            <p>
-              Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
-            </p>
-            <div slot="footer">
-              <nh-button label="Browse Applets" .variant=${"primary"} .clickHandler=${() => this._showLibrary = true} .size=${"stretch"}></nh-button>
+    return this._showLibrary
+      ? html`
+            <div class="container">
+              <applet-library .toggleVisible=${() => { this._showLibrary = false }}></applet-library>
             </div>
-          </nh-card>  
-        </div>
-        <div class="to-join"></div>
-        <div class="installed"></div>
-        <div class="uninstalled"></div>
-        <div class="danger-zone"></div>
-      </div>
+        `
+      : html`
+            <div class="container">
+              <div class="nh-image"></div>
+              <div class="card-block">
+                <invitations-block></invitations-block>
+
+                <nh-card .theme=${"dark"} .title=${""} .heading=${"Add new applet"} .textSize=${"sm"} .hasPrimaryAction=${true}>
+                  <p>
+                    Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
+                  </p>
+                  <div slot="footer">
+                    <nh-button label="Browse Applets" .variant=${"primary"} .clickHandler=${() => this._showLibrary = true} .size=${"stretch"}></nh-button>
+                  </div>
+                </nh-card>  
+              </div>
+              <div class="to-join"></div>
+              <div class="installed"></div>
+              <div class="uninstalled"></div>
+              <div class="danger-zone"></div>
+            </div>
     `
   }
 
@@ -54,7 +55,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       "nh-button": NHButton,
       "nh-card": NHCard,
       'nh-dialog': NHDialog,
-      "installable-applets": InstallableApplets,
+      "applet-library": AppletLibrary,
       "invitations-block": InvitationsBlock,
       "sl-tooltip": SlTooltip,
       // "nh-create-profile": NHCreateProfile,
@@ -87,28 +88,29 @@ export class NeighbourhoodHome extends NHComponentShoelace {
           flex: 1;
           display: grid;
           gap: calc(1px * var(--nh-spacing-sm));
-          padding: calc(1px * var(--nh-spacing-lg));
+          padding: calc(1px * var(--nh-spacing-3xl));
           grid-template-columns: 1fr 1fr;
-          grid-template-rows: 30% 1fr 1fr 1fr 1fr;
+          grid-template-rows: minmax(16rem, 24rem) 1fr 1fr 1fr 1fr;
           grid-template-areas:  "nh-image card-block"
                                 "to-join to-join"
                                 "installed installed"
                                 "uninstalled uninstalled"
                                 "danger-zone danger-zone";
         }
-        .nh-image { grid-area: nh-image; }
-        .card-block { grid-area: card-block; }
+        .nh-image { grid-area: nh-image; align-self: center; }
+        .card-block { grid-area: card-block; align-self: center; }
         .to-join { grid-area: to-join; }
         .installed { grid-area: installed; }
         .uninstalled { grid-area: uninstalled; }
         .danger-zone { grid-area: danger-zone; }
+        applet-library { grid-column: -1/1; grid-row: -1/1;}
 
         /** Sub-Layout **/
 
         .card-block {
           display: flex;
           flex-direction: column;
-          gap: calc(1px * var(--nh-spacing-sm));
+          gap: calc(1px * var(--nh-spacing-3xl));
         }
     `
   ];
