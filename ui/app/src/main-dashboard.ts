@@ -178,7 +178,7 @@ export class MainDashboard extends NHComponentShoelace {
         <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));"> 
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
           ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
-              <button class="applet-add" @click=${() => this._weHome.appletAdd()}></button>
+              <button class="applet-add" @click=${() => this._weHome.showLibrary()}></button>
             </sl-tooltip>`
           : html`<span></span>`}
           ${this._dashboardMode == DashboardMode.AssessmentsHome
