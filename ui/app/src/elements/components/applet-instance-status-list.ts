@@ -15,7 +15,7 @@ import {
 } from "@scoped-elements/material-web";
 
 import { matrixContext, weGroupContext } from "../../context";
-import { MatrixStore } from "../../matrix-store";
+import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
@@ -104,15 +104,9 @@ export class AppletInstanceStatusList extends NHComponent {
       });
   }
 
-  renderErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        style="text-align: center;"
-        id="error-snackbar"
-        labelText="Error."
-      >
-      </mwc-snackbar>
-    `;
+  refresh() {
+    this.matrixStore.fetchMatrix();
+    this.requestUpdate();
   }
 
   renderAppStates() {
@@ -130,7 +124,7 @@ export class AppletInstanceStatusList extends NHComponent {
                 return info_a.applet.customName.localeCompare(info_b.applet.customName)
               }
             })
-            .map((appletInfo) => {
+            .map((appletInfo: AppletInstanceInfo) => {
               return html`
               ${this._widgetConfigDialogActivated ? html`
                 <nh-dialog
@@ -148,7 +142,7 @@ export class AppletInstanceStatusList extends NHComponent {
                     ></nh-sensemaker-settings>
                   </div>
                 </nh-dialog>` : html``}
-                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }}></applet-list-item>
+                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => { this._uninstallAppletDialog.open() }}></applet-list-item>
               `;
             })}`
       }
@@ -157,7 +151,7 @@ export class AppletInstanceStatusList extends NHComponent {
         <nh-button
           label="Refresh"
           .variant=${"neutral"}
-          .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+          .clickHandler=${() => { this.refresh() }}
           .iconImageB64=${b64images.icons.refresh}
           .size=${"icon-lg"}
         >
@@ -165,7 +159,6 @@ export class AppletInstanceStatusList extends NHComponent {
       </div>
     `;
   }
-
 
   render() {
     return html`
@@ -184,8 +177,11 @@ export class AppletInstanceStatusList extends NHComponent {
         timeoutMs="4000"
         labelText="Applet uninstalled."
       ></mwc-snackbar>
-      ${this.renderErrorSnackbar()}
-
+      <mwc-snackbar
+        style="text-align: center;"
+        id="error-snackbar"
+        labelText="Error."
+      ></mwc-snackbar>
 
       <uninstall-applet-dialog
         id="uninstall-applet-dialog"
@@ -195,7 +191,6 @@ export class AppletInstanceStatusList extends NHComponent {
       <federate-applet-dialog
         id="federate-applet-dialog"
       ></federate-applet-dialog>
-
 
       ${this.renderAppStates()}
     `;
