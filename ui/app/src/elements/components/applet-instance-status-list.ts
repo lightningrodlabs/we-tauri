@@ -138,123 +138,114 @@ export class AppletInstanceStatusList extends NHComponent {
 
   renderAppStates() {
     const appletInstanceInfos = this._installedApplets.value;
-    if (appletInstanceInfos!.length == 0 || !appletInstanceInfos) {
-      // TODO! make sure that this refresh button actually does anything.
-      return html`
-        <p>You have no applet instances installed in this neighbourhood.</p>
-        <div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
-          <nh-button
-            label="Refresh"
-            .variant=${"neutral"}
-            .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            .iconImageB64=${b64images.icons.refresh}
-            .size=${"icon-lg"}
-          >
-          </nh-button>
-        </div>
-      `;
-    } else {
-      return html`
-        ${appletInstanceInfos
-          .sort((info_a, info_b) => { // show disabled applets on top, then sort alphabetically
-            if (getStatus(info_a.appInfo) !== getStatus(info_b.appInfo)) {
-              return getStatus(info_a.appInfo).localeCompare(getStatus(info_b.appInfo));
-            } else {
-              return info_a.applet.customName.localeCompare(info_b.applet.customName)
-            }
-          })
-          .map((appletInfo) => {
-            const appStatus = getStatus(appletInfo.appInfo);
-            return html`
-            ${this._widgetConfigDialogActivated ? html`
-              <nh-dialog
-                id="applet-widget-config"
-                size="large"
-                dialogType="widget-config"
-                handleOk=${() => { this._widgetConfigDialogActivated = false}}
-                isOpen=${true}
-                title="Configure Applet Widgets"
-                .primaryButtonDisabled=${true}
-              >
-                <div slot="inner-content">
-                  <nh-sensemaker-settings
-                    .sensemakerStore=${this._sensemakerStore}
-                  ></nh-sensemaker-settings>
-                </div>
-              </nh-dialog>` : html``}
-              <div class="column" style="align-items: right; width: 100%;">
-                <mwc-card style="margin: 5px;">
-                  <div
-                    class="row"
-                    style="background: #645d69; color: white; align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
-                  >
-                    <img
-                        style="margin-right: 10px;"
-                        class="applet-image"
-                        src=${appletInfo.applet.logoSrc!}
-                      />
-                    <strong>${appletInfo.applet.customName}</strong>
-                    <div class="row" style="margin-left: auto; align-items: center;">
-                      <span style="color: gray; margin-right: 25px;">${appStatus}</span>
-
-                      <sl-tooltip placement="top" content="configure widgets" hoist>
-                        <mwc-button
-                          icon="share"
+    return html`
+      ${
+        appletInstanceInfos!.length == 0 || !appletInstanceInfos
+          ? html`<p>You have no applet instances installed in this neighbourhood.</p>`
+          : html `
+          ${appletInstanceInfos
+            .sort((info_a, info_b) => { // show disabled applets on top, then sort alphabetically
+              if (getStatus(info_a.appInfo) !== getStatus(info_b.appInfo)) {
+                return getStatus(info_a.appInfo).localeCompare(getStatus(info_b.appInfo));
+              } else {
+                return info_a.applet.customName.localeCompare(info_b.applet.customName)
+              }
+            })
+            .map((appletInfo) => {
+              const appStatus = getStatus(appletInfo.appInfo);
+              return html`
+              ${this._widgetConfigDialogActivated ? html`
+                <nh-dialog
+                  id="applet-widget-config"
+                  size="large"
+                  dialogType="widget-config"
+                  handleOk=${() => { this._widgetConfigDialogActivated = false}}
+                  isOpen=${true}
+                  title="Configure Applet Widgets"
+                  .primaryButtonDisabled=${true}
+                >
+                  <div slot="inner-content">
+                    <nh-sensemaker-settings
+                      .sensemakerStore=${this._sensemakerStore}
+                    ></nh-sensemaker-settings>
+                  </div>
+                </nh-dialog>` : html``}
+                <div class="column" style="align-items: right; width: 100%;">
+                  <mwc-card style="margin: 5px;">
+                    <div
+                      class="row"
+                      style="background: #645d69; color: white; align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
+                    >
+                      <img
                           style="margin-right: 10px;"
-                          @click=${() => {console.log("federate clicked"); this._widgetConfigDialogActivated = true}}
-                          label="configure widgets"
+                          class="applet-image"
+                          src=${appletInfo.applet.logoSrc!}
+                        />
+                      <strong>${appletInfo.applet.customName}</strong>
+                      <div class="row" style="margin-left: auto; align-items: center;">
+                        <span style="color: gray; margin-right: 25px;">${appStatus}</span>
+  
+                        <sl-tooltip placement="top" content="configure widgets" hoist>
+                          <mwc-button
+                            icon="share"
+                            style="margin-right: 10px;"
+                            @click=${() => {console.log("federate clicked"); this._widgetConfigDialogActivated = true}}
+                            label="configure widgets"
+                          >
+                          </mwc-button>
+                        </sl-tooltip>
+  
+                        ${appStatus === "RUNNING"
+                          ? html`
+                            <mwc-button
+                              class="disable-button"
+                              raised
+                              label="DISABLE"
+                              icon="stop"
+                              @click=${async () => await this.disableApp(appletInfo.appInfo)}
+                            ></mwc-button>
+                            `
+                          : html`
+                            <mwc-button
+                              class="start-button"
+                              raised
+                              label="START"
+                              icon="play_arrow"
+                              @click=${async () => await this.enableApp(appletInfo.appInfo)}
+                            ></mwc-button>
+                            `
+                        }
+                        <mwc-button
+                          class="delete-button"
+                          raised
+                          label="UNINSTALL"
+                          icon="delete"
+                          @click=${() => {
+                            this._uninstallAppletDialog.installedAppInfo = appletInfo.appInfo;
+                            this._uninstallAppletDialog.open();
+                            }
+                          }
                         >
                         </mwc-button>
-                      </sl-tooltip>
-
-                      ${appStatus === "RUNNING"
-                        ? html`
-                          <mwc-button
-                            class="disable-button"
-                            raised
-                            label="DISABLE"
-                            icon="stop"
-                            @click=${async () => await this.disableApp(appletInfo.appInfo)}
-                          ></mwc-button>
-                          `
-                        : html`
-                          <mwc-button
-                            class="start-button"
-                            raised
-                            label="START"
-                            icon="play_arrow"
-                            @click=${async () => await this.enableApp(appletInfo.appInfo)}
-                          ></mwc-button>
-                          `
-                      }
-                      <mwc-button
-                        class="delete-button"
-                        raised
-                        label="UNINSTALL"
-                        icon="delete"
-                        @click=${() => {
-                          this._uninstallAppletDialog.installedAppInfo = appletInfo.appInfo;
-                          this._uninstallAppletDialog.open();
-                          }
-                        }
-                      >
-                      </mwc-button>
+                      </div>
                     </div>
-                  </div>
-                </mwc-card>
-              </div>
-            `;
-          })}
-        <div class="row center-content">
-          <mwc-button
-            style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            icon="refresh"
-            >Refresh</mwc-button
-          >
-        </div>
-      `;
-    }
+                  </mwc-card>
+                </div>
+              `;
+            })}`
+      }
+
+      <div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
+        <nh-button
+          label="Refresh"
+          .variant=${"neutral"}
+          .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+          .iconImageB64=${b64images.icons.refresh}
+          .size=${"icon-lg"}
+        >
+        </nh-button>
+      </div>
+    `;
   }
 
 
