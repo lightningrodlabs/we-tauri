@@ -187,7 +187,7 @@ export class NeighbourhoodSettings extends NHComponent {
 
     /** Typo **/
     p {
-      color: var(--nh-theme-fg-default);
+      color: var(--nh-theme-fg-muted);
     }
     h3 {
       font-weight: 400;

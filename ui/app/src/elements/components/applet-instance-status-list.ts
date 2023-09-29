@@ -1,8 +1,7 @@
 import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
 import { decode } from "@msgpack/msgpack";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
-import { html, LitElement, css } from "lit";
+import { html, css } from "lit";
 import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import {
   Button,
@@ -28,10 +27,10 @@ import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
-import { NHDialog } from "@neighbourhoods/design-system-components";
+import { NHButton, NHComponent, NHDialog } from "@neighbourhoods/design-system-components";
+import { b64images } from "@neighbourhoods/design-system-styles";
 
-export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
-
+export class AppletInstanceStatusList extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 
@@ -48,7 +47,6 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   @query("#copied-snackbar")
   _copiedSnackbar!: Snackbar;
-
 
   @query("#uninstall-applet-dialog")
   _uninstallAppletDialog!: UninstallAppletDialog;
@@ -90,7 +88,6 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       });
   }
 
-
   async disableApp(appInfo: AppInfo) {
     this.matrixStore.disableApp(appInfo)
       .then(() => {
@@ -128,8 +125,6 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
       });
   }
 
-
-
   renderErrorSnackbar() {
     return html`
       <mwc-snackbar
@@ -146,14 +141,16 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
     if (appletInstanceInfos!.length == 0 || !appletInstanceInfos) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
-        <div style="margin-top: 10px;">You have no applet instances installed in this neighbourhood.</div>
-        <div class="row center-content">
-          <mwc-button
-            style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            icon="refresh"
-            >Refresh</mwc-button
+        <p>You have no applet instances installed in this neighbourhood.</p>
+        <div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
+          <nh-button
+            label="Refresh"
+            .variant=${"neutral"}
+            .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+            .iconImageB64=${b64images.icons.refresh}
+            .size=${"icon-lg"}
           >
+          </nh-button>
         </div>
       `;
     } else {
@@ -165,7 +162,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
             } else {
               return info_a.applet.customName.localeCompare(info_b.applet.customName)
             }
-           })
+          })
           .map((appletInfo) => {
             const appStatus = getStatus(appletInfo.appInfo);
             return html`
@@ -297,6 +294,7 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   static get elementDefinitions() {
     return {
+      "nh-button": NHButton,
       "mwc-button": Button,
       "mwc-icon-button": IconButton,
       "mwc-list": List,
@@ -317,6 +315,10 @@ export class AppletInstanceStatusList extends ScopedElementsMixin(LitElement) {
 
   static get styles() {
     let localStyles = css`
+      p {
+        color: var(--nh-theme-fg-muted); 
+      }
+
       .content-pane {
         padding: 30px;
       }

@@ -22,6 +22,8 @@ import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
+import { b64images } from "@neighbourhoods/design-system-styles";
+import { NHButton } from "@neighbourhoods/design-system-components";
 
 export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) {
 
@@ -62,20 +64,26 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
     `;
   }
 
+  renderRefreshButtonRow() {
+    return html `<div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
+      <nh-button
+        label="Refresh"
+        .variant=${"neutral"}
+        .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
+        .iconImageB64=${b64images.icons.refresh}
+        .size=${"icon-lg"}
+      >
+      </nh-button>
+    </div>`
+  }
+
   renderAppStates() {
     const appletInstanceInfos = this._joinableApplets.value;
     if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
       // TODO! make sure that this refresh button actually does anything.
       return html`
-        <div style="margin-top: 10px;">There are no applet instances you haven't joined.</div>
-        <div class="row center-content">
-          <mwc-button
-            style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            icon="refresh"
-            >Refresh</mwc-button
-          >
-        </div>
+        <p>There are no applet instances you haven't joined.</p>
+        ${this.renderRefreshButtonRow()}
       `;
     } else {
       return html`
@@ -150,6 +158,7 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
 
   static get elementDefinitions() {
     return {
+      "nh-button": NHButton,
       "mwc-button": Button,
       "mwc-list": List,
       "mwc-list-item": ListItem,
@@ -166,6 +175,10 @@ export class JoinableAppletInstanceList extends ScopedElementsMixin(LitElement) 
 
   static get styles() {
     let localStyles = css`
+      p {
+        color: var(--nh-theme-fg-muted); 
+      }
+
       .content-pane {
         padding: 30px;
       }
