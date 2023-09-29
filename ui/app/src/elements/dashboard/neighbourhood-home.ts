@@ -1,7 +1,7 @@
 import { contextProvided } from "@lit-labs/context";
 import { html, css, CSSResult } from "lit";
 
-import { matrixContext } from "../../context";
+import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
 import { query, state } from "lit/decorators.js";
@@ -9,12 +9,21 @@ import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } fro
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
-import { InstallFromFsDialog } from "../dialogs/install-from-file-system";
-
+import { TaskSubscriber } from "lit-svelte-stores";
+import { DnaHash } from "@holochain/client";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
-  matrixStore!: MatrixStore;
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext, subscribe: true })
+  weGroupId!: DnaHash;
+  
+  _neighbourhoodInfo = new TaskSubscriber(
+    this,
+    () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
+    () => [this._matrixStore, this.weGroupId]
+  );
 
   @state()
   private _showLibrary: boolean = false;
@@ -28,7 +37,17 @@ export class NeighbourhoodHome extends NHComponentShoelace {
         `
       : html`
             <div class="container">
-              <div class="nh-image"></div>
+              <div class="nh-image">
+                ${this._neighbourhoodInfo.value
+                  ? html`<img
+                      class="logo-large"
+                      src=${this._neighbourhoodInfo.value.logoSrc}
+                    />`
+                  : null }
+                <h1>
+                  ${this._neighbourhoodInfo.value?.name}
+                </h1>
+              </div>
               <div class="card-block">
                 <invitations-block></invitations-block>
 
@@ -104,13 +123,28 @@ export class NeighbourhoodHome extends NHComponentShoelace {
         .uninstalled { grid-area: uninstalled; }
         .danger-zone { grid-area: danger-zone; }
         applet-library { grid-column: -1/1; grid-row: -1/1;}
-
+        
         /** Sub-Layout **/
+        .nh-image {
+          display: grid;
+          place-content: center
+        }
 
         .card-block {
           display: flex;
           flex-direction: column;
           gap: calc(1px * var(--nh-spacing-3xl));
+        }
+        
+        .logo-large {
+          width: 200px;
+          height: 200px;
+          border-radius: 100%;
+        }
+
+        /** Typo **/
+        h1 {
+          text-align: center;
         }
     `
   ];
