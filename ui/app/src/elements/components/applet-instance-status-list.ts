@@ -147,7 +147,7 @@ export class AppletInstanceStatusList extends NHComponent {
             })}`
       }
 
-      <div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
+      <div class="refresh-button-row">
         <nh-button
           label="Refresh"
           .variant=${"neutral"}
@@ -224,45 +224,10 @@ export class AppletInstanceStatusList extends NHComponent {
         color: var(--nh-theme-fg-muted); 
       }
 
-      .content-pane {
-        padding: 30px;
-      }
-
-      .title {
-        align-items: center;
-        font-size: 1.2em;
-        text-align: center;
-      }
-
-      .start-button {
-        width: 130px;
-        --mdc-theme-primary: #17c200;
-      }
-
-      .disable-button {
-        width: 130px;
-        --mdc-theme-primary: #f9a70a;
-      }
-
-      .delete-button {
-        --mdc-theme-primary: #cf0000;
-        margin-left: 5px;
-      }
-
-      .applet-image {
-        height: 30px;
-        width: 30px;
-        border-radius: 50%;
-      }
-
-      .pubkey-field {
-        color: black;
-        background: #f4f0fa;
-        border-radius: 4px;
-        overflow-x: auto;
-        padding: 10px;
-        white-space: nowrap;
-        cursor: pointer;
+      .refresh-button-row {
+        margin: calc(1px * var(--nh-spacing-lg)) 0;
+        display: grid;
+        place-content: center;
       }
     `;
 

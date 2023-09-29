@@ -23,6 +23,9 @@ export class AppletListItem extends NHComponent {
   onConfigureWidgets!: () => void;
 
   @property()
+  onJoin!: () => void;
+
+  @property()
   onDelete!: () => void;
 
   async disableApp(appInfo: AppInfo) {
@@ -49,56 +52,70 @@ export class AppletListItem extends NHComponent {
       });
   }
 
+  renderButtons() {
+    return typeof this.onJoin !== "undefined"
+    ? html`
+      <nh-button
+        class="join-button"
+        label="Join"
+        .variant=${"success"}
+        .size=${"md"}
+        .clickHandler=${async () => await this.onJoin()}
+      ></nh-button>
+    `
+    : html`
+      <sl-tooltip placement="top" content="Configure Widgets" hoist>
+        <nh-button
+          .clickHandler=${() => {this.onConfigureWidgets()}}
+          label="Configure"
+          .variant=${"neutral"}
+          .size=${"md"}
+        >
+        </nh-button>
+      </sl-tooltip>
+
+      ${this.appletStatus === "RUNNING"
+        ? html`
+          <nh-button
+            class="disable-button"
+            label="Disable"
+            .variant=${"warning"}
+            .size=${"md"}
+            .clickHandler=${async () => await this.disableApp(this.appletInfo.appInfo)}
+          ></nh-button>
+          `
+        : html`
+          <nh-button
+            class="start-button"
+            label="Start" 
+            .variant=${"success"}
+            .size=${"md"}
+            .clickHandler=${async () => await this.enableApp(this.appletInfo.appInfo)}
+          ></nh-button>
+        `
+      }
+      <nh-button
+        class="delete-button"
+        label="Uninstall"
+        .variant=${"danger"}
+        .size=${"md"}
+        .clickHandler=${() => { this.onDelete() }}
+      >
+      </nh-button>
+    `
+  }
+
   render() {
     return html`<div class="container">
                   <div style="display: flex; flex: 1; align-items: center; gap: calc(1px * var(--nh-spacing-sm));">
                     <img
-                      class="applet-image"
                       src=${this.appletInfo.applet.logoSrc!}
                     />
                     <h4>${this.appletInfo.applet.customName}</h4>
                   </div>
                   <div style="display: flex; flex: 3; align-items: center; gap: calc(1px * var(--nh-spacing-lg)); justify-content: flex-end;">
                     <h4>${this.appletStatus}</h4>
-
-                    <sl-tooltip placement="top" content="Configure Widgets" hoist>
-                      <nh-button
-                        .clickHandler=${() => {this.onConfigureWidgets()}}
-                        label="Configure"
-                        .variant=${"neutral"}
-                        .size=${"md"}
-                      >
-                      </nh-button>
-                    </sl-tooltip>
-
-                    ${this.appletStatus === "RUNNING"
-                      ? html`
-                        <nh-button
-                          class="disable-button"
-                          label="Disable"
-                          .variant=${"warning"}
-                          .size=${"md"}
-                          .clickHandler=${async () => await this.disableApp(this.appletInfo.appInfo)}
-                        ></nh-button>
-                        `
-                      : html`
-                        <nh-button
-                          class="start-button"
-                          label="Start" 
-                          .variant=${"success"}
-                          .size=${"md"}
-                          .clickHandler=${async () => await this.enableApp(this.appletInfo.appInfo)}
-                        ></nh-button>
-                      `
-                    }
-                    <nh-button
-                      class="delete-button"
-                      label="Uninstall"
-                      .variant=${"danger"}
-                      .size=${"md"}
-                      .clickHandler=${() => { this.onDelete() }}
-                    >
-                    </nh-button>
+                    ${this.renderButtons()}
                   </div>
                 </div> 
     `;
