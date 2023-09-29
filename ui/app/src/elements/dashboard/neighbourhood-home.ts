@@ -14,6 +14,9 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { get } from "svelte/store";
+import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
+import { ProfilePrompt } from "../components/profile-prompt";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -46,7 +49,11 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   @state()
   private _installMode: "reinstall" | "join" = "join";
 
-  render() {
+  public showLibrary() {
+    this._showLibrary = true
+  }
+
+  renderContent() {
     return this._showLibrary
       ? html`
             <div class="container">
@@ -102,6 +109,21 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     `
   }
 
+  render() {
+    return this._neighbourhoodInfo.render({
+      pending: () => html`
+        <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
+          <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
+        </div>`,
+      complete: (info: NeighbourhoodInfo) => {
+        const nhProfilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash)) as ProfilesStore;
+
+        return typeof (get(nhProfilesStore.myProfile) as any)?.value === 'undefined'
+          ? html`<profile-prompt .profilesStore=${nhProfilesStore} .neighbourhoodInfo=${info}></profile-prompt>`
+          : this.renderContent()
+        }
+    })
+  }
 
   static elementDefinitions = {
       'nh-page-header-card': NHPageHeaderCard,
@@ -109,6 +131,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       "nh-card": NHCard,
       'nh-dialog': NHDialog,
       "applet-library": AppletLibrary,
+      "profile-prompt": ProfilePrompt,
       "invitations-block": InvitationsBlock,
       "neighbourhood-settings": NeighbourhoodSettings,
       "sl-tooltip": SlTooltip,
@@ -168,7 +191,3 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     `
   ];
 }
-
-// .container > * {
-//   background-color: var(--nh-theme-bg-surface); 
-// }
