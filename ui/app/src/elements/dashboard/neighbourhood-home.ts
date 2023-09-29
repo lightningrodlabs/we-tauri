@@ -12,10 +12,18 @@ import { AppletLibrary } from "../components/applet-library";
 import { TaskSubscriber } from "lit-svelte-stores";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
+import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: profilesStoreContext, subscribe: true })
+  _profilesStore!: ProfilesStore;
+
+  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  _sensemakerStore!: SensemakerStore;
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
