@@ -16,7 +16,7 @@ import { InstallableApplets } from "../components/installable-applets";
 import { InvitationsBlock } from "../components/invitations-block";
 
 
-export class HomeScreen extends NHComponentShoelace {
+export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
