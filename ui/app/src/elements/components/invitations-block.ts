@@ -1,24 +1,20 @@
-import { css, CSSResult, html, LitElement } from "lit";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { css, CSSResult, html } from "lit";
 import {
-  Button,
   TextField,
   Snackbar,
-  Icon,
-  Dialog,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { query, state } from "lit/decorators.js";
 
-import { sharedStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
-import { NHButton, NHCard, NHComponent, NHComponentShoelace } from "@neighbourhoods/design-system-components";
+import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { SlInput } from "@scoped-elements/shoelace";
 import { b64images } from "@neighbourhoods/design-system-styles";
 
 export class InvitationsBlock extends NHComponentShoelace {
+  // TODO: add Yup schema for hash validation
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
@@ -111,6 +107,11 @@ export class InvitationsBlock extends NHComponentShoelace {
         .input-pub-key {
           align-items: flex-start;
           justify-content: space-between;
+        }
+
+        .content {
+          max-width: 20rem;
+          margin: 0 auto;
         }
 
         .content, .field-set {
