@@ -25,7 +25,7 @@ import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
 import { DnaHashMap } from '@holochain-open-dev/utils';
 import { WeGroupContext } from './elements/we-group-context';
 import { AppletClassHome } from './elements/dashboard/applet-class-home';
-import { WeGroupHome } from './elements/dashboard/we-group-home';
+import { NeighbourhoodHome } from './elements/dashboard/neighbourhood-home';
 import { AppletClassRenderer } from './elements/dashboard/applet-class-renderer';
 import { SensemakerDashboard } from './elements/dashboard/sensemaker-dashboard';
 import { AppletInstanceRenderer } from './elements/dashboard/applet-instance-renderer';
@@ -244,12 +244,12 @@ export class MainDashboard extends NHComponentShoelace {
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
       return html`
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
-          <we-group-home
+          <nh-home
             style="display: flex; flex: 1;"
             id="we-home"
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           >
-          </we-group-home>
+          </nh-home>
         </we-group-context>
       `;
     } else if (this._dashboardMode === DashboardMode.AssessmentsHome) {
@@ -911,7 +911,7 @@ export class MainDashboard extends NHComponentShoelace {
       'sl-tooltip': SlTooltip,
       'we-group-context': WeGroupContext,
       'applet-class-home': AppletClassHome,
-      'we-group-home': WeGroupHome,
+      'nh-home': NeighbourhoodHome,
       'nh-dialog': NHDialog,
       'with-profile': WithProfile,
       'nh-profile-card': NHProfileCard,
