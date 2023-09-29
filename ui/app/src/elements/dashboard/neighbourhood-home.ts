@@ -10,7 +10,8 @@ import { SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
 import { TaskSubscriber } from "lit-svelte-stores";
-import { DnaHash } from "@holochain/client";
+import { DnaHash, EntryHash } from "@holochain/client";
+import { NeighbourhoodSettings } from "./neighbourhood-settings";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -26,7 +27,16 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   );
 
   @state()
-  private _showLibrary: boolean = false;
+  private _showLibrary: boolean = false; 
+  
+  @state()
+  private _showInstallScreen: boolean = false;
+
+  @state()
+  private _installAppletId: EntryHash | undefined;
+
+  @state()
+  private _installMode: "reinstall" | "join" = "join";
 
   render() {
     return this._showLibrary
@@ -48,6 +58,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
                   ${this._neighbourhoodInfo.value?.name}
                 </h1>
               </div>
+
               <div class="card-block">
                 <invitations-block></invitations-block>
 
@@ -60,10 +71,25 @@ export class NeighbourhoodHome extends NHComponentShoelace {
                   </div>
                 </nh-card>  
               </div>
-              <div class="to-join"></div>
-              <div class="installed"></div>
-              <div class="uninstalled"></div>
-              <div class="danger-zone"></div>
+              <neighbourhood-settings class="settings"
+                @join-applet=${(e: CustomEvent) => {
+                  this._installAppletId = e.detail;
+                  this._installMode = "join";
+                  this._showInstallScreen = true;
+                  }
+                }
+                @reinstall-applet=${(e: CustomEvent) => {
+                  this._installAppletId = e.detail;
+                  this._installMode = "reinstall";
+                  this._showInstallScreen = true;
+                  }
+                }
+              >
+                <div class="to-join"></div>
+                <div class="installed"></div>
+                <div class="uninstalled"></div>
+                <div class="danger-zone"></div>
+              </neighbourhood-settings>
             </div>
     `
   }
@@ -76,22 +102,8 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       'nh-dialog': NHDialog,
       "applet-library": AppletLibrary,
       "invitations-block": InvitationsBlock,
+      "neighbourhood-settings": NeighbourhoodSettings,
       "sl-tooltip": SlTooltip,
-      // "nh-create-profile": NHCreateProfile,
-      // "mwc-button": Button,
-      // "mwc-fab": Fab,
-      // "mwc-card": Card,
-      // "mwc-icon-button": IconButton,
-      // "mwc-circular-progress": CircularProgress,
-      // "mwc-icon-button-toggle": IconButtonToggle,
-      // "mwc-linear-progress": LinearProgress,
-      // // "list-agents-by-status": ListAgentsByStatus,
-      // 'nh-button': NHButton,
-      // "mwc-snackbar": Snackbar,
-      // "install-from-fs-dialog": InstallFromFsDialog,
-      // "we-group-settings": WeGroupSettings,
-      // "applet-not-installed": AppletNotInstalled,
-      // "nh-sensemaker-settings": NHSensemakerSettings,
   }
 
   static styles : CSSResult[] = [
@@ -109,22 +121,21 @@ export class NeighbourhoodHome extends NHComponentShoelace {
           gap: calc(1px * var(--nh-spacing-sm));
           padding: calc(1px * var(--nh-spacing-3xl));
           grid-template-columns: 1fr 1fr;
-          grid-template-rows: minmax(16rem, 24rem) 1fr 1fr 1fr 1fr;
+          grid-template-rows: auto;
           grid-template-areas:  "nh-image card-block"
-                                "to-join to-join"
-                                "installed installed"
-                                "uninstalled uninstalled"
-                                "danger-zone danger-zone";
+                                "nh-settings nh-settings";
         }
         .nh-image { grid-area: nh-image; align-self: center; }
         .card-block { grid-area: card-block; align-self: center; }
-        .to-join { grid-area: to-join; }
-        .installed { grid-area: installed; }
-        .uninstalled { grid-area: uninstalled; }
-        .danger-zone { grid-area: danger-zone; }
-        applet-library { grid-column: -1/1; grid-row: -1/1;}
+        .settings { grid-area: nh-settings; display: flex; flex-direction: column;}
+        applet-library { grid-column: -1/1; grid-row: -1/1; }
         
         /** Sub-Layout **/
+        .to-join, .installed, .uninstalled, .danger-zone { 
+          display: flex;
+          flex: 1;
+        }
+
         .nh-image {
           display: grid;
           place-content: center
