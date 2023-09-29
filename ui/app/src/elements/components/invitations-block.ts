@@ -1,4 +1,4 @@
-import { css, html, LitElement } from "lit";
+import { css, CSSResult, html, LitElement } from "lit";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
   Button,
@@ -6,18 +6,19 @@ import {
   Snackbar,
   Icon,
   Dialog,
-  Card,
 } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
-import { property, query, state } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
 
 import { sharedStyles } from "../../sharedStyles";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, AgentPubKeyB64, decodeHashFromBase64 } from "@holochain/client";
-import { NHCard } from "@neighbourhoods/design-system-components";
+import { NHButton, NHCard, NHComponent, NHComponentShoelace } from "@neighbourhoods/design-system-components";
+import { SlInput } from "@scoped-elements/shoelace";
+import { b64images } from "@neighbourhoods/design-system-styles";
 
-export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
+export class InvitationsBlock extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
@@ -65,61 +66,64 @@ export class InvitationsBlock extends ScopedElementsMixin(LitElement) {
         labelText="Error. Public key may be invalid."
       ></mwc-snackbar>
 
-      <nh-card .theme=${"dark"} .heading=${"Invite New Member"} .textSize=${"md"}>
-          <div class="row" style="align-items: center; margin-top: 20px;">
-            <mwc-textfield
-              label="Public Key"
-              id="pubkey-field"
-              autoValidate
-              @input=${(e) => (this._inviteePubKey = e.target.value)}
-              style="background: white"
-            ></mwc-textfield>
-            <mwc-button
-              style="margin: 10px; background-color: var(--mdc-theme-primary, #6200ee); height: 56px; display: grid; place-content:center; color: white;"
-              raised
-              icon="send"
-              label="INVITE"
-              @click=${() => this.inviteToJoin(this._inviteePubKey!)}
-              .disabled=${!this._inviteePubKey}
-            ></mwc-button>
+      <nh-card .theme=${"dark"} .heading=${"Invite new neighbour"} .textSize=${"sm"}>
+        <div class="content">
+          <div class="input-pub-key">
+            <div class="field-set">
+              <sl-input
+                help-text="Ask a friend to send you their public key"
+                id="pubkey-field"
+                name="pubkey-field"
+                type="text"
+                size="small"
+                placeholder="Public Key"
+                required
+                @sl-input=${(e) => (this._inviteePubKey = e.target.value)}
+              ></sl-input>
+            </div>
+            <nh-button label="Invite" .variant=${"primary"} .iconImageB64=${b64images.icons.forwardArrow} .clickHandler=${() => this.inviteToJoin(this._inviteePubKey!)} .size=${"md"} .disabled=${!this._inviteePubKey}></nh-button>
           </div>
-          <div
-            class="default-font"
-            style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: left;"
-          >
-            ask a friend to send you their public key
-          </div>
+        </div>
       </nh-card>
     `;
   }
 
   static get elementDefinitions() {
     return {
-      "mwc-button": Button,
-      "mwc-textfield": TextField,
+      "nh-button": NHButton,
+      "sl-input": SlInput,
       "mwc-snackbar": Snackbar,
-      "mwc-icon": Icon,
-      "mwc-dialog": Dialog,
       "nh-card": NHCard,
     };
   }
 
   static get styles() {
-    const localStyles = css`
-      .help-icon {
-        margin-left: 10px;
-        cursor: pointer;
-        color: #454545;
+    return [
+      super.styles as CSSResult,
+      css`
+      sl-input::part(input) {
+        --sl-input-spacing-small: calc(1px * var(--nh-spacing-sm));
       }
-      .help-icon:hover {
-        color: #8a8a8a;
+      sl-input::part(base) {
+        height: 3rem !important;
+        margin-bottom: 4px;
       }
+        .input-pub-key {
+          align-items: flex-start;
+          justify-content: space-between;
+        }
 
-      .copy-icon:hover {
-        color: black;
-      }
-    `;
+        .content, .field-set {
+          flex-direction: column;
+        }
 
-    return [sharedStyles, localStyles];
+        .content, .input-pub-key, .input-pub-key > *, .field-set {
+          display: flex;
+        }
+
+        .content, .field-set, .input-pub-key {
+          gap: calc(1px * var(--nh-spacing-sm));
+        }
+    `];
   }
 }
