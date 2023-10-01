@@ -20,16 +20,6 @@ export default defineConfig({
           src: "we_logo.png",
           dest: "dist/assets",
         },
-        {
-          src: "../applet-worker/dist/index.mjs",
-          dest: "",
-          rename: "applet-worker.js",
-        },
-        {
-          src: "../applet-iframe/dist/index.mjs",
-          dest: "",
-          rename: "applet-iframe.js",
-        },
       ],
     }),
   ],

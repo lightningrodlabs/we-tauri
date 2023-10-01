@@ -64,13 +64,9 @@ export class WeClient {
     postMessage({
       type: "ready",
     });
-
-    console.log("postMessage 'ready' sent.");
   }
 
-  static async connect(requestAttachments = true): Promise<WeClient> {
-
-    console.log("Connecting WeClient...");
+  static async connect(): Promise<WeClient> {
 
     // fetch localStorage for this applet from main window and override localStorage methods
     overrideLocalStorage();
@@ -80,11 +76,7 @@ export class WeClient {
       (key) => window.localStorage.setItem(key, localStorage[key])
     );
 
-    console.log("Overwrote localStorage");
-
     const appletHash = readAppletHash();
-
-    console.log("Read appletHash: ", encodeHashToBase64(appletHash));
 
     return new WeClient(appletHash);
   }
@@ -308,8 +300,6 @@ export async function internalGetRenderInfo(): Promise<RenderInfo> {
 
   const view = await internalGetRenderView();
 
-  console.log("GOT VIEW: ", view);
-
   if (!view) {
     throw new Error("RenderView undefined.");
   }
@@ -320,8 +310,6 @@ export async function internalGetRenderInfo(): Promise<RenderInfo> {
     type: "get-iframe-config",
     crossApplet,
   });
-
-  console.log("@internalGetRenderInfo: GOT IFRAME CONFIG: ", iframeConfig);
 
   if (iframeConfig.type === "not-installed") {
     throw new Error("Applet is not installed.");

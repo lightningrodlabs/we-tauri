@@ -38,7 +38,6 @@ export class ExampleApplet extends LitElement {
   attachmentsStore: AttachmentsStore | undefined;
 
   async firstUpdated() {
-    console.log("HELLO FROM FIRSTUPDATED.");
     // setupAppletServices( {
 
     // })
