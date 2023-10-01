@@ -90,7 +90,8 @@ export default class NHButton extends NHComponent {
         }
         button.secondary, button.secondary:hover {
           background-color: transparent;
-          border: 2px solid var(--nh-theme-accent-default);
+          border: 1px solid var(--nh-theme-accent-default);
+          outline: 1px solid var(--nh-theme-accent-default);
           color: var(--nh-theme-accent-default);
         }
         button:active {
