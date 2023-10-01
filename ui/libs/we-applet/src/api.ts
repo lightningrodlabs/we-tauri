@@ -1,14 +1,26 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap, HoloHashMap, parseHrl } from "@holochain-open-dev/utils";
 import { ActionHash, AppAgentClient,AppAgentWebsocket,CallZomeRequest,CallZomeRequestSigned,DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
-import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo, AppletToParentRequest, AppletToParentMessage, InternalAttachmentType, IframeConfig, HrlLocation } from "./types";
+import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo, AppletToParentRequest, AppletToParentMessage, InternalAttachmentType, IframeConfig, HrlLocation, ParentToAppletRequest } from "./types";
 import { decode } from "@msgpack/msgpack";
 import { toUint8Array } from "js-base64";
 
 
-export interface AppletServices {
-  attachmentTypes: () => Promise<Record<string, AttachmentType>>;
+export class AppletServices {
+  constructor() {
+    this.search = async () => [],
+    this.getAppletAttachmentTypes = async () => ({}),
+    this.getBlockTypes = async () => ({}),
+    this.getEntryInfo = async (
+      _roleName,
+      _integrityZomeName,
+      _entryType,
+      _hrl
+    ) => undefined
+  }
+
   search: (searchFilter: string) => Promise<Array<HrlWithContext>>;
+  getAppletAttachmentTypes: () => Promise<Record<string, AttachmentType>>;
   getBlockTypes: () => Promise<Record<string, BlockType>>;
   getEntryInfo: (
     roleName,
@@ -22,14 +34,38 @@ export interface AppletServices {
 export class WeClient {
 
   appletHash: EntryHash;
-  attachmentTypes: EntryHashMap<Record<string, AttachmentType>>;
+
+  // TODO make this private but it conflicts with buildHeadlessWeClient in applet-host.ts
+  appletServices: AppletServices;
 
   private constructor(
     appletHash: EntryHash,
-    attachmentTypes: EntryHashMap<Record<string, AttachmentType>> // Segmented by groupId
   ) {
     this.appletHash = appletHash;
-    this.attachmentTypes = attachmentTypes;
+    this.appletServices = new AppletServices();
+
+    // TODO add message handler for ParentToApplet messages
+    window.addEventListener("message", async (m) => {
+      try {
+        const result = await handleMessage(this.appletServices, m.data);
+        m.ports[0].postMessage({ type: "success", result });
+      } catch (e) {
+        m.ports[0].postMessage({ type: "error", error: (e as any).message });
+      }
+    });
+
+    // add eventlistener for clipboard
+    window.addEventListener ("keydown", async (zEvent) => {
+      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+        await postMessage({ type: "toggle-clipboard" })
+      }
+    });
+
+    postMessage({
+      type: "ready",
+    });
+
+    console.log("postMessage 'ready' sent.");
   }
 
   static async connect(requestAttachments = true): Promise<WeClient> {
@@ -46,34 +82,18 @@ export class WeClient {
 
     console.log("Overwrote localStorage");
 
-    // add eventlistener for clipboard
-    window.addEventListener ("keydown", async (zEvent) => {
-      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
-        await postMessage({ type: "toggle-clipboard" })
-      }
-    });
-
-    console.log("added event listener for clipboard shortcut");
-
-    // get attachmentTypes of all applets
-    let attachmentTypes = new EntryHashMap<Record<string, AttachmentType>>();
-
-    if (requestAttachments) {
-      attachmentTypes = await internalGetAttachmentTypes();
-      console.log("Got attachment types: ", attachmentTypes);
-    }
-
     const appletHash = readAppletHash();
 
     console.log("Read appletHash: ", encodeHashToBase64(appletHash));
 
-    await postMessage({
-      type: "ready",
-    });
+    return new WeClient(appletHash);
+  }
 
-    console.log("postMessage 'ready' sent.");
-
-    return new WeClient(appletHash, attachmentTypes);
+  /**
+  * Get Attachment types across all installed Applets
+  */
+  getGlobalAttachmentTypes = async (): Promise<EntryHashMap<Record<string, AttachmentType>>> => {
+    return internalGetAttachmentTypes();
   }
 
   openAppletMain = async (appletHash: EntryHash): Promise<void> =>
@@ -171,6 +191,30 @@ export async function getRenderInfo() {
   return internalGetRenderInfo();
 }
 
+const handleMessage = async (appletServices: AppletServices, request: ParentToAppletRequest) => {
+  switch (request.type) {
+    case "get-entry-info":
+      return appletServices.getEntryInfo(
+        request.roleName,
+        request.integrityZomeName,
+        request.entryType,
+        request.hrl,
+      );
+
+    case "get-applet-attachment-types":
+      console.log("@WeClient @handleMessage: got get-applet-attachment-types ParentToAppletRequest");
+      return appletServices.getAppletAttachmentTypes();
+    case "get-block-types":
+      return appletServices.getBlockTypes();
+    case "search":
+      return appletServices.search(request.filter);
+    case "create-attachment":
+      throw new Error("Creating attachment not implemented yet.");
+
+    default:
+      throw new Error("Unknown ParentToAppletRequest");
+  }
+}
 
 
 async function postMessage(request: AppletToParentRequest): Promise<any> {
@@ -351,7 +395,7 @@ async function internalGetAttachmentTypes() {
     EntryHashB64,
     Record<string, InternalAttachmentType>
   > = await postMessage({
-    type: "get-attachment-types",
+    type: "get-global-attachment-types",
   });
 
 

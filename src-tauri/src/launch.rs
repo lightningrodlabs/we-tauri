@@ -33,7 +33,7 @@ pub async fn launch(
     password: String,
 ) -> WeResult<(MetaLairClient, AdminPort, AppPort)> {
 
-    let log_level = log::Level::Warn;
+    let log_level = log::Level::Info;
 
     // initialize lair keystore if necessary
     if !fs.keystore_initialized() {

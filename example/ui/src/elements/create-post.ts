@@ -1,12 +1,9 @@
 import { LitElement, html } from 'lit';
-import { repeat } from "lit/directives/repeat.js";
-import { state, property, query, customElement } from 'lit/decorators.js';
-import { ActionHash, Record, DnaHash, AgentPubKey, EntryHash } from '@holochain/client';
+import { state, query, customElement } from 'lit/decorators.js';
 import { EntryRecord } from '@holochain-open-dev/utils';
-import { hashProperty, notifyError, hashState, sharedStyles, onSubmit, wrapPathInSvg } from '@holochain-open-dev/elements';
+import { notifyError, sharedStyles, onSubmit } from '@holochain-open-dev/elements';
 import { consume } from '@lit-labs/context';
 import { localized, msg } from '@lit/localize';
-import { mdiAlertCircleOutline, mdiDelete } from "@mdi/js";
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -14,7 +11,6 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 import '@holochain-open-dev/elements/dist/elements/display-error.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
@@ -51,8 +47,8 @@ export class CreatePost extends LitElement {
 
   async createPost(fields: any) {
     if (this.committing) return;
-  
-  
+
+
     const post: Post = {
       title: fields.title,
       content: fields.content,
@@ -69,7 +65,7 @@ export class CreatePost extends LitElement {
           postHash: record.actionHash
         }
       }));
-      
+
       this.form.reset();
     } catch (e: any) {
       console.error(e);
@@ -83,11 +79,11 @@ export class CreatePost extends LitElement {
       <sl-card style="flex: 1;">
         <span slot="header">${msg("Create Post")}</span>
 
-        <form 
+        <form
           id="create-form"
           style="display: flex; flex: 1; flex-direction: column;"
           ${onSubmit(fields => this.createPost(fields))}
-        >  
+        >
           <div style="margin-bottom: 16px;">
           <sl-input name="title" .label=${msg("Title")}  required></sl-input>          </div>
 
@@ -100,9 +96,9 @@ export class CreatePost extends LitElement {
             type="submit"
             .loading=${this.committing}
           >${msg("Create Post")}</sl-button>
-        </form> 
+        </form>
       </sl-card>`;
   }
-  
+
   static styles = [sharedStyles];
 }

@@ -5,7 +5,7 @@ import { localized, msg } from "@lit/localize";
 import { sharedStyles } from "@holochain-open-dev/elements";
 
 import "@shoelace-style/shoelace/dist/components/input/input.js";
-import { SearchEntry } from "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
+import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 
 
 import { EntryHash } from "@holochain/client";
@@ -131,8 +131,8 @@ export class WeClipboard extends LitElement {
             : html``
           }
 
-          <we-services-context
-            .services=${buildHeadlessWeClient(this._weStore)}
+          <we-client-context
+            .weClient=${buildHeadlessWeClient(this._weStore)}
           >
             <clipboard-search
               id="clipboard-search"
@@ -140,7 +140,7 @@ export class WeClipboard extends LitElement {
               @entry-selected=${(e) => this.handleHrlSelected(e)}
               @hrl-to-clipboard=${(e) => this.hrlToClipboard(e.detail.hrlWithContext)}
             ></clipboard-search>
-          </we-services-context>
+          </we-client-context>
 
           <div class="row" style="margin-top: 30px; flex-wrap: wrap;">
             ${this.clipboardContent.map((hrlB64) => html`

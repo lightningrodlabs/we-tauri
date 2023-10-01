@@ -1,8 +1,5 @@
 import { get, pipe, toPromise } from "@holochain-open-dev/stores";
 import {
-  ParentToAppletRequest,
-} from "applet-messages";
-import {
   AppletInfo,
   AttachmentType,
   EntryInfo,
@@ -13,12 +10,14 @@ import {
   WeNotification,
   WeClient,
   AppletToParentRequest,
+  ParentToAppletRequest,
   IframeConfig,
   InternalAttachmentType,
   BlockType,
+  AppletServices,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import { appWindow } from "@tauri-apps/api/window";
 
 import { AppOpenViews } from "../layout/types.js";
@@ -163,8 +162,9 @@ export function buildHeadlessWeClient(weStore: WeStore): WeClient {
     async notifyWe(notifications: Array<WeNotification>) {
       throw new Error("notify is not implemented on headless WeServices.");
     },
-    attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
     appletHash: new Uint8Array(),
+    appletServices: new AppletServices(),
+    getGlobalAttachmentTypes: async () => new EntryHashMap(),
     openAppletMain: async () => {},
     openCrossAppletMain: async () => {},
     openHrl: async () => {},
@@ -335,8 +335,7 @@ export async function handleAppletIframeMessage(
       return weClient.groupProfile(message.groupId);
     case "get-entry-info":
       return weClient.entryInfo(message.hrl);
-    case "get-attachment-types":
-      console.log("@HOST: got get-attachment-types message");
+    case "get-global-attachment-types":
       return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":
       return signZomeCallTauri(message.request);
@@ -414,9 +413,9 @@ export class AppletHost {
     });
   }
 
-  async getAttachmentTypes(): Promise<Record<string, InternalAttachmentType>> {
+  async getAppletAttachmentTypes(): Promise<Record<string, InternalAttachmentType>> {
     return this.postMessage({
-      type: "get-attachment-types",
+      type: "get-applet-attachment-types",
     });
   }
 

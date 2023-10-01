@@ -64,7 +64,6 @@ export class AppletStore {
     // document.body.appendChild(iframe);
 
     return new Promise<AppletHost>((resolve) => {
-      console.log("\n@AppletStore @host: adding event listener.\n");
       window.addEventListener("message", (message) => {
         if (message.source === iframe?.contentWindow) {
           if (
@@ -79,7 +78,7 @@ export class AppletStore {
 
   attachmentTypes: AsyncReadable<Record<string, InternalAttachmentType>> = pipe(
     this.host,
-    (host) => lazyLoadAndPoll(() => host.getAttachmentTypes(), 10000)
+    (host) => lazyLoadAndPoll(() => host.getAppletAttachmentTypes(), 10000)
   );
 
   blocks: AsyncReadable<Record<string, BlockType>> = pipe(this.host, (host) =>

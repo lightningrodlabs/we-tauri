@@ -43,7 +43,7 @@ export class ExampleApplet extends LitElement {
 
     // })
     try {
-      this.weClient = await WeClient.connect(false);
+      this.weClient = await WeClient.connect();
       console.log("Got WeClient: ", this.weClient);
     } catch (e) {
       console.error("Failed to connect WeClient: ", e);

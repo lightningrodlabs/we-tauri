@@ -8,30 +8,6 @@ import { fromUint8Array } from "js-base64";
 
 
 
-export type ParentToAppletRequest =
-  | {
-      type: "get-entry-info";
-      roleName: string;
-      integrityZomeName: string;
-      entryType: string;
-      hrl: Hrl;
-    }
-  | {
-      type: "get-attachment-types";
-    }
-  | {
-      type: "get-block-types";
-    }
-  | {
-      type: "search";
-      filter: string;
-    }
-  | {
-      type: "create-attachment";
-      attachmentType: string;
-      attachToHrl: Hrl;
-};
-
 export function renderViewToQueryString(renderView: RenderView): string {
   let base = `view=${renderView.type}&view-type=${renderView.view.type}`;
 

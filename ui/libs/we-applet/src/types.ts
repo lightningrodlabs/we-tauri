@@ -178,6 +178,30 @@ export type RenderView =
 };
 
 
+export type ParentToAppletRequest =
+  | {
+      type: "get-entry-info";
+      roleName: string;
+      integrityZomeName: string;
+      entryType: string;
+      hrl: Hrl;
+    }
+  | {
+      type: "get-applet-attachment-types";
+    }
+  | {
+      type: "get-block-types";
+    }
+  | {
+      type: "search";
+      filter: string;
+    }
+  | {
+      type: "create-attachment";
+      attachmentType: string;
+      attachToHrl: Hrl;
+};
+
 export interface AppletToParentMessage {
   appletHash: EntryHash;
   request: AppletToParentRequest;
@@ -220,7 +244,7 @@ export type AppletToParentRequest =
       appletHash: AppletHash;
     }
   | {
-      type: "get-attachment-types";
+      type: "get-global-attachment-types";
     }
   | {
       type: "get-group-profile";

@@ -81,6 +81,8 @@ export class WeStore {
 
     const appInfo = await this.joinGroup(networkSeed); // this line also updates the matrix store
 
+    console.log("Group created. AppInfo: ", appInfo);
+
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
 
@@ -374,10 +376,11 @@ export class WeStore {
   > = alwaysSubscribed(
     pipe(
       this.allRunningApplets,
-      (runningApplets) => mapAndJoin(
+      (runningApplets) =>
+        mapAndJoin(
           runningApplets,
           (appletStore) => appletStore.attachmentTypes
-      ),
+        ),
       (allAttachmentTypes) => {
         const attachments: Record<
           EntryHashB64,

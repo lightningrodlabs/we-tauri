@@ -8,6 +8,8 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
 import "@lightningrodlabs/we-applet/dist/elements/share-hrl.js";
+import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
+
 
 import { Hrl } from "@lightningrodlabs/we-applet";
 
@@ -61,10 +63,10 @@ export class EntryView extends LitElement {
       }}
     ></applet-view>
     <div id="we-toolbar" class="column toolbar">
-      <we-services-context .services=${buildHeadlessWeClient(this._weStore)}>
+      <we-client-context .weClient=${buildHeadlessWeClient(this._weStore)}>
         <share-hrl .hrl=${this.hrl} class="toolbar-btn" style="margin-bottom: 10px;"></share-hrl>
         <hrl-to-clipboard .hrl=${this.hrl} class="toolbar-btn" ></hrl-to-clipboard>
-      </we-services-context>
+      </we-client-context>
     </div>
     `;
   }
