@@ -2,14 +2,14 @@ import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { localized } from "@lit/localize";
-import { sharedStyles } from "@holochain-open-dev/elements";
+import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
 
 import "./elements/all-posts.js";
 import "./elements/create-post.js";
 import "./elements/post-detail.js";
 import "./elements/posts-context.js";
 
-import { WeClient, type RenderInfo, getRenderInfo } from "@lightningrodlabs/we-applet";
+import { WeClient, type RenderInfo, getRenderInfo, AppletServices } from "@lightningrodlabs/we-applet";
 
 import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/attachments/dist/elements/attachments-context.js";
@@ -20,6 +20,7 @@ import { PostsClient } from "./posts-client.js";
 import { PostsStore } from "./posts-store.js";
 import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
 import { CellType } from "@holochain/client";
+import { mdiPost } from "@mdi/js";
 
 @localized()
 @customElement("example-applet")
@@ -42,25 +43,68 @@ export class ExampleApplet extends LitElement {
 
     // })
     try {
-      this.weClient = await WeClient.connect();
+      try {
+        const renderInfo = await getRenderInfo();
+        this.renderInfo = renderInfo;
+        console.log("Got RenderInfo: ", renderInfo);
+      } catch (e) {
+        console.error("Failed to get render Info: ", e);
+      }
+      if (!this.renderInfo) throw new Error("Failed to get RenderInfo.");
+
+      let appletServices: AppletServices | undefined;
+
+      if (this.renderInfo.type === "applet-view") {
+        this.postsStore = new PostsStore(new PostsClient(this.renderInfo.appletClient, "forum"));
+        this.attachmentsStore = new AttachmentsStore(new AttachmentsClient(this.renderInfo.appletClient, "forum"));
+
+        // Define entry info method
+        const appletClient = this.renderInfo.appletClient;
+
+        appletServices = {
+          search: async () => [],
+          getAppletAttachmentTypes: async () => ({}),
+          getBlockTypes: async () => ({}),
+          getEntryInfo: async (
+            roleName,
+            integrityZomeName,
+            entryType,
+            hrl
+          ) => {
+            console.log("@EXAMPLE-APPLET: entryInfoHandler is being called with parameters: ", roleName, integrityZomeName, entryType, hrl);
+            switch (roleName) {
+              case "forum":
+                switch (integrityZomeName) {
+                  case "posts_integrity":
+                    switch (entryType) {
+                      case "post":
+                        const postsClient = new PostsClient(appletClient, roleName);
+                        const post = await postsClient.getPost(hrl[1]);
+                        if (!post) return undefined;
+                        return {
+                          name: post.entry.title,
+                          icon_src: wrapPathInSvg(mdiPost),
+                        };
+                      default:
+                        throw new Error("Unknown entry type.");
+                    }
+                  default:
+                    throw new Error("Unknown zome.");
+                }
+              default:
+                throw new Error("Unknown role name.");
+            }
+          }
+        };
+      }
+
+      this.weClient = await WeClient.connect(appletServices);
+
       console.log("Got WeClient: ", this.weClient);
     } catch (e) {
       console.error("Failed to connect WeClient: ", e);
     }
-    try {
-      const renderInfo = await getRenderInfo();
-      this.renderInfo = renderInfo;
-      console.log("Got RenderInfo: ", renderInfo);
-    } catch (e) {
-      console.error("Failed to get render Info: ", e);
-    }
 
-    if (!this.renderInfo) throw new Error("Failed to get RenderInfo.");
-
-    if (this.renderInfo.type === "applet-view") {
-      this.postsStore = new PostsStore(new PostsClient(this.renderInfo.appletClient, "forum"));
-      this.attachmentsStore = new AttachmentsStore(new AttachmentsClient(this.renderInfo.appletClient, "forum"));
-    }
   }
 
   render() {

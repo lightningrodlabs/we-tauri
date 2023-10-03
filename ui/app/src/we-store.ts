@@ -315,7 +315,7 @@ export class WeStore {
                 (appletStore) => appletStore!.host,
                 (host) =>
                   lazyLoad(() =>
-                    host.getEntryInfo(
+                    host.getAppletEntryInfo(
                       location.dnaLocation.roleName,
                       location.entryDefLocation.integrity_zome,
                       location.entryDefLocation.entry_def,

@@ -180,7 +180,7 @@ export type RenderView =
 
 export type ParentToAppletRequest =
   | {
-      type: "get-entry-info";
+      type: "get-applet-entry-info";
       roleName: string;
       integrityZomeName: string;
       entryType: string;
@@ -251,7 +251,7 @@ export type AppletToParentRequest =
       groupId: DnaHash;
     }
   | {
-      type: "get-entry-info";
+      type: "get-global-entry-info";
       hrl: Hrl;
     }
   | {

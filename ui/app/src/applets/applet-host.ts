@@ -15,6 +15,7 @@ import {
   InternalAttachmentType,
   BlockType,
   AppletServices,
+  WeServices,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
@@ -83,7 +84,7 @@ export async function setupAppletMessageHandler(
   });
 }
 
-export function buildHeadlessWeClient(weStore: WeStore): WeClient {
+export function buildHeadlessWeClient(weStore: WeStore): WeServices {
   return {
     async entryInfo(hrl: Hrl) {
       const dnaHash = hrl[0];
@@ -162,8 +163,6 @@ export function buildHeadlessWeClient(weStore: WeStore): WeClient {
     async notifyWe(notifications: Array<WeNotification>) {
       throw new Error("notify is not implemented on headless WeServices.");
     },
-    appletHash: new Uint8Array(),
-    appletServices: new AppletServices(),
     getGlobalAttachmentTypes: async () => new EntryHashMap(),
     openAppletMain: async () => {},
     openCrossAppletMain: async () => {},
@@ -186,7 +185,7 @@ export async function handleAppletIframeMessage(
   message: AppletToParentRequest
 ) {
   let host: AppletHost;
-  const weClient = buildHeadlessWeClient(weStore);
+  const weServices = buildHeadlessWeClient(weStore);
 
   const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
 
@@ -277,7 +276,7 @@ export async function handleAppletIframeMessage(
       weStore.hrlToClipboard(message.hrl);
       break;
     case "search":
-      return weClient.search(message.filter);
+      return weServices.search(message.filter);
     case "user-select-hrl":
       return openViews.userSelectHrl();
     case "toggle-clipboard":
@@ -330,11 +329,12 @@ export async function handleAppletIframeMessage(
       }))
       return;
     case "get-applet-info":
-      return weClient.appletInfo(message.appletHash);
+      return weServices.appletInfo(message.appletHash);
     case "get-group-profile":
-      return weClient.groupProfile(message.groupId);
-    case "get-entry-info":
-      return weClient.entryInfo(message.hrl);
+      return weServices.groupProfile(message.groupId);
+    case "get-global-entry-info":
+      console.log("@applet-host: got 'get-entry-info' message: ", message);
+      return weServices.entryInfo(message.hrl);
     case "get-global-attachment-types":
       return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":
@@ -380,14 +380,15 @@ export async function handleAppletIframeMessage(
 export class AppletHost {
   constructor(public iframe: HTMLIFrameElement) {}
 
-  async getEntryInfo(
+  async getAppletEntryInfo(
     roleName: string,
     integrityZomeName: string,
     entryType: string,
     hrl: Hrl
   ): Promise<EntryInfo | undefined> {
+    console.log("@applet-host: calling getAppletEntryInfo()");
     return this.postMessage({
-      type: "get-entry-info",
+      type: "get-applet-entry-info",
       roleName,
       integrityZomeName,
       entryType,

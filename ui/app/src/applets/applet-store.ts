@@ -12,14 +12,15 @@ import {
   AppletToParentMessage,
   BlockType,
   InternalAttachmentType,
+  RenderView,
 } from "@lightningrodlabs/we-applet";
+import { renderViewToQueryString } from "applet-messages";
 
 import { AppletHost } from "./applet-host.js";
 import { Applet } from "./types.js";
 import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus } from "../utils.js";
 import { ConductorInfo } from "../tauri.js";
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
-import { ViewFrame } from "../layout/views/view-frame.js";
 
 export class AppletStore {
   constructor(
@@ -41,27 +42,23 @@ export class AppletStore {
       return new AppletHost(iframe);
     }
 
-    const origin = appletOrigin(this.conductorInfo, this.appletHash);
-    iframe = document.createElement("iframe");
-    iframe.id = appletHashBase64;
-    iframe.src = origin;
-    iframe.style.display = "none";
-
-    // add the applet main view into the container to receive notifications etc.
-    const appletMainView: ViewFrame = document.createElement("view-frame") as ViewFrame;
-    appletMainView.appletHash = this.appletHash;
-    appletMainView.renderView = {
+    const renderView: RenderView = {
       type: "applet-view",
       view: {
         type: "main",
       }
     };
+    const origin = `${appletOrigin(
+      this.conductorInfo,
+      this.appletHash
+    )}?${renderViewToQueryString(renderView)}`;
 
-    iframe.appendChild(appletMainView);
-    // add the iframe inside the app-container (<we-app></we-app> tag in index.html) to have the WeStore context
-    const appContainer = document.getElementById("app-container");
-    appContainer!.appendChild(iframe);
-    // document.body.appendChild(iframe);
+    iframe = document.createElement("iframe");
+    iframe.id = appletHashBase64;
+    iframe.src = origin;
+    iframe.style.display = "none";
+
+    document.body.appendChild(iframe);
 
     return new Promise<AppletHost>((resolve) => {
       window.addEventListener("message", (message) => {

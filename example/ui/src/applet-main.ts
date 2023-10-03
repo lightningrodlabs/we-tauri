@@ -28,17 +28,17 @@ export class AppletMain extends LitElement {
   @state()
   selectedHrl: HrlWithContext | undefined = undefined;
 
-  @state()
-  unsubscribe: undefined | (() => void);
+  // @state()
+  // unsubscribe: undefined | (() => void);
 
-  firstUpdated() {
-    // console.log("@firstUpdated in example applet: Hello.");
-    this.unsubscribe = this.client.on("signal", (signal) => console.log("Received signal: ", signal));
-  }
+  // firstUpdated() {
+  //   // console.log("@firstUpdated in example applet: Hello.");
+  //   this.unsubscribe = this.client.on("signal", (signal) => console.log("Received signal: ", signal));
+  // }
 
-  disconnectedCallback(): void {
-    if (this.unsubscribe) this.unsubscribe();
-  }
+  // disconnectedCallback(): void {
+  //   if (this.unsubscribe) this.unsubscribe();
+  // }
 
   sendUrgentNotification(delay: number) {
     const notification: WeNotification = {

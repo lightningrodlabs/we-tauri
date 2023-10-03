@@ -30,24 +30,51 @@ export class AppletServices {
   ) => Promise<EntryInfo | undefined>;
 }
 
+export interface WeServices {
+  getGlobalAttachmentTypes: () => Promise<EntryHashMap<Record<string, AttachmentType>>>;
+  openAppletMain: (appletHash: EntryHash) => Promise<void>;
+  openAppletBlock: (appletHash, block: string, context: any) => Promise<void>;
+  openCrossAppletMain: (appletBundleId: ActionHash) => Promise<void>;
+  openCrossAppletBlock: (appletBundleId: ActionHash, block: string, context: any) => Promise<void>;
+  openHrl: (hrl: Hrl, context: any) => Promise<void>;
+  groupProfile: (groupId) => Promise<any>;
+  appletInfo: (appletHash) => Promise<any>;
+  entryInfo: (hrl: Hrl) => Promise<any>;
+  hrlToClipboard: (hrl: HrlWithContext) => Promise<any>;
+  search: (filter: string) => Promise<any>;
+  userSelectHrl: () => Promise<any>;
+  notifyWe: (notifications: Array<WeNotification>) => Promise<any>;
+}
 
-export class WeClient {
+
+export class WeClient implements WeServices {
 
   appletHash: EntryHash;
-
-  // TODO make this private but it conflicts with buildHeadlessWeClient in applet-host.ts
-  appletServices: AppletServices;
 
   private constructor(
     appletHash: EntryHash,
   ) {
     this.appletHash = appletHash;
-    this.appletServices = new AppletServices();
+  }
+
+  static async connect(appletServices?: AppletServices): Promise<WeClient> {
+
+    // fetch localStorage for this applet from main window and override localStorage methods
+    overrideLocalStorage();
+    const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
+    const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
+    if (localStorageJson) Object.keys(localStorage).forEach(
+      (key) => window.localStorage.setItem(key, localStorage[key])
+    );
+
+    const appletHash = readAppletHash();
+
+    console.log("@WeClient: connecting with appletServices.entryInfo: ", appletServices?.getEntryInfo);
 
     // TODO add message handler for ParentToApplet messages
-    window.addEventListener("message", async (m) => {
+    window.addEventListener("message", async (m: MessageEvent<any>) => {
       try {
-        const result = await handleMessage(this.appletServices, m.data);
+        const result = await handleMessage(appletServices ? appletServices : new AppletServices(), m.data);
         m.ports[0].postMessage({ type: "success", result });
       } catch (e) {
         m.ports[0].postMessage({ type: "error", error: (e as any).message });
@@ -61,25 +88,13 @@ export class WeClient {
       }
     });
 
-    postMessage({
+    await postMessage({
       type: "ready",
     });
-  }
-
-  static async connect(): Promise<WeClient> {
-
-    // fetch localStorage for this applet from main window and override localStorage methods
-    overrideLocalStorage();
-    const localStorageJson: string | null = await postMessage({ type: "get-localStorage" });
-    const localStorage = localStorageJson ? JSON.parse(localStorageJson) : null;
-    if (localStorageJson) Object.keys(localStorage).forEach(
-      (key) => window.localStorage.setItem(key, localStorage[key])
-    );
-
-    const appletHash = readAppletHash();
 
     return new WeClient(appletHash);
   }
+
 
   /**
   * Get Attachment types across all installed Applets
@@ -151,7 +166,7 @@ export class WeClient {
     });
 
   entryInfo = (hrl: Hrl) => postMessage({
-    type: "get-entry-info",
+    type: "get-global-entry-info",
     hrl,
   });
 
@@ -184,8 +199,11 @@ export async function getRenderInfo() {
 }
 
 const handleMessage = async (appletServices: AppletServices, request: ParentToAppletRequest) => {
+  console.log("GOT HANDLEMESSAGE: with appletServices.getEntryInfo: ", appletServices.getEntryInfo);
   switch (request.type) {
-    case "get-entry-info":
+    case "get-applet-entry-info":
+      console.log("@WeClient: @handleMessage: got get-entry-info request with appletServices: ", appletServices);
+      console.log("@WeClient: @handleMessage: got get-entry-info request with appletServices.getEntryInfo: ", appletServices.getEntryInfo);
       return appletServices.getEntryInfo(
         request.roleName,
         request.integrityZomeName,

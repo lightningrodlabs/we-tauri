@@ -37,7 +37,7 @@ export class EntryTitle extends LitElement {
   );
 
   renderName(info: EntryInfo | undefined) {
-    if (!info) return html``;
+    if (!info) return html`[Unknown]`;
 
     return html` <sl-icon
         .src=${info.icon_src}
