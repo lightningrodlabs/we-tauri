@@ -1,20 +1,18 @@
 import { contextProvided } from "@lit-labs/context";
-import { html, css, CSSResult } from "lit";
+import { html, css, CSSResult, PropertyValueMap } from "lit";
 
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
-import { query, state } from "lit/decorators.js";
+import {  state } from "lit/decorators.js";
 import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
-import { SlTooltip } from "@scoped-elements/shoelace";
+import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
-import { TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
-import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { get } from "svelte/store";
 import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
 import { ProfilePrompt } from "../components/profile-prompt";
 
@@ -22,8 +20,11 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: profilesStoreContext, subscribe: true })
-  _profilesStore!: ProfilesStore;
+  _profilesStore = new StoreSubscriber(
+    this,
+    () => this._matrixStore.profilesStore(this.weGroupId),
+    () => [this._matrixStore, this.weGroupId]
+  );
 
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
@@ -34,6 +35,12 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   _neighbourhoodInfo = new TaskSubscriber(
     this,
     () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
+    () => [this._matrixStore, this.weGroupId]
+  );
+
+  _neighbourhoodProfile = new TaskSubscriber(
+    this,
+    () => Promise.resolve(this._profilesStore.value!.myProfile),
     () => [this._matrixStore, this.weGroupId]
   );
 
@@ -82,7 +89,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
                     Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
                   </p>
                   <div slot="footer">
-                    <nh-button label="Browse Applets" .variant=${"primary"} .clickHandler=${() => this._showLibrary = true} .size=${"stretch"}></nh-button>
+                    <nh-button label="Browse Applets" .variant=${"primary"} @click=${() => this._showLibrary = true} .size=${"stretch"}></nh-button>
                   </div>
                 </nh-card>  
               </div>
@@ -109,18 +116,21 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     `
   }
 
+  refresh() {
+    this.requestUpdate()
+  }
+    
   render() {
     return this._neighbourhoodInfo.render({
-      pending: () => html`
-        <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
-          <mwc-circular-progress indeterminate></mwc-circular-progress><slot></slot>
-        </div>`,
+      pending: () => html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>`, // TODO: fix this loading transition - it is currently quite jarring
       complete: (info: NeighbourhoodInfo) => {
-        const nhProfilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash)) as ProfilesStore;
-
-        return typeof (get(nhProfilesStore.myProfile) as any)?.value === 'undefined'
-          ? html`<profile-prompt .profilesStore=${nhProfilesStore} .neighbourhoodInfo=${info}></profile-prompt>`
-          : this.renderContent()
+        return this._neighbourhoodProfile.render({
+          complete: (profileInfo) => {
+            return (profileInfo as any)?.value?.nickname
+            ? this.renderContent()
+            : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
+          }
+        })
         }
     })
   }
@@ -135,6 +145,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       "invitations-block": InvitationsBlock,
       "neighbourhood-settings": NeighbourhoodSettings,
       "sl-tooltip": SlTooltip,
+      "sl-skeleton": SlSkeleton,
   }
 
   static styles : CSSResult[] = [
@@ -142,8 +153,9 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       css`
         /** Layout **/
         
-        :host {
+        main {
           display: flex;
+          flex: 1;
         }
 
         .container {

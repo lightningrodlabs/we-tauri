@@ -73,6 +73,7 @@ export class NHCreateProfile extends NHComponentShoelace {
         }
       }
       await this.profilesStore!.client.createProfile(payload);
+      await this.profilesStore!.myProfile.reload();
       this.dispatchEvent(
         new CustomEvent('profile-created', {
           detail: {
@@ -82,7 +83,6 @@ export class NHCreateProfile extends NHComponentShoelace {
           composed: true,
         }),
         );
-        await this.profilesStore!.myProfile.reload();
     } catch (e) {
       console.error(e);
     }
