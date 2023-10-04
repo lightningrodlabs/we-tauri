@@ -23,13 +23,13 @@ import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "../../utils";
-import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { NHButton, NHComponent, NHDialog } from "@neighbourhoods/design-system-components";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { AppletListItem } from "./applet-list-item";
+import { UninstallApplet } from "../dialogs/uninstall-applet";
 
 export class AppletInstanceStatusList extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -50,13 +50,16 @@ export class AppletInstanceStatusList extends NHComponent {
   _copiedSnackbar!: Snackbar;
 
   @query("#uninstall-applet-dialog")
-  _uninstallAppletDialog!: UninstallAppletDialog;
+  _uninstallAppletDialog;
 
   @query("#federate-applet-dialog")
   _federateAppletDialog!: FederateAppletDialog;
 
   @state()
   private _widgetConfigDialogActivated: boolean = false;
+
+  @state()
+  private _currentAppInfo!: AppletInstanceInfo;
 
   async joinGroup(
     invitationActionHash: ActionHash,
@@ -96,8 +99,6 @@ export class AppletInstanceStatusList extends NHComponent {
         (this.shadowRoot?.getElementById("app-uninstalled-snackbar") as Snackbar).show();
         await this.matrixStore.fetchMatrix();
         this.requestUpdate();
-        // force page refresh to clear remaining intervals, timeouts etc.
-        window.location.reload();
       }).catch((e) => {
         console.log("Error: ", e);
         (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
@@ -142,7 +143,7 @@ export class AppletInstanceStatusList extends NHComponent {
                     ></nh-sensemaker-settings>
                   </div>
                 </nh-dialog>` : html``}
-                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => { this._uninstallAppletDialog.open() }}></applet-list-item>
+                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => {this._currentAppInfo = appletInfo;  this._uninstallAppletDialog.open()}}></applet-list-item>
               `;
             })}`
       }
@@ -185,7 +186,7 @@ export class AppletInstanceStatusList extends NHComponent {
 
       <uninstall-applet-dialog
         id="uninstall-applet-dialog"
-        @confirm-uninstall=${(e) => this.uninstallApp(e.detail.installedAppInfo)}
+        @confirm-uninstall=${() => {this.uninstallApp(this._currentAppInfo.appInfo)}}
       ></uninstall-applet-dialog>
 
       <federate-applet-dialog
@@ -211,7 +212,7 @@ export class AppletInstanceStatusList extends NHComponent {
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "applet-list-item": AppletListItem,
-      "uninstall-applet-dialog": UninstallAppletDialog,
+      "uninstall-applet-dialog": UninstallApplet,
       "federate-applet-dialog": FederateAppletDialog,
       "nh-sensemaker-settings": NHSensemakerSettings,
       'nh-dialog': NHDialog,
