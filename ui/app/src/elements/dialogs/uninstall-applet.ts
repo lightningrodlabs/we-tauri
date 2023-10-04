@@ -1,27 +1,19 @@
-import { css, CSSResult, html } from "lit";
-import { property, query } from "lit/decorators.js";
+import { CSSResult, html } from "lit";
+import { property } from "lit/decorators.js";
 
-import { AppInfo } from "@holochain/client";
 import { NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
 
-export class UninstallAppletDialog extends NHComponentShoelace {
-  @query("#leave-neighbourhood")
-  _uninstallAppletDialog;
-
-  @property({ type: Object })
-  installedAppInfo: AppInfo | undefined;
-
+export class UninstallApplet extends NHComponentShoelace {
   @property()
-  isOpen: boolean = false;
+  private _isOpen: boolean = false;
 
   open() {
-    this.isOpen = true;
+    this._isOpen = true;
   }
 
   confirm() {
     this.dispatchEvent(
       new CustomEvent("confirm-uninstall", {
-        detail: { installedAppInfo: this.installedAppInfo},
         composed: true,
         bubbles: true,
       })
@@ -36,13 +28,13 @@ export class UninstallAppletDialog extends NHComponentShoelace {
                   .alertMessage=${"Are you sure you want to uninstall this applet?"}
                   .alertType=${"warning"}
                   .dialogType=${"applet-install"}
-                  size=${"medium"}
-                  handleOk=${this.confirm}}
-                  isOpen=${false}
+                  .size=${"medium"}
+                  .handleOk=${this.confirm}
+                  .isOpen=${this._isOpen}
                   .primaryButtonDisabled=${false}
                 >
                 <div slot="inner-content">
-                  <nh-card .theme=${"light"} .title="" .heading="" class="nested-card">
+                  <nh-card .theme=${"dark"} .title="" .heading="" class="nested-card">
                   <ul>
                   <li>This will <strong>delete all data</strong> you have stored within this applet.</li>
                   <li>In case this applet has been federated with other neighbourhoods, <b>it will also be removed from those neighbourhoods</b>.</li>
@@ -68,8 +60,6 @@ export class UninstallAppletDialog extends NHComponentShoelace {
   static get styles() {
     return [
       super.styles as CSSResult,
-      css `
-      `
     ]
   }
 }
