@@ -53,12 +53,12 @@ export async function setupAppletMessageHandler(
       const installedApplets = await toPromise(
         weStore.appletBundlesStore.installedApplets
       );
-      const appletId = installedApplets.find(
+      const appletHash = installedApplets.find(
         (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
       );
 
-      if (!appletId) {
-        console.log("applet Id not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
+      if (!appletHash) {
+        console.log("appletHash not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
         const iframeConfig: IframeConfig = {
           type: "not-installed",
           appletName: lowerCaseAppletId,
@@ -72,7 +72,7 @@ export async function setupAppletMessageHandler(
       const result = await handleAppletIframeMessage(
         weStore,
         openViews,
-        appletId,
+        appletHash,
         message.data.request
       );
       message.ports[0].postMessage({ type: "success", result });
