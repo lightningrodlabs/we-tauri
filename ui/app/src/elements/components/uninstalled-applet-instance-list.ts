@@ -22,9 +22,9 @@ import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { DnaHash, EntryHash } from "@holochain/client";
-import { UninstallAppletDialog } from "../dialogs/uninstall-applet-dialog";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton } from "@neighbourhoods/design-system-components";
+import { UninstallApplet } from "../dialogs/uninstall-applet";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
 
@@ -165,7 +165,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
       "create-we-group-dialog": CreateNeighbourhoodDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
-      "uninstall-applet-dialog": UninstallAppletDialog,
+      "uninstall-applet-dialog": UninstallApplet,
     };
   }
 
