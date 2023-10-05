@@ -121,30 +121,30 @@ pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> ()
     });
 }
 
-pub fn _iframe() -> String {
-    format!(
-        r#"
-        <html>
-          <head>
-            <style>
-              body {{
-                margin: 0;
-                height: 100%;
-                width: 100%;
-                display: flex;
-              }}
-            </style>
-          </head>
-          <body>
-            <script type="module">
-              {}
-            </script>
-          </body>
-        </html>
-    "#,
-        include_str!("../../ui/applet-iframe/dist/index.mjs")
-    )
-}
+// pub fn _iframe() -> String {
+//     format!(
+//         r#"
+//         <html>
+//           <head>
+//             <style>
+//               body {{
+//                 margin: 0;
+//                 height: 100%;
+//                 width: 100%;
+//                 display: flex;
+//               }}
+//             </style>
+//           </head>
+//           <body>
+//             <script type="module">
+//               {}
+//             </script>
+//           </body>
+//         </html>
+//     "#,
+//         include_str!("../../ui/applet-iframe/dist/index.mjs")
+//     )
+// }
 
 pub fn app_id_from_applet_id(applet_id: &String) -> String {
     format!("applet#{}", applet_id)
