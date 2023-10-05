@@ -11,7 +11,8 @@ import {
 } from "@holochain/client";
 
 
-type AppletHash = EntryHash;
+export type AppletHash = EntryHash;
+export type AppletId = EntryHashB64;
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 export type HrlB64 = [DnaHashB64, ActionHashB64 | EntryHashB64];
@@ -43,8 +44,10 @@ export interface GroupProfile {
 export interface AttachmentType {
   label: string;
   icon_src: string;
-  create: (appletClient: AppAgentClient, attachToHrl: Hrl) => Promise<HrlWithContext>;
+  create: (attachToHrl: Hrl) => Promise<HrlWithContext>;
 }
+
+export type AttachmentName = string;
 
 export interface WeNotification {
   /**
@@ -156,6 +159,8 @@ export interface BlockType {
   icon_src: string;
   view: "applet-view" | "cross-applet-view";
 }
+
+export type BlockName = string;
 
 export type RenderInfo = {
   type: "applet-view",

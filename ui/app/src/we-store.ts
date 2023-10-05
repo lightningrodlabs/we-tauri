@@ -43,7 +43,7 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
-import { AppletHash } from "./types.js";
+import { AppletHash, AppletId } from "./types.js";
 import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
@@ -386,7 +386,7 @@ export class WeStore {
         ),
       (allAttachmentTypes) => {
         const attachments: Record<
-          EntryHashB64,
+          AppletId,
           Record<string, InternalAttachmentType>
         > = {};
 

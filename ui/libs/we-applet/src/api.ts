@@ -1,14 +1,14 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap, HoloHashMap, parseHrl } from "@holochain-open-dev/utils";
-import { ActionHash, AppAgentClient,AppAgentWebsocket,CallZomeRequest,CallZomeRequestSigned,DnaHash, EntryHash, EntryHashB64, RoleName, ZomeName, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
-import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo, AppletToParentRequest, AppletToParentMessage, InternalAttachmentType, IframeConfig, HrlLocation, ParentToAppletRequest } from "./types";
+import { ActionHash, AppAgentClient,AppAgentWebsocket,CallZomeRequest,CallZomeRequestSigned, EntryHash, EntryHashB64, RoleName, ZomeName, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
+import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo, AppletToParentRequest, AppletToParentMessage, InternalAttachmentType, IframeConfig, HrlLocation, ParentToAppletRequest, AttachmentName, BlockName, AppletHash, AppletInfo, EntryLocationAndInfo, AppletId } from "./types";
 import { decode } from "@msgpack/msgpack";
 import { toUint8Array } from "js-base64";
 
 
 export class AppletServices {
   constructor() {
-    this.attachmentTypes = {},
+    this.attachmentTypes = async (_appletClient) => ({}),
     this.blockTypes = {},
     this.search = async (_appletClient, _searchFilter) => [],
     this.getEntryInfo = async (
@@ -19,8 +19,17 @@ export class AppletServices {
     ) => undefined
   }
 
-  attachmentTypes: Record<string, AttachmentType>;
-  blockTypes: Record<string, BlockType>;
+  /**
+   * Attachment types that this Applet offers for other Applets to attach
+   */
+  attachmentTypes: (appletClient: AppAgentClient) => Promise<Record<AttachmentName, AttachmentType>>;
+  /**
+   * Render block types that this Applet offers
+   */
+  blockTypes: Record<BlockName, BlockType>;
+  /**
+   * Get info about the specified entry of this Applet
+   */
   getEntryInfo: (
     appletClient: AppAgentClient,
     roleName: RoleName,
@@ -28,22 +37,96 @@ export class AppletServices {
     entryType: string,
     hrl: Hrl,
   ) => Promise<EntryInfo | undefined>;
+  /**
+   * Search in this Applet
+   */
   search: (appletClient: AppAgentClient, searchFilter: string) => Promise<Array<HrlWithContext>>;
 }
 
 export interface WeServices {
-  getGlobalAttachmentTypes: () => Promise<EntryHashMap<Record<string, AttachmentType>>>;
+  /**
+   * Available attachment types across all We Applets
+   * @returns
+   */
+  attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>;
+  /**
+   * Open the main view of the specified Applet
+   * @param appletHash
+   * @returns
+   */
   openAppletMain: (appletHash: EntryHash) => Promise<void>;
+  /**
+   * Open the specified block view of the specified Applet
+   * @param appletHash
+   * @param block
+   * @param context
+   * @returns
+   */
   openAppletBlock: (appletHash, block: string, context: any) => Promise<void>;
+  /**
+   * Open the cross-applet main view of the specified Applet Type.
+   * @param appletBundleId
+   * @returns
+   */
   openCrossAppletMain: (appletBundleId: ActionHash) => Promise<void>;
+  /**
+   * Open the specified block view of the specified Applet Type
+   * @param appletBundleId
+   * @param block
+   * @param context
+   * @returns
+   */
   openCrossAppletBlock: (appletBundleId: ActionHash, block: string, context: any) => Promise<void>;
+  /**
+   * Open the specified HRL as an entry view
+   * @param hrl
+   * @param context
+   * @returns
+   */
   openHrl: (hrl: Hrl, context: any) => Promise<void>;
+  /**
+   * Get the group profile of the specified group
+   * @param groupId
+   * @returns
+   */
   groupProfile: (groupId) => Promise<any>;
-  appletInfo: (appletHash) => Promise<any>;
-  entryInfo: (hrl: Hrl) => Promise<any>;
-  hrlToClipboard: (hrl: HrlWithContext) => Promise<any>;
-  search: (filter: string) => Promise<any>;
-  userSelectHrl: () => Promise<any>;
+  /**
+   * Returns Applet info of the specified Applet
+   * @param appletHash
+   * @returns
+   */
+  appletInfo: (appletHash) => Promise<AppletInfo | undefined>;
+  /**
+   * Gets information about an entry in any other Applet in We
+   * @param hrl
+   * @returns
+   */
+  entryInfo: (hrl: Hrl) => Promise<EntryLocationAndInfo | undefined>;
+  /**
+   * Adds the specified HRL to the We-internal clipboard
+   * @param hrl
+   * @returns
+   */
+  hrlToClipboard: (hrl: HrlWithContext) => Promise<void>;
+  /**
+   * Searching across all We Applets
+   * @param searchFilter
+   * @returns
+   */
+  search: (searchFilter: string) => Promise<any>;
+  /**
+   * Prompts the user with the search bar and We clipboard to select an HRL.
+   * Returns an HrlWithContex as soon as the usser has selected an HRL
+   * or undefined if the user cancels the selection process.
+   * @returns
+   */
+  userSelectHrl: () => Promise<HrlWithContext | undefined>;
+  /**
+   * Sends notifications to We and depending on user settings and urgency level
+   * further to the operating system.
+   * @param notifications
+   * @returns
+   */
   notifyWe: (notifications: Array<WeNotification>) => Promise<any>;
 }
 
@@ -52,13 +135,16 @@ export class WeClient implements WeServices {
 
   appletHash: EntryHash;
   renderInfo: RenderInfo;
+  attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>;
 
   private constructor(
     appletHash: EntryHash,
     renderInfo: RenderInfo,
+    attachmentTypes: ReadonlyMap<AppletHash, Record<AttachmentName, AttachmentType>>,
   ) {
     this.appletHash = appletHash;
     this.renderInfo = renderInfo;
+    this.attachmentTypes = attachmentTypes;
   }
 
   static async connect(appletServices?: AppletServices): Promise<WeClient> {
@@ -76,27 +162,12 @@ export class WeClient implements WeServices {
     // create RenderInfo based on renderView.type and in case of type "background-service", add event listener for messages
     const renderInfo = await renderViewSetup(appletServices);
 
-    // add eventlistener for clipboard
-    window.addEventListener ("keydown", async (zEvent) => {
-      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
-        await postMessage({ type: "toggle-clipboard" })
-      }
-    });
+    // get attachment types across all Applets
+    const globalAttachmentTypes = await getGlobalAttachmentTypes();
 
-    await postMessage({
-      type: "ready",
-    });
-
-    return new WeClient(appletHash, renderInfo);
+    return new WeClient(appletHash, renderInfo, globalAttachmentTypes);
   }
 
-
-  /**
-  * Get Attachment types across all installed Applets
-  */
-  getGlobalAttachmentTypes = async (): Promise<EntryHashMap<Record<string, AttachmentType>>> => {
-    return internalGetAttachmentTypes();
-  }
 
   openAppletMain = async (appletHash: EntryHash): Promise<void> =>
     postMessage({
@@ -200,14 +271,13 @@ const handleMessage = async (appletClient: AppAgentClient, appletServices: Apple
         request.hrl,
       );
     case "get-applet-attachment-types":
-      return appletServices.attachmentTypes;
+      return appletServices.attachmentTypes(appletClient);
     case "get-block-types":
       return appletServices.blockTypes;
     case "search":
       return appletServices.search(appletClient, request.filter);
     case "create-attachment":
-      return appletServices.attachmentTypes[request.attachmentType].create(appletClient, request.attachToHrl);
-
+      return appletServices.attachmentTypes(appletClient)[request.attachmentType].create(request.attachToHrl);
     default:
       throw new Error("Unknown ParentToAppletRequest");
   }
@@ -347,6 +417,11 @@ async function renderViewSetup(appletServices?: AppletServices): Promise<RenderI
       }
     });
 
+    // Send message to AppletHost that background-service is ready and listening
+    await postMessage({
+      type: "ready",
+    });
+
     // return dummy "applet-view" RenderInfo for the sake of keeping the applet-facing API clean, i.e.
     // such that RenderInfo only contains "applet-view" and "cross-applet-view" but not "background-services"
     return {
@@ -367,6 +442,13 @@ async function renderViewSetup(appletServices?: AppletServices): Promise<RenderI
       iframeConfig.appPort,
       iframeConfig.appletHash
     );
+
+    // add eventlistener for clipboard
+    window.addEventListener ("keydown", async (zEvent) => {
+      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+        await postMessage({ type: "toggle-clipboard" })
+      }
+    });
 
     return {
       type: "applet-view",
@@ -401,6 +483,13 @@ async function renderViewSetup(appletServices?: AppletServices): Promise<RenderI
       });
     }
 
+    // add eventlistener for clipboard
+    window.addEventListener ("keydown", async (zEvent) => {
+      if (zEvent.altKey  &&  zEvent.key === "s") {  // case sensitive
+        await postMessage({ type: "toggle-clipboard" })
+      }
+    });
+
     return {
       type: "cross-applet-view",
       view: view.view,
@@ -413,31 +502,31 @@ async function renderViewSetup(appletServices?: AppletServices): Promise<RenderI
 
 
 
-async function internalGetAttachmentTypes() {
-  console.log("@internalGetAttachmentTypes");
-  const attachmentTypes = new EntryHashMap<Record<string, AttachmentType>>();
+async function getGlobalAttachmentTypes() {
+  console.log("@getGlobalAttachmentTypes");
+  const attachmentTypes = new HoloHashMap<AppletHash, Record<AttachmentName, AttachmentType>>();
 
-  const internalAttachmentTypesByGroups: Record<
-    EntryHashB64,
-    Record<string, InternalAttachmentType>
+  const internalAttachmentTypes: Record<
+    AppletId,
+    Record<AttachmentName, InternalAttachmentType>
   > = await postMessage({
     type: "get-global-attachment-types",
   });
 
 
-  console.log("got attachment types by group: ", internalAttachmentTypesByGroups);
+  console.log("got attachment types by group: ", internalAttachmentTypes);
 
   for (const [appletId, appletAttachmentTypes] of Object.entries(
-    internalAttachmentTypesByGroups
+    internalAttachmentTypes
   )) {
-    const attachmentTypesForThisApplet: Record<string, AttachmentType> = {};
+    const attachmentTypesForThisApplet: Record<AttachmentName, AttachmentType> = {};
     for (const [name, attachmentType] of Object.entries(
       appletAttachmentTypes
     )) {
       attachmentTypesForThisApplet[name] = {
         label: attachmentType.label,
         icon_src: attachmentType.icon_src,
-        create: (appletClient, attachToHrl) =>
+        create: (attachToHrl) =>
           postMessage({
             type: "create-attachment",
             request: {

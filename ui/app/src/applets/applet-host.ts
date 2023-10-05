@@ -16,6 +16,8 @@ import {
   BlockType,
   AppletServices,
   WeServices,
+  GroupProfile,
+  AttachmentName,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
@@ -86,7 +88,9 @@ export async function setupAppletMessageHandler(
 
 export function buildHeadlessWeClient(weStore: WeStore): WeServices {
   return {
-    async entryInfo(hrl: Hrl) {
+    // background-services don't need to provide global attachment types as they are available via the WeStore anyway.
+    attachmentTypes: new HoloHashMap<AppletHash, Record<AttachmentName, AttachmentType>>(),
+    async entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined> {
       const dnaHash = hrl[0];
 
       console.log("@headlessWeClient: getting entryInfo...");
@@ -112,7 +116,7 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
 
       return entryAndAppletInfo;
     },
-    async groupProfile(groupId: DnaHash) {
+    async groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined> {
       const groupProfile = await toPromise(
         pipe(
           weStore.groups.get(groupId),
@@ -169,7 +173,6 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
     async notifyWe(notifications: Array<WeNotification>) {
       throw new Error("notify is not implemented on headless WeServices.");
     },
-    getGlobalAttachmentTypes: async () => new EntryHashMap(),
     openAppletMain: async () => {},
     openCrossAppletMain: async () => {},
     openHrl: async () => {},
