@@ -37,7 +37,6 @@ export type EntryTypes =
 
 export interface Post {
   title: string;
-
   content: string;
 }
 

@@ -12,12 +12,94 @@
   </head>
 
   <body>
-    <example-applet></example-applet>
+    <we-client-context id="provider">
+      <example-applet id="example-applet"></example-applet>
+    </we-client-context>
     <script type="module">
       import '@shoelace-style/shoelace/dist/themes/light.css';
-      import './src/example-applet.ts';
+      // import './src/example-applet.ts';
       import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
+      import { WeClient } from "@lightningrodlabs/we-applet";
+      import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js"
+      import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
+      import { CellType, encodeHashToBase64 } from "@holochain/client";
+
+      import { ExampleApplet } from "./src/example-applet.ts";
+      import { PostsClient } from "./src/posts-client.ts";
+      import { PostsStore } from "./src/posts-store.ts";
+
+
       setBasePath('shoelace');
+
+      (async function() {
+        console.log("@index.html: running async function.");
+
+
+        const appletServices = {
+          attachmetTypes: {},
+          blockTypes: {},
+          search: async (appletClient, searchFilter) => {
+            const postsClient = new PostsClient(weClient.renderInfo.appletClient, "forum");
+            const appInfo = await appletClient.appInfo();
+            const dnaHash = (appInfo.cell_info.forum[0])[
+              CellType.Provisioned
+            ].cell_id[0];
+            console.log("my dnaHash: ", encodeHashToBase64(dnaHash));
+            const allPosts = await postsClient.getAllPosts();
+            return allPosts
+              .map((postEntryRecord) => [postEntryRecord.entry, postEntryRecord.actionHash])
+              .filter(([post, _actionHash]) => post.title.toLowerCase().includes(searchFilter.toLowerCase()) ? true : false)
+              .map(([post, actionHash]) => ({
+                hrl: [dnaHash, actionHash],
+                context: {},
+              }));
+          },
+          getEntryInfo: async (
+            roleName,
+            integrityZomeName,
+            entryType,
+            hrl
+          ) => {
+            console.log("@EXAMPLE-APPLET: entryInfoHandler is being called with parameters: ", roleName, integrityZomeName, entryType, hrl);
+            switch (roleName) {
+              case "forum":
+                switch (integrityZomeName) {
+                  case "posts_integrity":
+                    switch (entryType) {
+                      case "post":
+                        const postsClient = new PostsClient(appletClient, roleName);
+                        const post = await postsClient.getPost(hrl[1]);
+                        if (!post) return undefined;
+                        return {
+                          name: post.entry.title,
+                          icon_src: wrapPathInSvg(mdiPost),
+                        };
+                      default:
+                        throw new Error("Unknown entry type.");
+                    }
+                  default:
+                    throw new Error("Unknown zome.");
+                }
+              default:
+                throw new Error("Unknown role name.");
+            }
+          }
+        };
+
+
+        const weClient = await WeClient.connect(appletServices);
+
+        console.log("@index.html: weClient: ", weClient);
+
+        const provider = document.getElementById("provider");
+        provider.weClient = weClient;
+
+        customElements.define("example-applet", ExampleApplet);
+        const exampleApplet = document.getElementById("example-applet");
+        exampleApplet.postsStore = new PostsStore(new PostsClient(weClient.renderInfo.appletClient, "forum"));
+        exampleApplet.attachmentsStore = new AttachmentsStore(new AttachmentsClient(weClient.renderInfo.appletClient, "forum"));
+      })();
+
     </script>
   </body>
 </html>

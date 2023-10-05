@@ -1,5 +1,5 @@
 import { LitElement, css, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import { localized } from "@lit/localize";
 import { sharedStyles, wrapPathInSvg } from "@holochain-open-dev/elements";
@@ -9,148 +9,72 @@ import "./elements/create-post.js";
 import "./elements/post-detail.js";
 import "./elements/posts-context.js";
 
-import { WeClient, type RenderInfo, getRenderInfo, AppletServices } from "@lightningrodlabs/we-applet";
+import { WeClient, type RenderInfo, AppletServices, weClientContext } from "@lightningrodlabs/we-applet";
 
 import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/attachments/dist/elements/attachments-context.js";
 
 import "./applet-main.js";
 import "./cross-applet-main.js";
-import { PostsClient } from "./posts-client.js";
-import { PostsStore } from "./posts-store.js";
-import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
+import { AttachmentsStore } from "@lightningrodlabs/attachments";
 import { CellType } from "@holochain/client";
 import { mdiPost } from "@mdi/js";
+import { consume } from "@lit-labs/context";
+import { PostsStore } from "./posts-store.js";
 
 @localized()
-@customElement("example-applet")
+// @customElement("example-applet")
 export class ExampleApplet extends LitElement {
 
-  @state()
-  weClient!: WeClient | undefined;
+  @consume({ context: weClientContext })
+  weClient!: WeClient;
 
-  @state()
-  renderInfo!: RenderInfo | undefined;
+  @property()
+  postsStore!: PostsStore;
 
-  @state()
-  postsStore: PostsStore | undefined;
-
-  @state()
-  attachmentsStore: AttachmentsStore | undefined;
-
-  async firstUpdated() {
-    // setupAppletServices( {
-
-    // })
-    try {
-      try {
-        const renderInfo = await getRenderInfo();
-        this.renderInfo = renderInfo;
-        console.log("Got RenderInfo: ", renderInfo);
-      } catch (e) {
-        console.error("Failed to get render Info: ", e);
-      }
-      if (!this.renderInfo) throw new Error("Failed to get RenderInfo.");
-
-      let appletServices: AppletServices | undefined;
-
-      if (this.renderInfo.type === "applet-view") {
-        this.postsStore = new PostsStore(new PostsClient(this.renderInfo.appletClient, "forum"));
-        this.attachmentsStore = new AttachmentsStore(new AttachmentsClient(this.renderInfo.appletClient, "forum"));
-
-        // Define entry info method
-        const appletClient = this.renderInfo.appletClient;
-
-        appletServices = {
-          search: async () => [],
-          getAppletAttachmentTypes: async () => ({}),
-          getBlockTypes: async () => ({}),
-          getEntryInfo: async (
-            roleName,
-            integrityZomeName,
-            entryType,
-            hrl
-          ) => {
-            console.log("@EXAMPLE-APPLET: entryInfoHandler is being called with parameters: ", roleName, integrityZomeName, entryType, hrl);
-            switch (roleName) {
-              case "forum":
-                switch (integrityZomeName) {
-                  case "posts_integrity":
-                    switch (entryType) {
-                      case "post":
-                        const postsClient = new PostsClient(appletClient, roleName);
-                        const post = await postsClient.getPost(hrl[1]);
-                        if (!post) return undefined;
-                        return {
-                          name: post.entry.title,
-                          icon_src: wrapPathInSvg(mdiPost),
-                        };
-                      default:
-                        throw new Error("Unknown entry type.");
-                    }
-                  default:
-                    throw new Error("Unknown zome.");
-                }
-              default:
-                throw new Error("Unknown role name.");
-            }
-          }
-        };
-      }
-
-      this.weClient = await WeClient.connect(appletServices);
-
-      console.log("Got WeClient: ", this.weClient);
-    } catch (e) {
-      console.error("Failed to connect WeClient: ", e);
-    }
-
-  }
+  @property()
+  attachmentsStore!: AttachmentsStore;
 
   render() {
-    if (!this.renderInfo) return html`loading...`;
-    switch (this.renderInfo.type) {
+    if (!this.weClient.renderInfo) return html`loading...`;
+    switch (this.weClient.renderInfo.type) {
       case "applet-view":
-        switch (this.renderInfo.view.type) {
+        switch (this.weClient.renderInfo.view.type) {
           case "main":
-            const client = this.renderInfo.appletClient;
+            const client = this.weClient.renderInfo.appletClient;
             return html`
               <posts-context .store=${this.postsStore}>
-                <we-client-context .weClient=${this.weClient}>
-                  <attachments-context .store=${this.attachmentsStore}>
-                    <applet-main
-                      .client=${this.renderInfo.appletClient}
-                      .weClient=${this.weClient}
-                      @post-selected=${async (e: CustomEvent) => {
-                        const appInfo = await client.appInfo();
-                        const dnaHash = (appInfo.cell_info.forum[0] as any)[
-                          CellType.Provisioned
-                        ].cell_id[0];
-                        this.weClient!.openHrl([dnaHash, e.detail.postHash], {
-                          detail: "post",
-                        });
-                      }}
-                    ></applet-main>
-                  </attachments-context>
-                </we-client-context>
+                <attachments-context .store=${this.attachmentsStore}>
+                  <applet-main
+                    .client=${this.weClient.renderInfo.appletClient}
+                    .weClient=${this.weClient}
+                    @post-selected=${async (e: CustomEvent) => {
+                      const appInfo = await client.appInfo();
+                      const dnaHash = (appInfo.cell_info.forum[0] as any)[
+                        CellType.Provisioned
+                      ].cell_id[0];
+                      this.weClient!.openHrl([dnaHash, e.detail.postHash], {
+                        detail: "post",
+                      });
+                    }}
+                  ></applet-main>
+                </attachments-context>
               </we-client-context>
             `
           case "block":
             throw new Error("Block view is not implemented.");
           case "entry":
-            switch (this.renderInfo.view.roleName) {
+            switch (this.weClient.renderInfo.view.roleName) {
               case "forum":
-                switch (this.renderInfo.view.integrityZomeName) {
+                switch (this.weClient.renderInfo.view.integrityZomeName) {
                   case "posts_integrity":
-                    switch (this.renderInfo.view.entryType) {
+                    switch (this.weClient.renderInfo.view.entryType) {
                       case "post":
                         return html`
                           <posts-context .store=${this.postsStore}>
-                            <we-client-context .weClient=${this.weClient}>
-                              <attachments-context .store=${this.attachmentsStore}>
-                                <post-detail .postHash=${this.renderInfo.view.hrl[1]}></post-detail>
-                              </attachments-context>
-                            </we-client-context>
+                            <attachments-context .store=${this.attachmentsStore}>
+                              <post-detail .postHash=${this.weClient.renderInfo.view.hrl[1]}></post-detail>
+                            </attachments-context>
                           </we-client-context>
                         `
                       default:
@@ -167,9 +91,7 @@ export class ExampleApplet extends LitElement {
         }
       case "cross-applet-view":
         return html`
-          <we-client-context .weClient=${this.weClient}>
-            <cross-applet-main .applets=${this.renderInfo.applets}></cross-applet-main>
-          </we-client-context>
+          <cross-applet-main .applets=${this.weClient.renderInfo.applets}></cross-applet-main>
         `;
       default:
         throw new Error("Unknown render view type");
