@@ -110,7 +110,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
 
       <uninstall-applet-dialog
         id="uninstall-applet-dialog"
-        @confirm-uninstall=${() => {this.reinstallApp(this._currentAppInfo.appInfo)}}
+        @confirm-uninstall=${() => {this.reinstallApp(this._currentAppInfo.appletId)}}
       ></uninstall-applet-dialog>
 
       ${this.renderAppStates()}
