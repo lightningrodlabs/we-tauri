@@ -5,8 +5,6 @@ import { html, css } from "lit";
 import { StoreSubscriber   } from "lit-svelte-stores";
 import {
   Button,
-  List,
-  ListItem,
   Card,
   Snackbar,
   Icon,
@@ -143,7 +141,7 @@ export class AppletInstanceStatusList extends NHComponent {
                     ></nh-sensemaker-settings>
                   </div>
                 </nh-dialog>` : html``}
-                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => {this._currentAppInfo = appletInfo;  this._uninstallAppletDialog.open()}}></applet-list-item>
+                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => {this._currentAppInfo = appletInfo; this._uninstallAppletDialog.open()}}></applet-list-item>
               `;
             })}`
       }
@@ -202,8 +200,6 @@ export class AppletInstanceStatusList extends NHComponent {
       "nh-button": NHButton,
       "mwc-button": Button,
       "mwc-icon-button": IconButton,
-      "mwc-list": List,
-      "mwc-list-item": ListItem,
       "mwc-card": Card,
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
