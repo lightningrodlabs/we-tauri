@@ -80,7 +80,7 @@ export class EditCustomGroupView extends LitElement {
           content: `<iframe src="${appletOrigin(
             this.weStore.conductorInfo,
             appletHash
-          )}?view=applet-view&view-type=block&block=${blockName}" style="width: 100%"></iframe>`,
+          )}?view=${block.view}&view-type=block&block=${blockName}" style="width: 100%"></iframe>`,
         });
       }
     }

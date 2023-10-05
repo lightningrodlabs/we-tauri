@@ -154,6 +154,7 @@ export type CrossAppletView =
 export interface BlockType {
   label: string;
   icon_src: string;
+  view: "applet-view" | "cross-applet-view";
 }
 
 export type RenderInfo = {
