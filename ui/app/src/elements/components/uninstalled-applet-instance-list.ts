@@ -1,6 +1,4 @@
-import { JoinMembraneInvitation } from "@holochain-open-dev/membrane-invitations";
 import { contextProvided } from "@lit-labs/context";
-import { decode } from "@msgpack/msgpack";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -15,9 +13,9 @@ import {
 } from "@scoped-elements/material-web";
 
 import { matrixContext, weGroupContext } from "../../context";
-import { MatrixStore } from "../../matrix-store";
+import { AppletInstanceInfo, MatrixStore, UninstalledAppletInstanceInfo } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { query } from "lit/decorators.js";
+import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from "@holochain-open-dev/elements";
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
@@ -25,9 +23,9 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton } from "@neighbourhoods/design-system-components";
 import { UninstallApplet } from "../dialogs/uninstall-applet";
+import { AppletListItem } from "./applet-list-item";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
-
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -39,7 +37,8 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     () => this.matrixStore.getUninstalledAppletInstanceInfosForGroup(this.weGroupId)
   );
 
-
+  @state()
+  private _currentAppInfo!: UninstalledAppletInstanceInfo;
 
   reinstallApp(appletInstanceId: EntryHash) {
     this.dispatchEvent(
@@ -51,82 +50,40 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     );
   }
 
-
-
-  renderErrorSnackbar() {
-    return html`
-      <mwc-snackbar
-        style="text-align: center;"
-        id="error-snackbar"
-        labelText="Error."
-      >
-      </mwc-snackbar>
-    `;
+  refresh() {
+    this.matrixStore.fetchMatrix();
+    this.requestUpdate();
   }
-
+  
   renderAppStates() {
     const appletInstanceInfos = this._uninstalledApplets.value;
-    if (!appletInstanceInfos || appletInstanceInfos.length == 0) {
-      // TODO! make sure that this refresh button actually does anything.
-      return html`
-        <p>There are no uninstalled applet instances.</p>
-        <div class="row center-content" style="margin: calc(1px * var(--nh-spacing-lg)) 0;">
-          <nh-button
-            label="Refresh"
-            .variant=${"neutral"}
-            .clickHandler=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            .iconImageB64=${b64images.icons.refresh}
-            .size=${"icon-lg"}
-          >
-          </nh-button>
-        </div>
-      `;
-    } else {
-      return html`
-        ${appletInstanceInfos
-          .sort((info_a, info_b) => info_a.applet.customName.localeCompare(info_b.applet.customName)) // sort alphabetically
+    return html`${appletInstanceInfos!.length == 0 || !appletInstanceInfos
+      ? html`<p>You have no applet instances to uninstall in this neighbourhood.</p>`
+      : html`
+      ${
+        appletInstanceInfos!.length == 0 || !appletInstanceInfos
+          ? html`<p>You have no applet instances installed in this neighbourhood.</p>`
+          : html `
+          ${appletInstanceInfos
+            .sort((info_a, info_b) => info_a.applet.customName.localeCompare(info_b.applet.customName)) // sort alphabetically
           .map((appletInfo) => {
-            return html`
-              <div class="column" style="align-items: right; width: 100%;">
-                <mwc-card style="margin: 5px;">
-                  <div
-                    class="row"
-                    style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
-                  >
-                    <img
-                        style="margin-right: 10px;"
-                        class="applet-image"
-                        src=${appletInfo.applet.logoSrc!}
-                      />
-                    <strong>${appletInfo.applet.customName}</strong>
-                    <div class="row" style="margin-left: auto; align-items: center;">
-
-                      <mwc-button
-                        class="reinstall-button"
-                        raised
-                        label="REINSTALL"
-                        @click=${() => this.reinstallApp(appletInfo.appletId)}
-                      >
-                      </mwc-button>
-                    </div>
-                  </div>
-                </mwc-card>
-              </div>
-            `;
-          })
+            return html`<applet-list-item .appletInfo=${appletInfo} .onReinstall=${() => {this._currentAppInfo = appletInfo; // TODO do something
+          }}></applet-list-item>`;
+          })}`
         }
-        <div class="row center-content">
-          <mwc-button
-            style="margin-top: 20px; text-align: center;"
-            @click=${() => { this.matrixStore.fetchMatrix(); this.requestUpdate(); }}
-            icon="refresh"
-            >Refresh</mwc-button
-          >
-        </div>
-      `;
-    }
+    `}
+      <div class="refresh-button-row">
+        <nh-button
+          label="Refresh"
+          .variant=${"neutral"}
+          @click=${this.refresh}
+          .iconImageB64=${b64images.icons.refresh}
+          .size=${"icon-lg"}
+        >
+        </nh-button>
+      </div>
+    `;
   }
-
 
   render() {
     return html`
@@ -145,8 +102,16 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
         timeoutMs="4000"
         labelText="Applet uninstalled."
       ></mwc-snackbar>
-      ${this.renderErrorSnackbar()}
+      <mwc-snackbar
+        style="text-align: center;"
+        id="error-snackbar"
+        labelText="Error."
+      ></mwc-snackbar>
 
+      <uninstall-applet-dialog
+        id="uninstall-applet-dialog"
+        @confirm-uninstall=${() => {this.reinstallApp(this._currentAppInfo.appInfo)}}
+      ></uninstall-applet-dialog>
 
       ${this.renderAppStates()}
     `;
@@ -155,17 +120,8 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   static get elementDefinitions() {
     return {
       "nh-button": NHButton,
-      "mwc-button": Button,
-      "mwc-list": List,
-      "mwc-list-item": ListItem,
-      "mwc-card": Card,
-      "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
-      "holo-identicon": HoloIdenticon,
-      "create-we-group-dialog": CreateNeighbourhoodDialog,
-      "sl-tooltip": SlTooltip,
-      "mwc-dialog": Dialog,
-      "uninstall-applet-dialog": UninstallApplet,
+      "applet-list-item": AppletListItem,
     };
   }
 
@@ -175,43 +131,10 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
         color: var(--nh-theme-fg-muted); 
       }
       
-      .content-pane {
-        padding: 30px;
-      }
-
-      .title {
-        align-items: center;
-        font-size: 1.2em;
-        text-align: center;
-      }
-
-      .start-button {
-        --mdc-theme-primary: #17c200;
-      }
-
-      .disable-button {
-        --mdc-theme-primary: #f9a70a;;
-      }
-
-      .reinstall-button {
-        /* --mdc-theme-primary: #17c200; */
-        margin-left: 5px;
-      }
-
-      .applet-image {
-        height: 30px;
-        width: 30px;
-        border-radius: 50%;
-      }
-
-      .pubkey-field {
-        color: black;
-        background: #f4f0fa;
-        border-radius: 4px;
-        overflow-x: auto;
-        padding: 10px;
-        white-space: nowrap;
-        cursor: pointer;
+      .refresh-button-row {
+        margin: calc(1px * var(--nh-spacing-lg)) 0;
+        display: grid;
+        place-content: center;
       }
     `;
 
