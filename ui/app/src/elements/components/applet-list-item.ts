@@ -26,6 +26,9 @@ export class AppletListItem extends NHComponent {
   onJoin!: () => void;
 
   @property()
+  onReinstall!: () => void;
+
+  @property()
   onDelete!: () => void;
 
   async disableApp(appInfo: AppInfo) {
@@ -61,6 +64,16 @@ export class AppletListItem extends NHComponent {
         .variant=${"success"}
         .size=${"md"}
         .clickHandler=${async () => await this.onJoin()}
+      ></nh-button>
+    `
+    : typeof this.onReinstall !== "undefined"
+    ? html`
+      <nh-button
+        class="reinstall-button"
+        label="Reinstall"
+        .variant=${"warning"}
+        .size=${"md"}
+        .clickHandler=${async () => await this.onReinstall()}
       ></nh-button>
     `
     : html`
