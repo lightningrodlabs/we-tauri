@@ -52,7 +52,9 @@ export default class NHDialog extends NHComponentShoelace {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.openButtonRef?.removeEventListener('click', this.showDialog);
+    if(this.openButtonRef && typeof this.openButtonRef?.removeEventListener == 'function') {
+      this.openButtonRef?.removeEventListener('click', this.showDialog);
+    }
   }
 
   updated(changedProperties: any) {
