@@ -43,7 +43,7 @@ export interface GroupProfile {
 export interface AttachmentType {
   label: string;
   icon_src: string;
-  create: (attachToHrl: Hrl) => Promise<HrlWithContext>;
+  create: (appletClient: AppAgentClient, attachToHrl: Hrl) => Promise<HrlWithContext>;
 }
 
 export interface WeNotification {
@@ -175,7 +175,11 @@ export type RenderView =
   | {
       type: "cross-applet-view";
       view: CrossAppletView;
-};
+    }
+  | {
+      type: "background-service";
+      view: null;
+  };
 
 
 export type ParentToAppletRequest =

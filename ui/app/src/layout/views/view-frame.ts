@@ -5,10 +5,8 @@ import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
 import { RenderView } from "@lightningrodlabs/we-applet";
 
-import { renderViewToQueryString } from "applet-messages";
-
 import { weStyles } from "../../shared-styles.js";
-import { appletOrigin } from "../../utils.js";
+import { appletOrigin, renderViewToQueryString } from "../../utils.js";
 import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
 

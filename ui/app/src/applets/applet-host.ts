@@ -89,11 +89,15 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
     async entryInfo(hrl: Hrl) {
       const dnaHash = hrl[0];
 
+      console.log("@headlessWeClient: getting entryInfo...");
       const location = await toPromise(
         weStore.hrlLocations.get(dnaHash).get(hrl[1])
       );
+      console.log("@headlessWeClient: Got location: ", location);
 
       if (!location) return undefined;
+
+      console.log("%%%%%% Getting entryInfo...");
 
       const entryInfo = await toPromise(
         weStore.entryInfo.get(hrl[0]).get(hrl[1])
@@ -132,7 +136,9 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
       } as AppletInfo;
     },
     async search(filter: string) {
+      console.log("%%%%%% @headlessWeClient: searching...");
       const hosts = await toPromise(weStore.allAppletsHosts);
+      console.log("%%%%%% @headlessWeClient: got hosts.");
 
       const promises: Array<Promise<Array<HrlWithContext>>> = [];
 
@@ -140,10 +146,10 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
         promises.push(
           (async () => {
             try {
-              const results = await host.search(filter);
+              const results = host ? await host.search(filter) : [];
               return results;
             } catch (e) {
-              console.warn(e);
+              console.warn(`Search in applet ${host?.appletId} failed: ${e}`);
               return [];
             }
           })()
@@ -184,7 +190,7 @@ export async function handleAppletIframeMessage(
   appletHash: EntryHash,
   message: AppletToParentRequest
 ) {
-  let host: AppletHost;
+  let host: AppletHost | undefined;
   const weServices = buildHeadlessWeClient(weStore);
 
   const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
@@ -346,10 +352,10 @@ export async function handleAppletIframeMessage(
           (appletStore) => appletStore!.host
         )
       );
-      return host.createAttachment(
+      return host ? host.createAttachment(
         message.request.attachmentType,
         message.request.attachToHrl
-      );
+      ) : Promise.reject(new Error("No applet host available."));
     case "localStorage.setItem":
       const appletLocalStorageJson: string | null = window.localStorage.getItem(appletLocalStorageKey);
       const appletLocalStorage: Record<string, string> = appletLocalStorageJson ? JSON.parse(appletLocalStorageJson) : {};
@@ -378,7 +384,12 @@ export async function handleAppletIframeMessage(
 }
 
 export class AppletHost {
-  constructor(public iframe: HTMLIFrameElement) {}
+
+  appletId: AppletId;
+
+  constructor(public iframe: HTMLIFrameElement, appletId: AppletId) {
+    this.appletId = appletId;
+  }
 
   async getAppletEntryInfo(
     roleName: string,

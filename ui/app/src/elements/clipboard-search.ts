@@ -33,7 +33,7 @@ import {
   WeClient,
 } from "@lightningrodlabs/we-applet";
 import { weClientContext } from "@lightningrodlabs/we-applet";
-import { EntryHash } from "@holochain/client";
+import { EntryHash, encodeHashToBase64 } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { getAppletsInfosAndGroupsProfiles } from "@lightningrodlabs/we-applet";
 import { mdiMagnify } from "@mdi/js";
@@ -171,7 +171,10 @@ export class ClipboardSearch extends LitElement implements FormField {
   }
 
   async search(filter: string): Promise<SearchResult> {
+    console.log("SEARCHING...");
     const hrls = await this.weClient.search(filter);
+    console.log("GOT SEARCH RESULTS: ", hrls);
+    console.log("GOT B64 SEARCH RESULTS: ", hrls.map((hrl) => ({ hrl: [encodeHashToBase64(hrl.hrl[0]), encodeHashToBase64(hrl.hrl[1])], context: hrl.context})));
 
     const hrlsWithInfo = await Promise.all(
       hrls.map(async (hrlWithContext) => {
@@ -255,6 +258,7 @@ export class ClipboardSearch extends LitElement implements FormField {
           `
         );
       case "error":
+        console.error("Error searching entries: ", this._searchEntries.value.error);
         return html`
           <display-error
             style="flex: 1; display:flex"

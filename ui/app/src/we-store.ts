@@ -273,6 +273,7 @@ export class WeStore {
         if (!app) throw new Error("The given dna is not installed");
         if (!app.appInfo.installed_app_id.startsWith("applet#")) throw new Error("The given dna is part of an app that's not an applet.");
 
+        console.log("@dnaLocations: found and returning app: ", app);
         return {
           appletHash: appletHashFromAppId(app.appInfo.installed_app_id),
           appInfo: app.appInfo,
@@ -284,8 +285,9 @@ export class WeStore {
 
   hrlLocations = new LazyHoloHashMap(
     (dnaHash: DnaHash) =>
-      new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
-        asyncDerived(
+      new LazyHoloHashMap((hash: EntryHash | ActionHash) => {
+        console.log("TRYING TO GET HRL LOCATION.");
+        return asyncDerived(
           this.dnaLocations.get(dnaHash),
           async (dnaLocation: DnaLocation) => {
             console.log("@hrlLocations: got dnaLocation: ", dnaLocation);
@@ -301,7 +303,8 @@ export class WeStore {
               entryDefLocation,
             };
           }
-        )
+        );
+      }
       )
   );
 
@@ -315,12 +318,12 @@ export class WeStore {
                 (appletStore) => appletStore!.host,
                 (host) =>
                   lazyLoad(() =>
-                    host.getAppletEntryInfo(
+                    host ? host.getAppletEntryInfo(
                       location.dnaLocation.roleName,
                       location.entryDefLocation.integrity_zome,
                       location.entryDefLocation.entry_def,
                       [dnaHash, hash]
-                    )
+                    ) : Promise.resolve(undefined)
                   )
               )
             : completed(undefined)

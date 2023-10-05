@@ -14,11 +14,10 @@ import {
   InternalAttachmentType,
   RenderView,
 } from "@lightningrodlabs/we-applet";
-import { renderViewToQueryString } from "applet-messages";
 
 import { AppletHost } from "./applet-host.js";
 import { Applet } from "./types.js";
-import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus } from "../utils.js";
+import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus, renderViewToQueryString } from "../utils.js";
 import { ConductorInfo } from "../tauri.js";
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
 
@@ -32,22 +31,21 @@ export class AppletStore {
   this._unreadNotifications.set(loadAppletNotificationStatus(encodeHashToBase64(appletHash)));
 }
 
-  host: AsyncReadable<AppletHost> = lazyLoad(async () => {
+  host: AsyncReadable<AppletHost | undefined> = lazyLoad(async () => {
     const appletHashBase64 = encodeHashToBase64(this.appletHash);
 
     let iframe = document.getElementById(appletHashBase64) as
       | HTMLIFrameElement
       | undefined;
     if (iframe) {
-      return new AppletHost(iframe);
+      return new AppletHost(iframe, appletHashBase64);
     }
 
     const renderView: RenderView = {
-      type: "applet-view",
-      view: {
-        type: "main",
-      }
+      type: "background-service",
+      view: null,
     };
+
     const origin = `${appletOrigin(
       this.conductorInfo,
       this.appletHash
@@ -60,13 +58,22 @@ export class AppletStore {
 
     document.body.appendChild(iframe);
 
-    return new Promise<AppletHost>((resolve) => {
+    return new Promise<AppletHost | undefined>((resolve) => {
+      console.log("@APPLET-STORE: attaching message event listener for applet: ", appletHashBase64);
+
+      const timeOut = setTimeout(() => {
+        console.warn(`Connecting to applet host for applet ${appletHashBase64} timed out in 10000ms`);
+        resolve(undefined);
+      }, 10000);
+
       window.addEventListener("message", (message) => {
         if (message.source === iframe?.contentWindow) {
           if (
             (message.data as AppletToParentMessage).request.type === "ready"
           ) {
-            resolve(new AppletHost(iframe!));
+            console.log("|\n|\n|\n|\n------- RESOLVING HOST FOR APPLET: ", appletHashBase64);
+            clearTimeout(timeOut);
+            resolve(new AppletHost(iframe!, appletHashBase64));
           }
         }
       });
@@ -75,11 +82,11 @@ export class AppletStore {
 
   attachmentTypes: AsyncReadable<Record<string, InternalAttachmentType>> = pipe(
     this.host,
-    (host) => lazyLoadAndPoll(() => host.getAppletAttachmentTypes(), 10000)
+    (host) => lazyLoadAndPoll(() => host ? host.getAppletAttachmentTypes() : Promise.resolve({}), 10000)
   );
 
   blocks: AsyncReadable<Record<string, BlockType>> = pipe(this.host, (host) =>
-    lazyLoadAndPoll(() => host.getBlocks(), 10000)
+    lazyLoadAndPoll(() => host ? host.getBlocks() : Promise.resolve({}), 10000)
   );
 
   logo = this.appletBundlesStore.appletBundleLogo.get(

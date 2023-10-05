@@ -1,7 +1,7 @@
 import { HoloHashMap } from "@holochain-open-dev/utils";
-import { EntryHash } from "@holochain/client";
+import { EntryHash, decodeHashFromBase64 } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
-import { AppletInfo, GroupProfile } from "./types";
+import { AppletInfo, GroupProfile, Hrl } from "./types";
 import { WeClient } from "./api";
 
 export async function getAppletsInfosAndGroupsProfiles(

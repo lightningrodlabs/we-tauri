@@ -9,17 +9,23 @@ import { fromUint8Array } from "js-base64";
 
 
 export function renderViewToQueryString(renderView: RenderView): string {
-  let base = `view=${renderView.type}&view-type=${renderView.view.type}`;
 
-  if ("block" in renderView.view) {
-    base = `${base}&block=${renderView.view.block}`;
-  }
-  if ("hrl" in renderView.view) {
-    base = `${base}&hrl=${stringifyHrl(renderView.view.hrl)}`;
-  }
-  if ("context" in renderView.view) {
-    const b64context = fromUint8Array(encode(renderView.view.context), true);
-    base = `${base}&context=${b64context}`;
+  let base = `view=${renderView.type}`;
+
+  if (renderView.view) {
+    console.log("### @renderViewToQUeryString");
+    base = `view=${renderView.type}&view-type=${renderView.view.type}`;
+
+    if ("block" in renderView.view) {
+      base = `${base}&block=${renderView.view.block}`;
+    }
+    if ("hrl" in renderView.view) {
+      base = `${base}&hrl=${stringifyHrl(renderView.view.hrl)}`;
+    }
+    if ("context" in renderView.view) {
+      const b64context = fromUint8Array(encode(renderView.view.context), true);
+      base = `${base}&context=${b64context}`;
+    }
   }
 
   return base;
@@ -29,10 +35,3 @@ export function stringifyHrl(hrl: Hrl): string {
   return `hrl://${encodeHashToBase64(hrl[0])}/${encodeHashToBase64(hrl[1])}`;
 }
 
-export function parseHrl(hrl: string): Hrl {
-  const split1 = hrl.split("://");
-  if (split1[0] !== "hrl") throw new Error(`Invalid hrl string: ${hrl}`);
-
-  const split2 = split1[1].split("/");
-  return [decodeHashFromBase64(split2[0]), decodeHashFromBase64(split2[1])];
-}

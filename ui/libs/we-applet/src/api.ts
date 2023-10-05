@@ -1,6 +1,6 @@
 import { ProfilesClient } from "@holochain-open-dev/profiles";
 import { EntryHashMap, HoloHashMap, parseHrl } from "@holochain-open-dev/utils";
-import { ActionHash, AppAgentClient,AppAgentWebsocket,CallZomeRequest,CallZomeRequestSigned,DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
+import { ActionHash, AppAgentClient,AppAgentWebsocket,CallZomeRequest,CallZomeRequestSigned,DnaHash, EntryHash, EntryHashB64, RoleName, ZomeName, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderView, RenderInfo, AppletToParentRequest, AppletToParentMessage, InternalAttachmentType, IframeConfig, HrlLocation, ParentToAppletRequest } from "./types";
 import { decode } from "@msgpack/msgpack";
 import { toUint8Array } from "js-base64";
@@ -8,26 +8,27 @@ import { toUint8Array } from "js-base64";
 
 export class AppletServices {
   constructor() {
-    this.search = async () => [],
-    this.getAppletAttachmentTypes = async () => ({}),
-    this.getBlockTypes = async () => ({}),
+    this.attachmentTypes = {},
+    this.blockTypes = {},
+    this.search = async (_appletClient, _searchFilter) => [],
     this.getEntryInfo = async (
-      _roleName,
+      _appletClient,
       _integrityZomeName,
       _entryType,
       _hrl
     ) => undefined
   }
 
-  search: (searchFilter: string) => Promise<Array<HrlWithContext>>;
-  getAppletAttachmentTypes: () => Promise<Record<string, AttachmentType>>;
-  getBlockTypes: () => Promise<Record<string, BlockType>>;
+  attachmentTypes: Record<string, AttachmentType>;
+  blockTypes: Record<string, BlockType>;
   getEntryInfo: (
-    roleName,
-    integrityZomeName,
-    entryType,
-    hrl
+    appletClient: AppAgentClient,
+    roleName: RoleName,
+    integrityZomeName: ZomeName,
+    entryType: string,
+    hrl: Hrl,
   ) => Promise<EntryInfo | undefined>;
+  search: (appletClient: AppAgentClient, searchFilter: string) => Promise<Array<HrlWithContext>>;
 }
 
 export interface WeServices {
@@ -50,11 +51,14 @@ export interface WeServices {
 export class WeClient implements WeServices {
 
   appletHash: EntryHash;
+  renderInfo: RenderInfo;
 
   private constructor(
     appletHash: EntryHash,
+    renderInfo: RenderInfo,
   ) {
     this.appletHash = appletHash;
+    this.renderInfo = renderInfo;
   }
 
   static async connect(appletServices?: AppletServices): Promise<WeClient> {
@@ -69,17 +73,8 @@ export class WeClient implements WeServices {
 
     const appletHash = readAppletHash();
 
-    console.log("@WeClient: connecting with appletServices.entryInfo: ", appletServices?.getEntryInfo);
-
-    // TODO add message handler for ParentToApplet messages
-    window.addEventListener("message", async (m: MessageEvent<any>) => {
-      try {
-        const result = await handleMessage(appletServices ? appletServices : new AppletServices(), m.data);
-        m.ports[0].postMessage({ type: "success", result });
-      } catch (e) {
-        m.ports[0].postMessage({ type: "error", error: (e as any).message });
-      }
-    });
+    // create RenderInfo based on renderView.type and in case of type "background-service", add event listener for messages
+    const renderInfo = await renderViewSetup(appletServices);
 
     // add eventlistener for clipboard
     window.addEventListener ("keydown", async (zEvent) => {
@@ -92,7 +87,7 @@ export class WeClient implements WeServices {
       type: "ready",
     });
 
-    return new WeClient(appletHash);
+    return new WeClient(appletHash, renderInfo);
   }
 
 
@@ -194,32 +189,24 @@ export class WeClient implements WeServices {
     });
 }
 
-export async function getRenderInfo() {
-  return internalGetRenderInfo();
-}
-
-const handleMessage = async (appletServices: AppletServices, request: ParentToAppletRequest) => {
-  console.log("GOT HANDLEMESSAGE: with appletServices.getEntryInfo: ", appletServices.getEntryInfo);
+const handleMessage = async (appletClient: AppAgentClient, appletServices: AppletServices, request: ParentToAppletRequest) => {
   switch (request.type) {
     case "get-applet-entry-info":
-      console.log("@WeClient: @handleMessage: got get-entry-info request with appletServices: ", appletServices);
-      console.log("@WeClient: @handleMessage: got get-entry-info request with appletServices.getEntryInfo: ", appletServices.getEntryInfo);
       return appletServices.getEntryInfo(
+        appletClient,
         request.roleName,
         request.integrityZomeName,
         request.entryType,
         request.hrl,
       );
-
     case "get-applet-attachment-types":
-      console.log("@WeClient @handleMessage: got get-applet-attachment-types ParentToAppletRequest");
-      return appletServices.getAppletAttachmentTypes();
+      return appletServices.attachmentTypes;
     case "get-block-types":
-      return appletServices.getBlockTypes();
+      return appletServices.blockTypes;
     case "search":
-      return appletServices.search(request.filter);
+      return appletServices.search(appletClient, request.filter);
     case "create-attachment":
-      throw new Error("Creating attachment not implemented yet.");
+      return appletServices.attachmentTypes[request.attachmentType].create(appletClient, request.attachToHrl);
 
     default:
       throw new Error("Unknown ParentToAppletRequest");
@@ -307,16 +294,21 @@ function appIdFromAppletHash(appletHash: EntryHash): string {
   return `applet#${encodeHashToBase64(appletHash)}`
 }
 
-async function internalGetRenderView() {
+async function getRenderView(): Promise<RenderView | undefined> {
   if (window.location.search.length === 0) return undefined;
   const queryString = window.location.search.slice(1);
   return queryStringToRenderView(queryString);
 }
 
+/**
+ * Sets up appletClient, profilesClient and message event handlers etc. depending
+ * on the RenderView
+ *
+ * @returns
+ */
+async function renderViewSetup(appletServices?: AppletServices): Promise<RenderInfo> {
 
-export async function internalGetRenderInfo(): Promise<RenderInfo> {
-
-  const view = await internalGetRenderView();
+  const view = await getRenderView();
 
   if (!view) {
     throw new Error("RenderView undefined.");
@@ -333,7 +325,37 @@ export async function internalGetRenderInfo(): Promise<RenderInfo> {
     throw new Error("Applet is not installed.");
   }
 
-  if (view.type === "applet-view") {
+  if (view.type === "background-service") {
+    if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
+    const profilesClient = await setupProfilesClient(
+      iframeConfig.appPort,
+      iframeConfig.profilesLocation.profilesAppId,
+      iframeConfig.profilesLocation.profilesRoleName
+    );
+    const appletClient = await setupAppletClient(
+      iframeConfig.appPort,
+      iframeConfig.appletHash
+    );
+
+    // message handler for ParentToApplet messages - Only added for background-service iframes
+    window.addEventListener("message", async (m: MessageEvent<any>) => {
+      try {
+        const result = await handleMessage(appletClient, appletServices ? appletServices : new AppletServices(), m.data);
+        m.ports[0].postMessage({ type: "success", result });
+      } catch (e) {
+        m.ports[0].postMessage({ type: "error", error: (e as any).message });
+      }
+    });
+
+    // return dummy "applet-view" RenderInfo for the sake of keeping the applet-facing API clean, i.e.
+    // such that RenderInfo only contains "applet-view" and "cross-applet-view" but not "background-services"
+    return {
+      type: "applet-view",
+      view: { type: "main" },
+      appletClient,
+      profilesClient,
+    }
+  } else if (view.type === "applet-view") {
     if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
 
     const profilesClient = await setupProfilesClient(
@@ -384,11 +406,9 @@ export async function internalGetRenderInfo(): Promise<RenderInfo> {
       view: view.view,
       applets,
     }
-
   } else {
     throw new Error("Bad RenderView type.");
   }
-
 }
 
 
@@ -417,7 +437,7 @@ async function internalGetAttachmentTypes() {
       attachmentTypesForThisApplet[name] = {
         label: attachmentType.label,
         icon_src: attachmentType.icon_src,
-        create: (attachToHrl) =>
+        create: (appletClient, attachToHrl) =>
           postMessage({
             type: "create-attachment",
             request: {
@@ -442,11 +462,15 @@ async function internalGetAttachmentTypes() {
 export async function queryStringToRenderView(s: string): Promise<RenderView> {
   const args = s.split("&");
 
-  const view = args[0].split("=")[1] as "applet-view" | "cross-applet-view";
-  const viewType = args[1].split("=")[1];
+  const view = args[0].split("=")[1] as "applet-view" | "cross-applet-view" | "background-service";
+  let viewType: string | undefined;
   let block: string | undefined;
   let hrl: Hrl | undefined;
   let context: any | undefined;
+
+  if (args[1]) {
+    viewType = args[1].split("=")[1];
+  }
 
   if (args[2] && args[2].split("=")[0] === "block") {
     block = args[2].split("=")[1];
@@ -459,14 +483,28 @@ export async function queryStringToRenderView(s: string): Promise<RenderView> {
   }
 
   switch (viewType) {
+    case undefined:
+      if (view !== "background-service") {
+        throw new Error("view is undefined");
+      }
+      return {
+        type: view,
+        view: null,
+      }
     case "main":
+      if (view !== "applet-view" && view !== "cross-applet-view") {
+        throw new Error(`invalid query string: ${s}.`);
+      }
       return {
         type: view,
         view: {
           type: "main"
         }
-      }
+      };
     case "block":
+      if (view !== "applet-view" && view !== "cross-applet-view") {
+        throw new Error(`invalid query string: ${s}.`);
+      }
       if (!block) throw new Error(`Invalid query string: ${s}. Missing block name.`);
       return {
         type: view,
@@ -475,7 +513,7 @@ export async function queryStringToRenderView(s: string): Promise<RenderView> {
           block,
           context,
         }
-      }
+      };
     case "entry":
       if (!hrl) throw new Error(`Invalid query string: ${s}. Missing hrl parameter.`);
       if (view !== "applet-view") throw new Error(`Invalid query string: ${s}.`);

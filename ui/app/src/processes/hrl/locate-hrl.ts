@@ -25,6 +25,7 @@ export async function locateHrl(
   dnaLocation: DnaLocation,
   hrl: Hrl
 ): Promise<EntryDefLocation | undefined> {
+  console.log("### LOCATING HRL!!!");
   const client = await initAppClient(dnaLocation.appInfo.installed_app_id);
 
   let location;
