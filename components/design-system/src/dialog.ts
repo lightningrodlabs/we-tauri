@@ -93,6 +93,12 @@ export default class NHDialog extends NHComponentShoelace {
         primary: 'Install',
         secondary: 'Cancel',
       }
+
+      case DialogType.appletUninstall:
+      return {
+        primary: 'Uninstall',
+        secondary: 'Cancel',
+      }
     
       default:
         return {
@@ -104,7 +110,7 @@ export default class NHDialog extends NHComponentShoelace {
 
   renderActions() {
     switch (true) {
-      case ['applet-install', 'create-neighbourhood'].includes(this.dialogType):
+      case ['applet-install', 'applet-uninstall', 'create-neighbourhood'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
           <nh-button
             id="secondary-action-button"
@@ -117,15 +123,15 @@ export default class NHDialog extends NHComponentShoelace {
           <nh-button
             id="primary-action-button"
             .size=${"md"}
-            .variant=${"primary"}
+            .variant=${'applet-uninstall' === this.dialogType ? "danger" : "primary"}
             .clickHandler=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
             .label=${this.chooseButtonText().primary}
             >
-            </nh-button>
-            </sl-button-group>`;
-            case 'widget-config' === this.dialogType:
-              return html`<sl-button-group id="buttons">
+          </nh-button>
+        </sl-button-group>`;
+      case 'widget-config' === this.dialogType:
+        return html`<sl-button-group id="buttons">
           <nh-button
           id="primary-action-button"
           size=${"md"}
