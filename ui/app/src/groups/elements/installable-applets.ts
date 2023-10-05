@@ -4,7 +4,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import {
   asyncDeriveAndJoin,
-  join,
+  joinAsync,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 
@@ -39,7 +39,7 @@ export class InstallableApplets extends LitElement {
       asyncDeriveAndJoin(
         this.groupStore.weStore.appletBundlesStore.allAppletBundles,
         (allAppletBundles) =>
-          join(
+          joinAsync(
             allAppletBundles.map((b) =>
               this.weStore.appletBundlesStore.appletBundleLogo.get(b.id)
             )

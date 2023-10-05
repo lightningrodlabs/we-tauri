@@ -1,7 +1,7 @@
 import {
   asyncDeriveStore,
   AsyncReadable,
-  join,
+  joinAsync,
   joinAsyncMap,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
@@ -37,7 +37,7 @@ export class AppletTitle extends LitElement {
   _applet = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         this._weStore.appletStores.get(this.appletHash),
         asyncDeriveStore(
           this._weStore.groupsForApplet.get(this.appletHash),

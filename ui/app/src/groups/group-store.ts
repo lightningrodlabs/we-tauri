@@ -10,7 +10,7 @@ import {
   completed,
   derived,
   get,
-  join,
+  joinAsync,
   joinMap,
   lazyLoad,
   lazyLoadAndPoll,
@@ -174,7 +174,7 @@ export class GroupStore {
   );
 
   installedApplets = asyncDerived(
-    join([this.allApplets, this.weStore.appletBundlesStore.installedApplets]),
+    joinAsync([this.allApplets, this.weStore.appletBundlesStore.installedApplets]),
     ([allApplets, installedApplets]) =>
       allApplets.filter((appletHash) =>
         installedApplets.find(

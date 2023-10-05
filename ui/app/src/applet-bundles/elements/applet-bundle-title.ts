@@ -1,6 +1,6 @@
 import {
   AsyncReadable,
-  join,
+  joinAsync,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
@@ -35,7 +35,7 @@ export class AppletBundleTitle extends LitElement {
   appletBundle = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         this._weStore.appletBundlesStore.appletBundles.get(
           this.appletBundleHash
         ),

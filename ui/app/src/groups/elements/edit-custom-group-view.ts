@@ -9,7 +9,7 @@ import { BlockProperties } from "grapesjs";
 import {
   asyncDeriveAndJoin,
   AsyncReadable,
-  join,
+  joinAsync,
   mapAndJoin,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
@@ -44,7 +44,7 @@ export class EditCustomGroupView extends LitElement {
   _blocks = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         this.groupStore.customViewsStore.customViews.get(this.customViewHash),
         asyncDeriveAndJoin(this.groupStore.allBlocks, (allBlocks) =>
           mapAndJoin(allBlocks, (_, appletHash) =>
