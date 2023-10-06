@@ -59,8 +59,6 @@ export class AppletStore {
     document.body.appendChild(iframe);
 
     return new Promise<AppletHost | undefined>((resolve) => {
-      console.log("@APPLET-STORE: attaching message event listener for applet: ", appletHashBase64);
-
       const timeOut = setTimeout(() => {
         console.warn(`Connecting to applet host for applet ${appletHashBase64} timed out in 10000ms`);
         resolve(undefined);
@@ -71,7 +69,6 @@ export class AppletStore {
           if (
             (message.data as AppletToParentMessage).request.type === "ready"
           ) {
-            console.log("|\n|\n|\n|\n------- RESOLVING HOST FOR APPLET: ", appletHashBase64);
             clearTimeout(timeOut);
             resolve(new AppletHost(iframe!, appletHashBase64));
           }

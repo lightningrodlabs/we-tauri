@@ -18,7 +18,6 @@ import "./applet-main.js";
 import "./cross-applet-main.js";
 import { AttachmentsStore } from "@lightningrodlabs/attachments";
 import { CellType } from "@holochain/client";
-import { mdiPost } from "@mdi/js";
 import { consume } from "@lit-labs/context";
 import { PostsStore } from "./posts-store.js";
 

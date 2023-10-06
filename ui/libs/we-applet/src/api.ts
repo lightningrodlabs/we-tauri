@@ -504,7 +504,6 @@ async function renderViewSetup(appletServices?: AppletServices): Promise<RenderI
 
 
 async function getGlobalAttachmentTypes() {
-  console.log("@getGlobalAttachmentTypes");
   const attachmentTypes = new HoloHashMap<AppletHash, Record<AttachmentName, AttachmentType>>();
 
   const internalAttachmentTypes: Record<
@@ -513,9 +512,6 @@ async function getGlobalAttachmentTypes() {
   > = await postMessage({
     type: "get-global-attachment-types",
   });
-
-
-  console.log("got attachment types by group: ", internalAttachmentTypes);
 
   for (const [appletId, appletAttachmentTypes] of Object.entries(
     internalAttachmentTypes

@@ -93,28 +93,29 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
     async entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined> {
       const dnaHash = hrl[0];
 
-      console.log("@headlessWeClient: getting entryInfo...");
-      const location = await toPromise(
-        weStore.hrlLocations.get(dnaHash).get(hrl[1])
-      );
-      console.log("@headlessWeClient: Got location: ", location);
+      try {
+        const location = await toPromise(
+          weStore.hrlLocations.get(dnaHash).get(hrl[1])
+        );
 
-      if (!location) return undefined;
+        if (!location) return undefined;
 
-      console.log("%%%%%% Getting entryInfo...");
+        const entryInfo = await toPromise(
+          weStore.entryInfo.get(hrl[0]).get(hrl[1])
+        );
 
-      const entryInfo = await toPromise(
-        weStore.entryInfo.get(hrl[0]).get(hrl[1])
-      );
+        if (!entryInfo) return undefined;
 
-      if (!entryInfo) return undefined;
+        const entryAndAppletInfo: EntryLocationAndInfo = {
+          appletHash: location.dnaLocation.appletHash,
+          entryInfo,
+        };
 
-      const entryAndAppletInfo: EntryLocationAndInfo = {
-        appletHash: location.dnaLocation.appletHash,
-        entryInfo,
-      };
-
-      return entryAndAppletInfo;
+        return entryAndAppletInfo;
+      } catch (e) {
+        console.warn(`Failed to get entryInfo for hrl ${hrl.map((hash) => encodeHashToBase64(hash))}.`);
+        return undefined;
+      }
     },
     async groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined> {
       const groupProfile = await toPromise(
@@ -170,7 +171,7 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
         .filter((h) => !!h);
       return hrls;
     },
-    async notifyWe(notifications: Array<WeNotification>) {
+    async notifyWe(_notifications: Array<WeNotification>) {
       throw new Error("notify is not implemented on headless WeServices.");
     },
     openAppletMain: async () => {},
