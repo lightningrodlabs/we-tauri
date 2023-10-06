@@ -5,8 +5,6 @@ import { NHComponent } from './ancestors/base';
 
 export default class NHTabButton extends NHComponent {
   @property()
-  label!: string;
-  @property()
   selected: boolean = false;
   @property()
   disabled: boolean = false;
@@ -29,7 +27,7 @@ export default class NHTabButton extends NHComponent {
           [this.size]: !!this.size
         })}"
       >
-        ${this.label}
+        <slot> </slot>
       </button>
     `;
   }
