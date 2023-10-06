@@ -16,22 +16,20 @@ export default class NHButton extends NHComponent {
   @property()
   theme: string = "dark";
   @property()
-  size: "stretch" | "lg" | "md" | "sm" | "icon"| "icon-lg"| "icon-sm" = "md";
+  size: "auto" | "lg" | "md" | "sm" | "icon"| "icon-label"| "icon-sm" = "auto";
   @property()
   variant:
     | "primary"
+    | "secondary"
     | "success"
     | "neutral"
     | "warning"
     | "danger" =  "primary";
-  @property()
-  clickHandler!: () => void;
   
     render() {
       return html`
         <button
           type="button"
-          @click=${() => this.clickHandler()}
           ?disabled=${this.disabled}
           class="btn${classMap({
             disabled: this.disabled,
@@ -97,10 +95,6 @@ export default class NHButton extends NHComponent {
         button:active {
           background-color: var(--nh-theme-accent-emphasis);
         }
-        button.disabled {
-          color: var(--nh-theme-fg-on-disabled);
-          background-color: var(--nh-theme-fg-disabled);
-        }
         button.success {
           color: var(--nh-theme-fg-on-disabled);
           background-color: var(--nh-theme-success-default);
@@ -117,17 +111,12 @@ export default class NHButton extends NHComponent {
           color: var(--nh-theme-fg-default);
           background-color: var(--nh-theme-bg-detail);
         }
-        button.stretch {
+        button.disabled {
+          color: var(--nh-theme-fg-on-disabled);
+          background-color: var(--nh-theme-fg-disabled);
+        }
+        button.auto {
           width: 100%;
-        }
-        button.lg {
-          width: 145px;
-        }
-        button.md {
-          width: 88px;
-        }
-        button.sm {
-          width: 62px;
         }
         .button-inner {
           gap: calc(1px * var(--nh-spacing-md));
@@ -140,10 +129,6 @@ export default class NHButton extends NHComponent {
         }
         button.icon .button-inner img {
           with: auto;
-        }
-        button.primary.icon, button.danger.icon {
-          height: 32px;
-          width: 32px;
         }
         button.icon-sm .button-inner img {
           width: 16px;
@@ -161,7 +146,7 @@ export default class NHButton extends NHComponent {
           place-content: center;
           cursor: pointer;
         }
-        button.icon-lg .button-inner img {
+        button.icon-label .button-inner img {
           width: 80%;
           margin: 0 auto;
         }
@@ -204,7 +189,7 @@ export default class NHButton extends NHComponent {
           font-weight: var(--nh-font-weights-headlines-bold);
           font-size: calc(1px * var(--nh-font-size-sm));
         }
-        button.md, button.stretch {
+        button.md, button.auto {
           line-height: var(--nh-line-heights-headlines-default);
           font-weight: var(--nh-font-weights-headlines-bold);
           font-size: calc(1px * var(--nh-font-size-md));
