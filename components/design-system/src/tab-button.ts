@@ -100,7 +100,7 @@ export default class NHTabButton extends NHComponent {
         font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-sm));
       }
-      button.md, button.stretch {
+      button.md, button.auto {
         line-height: var(--nh-line-heights-headlines-default);
         font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-md));

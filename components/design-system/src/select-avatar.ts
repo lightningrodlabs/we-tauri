@@ -85,7 +85,7 @@ export default class NHSelectAvatar extends NHComponent {
         <nh-button
           .disabled=${this.disabled}
           variant="icon"
-          size="icon-lg"
+          size="icon-label"
           .iconImageB64=${this.defaultValue}
           @click=${() => this._avatarFilePicker.click()}
         >
