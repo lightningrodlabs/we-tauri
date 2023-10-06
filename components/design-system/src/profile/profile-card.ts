@@ -99,7 +99,7 @@ export default class NHProfileCard extends NHComponentShoelace {
                   .variant=${"primary"}
                   .size=${"icon-sm"}
                   .iconImageB64=${"PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyMSAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMSIgeT0iNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iNiIgeT0iMSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgZmlsbD0iIzI2MUYyQiIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cg=="}
-                  .clickHandler=${() => {
+                  @click=${() => {
                     navigator.clipboard.writeText((this._hashContainer.textContent as string)?.trim());
                     this._tooltipText = "Hash Copied!";
                     this.requestUpdate();
