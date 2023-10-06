@@ -32,7 +32,7 @@ export class WithProfile extends NHComponent {
 
   profilesStore;
 
-  #agentProfile = new StoreSubscriber(
+  agentProfile = new StoreSubscriber(
     this,
     () => (this.profilesStore as ProfilesStore).profiles.get(decodeHashFromBase64(this.agentHash)),
     () => [this.agentHash, this.profilesStore, this.refreshed]
@@ -42,12 +42,12 @@ export class WithProfile extends NHComponent {
       super.connectedCallback()
       this.profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
       this.refreshed = false;
-    }
+  }
     
-    protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
       if(_changedProperties.has('weGroupId') && typeof this.weGroupId !== 'undefined') {
         this.profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
-        this.refreshed = true;
+        debugger; 
     }
   }
 
@@ -59,11 +59,9 @@ export class WithProfile extends NHComponent {
         if (payload.type !== 'EntryCreated') return;
         if (payload.app_entry.type !== 'Profile') return;
 
-        // TODO: reimplement if needed.
-
-        this.#agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
+        this.agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}
         if(this.agentHash && this.agentHash == encodeHashToBase64(this._matrixStore.myAgentPubKey)) {
-          this.#agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}};
+          this.agentProfile.value = {status: 'complete', value: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}};
         }
         this.requestUpdate()
       })
@@ -106,7 +104,7 @@ export class WithProfile extends NHComponent {
   }
 
   render() {
-    const status = this.#agentProfile.value as AsyncStatus<Profile>;
+    const status = this.agentProfile.value as AsyncStatus<Profile>;
     switch (this.component) {
       case 'card':
         return this.renderAgentCard(status);

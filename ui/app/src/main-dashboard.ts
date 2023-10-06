@@ -112,10 +112,13 @@ export class MainDashboard extends NHComponentShoelace {
   @state()
   userProfileMenuVisible: boolean = false;
   
-  async refreshProfileCard() {
-    if(!this._withProfile?._profilesStore) return;
-    await this._withProfile._profilesStore.value.myProfile.reload();
-    this._withProfile.refreshed = true;
+  async refreshProfileCard(weGroupId: DnaHash) {
+    if(!this._withProfile?.agentProfile?.value) {
+      console.log("Unable to refresh profile card")
+      return;
+    }
+    this._withProfile.weGroupId = weGroupId;
+    await this._withProfile.updateComplete;
   }
   
   toggleUserMenu () {
@@ -304,8 +307,6 @@ export class MainDashboard extends NHComponentShoelace {
   }
 
   async handleWeGroupIconPrimaryClick(weGroupId: DnaHash) {
-    await this.refreshProfileCard();
-
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
       this._selectedAppletInstanceId = undefined;
@@ -314,6 +315,7 @@ export class MainDashboard extends NHComponentShoelace {
     this._dashboardMode = DashboardMode.WeGroupHome;
     this._selectedWeGroupId = weGroupId;
 
+    await this.refreshProfileCard(weGroupId);
 
     // initialize widgets for group
     console.log("initializing views for group")
@@ -755,6 +757,7 @@ export class MainDashboard extends NHComponentShoelace {
       <create-nh-dialog
         @we-added=${e => {
           this.handleWeGroupAdded(e);
+          this.refreshProfileCard(e.detail)
         }}
         @creating-we=${_e => this.showLoading()}
         id="create-nh-dialog"
