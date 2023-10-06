@@ -37,6 +37,9 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
   private async onSubmit(e: any) {
     const root = this.renderRoot;
 
+    if(!this._neighbourhood.image) {
+      this._neighbourhood.image = `data:image/svg+xml;base64,${NH_DEFAULT_LOGO}`
+    }
     this._neighbourhoodSchema.validate(this._neighbourhood)
       .then(async valid => {
         if(!valid) throw new Error("Neighbourhood input data invalid");
