@@ -34,7 +34,7 @@ describe('RenderBlock', () => {
       }
 
       render() {
-        return html`<nh-button label="Child 1" />`
+        return html`<nh-button>Child 1</nh-button>`
       }
     }
 
@@ -44,7 +44,7 @@ describe('RenderBlock', () => {
       }
 
       render() {
-        return html`<nh-button label="Child 2" />`
+        return html`<nh-button>Child 2</nh-button>`
       }
     }
 
@@ -57,8 +57,8 @@ describe('RenderBlock', () => {
       const children = harness.querySelectorAll('render-block')
 
       expect(children.length).to.equal(2)
-      expect(children[0].shadowRoot?.querySelector('child-1')).shadowDom.to.equal('<nh-button label="Child 1" />')
-      expect(children[1].shadowRoot?.querySelector('child-2')).shadowDom.to.equal('<nh-button label="Child 2" />')
+      expect(children[0].shadowRoot?.querySelector('child-1')).shadowDom.to.equal('<nh-button>Child 1</nh-button>')
+      expect(children[1].shadowRoot?.querySelector('child-2')).shadowDom.to.equal('<nh-button>Child 2</nh-button>')
     })
   })
 
@@ -70,7 +70,7 @@ describe('RenderBlock', () => {
       }
 
       render() {
-        return html`<nh-button label="Child 3" />`
+        return html`<nh-button>Child 3</nh-button>`
       }
     }
 
@@ -99,12 +99,12 @@ describe('RenderBlock', () => {
 
       const nestedRoot = child?.shadowRoot?.querySelector('dynamic-child')
       expect(nestedRoot).shadowDom.to.equal('<div><render-block></render-block><child-3></child-3></div>')
-      expect(nestedRoot?.shadowRoot?.querySelector('child-3')).shadowDom.to.equal('<nh-button label="Child 3" />')
+      expect(nestedRoot?.shadowRoot?.querySelector('child-3')).shadowDom.to.equal('<nh-button>Child 3</nh-button>')
 
       const nestedChild = nestedRoot?.shadowRoot?.querySelector('render-block')
       expect(nestedChild).shadowDom.to.equal('<div><child-3 /></div>', { ignoreAttributes: [{ tags: ['div'], attributes: ['style'] }] })
 
-      expect(nestedChild?.shadowRoot?.querySelector('child-3')).shadowDom.to.equal('<nh-button label="Child 3" />')
+      expect(nestedChild?.shadowRoot?.querySelector('child-3')).shadowDom.to.equal('<nh-button>Child 3</nh-button>')
     })
   })
 
@@ -116,7 +116,7 @@ describe('RenderBlock', () => {
       }
 
       render() {
-        return html`<nh-button label="Child 4" />`
+        return html`<nh-button>Child 4</nh-button/>`
       }
     }
 

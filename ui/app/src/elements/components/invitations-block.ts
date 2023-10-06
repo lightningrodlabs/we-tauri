@@ -77,7 +77,7 @@ export class InvitationsBlock extends NHComponentShoelace {
                 @sl-input=${(e) => (this._inviteePubKey = e.target.value)}
               ></sl-input>
             </div>
-            <nh-button label="Invite" .variant=${"primary"} .iconImageB64=${b64images.icons.forwardArrow} @click=${() => this.inviteToJoin(this._inviteePubKey!)} .size=${"md"} .disabled=${!this._inviteePubKey}></nh-button>
+            <nh-button .variant=${"primary"} .iconImageB64=${b64images.icons.forwardArrow} @click=${() => this.inviteToJoin(this._inviteePubKey!)} .size=${"md"} .disabled=${!this._inviteePubKey}>Invite</nh-button>
           </div>
         </div>
       </nh-card>

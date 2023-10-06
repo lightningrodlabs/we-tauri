@@ -137,9 +137,8 @@ export class NeighbourhoodSettings extends NHComponent {
             <nh-button
               .size=${"auto"}
               .variant=${"danger"}
-              label="Leave Neighbourhood"
               @click=${() => this._leaveGroupDialog.open()}
-            ></nh-button>
+            >Leave Neighbourhood</nh-button>
           </div>
         </slot>
     `;

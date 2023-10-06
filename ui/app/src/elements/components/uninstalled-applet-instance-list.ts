@@ -74,13 +74,11 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     `}
       <div class="refresh-button-row">
         <nh-button
-          label="Refresh"
           .variant=${"neutral"}
           @click=${this.refresh}
           .iconImageB64=${b64images.icons.refresh}
           .size=${"icon-lg"}
-        >
-        </nh-button>
+        >Refresh</nh-button>
       </div>
     `;
   }

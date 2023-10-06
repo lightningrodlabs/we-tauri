@@ -171,12 +171,11 @@ export class WeGroupHome extends ScopedElementsMixin(LitElement) {
                       @click=${() => this._showLibrary = false}
                     />
                     <nh-button
-                      .label=${"Upload Applet File"}
                       .variant=${"primary"}
                       .size=${"md"}
                       @click=${() => this._installFromFsDialog.open()}
                       slot="primary-action"
-                    ></nh-button>
+                    >Upload Applet File</nh-button>
                   </nh-page-header-card>
 
                   <installable-applets></installable-applets>

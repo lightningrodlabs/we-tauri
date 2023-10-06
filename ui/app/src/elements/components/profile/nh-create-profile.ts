@@ -104,14 +104,12 @@ export class NHCreateProfile extends NHComponentShoelace {
         </div>
         <div slot="footer">
         <nh-button
-          .label=${"Create Profile"} 
           .size=${"auto"}
           .variant=${"primary"}
           @click=${() => this.onSubmit()}
           .disabled=${false}
           .loading=${false}
-        >
-        </nh-button>
+        >Create Profile</nh-button>
         </div>
       </nh-card>
     `;

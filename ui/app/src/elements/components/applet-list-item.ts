@@ -60,30 +60,27 @@ export class AppletListItem extends NHComponent {
     ? html`
       <nh-button
         class="join-button"
-        label="Join"
         .variant=${"success"}
         .size=${"md"}
         @click=${async () => await this.onJoin()}
-      ></nh-button>
+      >Join</nh-button>
     `
     : typeof this.onReinstall !== "undefined"
     ? html`
       <nh-button
         class="reinstall-button"
-        label="Reinstall"
         .variant=${"warning"}
         .size=${"md"}
         @click=${async () => await this.onReinstall()}
-      ></nh-button>
+      >Reinstall</nh-button>
     `
     : html`
       <sl-tooltip placement="top" content="Configure Widgets" hoist>
         <nh-button
           @click=${() => {this.onConfigureWidgets()}}
-          label="Configure"
           .variant=${"neutral"}
           .size=${"md"}
-        >
+        >Configure
         </nh-button>
       </sl-tooltip>
 
@@ -91,30 +88,26 @@ export class AppletListItem extends NHComponent {
         ? html`
           <nh-button
             class="disable-button"
-            label="Disable"
             .variant=${"warning"}
             .size=${"md"}
             @click=${async () => await this.disableApp(this.appletInfo.appInfo)}
-          ></nh-button>
+          >Disable</nh-button>
           `
         : html`
           <nh-button
             class="start-button"
-            label="Start" 
             .variant=${"success"}
             .size=${"md"}
             @click=${async () => await this.enableApp(this.appletInfo.appInfo)}
-          ></nh-button>
+          >Start</nh-button>
         `
       }
       <nh-button
         class="delete-button"
-        label="Uninstall"
         .variant=${"danger"}
         .size=${"md"}
         @click=${() => { this.onDelete() }}
-      >
-      </nh-button>
+      >Uninstall</nh-button>
     `
   }
 
