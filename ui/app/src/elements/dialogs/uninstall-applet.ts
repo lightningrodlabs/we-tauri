@@ -25,7 +25,7 @@ export class UninstallApplet extends NHComponentShoelace {
   render() {
     return html`
                 <nh-dialog
-                  id="leave-neighbourhood"
+                  id="uninstall-applet"
                   .title=${"Uninstall Applet"}
                   .alertMessage=${"Are you sure you want to uninstall this applet?"}
                   .alertType=${"warning"}
