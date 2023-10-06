@@ -368,7 +368,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
                             .addItemButton=${false}
                           >
                           <div slot="buttons">
-                            <nh-button .clickHandler=${async () => { await this.contextSelector.requestUpdate("resourceAssessments");  // TODO test this
+                            <nh-button @click=${async () => { await this.contextSelector.requestUpdate("resourceAssessments");  // TODO test this
                           }} .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
                           </div>
                           </nh-button-group></div>` : html``}

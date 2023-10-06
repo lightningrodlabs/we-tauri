@@ -152,7 +152,7 @@ export class AppletInstanceStatusList extends NHComponent {
           .variant=${"neutral"}
           @click=${this.refresh}
           .iconImageB64=${b64images.icons.refresh}
-          .size=${"icon-lg"}
+          .size=${"icon-label"}
         >
         </nh-button>
       </div>

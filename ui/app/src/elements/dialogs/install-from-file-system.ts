@@ -224,7 +224,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                       No file selected.
                     </div>`}
               </div>
-              <nh-button .disabled=${this._fileBytes} .variant=${"primary"} .label=${!this._fileBytes ? "Choose File" : "File Chosen"} .size=${"md"} .clickHandler=${() => {} } @click=${(e) => {if (this._fileBytes) return; e.currentTarget.nextElementSibling.click()}}>
+              <nh-button .disabled=${this._fileBytes} .variant=${"primary"} .label=${!this._fileBytes ? "Choose File" : "File Chosen"} .size=${"md"} @click=${() => {} } @click=${(e) => {if (this._fileBytes) return; e.currentTarget.nextElementSibling.click()}}>
               </nh-button>
               <input style="display:none;" type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes} />
             </div>

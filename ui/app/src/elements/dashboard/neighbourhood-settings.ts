@@ -135,7 +135,7 @@ export class NeighbourhoodSettings extends NHComponent {
             <p>Leave neighbourhood and delete all applets: </p>
             <span style="flex: 1"></span>
             <nh-button
-              .size=${"stretch"}
+              .size=${"auto"}
               .variant=${"danger"}
               label="Leave Neighbourhood"
               @click=${() => this._leaveGroupDialog.open()}

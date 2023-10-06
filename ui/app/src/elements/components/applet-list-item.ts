@@ -63,7 +63,7 @@ export class AppletListItem extends NHComponent {
         label="Join"
         .variant=${"success"}
         .size=${"md"}
-        .clickHandler=${async () => await this.onJoin()}
+        @click=${async () => await this.onJoin()}
       ></nh-button>
     `
     : typeof this.onReinstall !== "undefined"
@@ -73,13 +73,13 @@ export class AppletListItem extends NHComponent {
         label="Reinstall"
         .variant=${"warning"}
         .size=${"md"}
-        .clickHandler=${async () => await this.onReinstall()}
+        @click=${async () => await this.onReinstall()}
       ></nh-button>
     `
     : html`
       <sl-tooltip placement="top" content="Configure Widgets" hoist>
         <nh-button
-          .clickHandler=${() => {this.onConfigureWidgets()}}
+          @click=${() => {this.onConfigureWidgets()}}
           label="Configure"
           .variant=${"neutral"}
           .size=${"md"}
@@ -94,7 +94,7 @@ export class AppletListItem extends NHComponent {
             label="Disable"
             .variant=${"warning"}
             .size=${"md"}
-            .clickHandler=${async () => await this.disableApp(this.appletInfo.appInfo)}
+            @click=${async () => await this.disableApp(this.appletInfo.appInfo)}
           ></nh-button>
           `
         : html`
@@ -103,7 +103,7 @@ export class AppletListItem extends NHComponent {
             label="Start" 
             .variant=${"success"}
             .size=${"md"}
-            .clickHandler=${async () => await this.enableApp(this.appletInfo.appInfo)}
+            @click=${async () => await this.enableApp(this.appletInfo.appInfo)}
           ></nh-button>
         `
       }
@@ -112,7 +112,7 @@ export class AppletListItem extends NHComponent {
         label="Uninstall"
         .variant=${"danger"}
         .size=${"md"}
-        .clickHandler=${() => { this.onDelete() }}
+        @click=${() => { this.onDelete() }}
       >
       </nh-button>
     `

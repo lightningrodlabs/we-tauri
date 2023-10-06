@@ -89,7 +89,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
                     Initiate a new Applet instance from scratch that other neighbourhood members will be able to join.
                   </p>
                   <div slot="footer">
-                    <nh-button label="Browse Applets" .variant=${"primary"} @click=${() => this._showLibrary = true} .size=${"stretch"}></nh-button>
+                    <nh-button label="Browse Applets" .variant=${"primary"} @click=${() => this._showLibrary = true} .size=${"auto"}></nh-button>
                   </div>
                 </nh-card>  
               </div>

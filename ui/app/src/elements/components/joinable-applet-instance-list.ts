@@ -55,9 +55,9 @@ export class JoinableAppletInstanceList extends NHComponent {
         <nh-button
           label="Refresh"
           .variant=${"neutral"}
-          .clickHandler=${() => { this.refresh() }}
+          @click=${() => { this.refresh() }}
           .iconImageB64=${b64images.icons.refresh}
-          .size=${"icon-lg"}
+          .size=${"icon-label"}
         >
         </nh-button>
       </div>

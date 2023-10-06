@@ -28,7 +28,7 @@ export class AppletLibrary extends NHComponent {
           .label=${"Upload Applet File"}
           .variant=${"primary"}
           .size=${"md"}
-          .clickHandler=${() => {this._installFromFsDialog?.open()}}
+          @click=${() => {this._installFromFsDialog?.open()}}
           slot="primary-action"
         ></nh-button>
       </nh-page-header-card>
