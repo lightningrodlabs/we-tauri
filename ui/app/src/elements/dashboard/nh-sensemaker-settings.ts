@@ -297,7 +297,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     }
 
   #pagination {
-    margin: 0 auto;
+    margin: calc(1px * var(--nh-spacing-lg)) auto;
     padding: 0;
     display: flex;
     justify-content: center;
