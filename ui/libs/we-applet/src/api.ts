@@ -5,6 +5,7 @@ import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotificati
 import { decode } from "@msgpack/msgpack";
 import { toUint8Array } from "js-base64";
 
+export const isWeContext = () => window.location.protocol === "applet:";
 
 export class AppletServices {
   constructor() {
