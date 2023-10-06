@@ -59,7 +59,7 @@ export const VerticalButtons: Story = {
     direction: "vertical",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary", size: "stretch" },
+    itemComponentProps: { variant: "primary", size: "auto" },
     fixedFirstItem: false,
     addItemButton: false,
     theme: "dark",
@@ -121,7 +121,7 @@ export const VerticalIconButtons: Story = {
     itemComponentProps: {
       variant: "primary",
       iconImageB64: b64images.icons.forwardArrow,
-      size: "stretch",
+      size: "auto",
     },
     fixedFirstItem: false,
     addItemButton: false,

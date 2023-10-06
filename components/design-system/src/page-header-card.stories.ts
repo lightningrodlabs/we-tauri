@@ -56,7 +56,7 @@ class TestRoot extends NHComponent {
       ? html`<nh-button
           .label=${this.primaryText}
           .variant=${"primary"}
-          .size=${"stretch"}
+          .size=${"auto"}
           slot="primary-action"
         ></nh-button>`
       : null}

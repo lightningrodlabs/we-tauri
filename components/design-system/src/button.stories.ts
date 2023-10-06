@@ -10,9 +10,10 @@ export interface ButtonProps {
   iconImageB64: string;
   disabled: boolean;
   theme: string;
-  size: "stretch" | "lg" | "md" | "sm" | "icon";
+  size: "auto" | "lg" | "md" | "sm" | "icon"| "icon-label"| "icon-sm";
   variant:
     | "primary"
+    | "secondary"
     | "success"
     | "neutral"
     | "warning"
@@ -24,19 +25,19 @@ const meta: Meta<ButtonProps> = {
   component: "nh-button",
   argTypes: {
     label: { control: "text" },
-    iconImageB64: { control: "none" },
-    theme: { control: "none" },
-    disabled: { control: "none" },
-    size: { options: ['stretch', 'lg', 'md', 'sm', 'icon'], control: { type: 'radio' }, },
-    variant: { control: "none" },
+    iconImageB64: { control: false },
+    theme: { control: false },
+    disabled: { control: 'boolean' },
+    size: { control: false },
+    variant: { options: ['primary', 'secondary', 'neutral', 'success', 'warning', 'danger'], control: { type: 'radio' }, },
   },
   render: (args) => html`<nh-button
-    label=${args.label}
-    iconImageB64=${args.iconImageB64}
-    disabled=${args.disabled}
-    theme=${args.theme}
-    size=${args.size}
-    variant=${args.variant}
+    .label=${args.label}
+    .iconImageB64=${args.iconImageB64}
+    .theme=${args.theme}
+    .size=${args.size}
+    .disabled=${args.disabled}
+    .variant=${args.variant}
   >
   </nh-button>`,
 };
@@ -45,11 +46,33 @@ export default meta;
 
 type Story = StoryObj<ButtonProps>;
 
+const variantParams = {
+    controls: {
+      exclude:/variant|iconImageB64|theme|size/g
+    }
+};
+const sizeParams = {
+    controls: {
+      exclude:/size|iconImageB64|theme|size/g
+    }
+};
+
+// Variants
+
 export const Primary: Story = {
   args: {
     variant: "primary",
-    label: "Save"
+    label: "Save",
   },
+  parameters: variantParams
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: "secondary",
+    label: "Help"
+  },
+  parameters: variantParams
 };
 
 export const Neutral: Story = {
@@ -57,6 +80,7 @@ export const Neutral: Story = {
     variant: "neutral",
     label: "Save"
   },
+  parameters: variantParams
 };
 
 export const Success: Story = {
@@ -64,27 +88,91 @@ export const Success: Story = {
     variant: "success",
     label: "OK"
   },
+  parameters: variantParams
 };
 
 export const Warning: Story = {
   args: {
     variant: "warning",
-    label: "Warning"
+    label: "Reinstall"
   },
+  parameters: variantParams
 };
 
 export const Danger: Story = {
   args: {
     variant: "danger",
-    label: "Danger"
+    label: "Uninstall"
   },
+  parameters: variantParams
 };
+
+// Sizes
+
+export const Auto: Story = {
+  args: {
+    variant: "neutral",
+    label: "Click Me",
+    size: "auto",
+  },
+  parameters: sizeParams
+};
+
+export const Md: Story = {
+  args: {
+    variant: "neutral",
+    label: "Click Me",
+    size: "md",
+  },
+  parameters: sizeParams
+};
+
+export const Sm: Story = {
+  args: {
+    variant: "neutral",
+    label: "Click Me",
+    size: "sm",
+  },
+  parameters: sizeParams
+};
+
+export const Lg: Story = {
+  args: {
+    variant: "neutral",
+    label: "Click Me",
+    size: "lg",
+  },
+  parameters: sizeParams
+};
+
+// Icons 
 
 export const Icon: Story = {
   args: {
     variant: "neutral",
     label: "",
-    iconImageB64: b64images.icons.backCaret,
+    iconImageB64: b64images.icons.refresh,
     size: "icon",
   },
+  parameters: sizeParams
+};
+
+export const IconSm: Story = {
+  args: {
+    variant: "neutral",
+    label: "",
+    iconImageB64: b64images.icons.refresh,
+    size: "icon-sm",
+  },
+  parameters: sizeParams
+};
+
+export const IconLabel: Story = {
+  args: {
+    variant: "neutral",
+    label: "Refresh",
+    iconImageB64: b64images.icons.refresh,
+    size: "icon-label",
+  },
+  parameters: sizeParams
 };
