@@ -105,7 +105,6 @@ export default class NHProfileCard extends NHComponentShoelace {
                     this.requestUpdate();
                 }}
                 >
-                  <img class="copy-hash" src="icons/copy.svg" alt="user identicon" />
                   </nh-button>       
                 </sl-tooltip>
               </div>
