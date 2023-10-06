@@ -82,7 +82,16 @@ export class AppletStore {
 
   attachmentTypes: AsyncReadable<Record<string, InternalAttachmentType>> = pipe(
     this.host,
-    (host) => lazyLoadAndPoll(() => host ? host.getAppletAttachmentTypes() : Promise.resolve({}), 10000)
+    (host) => lazyLoadAndPoll(async () => {
+      if (!host) return Promise.resolve({});
+      try {
+        const attachmentTypes = await host.getAppletAttachmentTypes();
+        return attachmentTypes;
+      } catch (e) {
+        console.warn(`Failed to get attachment types from applet "${host.appletId}": ${e}`);
+        return Promise.resolve({});
+      }
+    }, 10000)
   );
 
   blocks: AsyncReadable<Record<string, BlockType>> = pipe(this.host, (host) =>

@@ -2,6 +2,7 @@ import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { encodeHashToBase64 } from "@holochain/client";
 import { msg } from "@lit/localize";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -53,11 +54,8 @@ export class EntryTitle extends LitElement {
       case "complete":
         return this.renderName(this.entryInfo.value.value);
       case "error":
-        return html`<display-error
-          tooltip
-          .headline=${msg("Error fetching the information about the entry")}
-          .error=${this.entryInfo.value.error}
-        ></display-error>`;
+        console.error(`Failed to get entry info for HRL '${this.hrl.map((hash) => encodeHashToBase64(hash))}': ${this.entryInfo.value.error}`);
+        return html`[Unknown]`;
     }
   }
 

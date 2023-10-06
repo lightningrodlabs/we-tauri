@@ -13,6 +13,7 @@ export class AppletServices {
     this.search = async (_appletClient, _searchFilter) => [],
     this.getEntryInfo = async (
       _appletClient,
+      _roleName,
       _integrityZomeName,
       _entryType,
       _hrl
@@ -160,7 +161,7 @@ export class WeClient implements WeServices {
     const appletHash = readAppletHash();
 
     // create RenderInfo based on renderView.type and in case of type "background-service", add event listener for messages
-    const renderInfo = await renderViewSetup(appletServices);
+    const renderInfo = await renderViewSetup(appletServices ? appletServices : new AppletServices());
 
     // get attachment types across all Applets
     const globalAttachmentTypes = await getGlobalAttachmentTypes();
