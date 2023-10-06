@@ -19,11 +19,14 @@ export class AppletLibrary extends NHComponent {
       <nh-page-header-card
         .heading=${"Applet Library"}
       >
-        <img
-          src="data:image/svg+xml;base64,${b64images.icons.backCaret}"
+        <nh-button
           slot="secondary-action"
+          .variant=${"neutral"}
+          .size=${"icon"}
+          .iconImageB64=${b64images.icons.backCaret}
           @click=${this.toggleVisible}
-        />
+        >
+        </nh-button>
         <nh-button
           .variant=${"primary"}
           .size=${"md"}
