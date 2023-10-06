@@ -42,7 +42,7 @@ class TestRoot extends NHComponent {
       : null}
     ${this.hasPrimaryAction && !this.hasWidget
       ? html`<div slot="footer">
-          <nh-button ?disabled=${false} label="Install" type="primary"></nh-button>
+          <nh-button ?disabled=${false} type="primary">Install</nh-button>
         </div>`
       : null}
   </nh-card>`

@@ -32,14 +32,12 @@ const meta: Meta<ButtonProps> = {
     variant: { options: ['primary', 'secondary', 'neutral', 'success', 'warning', 'danger'], control: { type: 'radio' }, },
   },
   render: (args) => html`<nh-button
-    .label=${args.label}
     .iconImageB64=${args.iconImageB64}
     .theme=${args.theme}
     .size=${args.size}
     .disabled=${args.disabled}
     .variant=${args.variant}
-  >
-  </nh-button>`,
+  >${args.label}</nh-button>`,
 };
 
 export default meta;

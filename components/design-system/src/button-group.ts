@@ -53,7 +53,6 @@ export default class NHButtonGroup extends NHComponent {
                         fixed: this.fixedFirstItem && i == 0,
                       })}"
                       .fixed=${this.fixedFirstItem && i == 0}
-                      .label=${label}
                       .iconImageB64=${this.itemComponentProps?.iconImageB64 || ""}
                       .size=${this.itemComponentProps?.size || "md"}
                     >

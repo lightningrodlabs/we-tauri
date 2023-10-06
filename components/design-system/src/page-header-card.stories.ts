@@ -54,11 +54,10 @@ class TestRoot extends NHComponent {
     </nh-menu>`
       : this.primary == "button"
       ? html`<nh-button
-          .label=${this.primaryText}
           .variant=${"primary"}
           .size=${"auto"}
           slot="primary-action"
-        ></nh-button>`
+        >${this.primaryText}</nh-button>`
       : null}
   </nh-page-header-card>`
   }

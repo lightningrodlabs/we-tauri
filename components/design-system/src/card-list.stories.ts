@@ -28,7 +28,7 @@ class TestRoot extends NHComponent {
       ${this.hasHeader
         ? html`<nh-page-header-card slot="header" .heading=${"Applet Library"}>
         <img src="data:image/svg+xml;base64,${b64images.icons.backCaret}" slot="secondary-action"/>
-        <nh-button label="Upload Applet File" slot="primary-action"></nh-button>
+        <nh-button slot="primary-action">Upload Applet File</nh-button>
       </nh-page-header-card>`
         : null}
       ${this.cards.map((card) => {
