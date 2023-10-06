@@ -9,10 +9,10 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
 import { UninstalledAppletInstanceList } from "../components/uninstalled-applet-instance-list";
-import { LeaveGroupDialog } from "../dialogs/leave-group-dialog";
 import { JoinableAppletInstanceList } from "../components/joinable-applet-instance-list";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
+import { LeaveNeighbourhood } from "../dialogs/leave-neighbourhood";
 
 export class NeighbourhoodSettings extends NHComponent {
 
@@ -37,8 +37,8 @@ export class NeighbourhoodSettings extends NHComponent {
   @state()
   private _showAppletDescription: boolean = false;
 
-  @query("#leave-group-dialog")
-  _leaveGroupDialog!: LeaveGroupDialog;
+  @query("#leave-nh-dialog")
+  _leaveGroupDialog!: LeaveNeighbourhood;
 
   renderJoinErrorSnackbar() {
     return html`
@@ -107,7 +107,7 @@ export class NeighbourhoodSettings extends NHComponent {
 
   renderContent() {
     return html`
-        <leave-group-dialog id="leave-group-dialog"></leave-group-dialog>
+        <leave-nh-dialog id="leave-nh-dialog" .weGroupId=${this.weGroupId}></leave-nh-dialog>
 
         <slot name="to-join">
           <h3>Applets to Join</h3>
@@ -164,7 +164,7 @@ export class NeighbourhoodSettings extends NHComponent {
       "mwc-circular-progress": CircularProgress,
       "mwc-snackbar": Snackbar,
       "mwc-linear-progress": LinearProgress,
-      "leave-group-dialog": LeaveGroupDialog,
+      "leave-nh-dialog": LeaveNeighbourhood,
       "joinable-applet-instance-list": JoinableAppletInstanceList,
       "applet-instance-status-list": AppletInstanceStatusList,
       "uninstalled-applet-instance-list": UninstalledAppletInstanceList,
