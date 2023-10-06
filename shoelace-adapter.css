@@ -795,8 +795,7 @@
   --sl-font-size-large: calc(1px * var(--nh-font-size-xl));
 
   /* These two combine to make nh-theme-fg-opacity-50 */
-  --sl-overlay-opacity: 0.5;
-  --sl-overlay-background-color: 37 31 40;
+  --sl-overlay-background-color: rgba(37, 31, 40, 0.5);
 
   --sl-color-neutral-700: var(--nh-theme-accent-default);
   --sl-color-neutral-300: var(--nh-theme-bg-element);
