@@ -58,7 +58,7 @@ export class ExampleApplet extends LitElement {
                     }}
                   ></applet-main>
                 </attachments-context>
-              </we-client-context>
+              </posts-context>
             `
           case "block":
             throw new Error("Block view is not implemented.");
@@ -74,7 +74,7 @@ export class ExampleApplet extends LitElement {
                             <attachments-context .store=${this.attachmentsStore}>
                               <post-detail .postHash=${this.weClient.renderInfo.view.hrl[1]}></post-detail>
                             </attachments-context>
-                          </we-client-context>
+                          </posts-context>
                         `
                       default:
                         throw new Error(`Unknown entry type ${this.weClient.renderInfo.view.entryType}.`);
