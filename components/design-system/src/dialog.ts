@@ -123,8 +123,7 @@ export default class NHDialog extends NHComponentShoelace {
             .size=${"md"}
             variant=${"neutral"}
             @click=${this.hideDialog}
-            .label=${this.chooseButtonText().secondary}
-          >
+          >${this.chooseButtonText().secondary}
           </nh-button>
           <nh-button
             id="primary-action-button"
@@ -132,8 +131,7 @@ export default class NHDialog extends NHComponentShoelace {
             .variant=${'applet-uninstall' === this.dialogType ? "danger" : "primary"}
             @click=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
-            .label=${this.chooseButtonText().primary}
-            >
+            >${this.chooseButtonText().primary}
           </nh-button>
         </sl-button-group>`;
       case 'widget-config' === this.dialogType:
@@ -144,8 +142,7 @@ export default class NHDialog extends NHComponentShoelace {
           variant=${"primary"}
           @click=${this.onOkClicked}
           ?disabled=${this.primaryButtonDisabled}
-          .label=${this.chooseButtonText().primary}
-          >
+          >${this.chooseButtonText().primary}
           </nh-button>
         </sl-button-group>`;
 
