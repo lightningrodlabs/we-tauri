@@ -6,8 +6,6 @@ import SlSpinner from "@shoelace-style/shoelace/dist/components/spinner/spinner.
 
 export default class NHButton extends NHComponent {
   @property()
-  label!: string;
-  @property()
   iconImageB64!: string;
   @property()
   disabled: boolean = false;
@@ -43,8 +41,8 @@ export default class NHButton extends NHComponent {
           ?  html`<div class="button-inner" style="position: relative; cursor: wait;"><span style="opacity: 0;">${this.label}</span><sl-spinner style="position: absolute; left: calc(50% - 0.75rem); font-size: 1.5rem; --track-width: 3px; --track-color: var(--nh-theme-accent-default); --indicator-color: var(--nh-theme-accent-subtle);"></sl-spinner></div>`
           :  html`<div class="button-inner">
           ${this.iconImageB64
-            ? html`<img alt="button icon" src=${`data:image/svg+xml;base64,${this.iconImageB64}`} />`
-            : null}<span>${this.label}</span>
+            ? html`<img alt="button icon" src=${`data:image/svg+xml;base64,${this.iconImageB64}`} /><slot></slot>`
+            : null}<span><slot></slot></span>
         </div>`
         }
         </button>
