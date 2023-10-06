@@ -1,5 +1,5 @@
 import { contextProvided, contextProvider } from '@lit-labs/context';
-import { state, query, property } from 'lit/decorators.js';
+import { state, query, property, queryAsync } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 import { html, css, CSSResult } from 'lit';
 import { StoreSubscriber, TaskSubscriber } from 'lit-svelte-stores';
@@ -65,8 +65,8 @@ export class MainDashboard extends NHComponentShoelace {
 
   @query('#sensemaker-dashboard')
   _sensemakerDashboard;
-  @query('#we-home')
-  _weHome;
+  @queryAsync('#nh-home')
+  _neighbourhoodHome;
 
   /**
    * Defines the content of the dashboard
@@ -177,12 +177,12 @@ export class MainDashboard extends NHComponentShoelace {
         </div>
         <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));"> 
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
-          ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
-              <button class="applet-add" @click=${() => this._weHome.showLibrary()}></button>
-            </sl-tooltip>`
+          ? null
           : html`<span></span>`}
           ${this._dashboardMode == DashboardMode.AssessmentsHome
-            ? null
+            ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
+            <button class="applet-add" @click=${async () => {this._dashboardMode = DashboardMode.WeGroupHome; (await this._neighbourhoodHome).showLibrary();}}></button>
+          </sl-tooltip>`
             : html`
             <sl-tooltip hoist placement="bottom" content="Dashboard">
             <button
@@ -237,7 +237,7 @@ export class MainDashboard extends NHComponentShoelace {
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
           <nh-home
             style="display: flex; flex: 1;"
-            id="we-home"
+            id="nh-home"
             @applet-installed=${(e: CustomEvent) => this.handleAppletInstalled(e)}
           >
           </nh-home>
