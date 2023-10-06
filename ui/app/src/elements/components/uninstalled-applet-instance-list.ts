@@ -57,7 +57,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   
   renderAppStates() {
     const appletInstanceInfos = this._uninstalledApplets.value;
-    return html`${appletInstanceInfos!.length == 0 || !appletInstanceInfos
+    return html`${appletInstanceInfos?.length == 0 || !appletInstanceInfos
       ? html`<p>You have no applet instances to uninstall in this neighbourhood.</p>`
       : html`
       ${
