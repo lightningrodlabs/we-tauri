@@ -23,6 +23,7 @@
       import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js"
       import { AttachmentsClient, AttachmentsStore } from "@lightningrodlabs/attachments";
       import { CellType, encodeHashToBase64 } from "@holochain/client";
+      import { wrapPathInSvg } from "@holochain-open-dev/elements";
 
       import { ExampleApplet } from "./src/example-applet.ts";
       import { PostsClient } from "./src/posts-client.ts";
@@ -36,7 +37,7 @@
 
 
         const appletServices = {
-          attachmetTypes: {},
+          attachmetTypes: (_appletClient) => ({}),
           blockTypes: {},
           search: async (appletClient, searchFilter) => {
             const postsClient = new PostsClient(weClient.renderInfo.appletClient, "forum");
@@ -55,6 +56,7 @@
               }));
           },
           getEntryInfo: async (
+            appletClient,
             roleName,
             integrityZomeName,
             entryType,
@@ -75,13 +77,13 @@
                           icon_src: wrapPathInSvg(mdiPost),
                         };
                       default:
-                        throw new Error("Unknown entry type.");
+                        throw new Error(`Unknown entry type ${entryType}.`);
                     }
                   default:
-                    throw new Error("Unknown zome.");
+                    throw new Error(`Unknown zome '${integrityZomeName}'.`);
                 }
               default:
-                throw new Error("Unknown role name.");
+                throw new Error(`Unknown role name '${roleName}'.`);
             }
           }
         };

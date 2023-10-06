@@ -78,16 +78,16 @@ export class ExampleApplet extends LitElement {
                           </we-client-context>
                         `
                       default:
-                        throw new Error("Unknown entry type");
+                        throw new Error(`Unknown entry type ${this.weClient.renderInfo.view.entryType}.`);
                     }
                   default:
-                    throw new Error("Unknown integrity zome");
+                    throw new Error(`Unknown zome '${this.weClient.renderInfo.view.integrityZomeName}'.`);
                 }
               default:
-                throw new Error("Unknown role name");
+                throw new Error(`Unknown role name '${this.weClient.renderInfo.view.roleName}'.`);
             }
           default:
-            throw new Error("Unknown applet-view type");
+            throw new Error(`Unknown applet-view type.`);
         }
       case "cross-applet-view":
         return html`
