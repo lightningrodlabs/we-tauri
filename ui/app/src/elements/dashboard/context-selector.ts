@@ -69,8 +69,8 @@ export class ContextSelector extends ScopedRegistryHost(LitElement) {
   }
   static styles = css`
     :host {
-      display: flex;
-      flex: 9;
+      display: grid;
+      flex-basis: 100%;
     }
   `
 }

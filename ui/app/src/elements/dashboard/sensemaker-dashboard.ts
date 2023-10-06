@@ -342,9 +342,9 @@ export class SensemakerDashboard extends NHComponentShoelace {
                     >
                     <div
                       slot="buttons"
-                      class="tabs">
+                      class="tabs" style="width: 100%; display: flex; justify-content: space-between;">
                         ${contexts ?
-                          html`<div style="display: flex">${contexts.map(
+                          html`<div>${contexts.map(
                             context =>
                             this.context_ehs[context] ? 
                               html`<nh-tab-button><sl-tab
@@ -361,8 +361,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
                                 >${context}</sl-tab-panel></nh-tab-button>`
                                 : null,
                           )}
+                          </div>
                           <nh-button-group
                             class="dashboard-action-buttons"
+                            style="display: flex; align-items: center;"
                             .direction=${"horizontal"}
                             .fixedFirstItem=${false}
                             .addItemButton=${false}
@@ -370,8 +372,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
                           <div slot="buttons">
                             <nh-button @click=${async () => { await this.contextSelector.requestUpdate("resourceAssessments");  // TODO test this
                           }} .iconImageB64=${b64images.icons.refresh} .variant=${"neutral"} .size=${"icon"}></nh-button>
-                          </div>
                           </nh-button-group></div>` : html``}
+                        </div>
                       </div>
                     </nh-context-selector>
                 </nh-page-header-card>
@@ -502,7 +504,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
         font-family: "Work Sans", "Open Sans";
       }
 
-      [slot="buttons"] {
+      [slot="buttons"] > div{
         display: flex;
         gap: 4px;
         font-family: "Work Sans", "Open Sans";
