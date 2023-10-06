@@ -15,7 +15,13 @@ export enum DialogType {
   confirmation = 'confirmation',
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
-} 
+}
+
+function preventOverlayClose(event: CustomEvent) : void {
+  if (event.detail.source === 'overlay') {
+    event.preventDefault();
+  }
+}
 
 export default class NHDialog extends NHComponentShoelace {
   @property()
@@ -55,6 +61,8 @@ export default class NHDialog extends NHComponentShoelace {
     if(this.openButtonRef && typeof this.openButtonRef?.removeEventListener == 'function') {
       this.openButtonRef?.removeEventListener('click', this.showDialog);
     }
+    this._dialog.removeEventListener('sl-request-close', preventOverlayClose)
+    typeof this.handleClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.handleClose);
   }
 
   updated(changedProperties: any) {
@@ -68,12 +76,8 @@ export default class NHDialog extends NHComponentShoelace {
 
   firstUpdated() {
     if(!this._dialog) return
-    this._dialog.addEventListener('sl-request-close', event => {
-      if (event.detail.source === 'overlay') {
-        event.preventDefault();
-      }
-    })
-    this.handleClose && this._dialog.addEventListener('sl-after-hide', this.handleClose);
+    this._dialog.addEventListener('sl-request-close', preventOverlayClose)
+    typeof this.handleClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.handleClose);
   }
     
   chooseButtonText() {
@@ -118,7 +122,7 @@ export default class NHDialog extends NHComponentShoelace {
             id="secondary-action-button"
             .size=${"md"}
             variant=${"neutral"}
-            .clickHandler=${this.hideDialog}
+            @click=${this.hideDialog}
             .label=${this.chooseButtonText().secondary}
           >
           </nh-button>
@@ -126,7 +130,7 @@ export default class NHDialog extends NHComponentShoelace {
             id="primary-action-button"
             .size=${"md"}
             .variant=${'applet-uninstall' === this.dialogType ? "danger" : "primary"}
-            .clickHandler=${this.onOkClicked}
+            @click=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
             .label=${this.chooseButtonText().primary}
             >
@@ -138,7 +142,7 @@ export default class NHDialog extends NHComponentShoelace {
           id="primary-action-button"
           size=${"md"}
           variant=${"primary"}
-          .clickHandler=${this.onOkClicked}
+          @click=${this.onOkClicked}
           ?disabled=${this.primaryButtonDisabled}
           .label=${this.chooseButtonText().primary}
           >
@@ -164,7 +168,7 @@ export default class NHDialog extends NHComponentShoelace {
       >
         <div class="container">
           ${this.alertMessage
-          ? html`<nh-alert><span>${this.alertMessage}</span></nh-alert>`
+          ? html`<nh-alert .type=${this.alertType}><span>${this.alertMessage}</span></nh-alert>`
           : null}
           <slot name="inner-content">
           </slot>
