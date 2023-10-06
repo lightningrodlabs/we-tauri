@@ -183,7 +183,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
       <nh-dialog
         id="applet-dialog"
         size="medium"
-        dialogType="applet-install"
+        dialogType=${"applet-install"}
         handleOk=${this.createApplet.bind(this)}
         title="Install Applet"
         .openButtonRef=${this._openAppletDialogButton}
@@ -224,7 +224,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
                       No file selected.
                     </div>`}
               </div>
-              <nh-button .disabled=${this._fileBytes} .variant=${"primary"} .size=${"md"} @click=${() => {} } @click=${(e) => {if (this._fileBytes) return; e.currentTarget.nextElementSibling.click()}}>
+              <nh-button .disabled=${this._fileBytes} .variant=${"primary"} .size=${"md"} @click=${(e) => {if (this._fileBytes) return; e.currentTarget.nextElementSibling.click()}}>
                 ${!this._fileBytes ? "Choose File" : "File Chosen"}
               </nh-button>
               <input style="display:none;" type="file" id="filepicker" accept=".webhapp" @change=${this.loadFileBytes} />
