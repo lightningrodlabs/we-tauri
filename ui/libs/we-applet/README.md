@@ -54,7 +54,7 @@ const appletServices: Appletservices = {
             label: 'post',
             icon_src: 'data:image/png;base64,iVBORasdwsfvawe',
             create: (attachToHrl: Hrl) => {
-            // logic to create a new note. The attachToHrl can be used for
+            // logic to create a new entry of that type. The attachToHrl can be used for
             // backlinking, i.e. it is the HRL that the entry which is being
             // created with this function is being attached to.
             }
