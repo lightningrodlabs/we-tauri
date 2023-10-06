@@ -22,8 +22,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(react@17.0.2)
       '@neighbourhoods/design-system-styles':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
       '@storybook/addon-actions':
         specifier: ^7.4.0
         version: 7.4.0(react-dom@18.2.0)(react@17.0.2)
@@ -94,8 +94,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@neighbourhoods/design-system-styles':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
       '@open-wc/lit-helpers':
         specifier: ^0.6.0
         version: 0.6.0(lit@2.8.0)
@@ -125,8 +125,8 @@ importers:
         specifier: workspace:*
         version: link:../design-system
       '@neighbourhoods/design-system-styles':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
       '@scoped-elements/shoelace':
         specifier: ^0.1.0
         version: 0.1.0
@@ -153,8 +153,8 @@ importers:
         specifier: 0.0.6
         version: 0.0.6(ws@8.13.0)
       '@neighbourhoods/design-system-styles':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
       '@scoped-elements/shoelace':
         specifier: ^0.1.0
         version: 0.1.0
@@ -2214,8 +2214,8 @@ packages:
       - ws
     dev: false
 
-  /@neighbourhoods/design-system-styles@0.0.5:
-    resolution: {integrity: sha512-8HA4AeAkGQEybCv9Ow/qh497gu4yxemLMHHNL5Dw5GZpuBHlXjkBg6hm0PAWTOPolrGK8+L2ld02uT5xmQJrFA==}
+  /@neighbourhoods/design-system-styles@0.0.6:
+    resolution: {integrity: sha512-S+Sn2mrVSkCIOWyXaQMI84aAeHyW7miI1f/o+0gUoSQdRaYHkaGin0/2vpTzpU1+JQtnxlGzg214ehisCdMVgg==}
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}

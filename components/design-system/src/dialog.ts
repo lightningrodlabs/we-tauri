@@ -11,6 +11,7 @@ import SlButton from '@shoelace-style/shoelace/dist/components/button/button.js'
 
 export enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
+  leaveNeighbourhood = 'leave-neighbourhood',
   widgetConfig = 'widget-config',
   confirmation = 'confirmation',
   appletInstall = 'applet-install',
@@ -88,6 +89,12 @@ export default class NHDialog extends NHComponentShoelace {
         secondary: 'Cancel',
       }
     
+      case DialogType.leaveNeighbourhood:
+      return {
+        primary: 'Leave',
+        secondary: 'Cancel',
+      }
+    
       case DialogType.widgetConfig:
       return {
         primary: 'Save',
@@ -116,7 +123,7 @@ export default class NHDialog extends NHComponentShoelace {
 
   renderActions() {
     switch (true) {
-      case ['applet-install', 'applet-uninstall', 'create-neighbourhood'].includes(this.dialogType):
+      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
           <nh-button
             id="secondary-action-button"
@@ -128,7 +135,7 @@ export default class NHDialog extends NHComponentShoelace {
           <nh-button
             id="primary-action-button"
             .size=${"md"}
-            .variant=${'applet-uninstall' === this.dialogType ? "danger" : "primary"}
+            .variant=${this.dialogType.match(/uninstall|leave/) ? "danger" : "primary"}
             @click=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
             >${this.chooseButtonText().primary}
@@ -161,7 +168,7 @@ export default class NHDialog extends NHComponentShoelace {
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
-        @sl-hide=${() => this.handleClose()}
+        @sl-hide=${() => typeof this.handleClose == 'function' && this.handleClose()}
       >
         <div class="container">
           ${this.alertMessage

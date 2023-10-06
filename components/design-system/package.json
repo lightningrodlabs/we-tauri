@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@lit-labs/scoped-registry-mixin": "^1.0.1",
-    "@neighbourhoods/design-system-styles": "^0.0.5",
+    "@neighbourhoods/design-system-styles": "^0.0.6",
     "@open-wc/lit-helpers": "^0.6.0",
     "@shoelace-style/shoelace": "^2.8.0",
     "lit": "^2.2.0"
