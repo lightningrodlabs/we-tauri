@@ -182,16 +182,7 @@ export class MainDashboard extends NHComponentShoelace {
             </sl-tooltip>`
           : html`<span></span>`}
           ${this._dashboardMode == DashboardMode.AssessmentsHome
-            ? html`<sl-tooltip placement="bottom" content="Configure Applet" hoist>
-                <button class="dashboard-icon applet-config with-emoji"
-                @click=${() => {
-                  const currentDashboardAppletId = get(
-                    this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId as Uint8Array))![this._sensemakerDashboard.selectedAppletIndex].appletId
-                  this._selectedAppletInstanceId = currentDashboardAppletId;
-                  this._dashboardMode = DashboardMode.AssessmentsHome;
-                  this._widgetConfigDialogActivated = true;
-                  this.requestUpdate('_widgetConfigDialogActivated')}}></button>
-              </sl-tooltip>`
+            ? null
             : html`
             <sl-tooltip hoist placement="bottom" content="Dashboard">
             <button
