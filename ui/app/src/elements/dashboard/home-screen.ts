@@ -82,6 +82,16 @@ export class HomeScreen extends NHComponentShoelace {
         flex-direction: row;
         align-items: flex-start;
       }
+
+      @media (max-width: 1024px) {
+        .content-pane {
+          flex-wrap: wrap;
+        }
+        .content-pane > * {
+          justify-content: center;
+          flex: 1;
+        }
+      }
     `
   ];
 }
