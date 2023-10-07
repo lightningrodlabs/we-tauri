@@ -11,7 +11,7 @@ import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
   AsyncReadable,
-  join,
+  joinAsync,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
@@ -43,7 +43,7 @@ export class AddRelatedGroupDialog extends LitElement {
   _groups = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         this._weStore.allGroupsProfiles,
         this._groupStore.relatedGroups,
       ]) as AsyncReadable<

@@ -7,10 +7,16 @@ import {
   EntryHashB64,
   ActionHashB64,
   DnaHashB64,
+  CallZomeRequest,
 } from "@holochain/client";
+
+
+export type AppletHash = EntryHash;
+export type AppletId = EntryHashB64;
 
 export type Hrl = [DnaHash, ActionHash | EntryHash];
 export type HrlB64 = [DnaHashB64, ActionHashB64 | EntryHashB64];
+
 
 // Contextual reference to a Hrl
 // Useful use case: image we want to point to a specific section of a document
@@ -40,6 +46,8 @@ export interface AttachmentType {
   icon_src: string;
   create: (attachToHrl: Hrl) => Promise<HrlWithContext>;
 }
+
+export type AttachmentName = string;
 
 export interface WeNotification {
   /**
@@ -118,107 +126,235 @@ export interface AppletInfo {
   groupsIds: Array<DnaHash>;
 }
 
-export interface WeServices {
-  openViews: OpenViews;
-  attachmentTypes: ReadonlyMap<EntryHash, Record<string, AttachmentType>>; // Segmented by groupId
-
-  groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined>;
-  appletInfo(appletHash: EntryHash): Promise<AppletInfo | undefined>;
-  entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined>;
-  /**
-   * Stores an HRL to the user's We "Clipboard" of HRLs for simple retrieval
-   * @param hrl
-   */
-  hrlToClipboard(hrl: HrlWithContext): Promise<void>;
-  /**
-   * Searches for HRLs across applets
-   *
-   * @param filter
-   */
-  search(filter: string): Promise<Array<HrlWithContext>>;
-  /**
-   * Prompts the end-user with a dialog to select an HRL from his
-   * We clipboard or via search across applets
-   * applets.
-   */
-  userSelectHrl(): Promise<HrlWithContext | undefined>;
-  /**
-   * Send notifications to We
-   * @param notifications Array of notifications to send to We
-   */
-  notifyWe(notifications: Array<WeNotification>): Promise<void>;
-  // /**
-  //  * Clear notification indicators associated to this message
-  //  * (e.g. notification dot on the applet icon in We)
-  //  * Use this method, if you want to have internal logic on keeping
-  //  * track of which events have been seen by the user.
-  //  * We by default takes care of this by clearing all notification
-  //  * dots of an applet upon opening the applet.
-  //  *
-  //  * @param notificationCount Either a specific notification Id or all
-  //  */
-  // clearNotification(notificationId: NotificationId | "all"): Promise<void>;
-}
-
-export type MainView = (rootElement: HTMLElement) => void;
-export interface BlockView {
-  label: string;
-  icon_src: string;
-  view: (rootElement: HTMLElement, context: any) => void;
-}
-export type EntryTypeView = (
-  rootElement: HTMLElement,
-  hrl: Hrl,
-  context: any
-) => void;
-
-export interface ReferenceableEntryType {
-  info: (hrl: Hrl) => Promise<EntryInfo | undefined>;
-  view: EntryTypeView;
-}
-
-export interface AppletViews {
-  main: MainView;
-  blocks: Record<string, BlockView>; // all events -> schedule
-  entries: Record<
-    string,
-    Record<string, Record<string, ReferenceableEntryType>>
-  >; // Segmented by RoleName, integrity ZomeName and EntryType
-}
-
-export interface CrossAppletViews {
-  main: MainView;
-  blocks: Record<string, BlockView>;
-}
-
 export interface AppletClients {
   appletClient: AppAgentClient;
   profilesClient: ProfilesClient;
 }
 
-export interface WeApplet {
-  appletViews: (
-    client: AppAgentClient,
-    appletHash: EntryHash,
-    profilesClient: ProfilesClient,
-    weServices: WeServices
-  ) => Promise<AppletViews>;
+export type AppletView =
+  | { type: "main" }
+  | { type: "block"; block: string; context: any }
+  | {
+      type: "entry";
+      roleName: string;
+      integrityZomeName: string;
+      entryType: string;
+      hrl: Hrl;
+      context: any;
+    };
 
-  crossAppletViews: (
-    applets: ReadonlyMap<EntryHash, AppletClients>,
-    weServices: WeServices
-  ) => Promise<CrossAppletViews>;
+export type CrossAppletView =
+  | {
+      type: "main";
+    }
+  | {
+      type: "block";
+      block: string;
+      context: any;
+    };
 
-  attachmentTypes: (
-    appletClient: AppAgentClient,
-    appletHash: EntryHash,
-    weServices: WeServices
-  ) => Promise<Record<string, AttachmentType>>;
 
-  search: (
-    appletClient: AppAgentClient,
-    appletHash: EntryHash,
-    weServices: WeServices,
-    searchFilter: string
-  ) => Promise<Array<HrlWithContext>>;
+export interface BlockType {
+  label: string;
+  icon_src: string;
+  view: "applet-view" | "cross-applet-view";
+}
+
+export type BlockName = string;
+
+export type RenderInfo = {
+  type: "applet-view",
+  view: AppletView,
+  appletClient: AppAgentClient,
+  profilesClient: ProfilesClient,
+} | {
+  type: "cross-applet-view",
+  view: CrossAppletView,
+  applets: ReadonlyMap<EntryHash, AppletClients>,
+}
+
+export type RenderView =
+  | {
+      type: "applet-view";
+      view: AppletView;
+    }
+  | {
+      type: "cross-applet-view";
+      view: CrossAppletView;
+    }
+  | {
+      type: "background-service";
+      view: null;
+  };
+
+
+export type ParentToAppletRequest =
+  | {
+      type: "get-applet-entry-info";
+      roleName: string;
+      integrityZomeName: string;
+      entryType: string;
+      hrl: Hrl;
+    }
+  | {
+      type: "get-applet-attachment-types";
+    }
+  | {
+      type: "get-block-types";
+    }
+  | {
+      type: "search";
+      filter: string;
+    }
+  | {
+      type: "create-attachment";
+      attachmentType: string;
+      attachToHrl: Hrl;
+};
+
+export interface AppletToParentMessage {
+  appletHash: EntryHash;
+  request: AppletToParentRequest;
+}
+
+export type AppletToParentRequest =
+  | {
+      type: "ready";
+    }
+  | {
+      type: "get-iframe-config";
+      crossApplet: boolean;
+    }
+  | {
+      type: "get-hrl-location";
+      hrl: Hrl;
+    }
+  | {
+      type: "sign-zome-call";
+      request: CallZomeRequest;
+    }
+  | {
+      type: "open-view";
+      request: OpenViewRequest;
+    }
+  | {
+      type: "create-attachment";
+      request: CreateAttachmentRequest;
+    }
+  | {
+      type: "search";
+      filter: string;
+    }
+  | {
+      type: "notify-we";
+      notifications: Array<WeNotification>;
+  }
+  | {
+      type: "get-applet-info";
+      appletHash: AppletHash;
+    }
+  | {
+      type: "get-global-attachment-types";
+    }
+  | {
+      type: "get-group-profile";
+      groupId: DnaHash;
+    }
+  | {
+      type: "get-global-entry-info";
+      hrl: Hrl;
+    }
+  | {
+      type: "hrl-to-clipboard";
+      hrl: HrlWithContext;
+    }
+  | {
+      type: "user-select-hrl";
+    }
+  | {
+      type: "toggle-clipboard";
+    }
+  | {
+      type: "localStorage.setItem";
+      key: string;
+      value: string;
+    }
+  | {
+      type: "localStorage.removeItem";
+      key: string;
+    }
+  | {
+      type: "localStorage.clear";
+    }
+  | {
+      type: "get-localStorage";
+};
+
+
+
+export type OpenViewRequest =
+  | {
+      type: "applet-main";
+      appletHash: EntryHash;
+    }
+  | {
+      type: "cross-applet-main";
+      appletBundleId: ActionHash;
+    }
+  | {
+      type: "applet-block";
+      appletHash: EntryHash;
+      block: string;
+      context: any;
+    }
+  | {
+      type: "cross-applet-block";
+      appletBundleId: ActionHash;
+      block: string;
+      context: any;
+    }
+  | {
+      type: "hrl";
+      hrl: Hrl;
+      context: any;
+};
+
+export interface CreateAttachmentRequest {
+  appletHash: EntryHash;
+  attachmentType: string;
+  attachToHrl: Hrl;
+}
+
+export interface InternalAttachmentType {
+  label: string;
+  icon_src: string;
+}
+
+export type IframeConfig =
+  | {
+      type: "applet";
+      appPort: number;
+      appletHash: EntryHash;
+
+      profilesLocation: ProfilesLocation;
+    }
+  | {
+      type: "cross-applet";
+      appPort: number;
+      applets: Record<EntryHashB64, ProfilesLocation>;
+    }
+  | {
+      type: "not-installed";
+      appletName: string;
+};
+
+export interface ProfilesLocation {
+  profilesAppId: string;
+  profilesRoleName: string;
+}
+
+export interface HrlLocation {
+  roleName: string;
+  integrityZomeName: string;
+  entryType: string;
 }

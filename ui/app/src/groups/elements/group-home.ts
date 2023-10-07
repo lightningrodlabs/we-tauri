@@ -10,7 +10,7 @@ import { ActionHash, EntryHash, encodeHashToBase64 } from "@holochain/client";
 import {
   AsyncReadable,
   StoreSubscriber,
-  join,
+  joinAsync,
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
@@ -87,11 +87,14 @@ export class GroupHome extends LitElement {
 
   groupProfile = new StoreSubscriber(
     this,
-    () =>
-      join([
+    () => {
+      const store = joinAsync([
         this.groupStore.groupProfile,
         this.groupStore.networkSeed,
-      ]) as AsyncReadable<[GroupProfile | undefined, string]>,
+      ]) as AsyncReadable<[GroupProfile | undefined, string]>;
+      // (window as any).groupProfileStore = store;
+      return store;
+    },
     () => [this.groupStore, this.weStore]
   );
 

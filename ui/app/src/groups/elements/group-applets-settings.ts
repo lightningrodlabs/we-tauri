@@ -1,7 +1,7 @@
 import {
   asyncDeriveAndJoin,
   AsyncReadable,
-  join,
+  joinAsync,
   mapAndJoin,
   pipe,
   sliceAndJoin,
@@ -57,7 +57,7 @@ export class GroupAppletsSettings extends LitElement {
   _groupApplets = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         asyncDeriveAndJoin(
           pipe(this._groupStore.allApplets, (allApplets) =>
             sliceAndJoin(this._groupStore.applets, allApplets)

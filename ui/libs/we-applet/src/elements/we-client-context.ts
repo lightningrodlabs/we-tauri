@@ -2,14 +2,14 @@ import { css, html, LitElement } from "lit";
 import { provide } from "@lit-labs/context";
 import { customElement, property } from "lit/decorators.js";
 
-import { weServicesContext } from "../context.js";
-import { WeServices } from "../types.js";
+import { weClientContext } from "../context.js";
+import { WeClient, WeServices } from "../api.js";
 
-@customElement("we-services-context")
-export class WeServicesContext extends LitElement {
-  @provide({ context: weServicesContext })
+@customElement("we-client-context")
+export class WeClientContext extends LitElement {
+  @provide({ context: weClientContext })
   @property({ type: Object })
-  services!: WeServices;
+  weClient!: WeClient | WeServices;
 
   render() {
     return html`<slot></slot>`;

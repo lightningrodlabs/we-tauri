@@ -21,7 +21,7 @@ import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
-import "@lightningrodlabs/we-applet/dist/elements/we-services-context.js";
+import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/we-applet/dist/elements/search-entry.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
 
@@ -38,7 +38,6 @@ import { weStoreContext } from "../context.js";
 import { WeStore } from "../we-store.js";
 import { JoinGroupDialog } from "./join-group-dialog.js";
 import { weLogoIcon } from "../icons/we-logo-icon.js";
-import { buildHeadlessWeServices } from "../applets/applet-host.js";
 import { CreateGroupDialog } from "./create-group-dialog.js";
 
 import "./clipboard.js";
@@ -304,6 +303,7 @@ export class MainDashboard extends LitElement {
 
       <!-- dashboard -->
       <!-- golden-layout (display: none if not in browserView) -->
+      <!-- Contains the applet message handler -->
       <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout

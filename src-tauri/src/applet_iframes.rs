@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 use futures::lock::Mutex;
-use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
 use hyper::{
     service::{make_service_fn, service_fn},
@@ -122,31 +121,30 @@ pub fn start_applet_uis_server(app_handle: AppHandle, ui_server_port: u16) -> ()
     });
 }
 
-pub fn iframe() -> String {
-    format!(
-        r#"
-        <html>
-          <head>
-            <style>
-              body {{
-                margin: 0;
-                height: 100%;
-                width: 100%;
-                display: flex;
-              }}
-            </style>
-            <link href="/styles.css" rel="stylesheet"></link>
-          </head>
-          <body>
-            <script type="module">
-              {}
-            </script>
-          </body>
-        </html>
-    "#,
-        include_str!("../../ui/applet-iframe/dist/index.mjs")
-    )
-}
+// pub fn _iframe() -> String {
+//     format!(
+//         r#"
+//         <html>
+//           <head>
+//             <style>
+//               body {{
+//                 margin: 0;
+//                 height: 100%;
+//                 width: 100%;
+//                 display: flex;
+//               }}
+//             </style>
+//           </head>
+//           <body>
+//             <script type="module">
+//               {}
+//             </script>
+//           </body>
+//         </html>
+//     "#,
+//         include_str!("../../ui/applet-iframe/dist/index.mjs")
+//     )
+// }
 
 pub fn app_id_from_applet_id(applet_id: &String) -> String {
     format!("applet#{}", applet_id)
@@ -187,11 +185,8 @@ pub async fn read_asset(
     if asset_name.starts_with("/") {
         asset_name = asset_name.strip_prefix("/").unwrap().to_string();
     }
-    if let "index.html" | "" = asset_name.as_str() {
-        return Ok(Some((
-            iframe().as_bytes().to_vec(),
-            Some(String::from("text/html")),
-        )));
+    if let "" = asset_name.as_str() {
+        asset_name = String::from("index.html");
     }
     let applet_app_id = app_id_from_applet_id(
         &get_applet_id_from_lowercase(applet_id_lowercase, admin_ws).await?

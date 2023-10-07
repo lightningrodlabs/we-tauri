@@ -6,9 +6,9 @@ import { sharedStyles } from "@holochain-open-dev/elements";
 import { lazyLoad, StoreSubscriber } from "@holochain-open-dev/stores";
 import {
   getAppletsInfosAndGroupsProfiles,
-  WeServices,
-  weServicesContext,
-  AppletClients,
+  WeClient,
+  weClientContext,
+  type AppletClients,
 } from "@lightningrodlabs/we-applet";
 import { consume } from "@lit-labs/context";
 import { EntryHash } from "@holochain/client";
@@ -19,15 +19,15 @@ export class CrossAppletMain extends LitElement {
   @property()
   applets!: ReadonlyMap<EntryHash, AppletClients>;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   appletsInfo = new StoreSubscriber(
     this,
     () =>
       lazyLoad(async () =>
         getAppletsInfosAndGroupsProfiles(
-          this.weServices,
+          this.weClient,
           Array.from(this.applets.keys())
         )
       ),

@@ -8,6 +8,8 @@ import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-to-clipboard.js";
 import "@lightningrodlabs/we-applet/dist/elements/share-hrl.js";
+import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
+
 
 import { Hrl } from "@lightningrodlabs/we-applet";
 
@@ -19,7 +21,7 @@ import {
 import { weStyles } from "../../shared-styles.js";
 import { WeStore } from "../../we-store.js";
 import "./applet-view.js";
-import { buildHeadlessWeServices } from "../../applets/applet-host.js";
+import { buildHeadlessWeClient } from "../../applets/applet-host.js";
 
 @customElement("entry-view")
 export class EntryView extends LitElement {
@@ -53,18 +55,18 @@ export class EntryView extends LitElement {
       .appletHash=${dnaLocation.appletHash}
       .view=${{
         type: "entry",
-        role: dnaLocation.roleName,
-        zome: entryTypeLocation.integrity_zome,
+        roleName: dnaLocation.roleName,
+        integrityZomeName: entryTypeLocation.integrity_zome,
         entryType: entryTypeLocation.entry_def,
         hrl: this.hrl,
         context: this.context,
       }}
     ></applet-view>
     <div id="we-toolbar" class="column toolbar">
-      <we-services-context .services=${buildHeadlessWeServices(this._weStore)}>
+      <we-client-context .weClient=${buildHeadlessWeClient(this._weStore)}>
         <share-hrl .hrl=${this.hrl} class="toolbar-btn" style="margin-bottom: 10px;"></share-hrl>
         <hrl-to-clipboard .hrl=${this.hrl} class="toolbar-btn" ></hrl-to-clipboard>
-      </we-services-context>
+      </we-client-context>
     </div>
     `;
   }

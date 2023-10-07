@@ -15,7 +15,7 @@ import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import { PostsStore } from "../posts-store";
 import { postsStoreContext } from "../context";
 import { Post } from "../types";
-import { WeNotification } from "@lightningrodlabs/we-applet";
+import { type WeNotification } from "@lightningrodlabs/we-applet";
 
 /**
  * @element post-summary

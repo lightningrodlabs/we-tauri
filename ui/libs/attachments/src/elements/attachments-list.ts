@@ -20,8 +20,8 @@ import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 
 import {
-  weServicesContext,
-  WeServices,
+  weClientContext,
+  WeClient,
   HrlWithContext,
 } from "@lightningrodlabs/we-applet";
 import "@lightningrodlabs/we-applet/dist/elements/hrl-link.js";
@@ -34,8 +34,8 @@ export class AttachmentsList extends LitElement {
   @consume({ context: attachmentsStoreContext, subscribe: true })
   attachmentsStore!: AttachmentsStore;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   @property(hashProperty("hash"))
   hash!: AnyDhtHash;

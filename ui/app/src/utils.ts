@@ -13,7 +13,9 @@ import {
   DnaHashB64,
   decodeHashFromBase64,
 } from "@holochain/client";
-import { HrlB64WithContext, HrlWithContext, WeNotification } from "@lightningrodlabs/we-applet";
+import { Hrl, HrlB64WithContext, HrlWithContext, RenderView, WeNotification } from "@lightningrodlabs/we-applet";
+import { encode } from "@msgpack/msgpack";
+import { fromUint8Array } from "js-base64";
 
 import { AppletIframeProtocol, ConductorInfo } from "./tauri.js";
 import { AppletNotificationSettings } from "./applets/types.js";
@@ -404,5 +406,29 @@ export function hrlB64WithContextToRaw(hrlB64: HrlB64WithContext): HrlWithContex
   }
 }
 
+export function renderViewToQueryString(renderView: RenderView): string {
 
+  let base = `view=${renderView.type}`;
 
+  if (renderView.view) {
+    console.log("### @renderViewToQUeryString");
+    base = `view=${renderView.type}&view-type=${renderView.view.type}`;
+
+    if ("block" in renderView.view) {
+      base = `${base}&block=${renderView.view.block}`;
+    }
+    if ("hrl" in renderView.view) {
+      base = `${base}&hrl=${stringifyHrl(renderView.view.hrl)}`;
+    }
+    if ("context" in renderView.view) {
+      const b64context = fromUint8Array(encode(renderView.view.context), true);
+      base = `${base}&context=${b64context}`;
+    }
+  }
+
+  return base;
+}
+
+export function stringifyHrl(hrl: Hrl): string {
+  return `hrl://${encodeHashToBase64(hrl[0])}/${encodeHashToBase64(hrl[1])}`;
+}

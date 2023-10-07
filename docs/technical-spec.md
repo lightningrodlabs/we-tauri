@@ -11,6 +11,7 @@
   - Identified by the groupDnaHash.
 	- `GroupStore` is a TS class that given a group exposes relevant queries.
 
+# BELOW HERE OUTDATED
 # We <-> Applet communication
 
 - Applets are renderered inside iframes.

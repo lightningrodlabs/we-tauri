@@ -29,7 +29,7 @@ import SlMenu from "@shoelace-style/shoelace/dist/components/menu/menu.js";
 import { EntryHash } from "@holochain/client";
 import { DnaHash } from "@holochain/client";
 import { mdiMagnify } from "@mdi/js";
-import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlWithContext, WeServices, getAppletsInfosAndGroupsProfiles, weServicesContext } from "@lightningrodlabs/we-applet";
+import { AppletInfo, EntryLocationAndInfo, GroupProfile, HrlWithContext, WeClient, getAppletsInfosAndGroupsProfiles, weClientContext } from "@lightningrodlabs/we-applet";
 
 export interface SearchResult {
   hrlsWithInfo: Array<[HrlWithContext, EntryLocationAndInfo]>;
@@ -90,9 +90,9 @@ export class SearchBar extends LitElement implements FormField {
   @property({ type: Number, attribute: "min-chars" })
   minChars: number = 3;
 
-  @consume({ context: weServicesContext, subscribe: true })
+  @consume({ context: weClientContext, subscribe: true })
   @property()
-  services!: WeServices;
+  weClient!: WeClient;
 
   /**
    * @internal
@@ -159,11 +159,11 @@ export class SearchBar extends LitElement implements FormField {
   }
 
   async search(filter: string): Promise<SearchResult> {
-    const hrls = await this.services.search(filter);
+    const hrls = await this.weClient.search(filter);
 
     const hrlsWithInfo = await Promise.all(
       hrls.map(async (hrlWithContext) => {
-        const info = await this.services.entryInfo(hrlWithContext.hrl);
+        const info = await this.weClient.entryInfo(hrlWithContext.hrl);
         return [hrlWithContext, info] as [
           HrlWithContext,
           EntryLocationAndInfo | undefined
@@ -176,7 +176,7 @@ export class SearchBar extends LitElement implements FormField {
 
     const { appletsInfos, groupsProfiles } =
       await getAppletsInfosAndGroupsProfiles(
-        this.services,
+        this.weClient,
         filteredHrls.map(([_, info]) => info.appletHash)
       );
 

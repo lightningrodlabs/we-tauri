@@ -31,12 +31,11 @@ import {
   DnaHash,
   EntryHash,
 } from "@holochain/client";
-import { GroupProfile, HrlB64WithContext, HrlWithContext } from "@lightningrodlabs/we-applet";
+import { GroupProfile, HrlB64WithContext, HrlWithContext, InternalAttachmentType, ProfilesLocation } from "@lightningrodlabs/we-applet";
 import { v4 as uuidv4 } from "uuid";
 import { invoke } from "@tauri-apps/api";
 import { notify } from "@holochain-open-dev/elements";
 import { msg } from "@lit/localize";
-import { InternalAttachmentType, ProfilesLocation } from "applet-messages";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
@@ -44,7 +43,7 @@ import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
-import { AppletHash } from "./types.js";
+import { AppletHash, AppletId } from "./types.js";
 import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
 
 export class WeStore {
@@ -81,6 +80,8 @@ export class WeStore {
     const networkSeed = uuidv4();
 
     const appInfo = await this.joinGroup(networkSeed); // this line also updates the matrix store
+
+    console.log("Group created. AppInfo: ", appInfo);
 
     const groupDnaHash: DnaHash =
       appInfo.cell_info["group"][0][CellType.Provisioned].cell_id[0];
@@ -272,6 +273,7 @@ export class WeStore {
         if (!app) throw new Error("The given dna is not installed");
         if (!app.appInfo.installed_app_id.startsWith("applet#")) throw new Error("The given dna is part of an app that's not an applet.");
 
+        console.log("@dnaLocations: found and returning app: ", app);
         return {
           appletHash: appletHashFromAppId(app.appInfo.installed_app_id),
           appInfo: app.appInfo,
@@ -283,8 +285,9 @@ export class WeStore {
 
   hrlLocations = new LazyHoloHashMap(
     (dnaHash: DnaHash) =>
-      new LazyHoloHashMap((hash: EntryHash | ActionHash) =>
-        asyncDerived(
+      new LazyHoloHashMap((hash: EntryHash | ActionHash) => {
+        console.log("TRYING TO GET HRL LOCATION.");
+        return asyncDerived(
           this.dnaLocations.get(dnaHash),
           async (dnaLocation: DnaLocation) => {
             console.log("@hrlLocations: got dnaLocation: ", dnaLocation);
@@ -300,7 +303,8 @@ export class WeStore {
               entryDefLocation,
             };
           }
-        )
+        );
+      }
       )
   );
 
@@ -314,12 +318,12 @@ export class WeStore {
                 (appletStore) => appletStore!.host,
                 (host) =>
                   lazyLoad(() =>
-                    host.getEntryInfo(
+                    host ? host.getAppletEntryInfo(
                       location.dnaLocation.roleName,
                       location.entryDefLocation.integrity_zome,
                       location.entryDefLocation.entry_def,
                       [dnaHash, hash]
-                    )
+                    ) : Promise.resolve(undefined)
                   )
               )
             : completed(undefined)
@@ -375,13 +379,14 @@ export class WeStore {
   > = alwaysSubscribed(
     pipe(
       this.allRunningApplets,
-      (runningApplets) => mapAndJoin(
+      (runningApplets) =>
+        mapAndJoin(
           runningApplets,
           (appletStore) => appletStore.attachmentTypes
-      ),
+        ),
       (allAttachmentTypes) => {
         const attachments: Record<
-          EntryHashB64,
+          AppletId,
           Record<string, InternalAttachmentType>
         > = {};
 

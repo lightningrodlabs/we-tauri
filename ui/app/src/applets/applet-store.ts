@@ -12,14 +12,14 @@ import {
   AppletToParentMessage,
   BlockType,
   InternalAttachmentType,
-} from "applet-messages";
+  RenderView,
+} from "@lightningrodlabs/we-applet";
 
 import { AppletHost } from "./applet-host.js";
 import { Applet } from "./types.js";
-import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus } from "../utils.js";
+import { appletOrigin, clearAppletNotificationStatus, loadAppletNotificationStatus, renderViewToQueryString } from "../utils.js";
 import { ConductorInfo } from "../tauri.js";
 import { AppletBundlesStore } from "../applet-bundles/applet-bundles-store.js";
-import { ViewFrame } from "../layout/views/view-frame.js";
 
 export class AppletStore {
   constructor(
@@ -31,46 +31,46 @@ export class AppletStore {
   this._unreadNotifications.set(loadAppletNotificationStatus(encodeHashToBase64(appletHash)));
 }
 
-  host: AsyncReadable<AppletHost> = lazyLoad(async () => {
+  host: AsyncReadable<AppletHost | undefined> = lazyLoad(async () => {
     const appletHashBase64 = encodeHashToBase64(this.appletHash);
 
     let iframe = document.getElementById(appletHashBase64) as
       | HTMLIFrameElement
       | undefined;
     if (iframe) {
-      return new AppletHost(iframe);
+      return new AppletHost(iframe, appletHashBase64);
     }
 
-    const origin = appletOrigin(this.conductorInfo, this.appletHash);
+    const renderView: RenderView = {
+      type: "background-service",
+      view: null,
+    };
+
+    const origin = `${appletOrigin(
+      this.conductorInfo,
+      this.appletHash
+    )}?${renderViewToQueryString(renderView)}`;
+
     iframe = document.createElement("iframe");
     iframe.id = appletHashBase64;
     iframe.src = origin;
     iframe.style.display = "none";
 
-    // add the applet main view into the container to receive notifications etc.
-    const appletMainView: ViewFrame = document.createElement("view-frame") as ViewFrame;
-    appletMainView.appletHash = this.appletHash;
-    appletMainView.renderView = {
-      type: "applet-view",
-      view: {
-        type: "main",
-      }
-    };
+    document.body.appendChild(iframe);
 
-    iframe.appendChild(appletMainView);
-    // add the iframe inside the app-container (<we-app></we-app> tag in index.html) to have the WeStore context
-    const appContainer = document.getElementById("app-container");
-    appContainer!.appendChild(iframe);
-    // document.body.appendChild(iframe);
+    return new Promise<AppletHost | undefined>((resolve) => {
+      const timeOut = setTimeout(() => {
+        console.warn(`Connecting to applet host for applet ${appletHashBase64} timed out in 10000ms`);
+        resolve(undefined);
+      }, 10000);
 
-    return new Promise<AppletHost>((resolve) => {
-      console.log("\n@AppletStore @host: adding event listener.\n");
       window.addEventListener("message", (message) => {
         if (message.source === iframe?.contentWindow) {
           if (
             (message.data as AppletToParentMessage).request.type === "ready"
           ) {
-            resolve(new AppletHost(iframe!));
+            clearTimeout(timeOut);
+            resolve(new AppletHost(iframe!, appletHashBase64));
           }
         }
       });
@@ -79,11 +79,20 @@ export class AppletStore {
 
   attachmentTypes: AsyncReadable<Record<string, InternalAttachmentType>> = pipe(
     this.host,
-    (host) => lazyLoadAndPoll(() => host.getAttachmentTypes(), 10000)
+    (host) => lazyLoadAndPoll(async () => {
+      if (!host) return Promise.resolve({});
+      try {
+        const attachmentTypes = await host.getAppletAttachmentTypes();
+        return attachmentTypes;
+      } catch (e) {
+        console.warn(`Failed to get attachment types from applet "${host.appletId}": ${e}`);
+        return Promise.resolve({});
+      }
+    }, 10000)
   );
 
   blocks: AsyncReadable<Record<string, BlockType>> = pipe(this.host, (host) =>
-    lazyLoadAndPoll(() => host.getBlocks(), 10000)
+    lazyLoadAndPoll(() => host ? host.getBlocks() : Promise.resolve({}), 10000)
   );
 
   logo = this.appletBundlesStore.appletBundleLogo.get(

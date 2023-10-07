@@ -1,10 +1,5 @@
 import {
-  DnaHash,
-  Record, 
-  ActionHash, 
   SignedActionHashed,
-  EntryHash, 
-  AgentPubKey,
   Create,
   Update,
   Delete,
@@ -40,9 +35,8 @@ export type EntryTypes =
 
 
 
-export interface Post { 
+export interface Post {
   title: string;
-
   content: string;
 }
 

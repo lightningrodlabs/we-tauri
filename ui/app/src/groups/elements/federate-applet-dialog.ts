@@ -16,7 +16,7 @@ import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import {
   AsyncReadable,
-  join,
+  joinAsync,
   joinAsyncMap,
   pipe,
   StoreSubscriber,
@@ -53,7 +53,7 @@ export class FederateAppletDialog extends LitElement {
     this,
     () =>
       pipe(
-        join([
+        joinAsync([
           this._weStore.allGroups,
           this._weStore.groupsForApplet.get(this.appletHash),
         ]) as AsyncReadable<

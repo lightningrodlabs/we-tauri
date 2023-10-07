@@ -31,10 +31,8 @@ import "@material/web/menu/sub-menu-item.js";
 import "@material/web/menu/menu-item.js";
 
 import {
-  weServicesContext,
-  WeServices,
-  AttachmentType,
-  getAppletsInfosAndGroupsProfiles,
+  weClientContext,
+  WeClient,
 } from "@lightningrodlabs/we-applet";
 import { HoloHashMap } from "@holochain-open-dev/utils";
 
@@ -47,15 +45,15 @@ export class AddAttachment extends LitElement {
   @consume({ context: attachmentsStoreContext, subscribe: true })
   attachmentsStore!: AttachmentsStore;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   @property(hashProperty("hash"))
   hash!: AnyDhtHash;
 
   async addAttachment() {
     try {
-      const hrlWithContext = await this.weServices.userSelectHrl();
+      const hrlWithContext = await this.weClient.userSelectHrl();
       if (hrlWithContext) {
         await this.attachmentsStore.client.addAttachment(
           this.hash,

@@ -6,7 +6,7 @@ import {
 } from "@holochain-open-dev/elements";
 import {
   AsyncReadable,
-  join,
+  joinAsync,
   StoreSubscriber,
   toPromise,
 } from "@holochain-open-dev/stores";
@@ -25,8 +25,7 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { AppletView, RenderView } from "applet-messages";
-import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { GroupProfile, AppletView, RenderView } from "@lightningrodlabs/we-applet";
 
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
@@ -57,7 +56,7 @@ export class AppletViewEl extends LitElement {
   _applet = new StoreSubscriber(
     this,
     () =>
-      join([
+      joinAsync([
         this.weStore.appletStores.get(this.appletHash),
         this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
         this.weStore.groupsForApplet.get(this.appletHash),

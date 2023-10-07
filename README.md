@@ -1,8 +1,8 @@
 # We
 
-*We* is a Holochain runtime that makes it trivially easy for groups to build collaboration spaces by composing custom "applet" suites to meet their collaboration needs.
+*We* is a Holochain runtime that makes it trivially easy for groups to build collaboration spaces by composing custom "Applet" suites to meet their collaboration needs.
 
-*We* is composed of a group management DNA, together with a defined pattern on how to build *applet* DNAs that are can be installed into a *We* group. Each such group as well as each *applet* used within a group is its own private peer-to-peer network.
+*We* is composed of a group management DNA, together with a defined pattern on how to build *Applet* DNAs that can be added to a *We* group. Each such group as well as each *Applet* used within a group is its own private peer-to-peer network.
 
 For more about the motivation behind *We*, read [this blogpost](https://eric.harris-braun.com/blog/2022/07/26/id-390).
 
@@ -10,13 +10,13 @@ For more about the motivation behind *We*, read [this blogpost](https://eric.har
 
 For details about the design, read the [design document](docs/Design.md).
 
-## Creating We applets
+## Creating We Applets
 
 The details on how to create a *we applet* can be found [here](docs/How-to-create-a-we-applet.md).
 
 ## Installation
 
-Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and download the latest release for your OS.
+Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and download the latest release for your Operating System.
 
 ## Developer Setup
 
@@ -57,7 +57,7 @@ The `scripts/publish-applets.js` is going to be executed, which will publish the
 
 Note that you need to enter the password in the tauri window before the publishing can begin.
 
-To check whether this has finished, look in the terminal for the log: `Published applet: gather`
+To check whether this has finished, look in the terminal for the log: `Published applet: [name of your Applet]`
 
 ### Building
 

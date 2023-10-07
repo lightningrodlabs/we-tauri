@@ -1,25 +1,26 @@
 import { get, pipe, toPromise } from "@holochain-open-dev/stores";
 import {
-  AppletToParentMessage,
-  AppletToParentRequest,
-  BlockType,
-  HrlLocation,
-  IframeConfig,
-  InternalAttachmentType,
-  ParentToAppletRequest,
-} from "applet-messages";
-import {
   AppletInfo,
   AttachmentType,
   EntryInfo,
   EntryLocationAndInfo,
   Hrl,
+  HrlLocation,
   HrlWithContext,
   WeNotification,
+  WeClient,
+  AppletToParentRequest,
+  ParentToAppletRequest,
+  IframeConfig,
+  InternalAttachmentType,
+  BlockType,
+  AppletServices,
   WeServices,
+  GroupProfile,
+  AttachmentName,
 } from "@lightningrodlabs/we-applet";
 import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
-import { HoloHashMap } from "@holochain-open-dev/utils";
+import { EntryHashMap, HoloHashMap } from "@holochain-open-dev/utils";
 import { appWindow } from "@tauri-apps/api/window";
 
 import { AppOpenViews } from "../layout/types.js";
@@ -54,12 +55,12 @@ export async function setupAppletMessageHandler(
       const installedApplets = await toPromise(
         weStore.appletBundlesStore.installedApplets
       );
-      const appletId = installedApplets.find(
+      const appletHash = installedApplets.find(
         (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
       );
 
-      if (!appletId) {
-        console.log("applet Id not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
+      if (!appletHash) {
+        console.log("appletHash not found. installedApplets: ", installedApplets.map((hash) => encodeHashToBase64(hash)), "lowercaseAppletId: ", lowerCaseAppletId);
         const iframeConfig: IframeConfig = {
           type: "not-installed",
           appletName: lowerCaseAppletId,
@@ -73,7 +74,7 @@ export async function setupAppletMessageHandler(
       const result = await handleAppletIframeMessage(
         weStore,
         openViews,
-        appletId,
+        appletHash,
         message.data.request
       );
       message.ports[0].postMessage({ type: "success", result });
@@ -85,31 +86,38 @@ export async function setupAppletMessageHandler(
   });
 }
 
-export function buildHeadlessWeServices(weStore: WeStore): WeServices {
+export function buildHeadlessWeClient(weStore: WeStore): WeServices {
   return {
-    async entryInfo(hrl: Hrl) {
+    // background-services don't need to provide global attachment types as they are available via the WeStore anyway.
+    attachmentTypes: new HoloHashMap<AppletHash, Record<AttachmentName, AttachmentType>>(),
+    async entryInfo(hrl: Hrl): Promise<EntryLocationAndInfo | undefined> {
       const dnaHash = hrl[0];
 
-      const location = await toPromise(
-        weStore.hrlLocations.get(dnaHash).get(hrl[1])
-      );
+      try {
+        const location = await toPromise(
+          weStore.hrlLocations.get(dnaHash).get(hrl[1])
+        );
 
-      if (!location) return undefined;
+        if (!location) return undefined;
 
-      const entryInfo = await toPromise(
-        weStore.entryInfo.get(hrl[0]).get(hrl[1])
-      );
+        const entryInfo = await toPromise(
+          weStore.entryInfo.get(hrl[0]).get(hrl[1])
+        );
 
-      if (!entryInfo) return undefined;
+        if (!entryInfo) return undefined;
 
-      const entryAndAppletInfo: EntryLocationAndInfo = {
-        appletHash: location.dnaLocation.appletHash,
-        entryInfo,
-      };
+        const entryAndAppletInfo: EntryLocationAndInfo = {
+          appletHash: location.dnaLocation.appletHash,
+          entryInfo,
+        };
 
-      return entryAndAppletInfo;
+        return entryAndAppletInfo;
+      } catch (e) {
+        console.warn(`Failed to get entryInfo for hrl ${hrl.map((hash) => encodeHashToBase64(hash))}.`);
+        return undefined;
+      }
     },
-    async groupProfile(groupId: DnaHash) {
+    async groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined> {
       const groupProfile = await toPromise(
         pipe(
           weStore.groups.get(groupId),
@@ -133,7 +141,9 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
       } as AppletInfo;
     },
     async search(filter: string) {
+      console.log("%%%%%% @headlessWeClient: searching...");
       const hosts = await toPromise(weStore.allAppletsHosts);
+      console.log("%%%%%% @headlessWeClient: got hosts.");
 
       const promises: Array<Promise<Array<HrlWithContext>>> = [];
 
@@ -141,10 +151,10 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
         promises.push(
           (async () => {
             try {
-              const results = await host.search(filter);
+              const results = host ? await host.search(filter) : [];
               return results;
             } catch (e) {
-              console.warn(e);
+              console.warn(`Search in applet ${host?.appletId} failed: ${e}`);
               return [];
             }
           })()
@@ -161,17 +171,14 @@ export function buildHeadlessWeServices(weStore: WeStore): WeServices {
         .filter((h) => !!h);
       return hrls;
     },
-    async notifyWe(notifications: Array<WeNotification>) {
+    async notifyWe(_notifications: Array<WeNotification>) {
       throw new Error("notify is not implemented on headless WeServices.");
     },
-    attachmentTypes: new HoloHashMap<DnaHash, Record<string, AttachmentType>>(),
-    openViews: {
-      openAppletMain: () => {},
-      openCrossAppletMain: () => {},
-      openHrl: () => {},
-      openCrossAppletBlock: () => {},
-      openAppletBlock: () => {},
-    },
+    openAppletMain: async () => {},
+    openCrossAppletMain: async () => {},
+    openHrl: async () => {},
+    openCrossAppletBlock: async () => {},
+    openAppletBlock: async () => {},
     async userSelectHrl() {
       throw new Error("userSelectHrl is not supported in headless WeServices.")
     },
@@ -187,8 +194,8 @@ export async function handleAppletIframeMessage(
   appletHash: EntryHash,
   message: AppletToParentRequest
 ) {
-  let host: AppletHost;
-  const services = buildHeadlessWeServices(weStore);
+  let host: AppletHost | undefined;
+  const weServices = buildHeadlessWeClient(weStore);
 
   const appletLocalStorageKey = `appletLocalStorage#${encodeHashToBase64(appletHash)}`;
 
@@ -248,6 +255,7 @@ export async function handleAppletIframeMessage(
         integrityZomeName: location0.entryDefLocation.integrity_zome,
         entryType: location0.entryDefLocation.entry_def,
       };
+      console.log("Got HrlLocation: ", hrlLocation);
       return hrlLocation;
     case "open-view":
       switch (message.request.type) {
@@ -278,7 +286,7 @@ export async function handleAppletIframeMessage(
       weStore.hrlToClipboard(message.hrl);
       break;
     case "search":
-      return services.search(message.filter);
+      return weServices.search(message.filter);
     case "user-select-hrl":
       return openViews.userSelectHrl();
     case "toggle-clipboard":
@@ -331,12 +339,13 @@ export async function handleAppletIframeMessage(
       }))
       return;
     case "get-applet-info":
-      return services.appletInfo(message.appletHash);
+      return weServices.appletInfo(message.appletHash);
     case "get-group-profile":
-      return services.groupProfile(message.groupId);
-    case "get-entry-info":
-      return services.entryInfo(message.hrl);
-    case "get-attachment-types":
+      return weServices.groupProfile(message.groupId);
+    case "get-global-entry-info":
+      console.log("@applet-host: got 'get-entry-info' message: ", message);
+      return weServices.entryInfo(message.hrl);
+    case "get-global-attachment-types":
       return toPromise(weStore.allAttachmentTypes);
     case "sign-zome-call":
       return signZomeCallTauri(message.request);
@@ -347,10 +356,10 @@ export async function handleAppletIframeMessage(
           (appletStore) => appletStore!.host
         )
       );
-      return host.createAttachment(
+      return host ? host.createAttachment(
         message.request.attachmentType,
         message.request.attachToHrl
-      );
+      ) : Promise.reject(new Error("No applet host available."));
     case "localStorage.setItem":
       const appletLocalStorageJson: string | null = window.localStorage.getItem(appletLocalStorageKey);
       const appletLocalStorage: Record<string, string> = appletLocalStorageJson ? JSON.parse(appletLocalStorageJson) : {};
@@ -379,19 +388,25 @@ export async function handleAppletIframeMessage(
 }
 
 export class AppletHost {
-  constructor(public iframe: HTMLIFrameElement) {}
 
-  async getEntryInfo(
+  appletId: AppletId;
+
+  constructor(public iframe: HTMLIFrameElement, appletId: AppletId) {
+    this.appletId = appletId;
+  }
+
+  async getAppletEntryInfo(
     roleName: string,
     integrityZomeName: string,
-    entryDefId: string,
+    entryType: string,
     hrl: Hrl
   ): Promise<EntryInfo | undefined> {
+    console.log("@applet-host: calling getAppletEntryInfo()");
     return this.postMessage({
-      type: "get-entry-info",
+      type: "get-applet-entry-info",
       roleName,
       integrityZomeName,
-      entryDefId,
+      entryType,
       hrl,
     });
   }
@@ -414,9 +429,9 @@ export class AppletHost {
     });
   }
 
-  async getAttachmentTypes(): Promise<Record<string, InternalAttachmentType>> {
+  async getAppletAttachmentTypes(): Promise<Record<string, InternalAttachmentType>> {
     return this.postMessage({
-      type: "get-attachment-types",
+      type: "get-applet-attachment-types",
     });
   }
 

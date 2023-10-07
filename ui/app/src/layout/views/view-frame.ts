@@ -3,11 +3,10 @@ import { customElement, property, state } from "lit/decorators.js";
 import { hashProperty } from "@holochain-open-dev/elements";
 import { encodeHashToBase64, EntryHash } from "@holochain/client";
 import { consume } from "@lit-labs/context";
-
-import { RenderView, renderViewToQueryString } from "applet-messages";
+import { RenderView } from "@lightningrodlabs/we-applet";
 
 import { weStyles } from "../../shared-styles.js";
-import { appletOrigin } from "../../utils.js";
+import { appletOrigin, renderViewToQueryString } from "../../utils.js";
 import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
 
@@ -23,6 +22,9 @@ export class ViewFrame extends LitElement {
   @property()
   renderView!: RenderView;
 
+  @property()
+  iframeId: string | undefined;
+
   render() {
     console.log("rendering viewframe for appletHash: ", encodeHashToBase64(this.appletHash));
     console.log(`Querystring: ${appletOrigin(
@@ -32,6 +34,7 @@ export class ViewFrame extends LitElement {
     return html`<iframe
       frameBorder="0"
       title="TODO"
+      id=${this.iframeId ? this.iframeId : undefined}
       src="${appletOrigin(
         this.weStore.conductorInfo,
         this.appletHash

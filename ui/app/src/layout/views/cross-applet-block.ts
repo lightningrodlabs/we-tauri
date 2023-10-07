@@ -7,7 +7,7 @@ import {
 } from "@holochain/client";
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { ProfilesLocation, RenderView } from "applet-messages";
+import { ProfilesLocation, RenderView } from "@lightningrodlabs/we-applet";
 import { consume } from "@lit-labs/context";
 import { msg, localized } from "@lit/localize";
 

@@ -1,4 +1,4 @@
 import { createContext } from "@lit-labs/context";
-import { WeServices } from "./types";
+import { WeClient, WeServices } from "./api";
 
-export const weServicesContext = createContext<WeServices>("we_services");
+export const weClientContext = createContext<WeClient | WeServices>("we_client");

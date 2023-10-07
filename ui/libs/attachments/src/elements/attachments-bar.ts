@@ -10,8 +10,8 @@ import "./add-attachment.js";
 import { consume } from "@lit-labs/context";
 import { AttachmentsStore } from "../attachments-store.js";
 import { attachmentsStoreContext } from "../context.js";
-import { weServicesContext } from "../../../we-applet/dist/context.js";
-import { HrlWithContext, WeServices } from "../../../we-applet/dist/types.js";
+import { weClientContext } from "../../../we-applet/dist/context.js";
+import { HrlWithContext, WeClient } from "@lightningrodlabs/we-applet";
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 
 @localized()
@@ -23,8 +23,8 @@ export class AttachmentsBar extends LitElement {
   @consume({ context: attachmentsStoreContext, subscribe: true })
   attachmentsStore!: AttachmentsStore;
 
-  @consume({ context: weServicesContext, subscribe: true })
-  weServices!: WeServices;
+  @consume({ context: weClientContext, subscribe: true })
+  weClient!: WeClient;
 
   attachments = new StoreSubscriber(
     this,

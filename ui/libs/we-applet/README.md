@@ -1,146 +1,183 @@
 # @lightningrodlabs/we-applet
 
-This package contains the interfaces and contracts that a UI module needs to implement in order to become a We Applet.
+This package contains the interfaces and contracts that a Holochain app UI needs to implement in order to become a We Applet.
 
-## Implementing the UI for a we applet
 
-We applets don't have an `index.html` file as their entrypoint, but an `index.js`. This `index.js` **must** have a default export that implements the interface defined by the `WeApplet` type.
 
-To implement the UI for your applet, import the `WeApplet` type from `@lightningrodlabs/we-applet`, create an object that implements it, and have that be the default export in your file:
+The differences between a We Applet and a normal Holochain App are:
 
-> index.ts.
+* A We Applet can make use of the profiles zome provided by We instead of using its own profiles module
+* A We Applet can provide more than just the default "main" UI. It can additionally provide:
+  * UI elements to display single DHT entries
+  * UI widgets/blocks of any kind
+  * UI elements ("main" view or "blocks") that render information across all instances of that same Applet type
+* A We Applet can provide AppletServices for We or other Applets to use, including:
+  * search: Searching in the Applet that returns Holochain Resource Locators (HRLs) pointing to DHT content
+  * attachmentTypes: Entry types that can be attached by other Applets, alongside with a `create()` method that creates a new entry type to be attached ad hoc.
+  * getEntryInfo(): A function that returns info for the entry associated to the HRL if it exists in the Applet and the method is implemented.
+  * blockTypes: Types of UI widgets/blocks that this Applet can render if requested by We.
 
-```ts
-import { DnaHash, EntryHash, AppAgentClient } from "@holochain/client";
-import { WeApplet, AppletViews, WeServices, Hrl } from "@lightningrodlabs/we-applet";
-import { ProfilesClient } from '@holochain-open-dev/profiles';
 
-async function appletViews(
-  client: AppAgentClient,        // The client for this applet, already set up
-  appletHash: EntryHash,   // The applet instance id, usually used when opening views
-  profilesClient: ProfilesClient,  // The services that this group offers, like the group's profile or the ProfilesClient for the agents
-  weServices: WeServices         // The services that "we" offers to this applet, to enable attachments, open views, search...
-): AppletViews {
-  return {
-    main: (element: HTMLElement) => element.innerHTML = "<span>This is the main view for this applet, which is going to be opened when the user clicks on the applet's icon</span>",
-    blocks: {
-      my_block: {
-        label: "My Block",
-        icon_src: "<svg>...</svg>",
-        view: (element: HTMLElement) => element.innerHTML = '<span>This is a block view for this applet, which can be opened from the main view</span>'
-      }
-    },
-    entries: {
-      my_role_name: {
-        my_integrity_zome_name: {
-          my_entry_type_name: {
-            async view(element: HTMLElement, hrl: Hrl, context) {
-              const myEntry = await client.callZome({
-                cell_id: [hrl[0], client.myPubKey],
-                payload: hrl[1],
-                /** TODO: call the appropriate zome function in your app */
-              });
 
-              element.innerHTML = `<span>The title of this entry is ${myEntry.title}</span>`
-            },
-            async info(hrl: Hrl) { // The HRL is a [DnaHash, ActionHash | EntryHash] pair, identifying the entry to retrieve
-              const myEntry = await client.callZome({
-                cell_id: [hrl[0], client.myPubKey],
-                payload: hrl[1],
-                /** TODO: call the appropriate zome function in your app */
-              });
+### Implementing a most basic applet UI
 
-              if (!myEntry) return undefined;
+```typescript=
+import { WeClient } from '@lightningrodlabs/we-applet';
 
-              return {
-                name: myEntry.title,
-                icon_src: /** Here you can use a SVG, maybe from the @mdi/js package */
-              }
-            },
-          }
+const weClient = await WeClient.connect();
+
+if (
+  !weClient.renderInfo.type === "applet-view"
+  && !weClient.renderInfo.view.type === "main"
+) throw new Error("This Applet only implements the applet main view.");
+
+const appAgentClient = weClient.renderInfo.appletClient;
+const profilesClient = weClient.renderInfo.profilesClient;
+
+// Your normal rendering logic here...
+
+```
+
+### Implementing an (almost) full-fletched We Applet
+
+
+```typescript=
+import { WeClient, AppletServices, HrlWithContext, EntryInfo } from '@lightningrodlabs/we-applet';
+
+// First define your AppletServices that We can call on your applet
+// to do things like search your applet or get information
+// about the available block views etc.
+const appletServices: Appletservices = {
+    // Types of attachment that this Applet offers for other Applets to attach
+    attachmentTypes: {
+        'post': {
+            label: 'post',
+            icon_src: 'data:image/png;base64,iVBORasdwsfvawe',
+            create: (attachToHrl: Hrl) => {
+            // logic to create a new entry of that type. The attachToHrl can be used for
+            // backlinking, i.e. it is the HRL that the entry which is being
+            // created with this function is being attached to.
+            }
+        },
+        'comment': {
+            ...
         }
-      }
-    }
-  }
+
+    },
+    // Types of UI widgets/blocks that this Applet supports
+    blockTypes: {
+        'most_recent_posts': {
+            label: 'most_recent_posts',
+            icon_src: 'data:image/png;base64,KJNjknAKJkajsn',
+            view: "applet-view",
+        },
+        'bookmarked_posts': {
+            label: 'bookmarked_posts',
+            icon_src: 'data:image/png;base64,LKlkJElkjJnlksja',
+            view: "cross-applet-view",
+        }
+    },
+    getEntryInfo: async (
+        appletClient: AppAgentClient,
+        roleName: RoleName,
+        integrityZomeName: ZomeName,
+        entryType: string,
+        hrl: Hrl,
+    ): Promise<EntryInfo | undefined> => {
+        // your logic here...
+        // for example
+        const post = appletClient.callZome({
+            'get_post',
+            ...
+        });
+        return {
+            title: post.title,
+            icon_src: 'data:image/png;base64,iVBORasdwsfvawe'
+        };
+    },
+    search: async (appletClient: AppAgentClient, filter: string): Promise<Array<HrlWithContext>> => {
+        // Your search logic here. For example
+        let searchResults: Array<Record> = await appletClient.callZome({
+            zome_name: 'search_posts',
+            ...
+        });
+        const appInfo = await appletClient.appInfo();
+        const dnaHash = (appInfo.cell_info.notebooks[0] as any)[
+          CellType.Provisioned
+        ].cell_id[0];
+
+        return searchResults.map((record) => {
+                hrl: [
+                    dnaHash,
+                    record.signed_action.hashed.hash
+                ],
+                context: {}
+            }
+        );
+    },
 }
 
-const applet: WeApplet = {
-  appletViews,
-  async crossAppletViews: (
-    applets: ReadonlyMap<EntryHash, AppletClients>, // Segmented by applet ID
-    weServices: WeServices
-  ) {
-    return {
-      main: element => {},
-      blocks: {}
+
+// Now connect to the WeClient by passing your appletServices
+const weClient = await WeClient.connect(appletServices);
+
+// Then handle all the different types of views that you offer
+switch (weClient.renderInfo.type) {
+  case "applet-view":
+    switch (weClient.renderInfo.view.type) {
+      case "main":
+        // here comes your rendering logic for the main view
+      case "block":
+        switch(weClient.renderInfo.view.block) {
+          case "most_recent_posts":
+            // your rendering logic to display this block type
+          case "bookmarked_posts":
+            // Your rendering logic to display this block type
+          default:
+             throw new Error("Unknown applet-view block type");
+        }
+      case "entry":
+        switch (weClient.renderInfo.view.roleName) {
+          case "forum":
+            switch (weClient.renderInfo.view.integrityZomeName) {
+              case "posts_integrity":
+                switch (weClient.renderInfo.view.entryType) {
+                  case "post":
+                        // here comes your rendering logic for that specific entry type
+                  default:
+                    throw new Error("Unknown entry type");
+                }
+              default:
+                throw new Error("Unknown integrity zome");
+            }
+          default:
+            throw new Error("Unknown role name");
+        }
+
+      default:
+        throw new Error("Unknown applet-view type");
     }
-  },
-  attachmentTypes: async client => ({}),
-  search: async () => [],
-};
 
-export default applet;
+  case "cross-applet-view":
+    switch (this.weClient.renderInfo.view.type) {
+      case "main":
+        // here comes your rendering logic for the cross-applet main view
+      case "block":
+        //
+      default:
+        throw new Error("Unknown cross-applet-view render type.")
+
+    `;
+    }
+
+  default:
+    throw new Error("Unknown render view type");
+
+}
+
+
 ```
 
-## Building
 
-Use [rollup](https://rollupjs.org/guide/en/) to build a fully bundled javascript file that doesn't have any external imports.
 
-This is an example configuration for it:
 
-> rollup.config.js
-
-```js
-import nodeResolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import typescript from "@rollup/plugin-typescript";
-
-import babel from "@rollup/plugin-babel";
-import { terser } from "rollup-plugin-terser";
-
-export default {
-  input: "src/index.ts", // This needs to be pointing to the file that has the `WeApplet` default export
-  output: {
-    format: "es",
-    dir: 'dist',
-  },
-  watch: {
-    clearScreen: false,
-  },
-
-  plugins: [
-    /** Resolve bare module imports */
-    nodeResolve({
-      browser: true,
-      preferBuiltins: false,
-    }),
-    commonjs({}),
-    typescript(),
-    /** Minify JS */
-    terser(),
-    /** Compile JS to a lower language target */
-    babel({
-      exclude: /node_modules/,
-
-      babelHelpers: "bundled",
-      presets: [
-        [
-          require.resolve("@babel/preset-env"),
-          {
-            targets: [
-              "last 3 Chrome major versions",
-              "last 3 Firefox major versions",
-              "last 3 Edge major versions",
-              "last 3 Safari major versions",
-            ],
-            modules: false,
-            bugfixes: true,
-          },
-        ],
-      ],
-    }),
-  ],
-};
-```
-
-Now you have it! You can use the generated `.js` file as a We Applet UI file.

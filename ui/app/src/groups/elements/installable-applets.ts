@@ -4,7 +4,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 import {
   asyncDeriveAndJoin,
-  join,
+  joinAsync,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
 
@@ -39,7 +39,7 @@ export class InstallableApplets extends LitElement {
       asyncDeriveAndJoin(
         this.groupStore.weStore.appletBundlesStore.allAppletBundles,
         (allAppletBundles) =>
-          join(
+          joinAsync(
             allAppletBundles.map((b) =>
               this.weStore.appletBundlesStore.appletBundleLogo.get(b.id)
             )
@@ -88,10 +88,10 @@ export class InstallableApplets extends LitElement {
         id="applet-dialog"
       ></install-applet-bundle-dialog>
 
-      <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; flex: 1;">
         ${allApplets[0].length === 0
           ? html`
-              <div class="column center-content">
+              <div class="column center-content" style="flex: 1;">
                 <span class="placeholder"
                   >${msg("No applets available yet.")}</span
                 >
@@ -107,6 +107,7 @@ export class InstallableApplets extends LitElement {
   render() {
     switch (this._installableApplets.value?.status) {
       case "pending":
+        console.log("STILL PENDING!!!");
         return html`<div class="row center-content" style="flex: 1;">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
