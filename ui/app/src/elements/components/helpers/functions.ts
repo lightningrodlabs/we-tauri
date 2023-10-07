@@ -48,8 +48,8 @@ export function generateHeaderHTML(headerTitle: string, resourceName: string = '
 export function generateHashHTML(hash: string) {
   return html`
     <div
-      style="color: var(--menuSubTitle);
-      border: 1px solid var(--menuSubTitle);
+      style="color: var(--nh-theme-fg-default);
+      border: 1px solid var(--nh-theme-bg-detail);
       border-radius: var(--cell-hash-border-radius);
       font-family: var(--nh-font-families-body);
       font-size: var(--cell-hash-font-size);
