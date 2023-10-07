@@ -1,8 +1,7 @@
 import { JoinMembraneInvitation } from '@holochain-open-dev/membrane-invitations';
 import { contextProvided } from '@lit-labs/context';
 import { decode } from '@msgpack/msgpack';
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
-import { html, LitElement, css } from 'lit';
+import { html, css, CSSResult } from 'lit';
 import { TaskSubscriber } from 'lit-svelte-stores';
 import {
   Button,
@@ -17,15 +16,17 @@ import {
 import { matrixContext } from '../../context';
 import { MatrixStore } from '../../matrix-store';
 import { sharedStyles } from '../../sharedStyles';
-import { query } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { HoloIdenticon } from '@holochain-open-dev/elements';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
-import { NHCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHCard, NHComponent, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { generateHashHTML } from './helpers/functions';
+import { b64images } from '@neighbourhoods/design-system-styles';
 
-export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
+export class JoinGroupCard extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
@@ -126,13 +127,15 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   renderInvitations(invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>) {
     if (invitations.entries().length == 0) {
       return html`
-        <div>You have no open invitations...</div>
-        <mwc-button
-          style="margin-top: 20px;"
-          @click=${() => this._myInvitations.run()}
-          icon="refresh"
-          >Refresh</mwc-button
-        >
+        <div style="display: flex; justify-content: space-between;">
+          <p>You have no open invitations...</p>
+          <nh-button
+            .variant=${"neutral"}
+            @click=${() => this._myInvitations.run()}
+            .iconImageB64=${b64images.icons.refresh}
+            .size=${"icon-lg"}
+          >Refresh</nh-button>
+        </div>
       `;
     } else {
       return html`
@@ -165,21 +168,21 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
                       ${this.weName(invitation)}
                     </div>
                     <div class="row" style="margin-left: auto;">
-                      <mwc-button
+                      <nh-button
                         class="accept-invitation"
                         raised
                         label="JOIN"
                         icon="check"
                         @click=${() => this.joinGroup(actionHash, invitation)}
-                      ></mwc-button>
-                      <mwc-button
+                      ></nh-button>
+                      <nh-button
                         class="delete-invitation"
                         raised
                         label="REJECT"
                         icon="close"
                         @click=${() => this.removeInvitation(actionHash)}
                       >
-                      </mwc-button>
+                      </nh-button>
                     </div>
                   </div>
                 </mwc-card>
@@ -189,11 +192,11 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
               </div>
             `;
           })}
-        <mwc-button
+        <nh-button
           style="margin-top: 20px;"
           @click=${() => this._myInvitations.run()}
           icon="refresh"
-          >Refresh</mwc-button
+          >Refresh</nh-button
         >
       `;
     }
@@ -202,10 +205,9 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
   renderInvitationsBlock(invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>) {
     return html`
       ${this.renderErrorSnackbar()}
-      <div class="row title center-content" style="margin-top: 70px;">
-        <mwc-icon>mail</mwc-icon><span style="margin-left: 10px;">your invitations:</span>
+      <h2>Your invitations:</h2>
       </div>
-      <div class="column center-content" style="justify-content: space-between; margin-top: 30px;">
+      <div>
         ${this.renderInvitations(invitations)}
       </div>
     `;
@@ -216,35 +218,36 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
       <mwc-snackbar id="copied-snackbar" timeoutMs="4000" labelText="Copied!"></mwc-snackbar>
 
       <nh-card .theme=${"dark"} .heading=${"Joining A Neighbourhood"}>
-        <div class="center-content">
-          <div style="text-align: left; margin-top: 40px; font-size: 1.15em; line-height: 150%;">
+        <div>
+          <p>
             To join a neighbourhood, send your public key to a member of the neighbourhood you
             would like to join and ask them to invite you.
-          </div>
+          </p>
 
-          <div class="column center-content">
-            <div class="row title center-content" style="margin-top: 50px;">
-              <mwc-icon>key</mwc-icon><span style="margin-left: 10px;">your public key</span>
-            </div>
-            <div style="margin-top: 15px;">
-              <sl-tooltip placement="right" .content=${'copy'}>
-                <div
-                  class="pubkey-field"
+          <div>
+            <nh-card .theme=${"dark"} .title=${"Your public key:"} class="nested-card">
+              <div
+                class="pubkey-field"
+              > 
+                <nh-button
+                  .variant=${"primary"}
+                  .size=${"auto"}
+                  .iconImageB64=${b64images.icons.copy}
                   @click=${() => {
                     navigator.clipboard.writeText(
                       encodeHashToBase64(this.matrixStore.myAgentPubKey),
-                    );
-                    this._copiedSnackbar.show();
-                  }}
-                >
-                  ${encodeHashToBase64(this.matrixStore.myAgentPubKey)}
+                      );
+                      this._copiedSnackbar.show();
+                      this.requestUpdate();
+                    }}
+                  >
+                  ${generateHashHTML(encodeHashToBase64(this.matrixStore.myAgentPubKey))}
+                </nh-button>
                 </div>
-              </sl-tooltip>
-              <div style="margin-top: 3px; font-size: 0.8em; color: gray; text-align: center">
-                send your public key to your friends if they want to invite you to their
-                neighbourhood
-              </div>
-            </div>
+            </nh-card>
+            <p class="label">
+              Click above to copy your public key, ready to send to a prospective neighbour
+            </p>
           </div>
 
           ${this._myInvitations.render({
@@ -257,57 +260,49 @@ export class JoinGroupCard extends ScopedElementsMixin(LitElement) {
 
   static get elementDefinitions() {
     return {
-      'mwc-button': Button,
-      'mwc-list': List,
-      'mwc-list-item': ListItem,
-      'mwc-icon': Icon,
       'mwc-snackbar': Snackbar,
-      'holo-identicon': HoloIdenticon,
       'create-we-group-dialog': CreateNeighbourhoodDialog,
       'sl-tooltip': SlTooltip,
-      'mwc-dialog': Dialog,
       'nh-card': NHCard,
+      'nh-button': NHButton,
     };
   }
 
-  static get styles() {
-    let localStyles = css`
-      .content-pane {
-        padding: 30px;
-      }
+  static styles: CSSResult[] = [
+      super.styles as CSSResult,
+      css`
+        :host {
+          --cell-hash-border-radius: calc(1px * var(--nh-radii-sm));
+          --cell-hash-padding: calc(1px * var(--nh-spacing-sm));
+          --cell-hash-font-size: calc(1px * var(--nh-font-size-sm));
+        }
 
-      .title {
-        align-items: center;
-        font-size: 1.2em;
-        text-align: center;
-      }
 
-      .accept-invitation {
-        --mdc-theme-primary: #17c200;
-      }
+        .pubkey-field button {
+          cursor: pointer;
+          display: flex;
+          gap: calc(1px * var(--nh-spacing-lg));
+          align-items: center;
+          justify-content: center;
+        }
 
-      .delete-invitation {
-        --mdc-theme-primary: #cf0000;
-        margin-left: 5px;
-      }
+        .pubkey-field nh-button:hover {
+          color: var(--nh-theme-accent-default) !important; 
+        }
 
-      .we-image {
-        height: 30px;
-        width: 30px;
-        border-radius: 50%;
-      }
+        p {
+          margin: 0;
+          margin-bottom: calc(1px * var(--nh-spacing-lg));
+        }
 
-      .pubkey-field {
-        color: black;
-        background: #f4f0fa;
-        border-radius: 4px;
-        overflow-x: auto;
-        padding: 10px;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-    `;
-
-    return [sharedStyles, localStyles];
-  }
+        h2 {
+          font-family: var(--nh-font-families-body);
+          font-weight: var(--nh-font-weights-body-regular);
+          margin: calc(1px * var(--nh-spacing-xl)) 0;
+        }
+        .label {
+          color: var(--nh-theme-fg-muted);
+        }
+      `
+    ];
 }
