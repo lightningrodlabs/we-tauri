@@ -14,11 +14,18 @@ import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 import { WithProfile } from './profile/with-profile';
+import { contextProvided } from '@lit-labs/context';
+import { AgentPubKeyB64, DnaHash } from '@holochain/client';
+import { weGroupContext } from '../../context';
+import { WeGroupContext } from '../we-group-context';
 
 export const tableId = 'assessmentsForResource';
 
 @customElement('dashboard-table')
 export class StatefulTable extends NHComponentShoelace {
+  @contextProvided({ context: weGroupContext, subscribe: true })
+  weGroupId!: DnaHash;
+
   @property({ type: Array })
   assessments: AssessmentTableRecord[] = [];
 
@@ -79,12 +86,13 @@ export class StatefulTable extends NHComponentShoelace {
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Neighbour', 'Member'),
-        decorator: function(agentPublicKeyB64: any) {return html` <div
+        decorator: (agentPublicKeyB64: AgentPubKeyB64) => {
+          return html` <div
           style="width: 100%; display: flex; flex-direction: column; align-items: start; height: 100%; justify-items: center;"
           >
-          <with-profile .component=${"identicon"} .agentHash=${agentPublicKeyB64}></with-profile>
-        </div>`},
-      }),
+            ${generateHashHTML(agentPublicKeyB64)}
+        </div>`}},
+      ),
     };
     return {
       ...fixedFieldDefs,
@@ -105,6 +113,7 @@ export class StatefulTable extends NHComponentShoelace {
   static elementDefinitions = {
     'wc-table': Table,
     'sl-alert': SlAlert,
+    'we-group-context': WeGroupContext,
     'with-profile': WithProfile,
   };
 
@@ -168,7 +177,7 @@ export class StatefulTable extends NHComponentShoelace {
       --table-assessmentsForResource-resource-width: var(--column-max-width);
       --table-assessmentsForResource-neighbour-width: var(--column-max-width);
       --table-assessmentsForResource-resource-vertical-align: middle;
-      --table-assessmentsForResource-neighbour-vertical-align: top;
+      --table-assessmentsForResource-neighbour-vertical-align: middle;
 
       --table-assessmentsForResource-row-even-background-color: var(---nh-theme-bg-surface);
       --table-assessmentsForResource-row-odd-background-color: var(---nh-theme-bg-surface);
