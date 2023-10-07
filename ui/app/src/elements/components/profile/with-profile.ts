@@ -47,7 +47,6 @@ export class WithProfile extends NHComponent {
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
       if(_changedProperties.has('weGroupId') && typeof this.weGroupId !== 'undefined') {
         this.profilesStore = get(this._matrixStore.profilesStore(this.weGroupId as DnaHash));
-        debugger; 
     }
   }
 
