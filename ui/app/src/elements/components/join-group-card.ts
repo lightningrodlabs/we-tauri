@@ -22,7 +22,7 @@ import { HoloIdenticon } from '@holochain-open-dev/elements';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
-import { NHButton, NHCard, NHComponent, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHButton, NHButtonGroup, NHCard, NHComponent, NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHashHTML } from './helpers/functions';
 import { b64images } from '@neighbourhoods/design-system-styles';
 
@@ -150,54 +150,57 @@ export class JoinGroupCard extends NHComponent {
             );
           })
           .map(([actionHash, invitation]) => {
+            // TODO: refactor this into a component and correct layout at different screen sizes
             return html`
               <div class="column" style="align-items: right; width: 100%;">
-                <mwc-card style="max-width: 800px; margin: 5px;">
-                  <div
-                    class="row"
-                    style="align-items: center; padding: 5px; padding-left: 15px; font-size: 1.2em"
-                  >
-                    <holo-identicon .hash=${this.inviter(invitation)}></holo-identicon>
-                    <span style="margin-left: 10px;">invited you to join</span>
-                    <img
-                      style="margin-left: 10px;"
-                      class="we-image"
-                      src=${this.weImg(invitation)}
-                    />
-                    <div style="font-weight: bold; margin-left: 10px;">
-                      ${this.weName(invitation)}
+                <nh-card .theme=${"dark"} class="nested-card">
+                  <nh-button-group .direction=${"horizontal"} >
+                    
+                    <div slot="button-fixed" style="display: flex; gap: 1rem; align-items: baseline;">
+                        <div style="display:flex; overflow: hidden; width: 6rem;">${generateHashHTML(encodeHashToBase64(this.inviter(invitation)))}</div>
+                        <span style="text-align:center">invited you to join
+                          <img
+                            class="identicon"
+                            alt="Neighbourhood image"
+                            src=${this.weImg(invitation)}
+                            style="position: relative; top: 1.25em; padding: 0 8px;"
+                          />
+                          ${this.weName(invitation)}
+                        </span>
+                        <div style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;">
+                          ${this.getDate(invitation)}
+                        </div>
                     </div>
-                    <div class="row" style="margin-left: auto;">
-                      <nh-button
-                        class="accept-invitation"
-                        raised
-                        label="JOIN"
-                        icon="check"
-                        @click=${() => this.joinGroup(actionHash, invitation)}
-                      ></nh-button>
-                      <nh-button
-                        class="delete-invitation"
-                        raised
-                        label="REJECT"
-                        icon="close"
-                        @click=${() => this.removeInvitation(actionHash)}
-                      >
-                      </nh-button>
+                    <div slot="actions">
+                      <div slot="buttons" style="display: flex; gap: 4px; padding-top: 24px; margin-left: 8px">
+                        <nh-button
+                          .size=${"sm"}
+                          .variant=${"success"}
+                          class="accept-invitation"
+                          @click=${() => this.joinGroup(actionHash, invitation)}
+                        >Join</nh-button>
+                        <nh-button
+                          class="delete-invitation"
+                          .size=${"sm"}
+                          .variant=${"danger"}
+                          @click=${() => this.removeInvitation(actionHash)}
+                        >Reject</nh-button>
+                      </div>
                     </div>
-                  </div>
-                </mwc-card>
-                <div style="font-size: 0.7em; color: gray; text-align: right; margin-top: -4px;">
-                  ${this.getDate(invitation)}
-                </div>
+                  </nh-button-group>
+                </nh-card>
               </div>
             `;
           })}
-        <nh-button
-          style="margin-top: 20px;"
-          @click=${() => this._myInvitations.run()}
-          icon="refresh"
-          >Refresh</nh-button
-        >
+
+        <div class="refresh-button-row">
+          <nh-button
+            .variant=${"neutral"}
+            @click=${() => this._myInvitations.run()}
+            .iconImageB64=${b64images.icons.refresh}
+            .size=${"icon-lg"}
+          >Refresh</nh-button>
+        </div>
       `;
     }
   }
@@ -243,7 +246,7 @@ export class JoinGroupCard extends NHComponent {
                   >
                   ${generateHashHTML(encodeHashToBase64(this.matrixStore.myAgentPubKey))}
                 </nh-button>
-                </div>
+              </div>
             </nh-card>
             <p class="label">
               Click above to copy your public key, ready to send to a prospective neighbour
@@ -258,14 +261,13 @@ export class JoinGroupCard extends NHComponent {
     `;
   }
 
-  static get elementDefinitions() {
-    return {
+  static elementDefinitions = {
       'mwc-snackbar': Snackbar,
       'create-we-group-dialog': CreateNeighbourhoodDialog,
       'sl-tooltip': SlTooltip,
       'nh-card': NHCard,
+      'nh-button-group': NHButtonGroup,
       'nh-button': NHButton,
-    };
   }
 
   static styles: CSSResult[] = [
@@ -277,6 +279,16 @@ export class JoinGroupCard extends NHComponent {
           --cell-hash-font-size: calc(1px * var(--nh-font-size-sm));
         }
 
+        .identicon {
+          height: 3rem;
+          border-radius: 100%;
+        }
+        
+        .refresh-button-row {
+          margin: calc(1px * var(--nh-spacing-lg)) 0;
+          display: grid;
+          place-content: center;
+        }
 
         .pubkey-field button {
           cursor: pointer;
@@ -300,6 +312,7 @@ export class JoinGroupCard extends NHComponent {
           font-weight: var(--nh-font-weights-body-regular);
           margin: calc(1px * var(--nh-spacing-xl)) 0;
         }
+
         .label {
           color: var(--nh-theme-fg-muted);
         }
