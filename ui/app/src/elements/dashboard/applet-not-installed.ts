@@ -1,6 +1,5 @@
 import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
-import { Task } from "@lit-labs/task";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
@@ -9,9 +8,7 @@ import { matrixContext, weGroupContext } from "../../context";
 import { AppletInstanceInfo, MatrixStore, NewAppletInstanceInfo } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
-import { RenderBlock } from "../components/render-block";
-
-
+import { NHButton } from "@neighbourhoods/design-system-components";
 
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
@@ -144,105 +141,83 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
         id="join-from-fs-dialog">
       </join-from-fs-dialog>
 
-      <div class="flex-scrollable-parent">
-        <div class="flex-scrollable-container">
-          <div class="flex-scrollable-y">
-            <div
-              class="column center-content"
-              style="flex: 1; margin-top: 50px;"
+      <div class="content">
+        ${!appletInstanceInfo.applet.logoSrc
+          ? html`<div
+              class="logo-placeholder-large"
+              style="width: 100px; height: 100px;"
             >
-              ${!appletInstanceInfo.applet.logoSrc
-                ? html`<div
-                    class="logo-placeholder-large"
-                    style="width: 100px; height: 100px;"
-                  >
-                    ${appletInstanceInfo.applet.customName[0]}
-                  </div>`
-                : html`<img class="logo-large" src=${appletInstanceInfo.applet.logoSrc} />`}
-              <div class="row center-content" style="margin-top: 20px;">
-                <div
-                  style="font-size: 1.4em; margin-left: 50px; margin-right: 5px;"
-                >
-                  ${appletInstanceInfo.applet.customName}
-                </div>
-                <mwc-icon-button-toggle
-                  onIcon="expand_less"
-                  offIcon="expand_more"
-                  @click=${this.toggleAppletDescription}
-                ></mwc-icon-button-toggle>
-              </div>
-              ${this._showAppletDescription
-                ? html`<div
-                    style="margin-top: 10px; font-size: 1em; max-width: 800px; color: #656565;"
-                  >
-                    ${appletInstanceInfo.applet.description}
-                  </div>`
-                : html``}
-
-              ${this.mode == "reinstall"
-                ? html`
-                    <div
-                      style="margin-top: 70px; font-size: 1.2em; text-align: center;"
-                    >
-                      Reinstall this applet?
-                    </div>
-                  `
-                : html`
-                    <div
-                      style="margin-top: 70px; font-size: 1.2em; text-align: center;"
-                    >
-                      This applet has been added by someone else from your group.
-                    </div>
-                    <div
-                      style="margin-top: 10px; font-size: 1.2em; text-align: center;"
-                    >
-                      You haven't installed it yet.
-                    </div>
-                  `
-              }
-
-              <mwc-button
-                style="margin-top: 65px;"
-                raised
-                @click=${async () => this.mode == "reinstall" ? await this.reinstallApplet() : await this.joinApplet()}
-                >Automatically Install from the DevHub</mwc-button
-              >
-
-              <mwc-button
-                style="margin-top: 15px;"
-                @click=${async () => this.joinFromFsDialog.open()}
-                >Upload from Filesystem instead</mwc-button
-              >
-
-              <mwc-button
-                raised
-                style="margin-top: 30px;"
-                @click=${this.cancelReinstall}
-                >Cancel</mwc-button
-              >
-            </div>
+              ${appletInstanceInfo.applet.customName[0]}
+            </div>`
+          : html`<img class="logo-large" src=${appletInstanceInfo.applet.logoSrc} />`}
+        <div>
+          <div
+          >
+            ${appletInstanceInfo.applet.customName}
           </div>
+        </div>
+        ${this._showAppletDescription
+          ? html`<div
+            >
+              ${appletInstanceInfo.applet.description}
+            </div>`
+          : html``}
+
+        ${this.mode == "reinstall"
+          ? html`
+              <div
+              >
+                Reinstall this applet?
+              </div>
+            `
+          : html`
+              <p>
+                This applet has been added by someone else from your group.
+              </p>
+              <p>
+                You haven't installed it yet.
+              </p>
+            `
+        }
+      ${
+        // TODO: reimplement
+        // <mwc-button
+        //   @click=${async () => this.mode == "reinstall" ? await this.reinstallApplet() : await this.joinApplet()}
+        //   >Automatically Install from the DevHub</mwc-button
+        // >
+        null
+      }
+
+        <div class="buttons">
+          <nh-button
+            .variant=${"primary"}
+            @click=${async () => this.joinFromFsDialog.open()}
+          >Upload from Filesystem</nh-button>
+          <nh-button
+            .variant=${"secondary"}
+            @click=${this.cancelReinstall}
+          >Cancel</nh-button>
         </div>
       </div>
     `;
   }
 
 
-  static get elementDefinitions() {
-    return {
-      "render-block": RenderBlock,
-      "mwc-circular-progress": CircularProgress,
-      "mwc-button": Button,
-      "mwc-icon-button-toggle": IconButtonToggle,
-      "mwc-snackbar": Snackbar,
-      "join-from-fs-dialog": JoinFromFsDialog,
-    };
+  static elementDefinitions = {
+    "mwc-circular-progress": CircularProgress,
+    "mwc-button": Button,
+    "nh-button": NHButton,
+    "mwc-snackbar": Snackbar,
+    "join-from-fs-dialog": JoinFromFsDialog,
   }
 
   static get styles() {
     const localStyles = css`
       :host {
-        display: flex;
+        display: grid;
+        flex: 1;
+        place-content: center;
+        color: var(--nh-theme-fg-default); 
       }
 
       .logo-large {
@@ -253,15 +228,16 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
         background: white;
       }
 
-      .logo-placeholder-large {
-        text-align: center;
-        font-size: 70px;
-        border-radius: 50%;
-        border: 4px solid black;
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        background: white;
+      .content, .buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: calc(1px * var(--nh-spacing-xl));
+      }
+      
+      .buttons {
+        flex-direction: row-reverse;
       }
     `;
 

@@ -15,6 +15,7 @@ import { NeighbourhoodSettings } from "./neighbourhood-settings";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
 import { ProfilePrompt } from "../components/profile-prompt";
+import { AppletNotInstalled } from "./applet-not-installed";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -61,6 +62,26 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   }
 
   renderContent() {
+    if (this._showInstallScreen) {
+      return html`
+          ${this._installMode == "reinstall"
+            ? html`
+              <applet-not-installed
+                .appletInstanceId=${this._installAppletId}
+                .mode=${"reinstall"}
+                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+              </applet-not-installed>
+              `
+            : html`
+              <applet-not-installed
+                .appletInstanceId=${this._installAppletId}
+                .mode=${"join"}
+                @cancel-reinstall=${() => { this._showInstallScreen = false; this._installAppletId = undefined; }}>
+              </applet-not-installed>
+            `
+          } `
+    }
+
     return this._showLibrary
       ? html`
             <div class="container">
@@ -146,6 +167,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       "neighbourhood-settings": NeighbourhoodSettings,
       "sl-tooltip": SlTooltip,
       "sl-skeleton": SlSkeleton,
+      'applet-not-installed': AppletNotInstalled,
   }
 
   static styles : CSSResult[] = [
