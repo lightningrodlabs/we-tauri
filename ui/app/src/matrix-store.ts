@@ -1303,7 +1303,7 @@ export class MatrixStore {
       catch (e: any) {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
-            throw new Error(e);
+            throw new Error(JSON.stringify(e.data, null, 2));
           }
       }     
 
