@@ -13,14 +13,13 @@ import {
 
 import md5 from 'md5';
 
-import { sharedStyles } from '../../sharedStyles';
 import { AppletMetaData } from '../../types';
 import { TaskSubscriber } from 'lit-svelte-stores';
 import { MatrixStore } from '../../matrix-store';
 import { matrixContext, weGroupContext } from '../../context';
 import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
 import { fakeMd5SeededEntryHash } from '../../utils';
-import { SlButton, SlInput, SlTextarea } from '@scoped-elements/shoelace';
+import { SlInput, SlTextarea } from '@scoped-elements/shoelace';
 import { NHButton, NHDialog } from '@neighbourhoods/design-system-components';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
@@ -44,16 +43,6 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
 
   @query('#description-field')
   _descriptionField!: TextArea;
-
-  @state()
-  _dnaBundle: { hash: EntryHashB64; file: File } | undefined = undefined;
-  @state()
-  _uiBundle: { hash: EntryHashB64; setupRenderers: any } | undefined = undefined;
-  @state()
-  _invalidUiBundle = false;
-
-  @state()
-  _installableApplets;
 
   @state()
   _duplicateName: boolean = false;
@@ -235,19 +224,12 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     `;
   }
 
-  static get elementDefinitions() {
-    return {
-      'sl-textarea': SlTextarea,
-      'sl-input': SlInput,
-      'mwc-textfield': TextField,
-      'mwc-button': Button,
-      'mwc-dialog': Dialog,
-      'nh-dialog': NHDialog,
-      'mwc-snackbar': Snackbar,
-      'mwc-circular-progress': CircularProgress,
-      'mwc-textarea': TextArea,
-      'nh-button': NHButton,
-    };
+  static elementDefinitions = {
+    'sl-textarea': SlTextarea,
+    'sl-input': SlInput,
+    'nh-button': NHButton,
+    'nh-dialog': NHDialog,
+    'mwc-snackbar': Snackbar,
   }
 
   static get styles() {
