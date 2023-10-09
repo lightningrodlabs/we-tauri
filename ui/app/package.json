@@ -27,7 +27,7 @@
     "@msgpack/msgpack": "^2.7.2",
     "@neighbourhoods/client": "0.0.6",
     "@neighbourhoods/design-system-components": "0.0.14",
-    "@neighbourhoods/design-system-styles": "^0.0.6",
+    "@neighbourhoods/design-system-styles": "^0.0.7",
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
