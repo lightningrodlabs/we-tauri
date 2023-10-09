@@ -90,8 +90,8 @@ importers:
         specifier: 0.0.6
         version: 0.0.6(ws@8.14.2)
       '@neighbourhoods/design-system-components':
-        specifier: 0.0.13
-        version: 0.0.13(@types/react@18.2.25)
+        specifier: 0.0.14
+        version: 0.0.14(@types/react@18.2.25)
       '@neighbourhoods/design-system-styles':
         specifier: ^0.0.6
         version: 0.0.6
@@ -2757,19 +2757,16 @@ packages:
       - ws
     dev: false
 
-  /@neighbourhoods/design-system-components@0.0.13(@types/react@18.2.25):
-    resolution: {integrity: sha512-iQ5hv8ADsCePc3tbKLKnAMo+F55i3mbIltxTOoz/aDrJ5++us1mRvHzuFO2L/8l/4Kq6hz1z1g9ZxxRexDWmxQ==}
+  /@neighbourhoods/design-system-components@0.0.14(@types/react@18.2.25):
+    resolution: {integrity: sha512-mpIQqGXG7rqqiq9COc/2nTZWCCjd/ciGOAvQpXE7W1/A0lmzruPVaWWE8GMHCeXAfjxdu0dOSdYTzogrUj6VPg==}
     dependencies:
       '@lit-labs/scoped-registry-mixin': 1.0.1
-      '@neighbourhoods/design-system-styles': 0.0.5
+      '@neighbourhoods/design-system-styles': 0.0.6
+      '@open-wc/lit-helpers': 0.6.0(lit@2.8.0)
       '@shoelace-style/shoelace': 2.9.0(@types/react@18.2.25)
-      lit: 2.2.0
+      lit: 2.8.0
     transitivePeerDependencies:
       - '@types/react'
-    dev: false
-
-  /@neighbourhoods/design-system-styles@0.0.5:
-    resolution: {integrity: sha512-8HA4AeAkGQEybCv9Ow/qh497gu4yxemLMHHNL5Dw5GZpuBHlXjkBg6hm0PAWTOPolrGK8+L2ld02uT5xmQJrFA==}
     dev: false
 
   /@neighbourhoods/design-system-styles@0.0.6:
@@ -2810,6 +2807,14 @@ packages:
 
   /@open-wc/dedupe-mixin@1.4.0:
     resolution: {integrity: sha512-Sj7gKl1TLcDbF7B6KUhtvr+1UCxdhMbNY5KxdU5IfMFWqL8oy1ZeAcCANjoB1TL0AJTcPmcCFsCbHf8X2jGDUA==}
+
+  /@open-wc/lit-helpers@0.6.0(lit@2.8.0):
+    resolution: {integrity: sha512-9F0Rw18Lupp8hehF299yYozN4cFMTnHeCVNtz0k18/eUkcUUb6DCWerL/ASJ9lZ4bLA/YUPmrkdgZz/xe9cKeg==}
+    peerDependencies:
+      lit: ^2.0.0
+    dependencies:
+      lit: 2.8.0
+    dev: false
 
   /@open-wc/scoped-elements@2.2.1:
     resolution: {integrity: sha512-AWq/vhQWUQ2mgO0GsKVq/KEBuSxy30WqCWfCqxY/KZG5Z7JXRbkxrvKhFwPu467jrVDuLc+Xo9vbxZQHVM/nJA==}
@@ -7361,7 +7366,7 @@ packages:
       '@lit-labs/context': 0.2.0
       '@lit-labs/react': 1.2.1
       '@lit-labs/scoped-registry-mixin': 1.0.1
-      lit: 2.2.0
+      lit: 2.8.0
       lit-svelte-stores: 0.2.5
       svelte: 3.59.1
     dev: false
