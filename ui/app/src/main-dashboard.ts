@@ -1,7 +1,7 @@
 import { contextProvided, contextProvider } from '@lit-labs/context';
 import { state, query, property, queryAsync } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
-import { html, css, CSSResult } from 'lit';
+import { html, css, CSSResult, unsafeCSS } from 'lit';
 import { StoreSubscriber, TaskSubscriber } from 'lit-svelte-stores';
 import { CircularProgress, Fab, Icon, Snackbar } from '@scoped-elements/material-web';
 import { classMap } from 'lit/directives/class-map.js';
@@ -34,13 +34,13 @@ import { NotificationDot } from './elements/components/notification-dot';
 import { InactiveOverlay } from './elements/components/inactive-overlay';
 import { AppletIconBadge } from './elements/components/applet-icon-badge';
 import { mergeEyeViewIcon } from './icons/merge-eye-view-icon';
-import { nhLogoIcon } from './icons/nh-logo-icon';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
 import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -747,6 +747,14 @@ export class MainDashboard extends NHComponentShoelace {
     this._widgetConfigDialogActivated = true;
   }
 
+  goHome() {
+    this._selectedWeGroupId = undefined;
+    this._selectedAppletClassId = undefined;
+    this._selectedAppletInstanceId = undefined;
+    this._dashboardMode = DashboardMode.MainHome;
+    this._navigationMode = NavigationMode.Agnostic;
+  }
+
   showLoading() {
     this._dashboardMode = DashboardMode.Loading;
     this.requestUpdate();
@@ -817,22 +825,30 @@ export class MainDashboard extends NHComponentShoelace {
             })}"
           ></div>
           <div class="column top-left-corner">
-            <sidebar-button
-              id="nh-logo"
-              logoSrc="${nhLogoIcon}"
-              tooltipText="Home"
-              @click=${() => {
-                this._selectedWeGroupId = undefined;
-                this._selectedAppletClassId = undefined;
-                this._selectedAppletInstanceId = undefined;
-                this._dashboardMode = DashboardMode.MainHome;
-                this._navigationMode = NavigationMode.Agnostic;
-              }}
-              class=${classMap({
-                highlightedHome: this._dashboardMode === DashboardMode.MainHome,
-                homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
-              })}
-            ></sidebar-button>
+            <sl-tooltip
+              hoist
+              placement="right"
+              .content="${"Home"}"
+            >
+              <sidebar-button
+                id="nh-logo"
+                logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoWhite}"
+                @click=${this.goHome}
+                class=${classMap({
+                  highlightedHome: this._dashboardMode === DashboardMode.MainHome,
+                  homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
+                })}
+              ></sidebar-button>
+              <sidebar-button
+                id="nh-logo-col"
+                logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoCol}"
+                @click=${this.goHome}
+                class=${classMap({
+                  highlightedHome: this._dashboardMode === DashboardMode.MainHome,
+                  homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
+                })}
+              ></sidebar-button>
+            </sl-tooltip>
           </div>
 
           <div
@@ -950,14 +966,35 @@ export class MainDashboard extends NHComponentShoelace {
         z-index: 0;
       }
 
-      #nh-logo {
+      #nh-logo,
+      #nh-logo-col {
         border-width: 0 !important;
         display: grid;
         place-content: center;
         height: 72px;
         width: 72px;
-        position: relative;
+        position: absolute;
         overflow: initial;
+        animation: none;
+      }
+      #nh-logo:hover {
+        animation: crossfade 8s ease-in;
+      } 
+
+      #nh-logo-col {
+        z-index: 0;
+      }
+
+      #nh-logo {
+        z-index: 1;
+      }
+
+      @keyframes crossfade {
+        0% {opacity: 1; z-index:1}
+        3% {opacity: 1;}
+        6% {opacity: 0;}
+        7% {opacity: 0; z-index:1}
+        100% {opacity: 0; z-index:1}
       }
 
       .tlcbgGroupCentric {
@@ -1001,18 +1038,18 @@ export class MainDashboard extends NHComponentShoelace {
       .applet-add::before,
       .dashboard-icon::before {
         content: '';
-        background-image: url(user-menu-divider.png);
+        background-image: url('data:image/svg+xml;base64,${unsafeCSS(b64images.nhIcons.divider)}');
         position: absolute;
         display: flex;
         justify-content: center;
-        width: 50px;
+        width: 69px;
         height: 2px;
       }
       .group-add::before,
       .user-profile::before {
         margin-bottom: calc(1px * var(--nh-spacing-lg));
-        left: -4px;
-        top: calc(-1px * var(--nh-spacing-lg) - 1px);
+        left: -7px;
+        top: calc(-1px * var(--nh-spacing-lg) + 3px);
       }
       #nh-logo::after {
         margin-top: calc(1px * var(--nh-spacing-lg));
@@ -1023,13 +1060,14 @@ export class MainDashboard extends NHComponentShoelace {
       .applet-add::before,
       .dashboard-icon::before {
         transform: rotate(-90deg);
-        left: calc(-2px * var(--nh-spacing-lg) - 2px);
-        bottom: 16px;
+        left: calc(-2px * var(--nh-spacing-lg) - 12px);
+        bottom: 25px;
         margin: 0;
+        filter: brightness(0.5);
       }
       .group-add,
       .applet-add {
-        background: url(./icons/add-nh-icon.png);
+        background: url('data:image/svg+xml;base64,${unsafeCSS(b64images.nhIcons.addApplet)}');
         background-size: contain;
         background-repeat: no-repeat;
       }
@@ -1043,7 +1081,7 @@ export class MainDashboard extends NHComponentShoelace {
         display: relaive;
       }
       .user-profile {
-        background: url(./icons/user-icon.png);
+        background: url('data:image/svg+xml;base64,${unsafeCSS(b64images.nhIcons.blankProfile)}');
         background-size: contain;
         background-repeat: no-repeat;
       }
@@ -1095,7 +1133,8 @@ export class MainDashboard extends NHComponentShoelace {
       }
 
       .left-sidebar,
-      #nh-logo {
+      #nh-logo,
+      #nh-logo-col {
         background-color: var(--nh-colors-eggplant-950);
       }
 
@@ -1114,11 +1153,6 @@ export class MainDashboard extends NHComponentShoelace {
         border-radius: calc(1px * var(--nh-radii-2xl)) !important;
       }
 
-      .highlightedGroupCentric {
-        border: var(--nh-theme-bg-surface) 1px solid;
-        border-radius: calc(1px * var(--nh-radii-2xl));
-      }
-
       .highlightedHome {
         border: transparent 1px solid;
       }
@@ -1131,16 +1165,16 @@ export class MainDashboard extends NHComponentShoelace {
         border: transparent 1px solid;
       }
 
-      .groupCentricIconHover {
-        border: transparent 1px solid;
+      .groupCentricIconHover, .highlightedGroupCentric {
+        border: transparent 2px solid;
         border-radius: 50%;
-        transition: border-radius 0.1s ease-in;
+        transition: border-radius 0.2s ease-in;
       }
-      .groupCentricIconHover:hover {
-        border-radius: calc(1px * var(--nh-radii-xl));
+      .groupCentricIconHover:hover,.highlightedGroupCentric {
+        border-radius: calc(12px);
+        border-color: var(--nh-theme-bg-canvas); 
       }
 
-      .groupCentricIconHover:hover,
       .user-profile:hover,
       .group-add:hover,
       .applet-add:hover,
