@@ -22,7 +22,11 @@ The differences between a We Applet and a normal Holochain App are:
 ### Implementing a most basic applet UI
 
 ```typescript=
-import { WeClient } from '@lightningrodlabs/we-applet';
+import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+
+if (!isWeContext) {
+  // do non-We related rendering logic (launcher, kangaroo, electron, ...)
+}
 
 const weClient = await WeClient.connect();
 
