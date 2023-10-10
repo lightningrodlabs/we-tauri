@@ -15,7 +15,7 @@ import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './hel
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 import { WithProfile } from './profile/with-profile';
 import { contextProvided } from '@lit-labs/context';
-import { AgentPubKeyB64, DnaHash } from '@holochain/client';
+import { AgentPubKeyB64, DnaHash, encodeHashToBase64 } from '@holochain/client';
 import { weGroupContext } from '../../context';
 import { WeGroupContext } from '../we-group-context';
 
@@ -48,11 +48,10 @@ export class StatefulTable extends NHComponentShoelace {
       return;
     }
     
-    // The following lines removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
-    this.tableStore.records = this.contextFieldDefs && Object.entries(this.contextFieldDefs).length 
-      ? this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) 
-      : this.assessments;
+    // The following line removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
+    this.contextFieldDefs && Object.entries(this.contextFieldDefs).length  && (this.tableStore.records = this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) as AssessmentTableRecord[] )
   }
+  
   async connectedCallback() {
     super.connectedCallback();
 
@@ -62,6 +61,7 @@ export class StatefulTable extends NHComponentShoelace {
       fieldDefs,
       colGroups: [{ span: 2, class: 'fixedcols' }],
       showHeader: true,
+      records: [] as AssessmentTableRecord[]
     });
   }
 
@@ -71,6 +71,18 @@ export class StatefulTable extends NHComponentShoelace {
     }
   }
 
+  refMemo = {}
+
+  getRef(resource: any) {
+    if (typeof resource.eh[1] !== 'function') return
+
+    const hashKey = encodeHashToBase64(resource.eh[0]);
+    if (this.refMemo[hashKey]) return this.refMemo[hashKey]
+
+    this.refMemo[hashKey] = { resource, callback: function(e) { return e ? resource.eh[1](e, resource.eh[0]) : null} }
+    return this.refMemo[hashKey]
+  }
+
   generateFieldDefs(
     resourceName: string,
     contextFieldDefs: { [x: string]: FieldDefinition<AssessmentTableRecord> },
@@ -78,11 +90,13 @@ export class StatefulTable extends NHComponentShoelace {
     const fixedFieldDefs = {
       resource: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
-        decorator: (resource: any) => html`<div
+        decorator: (resource: any) => {
+          console.log('this.getRef(resource) :>> ', this.getRef(resource));
+          return html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-          ${typeof resource.eh[1] === 'function' ? ref((e) => e ? resource.eh[1](e as HTMLElement, resource.eh[0]): null) : null}
+          ${ref(this.getRef(resource).callback)}
         >
-        </div>`,
+        </div>`},
       }),
       neighbour: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Neighbour', 'Member'),
