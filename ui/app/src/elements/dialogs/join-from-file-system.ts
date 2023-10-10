@@ -97,7 +97,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
       const devhubHappReleaseHash = this.mode == "reinstall"
         ? this._matrixStore.getUninstalledAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash
         : this._matrixStore.getNewAppletInstanceInfo(this.appletInstanceId)?.applet.devhubHappReleaseHash;
-     return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
+      return JSON.stringify(devhubHappReleaseHash) === JSON.stringify(this._fakeDevhubHappReleaseHash)
     } else {
       return false;
     }
@@ -139,35 +139,35 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   }
 
 
-  async reinstallApplet() {
-    (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
-    try {
-      await this._matrixStore.reinstallApplet(
-        this.weGroupId,
-        this.appletInstanceId,
-        this._fileBytes, // compressed webhapp as Uint8Array
-      );
-      const appletEntryHash = this.appletInstanceId;
-      (
-        this.shadowRoot?.getElementById("installing-progress") as Snackbar
-      ).close();
-      (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
+  // async reinstallApplet() {
+  //   (this.shadowRoot?.getElementById("installing-progress") as Snackbar).show();
+  //   try {
+  //     await this._matrixStore.reinstallApplet(
+  //       this.weGroupId,
+  //       this.appletInstanceId,
+  //       this._fileBytes, // compressed webhapp as Uint8Array
+  //     );
+  //     const appletEntryHash = this.appletInstanceId;
+  //     (
+  //       this.shadowRoot?.getElementById("installing-progress") as Snackbar
+  //     ).close();
+  //     (this.shadowRoot?.getElementById("success-snackbar") as Snackbar).show();
 
-      this.dispatchEvent(
-        new CustomEvent("applet-installed", {
-          detail: { appletEntryHash, weGroupId: this.weGroupId },
-          composed: true,
-          bubbles: true,
-        })
-      );
-    } catch (e) {
-      (
-        this.shadowRoot?.getElementById("installing-progress") as Snackbar
-      ).close();
-      (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
-      console.log("Installation error:", e);
-    }
-  }
+  //     this.dispatchEvent(
+  //       new CustomEvent("applet-installed", {
+  //         detail: { appletEntryHash, weGroupId: this.weGroupId },
+  //         composed: true,
+  //         bubbles: true,
+  //       })
+  //     );
+  //   } catch (e) {
+  //     (
+  //       this.shadowRoot?.getElementById("installing-progress") as Snackbar
+  //     ).close();
+  //     (this.shadowRoot?.getElementById("error-snackbar") as Snackbar).show();
+  //     console.log("Installation error:", e);
+  //   }
+  // }
 
 
   // TODO! make typing right here
@@ -259,7 +259,7 @@ export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
           slot="primaryAction"
           dialogAction="close"
           label="INSTALL"
-          @click=${() => this.mode == "reinstall" ? this.reinstallApplet() : this.joinApplet()}
+          @click=${() => this.joinApplet()}
         ></mwc-button>
       </mwc-dialog>
     `;
