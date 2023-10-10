@@ -31,8 +31,8 @@ if (!isWeContext) {
 const weClient = await WeClient.connect();
 
 if (
-  !weClient.renderInfo.type === "applet-view"
-  && !weClient.renderInfo.view.type === "main"
+  !(weClient.renderInfo.type === "applet-view")
+  && !(weClient.renderInfo.view.type === "main")
 ) throw new Error("This Applet only implements the applet main view.");
 
 const appAgentClient = weClient.renderInfo.appletClient;
