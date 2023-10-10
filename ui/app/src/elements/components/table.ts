@@ -82,11 +82,13 @@ export class StatefulTable extends NHComponentShoelace {
   getRef(resource: any) {
     if (typeof resource.eh[1] !== 'function') return
 
-    const hashKey = encodeHashToBase64(resource.eh[0]);
+    const hashKey = encodeHashToBase64(resource.eh[0])  + resource.value[1].timestamp;
     if (this.refMemo[hashKey]) return this.refMemo[hashKey]
 
-    this.refMemo[hashKey] = { rendered: 0, callback: function(e) { if(!e) return; this.refMemo[hashKey].rendered += 1; return resource.eh[1](e, resource.eh[0]) }.bind(this) }
-    return this.refMemo[hashKey]
+    const callback = function(e) { if(!e) return; return resource.eh[1](e, resource.eh[0]) }.bind(this);
+    const myref = ref(callback); 
+    this.refMemo[hashKey] = { callback, ref: myref }
+    return myref
   }
 
   generateFieldDefs(
@@ -99,7 +101,7 @@ export class StatefulTable extends NHComponentShoelace {
         decorator: (resource: any) => {
           return html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
-          ${ref(this.getRef(resource).callback)}
+          ${this.getRef(resource)}
         >
         </div>`},
       }),
