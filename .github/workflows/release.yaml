@@ -79,6 +79,11 @@ jobs:
         run:  curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${{ github.ref_name }}/we.happ
 
       - name: npm install and prepare
+
+      - name: Build zomes
+        run: |
+          rustup target add wasm32-unknown-unknown
+          npm run build:zomes
         run: npm install
 
       - name: Build libs
@@ -86,11 +91,6 @@ jobs:
 
       - name: Build main UI
         run: npm run build -w we-alpha
-
-      - name: Build zomes
-        run: |
-          rustup target add wasm32-unknown-unknown
-          npm run build:zomes
 
       - name: setup binaries (Windows only)
         if: matrix.platform == 'windows-2019'
