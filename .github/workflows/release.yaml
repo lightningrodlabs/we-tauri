@@ -78,6 +78,20 @@ jobs:
       - name: Download the happ from the previous job
         run:  curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/${{ github.ref_name }}/we.happ
 
+      - name: npm install and prepare
+        run: npm install
+
+      - name: Build libs
+        run: npm run build:libs
+
+      - name: Build main UI
+        run: npm run build -w we-alpha
+
+      - name: Build zomes
+        run: |
+          rustup target add wasm32-unknown-unknown
+          npm run build:zomes
+
       - name: setup binaries (Windows only)
         if: matrix.platform == 'windows-2019'
         run: |
@@ -141,20 +155,6 @@ jobs:
         with:
           override: true
           toolchain: stable
-
-      - name: Install and prepare
-        run: |
-          rustup target add wasm32-unknown-unknown
-          npm install
-
-      - name: Build libs
-        run: npm run build:libs
-
-      - name: Build main UI
-        run: npm run build -w we-alpha
-
-      - name: Build zomes
-        run: npm run build:zomes
 
       - name: build the app
         uses: tauri-apps/tauri-action@dev
