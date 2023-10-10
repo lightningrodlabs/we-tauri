@@ -2,8 +2,7 @@
   "build": {
     "devPath": "http://localhost:1420",
     "distDir": "../ui/app/dist",
-    "withGlobalTauri": false,
-    "beforeBuildCommand": "npm run build:ui"
+    "withGlobalTauri": false
   },
   "package": {
     "productName": "We alpha",
