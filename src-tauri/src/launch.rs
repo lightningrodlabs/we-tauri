@@ -205,7 +205,7 @@ pub async fn launch_holochain_process(
         match event.clone() {
         CommandEvent::Stdout(line) => {
             log::info!("[HOLOCHAIN] {}", line);
-            if line == String::from("Conductor ready.") {
+            if line.contains("Conductor ready.") {
             launch_state = LaunchHolochainProcessState::Success;
             break;
             }
