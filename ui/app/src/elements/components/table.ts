@@ -1,5 +1,5 @@
-import { html, css, TemplateResult } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import { html, css, TemplateResult, unsafeCSS } from 'lit';
+import { property, customElement, state } from 'lit/decorators.js';
 import { ref } from "lit/directives/ref.js";
 
 import {
@@ -9,7 +9,7 @@ import {
   Table,
 } from '@adaburrows/table-web-component';
 
-import { SlAlert, SlIcon } from '@scoped-elements/shoelace';
+import { SlAlert, SlSkeleton } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
@@ -34,6 +34,10 @@ export class StatefulTable extends NHComponentShoelace {
 
   @property()
   resourceName!: string;
+  @state()
+  columns: number = 0;
+  @state()
+  loading: boolean = true;
   @property()
   contextFieldDefs!: { [x: string]: FieldDefinition<AssessmentTableRecord> };
   @property()
@@ -50,6 +54,8 @@ export class StatefulTable extends NHComponentShoelace {
     
     // The following line removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
     this.contextFieldDefs && Object.entries(this.contextFieldDefs).length  && (this.tableStore.records = this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) as AssessmentTableRecord[] )
+    this.columns = Object.values(this.contextFieldDefs).length + 2
+
   }
   
   async connectedCallback() {
@@ -79,7 +85,7 @@ export class StatefulTable extends NHComponentShoelace {
     const hashKey = encodeHashToBase64(resource.eh[0]);
     if (this.refMemo[hashKey]) return this.refMemo[hashKey]
 
-    this.refMemo[hashKey] = { resource, callback: function(e) { return e ? resource.eh[1](e, resource.eh[0]) : null} }
+    this.refMemo[hashKey] = { rendered: 0, callback: function(e) { if(!e) return; this.refMemo[hashKey].rendered += 1; return resource.eh[1](e, resource.eh[0]) }.bind(this) }
     return this.refMemo[hashKey]
   }
 
@@ -114,11 +120,16 @@ export class StatefulTable extends NHComponentShoelace {
   }
 
   render(): TemplateResult {
-    return this.contextFieldDefs
+    return !this.loading && this.contextFieldDefs
       ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
-      : html`<div class="skeleton-main-container">
-      ${Array.from(Array(24)).map(
-        () => html`<sl-skeleton effect="sheen" class="skeleton-part"></sl-skeleton>`,
+      : html`<div class="skeleton-main-container" data-columns=${this.columns}>
+      ${Array.from(Array(this.columns)).map(
+
+        () => html`<sl-skeleton effect="pulse" class="skeleton-part-header"></sl-skeleton>`,
+      )}
+      ${Array.from(Array(this.columns * 5)).map(
+
+        () => html`<sl-skeleton effect="pulse" class="skeleton-part"></sl-skeleton>`,
       )}
     </div>`;
   }
@@ -127,6 +138,7 @@ export class StatefulTable extends NHComponentShoelace {
     'wc-table': Table,
     'sl-alert': SlAlert,
     'we-group-context': WeGroupContext,
+    'sl-skeleton': SlSkeleton,
     'with-profile': WithProfile,
   };
 
@@ -216,6 +228,41 @@ export class StatefulTable extends NHComponentShoelace {
     .alert::part(base) {
       height: 8rem;
       width: 100%;
+    }
+
+    .skeleton-main-container {
+      display: grid;
+      grid-template-columns: 204px 204px repeat(2, 140px);
+      gap: calc(1px * var(--nh-spacing-sm));
+      margin: calc(1px * var(--nh-spacing-sm));
+      grid-template-rows: 86px repeat(8, 4rem);
+    }
+    .skeleton-main-container[data-columns="3"] {
+      grid-template-columns: 204px 204px repeat(1, 140px);
+    }
+    .skeleton-main-container[data-columns="4"] {
+      grid-template-columns: 204px 204px repeat(2, 140px);
+    }
+    .skeleton-main-container[data-columns="5"] {
+      grid-template-columns: 204px 204px repeat(3, 140px);
+    }
+    .skeleton-main-container[data-columns="6"] {
+      grid-template-columns: 204px 204px repeat(4, 140px);
+    }
+    .skeleton-part-header {
+      --color: rgb(37, 31, 40);
+      --sheen-color: rgb(37, 31, 40);
+    }
+    .skeleton-part {
+      --color: var(--nh-theme-bg-surface);
+      --sheen-color: var(--nh-theme-bg-surface);
+    }
+    .skeleton-part-header::part(indicator), .skeleton-part::part(indicator) {
+      border-radius: calc(1px * var(--nh-radii-base));
+      opacity: 1;
+    }
+    .skeleton-part-header::part(indicator) {
+      border: 1px solid rgb(125, 112, 135);
     }
   `;
 }
