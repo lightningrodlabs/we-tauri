@@ -74,6 +74,7 @@ export class StatefulTable extends NHComponentShoelace {
   updated(changedProps) {
     if (changedProps.has('assessments') || changedProps.has('contextFieldDefs') || changedProps.has('resourceName')) {
       this.updateTable();
+      this.loading = false;
     }
   }
 
