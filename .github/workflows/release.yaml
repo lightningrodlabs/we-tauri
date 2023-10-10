@@ -56,7 +56,7 @@ jobs:
 
 
   publish-tauri:
-    # needs: publish-happ
+    needs: publish-happ
     strategy:
       fail-fast: false
       matrix:
