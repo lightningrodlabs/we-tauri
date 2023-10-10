@@ -53,7 +53,9 @@ export class StatefulTable extends NHComponentShoelace {
     }
     
     // The following line removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
-    this.contextFieldDefs && Object.entries(this.contextFieldDefs).length  && (this.tableStore.records = this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) as AssessmentTableRecord[] )
+    this.contextFieldDefs && Object.entries(this.contextFieldDefs).length  && 
+      (this.tableStore.records = this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) as AssessmentTableRecord[] )
+      
     if(typeof this.contextFieldDefs == 'object') this.columns = Object.values(this.contextFieldDefs).length + 2
   }
   
