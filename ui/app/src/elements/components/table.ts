@@ -11,7 +11,7 @@ import {
 
 import { SlAlert, SlSkeleton } from '@scoped-elements/shoelace';
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
-import { generateHeaderHTML, generateHashHTML, generateMockProfile } from './helpers/functions';
+import { generateHeaderHTML, generateHashHTML } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 import { WithProfile } from './profile/with-profile';
 import { contextProvided } from '@lit-labs/context';
@@ -54,8 +54,7 @@ export class StatefulTable extends NHComponentShoelace {
     
     // The following line removes records in the table that have no assessment value for the context field definitions generate by generateFieldDefs
     this.contextFieldDefs && Object.entries(this.contextFieldDefs).length  && (this.tableStore.records = this.assessments.filter(assessment => Object.keys(this.contextFieldDefs).some(contextField => assessment[contextField] !== "")) as AssessmentTableRecord[] )
-    this.columns = Object.values(this.contextFieldDefs).length + 2
-
+    if(typeof this.contextFieldDefs == 'object') this.columns = Object.values(this.contextFieldDefs).length + 2
   }
   
   async connectedCallback() {
