@@ -26,7 +26,7 @@ Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and d
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`.
 3. Enter the nix shell: `nix develop`.
 4. Run: `npm install`.
-5. Compile holochain and lair, following the commands in the [release.yaml](.github/workflows/release.yaml) for your platform.
+5. Compile holochain and lair. On Linux/macOS you can simply run `bash ./scripts/install_binaries.sh`. On Windows, follow the instructions in [docs/install-binaries.md](./docs/install-binaries.md).
 6. Run `npm run start`.
 
 ### Running the DNA tests
@@ -53,9 +53,9 @@ npm run network
 
 If you already have applets web-happs to test with, add them in the `testing-applets` folder and run `npm start`.
 
-The `scripts/publish-applets.js` is going to be executed, which will publish the applets `.webhapp` files that it finds in the `testing-applets` folder.
+The `scripts/publish-applets.js` is going to be executed when running `npm run start`, which will publish the applets `.webhapp` files that it finds in the `testing-applets` folder.
 
-Note that you need to enter the password in the tauri window before the publishing can begin.
+Note that you need to enter the password in the tauri window and enable dev mode in the App Library within We before the publishing can begin.
 
 To check whether this has finished, look in the terminal for the log: `Published applet: [name of your Applet]`
 
