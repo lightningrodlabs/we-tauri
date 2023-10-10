@@ -73,16 +73,18 @@ jobs:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: we.happ
-          path: workdir/we.happ
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: we.happ
+      #     path: workdir/we.happ
 
-      - name: Check that download worked
-        run:  ls ./workdir
+      # - name: Check that download worked
+      #   run:  ls ./workdir
 
       - name: npm install and prepare
-        run: npm install
+        run: |
+          npm install
+          curl -L --output workdir/we.happ https://drive.switch.ch/index.php/s/l1dFNGHxvk4KCpk/download
 
       - name: Build zomes
         run: |
@@ -93,7 +95,9 @@ jobs:
         run: npm run build -w @lightningrodlabs/we-applet
 
       - name: Build grapes-editor
-        run: npm run build -w grapes-editor
+        run: |
+          npm run build -w grapes-editor
+          echo "Building grapes-editor succeeded."
 
       - name: Build @lightningrodlabs/attachments
         run: npm run build -w @lightningrodlabs/attachments
