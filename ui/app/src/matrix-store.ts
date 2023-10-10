@@ -1280,6 +1280,7 @@ export class MatrixStore {
       // be able to detect the cell based on the network seed
       const hashedNetworkSeed = md5(networkSeed!, { asString: true });
       const installedAppId: InstalledAppId = `applet@we-${hashedNetworkSeed}-${newAppletInfo.applet.customName}`;
+      let appInfo : AppInfo;
 
       // install app bundle
       const request: InstallAppRequest = {
@@ -1289,10 +1290,15 @@ export class MatrixStore {
         bundle: decompressedHapp,
         network_seed: networkSeed,
       };
-
       try {
-        const appInfo = await this.adminWebsocket.installApp(request);
+        await this.adminWebsocket.installApp(request);
+        const enabledAppInfo = await this.adminWebsocket.enableApp({
+          installed_app_id: installedAppId,
+        });
+        
+        appInfo = enabledAppInfo.app;
         const installedCells = appInfo.cell_info;
+        
         for (const [roleName, cells] of Object.entries(installedCells)) {
           for (const cellInfo of cells) {
             await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
@@ -1327,18 +1333,7 @@ export class MatrixStore {
       //     }
       //   });
 
-      const enabledAppInfo = await this.adminWebsocket.enableApp({
-        installed_app_id: installedAppId,
-      });
-
-      const appInfo = enabledAppInfo.app;
       const anyPubKey = getCellId(Object.values(appInfo.cell_info)[0][0])![1];
-      const installedCells = appInfo.cell_info;
-      for (const [roleName, cells] of Object.entries(installedCells)) {
-        for (const cellInfo of cells) {
-          await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-        }
-      }
 
       // register Applet entry in order to have it in the own source chain
       const registerAppletInput: RegisterAppletInput = {
@@ -1360,14 +1355,13 @@ export class MatrixStore {
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
       
-      
-      const devhubHappReleaseHash =
-        this.releaseHashOfAppletInstance(appletInstanceId)!;
+      // const devhubHappReleaseHash =
+      //   this.releaseHashOfAppletInstance(appletInstanceId)!;
       // ATTENTION: IT IS ASSUMED HERE THAT THE APPLET IS ALREADY IN THE MATRIX!!
 
-      let gui = this._appletGuis.get(devhubHappReleaseHash);
+      let gui = this._appletGuis.get(newAppletInfo.applet.devhubHappReleaseHash);
       if (!gui) {
-        gui = await this.queryAppletGui(devhubHappReleaseHash);
+        gui = await this.queryAppletGui(newAppletInfo.applet.devhubHappReleaseHash);
       }
 
       // register applet config and sensemaker dimension widgets on applet join
