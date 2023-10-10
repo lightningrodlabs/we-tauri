@@ -91,7 +91,6 @@ export class StatefulTable extends NHComponentShoelace {
       resource: new FieldDefinition<AssessmentTableRecord>({
         heading: generateHeaderHTML('Resource', resourceName),
         decorator: (resource: any) => {
-          console.log('this.getRef(resource) :>> ', this.getRef(resource));
           return html`<div
           style="width: 100%; display: grid;place-content: start center; height: 100%; justify-items: center;"
           ${ref(this.getRef(resource).callback)}
