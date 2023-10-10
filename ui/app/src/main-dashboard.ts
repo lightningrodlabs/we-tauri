@@ -978,7 +978,7 @@ export class MainDashboard extends NHComponentShoelace {
         animation: none;
       }
       #nh-logo:hover {
-        animation: crossfade 8s ease-in;
+        animation: crossfade 8s linear;
       } 
 
       #nh-logo-col {
