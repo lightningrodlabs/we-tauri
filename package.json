@@ -13,7 +13,7 @@
     "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\" \"DISABLE_DEEP_LINK=true ADMIN_PORT=10002 npm run start:agent\"",
     "start:ui": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we-alpha\"",
     "start:agent": "concurrently \"npm run tauri:dev\" \"npm run publish:applets\"",
-    "tauri:dev": "RUST_LOG=info WASM_LOG=warn cargo tauri dev -- -- --profile ${ADMIN_PORT}",
+    "tauri:dev": "RUST_LOG=info WASM_LOG=warn npm run tauri dev -- -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "build:libs": "npm run build -w @lightningrodlabs/we-applet -w grapes-editor -w @lightningrodlabs/attachments",
     "build:ui": "npm run build:libs && npm run build -w we-alpha",
@@ -29,7 +29,7 @@
   "devDependencies": {
     "@holochain-playground/cli": "^0.1.1",
     "@open-wc/eslint-config": "^12.0.0",
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "^1.5.2",
     "@typescript-eslint/parser": "^5.61.0",
     "adm-zip": "^0.5.10",
     "concurrently": "^6.2.1",
