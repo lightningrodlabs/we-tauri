@@ -4,8 +4,9 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "@rollup/plugin-typescript";
 import postcss from "rollup-plugin-postcss";
 import postcssLit from "rollup-plugin-postcss-lit";
+import { readFileSync } from 'fs';
 
-const pkg = require("./package.json");
+const pkg = JSON.parse(readFileSync('./package.json'));
 
 export default {
   input: `src/index.ts`,
