@@ -30,7 +30,7 @@
     "@holochain-playground/cli": "^0.1.1",
     "@open-wc/eslint-config": "^12.0.0",
     "@tauri-apps/cli": "^1.5.2",
-    "@typescript-eslint/parser": "^5.61.0",
+    "@typescript-eslint/parser": "^6.7.5",
     "adm-zip": "^0.5.10",
     "concurrently": "^6.2.1",
     "concurrently-repeat": "^0.0.1",
