@@ -85,8 +85,8 @@ export class StatefulTable extends NHComponentShoelace {
     if (typeof resource.eh[1] !== 'function') return
 
     const hashKey = encodeHashToBase64(resource.eh[0])  + resource.value[1].timestamp;
-    if (this.refMemo[hashKey]) return this.refMemo[hashKey]
-
+    // if (this.refMemo[hashKey]) return this.refMemo[hashKey]
+    //TODO rework this to fix bug when implemented.
     const callback = function(e) { if(!e) return; return resource.eh[1](e, resource.eh[0]) }.bind(this);
     const myref = ref(callback); 
     this.refMemo[hashKey] = { callback, ref: myref }
