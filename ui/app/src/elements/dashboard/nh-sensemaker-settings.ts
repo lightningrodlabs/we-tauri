@@ -8,6 +8,7 @@ import { get } from 'svelte/store';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
+import { cleanForUI } from '../components/helpers/functions';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
   @property()
@@ -22,6 +23,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   selectedMethod : boolean = false;
   @state()
   selectedMethodIndex!: number;
+  @state()
+  selectedAppletRolename!: string;
   @property()
   currentVisibleDimensionIndex!: number;
 
@@ -31,8 +34,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     store &&
       store.subscribe(appletConfig => {
         this.appletDetails = appletConfig;
-        if (Object.values(appletConfig.resource_defs)
-            .flatMap((zome) => Object.values(zome))
+        if (Object.values(appletConfig.resource_defs[this.selectedAppletRolename])
             .flatMap((resource) => Object.values(resource)).length < 1)
           return console.log("Didn't register the applet's resource defs yet");
         this.activeMethodsDict = Object.entries(
@@ -41,7 +43,6 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             .flatMap((resource) => Object.values(resource)),
           )
           .reduce(
-            // Slice to remove Generic Resource
             (dict, [_, eH]): any => {
               const resourceDefEh = encodeHashToBase64(eH);
               const activeMethodEh = get(this.sensemakerStore.activeMethod())[resourceDefEh];
@@ -72,7 +73,12 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         <nh-card .theme=${"dark"} title=${'PREVIEW WITH POST'}>
           <div class="preview-container">
             <img src="post-example.png" style="width: 100%; object-fit: cover" />
-            ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') ? html`<span class="widget-display">${Array.from(this.renderAssessmentEmoji(dimensionNames[this.currentVisibleDimensionIndex]))[0]}</span>` : html``}
+            ${this.selectedMethod && (typeof this.currentVisibleDimensionIndex == 'number') 
+              ? html`<div class="display-box-wrapper">
+                      <div class="display-box">${this.renderObjectiveAssessment(dimensionNames[this.currentVisibleDimensionIndex])}
+                      </div>
+                    </div>`
+              : html``}
           </div>
         </nh-card>
       </div>
@@ -80,7 +86,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         (dimension, i) => html`
           <nh-card
             .title=${"Assessment"}
-            .heading=${'Dimension: ' + dimension}
+            .heading=${'Dimension: ' + cleanForUI(dimension.replace('_method', ''))}
             class="widget-card ${classMap({
               active: i == this.selectedDimensionIndex,
             })}"
@@ -99,7 +105,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
                   <a class="${classMap({
                     selected: i == this.selectedMethodIndex,
                   })} select-widget-link" @click=${() => {this.selectedMethodIndex = i; this.handleUpdateActiveMethod(dimension,  currentResourceDefEh)}}>
-                    <span class="widget-display">${this.renderAssessmentEmoji(dimension)}</span>
+                    <div class="display-box-wrapper">
+                      <div class="display-box">${this.renderSujectiveAssessment(dimension)}</div>
+                    </div>
                     <sl-button size="large" class="choose-widget-button" label=${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}>
                       ${this.selectedMethodIndex == i ? "Selected" : "Choose Me"}
                     </sl-button>
@@ -114,7 +122,31 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       )}
     </div>`;
   }
-  renderAssessmentEmoji(method) {
+
+  renderObjectiveAssessment(method) {
+    let emojis;
+
+    switch (method) {
+        case ('average_star_method'):
+            emojis = "⭐";
+            break;
+        case ('average_heat_method'):
+            emojis = "🌶️";
+            return html`<span>${emojis}</span>`;
+        case ('total_importance_method'):
+            emojis = "✅";
+            break;
+        case ('total_thumbs_up'):
+            emojis = "👍";
+            return html`<span>${emojis}</span><span>5</span>`;
+        case ('total_likes_method'):
+            emojis = "❤️";
+            break;
+    }
+    return html`<span>${emojis}</span><span>23</span>`;
+  }
+
+  renderSujectiveAssessment(method) {
     let emojis;
 
     switch (method) {
@@ -129,6 +161,9 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             break;
         case ('total_thumbs_up'):
             emojis = "👍 👎";
+            break;
+        case ('total_likes_method'):
+            emojis = "❤️";
             break;
     }
     return emojis;
@@ -190,7 +225,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   render() {
     // for each resource def, have a dropdown, which is all the dimensions available
-    const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs).map((zomeResourceMap) => Object.values(zomeResourceMap)).flat().reduce(
+    const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs[this.selectedAppletRolename]).flat().reduce(
       (acc, curr) => ({...acc, ...curr}),
       {}
     );
@@ -263,6 +298,34 @@ export class NHSensemakerSettings extends NHComponentShoelace {
       }
     }
 
+    .display-box {
+      background-color: rgb(50, 43, 55);
+      width: auto;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      color: var(--nh-theme-fg-default);
+      border-radius: calc(1px * var(--nh-radii-base));
+      min-width: 32px;
+      gap: calc(1px * var(--nh-spacing-sm));
+    }
+    .preview-container .display-box-wrapper {
+      position: absolute;
+      right: 26px;
+      bottom: 1.4rem;
+    }
+    .preview-container .display-box span {
+      margin: 0 4px;
+    }
+
+    .display-box-wrapper {
+        display: grid;
+        align-items: center;
+        justify-content: center;
+    }
+
     .slide {
       left: calc(-1000px);
       position: absolute;
@@ -310,7 +373,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   #pagination li {
     display: inline-block;
   }
-  a.arrow-link, span {
+  a.arrow-link, .pagination-number {
     cursor: pointer;
     display: grid;
     width: 32px;
@@ -365,6 +428,11 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     justify-content: space-between;
   }
 
+  .select-widget-link {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+  }
   .select-widget-link:hover .widget-display {
     transition: 0.4s all ease-in;
     cursor: pointer;
@@ -394,17 +462,11 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   }
 
   .widget-display {
-    padding: 0 0 16px 0;
-    margin-top: 84px;
     display: flex;
-    transform: scale(2);
-    width: auto;
-    flex-wrap: nowrap;
-    display: grid;
-    place-items: center;
-    padding: 0 0 calc(1px * var(--nh-spacing-md)) 0;
-    margin-top: calc(1px * var(--nh-spacing-xl));
-    font-size: 80%;
+    justify-content: flex-end;
+    position: relative;
+    top: -3.9rem;
+    right: 1.6rem;
   }
   .todo .widget-display {
     top: 20%;
@@ -415,45 +477,34 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   .widget-card.active {
     display:block;
   }
-
-  .preview-container span {
-    position: absolute;
-    bottom: 6%;
-    right: 10%;
-    display: block;
-    background: transparent;
-    border: 0;
-    padding: 0;
+    
+  h3 {
+    font-weight: var(--nh-font-weights-body-regular);
+    margin-bottom: calc(1px * var(--nh-spacing-xl));
+    font-size: calc(1px * var(--nh-font-size-lg));
+    line-height: var(--nh-line-heights-body-relaxed);
   }
 
-
-h3 {
-  font-weight: var(--nh-font-weights-body-regular);
-  margin-bottom: calc(1px * var(--nh-spacing-xl));
-  font-size: calc(1px * var(--nh-font-size-lg));
-  line-height: var(--nh-line-heights-body-relaxed);
-}
-
-.choose-assessment-widget {
-  gap: calc(1px * var(--nh-spacing-xl));
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 4rem 1fr;
-  grid-template-areas: "h1 h2"
-                      "c1 c2";
-}
-.choose-assessment-widget h3:first-of-type {
-  grid-area: h1;
-}
-.choose-assessment-widget h3:last-of-type {
-  grid-area: h2;
-}
-.choose-assessment-widget div:first-of-type {
-  grid-area: c1;
-}
-.choose-assessment-widget div:last-of-type {
-  grid-area: c2;
-}
+  .choose-assessment-widget {
+    gap: calc(1px * var(--nh-spacing-xl));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 4rem 1fr;
+    grid-template-areas: "h1 h2"
+                        "c1 c2";
+  }
+  .choose-assessment-widget h3:first-of-type {
+    grid-area: h1;
+  }
+  .choose-assessment-widget h3:last-of-type {
+    grid-area: h2;
+  }
+  .choose-assessment-widget div:first-of-type {
+    grid-area: c1;
+  }
+  .choose-assessment-widget div:last-of-type {
+    grid-area: c2;
+  }
     `,
   ];
 }
