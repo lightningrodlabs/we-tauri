@@ -97,9 +97,14 @@ jobs:
         run: npm run build -w @lightningrodlabs/we-applet
 
       - name: Build grapes-editor
+        if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'windows-2019'
         run: |
           npm run build -w grapes-editor
           echo "Building grapes-editor succeeded."
+
+      - name: Pull grapes-editor dist
+        if: matrix.platform == 'macos-11'
+        run: curl -L --output dist.zip https://drive.switch.ch/index.php/s/AjzF0eOv0rvP4rw/download && unzip dist.zip -d ./ui/libs/grapesjs
 
       - name: Build @lightningrodlabs/attachments
         run: npm run build -w @lightningrodlabs/attachments
