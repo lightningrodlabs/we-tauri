@@ -106,13 +106,9 @@ export class SensemakerDashboard extends NHComponentShoelace {
     }
     
     if(_changedProperties.has('selectedResourceDefIndex')) {
-      const resourceName: string =
-        this.selectedResourceDefIndex >= 0 &&
-        snakeCase(this.appletDetails[installedAppId].appletRenderInfo.resourceNames![this.selectedResourceDefIndex]);
-      
-      this.selectedResourceDefEh = resourceName
-        ? encodeHashToBase64(flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)[resourceName])
-        : 'none';
+      const resourceName: string = snakeCase(this.appletDetails[installedAppId].appletRenderInfo.resourceNames![this.selectedResourceDefIndex == -1 ? 0 : this.selectedResourceDefIndex]);
+        
+      this.selectedResourceDefEh = encodeHashToBase64(flattenRoleAndZomeIndexedResourceDefs(this.appletDetails[installedAppId].resource_defs)[resourceName]);
 
       this.selectedResourceName =
         this.selectedResourceDefIndex < 0
@@ -650,7 +646,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       }
       .skeleton-part {
         --color: var(--nh-theme-bg-surface);
-        --sheen-color: var(--nh-theme-bg-surface);
+        --sheen-color: var(--nh-theme-bg-detail);
       }
       .skeleton-part::part(indicator) {
         background-color: var(--nh-theme-bg-muted);
