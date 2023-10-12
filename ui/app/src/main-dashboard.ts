@@ -99,6 +99,9 @@ export class MainDashboard extends NHComponentShoelace {
   private _defaultAppletInstanceId: EntryHash | undefined; // hash of the default applet, used when going to config
 
   @state()
+  private _selectedAppletRolename: string | undefined;
+
+  @state()
   private _specialAppletMode: boolean = false;
   @state()
   private _widgetConfigDialogActivated: boolean = false;
@@ -736,15 +739,17 @@ export class MainDashboard extends NHComponentShoelace {
   handleAppletInstalled(e: CustomEvent) {
     this._selectedWeGroupId = e.detail.weGroupId;
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
-    this._selectedAppletClassId = this._matrixStore.getAppletInstanceInfo(
+    const applet = this._matrixStore.getAppletInstanceInfo(
       e.detail.appletEntryHash,
-    )?.applet.devhubHappReleaseHash;
+    )?.applet
+    this._selectedAppletClassId = applet!.devhubHappReleaseHash;
+    this._selectedAppletRolename = Object.keys(applet!.dnaHashes)[0];
     this._newAppletInstances.run();
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
-    this.requestUpdate();
     this._widgetConfigDialogActivated = true;
+    this.requestUpdate();
   }
 
   goHome() {
@@ -784,6 +789,7 @@ export class MainDashboard extends NHComponentShoelace {
             >
               <div slot="inner-content">
                 <nh-sensemaker-settings
+                  .selectedAppletRolename=${this._selectedAppletRolename}
                   .sensemakerStore=${get(
                     this._matrixStore.sensemakerStore(this._selectedWeGroupId as Uint8Array),
                   )}
