@@ -8,7 +8,7 @@ use holochain::test_utils::consistency_10s;
 use holochain::{conductor::config::ConductorConfig, sweettest::*};
 
 #[tokio::test(flavor = "multi_thread")]
-async fn create_applet() {
+async fn store_and_delete_private_applet_entry() {
     // Use prebuilt DNA file
     let dna_path = std::env::current_dir()
         .unwrap()
@@ -16,14 +16,12 @@ async fn create_applet() {
     let dna = SweetDnaFile::from_bundle(&dna_path).await.unwrap();
 
     // Set up conductors
-    let mut conductors = SweetConductorBatch::from_config(2, ConductorConfig::default()).await;
-    let apps = conductors.setup_app("we", &[dna]).await.unwrap();
-    conductors.exchange_peer_info().await;
+    let mut conductor = SweetConductor::from_config(ConductorConfig::default()).await;
+    let app = conductor.setup_app("we", &[dna]).await.unwrap();
 
-    let ((alice,), (bobbo,)) = apps.into_tuples();
+    let (cell,) = app.into_tuple();
 
-    let alice_zome = alice.zome("group");
-    let bob_zome = bobbo.zome("group");
+    let group_zome = cell.zome("group");
 
     let applet = Applet {
         custom_name: String::from("custom name"),
@@ -39,13 +37,18 @@ async fn create_applet() {
         properties: BTreeMap::new(), // Segmented by RoleId
     };
 
-    let _entry_hash: EntryHash = conductors[0]
-        .call(&alice_zome, "register_applet", applet)
+    let private_applet_record: Record = conductor
+        .call(&group_zome, "store_joined_applet", applet.clone())
         .await;
 
-    consistency_10s([&alice, &bobbo]).await;
+    let all_my_applets: Vec<Record> = conductor.call(&group_zome, "get_my_applets", ()).await;
 
-    let all_applets: Vec<EntryHash> = conductors[1].call(&bob_zome, "get_applets", ()).await;
+    assert_eq!(all_my_applets.len(), 1);
+    assert_eq!(all_my_applets.first().unwrap().to_owned(), private_applet_record);
 
-    assert_eq!(all_applets.len(), 1);
+    let _delete_action: ActionHash = conductor.call(&group_zome, "delete_joined_applet", private_applet_record.action_address()).await;
+
+    let my_remaining_applets: Vec<Record> = conductor.call(&group_zome, "get_my_applets", ()).await;
+    assert_eq!(my_remaining_applets.len(), 0);
+
 }

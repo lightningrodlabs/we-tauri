@@ -21,6 +21,7 @@ import {
   AppWebsocket,
   InstalledAppId,
   ProvisionedCell,
+  decodeHashFromBase64,
 } from "@holochain/client";
 import { encodeHashToBase64 } from "@holochain/client";
 import { EntryHashB64 } from "@holochain/client";
@@ -45,6 +46,8 @@ import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithCon
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
 import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
+import { Applet } from "./applets/types.js";
+import { GroupClient } from "./groups/group-client.js";
 
 export class WeStore {
 
@@ -120,24 +123,35 @@ export class WeStore {
     }
   }
 
+  /**
+   * Uninstalls the group DNA and all Applet DNA's that have been installed
+   * only in this group
+   *
+   * @param groupDnaHash
+   */
   public async leaveGroup(groupDnaHash: DnaHash) {
     const groupStore = await toPromise(this.groups.get(groupDnaHash));
 
-    await this.adminWebsocket.disableApp({
+    // We want to be sure we really get all applets here, i.e. we're
+    // not relying on AsyncReadables. And we do that before we uninstall
+    // anything, in case it fails.
+    const applets = await groupStore.groupClient.getMyApplets();
+
+    await this.adminWebsocket.uninstallApp({
       installed_app_id: groupStore.groupClient.appAgentClient.installedAppId,
     });
-
-    const applets = await toPromise(groupStore.allApplets);
 
     await Promise.all(
       applets.map(async (appletHash) => {
         // TODO: Is this save? groupsForApplet depends on the network so it may not always
         // actually return all groups that depend on this applet
-        const groupsForApplet = await toPromise(
-          this.groupsForApplet.get(appletHash)
-        );
-        if (groupsForApplet.size === 1) {
-          await this.adminWebsocket.disableApp({
+        const groupsForApplet = await this.getGroupsForApplet(appletHash);
+
+        if (
+          groupsForApplet.length === 1
+          && encodeHashToBase64(groupsForApplet[0]) === encodeHashToBase64(groupDnaHash)
+        ) {
+          await this.adminWebsocket.uninstallApp({
             installed_app_id: appIdFromAppletHash(appletHash),
           });
         }
@@ -191,7 +205,6 @@ export class WeStore {
         if (groups.size === 0)
           throw new Error("Applet is not installed in any of the groups");
 
-
         const applet = await Promise.race(
           Array.from(groups.values()).map((groupStore) =>
             toPromise(groupStore.applets.get(appletHash))
@@ -236,10 +249,39 @@ export class WeStore {
     mapAndJoin(groupsStores, (store) => store.groupProfile)
   );
 
+
+  /**
+   * A reliable function to get the groups for an applet and is guaranteed
+   * to reflect the current state.
+   */
+  getGroupsForApplet = async (appletHash: AppletHash) => {
+    const allApps = await this.adminWebsocket.listApps({});
+    const groupApps = allApps.filter((app) =>
+      app.installed_app_id.startsWith("group#")
+    );
+    const groupsWithApplet: Array<DnaHash> = [];
+    groupApps.forEach(async (app) => {
+      const groupAppAgentWebsocket = await initAppClient(
+        app.installed_app_id
+      );
+      const groupDnaHash = decodeHashFromBase64(app.installed_app_id.slice(6));
+      const groupClient = new GroupClient(groupAppAgentWebsocket, "group");
+      const allMyAppletDatas = await groupClient.getMyApplets();
+      if (
+        allMyAppletDatas
+          .map(([hash, _applet]) => hash.toString())
+          .includes(appletHash.toString())
+      ) {
+        groupsWithApplet.push(groupDnaHash);
+      }
+    })
+    return groupsWithApplet;
+  }
+
   groupsForApplet = new LazyHoloHashMap((appletHash: EntryHash) =>
     pipe(
       this.allGroups,
-      (allGroups) => mapAndJoin(allGroups, (store) => store.allApplets),
+      (allGroups) => mapAndJoin(allGroups, (store) => store.allMyApplets),
       (appletsByGroup) => {
         // console.log("appletsByGroup: ", Array.from(appletsByGroup.values()).map((hashes) => hashes.map((hash) => encodeHashToBase64(hash))));
         const groupDnaHashes = Array.from(appletsByGroup.entries())
@@ -253,10 +295,12 @@ export class WeStore {
         // console.log("Requested applet hash: ", encodeHashToBase64(appletHash));
         // console.log("groupDnaHashes: ", groupDnaHashes);
 
-        if (groupDnaHashes.length === 0) {
-          // console.log("//////// Disabling applet with hash: ", encodeHashToBase64(appletHash));
-          this.appletBundlesStore.disableApplet(appletHash);
-        }
+        // Disabling an applet here is dangerous. this.allGroups is coming from a
+        // manualReloadStore(), i.e. it is not reliable to be up to date with the
+        // actual state in the conductor.
+        // if (groupDnaHashes.length === 0) {
+        //   this.appletBundlesStore.disableApplet(appletHash);
+        // }
 
         return sliceAndJoin(this.groups, groupDnaHashes);
       }

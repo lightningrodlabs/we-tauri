@@ -100,10 +100,10 @@ export class FederateAppletDialog extends LitElement {
       if (!appletStore) throw new Error("Applet not found");
 
       const applet = appletStore.applet;
-      await groupStore.groupClient.registerApplet(applet);
+      await groupStore.addFederatedApplet(applet);
 
       // Two way link from one group to the other
-      // TODO: what to do when the applet is uninstalled
+      // TODO: what to do when the applet is uninstalled?
       await this._groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         groupDnaHash
@@ -112,6 +112,7 @@ export class FederateAppletDialog extends LitElement {
         this.appletHash,
         this._groupStore.groupDnaHash
       );
+
       const dialog = this.shadowRoot?.getElementById("dialog") as SlDialog;
       dialog.hide();
     } catch (e) {

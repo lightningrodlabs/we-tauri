@@ -2,7 +2,7 @@ import { AppInfo, DnaHash, EntryHash, encodeHashToBase64 } from "@holochain/clie
 import { hashProperty, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
 import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { msg } from "@lit/localize";
 import { mdiArchiveArrowDown, mdiArchiveArrowUp, mdiExportVariant } from "@mdi/js";
 import { invoke } from "@tauri-apps/api";
@@ -38,13 +38,13 @@ export class AppletDetailCard extends LitElement {
   applet!: Applet;
 
   @property()
-  appInfo: AppInfo | undefined;
-
-  @property()
   federatedGroups!: ReadonlyMap<EntryHash, Array<DnaHash>>;
 
   @property()
-  installationStatus: "installed" | "archived" = "installed"
+  installationStatus: "installed" | "archived" = "installed";
+
+  @state()
+  appInfo: AppInfo | undefined;
 
   async firstUpdated() {
     this.appInfo = await this.weStore.appWebsocket.appInfo({ installed_app_id: appIdFromAppletHash(this.appletHash) })

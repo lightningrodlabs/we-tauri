@@ -6,7 +6,6 @@ import {
   pipe,
   sliceAndJoin,
   StoreSubscriber,
-  toPromise,
 } from "@holochain-open-dev/stores";
 import { customElement, state } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
@@ -21,6 +20,7 @@ import {
 import {
   mdiToyBrickPlus,
 } from "@mdi/js";
+import { AppletHash } from "@lightningrodlabs/we-applet";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -44,6 +44,7 @@ import { weStyles } from "../../shared-styles.js";
 import { Applet } from "../../applets/types.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
+import { GroupDnaHash } from "../../types.js";
 
 @localized()
 @customElement("group-applets-settings")
@@ -59,33 +60,18 @@ export class GroupAppletsSettings extends LitElement {
     () =>
       joinAsync([
         asyncDeriveAndJoin(
-          pipe(this._groupStore.allApplets, (allApplets) =>
-            sliceAndJoin(this._groupStore.applets, allApplets)
+          pipe(this._groupStore.allMyApplets, (myApplets) =>
+            sliceAndJoin(this._groupStore.applets, myApplets)
           ),
           (applets) =>
             mapAndJoin(applets, (_applet, appletHash) =>
               this._groupStore.appletFederatedGroups.get(appletHash)
             )
-        ),
-
-        asyncDeriveAndJoin(
-          pipe(this._groupStore.archivedApplets, (allApplets) =>
-            sliceAndJoin(this._groupStore.applets, allApplets)
-          ),
-          (applets) => mapAndJoin(applets, (_applet, appletHash) =>
-            this._groupStore.appletFederatedGroups.get(appletHash)
-          )
         )
       ]) as AsyncReadable<
         [
-          [
-            ReadonlyMap<EntryHash, Applet>,
-            ReadonlyMap<EntryHash, Array<DnaHash>>
-          ],
-          [
-            ReadonlyMap<EntryHash, Applet>,
-            ReadonlyMap<EntryHash, Array<DnaHash>>
-          ]
+          ReadonlyMap<AppletHash, Applet>,
+          ReadonlyMap<AppletHash, Array<GroupDnaHash>> // Groups the Applet has been federated with
         ]
       >,
     () => [this._groupStore, this._weStore]
@@ -111,10 +97,9 @@ export class GroupAppletsSettings extends LitElement {
     try {
       await this._groupStore.groupClient.archiveApplet(appletToArchive!);
 
-      const groupsForApplet = await toPromise(
-        this._weStore.groupsForApplet.get(appletToArchive)
-      );
-      const otherGroupsForApplet = Array.from(groupsForApplet.keys()).filter(
+      const groupsForApplet = await this._weStore.getGroupsForApplet(appletToArchive);
+
+      const otherGroupsForApplet = groupsForApplet.filter(
         (groupDnaHash) =>
           groupDnaHash.toString() !== this._groupStore.groupDnaHash.toString()
       );
@@ -254,7 +239,7 @@ export class GroupAppletsSettings extends LitElement {
           </span>
         </div>
       `;
-
+    console.log("Rendering Installed Applets in settings: ", applets);
     return html`
       ${this.renderArchiveDialog()} ${this.renderFederateDialog()}
       <div class="column" style="flex: 1;">
@@ -335,17 +320,6 @@ export class GroupAppletsSettings extends LitElement {
             ${this.renderInstalledApplets(
               this._groupApplets.value.value[0][0],
               this._groupApplets.value.value[0][1]
-            )}
-
-            <sl-divider></sl-divider>
-
-            <span class="title" style="margin-bottom: 16px"
-              >${msg("Archived Applets")}</span
-            >
-
-            ${this.renderArchivedApplets(
-              this._groupApplets.value.value[1][0],
-              this._groupApplets.value.value[1][1]
             )}
           </div>
         `;

@@ -49,7 +49,7 @@ export class InstallableApplets extends LitElement {
   );
 
   @query("#applet-dialog")
-  _appletDialog!: InstallAppletBundleDialog;
+  _installAppletDialog!: InstallAppletBundleDialog;
 
   renderInstallableApplet(
     appEntry: Entity<AppEntry>,
@@ -71,8 +71,8 @@ export class InstallableApplets extends LitElement {
         <div class="column" style="flex: 1">
           <span style="flex: 1">${appEntry.content.subtitle}</span>
           <sl-button
-            @click=${() => {
-              this._appletDialog.open(appEntry);
+            @click=${async () => {
+              await this._installAppletDialog.open(appEntry);
             }}
           >
             ${msg("Add to group")}
@@ -107,7 +107,6 @@ export class InstallableApplets extends LitElement {
   render() {
     switch (this._installableApplets.value?.status) {
       case "pending":
-        console.log("STILL PENDING!!!");
         return html`<div class="row center-content" style="flex: 1;">
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;

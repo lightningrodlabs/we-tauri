@@ -39,7 +39,7 @@ export class InstallAppletBundleDialog extends LitElement {
   _registeredApplets = new StoreSubscriber(
     this,
     () =>
-      pipe(this.groupStore.allApplets, (allAppletsHashes) =>
+      pipe(this.groupStore.allAdvertisedApplets, (allAppletsHashes) =>
         joinAsyncMap(slice(this.groupStore.applets, allAppletsHashes))
       ),
     () => []
@@ -84,7 +84,9 @@ export class InstallAppletBundleDialog extends LitElement {
 
   _unlisten: UnlistenFn | undefined;
 
-  open(appletInfo: Entity<AppEntry>) {
+  async open(appletInfo: Entity<AppEntry>) {
+    // reload all advertised applets
+    await this.groupStore.allAdvertisedApplets.reload();
     this._appletInfo = appletInfo;
     setTimeout(() => {
       this.form.reset();
@@ -136,7 +138,7 @@ export class InstallAppletBundleDialog extends LitElement {
       const latestRelease =
         await this.weStore.appletBundlesStore.getLatestVersion(this._appletInfo!);
 
-      const appletEntryHash = await this.groupStore.installAppletBundle(
+      const appletEntryHash = await this.groupStore.installAndAdvertiseApplet(
         this._appletInfo!,
         fields.custom_name,
         latestRelease,
@@ -168,7 +170,7 @@ export class InstallAppletBundleDialog extends LitElement {
   }
 
   renderForm() {
-    if (!this._appletInfo) return html``;
+    if (!this._appletInfo) return html`Error.`;
 
     switch (this._registeredApplets.value.status) {
       case "pending":

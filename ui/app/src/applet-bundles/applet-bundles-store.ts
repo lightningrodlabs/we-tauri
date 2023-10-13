@@ -113,11 +113,11 @@ export class AppletBundlesStore {
       happEntryActionHash: encodeHashToBase64(applet.devhub_happ_entry_action_hash),
     });
 
-    await this.runningApps.reload();
-    await this.installedApps.reload();
-    // TODO check whether reloading this.installedApps is required as well
-
     return appInfo;
+  }
+
+  async uninstallApplet(appletHash: EntryHash): Promise<void> {
+    await this.adminWebsocket.uninstallApp({ installed_app_id: appIdFromAppletHash(appletHash) })
   }
 
   async disableApplet(appletHash: EntryHash) {
