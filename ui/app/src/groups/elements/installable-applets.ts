@@ -7,6 +7,7 @@ import {
   joinAsync,
   StoreSubscriber,
 } from "@holochain-open-dev/stores";
+import { DnaHashB64, decodeHashFromBase64 } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
@@ -15,14 +16,15 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { InstallAppletBundleDialog } from "./install-applet-bundle-dialog.js";
 import "./install-applet-bundle-dialog.js";
+import "./group-context.js";
 
-import { GroupStore } from "../group-store.js";
-import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { IconSrcOption } from "../../applet-bundles/types.js";
 import { AppEntry, Entity } from "../../processes/appstore/types.js";
+import { SelectGroupDialog } from "../../elements/select-group-dialog.js";
+import "../../elements/select-group-dialog.js";
 
 @localized()
 @customElement("installable-applets")
@@ -30,14 +32,11 @@ export class InstallableApplets extends LitElement {
   @consume({ context: weStoreContext, subscribe: true })
   weStore!: WeStore;
 
-  @consume({ context: groupStoreContext, subscribe: true })
-  groupStore!: GroupStore;
-
   _installableApplets = new StoreSubscriber(
     this,
     () =>
       asyncDeriveAndJoin(
-        this.groupStore.weStore.appletBundlesStore.allAppletBundles,
+        this.weStore.appletBundlesStore.allAppletBundles,
         (allAppletBundles) =>
           joinAsync(
             allAppletBundles.map((b) =>
@@ -51,13 +50,36 @@ export class InstallableApplets extends LitElement {
   @query("#applet-dialog")
   _installAppletDialog!: InstallAppletBundleDialog;
 
+  @query("#select-group-dialog")
+  _selectGroupDialog!: SelectGroupDialog;
+
+  @state()
+  _selectedGroupDnaHash: DnaHashB64 | undefined;
+
+  @state()
+  _selectedAppEntry: Entity<AppEntry> | undefined;
+
   renderInstallableApplet(
     appEntry: Entity<AppEntry>,
     iconSrc: string | undefined
   ) {
     return html`
-      <sl-card class="applet-card" style="height: 200px">
-        <div slot="header" class="row" style="align-items: center;">
+      <sl-card
+        tabindex=0
+        class="applet-card"
+        style="height: 200px"
+        @click=${async () => {
+          this._selectedAppEntry = appEntry;
+          this._selectGroupDialog.show();
+        }}
+        @keypress=${async (e: KeyboardEvent) => {
+          if (e.key === "Enter") {
+            this._selectedAppEntry = appEntry;
+            this._selectGroupDialog.show();
+          }
+        }}
+      >
+        <div slot="header" class="row" style="align-items: center; padding-top: 9px;">
           ${ iconSrc
             ? html`<img
               src=${iconSrc}
@@ -70,13 +92,6 @@ export class InstallableApplets extends LitElement {
         </div>
         <div class="column" style="flex: 1">
           <span style="flex: 1">${appEntry.content.subtitle}</span>
-          <sl-button
-            @click=${async () => {
-              await this._installAppletDialog.open(appEntry);
-            }}
-          >
-            ${msg("Add to group")}
-          </sl-button>
         </div>
       </sl-card>
     `;
@@ -85,10 +100,6 @@ export class InstallableApplets extends LitElement {
   renderApplets(allApplets: [Array<Entity<AppEntry>>, Array<IconSrcOption>]) {
     console.log("ALL APPLETS: ", allApplets);
     return html`
-      <install-applet-bundle-dialog
-        id="applet-dialog"
-      ></install-applet-bundle-dialog>
-
       <div style="display: flex; flex-direction: row; flex-wrap: wrap; flex: 1;">
         ${allApplets[0].length === 0
           ? html`
@@ -112,7 +123,30 @@ export class InstallableApplets extends LitElement {
           <sl-spinner style="font-size: 2rem"></sl-spinner>
         </div>`;
       case "complete":
-        return this.renderApplets(this._installableApplets.value.value);
+        return html`
+          ${ this._selectedGroupDnaHash
+            ? html `
+              <group-context .groupDnaHash=${decodeHashFromBase64(this._selectedGroupDnaHash)}>
+                <install-applet-bundle-dialog
+                  id="applet-dialog"
+                ></install-applet-bundle-dialog>
+              </group-context>
+            `
+            : html``
+          }
+          <select-group-dialog
+            id="select-group-dialog"
+            @installation-group-selected=${(e: CustomEvent) => {
+              this._selectedGroupDnaHash = e.detail;
+              this._selectGroupDialog.hide();
+              setTimeout(
+                async () => this._installAppletDialog.open(this._selectedAppEntry!),
+                50
+              );
+            }}
+          ></select-group-dialog>
+          ${this.renderApplets(this._installableApplets.value.value)}
+        `
       case "error":
         return html`<display-error
           .headline=${msg(
@@ -129,6 +163,18 @@ export class InstallableApplets extends LitElement {
         width: 300px;
         height: 180px;
         margin: 10px;
+        --border-radius: 15px;
+        cursor: pointer;
+        border: none;
+        --border-color: transparent;
+      }
+
+      .applet-card:hover {
+        --sl-panel-background-color: var(--sl-color-primary-100);
+      }
+
+      .applet-card:focus {
+        --sl-panel-background-color: var(--sl-color-primary-100);
       }
     `,
     weStyles,

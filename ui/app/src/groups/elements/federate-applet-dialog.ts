@@ -154,6 +154,7 @@ export class FederateAppletDialog extends LitElement {
               name="groupDnaHash"
               @sl-hide=${(e) => e.stopPropagation()}
               style="margin-top: 16px"
+              hoist
               required
             >
               ${groups.map(

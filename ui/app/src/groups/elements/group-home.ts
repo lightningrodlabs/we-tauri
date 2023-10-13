@@ -59,7 +59,6 @@ type View =
   | {
       view: "main";
     }
-  | { view: "applets-library" }
   | { view: "settings" }
   | { view: "create-custom-view" }
   | {
@@ -139,14 +138,6 @@ export class GroupHome extends LitElement {
               />
               <span class="title">${groupProfile.name}</span>
             </div>
-
-            <sl-icon-button
-              .src=${wrapPathInSvg(mdiToyBrickPlus)}
-              @click=${() => {
-                this.view = { view: "applets-library" };
-              }}
-              style="font-size: 2rem;"
-            ></sl-icon-button>
 
             <div style="position: relative;">
               ${
@@ -441,40 +432,6 @@ export class GroupHome extends LitElement {
     switch (this.view.view) {
       case "main":
         return this.renderMain(groupProfile, networkSeed);
-      case "applets-library":
-        return html`
-          <div class="column" style="margin: 16px; flex: 1">
-            <div class="row" style="margin-bottom: 16px; align-items: center">
-              <sl-icon-button
-                .src=${wrapPathInSvg(mdiArrowLeft)}
-                @click=${() => {
-                  this.view = { view: "main" };
-                }}
-                style="margin-right: 16px"
-              ></sl-icon-button>
-              <span class="title" style="flex: 1"
-                >${msg("Applets Library")}</span
-              >
-              <publish-applet-button></publish-applet-button>
-            </div>
-
-            <installable-applets
-              style="display: flex; flex: 1; overflow-y: auto;"
-              @applet-installed=${(e) => {
-                // console.log("@group-home: GOT APPLET INSTALLED EVENT.");
-                // this.view = { view: "main" };
-                // re-dispatch event since for some reason it doesn't bubble further
-                this.dispatchEvent(
-                  new CustomEvent("applet-installed", {
-                    detail: e.detail,
-                    composed: true,
-                    bubbles: true,
-                  })
-                );
-              }}
-            ></installable-applets>
-          </div>
-        `;
       case "settings":
         return this.renderNewSettings();
       case "create-custom-view":

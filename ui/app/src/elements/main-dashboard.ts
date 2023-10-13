@@ -209,11 +209,6 @@ export class MainDashboard extends LitElement {
                 this.dashboardMode = "browserView";
                 this._weStore.selectAppletHash(undefined);
               }}
-              @applet-installed=${(_e: CustomEvent) => {
-                // console.log("GOT APPLET INSTALLED EVENT");
-                // this._weStore.selectAppletHash(e.detail);
-                this.dashboardMode = "groupView";
-              }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);
                 this._weStore.selectAppletHash(e.detail.appletHash);
@@ -307,6 +302,8 @@ export class MainDashboard extends LitElement {
       <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout
+          id="dynamic-layout"
+          style="flex: 1; min-width: 0; height: 100%;"
           @open-tab-request=${() => {
             this.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
@@ -315,7 +312,18 @@ export class MainDashboard extends LitElement {
             this._clipboard.show("select");
           }}
           @toggle-clipboard=${() => this.toggleClipboard()}
-          id="dynamic-layout"
+          @request-create-group=${() =>
+            (this.shadowRoot?.getElementById(
+                "create-group-dialog"
+              ) as CreateGroupDialog
+            ).open()
+          }
+          @applet-installed=${(e: CustomEvent) => {
+            // console.log("GOT APPLET INSTALLED EVENT");
+            this._weStore.selectAppletHash(e.detail.appletEntryHash);
+            this.selectedGroupDnaHash = e.detail.groupDnaHash;
+            this.dashboardMode = "groupView";
+          }}
           .rootItemConfig=${{
             type: "row",
             content: [
@@ -328,7 +336,6 @@ export class MainDashboard extends LitElement {
               },
             ],
           }}
-          style="flex: 1; min-width: 0; height: 100%;"
           @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
           @request-join-group=${(_e) => this.joinGroupDialog.open()}
         ></dynamic-layout>

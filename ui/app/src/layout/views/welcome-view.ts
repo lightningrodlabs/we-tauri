@@ -1,5 +1,5 @@
 import { html, LitElement, css } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { localized, msg } from "@lit/localize";
 
 import "@shoelace-style/shoelace/dist/components/card/card.js";
@@ -7,13 +7,59 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
-import { mdiAccountMultiplePlus } from "@mdi/js";
+import { mdiAccountMultiplePlus, mdiArrowLeft } from "@mdi/js";
 
 import { weStyles } from "../../shared-styles.js";
+import "../../elements/select-group-dialog.js";
 
+enum WelcomePageView {
+  Main,
+  AppLibrary,
+}
 @localized()
 @customElement("welcome-view")
 export class WelcomeView extends LitElement {
+
+  @state()
+  view: WelcomePageView = WelcomePageView.Main;
+
+
+  renderAppLibrary() {
+    return html`
+      <div class="column" style="margin: 16px; flex: 1">
+        <div class="row" style="margin-bottom: 16px; align-items: center">
+          <sl-icon-button
+            .src=${wrapPathInSvg(mdiArrowLeft)}
+            @click=${() => {
+              this.view = WelcomePageView.Main;
+            }}
+            style="margin-right: 16px"
+          ></sl-icon-button>
+          <span class="title" style="flex: 1"
+            >${msg("Applets Library")}</span
+          >
+          <publish-applet-button></publish-applet-button>
+        </div>
+
+        <installable-applets
+          style="display: flex; flex: 1; overflow-y: auto;"
+          @applet-installed=${(e) => {
+            // console.log("@group-home: GOT APPLET INSTALLED EVENT.");
+            this.view = WelcomePageView.Main;
+            // re-dispatch event since for some reason it doesn't bubble further
+            // this.dispatchEvent(
+            //   new CustomEvent("applet-installed", {
+            //     detail: e.detail,
+            //     composed: true,
+            //     bubbles: true,
+            //   })
+            // );
+          }}
+        ></installable-applets>
+      </div>
+    `;
+  }
+
   renderExplanationCard() {
     return html`
       <sl-card style="flex: 1">
@@ -81,29 +127,75 @@ export class WelcomeView extends LitElement {
   }
 
   render() {
-    return html`
-      <div class="column" style="align-items: center; flex: 1; overflow: scroll; padding: 24px;">
-        <sl-button
-          variant="primary"
-          style="position: absolute; top: 20px; right: 20px;"
-          @click=${(e) => this.dispatchEvent(new CustomEvent("request-join-group",
-          {
-            composed: true,
-            bubbles: true
-          }))}
-        >${msg("Join Group with Invite Link")}</sl-button>
-        <div
-          class="row center-content default-font"
-          style="font-size: 3em; color: #2c3888; margin-top: 15px;"
-        >
-          <div>${msg("Welcome to We!")}</div>
-        </div>
+    switch (this.view) {
+      case WelcomePageView.Main:
+        return html`
+        <div class="column" style="align-items: center; flex: 1; overflow: scroll; padding: 24px;">
+          <div class="row" style="margin-top: 100px;">
+            <button
+              class="btn"
+              @click=${() => {
+                this.dispatchEvent(
+                  new CustomEvent("request-create-group", {
+                    bubbles: true,
+                    composed: true,
+                  })
+                );
+              }}
+              @keypress=${(e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  this.dispatchEvent(
+                    new CustomEvent("request-create-group", {
+                      bubbles: true,
+                      composed: true,
+                    })
+                  );
+                }
+              }}
+            ><div class="column center-content">Create Group</div></button>
+            <button
+              class="btn"
+              @click=${() => { this.view = WelcomePageView.AppLibrary }}
+              @keypress=${(e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  this.view = WelcomePageView.AppLibrary;
+                }
+              }}
+            ><div class="column center-content">Install Applet</div></button>
+            <button
+              class="btn"
+              @click=${(e) => this.dispatchEvent(
+                new CustomEvent("request-join-group",
+                  {
+                    composed: true,
+                    bubbles: true
+                  }
+              ))}
+              @keypress=${(e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  this.dispatchEvent(
+                    new CustomEvent("request-join-group",
+                      {
+                        composed: true,
+                        bubbles: true
+                      }
+                    )
+                  )
+                }
+              }}
+            ><div class="column center-content">Join Group</div></button>
+          </div>
 
-        <div class="row" style="margin-top: 48px; max-width: 1200px">
-          ${this.renderExplanationCard()} ${this.renderManagingGroupsCard()}
+          <div class="row" style="margin-top: 100px; max-width: 1200px">
+            ${this.renderExplanationCard()} ${this.renderManagingGroupsCard()}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+      case WelcomePageView.AppLibrary:
+        return this.renderAppLibrary();
+
+    }
+
   }
 
   static styles = [
@@ -112,6 +204,29 @@ export class WelcomeView extends LitElement {
         display: flex;
         flex: 1;
       }
+
+      .btn {
+        all: unset;
+        margin: 0 8px;
+        font-size: 25px;
+        height: 100px;
+        min-width: 300px;
+        background: var(--sl-color-primary-800);
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 2px 1px var(--sl-color-primary-900)
+      }
+
+      .btn:hover {
+        background: var(--sl-color-primary-700);
+      }
+
+      .btn:active{
+        background: var(--sl-color-primary-600);
+      }
+
+
     `,
     weStyles,
   ];

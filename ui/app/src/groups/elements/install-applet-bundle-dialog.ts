@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { ActionHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
+import { ActionHashB64, DnaHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
 import {
@@ -85,6 +85,7 @@ export class InstallAppletBundleDialog extends LitElement {
   _unlisten: UnlistenFn | undefined;
 
   async open(appletInfo: Entity<AppEntry>) {
+    console.log("OPENING WITH APPLETINFO: ", appletInfo);
     // reload all advertised applets
     await this.groupStore.allAdvertisedApplets.reload();
     this._appletInfo = appletInfo;
@@ -191,7 +192,7 @@ export class InstallAppletBundleDialog extends LitElement {
             ${ref((input) => {
               if (!input) return;
               setTimeout(() => {
-                if (allAppletsNames.includes(this._appletInfo!.content.title)) {
+                if (this._appletInfo && allAppletsNames.includes(this._appletInfo!.content.title)) {
                   (input as HTMLInputElement).setCustomValidity(
                     "Name already exists"
                   );
