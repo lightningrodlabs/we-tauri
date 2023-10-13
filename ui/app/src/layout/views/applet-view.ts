@@ -57,7 +57,7 @@ export class AppletViewEl extends LitElement {
     () =>
       joinAsync([
         this.weStore.appletStores.get(this.appletHash),
-        this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
+        this.weStore.isInstalled.get(this.appletHash),
         this.weStore.groupsForApplet.get(this.appletHash),
         this.weStore.allGroupsProfiles,
       ]) as AsyncReadable<
@@ -119,7 +119,7 @@ export class AppletViewEl extends LitElement {
     groupsForApplet: ReadonlyMap<DnaHash, GroupStore>,
   ): Promise<EntryHash> {
 
-    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    await this.weStore.installApplet(appletHash, applet);
 
     try {
       await Promise.all(
@@ -133,7 +133,7 @@ export class AppletViewEl extends LitElement {
     } catch (e) {
       console.error(`Failed to register Applet in groups after installation. Uninstalling again. Error:\n${e}.`);
       try {
-        await this.weStore.appletBundlesStore.uninstallApplet(appletHash);
+        await this.weStore.uninstallApplet(appletHash);
         return Promise.reject(new Error(`Failed to register Applet: ${e}.\nApplet uninstalled again.`))
       } catch (err) {
         console.error(`Failed to undo installation of Applet after failed registration: ${err}`)
@@ -142,9 +142,6 @@ export class AppletViewEl extends LitElement {
         );
       }
     }
-
-    await this.weStore.appletBundlesStore.runningApps.reload();
-    await this.weStore.appletBundlesStore.installedApps.reload();
 
     return appletHash;
   }

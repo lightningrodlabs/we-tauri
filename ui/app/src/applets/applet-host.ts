@@ -53,7 +53,7 @@ export async function setupAppletMessageHandler(
         message.origin
       );
       const installedApplets = await toPromise(
-        weStore.appletBundlesStore.installedApplets
+        weStore.installedApplets
       );
       const appletHash = installedApplets.find(
         (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
@@ -202,7 +202,7 @@ export async function handleAppletIframeMessage(
   switch (message.type) {
     case "get-iframe-config":
       const isInstalled = await toPromise(
-        weStore.appletBundlesStore.isInstalled.get(appletHash)
+        weStore.isInstalled.get(appletHash)
       );
 
       const appletStore = await toPromise(weStore.appletStores.get(appletHash));

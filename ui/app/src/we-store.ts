@@ -14,6 +14,7 @@ import {
   Writable,
   writable,
   derived,
+  manualReloadStore,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap, pickBy } from "@holochain-open-dev/utils";
 import {
@@ -42,7 +43,7 @@ import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
-import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled } from "./utils.js";
+import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled, isAppRunning } from "./utils.js";
 import { AppletStore } from "./applets/applet-store.js";
 import { AppletHash, AppletId } from "./types.js";
 import { ResourceLocatorB64 } from "./processes/appstore/get-happ-releases.js";
@@ -114,8 +115,8 @@ export class WeStore {
         networkSeed,
         this.appletBundlesStore.appstoreClient.myPubKey
       );
-      await this.appletBundlesStore.installedApps.reload();
-      await this.appletBundlesStore.runningApps.reload();
+      await this.installedApps.reload();
+      await this.runningApps.reload();
       return appInfo;
     } catch (e) {
       console.error("Error installing group app: ", e);
@@ -158,11 +159,38 @@ export class WeStore {
       })
     );
 
-    await this.appletBundlesStore.installedApps.reload();
-    await this.appletBundlesStore.runningApps.reload();
+    await this.installedApps.reload();
+    await this.runningApps.reload();
   }
 
-  runningGroupsApps = asyncDerived(this.appletBundlesStore.runningApps, (apps) =>
+  installedApps = manualReloadStore(async () =>
+    this.adminWebsocket.listApps({})
+  );
+
+  runningApps = manualReloadStore(async () => {
+    const apps = await this.adminWebsocket.listApps({});
+    return apps.filter((app) => isAppRunning(app));
+  });
+
+  installedApplets = asyncDerived(this.installedApps, async (apps) =>
+    apps
+      .filter(
+        (app) =>
+          app.installed_app_id.startsWith("applet#")
+      )
+      .map((app) => appletHashFromAppId(app.installed_app_id))
+  );
+
+  runningApplets = asyncDerived(this.runningApps, async (apps) =>
+    apps
+      .filter(
+        (app) =>
+          app.installed_app_id.startsWith("applet#")
+      )
+      .map((app) => appletHashFromAppId(app.installed_app_id))
+  );
+
+  runningGroupsApps = asyncDerived(this.runningApps, (apps) =>
     apps.filter((app) => app.installed_app_id.startsWith("group#"))
   );
 
@@ -238,7 +266,7 @@ export class WeStore {
   // );
 
   allRunningApplets = pipe(
-    this.appletBundlesStore.runningApplets,
+    this.runningApplets,
     (appletsHashes) =>
       sliceAndJoin(this.appletStores, appletsHashes) as AsyncReadable<
         ReadonlyMap<EntryHash, AppletStore>
@@ -310,7 +338,7 @@ export class WeStore {
 
   dnaLocations = new LazyHoloHashMap((dnaHash: DnaHash) =>
     asyncDerived(
-      this.appletBundlesStore.installedApps,
+      this.installedApps,
       async (installedApps) => {
         const app = findAppForDnaHash(installedApps, dnaHash);
 
@@ -443,6 +471,80 @@ export class WeStore {
         }
         return completed(attachments);
       }
+    )
+  );
+
+  async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
+    const appId = appIdFromAppletHash(appletHash);
+
+    const appInfo: AppInfo = await invoke("install_applet_bundle_if_necessary", {
+      appId,
+      networkSeed: applet.network_seed,
+      membraneProofs: {},
+      agentPubKey: encodeHashToBase64(this.appletBundlesStore.appstoreClient.myPubKey),
+      devhubDnaHash: encodeHashToBase64(applet.devhub_dna_hash),
+      happReleaseHash: encodeHashToBase64(applet.devhub_happ_release_hash),
+      happEntryActionHash: encodeHashToBase64(applet.devhub_happ_entry_action_hash),
+    });
+
+    await this.reloadManualStores();
+
+    return appInfo;
+  }
+
+  async uninstallApplet(appletHash: EntryHash): Promise<void> {
+    await this.adminWebsocket.uninstallApp({ installed_app_id: appIdFromAppletHash(appletHash) })
+    await this.reloadManualStores();
+  }
+
+  async disableApplet(appletHash: EntryHash) {
+    const installed = await toPromise(this.isInstalled.get(appletHash));
+    if (!installed) return;
+
+    await this.adminWebsocket.disableApp({
+      installed_app_id: appIdFromAppletHash(appletHash),
+    });
+    await this.reloadManualStores();
+  }
+
+  async enableApplet(appletHash: EntryHash) {
+    const installed = await toPromise(this.isInstalled.get(appletHash));
+    if (!installed) return;
+
+    await this.adminWebsocket.enableApp({
+      installed_app_id: appIdFromAppletHash(appletHash),
+    });
+    await this.reloadManualStores();
+  }
+
+  async reloadManualStores() {
+    await Promise.all(
+      Array.from(this.groups.map.values()).map( async (asyncReadable) => {
+        const groupStore = await toPromise(asyncReadable);
+        groupStore.allMyApplets.reload();
+        groupStore.allMyRunningApplets.reload();
+    }));
+    await this.installedApps.reload();
+    await this.runningApps.reload();
+  }
+
+  isInstalled = new LazyHoloHashMap((appletHash: EntryHash) => {
+    this.installedApps.reload(); // required after fresh installation of app
+    return asyncDerived(
+      this.installedApplets,
+      (appletsHashes) => !!appletsHashes.find(
+          (hash) => hash.toString() === appletHash.toString()
+        )
+    );
+  });
+
+  isRunning = new LazyHoloHashMap((appletHash: EntryHash) =>
+    asyncDerived(
+      this.runningApplets,
+      (appletsHashes) =>
+        !!appletsHashes.find(
+          (hash) => hash.toString() === appletHash.toString()
+        )
     )
   );
 

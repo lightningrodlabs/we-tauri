@@ -12,5 +12,7 @@ export async function getAllApps(
       payload: null,
     });
 
+    console.log("Asked appstore for all apps: ", allApps.payload);
+
   return allApps.payload;
 }

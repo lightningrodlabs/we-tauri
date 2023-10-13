@@ -6,7 +6,7 @@ import {
   retryUntilSuccess,
   toPromise,
 } from "@holochain-open-dev/stores";
-import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import {
   ActionHash,
   AdminWebsocket,
@@ -99,95 +99,6 @@ export class AppletBundlesStore {
 
     return latestRelease;
   }
-
-  async installApplet(appletHash: EntryHash, applet: Applet): Promise<AppInfo> {
-    const appId = appIdFromAppletHash(appletHash);
-
-    const appInfo: AppInfo = await invoke("install_applet_bundle_if_necessary", {
-      appId,
-      networkSeed: applet.network_seed,
-      membraneProofs: {},
-      agentPubKey: encodeHashToBase64(this.appstoreClient.myPubKey),
-      devhubDnaHash: encodeHashToBase64(applet.devhub_dna_hash),
-      happReleaseHash: encodeHashToBase64(applet.devhub_happ_release_hash),
-      happEntryActionHash: encodeHashToBase64(applet.devhub_happ_entry_action_hash),
-    });
-
-    return appInfo;
-  }
-
-  async uninstallApplet(appletHash: EntryHash): Promise<void> {
-    await this.adminWebsocket.uninstallApp({ installed_app_id: appIdFromAppletHash(appletHash) })
-  }
-
-  async disableApplet(appletHash: EntryHash) {
-    const installed = await toPromise(this.isInstalled.get(appletHash));
-    if (!installed) return;
-
-    await this.adminWebsocket.disableApp({
-      installed_app_id: appIdFromAppletHash(appletHash),
-    });
-
-    await this.runningApps.reload();
-  }
-
-  async enableApplet(appletHash: EntryHash) {
-    const installed = await toPromise(this.isInstalled.get(appletHash));
-    if (!installed) return;
-
-    await this.adminWebsocket.enableApp({
-      installed_app_id: appIdFromAppletHash(appletHash),
-    });
-
-    await this.runningApps.reload();
-  }
-
-  runningApps = manualReloadStore(async () => {
-    const apps = await this.adminWebsocket.listApps({});
-    return apps.filter((app) => isAppRunning(app));
-  });
-
-  installedApps = manualReloadStore(async () =>
-    this.adminWebsocket.listApps({})
-  );
-
-  runningApplets = asyncDerived(this.runningApps, async (apps) =>
-    apps
-      .filter(
-        (app) =>
-          app.installed_app_id.startsWith("applet#")
-      )
-      .map((app) => appletHashFromAppId(app.installed_app_id))
-  );
-
-  installedApplets = asyncDerived(this.installedApps, async (apps) =>
-    apps
-      .filter(
-        (app) =>
-          app.installed_app_id.startsWith("applet#")
-      )
-      .map((app) => appletHashFromAppId(app.installed_app_id))
-  );
-
-  isInstalled = new LazyHoloHashMap((appletHash: EntryHash) => {
-    this.installedApps.reload(); // required after fresh installation of app
-    return asyncDerived(
-      this.installedApplets,
-      (appletsHashes) => !!appletsHashes.find(
-          (hash) => hash.toString() === appletHash.toString()
-        )
-    );
-  });
-
-  isRunning = new LazyHoloHashMap((appletHash: EntryHash) =>
-    asyncDerived(
-      this.runningApplets,
-      (appletsHashes) =>
-        !!appletsHashes.find(
-          (hash) => hash.toString() === appletHash.toString()
-        )
-    )
-  );
 }
 
 

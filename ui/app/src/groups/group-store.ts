@@ -127,12 +127,8 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
-
-    await this.allMyApplets.reload();
-    await this.allMyRunningApplets.reload();
-    await this.weStore.appletBundlesStore.runningApps.reload();
-    await this.weStore.appletBundlesStore.installedApps.reload();  }
+    await this.weStore.installApplet(appletHash, applet);
+  }
 
   /**
    * Fetches the applet from the devhub, installs it in the current conductor
@@ -166,14 +162,14 @@ export class GroupStore {
 
     const appletHash = await this.groupClient.hashApplet(applet);
 
-    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    await this.weStore.installApplet(appletHash, applet);
 
     try {
       await this.groupClient.registerApplet(applet);
     } catch (e) {
       console.error(`Failed to register Applet after installation. Uninstalling again. Error:\n${e}.`);
       try {
-        await this.weStore.appletBundlesStore.uninstallApplet(appletHash);
+        await this.weStore.uninstallApplet(appletHash);
         return Promise.reject(new Error(`Failed to register Applet: ${e}.\nApplet uninstalled again.`))
       } catch (err) {
         console.error(`Failed to undo installation of Applet after failed registration: ${err}`)
@@ -182,11 +178,6 @@ export class GroupStore {
         );
       }
     }
-
-    await this.allMyApplets.reload();
-    await this.allMyRunningApplets.reload();
-    await this.weStore.appletBundlesStore.runningApps.reload();
-    await this.weStore.appletBundlesStore.installedApps.reload();
 
     return appletHash;
   }
@@ -281,7 +272,7 @@ export class GroupStore {
   //     )
   // );
 
-  activeAppletStores = pipe(this.weStore.appletBundlesStore.installedApplets,
+  activeAppletStores = pipe(this.weStore.installedApplets,
     (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets)
   );
 

@@ -105,7 +105,7 @@ export class GroupAppletsSettings extends LitElement {
       );
 
       if (otherGroupsForApplet.length === 0)
-        this._weStore.appletBundlesStore.disableApplet(appletToArchive);
+        this._weStore.disableApplet(appletToArchive);
 
       this.appletToArchive = undefined;
     } catch (e) {
