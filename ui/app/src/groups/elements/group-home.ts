@@ -225,97 +225,6 @@ export class GroupHome extends LitElement {
     `;
   }
 
-  renderSettings() {
-    return html`
-      <div class="column" style="margin: 16px; flex: 1">
-        <div class="row" style="margin-bottom: 16px; align-items: center">
-          <sl-icon-button
-            .src=${wrapPathInSvg(mdiArrowLeft)}
-            @click=${() => {
-              this.view = { view: "main" };
-            }}
-            style="margin-right: 16px; font-size: 1rem"
-          ></sl-icon-button>
-          <span class="title">${msg("Group Settings")}</span>
-        </div>
-
-        <sl-tab-group placement="start" style="flex: 1">
-          <sl-tab slot="nav" panel="applets">${msg("Applets")}</sl-tab>
-          <sl-tab slot="nav" panel="custom-views"
-            >${msg("Custom Views")}</sl-tab
-          >
-          <sl-tab slot="nav" panel="related-groups"
-            >${msg("Related Groups")}</sl-tab
-          >
-          <sl-tab slot="nav" panel="your-settings"
-            >${msg("Your Settings")}</sl-tab
-          >
-          <sl-tab-panel name="applets" style="display: flex; flex: 1;"
-            ><group-applets-settings></group-applets-settings>
-          </sl-tab-panel>
-          <sl-tab-panel name="custom-views">
-            <div class="column">
-              <span class="placeholder"
-                >${msg(
-                  "You can add custom views to this group, combining the relevant blocks from each applet."
-                )}</span
-              >
-              <all-custom-views
-                style="margin-top: 8px"
-                @edit-custom-view=${(e) => {
-                  this.view = {
-                    view: "edit-custom-view",
-                    customViewHash: e.detail.customViewHash,
-                  };
-                }}
-              ></all-custom-views>
-              <div class="row" style="flex: 1">
-                <span style="flex: 1"></span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => {
-                    this.view = { view: "create-custom-view" };
-                  }}
-                  >${msg("Create Custom View")}</sl-button
-                >
-              </div>
-            </div>
-          </sl-tab-panel>
-          <sl-tab-panel name="related-groups">
-            <add-related-group-dialog
-              id="add-related-group-dialog"
-            ></add-related-group-dialog>
-            <div class="column">
-              <span style="margin-bottom: 8px" class="placeholder"
-                >${msg(
-                  "You can add related groups to this group so that members of this group can see and join the related groups."
-                )}</span
-              >
-              <related-groups></related-groups>
-              <div class="row">
-                <span style="flex: 1"></span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => {
-                    (
-                      this.shadowRoot?.getElementById(
-                        "add-related-group-dialog"
-                      ) as AddRelatedGroupDialog
-                    ).show();
-                  }}
-                  >${msg("Add a related group")}</sl-button
-                >
-              </div>
-            </div>
-          </sl-tab-panel>
-          <sl-tab-panel name="your-settings">
-            <your-settings></your-settings>
-          </sl-tab-panel>
-        </sl-tab-group>
-      </div>
-    `;
-  }
-
   renderCreateCustomView() {
     return html`<div class="column" style="flex: 1">
       <create-custom-group-view
@@ -349,14 +258,14 @@ export class GroupHome extends LitElement {
     const tabs = [
       ["Applets", html`<group-applets-settings @update-ui=${async (e) => this.updateUi(e)} style="display: flex; flex: 1;"></group-applets-settings>`],
       ["Custom Views", html`
-        <div class="column">
-          <span class="placeholder"
+        <div class="column center-content" style="flex: 1;">
+          <span class="placeholder" style="margin-top: 200px;"
             >${msg(
               "You can add custom views to this group, combining the relevant blocks from each applet."
             )}</span
           >
           <all-custom-views
-            style="margin-top: 8px"
+            style="margin-top: 8px; flex: 1;"
             @edit-custom-view=${(e) => {
               this.view = {
                 view: "edit-custom-view",
@@ -380,14 +289,14 @@ export class GroupHome extends LitElement {
         <add-related-group-dialog
           id="add-related-group-dialog"
         ></add-related-group-dialog>
-        <div class="column">
+        <div class="column" style="flex: 1;">
           <span style="margin-bottom: 8px" class="placeholder"
             >${msg(
               "You can add related groups to this group so that members of this group can see and join the related groups."
             )}</span
           >
-          <related-groups></related-groups>
-          <div class="row">
+          <related-groups style="flex: 1;"></related-groups>
+          <div class="row" style="flex: 1;">
             <span style="flex: 1"></span>
             <sl-button
               variant="primary"
@@ -403,7 +312,11 @@ export class GroupHome extends LitElement {
           </div>
         </div>
       `],
-      ["Your Settings", html`<your-settings></your-settings>`]
+      ["Your Settings", html`
+        <div class="column center-content" style="flex: 1;">
+          <your-settings></your-settings>
+        </div>
+      `]
     ];
 
     return html`

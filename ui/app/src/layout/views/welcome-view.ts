@@ -207,7 +207,7 @@ export class WelcomeView extends LitElement {
 
       .btn {
         all: unset;
-        margin: 0 8px;
+        margin: 0 12px;
         font-size: 25px;
         height: 100px;
         min-width: 300px;
@@ -215,7 +215,7 @@ export class WelcomeView extends LitElement {
         color: white;
         border-radius: 10px;
         cursor: pointer;
-        box-shadow: 0 2px 1px var(--sl-color-primary-900)
+        box-shadow: 0 2px 5px var(--sl-color-primary-900)
       }
 
       .btn:hover {

@@ -78,7 +78,7 @@ export class GroupAppletsSettings extends LitElement {
   );
 
   @state(hashState())
-  appletToArchive: EntryHash | undefined;
+  appletToDisable: EntryHash | undefined;
 
   @state(hashState())
   appletToUnarchive: EntryHash | undefined;
@@ -92,123 +92,6 @@ export class GroupAppletsSettings extends LitElement {
   @state()
   unarchiving = false;
 
-  async archiveApplet(appletToArchive: EntryHash) {
-    this.archiving = true;
-    try {
-      await this._groupStore.groupClient.archiveApplet(appletToArchive!);
-
-      const groupsForApplet = await this._weStore.getGroupsForApplet(appletToArchive);
-
-      const otherGroupsForApplet = groupsForApplet.filter(
-        (groupDnaHash) =>
-          groupDnaHash.toString() !== this._groupStore.groupDnaHash.toString()
-      );
-
-      if (otherGroupsForApplet.length === 0)
-        this._weStore.disableApplet(appletToArchive);
-
-      this.appletToArchive = undefined;
-    } catch (e) {
-      notifyError(msg("Error archiving the applet."));
-      console.error(e);
-    }
-
-    this.archiving = false;
-  }
-
-  async unarchiveApplet(appletToUnarchive: EntryHash) {
-    this.unarchiving = true;
-    try {
-      await this._groupStore.groupClient.unarchiveApplet(appletToUnarchive!);
-      await this._groupStore.installApplet(appletToUnarchive!);
-
-      this.appletToUnarchive = undefined;
-    } catch (e) {
-      notifyError(msg("Error unarchiving the applet."));
-      console.error(e);
-    }
-
-    this.unarchiving = false;
-  }
-
-  renderArchiveDialog() {
-    if (!this.appletToArchive) return html``;
-
-    return html`<sl-dialog
-      .label=${msg("Archive Applet")}
-      open
-      @sl-request-close=${(e) => {
-        if (this.archiving) {
-          e.preventDefault();
-        }
-      }}
-      @sl-hide=${() => {
-        this.appletToArchive = undefined;
-      }}
-    >
-      <span>${msg("Do you want to archive this applet from this group?")}</span
-      ><br /><br />
-      <span
-        >${msg(
-          "You will be able to unarchive it in the future and no data will be lost."
-        )}</span
-      >
-      <sl-button
-        slot="footer"
-        @click=${() => {
-          this.appletToArchive = undefined;
-        }}
-        >${msg("Cancel")}</sl-button
-      >
-      <sl-button
-        slot="footer"
-        .loading=${this.archiving}
-        variant="primary"
-        @click=${() => this.archiveApplet(this.appletToArchive!)}
-        >${msg("Archive")}</sl-button
-      >
-    </sl-dialog>`;
-  }
-
-  renderUnarchiveDialog() {
-    if (!this.appletToUnarchive) return html``;
-
-    return html`<sl-dialog
-      .label=${msg("Unarchive Applet")}
-      open
-      @sl-request-close=${(e) => {
-        if (this.unarchiving) {
-          e.preventDefault();
-        }
-      }}
-      @sl-hide=${() => {
-        this.appletToUnarchive = undefined;
-      }}
-    >
-      <span
-        >${msg("Do you want to unarchive this applet from this group?")}</span
-      ><br /><br />
-      <span
-        >${msg(
-          "This will make the applet available again to all the members of the group."
-        )}</span
-      >
-      <sl-button
-        slot="footer"
-        @click=${() => {
-          this.appletToUnarchive = undefined;
-        }}
-        >${msg("Cancel")}</sl-button
-      >
-      <sl-button
-        slot="footer"
-        .loading=${this.unarchiving}
-        variant="primary"
-        @click=${() => this.unarchiveApplet(this.appletToUnarchive!)}
-        >${msg("Unarchive")}</sl-button
-      >
-    </sl-dialog>`;
-  }
 
   renderFederateDialog() {
     if (!this.appletToFederate) return html``;
@@ -232,16 +115,14 @@ export class GroupAppletsSettings extends LitElement {
             class="placeholder"
             style="margin: 24px; text-align: center; max-width: 600px; font-size: 20px;"
             >${msg(
-              "This group doesn't have any applets installed yet. Go to the applet library (the "
-            )} <sl-icon .src=${wrapPathInSvg(mdiToyBrickPlus)}></sl-icon>${msg(
-              " icon in the group home view) to install applets to this group."
+              "This group doesn't have any applets installed yet. Go to the applet library to install applets to this group."
             )}
           </span>
         </div>
       `;
     console.log("Rendering Installed Applets in settings: ", applets);
     return html`
-      ${this.renderArchiveDialog()} ${this.renderFederateDialog()}
+      ${this.renderFederateDialog()}
       <div class="column" style="flex: 1;">
         ${Array.from(applets.entries())
           .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
@@ -250,7 +131,7 @@ export class GroupAppletsSettings extends LitElement {
               html`
                 <applet-detail-card
                   @federate-applet=${(e) => {this.appletToFederate = e.detail}}
-                  @archive-applet=${(e) => {this.appletToArchive = e.detail}}
+                  @disable-applet=${(e) => {this.appletToDisable = e.detail}}
                   .appletHash=${appletHash}
                   .applet=${applet}
                   .federatedGroups=${federatedGroups}
@@ -261,47 +142,12 @@ export class GroupAppletsSettings extends LitElement {
     `;
   }
 
-  renderArchivedApplets(
-    applets: ReadonlyMap<EntryHash, Applet>,
-    federatedGroups: ReadonlyMap<EntryHash, Array<DnaHash>>
-  ) {
-    if (applets.size === 0)
-      return html`
-        <div class="row center-content" style="flex: 1; min-width: 800px;">
-          <span
-            class="placeholder"
-            style="margin: 24px; text-align: center; max-width: 600px"
-            >${msg("This group doesn't have any archived applets yet.")}
-          </span>
-        </div>
-      `;
-
-    return html`
-      ${this.renderUnarchiveDialog()}
-      <div class="column" style="flex: 1;">
-        ${Array.from(applets.entries())
-          .sort(([_, a], [__, b]) => a.custom_name.localeCompare(b.custom_name))
-          .map(
-            ([appletHash, applet]) =>
-              html`
-                <applet-detail-card
-                  @unarchive-applet=${(e) => {this.appletToUnarchive = e.detail}}
-                  installationStatus="archived"
-                  .appletHash=${appletHash}
-                  .applet=${applet}
-                  .federatedGroups=${federatedGroups}
-                ></applet-detail-card>
-              `
-          )}
-      </div>
-    `;
-  }
 
   render() {
     switch (this._groupApplets.value?.status) {
       case "pending":
         return html`
-          <div class="column center-content">
+          <div class="column center-content" style="flex: 1;">
             <sl-spinner
               style="font-size: 30px;"
             ></sl-spinner>
@@ -331,6 +177,7 @@ export class GroupAppletsSettings extends LitElement {
     css`
       :host {
         display: flex;
+        background-color: #e1e1e1;
       }
     `,
   ];
