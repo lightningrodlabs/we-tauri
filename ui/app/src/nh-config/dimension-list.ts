@@ -1,17 +1,46 @@
-import { DnaHash } from "@holochain/client";
-import { contextProvided } from "@lit-labs/context";
+import { html, css, PropertyValueMap } from "lit";
+import { property, state } from "lit/decorators.js";
+
+import { AppInfo } from "@holochain/client";
+import { decode } from "@msgpack/msgpack";
+import { Dimension, SensemakerStore } from "@neighbourhoods/client";
+
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
-import { html, css } from "lit";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
+import MethodListForDimension from "./method-list";
 
-export default class DimensionList extends NHComponent {
+export default class DimensionList extends NHComponent {  
+  @property()
+  sensemakerStore!: SensemakerStore;
 
-  @contextProvided({ context: matrixContext, subscribe: true })
-  _matrixStore!: MatrixStore;
+  @state()
+  private _dimensionEntries!: Dimension[];
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
-  weGroupId!: DnaHash;
+  async fetchSelectedDimensionEntries() {
+    try {
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      const response = await this.sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'get_dimensions',
+        payload: null,
+      });
+      this._dimensionEntries = response.map(payload => {
+        try {
+          return decode(payload.entry.Present.entry) as Dimension;
+        } catch (error) {
+          console.log('Error decoding dimension payload: ', error);
+        }
+      }) as Dimension[];
+    } catch (error) {
+      console.log('Error fetching dimension details: ', error);
+    }
+  }
+
+  async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    await this.fetchSelectedDimensionEntries()
+    console.log('this._dimensionEntries :>> ', this._dimensionEntries);
+  }
 
   render() {
     return html`
@@ -22,15 +51,16 @@ export default class DimensionList extends NHComponent {
 
   static elementDefinitions = {
     "nh-button": NHButton,
+    "method-list-for-dimension": MethodListForDimension
   }
 
   static get styles() {
     return css`
       :host {
-        display: grid;
+        display: flex;
         flex: 1;
-        place-content: center;
-        color: var(--nh-theme-fg-default); 
+        justify-content: center;
+        align-items: center;
       }
     `;
   }
