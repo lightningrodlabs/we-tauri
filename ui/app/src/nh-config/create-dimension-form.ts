@@ -5,7 +5,7 @@ import { html, css } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 
-export default class CreateMethod extends NHComponent {
+export default class CreateDimension extends NHComponent {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -15,7 +15,7 @@ export default class CreateMethod extends NHComponent {
 
   render() {
     return html`
-      
+      wooooorrrld
     `;
   }
 
