@@ -2,10 +2,10 @@ import { DnaHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { matrixContext, weGroupContext } from "./context";
-import { MatrixStore } from "./matrix-store";
+import { matrixContext, weGroupContext } from "../context";
+import { MatrixStore } from "../matrix-store";
 
-export class NHGlobalConfig extends NHComponent {
+export default class DimensionList extends NHComponent {
 
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -14,7 +14,8 @@ export class NHGlobalConfig extends NHComponent {
   weGroupId!: DnaHash;
 
   render() {
-      return html `
+    return html`
+      
     `;
   }
 
@@ -33,6 +34,4 @@ export class NHGlobalConfig extends NHComponent {
       }
     `;
   }
-
-
 }
