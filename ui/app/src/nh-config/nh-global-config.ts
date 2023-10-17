@@ -23,8 +23,8 @@ export default class NHGlobalConfig extends NHComponent {
   render() {
     return html`
       <create-dimension></create-dimension>
-      <create-method></create-method>
       <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
+      <create-method></create-method>
     `;
   }
 
@@ -44,11 +44,17 @@ export default class NHGlobalConfig extends NHComponent {
         place-content: center;
         color: var(--nh-theme-fg-default); 
         grid-template-columns: 2fr 1fr;
-        grid-template-rows: 1fr;
+        grid-template-rows: 1fr 1fr;
+        padding: calc(1px * var(--nh-spacing-xl));
+        gap: calc(1px * var(--nh-spacing-sm));
       }
 
       dimension-list {
-        grid-column: 1/-1;
+        grid-column: -2/-1;
+        grid-row: 0/2;
+        grid-row: 1/-1;
+        display: flex;
+        align-items: start;
       }
     `;
   }
