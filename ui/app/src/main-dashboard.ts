@@ -31,7 +31,7 @@ import { AppletIconBadge } from './elements/components/applet-icon-badge';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
-import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
@@ -122,8 +122,9 @@ export class MainDashboard extends NHComponentShoelace {
 
         <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));">
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
-          ? null
-          : html`<span></span>`}
+          ? html`<div style="margin: auto;"><nh-button .variant=${"primary"} .size=${"sm"} @click=${() => {this._dashboardMode = DashboardMode.NHGlobalConfig}}>Config</nh-button></div>`
+          : null
+        }
           ${this._dashboardMode == DashboardMode.AssessmentsHome
             ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
             <button class="applet-add" @click=${async () => {this._dashboardMode = DashboardMode.WeGroupHome; (await this._neighbourhoodHome).showLibrary();}}></button>
@@ -149,6 +150,9 @@ export class MainDashboard extends NHComponentShoelace {
   renderDashboardContent() {
     if (this._dashboardMode === DashboardMode.MainHome) {
       return html` <home-screen style="display: flex; flex: 1;"></home-screen> `;
+    } else if (this._dashboardMode === DashboardMode.NHGlobalConfig) {
+      console.log('this._dashboardMode :>> ', this._dashboardMode);
+      return html`Hello`
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
       return html`
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
@@ -608,6 +612,7 @@ export class MainDashboard extends NHComponentShoelace {
       'nh-home': NeighbourhoodHome,
       'nh-dialog': NHDialog,
       'with-profile': WithProfile,
+      'nh-button': NHButton,
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
       'nh-sensemaker-settings': NHSensemakerSettings,

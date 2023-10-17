@@ -8,6 +8,7 @@ export enum DashboardMode {
   AppletGroupInstanceRendering,
   AppletClassRendering,
   Loading,
+  NHGlobalConfig,
 }
 
 /**
