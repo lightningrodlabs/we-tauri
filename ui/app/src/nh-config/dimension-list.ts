@@ -5,7 +5,7 @@ import { AppInfo } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
 import { Dimension, SensemakerStore } from "@neighbourhoods/client";
 
-import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
+import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import MethodListForDimension from "./method-list";
 
 export default class DimensionList extends NHComponent {  
@@ -44,13 +44,24 @@ export default class DimensionList extends NHComponent {
 
   render() {
     return html`
-      
+      <nh-card .theme=${"light"} .title=${"Existing Dimensions"} .textSize=${"sm"}>
+        <div class="content">
+          ${
+            typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
+              ? "No dimensions available"
+              : this._dimensionEntries.map((dimension: Dimension) => {
+                  return html`Dimension`
+              })
+          }
+        </div>
+      </nh-card>
     `;
   }
 
 
   static elementDefinitions = {
     "nh-button": NHButton,
+    "nh-card": NHCard,
     "method-list-for-dimension": MethodListForDimension
   }
 
