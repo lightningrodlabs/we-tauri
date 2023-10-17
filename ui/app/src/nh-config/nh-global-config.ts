@@ -1,5 +1,6 @@
 import { html, css } from "lit";
 import { contextProvided } from "@lit-labs/context";
+import { StoreSubscriber } from "lit-svelte-stores";
 
 import { MatrixStore } from "../matrix-store";
 import { matrixContext, weGroupContext } from "../context";
@@ -9,7 +10,6 @@ import { NHButton, NHComponent } from "@neighbourhoods/design-system-components"
 import CreateMethod from "./create-method-form";
 import CreateDimension from "./create-dimension-form";
 import DimensionList from "./dimension-list";
-import { StoreSubscriber } from "lit-svelte-stores";
 
 export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -51,7 +51,6 @@ export default class NHGlobalConfig extends NHComponent {
 
       dimension-list {
         grid-column: -2/-1;
-        grid-row: 0/2;
         grid-row: 1/-1;
         display: flex;
         align-items: start;
