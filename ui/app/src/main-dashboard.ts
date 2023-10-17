@@ -152,7 +152,11 @@ export class MainDashboard extends NHComponentShoelace {
     if (this._dashboardMode === DashboardMode.MainHome) {
       return html` <home-screen style="display: flex; flex: 1;"></home-screen> `;
     } else if (this._dashboardMode === DashboardMode.NHGlobalConfig) {
-      return html`<nh-global-config></nh-global-config>`
+      return html`
+        <we-group-context .weGroupId=${this._selectedWeGroupId}>
+          <nh-global-config></nh-global-config>
+        </we-group-context>
+      `
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
       return html`
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
