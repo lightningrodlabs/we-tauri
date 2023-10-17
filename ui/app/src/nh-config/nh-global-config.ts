@@ -9,14 +9,22 @@ import { NHButton, NHComponent } from "@neighbourhoods/design-system-components"
 import CreateMethod from "./create-method-form";
 import CreateDimension from "./create-dimension-form";
 import DimensionList from "./dimension-list";
+import { StoreSubscriber } from "lit-svelte-stores";
 
 export default class NHGlobalConfig extends NHComponent {
+  @contextProvided({ context: matrixContext, subscribe: true })
+  _matrixStore!: MatrixStore;
+
+  @contextProvided({ context: weGroupContext, subscribe: true })
+  weGroupId!: DnaHash;
+
+  _sensemakerStore = new StoreSubscriber(this, () => this._matrixStore?.sensemakerStore(this.weGroupId));
 
   render() {
     return html`
       <create-dimension></create-dimension>
       <create-method></create-method>
-      <dimension-list></dimension-list>
+      <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
     `;
   }
 
