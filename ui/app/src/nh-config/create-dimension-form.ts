@@ -17,13 +17,32 @@ export default class CreateDimension extends NHComponentShoelace {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  dimensionSchema = object({
+  _dimensionSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
     computed: boolean().required(),
     range: object<Range>().required()
   });
 
-  dimension: Partial<ConfigDimension> = { name: "", computed: false, range: undefined };
+  _dimension: Partial<ConfigDimension> = { name: "", computed: false, range: undefined };
+
+  @query("nh-button")
+  submitBtn!: NHButton;
+
+  onSubmit() {
+    this._dimensionSchema.validate(this._dimension)
+      .then(async valid => {
+        if(!valid) throw new Error("Dimension input data invalid");
+        this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+
+        // await this.createPost()
+      })
+      .catch(this.handleValidationError.bind(this))
+
+  }
+
+  handleValidationError(e) {
+    console.log('error :>> ', e);
+  }
 
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.currentTarget as any);
@@ -31,7 +50,7 @@ export default class CreateDimension extends NHComponentShoelace {
       // case 'nickname':
       //   break;
       default:
-          this.dimension[inputControl.name] = inputControl.value; 
+          this._dimension[inputControl.name] = inputControl.value; 
         break;
     }
   }
@@ -42,11 +61,21 @@ export default class CreateDimension extends NHComponentShoelace {
         <form>
           <fieldset>
             <div class="field">
-              <sl-input label="Dimension Name" size="large" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this.dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+              <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
             </div>
           </fieldset>
         </form>
+
+        <div slot="footer">
+        <nh-button
+          .size=${"auto"}
+          .variant=${"primary"}
+          @click=${() => this.onSubmit()}
+          .disabled=${false}
+          .loading=${false}
+        >Create Dimension</nh-button>
+        </div>
       </nh-card>  
     `;
   }
