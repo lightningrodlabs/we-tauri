@@ -1,12 +1,15 @@
-import { DnaHash } from "@holochain/client";
-import { contextProvided } from "@lit-labs/context";
-import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { matrixContext, weGroupContext } from "../context";
+import { contextProvided } from "@lit-labs/context";
+
 import { MatrixStore } from "../matrix-store";
+import { matrixContext, weGroupContext } from "../context";
+import { DnaHash } from "@holochain/client";
+
+import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
+import CreateMethod from "./create-method-form";
+import CreateDimension from "./create-dimension-form";
 
 export default class NHGlobalConfig extends NHComponent {
-
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
@@ -15,13 +18,16 @@ export default class NHGlobalConfig extends NHComponent {
 
   render() {
     return html`
-      
+      <create-dimension></create-dimension>
+      <create-method></create-method>
     `;
   }
 
 
   static elementDefinitions = {
     "nh-button": NHButton,
+    "create-dimension": CreateDimension,
+    "create-method": CreateMethod,
   }
 
   static get styles() {
