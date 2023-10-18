@@ -505,20 +505,32 @@ export class MainDashboard extends LitElement {
         .left-sidebar {
           background-color: var(--sl-color-primary-900);
           width: var(--sidebar-width);
-          overflow-y: auto;
           display: flex;
           flex: 1;
-          overflow-y: scroll;
+          overflow-y: auto;
           overflow-x: hidden;
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+
+        .left-sidebar::-webkit-scrollbar {
+          display: none;
         }
 
 
         .top-bar {
-          overflow-x: auto;
           background-color: var(--sl-color-primary-600);
           min-height: var(--sidebar-width);
           align-items: center;
+          overflow-x: auto;
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
+
+        .top-bar::-webkit-scrollbar {
+          display: none;
+        }
+
       `,
     ];
   }
