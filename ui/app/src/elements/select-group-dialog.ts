@@ -70,6 +70,10 @@ export class SelectGroupDialog extends LitElement {
       case "complete":
         const groups = Array.from(this._groups.value.value.entries());
 
+        if (groups.length === 0) {
+          return html`<span style="margin-bottom: 20px;"><b>You need to create or join a Group before you can install Applets.<b></span>`
+        }
+
         return html`
           <sl-select
             id="group-selector"

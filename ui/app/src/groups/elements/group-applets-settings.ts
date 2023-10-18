@@ -11,7 +11,7 @@ import { customElement, state } from "lit/decorators.js";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
 import { localized, msg } from "@lit/localize";
-import { DnaHash, EntryHash } from "@holochain/client";
+import { DnaHash, encodeHashToBase64, EntryHash } from "@holochain/client";
 import {
   hashState,
   notifyError,

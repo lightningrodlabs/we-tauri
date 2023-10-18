@@ -99,6 +99,12 @@ export class InstallAppletBundleDialog extends LitElement {
     this.form.reset();
     this._appletInfo = undefined;
     this._appletDialog.hide();
+    this.dispatchEvent(
+      new CustomEvent("install-applet-dialog-closed", {
+        composed: true,
+        bubbles: true,
+      })
+    );
   }
 
   async firstUpdated() {
@@ -164,8 +170,7 @@ export class InstallAppletBundleDialog extends LitElement {
     } catch (e) {
       this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");
-      console.log("Installation error:", e);
-      this._appletDialog.hide();
+      console.error(`Installation error: ${e}`);
       this._installing = false;
     }
   }
@@ -257,6 +262,13 @@ export class InstallAppletBundleDialog extends LitElement {
         @sl-request-close=${(e) => {
           if (this._installing) {
             e.preventDefault();
+          } else {
+            this.dispatchEvent(
+              new CustomEvent("install-applet-dialog-closed", {
+                composed: true,
+                bubbles: true,
+              })
+            );
           }
         }}
       >

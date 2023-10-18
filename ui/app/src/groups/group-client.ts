@@ -7,6 +7,7 @@ import {
   Record,
   AppAgentWebsocket,
   AgentPubKey,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 
@@ -68,6 +69,10 @@ export class GroupClient {
 
   async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {
     const record = await this.callZome("get_applet", appletHash);
+    if (!record) {
+      console.warn(`@group-client: @getApplet: No applet found for hash: ${encodeHashToBase64(appletHash)}`);
+      return undefined;
+    };
     return new EntryRecord<Applet>(record).entry;
   }
 

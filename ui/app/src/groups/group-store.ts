@@ -40,7 +40,7 @@ import { AppEntry, Entity, HappReleaseEntry } from "../processes/appstore/types.
 import { Applet } from "../applets/types.js";
 import { isAppRunning } from "../utils.js";
 
-export const APPLETS_POLLING_FREQUENCY = 4000;
+export const NEW_APPLETS_POLLING_FREQUENCY = 15000;
 
 
 // Given a group, all the functionality related to that group
@@ -62,7 +62,6 @@ export class GroupStore {
     public groupDnaHash: DnaHash,
     public weStore: WeStore
   ) {
-    console.warn("Constructing GroupStore");
     this.groupClient = new GroupClient(appAgentWebsocket, "group");
 
     this.peerStatusStore = new PeerStatusStore(
@@ -127,6 +126,7 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
+    await this.groupClient.registerApplet(applet);
     await this.weStore.installApplet(appletHash, applet);
   }
 
@@ -204,7 +204,7 @@ export class GroupStore {
           () => this.groupClient.getMyApplets(),
           200,
           undefined,
-          true,
+          false,
         )
       }
       return this.groupClient.getMyApplets();
@@ -230,7 +230,7 @@ export class GroupStore {
         () => this.groupClient.getMyApplets(),
         200,
         undefined,
-        true,
+        false,
       );
     }
     return this.groupClient.getMyApplets();
@@ -243,7 +243,7 @@ export class GroupStore {
         () => this.groupClient.getGroupApplets(),
         200,
         undefined,
-        true,
+        false,
       )
     }
     return this.groupClient.getMyApplets();
@@ -252,7 +252,7 @@ export class GroupStore {
   // Applets that have been registered in the group by someone else but have never been installed
   // in the local conductor yet (provided that storing the Applet entry to the local source chain has
   // succeeded for every Applet that has been installed into the conductor)
-  unjoinedApplets = lazyLoadAndPoll(async () => this.groupClient.getUnjoinedApplets(), APPLETS_POLLING_FREQUENCY);
+  unjoinedApplets = lazyLoadAndPoll(async () => this.groupClient.getUnjoinedApplets(), NEW_APPLETS_POLLING_FREQUENCY);
 
   // Currently unused
   // Would be nice to show archived applets also if explicitly desired by the user but should not be polling constantly
@@ -272,7 +272,7 @@ export class GroupStore {
   //     )
   // );
 
-  activeAppletStores = pipe(this.weStore.installedApplets,
+  activeAppletStores = pipe(this.allMyApplets,
     (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets)
   );
 

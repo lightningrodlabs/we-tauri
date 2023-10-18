@@ -23,6 +23,9 @@ export class WelcomeView extends LitElement {
   @state()
   view: WelcomePageView = WelcomePageView.Main;
 
+  resetView() {
+    this.view = WelcomePageView.Main;
+  }
 
   renderAppLibrary() {
     return html`
@@ -131,7 +134,7 @@ export class WelcomeView extends LitElement {
       case WelcomePageView.Main:
         return html`
         <div class="column" style="align-items: center; flex: 1; overflow: scroll; padding: 24px;">
-          <div class="row" style="margin-top: 100px;">
+          <div class="row" style="margin-top: 100px; flex-wrap: wrap;">
             <button
               class="btn"
               @click=${() => {
@@ -207,7 +210,7 @@ export class WelcomeView extends LitElement {
 
       .btn {
         all: unset;
-        margin: 0 12px;
+        margin: 12px;
         font-size: 25px;
         height: 100px;
         min-width: 300px;

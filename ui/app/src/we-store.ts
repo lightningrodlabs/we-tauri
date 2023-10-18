@@ -40,7 +40,7 @@ import { notify } from "@holochain-open-dev/elements";
 import { msg } from "@lit/localize";
 
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
-import { APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
+import { NEW_APPLETS_POLLING_FREQUENCY, GroupStore } from "./groups/group-store.js";
 import { DnaLocation, locateHrl } from "./processes/hrl/locate-hrl.js";
 import { ConductorInfo, joinGroup } from "./tauri.js";
 import { appIdFromAppletHash, appletHashFromAppId, findAppForDnaHash, hrlWithContextToB64, initAppClient, isAppDisabled, isAppRunning } from "./utils.js";

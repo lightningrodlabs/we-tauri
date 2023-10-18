@@ -74,9 +74,19 @@ pub async fn launch(
     }]);
 
     let mut network_config = KitsuneP2pConfig::default();
-    network_config.bootstrap_service = Some(url2::url2!("https://bootstrap.holo.host")); // replace-me (optional) -- change bootstrap server URL here if desired
+
+    let bootstrap_url = match option_env!("BOOTSTRAP_PORT") {
+        Some(p) => url2::url2!("http://127.0.0.1:{}", p),
+        None => url2::url2!("https://bootstrap.holo.host")
+    };
+    network_config.bootstrap_service = Some(bootstrap_url);
+
+    let signaling_server_url = match option_env!("SIGNAL_PORT") {
+        Some(p) => format!("ws://127.0.0.1:{}", p),
+        None => String::from("wss://signal.holo.host")
+    };
     network_config.transport_pool.push(TransportConfig::WebRTC {
-        signal_url: String::from("wss://signal.holo.host"),
+        signal_url: signaling_server_url,
     });
 
     config.network = Some(network_config);

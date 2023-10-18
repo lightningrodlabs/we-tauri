@@ -128,6 +128,8 @@ export class InstallableApplets extends LitElement {
             ? html `
               <group-context .groupDnaHash=${decodeHashFromBase64(this._selectedGroupDnaHash)}>
                 <install-applet-bundle-dialog
+                  @install-applet-dialog-closed=${() => { this._selectedGroupDnaHash = undefined; this._selectedAppEntry = undefined; }}
+                  @applet-installed=${() => { this._selectedGroupDnaHash = undefined; this._selectedAppEntry = undefined; }}
                   id="applet-dialog"
                 ></install-applet-bundle-dialog>
               </group-context>

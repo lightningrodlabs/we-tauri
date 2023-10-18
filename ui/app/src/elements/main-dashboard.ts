@@ -42,6 +42,7 @@ import { CreateGroupDialog } from "./create-group-dialog.js";
 
 import "./clipboard.js";
 import { WeClipboard } from "./clipboard.js";
+import { WelcomeView } from "../layout/views/welcome-view.js";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
