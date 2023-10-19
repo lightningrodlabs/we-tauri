@@ -88,7 +88,7 @@ export class CreateGroupDialog extends LitElement {
       >
         <form class="column" ${onSubmit((f) => this.createGroup(f))}>
           <div class="row" style="justify-content: center">
-            <select-avatar name="logo_src"></select-avatar>
+            <select-avatar required name="logo_src"></select-avatar>
 
             <sl-input
               name="name"

@@ -50,6 +50,10 @@ export class GroupClient {
     return this.callZome("get_group_applets", null);
   }
 
+  /**
+   * Gets all the private Applet entries from the source chain
+   * @returns
+   */
   async getMyApplets(): Promise<Array<EntryHash>> {
     return this.callZome("get_my_applets", null);
   }

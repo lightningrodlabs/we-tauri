@@ -1,5 +1,6 @@
 import {
   hashProperty,
+  notify,
   notifyError,
   onSubmit,
 } from "@holochain-open-dev/elements";
@@ -112,7 +113,7 @@ export class FederateAppletDialog extends LitElement {
         this.appletHash,
         this._groupStore.groupDnaHash
       );
-
+        notify(msg("Applet federated."));
       const dialog = this.shadowRoot?.getElementById("dialog") as SlDialog;
       dialog.hide();
     } catch (e) {
