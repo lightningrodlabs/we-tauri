@@ -80,6 +80,9 @@ export class WeStore {
    * Clones the group DNA with a new unique network seed, and creates a group info entry in that DNA
    */
   public async createGroup(name: string, logo: string): Promise<AppInfo> {
+
+    if (!logo) throw new Error("No logo provided.");
+
     // generate random network seed (maybe use random words instead later, e.g. https://www.npmjs.com/package/generate-passphrase)
     const networkSeed = uuidv4();
 
@@ -100,12 +103,15 @@ export class WeStore {
     try {
       await groupStore.groupClient.setGroupProfile(groupProfile);
     } catch (e) {
-      // If we can't set profile, disable the group and bubble the error
-      await this.leaveGroup(groupDnaHash);
-
-      throw e;
+      try {
+        await this.leaveGroup(groupDnaHash);
+        console.error(`Failed to set up group profile - left group again: ${e}`);
+      } catch (err) {
+        throw new Error(`Failed to leave group after failed profile creation: ${err}`);
+      }
     }
 
+    await this.reloadManualStores();
     return appInfo;
   }
 
