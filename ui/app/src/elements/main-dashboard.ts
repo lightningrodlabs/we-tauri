@@ -192,7 +192,6 @@ export class MainDashboard extends LitElement {
         return html``
 
       case "groupView":
-        console.log("Rendering dashboard");
         return this.selectedAppletHash.value
          ? html`
               <applet-main

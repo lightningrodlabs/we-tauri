@@ -121,6 +121,7 @@ export class AppletDetailCard extends LitElement {
               (groupDnaHash) => html`
                 <group-context .groupDnaHash=${groupDnaHash}>
                   <group-logo
+                    .groupDnaHash=${groupDnaHash}
                     style="margin-right: 8px; --size: 40px"
                   ></group-logo
                 ></group-context>

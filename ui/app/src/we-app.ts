@@ -98,11 +98,11 @@ export class WeApp extends LitElement {
     const devhubAppInfo = await appWebsocket.appInfo({"installed_app_id": "DevHub-0.6.x"});
     // console.log("MY DEVHUB PUBLIC KEY: ", encodeHashToBase64(devhubAppInfo.agent_pub_key));
 
-    getProvisionedCells(appStoreAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
-    if (devhubAppInfo) getProvisionedCells(devhubAppInfo).map(([roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
+    getProvisionedCells(appStoreAppInfo).map(([_roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
+    if (devhubAppInfo) getProvisionedCells(devhubAppInfo).map(([_roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
 
-    const allApps = await adminWebsocket.listApps({});
-    console.log("ALL APPS: ", allApps);
+    // const allApps = await adminWebsocket.listApps({});
+    // console.log("ALL APPS: ", allApps);
     this.state = { state: "running" };
 
     console.log("Fetching available UI updates");

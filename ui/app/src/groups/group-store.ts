@@ -216,12 +216,12 @@ export class GroupStore {
       .filter((app) => isAppRunning(app))
       .map((appInfo) => appInfo.installed_app_id);
 
-    console.log("Got runningAppIds: ", runningAppIds);
-    console.log("Got allMyApplets: ", allMyApplets);
+    // console.log("Got runningAppIds: ", runningAppIds);
+    // console.log("Got allMyApplets: ", allMyApplets);
 
     const output = allMyApplets
       .filter((appletHash) => runningAppIds.includes(`applet#${encodeHashToBase64(appletHash)}`));
-    console.log("Got allMyRunningApplets: ", output);
+    // console.log("Got allMyRunningApplets: ", output);
     return output;
   });
 

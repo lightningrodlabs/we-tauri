@@ -16,7 +16,7 @@ import {
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { mdiArrowLeft, mdiCog } from "@mdi/js";
+import { mdiArrowLeft, mdiCog, mdiLinkVariant, mdiLinkVariantPlus } from "@mdi/js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
@@ -318,7 +318,15 @@ export class GroupHome extends LitElement {
                 ) as SlDialog
               ).show();
             }}
-            >${msg("Invite")}</sl-button
+            >
+            <div class="row center-content">
+              <sl-icon
+                .src=${wrapPathInSvg(mdiLinkVariantPlus)}
+                style="color: white; height: 25px; width: 25px; margin-right: 12px;"
+              ></sl-icon>
+              <div style="font-size: 16px; margin-top: 4px;">${msg("Invite Member")}</div>
+            </div>
+          </sl-button
           >
         </div>
       </div>

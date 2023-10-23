@@ -7,7 +7,7 @@ import "@shoelace-style/shoelace/dist/components/icon/icon.js";
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 
 import { wrapPathInSvg } from "@holochain-open-dev/elements";
-import { mdiAccountMultiplePlus, mdiArrowLeft } from "@mdi/js";
+import { mdiAccountLockOpen, mdiAccountMultiplePlus, mdiArrowLeft, mdiViewGridPlus } from "@mdi/js";
 
 import { weStyles } from "../../shared-styles.js";
 import "../../elements/select-group-dialog.js";
@@ -155,7 +155,15 @@ export class WelcomeView extends LitElement {
                   );
                 }
               }}
-            ><div class="column center-content">Create Group</div></button>
+            >
+              <div class="row center-content">
+                <sl-icon
+                  .src=${wrapPathInSvg(mdiAccountMultiplePlus)}
+                  style="color: white; height: 40px; width: 40px; margin-right: 10px;"
+                ></sl-icon>
+                <span>Create Group</span>
+              </div>
+            </button>
             <button
               class="btn"
               @click=${() => { this.view = WelcomePageView.AppLibrary }}
@@ -164,7 +172,15 @@ export class WelcomeView extends LitElement {
                   this.view = WelcomePageView.AppLibrary;
                 }
               }}
-            ><div class="column center-content">Install Applet</div></button>
+            >
+              <div class="row center-content">
+                <sl-icon
+                  .src=${wrapPathInSvg(mdiViewGridPlus)}
+                  style="color: white; height: 40px; width: 40px; margin-right: 10px;"
+                ></sl-icon>
+                <span>Install Applet</span>
+              </div>
+            </button>
             <button
               class="btn"
               @click=${(e) => this.dispatchEvent(
@@ -186,7 +202,15 @@ export class WelcomeView extends LitElement {
                   )
                 }
               }}
-            ><div class="column center-content">Join Group</div></button>
+            >
+              <div class="row center-content">
+                <sl-icon
+                  .src=${wrapPathInSvg(mdiAccountLockOpen)}
+                  style="color: white; height: 40px; width: 40px; margin-right: 10px;"
+                ></sl-icon>
+                <span>Join Group</span>
+              </div>
+            </button>
           </div>
 
           <div class="row" style="margin-top: 100px; max-width: 1200px">
