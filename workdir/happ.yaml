@@ -12,4 +12,4 @@ roles:
       properties: ~
       network_seed: ~
       version: ~
-      clone_limit: 100
+      clone_limit: 9999
