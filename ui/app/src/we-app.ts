@@ -103,6 +103,7 @@ export class WeApp extends LitElement {
 
     // const allApps = await adminWebsocket.listApps({});
     // console.log("ALL APPS: ", allApps);
+
     this.state = { state: "running" };
 
     console.log("Fetching available UI updates");

@@ -120,7 +120,6 @@ export class GroupAppletsSettings extends LitElement {
           </span>
         </div>
       `;
-    console.log("Rendering Installed Applets in settings: ", applets);
     return html`
       ${this.renderFederateDialog()}
       <div class="column" style="flex: 1;">

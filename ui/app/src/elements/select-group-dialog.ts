@@ -37,12 +37,7 @@ export class SelectGroupDialog extends LitElement {
     () => [this._weStore]
   );
 
-  firstUpdated() {
-    console.log("Group selector: ", this._groupSelector);
-  }
-
   show() {
-    console.log("SHOWING!!!");
     this._selectedGroupDnaHash = undefined;
     this._dialog.show();
   }

@@ -135,8 +135,6 @@ export class InstallAppletBundleDialog extends LitElement {
     if (this._installing) return;
     this._installing = true;
     try {
-
-
       // Trigger the download of the icon
       this._installationProgress = "Fetching app icon...";
       await toPromise(this.weStore.appletBundlesStore.appletBundleLogo.get(this._appletInfo!.id));
