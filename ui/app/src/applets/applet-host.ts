@@ -117,15 +117,13 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
         return undefined;
       }
     },
-    async groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined> {
-      const groupProfile = await toPromise(
-        pipe(
-          weStore.groups.get(groupId),
-          (groupStore) => groupStore.groupProfile
-        )
-      );
-
-      return groupProfile;
+    async groupProfile(groupDnaHash: DnaHash): Promise<GroupProfile | undefined> {
+      const groupStore = await weStore.groupStore(groupDnaHash);
+      if (groupStore) {
+        const groupProfile = await toPromise(groupStore.groupProfile);
+        return groupProfile;
+      }
+      return undefined;
     },
     async appletInfo(appletHash: AppletHash) {
       const applet = await toPromise(weStore.appletStores.get(appletHash));

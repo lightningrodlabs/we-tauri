@@ -16,7 +16,6 @@ import {
   mapAndJoin,
   pipe,
   sliceAndJoin,
-  toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap, mapValues } from "@holochain-open-dev/utils";
 import {
@@ -82,7 +81,9 @@ export class GroupStore {
     groupDnaHash: DnaHash,
     groupProfile: GroupProfile
   ) {
-    const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
+    const groupStore = await this.weStore.groupStore(groupDnaHash);
+
+    if (!groupStore) throw new Error("Failed to add related Group: GroupStore not found.");
 
     const modifiers = await groupStore.groupDnaModifiers();
 

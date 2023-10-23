@@ -81,7 +81,7 @@ export class MainDashboard extends LitElement {
 
   async handleOpenGroup(networkSeed: string) {
     const groups = await toPromise(
-      asyncDeriveStore(this._weStore.allGroups, (groups) =>
+      asyncDeriveStore(this._weStore.groupStores, (groups) =>
         joinAsyncMap(mapValues(groups, (groupStore) => groupStore.networkSeed))
       )
     );
@@ -200,7 +200,6 @@ export class MainDashboard extends LitElement {
                 style="flex: 1;"
               ></applet-main>
           `
-
         : html`
           <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
             <group-home

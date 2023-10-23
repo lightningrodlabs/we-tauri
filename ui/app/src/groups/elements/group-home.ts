@@ -385,36 +385,45 @@ export class GroupHome extends LitElement {
           </div>
         </div>
       `],
-      ["Related Groups", html`
-        <add-related-group-dialog
-          id="add-related-group-dialog"
-        ></add-related-group-dialog>
-        <div class="column" style="flex: 1;">
-          <span style="margin-bottom: 8px" class="placeholder"
-            >${msg(
-              "You can add related groups to this group so that members of this group can see and join the related groups."
-            )}</span
-          >
-          <related-groups style="flex: 1;"></related-groups>
-          <div class="row" style="flex: 1;">
-            <span style="flex: 1"></span>
-            <sl-button
-              variant="primary"
-              @click=${() => {
-                (
-                  this.shadowRoot?.getElementById(
-                    "add-related-group-dialog"
-                  ) as AddRelatedGroupDialog
-                ).show();
-              }}
-              >${msg("Add a related group")}</sl-button
-            >
-          </div>
-        </div>
-      `],
+      // ["Related Groups", html`
+      //   <add-related-group-dialog
+      //     id="add-related-group-dialog"
+      //   ></add-related-group-dialog>
+      //   <div class="column" style="flex: 1;">
+      //     <span style="margin-bottom: 8px" class="placeholder"
+      //       >${msg(
+      //         "You can add related groups to this group so that members of this group can see and join the related groups."
+      //       )}</span
+      //     >
+      //     <related-groups style="flex: 1;"></related-groups>
+      //     <div class="row" style="flex: 1;">
+      //       <span style="flex: 1"></span>
+      //       <sl-button
+      //         variant="primary"
+      //         @click=${() => {
+      //           (
+      //             this.shadowRoot?.getElementById(
+      //               "add-related-group-dialog"
+      //             ) as AddRelatedGroupDialog
+      //           ).show();
+      //         }}
+      //         >${msg("Add a related group")}</sl-button
+      //       >
+      //     </div>
+      //   </div>
+      // `],
       ["Your Settings", html`
         <div class="column center-content" style="flex: 1;">
-          <your-settings></your-settings>
+          <your-settings @group-left=${(e) => this.dispatchEvent(
+            new CustomEvent("group-left", {
+              detail: {
+                groupDnaHash: e.detail.groupDnaHash,
+              },
+              bubbles: true,
+              composed: true,
+            })
+          )}
+      ></your-settings>
         </div>
       `]
     ];

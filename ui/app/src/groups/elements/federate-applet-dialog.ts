@@ -55,7 +55,7 @@ export class FederateAppletDialog extends LitElement {
     () =>
       pipe(
         joinAsync([
-          this._weStore.allGroups,
+          this._weStore.groupStores,
           this._weStore.groupsForApplet.get(this.appletHash),
         ]) as AsyncReadable<
           [ReadonlyMap<DnaHash, GroupStore>, ReadonlyMap<DnaHash, GroupStore>]
@@ -94,9 +94,9 @@ export class FederateAppletDialog extends LitElement {
       const appletStore = await toPromise(
         this._weStore.appletStores.get(this.appletHash)
       );
-      const groupStore = await toPromise(
-        this._weStore.groups.get(groupDnaHash)
-      );
+      const groupStore = await this._weStore.groupStore(groupDnaHash);
+
+      if (!groupStore) throw new Error("Failed to federate Applet: GroupStore not found.");
 
       if (!appletStore) throw new Error("Applet not found");
 

@@ -48,14 +48,16 @@ export class GroupContext extends LitElement {
     if (changedValues.has("groupDnaHash")) {
       if (this.unsubscribe) this.unsubscribe();
 
-      this.unsubscribe = this.weStore.groups
-        .get(this.groupDnaHash)
-        .subscribe((v) => {
-          if (v.status === "complete") {
-            this.groupStore = v.value;
-            this.profilesStore = v.value.profilesStore;
-            this.peerStatusStore = v.value.peerStatusStore;
-            this.customViewsStore = v.value.customViewsStore;
+      this.unsubscribe = this.weStore.groupStores
+        .subscribe((stores) => {
+          if (stores.status === "complete") {
+            const groupStore = stores.value.get(this.groupDnaHash);
+            if (groupStore) {
+              this.groupStore = groupStore;
+              this.profilesStore = groupStore.profilesStore;
+              this.peerStatusStore = groupStore.peerStatusStore;
+              this.customViewsStore = groupStore.customViewsStore;
+            }
           }
         });
     }
