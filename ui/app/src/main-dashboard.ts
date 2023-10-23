@@ -114,6 +114,7 @@ export class MainDashboard extends NHComponentShoelace {
   
   @state()
   userProfileMenuVisible: boolean = false;
+  private _appletName: string | undefined;
   
   async refreshProfileCard(weGroupId: DnaHash) {
     if(!this._withProfile?.agentProfile?.value) {
@@ -739,9 +740,11 @@ export class MainDashboard extends NHComponentShoelace {
   handleAppletInstalled(e: CustomEvent) {
     this._selectedWeGroupId = e.detail.weGroupId;
     this._selectedAppletInstanceId = e.detail.appletEntryHash;
-    const applet = this._matrixStore.getAppletInstanceInfo(
+    const appletInstanceInfo = this._matrixStore.getAppletInstanceInfo(
       e.detail.appletEntryHash,
-    )?.applet
+    );
+    const applet = appletInstanceInfo?.applet;
+    this._appletName = appletInstanceInfo?.appInfo.installed_app_id;
     this._selectedAppletClassId = applet!.devhubHappReleaseHash;
     this._selectedAppletRolename = Object.keys(applet!.dnaHashes)[0];
     this._newAppletInstances.run();
@@ -789,7 +792,7 @@ export class MainDashboard extends NHComponentShoelace {
             >
               <div slot="inner-content">
                 <nh-sensemaker-settings
-                  .selectedAppletRolename=${this._selectedAppletRolename}
+                  .appletName=${this._appletName}
                   .sensemakerStore=${get(
                     this._matrixStore.sensemakerStore(this._selectedWeGroupId as Uint8Array),
                   )}

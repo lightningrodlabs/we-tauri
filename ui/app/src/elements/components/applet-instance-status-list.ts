@@ -54,9 +54,6 @@ export class AppletInstanceStatusList extends NHComponent {
   _federateAppletDialog!: FederateAppletDialog;
 
   @state()
-  private _widgetConfigDialogActivated: boolean = false;
-
-  @state()
   private _currentAppInfo!: AppletInstanceInfo;
 
   async joinGroup(
@@ -124,25 +121,27 @@ export class AppletInstanceStatusList extends NHComponent {
               }
             })
             .map((appletInfo: AppletInstanceInfo) => {
+              
+              // return html`
+              // ${this._widgetConfigDialogActivated ? html`
+              //   <nh-dialog
+              //     id="applet-widget-config"
+              //     size="large"
+              //     dialogType="widget-config"
+              //     handleOk=${() => { this._widgetConfigDialogActivated = false}}
+              //     isOpen=${true}
+              //     title="Configure Applet Widgets"
+              //     .primaryButtonDisabled=${true}
+              //   >
+              //     <div slot="inner-content">
+              //       <nh-sensemaker-settings
+              //         .sensemakerStore=${this._sensemakerStore}
+              //         .appletName=${appletInfo.appInfo.installed_app_id}
+              //       ></nh-sensemaker-settings>
+              //     </div>
+              //   </nh-dialog>` : html``}
               return html`
-              ${this._widgetConfigDialogActivated ? html`
-                <nh-dialog
-                  id="applet-widget-config"
-                  size="large"
-                  dialogType="widget-config"
-                  handleOk=${() => { this._widgetConfigDialogActivated = false}}
-                  isOpen=${true}
-                  title="Configure Applet Widgets"
-                  .primaryButtonDisabled=${true}
-                >
-                  <div slot="inner-content">
-                    <nh-sensemaker-settings
-                      .sensemakerStore=${this._sensemakerStore}
-                      .appletName=${appletInfo.appInfo.installed_app_id}
-                    ></nh-sensemaker-settings>
-                  </div>
-                </nh-dialog>` : html``}
-                <applet-list-item .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onConfigureWidgets=${() => { this._widgetConfigDialogActivated = true }} .onDelete=${() => {this._currentAppInfo = appletInfo; this._uninstallAppletDialog.open()}}></applet-list-item>
+                <applet-list-item .sensemakerStore=${this._sensemakerStore} .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onDelete=${() => {this._currentAppInfo = appletInfo; this._uninstallAppletDialog.open()}}></applet-list-item>
               `;
             })}`
       }

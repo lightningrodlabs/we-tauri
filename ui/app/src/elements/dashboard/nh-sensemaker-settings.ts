@@ -19,7 +19,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
   appletName!: string;
 
   @state()
-  appletDetails;
+  appletDetails!: AppletConfig;
+
   @property()
   selectedDimensionIndex: number = 0;
   @state()
@@ -35,18 +36,20 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   connectedCallback() {
     super.connectedCallback();
-    // let store: Readable<AppletConfig> = this.sensemakerStore?.flattenedAppletConfigs();
-    let store: Readable<AppletConfig> = derived(this.sensemakerStore.appletConfigs(), (appletConfigs) => {
-      return appletConfigs[this.appletName]
-    })
+    let store: Readable<AppletConfig> = this.sensemakerStore?.flattenedAppletConfigs();
+    // let store: Readable<AppletConfig> = derived(this.sensemakerStore.appletConfigs(), (appletConfigs) => {
+    //   console.error("applet name", this.appletName)
+    //   console.error("applet configs", appletConfigs)
+    //   return appletConfigs[this.appletName]
+    // })
     store &&
-      store.subscribe(appletConfig => {
-        this.appletDetails = appletConfig;
-        if (Object.values(appletConfig.resource_defs[this.selectedAppletRolename])
+      store.subscribe(appletConfigs => {
+        this.appletDetails = appletConfigs;
+        if (Object.values(flattenRoleAndZomeIndexedResourceDefs(this.appletDetails.resource_defs))
             .flatMap((resource) => Object.values(resource)).length < 1)
           return console.log("Didn't register the applet's resource defs yet");
         this.activeMethodsDict = Object.entries(
-          Object.values(appletConfig.resource_defs)
+          Object.values(appletConfigs.resource_defs)
             .flatMap((zome) => Object.values(zome))
             .flatMap((resource) => Object.values(resource)),
           )
@@ -54,14 +57,15 @@ export class NHSensemakerSettings extends NHComponentShoelace {
             (dict, [_, eH]): any => {
               const resourceDefEh = encodeHashToBase64(eH);
               const activeMethodEh = get(this.sensemakerStore.activeMethod())[resourceDefEh];
-              const activeMethod = Object.entries(appletConfig.methods).find(
+              const activeMethod = Object.entries(appletConfigs.methods).find(
                 ([methodName, methodEh]: any) => encodeHashToBase64(methodEh) === activeMethodEh,
               );
               dict.set(resourceDefEh, activeMethod);
               return dict;
             },
             new Map(),
-            );
+          )
+          
       });
   }
 
@@ -235,7 +239,8 @@ export class NHSensemakerSettings extends NHComponentShoelace {
     // for each resource def, have a dropdown, which is all the dimensions available
     console.log('this.appletDetails: ', this.appletDetails);
     console.log('selected applet role', this.selectedAppletRolename)
-    const flattenedResourceDefs = flattenRoleAndZomeIndexedResourceDefs(this.appletDetails.resource_defs);
+    const flattenedResourceDefs = flattenRoleAndZomeIndexedResourceDefs(get(this.sensemakerStore.appletConfigs())[this.appletName].resource_defs);
+    // const flattenedResourceDefs = flattenRoleAndZomeIndexedResourceDefs(this.appletDetails.resource_defs);
     // const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs[this.selectedAppletRolename]).flat().reduce(
     //   (acc, curr) => ({...acc, ...curr}),
     //   {}
