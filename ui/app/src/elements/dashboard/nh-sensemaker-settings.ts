@@ -4,15 +4,20 @@ import { NHCard, NHComponentShoelace, NHSlide } from '@neighbourhoods/design-sys
 
 import { encodeHashToBase64 } from '@holochain/client';
 import { Readable } from '@holochain-open-dev/stores';
-import { get } from 'svelte/store';
+import { derived, get } from 'svelte/store';
 import { AppletConfig, SensemakerStore } from '@neighbourhoods/client';
 import { SlIconButton, SlTooltip, SlButton } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import { cleanForUI } from '../components/helpers/functions';
+import { flattenRoleAndZomeIndexedResourceDefs } from '../../utils';
 
 export class NHSensemakerSettings extends NHComponentShoelace {
   @property()
   sensemakerStore!: SensemakerStore;
+
+  @property()
+  appletName!: string;
+
   @state()
   appletDetails;
   @property()
@@ -30,7 +35,10 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   connectedCallback() {
     super.connectedCallback();
-    let store: Readable<AppletConfig> = this.sensemakerStore?.flattenedAppletConfigs();
+    // let store: Readable<AppletConfig> = this.sensemakerStore?.flattenedAppletConfigs();
+    let store: Readable<AppletConfig> = derived(this.sensemakerStore.appletConfigs(), (appletConfigs) => {
+      return appletConfigs[this.appletName]
+    })
     store &&
       store.subscribe(appletConfig => {
         this.appletDetails = appletConfig;
@@ -225,10 +233,14 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   render() {
     // for each resource def, have a dropdown, which is all the dimensions available
-    const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs[this.selectedAppletRolename]).flat().reduce(
-      (acc, curr) => ({...acc, ...curr}),
-      {}
-    );
+    console.log('this.appletDetails: ', this.appletDetails);
+    console.log('selected applet role', this.selectedAppletRolename)
+    const flattenedResourceDefs = flattenRoleAndZomeIndexedResourceDefs(this.appletDetails.resource_defs);
+    // const flattenedResourceDefs = Object.values((this.appletDetails as AppletConfig).resource_defs[this.selectedAppletRolename]).flat().reduce(
+    //   (acc, curr) => ({...acc, ...curr}),
+    //   {}
+    // );
+    console.log("flattenedResourceDefs: ", flattenedResourceDefs)
     return html`
       ${Object.entries(flattenedResourceDefs)
         .map(([key, eH]: any) => {
@@ -243,7 +255,7 @@ export class NHSensemakerSettings extends NHComponentShoelace {
 
   handleUpdateActiveMethod(selectedMethodName, resourceDefEh) {
     const activeMethod = this.activeMethodsDict.get(resourceDefEh);
-
+    console.error("updating active method with resource eh", resourceDefEh)
     this.currentVisibleDimensionIndex = this.selectedDimensionIndex;
     try {
       if (activeMethod !== selectedMethodName) this.sensemakerStore.updateActiveMethod(

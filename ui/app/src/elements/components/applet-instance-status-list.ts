@@ -138,6 +138,7 @@ export class AppletInstanceStatusList extends NHComponent {
                   <div slot="inner-content">
                     <nh-sensemaker-settings
                       .sensemakerStore=${this._sensemakerStore}
+                      .appletName=${appletInfo.appInfo.installed_app_id}
                     ></nh-sensemaker-settings>
                   </div>
                 </nh-dialog>` : html``}
