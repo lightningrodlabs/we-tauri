@@ -142,10 +142,10 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         case ('average_star_method'):
             emojis = "⭐";
             break;
-        case ('average_heat_method'):
+        case ('Priority_level_method'):
             emojis = "🌶️";
             return html`<span>${emojis}</span>`;
-        case ('total_importance_method'):
+        case ('votes_method'):
             emojis = "✅";
             break;
         case ('total_thumbs_up'):
@@ -165,10 +165,10 @@ export class NHSensemakerSettings extends NHComponentShoelace {
         case ('average_star_method'):
             emojis = "⭐";
             break;
-        case ('average_heat_method'):
+        case ('Priority_level_method'):
             emojis = "🧊❄️💧🌶️🔥";
             break;
-        case ('total_importance_method'):
+        case ('Votes_method'):
             emojis = "✅";
             break;
         case ('total_thumbs_up'):
