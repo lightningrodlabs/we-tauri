@@ -4,10 +4,13 @@ import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-sy
 import { html, css, CSSResult } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
-import { SlInput } from "@scoped-elements/shoelace";
-import { object, string, boolean } from 'yup';
-import { ConfigDimension, Range } from "@neighbourhoods/client";
-import { query } from "lit/decorators.js";
+import { SlInput, SlRange } from "@scoped-elements/shoelace";
+import { object, string, boolean, number } from 'yup';
+import { ConfigDimension, Range, RangeKind } from "@neighbourhoods/client";
+import { query, state } from "lit/decorators.js";
+
+const MIN_RANGE = -1000000;
+const MAX_RANGE = 1000000;
 
 export default class CreateDimension extends NHComponentShoelace {
 
@@ -22,39 +25,108 @@ export default class CreateDimension extends NHComponentShoelace {
     computed: boolean().required(),
     range: object<Range>().required()
   });
+  
+  _minRangeBoundary : number = 0;
+  _dimensionRangeSchema = () => object({
+    min: number().min(MIN_RANGE, "Must be at least " + MIN_RANGE).required(),
+    max: number().min(this._minRangeBoundary + 1, "Must be > " + this._minRangeBoundary).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
+  });
 
-  _dimension: Partial<ConfigDimension> = { name: "", computed: false, range: undefined };
+
+  @state()
+  _dimensionRange: Range = { name: "", kind: { Integer: {
+    min: 0,
+    max: 1,
+  }} as RangeKind };
+  @state()
+  _dimension: Partial<ConfigDimension> = { name: "", computed: false, range: this._dimensionRange };
 
   @query("nh-button")
   submitBtn!: NHButton;
 
+  resetInputErrorLabels(inputs: NodeListOf<any>) {
+    inputs.forEach(input => {
+      input.helpText = "";
+      input.nextElementSibling.style.opacity = 0;
+      input.nextElementSibling.style.visibility = 'hidden';
+    });
+  }
+
+  validateIfUntouched(inputs: NodeListOf<any>) {
+    let existsUntouched = false;
+    inputs.forEach(input => {
+      if(input.dataset.touched !== "1") {
+        this.handleValidationError.call(this, { path: input.name, err: 'untouched'})
+        existsUntouched = true;
+      }
+    });
+    return existsUntouched
+  }
+
   onSubmit() {
-    this._dimensionSchema.validate(this._dimension)
-      .then(async valid => {
-        if(!valid) throw new Error("Dimension input data invalid");
-        this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+    const inputs = this.renderRoot.querySelectorAll("sl-input, sl-range");
+    this.resetInputErrorLabels(inputs);
+    const fieldsUntouched = this.validateIfUntouched(inputs);
+    if(fieldsUntouched) return;
 
-        // await this.createPost()
+    this._dimensionRangeSchema().validate(this._dimensionRange.kind['Integer'])
+      .catch((e) => {this.handleValidationError.call(this, e)})
+      .then(async validRange => {
+        if(validRange) {
+          this._dimensionSchema.validate(this._dimension)
+          .then(async _ => {
+            this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+            // await this.createPost()
+          })
+          .catch(this.handleValidationError.bind(this))
+        }
       })
-      .catch(this.handleValidationError.bind(this))
 
   }
 
-  handleValidationError(e) {
-    console.log('error :>> ', e);
+  fetchValidationErrorText({ path, err }: any) {
+    if(err && err == 'untouched') return path + " is required";
+    // TODO handle touched but invalid messages
   }
+
+  handleValidationError(err: any) {
+    console.log("Error validating profile for field: ", err.path);
+
+    const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
+    if(errorDOM.length == 0) return;
+    errorDOM.forEach((errorLabel: any) => {
+      errorLabel.style.visibility = 'visible';
+      errorLabel.style.opacity = '1';
+      
+      const slInput : any = errorLabel.previousElementSibling;
+      slInput.helpText = this.fetchValidationErrorText(err);
+      // slInput.reportValidity()
+    })
+  }
+
 
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.currentTarget as any);
+    if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
     switch (inputControl.name) {
-      // case 'nickname':
-      //   break;
+      case 'min':
+        this._minRangeBoundary = inputControl.value;
+        this._dimensionRange.kind['Integer'].min = inputControl.value;
+        break;
+      case 'max':
+        this._dimensionRange.kind['Integer'].max = inputControl.value;
+        break;
+      case 'dimension-name':
+        this._dimension['name'] = inputControl.value; 
+        this._dimensionRange['name'] = inputControl.value + '-range'; 
+        break;
       default:
-          this._dimension[inputControl.name] = inputControl.value; 
+        this._dimension[inputControl.name] = inputControl.value; 
         break;
     }
   }
   
+
   render() {
     return html`
       <nh-card .theme=${"dark"} .title=${"Create a Dimension"} .textSize=${"md"}>
@@ -63,6 +135,18 @@ export default class CreateDimension extends NHComponentShoelace {
             <div class="field">
               <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <div class="field">
+              <sl-range label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+              <label class="error" for="min" name="min">⁎</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <div class="field">
+              <sl-range label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+              <label class="error" for="max" name="max">⁎</label>
             </div>
           </fieldset>
         </form>
@@ -85,6 +169,7 @@ export default class CreateDimension extends NHComponentShoelace {
     "nh-button": NHButton,
     "nh-card": NHCard,
     "sl-input": SlInput,
+    "sl-range": SlRange,
   }
 
   static get styles() {
@@ -123,12 +208,21 @@ export default class CreateDimension extends NHComponentShoelace {
         align-items: center;
       }
       
-      sl-input::part(form-control-label) {
-        --sl-input-label-color: red;
+      sl-input::part(form-control) {
+        display: grid;
+        grid: auto / var(--label-width) 1fr;
+        gap: var(--sl-spacing-3x-small) var(--gap-width);
+        align-items: center;
+      }
+
+      :host *::part(form-control-label) {
+        color: red;
       }
 
       label.error {
-        display: none;
+        visibility: hidden;
+        opacity: 0;
+        align-items: center;
         padding: 0 8px;
         flex: 1;
         flex-grow: 0;
