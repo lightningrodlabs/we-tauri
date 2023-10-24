@@ -28,5 +28,14 @@ export default {
     typescript(),
     resolve(),
     commonjs({}),
+    {
+      // trying to fix https://github.com/rollup/rollup/issues/4213
+      closeBundle() {
+          if (!process.env.ROLLUP_WATCH) {
+            setTimeout(() => process.exit(0));
+          }
+      },
+      name: 'force-close'
+    }
   ],
 };

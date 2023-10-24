@@ -42,6 +42,7 @@ import { CreateGroupDialog } from "./create-group-dialog.js";
 
 import "./clipboard.js";
 import { WeClipboard } from "./clipboard.js";
+import { WelcomeView } from "../layout/views/welcome-view.js";
 
 @customElement("main-dashboard")
 export class MainDashboard extends LitElement {
@@ -80,7 +81,7 @@ export class MainDashboard extends LitElement {
 
   async handleOpenGroup(networkSeed: string) {
     const groups = await toPromise(
-      asyncDeriveStore(this._weStore.allGroups, (groups) =>
+      asyncDeriveStore(this._weStore.groupStores, (groups) =>
         joinAsyncMap(mapValues(groups, (groupStore) => groupStore.networkSeed))
       )
     );
@@ -191,7 +192,6 @@ export class MainDashboard extends LitElement {
         return html``
 
       case "groupView":
-        console.log("Rendering dashboard");
         return this.selectedAppletHash.value
          ? html`
               <applet-main
@@ -199,7 +199,6 @@ export class MainDashboard extends LitElement {
                 style="flex: 1;"
               ></applet-main>
           `
-
         : html`
           <group-context .groupDnaHash=${this.selectedGroupDnaHash}>
             <group-home
@@ -208,11 +207,6 @@ export class MainDashboard extends LitElement {
                 this.selectedGroupDnaHash = undefined;
                 this.dashboardMode = "browserView";
                 this._weStore.selectAppletHash(undefined);
-              }}
-              @applet-installed=${(_e: CustomEvent) => {
-                // console.log("GOT APPLET INSTALLED EVENT");
-                // this._weStore.selectAppletHash(e.detail);
-                this.dashboardMode = "groupView";
               }}
               @applet-selected=${(e: CustomEvent) => {
                 // this.openViews.openAppletMain(e.detail.appletHash);
@@ -307,6 +301,8 @@ export class MainDashboard extends LitElement {
       <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout
+          id="dynamic-layout"
+          style="flex: 1; min-width: 0; height: 100%;"
           @open-tab-request=${() => {
             this.selectedGroupDnaHash = undefined;
             this.dashboardMode = "browserView";
@@ -315,7 +311,18 @@ export class MainDashboard extends LitElement {
             this._clipboard.show("select");
           }}
           @toggle-clipboard=${() => this.toggleClipboard()}
-          id="dynamic-layout"
+          @request-create-group=${() =>
+            (this.shadowRoot?.getElementById(
+                "create-group-dialog"
+              ) as CreateGroupDialog
+            ).open()
+          }
+          @applet-installed=${(e: CustomEvent) => {
+            // console.log("GOT APPLET INSTALLED EVENT");
+            this._weStore.selectAppletHash(e.detail.appletEntryHash);
+            this.selectedGroupDnaHash = e.detail.groupDnaHash;
+            this.dashboardMode = "groupView";
+          }}
           .rootItemConfig=${{
             type: "row",
             content: [
@@ -328,7 +335,6 @@ export class MainDashboard extends LitElement {
               },
             ],
           }}
-          style="flex: 1; min-width: 0; height: 100%;"
           @open-group=${(e) => this.handleOpenGroup(e.detail.networkSeed)}
           @request-join-group=${(_e) => this.joinGroupDialog.open()}
         ></dynamic-layout>
@@ -497,20 +503,32 @@ export class MainDashboard extends LitElement {
         .left-sidebar {
           background-color: var(--sl-color-primary-900);
           width: var(--sidebar-width);
-          overflow-y: auto;
           display: flex;
           flex: 1;
-          overflow-y: scroll;
+          overflow-y: auto;
           overflow-x: hidden;
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+
+        .left-sidebar::-webkit-scrollbar {
+          display: none;
         }
 
 
         .top-bar {
-          overflow-x: auto;
           background-color: var(--sl-color-primary-600);
           min-height: var(--sidebar-width);
           align-items: center;
+          overflow-x: auto;
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
+
+        .top-bar::-webkit-scrollbar {
+          display: none;
+        }
+
       `,
     ];
   }

@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { ActionHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
+import { ActionHashB64, DnaHashB64, encodeHashToBase64, EntryHashB64 } from "@holochain/client";
 import { localized, msg } from "@lit/localize";
 import { ref } from "lit/directives/ref.js";
 import {
@@ -39,7 +39,7 @@ export class InstallAppletBundleDialog extends LitElement {
   _registeredApplets = new StoreSubscriber(
     this,
     () =>
-      pipe(this.groupStore.allApplets, (allAppletsHashes) =>
+      pipe(this.groupStore.allAdvertisedApplets, (allAppletsHashes) =>
         joinAsyncMap(slice(this.groupStore.applets, allAppletsHashes))
       ),
     () => []
@@ -84,7 +84,10 @@ export class InstallAppletBundleDialog extends LitElement {
 
   _unlisten: UnlistenFn | undefined;
 
-  open(appletInfo: Entity<AppEntry>) {
+  async open(appletInfo: Entity<AppEntry>) {
+    console.log("OPENING WITH APPLETINFO: ", appletInfo);
+    // reload all advertised applets
+    await this.groupStore.allAdvertisedApplets.reload();
     this._appletInfo = appletInfo;
     setTimeout(() => {
       this.form.reset();
@@ -96,6 +99,12 @@ export class InstallAppletBundleDialog extends LitElement {
     this.form.reset();
     this._appletInfo = undefined;
     this._appletDialog.hide();
+    this.dispatchEvent(
+      new CustomEvent("install-applet-dialog-closed", {
+        composed: true,
+        bubbles: true,
+      })
+    );
   }
 
   async firstUpdated() {
@@ -126,8 +135,6 @@ export class InstallAppletBundleDialog extends LitElement {
     if (this._installing) return;
     this._installing = true;
     try {
-
-
       // Trigger the download of the icon
       this._installationProgress = "Fetching app icon...";
       await toPromise(this.weStore.appletBundlesStore.appletBundleLogo.get(this._appletInfo!.id));
@@ -136,7 +143,7 @@ export class InstallAppletBundleDialog extends LitElement {
       const latestRelease =
         await this.weStore.appletBundlesStore.getLatestVersion(this._appletInfo!);
 
-      const appletEntryHash = await this.groupStore.installAppletBundle(
+      const appletEntryHash = await this.groupStore.installAndAdvertiseApplet(
         this._appletInfo!,
         fields.custom_name,
         latestRelease,
@@ -161,14 +168,13 @@ export class InstallAppletBundleDialog extends LitElement {
     } catch (e) {
       this._installationProgress = undefined;
       notifyError("Installation failed! (See console for details)");
-      console.log("Installation error:", e);
-      this._appletDialog.hide();
+      console.error(`Installation error: ${e}`);
       this._installing = false;
     }
   }
 
   renderForm() {
-    if (!this._appletInfo) return html``;
+    if (!this._appletInfo) return html`Error.`;
 
     switch (this._registeredApplets.value.status) {
       case "pending":
@@ -189,7 +195,7 @@ export class InstallAppletBundleDialog extends LitElement {
             ${ref((input) => {
               if (!input) return;
               setTimeout(() => {
-                if (allAppletsNames.includes(this._appletInfo!.content.title)) {
+                if (this._appletInfo && allAppletsNames.includes(this._appletInfo!.content.title)) {
                   (input as HTMLInputElement).setCustomValidity(
                     "Name already exists"
                   );
@@ -254,6 +260,13 @@ export class InstallAppletBundleDialog extends LitElement {
         @sl-request-close=${(e) => {
           if (this._installing) {
             e.preventDefault();
+          } else {
+            this.dispatchEvent(
+              new CustomEvent("install-applet-dialog-closed", {
+                composed: true,
+                bubbles: true,
+              })
+            );
           }
         }}
       >

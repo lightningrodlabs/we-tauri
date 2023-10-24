@@ -6,18 +6,22 @@ import {
 import { localized, msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { ActionHash, EntryHash, encodeHashToBase64 } from "@holochain/client";
+import { ActionHash, AgentPubKey, EntryHash, encodeHashToBase64 } from "@holochain/client";
 import {
   AsyncReadable,
   StoreSubscriber,
   joinAsync,
+  pipe,
+  toPromise,
 } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
-import { mdiArrowLeft, mdiCog, mdiToyBrickPlus } from "@mdi/js";
+import { mdiArrowLeft, mdiCog, mdiLinkVariant, mdiLinkVariantPlus } from "@mdi/js";
 import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 
 import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
+import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
+import "@holochain-open-dev/profiles/dist/elements/profile-detail.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/card/card.js";
 import "@shoelace-style/shoelace/dist/components/icon-button/icon-button.js";
@@ -54,12 +58,13 @@ import { weStoreContext } from "../../context.js";
 import { weStyles } from "../../shared-styles.js";
 import { LoadingDialog } from "../../elements/loading-dialog.js";
 import { AppletHash } from "../../types.js";
+import { AppEntry, Entity } from "../../processes/appstore/types.js";
+import { Applet } from "../../applets/types.js";
 
 type View =
   | {
       view: "main";
     }
-  | { view: "applets-library" }
   | { view: "settings" }
   | { view: "create-custom-view" }
   | {
@@ -82,8 +87,43 @@ export class GroupHome extends LitElement {
     () => [this.weStore, this.groupStore]
   );
 
+  _unjoinedApplets = new StoreSubscriber(
+    this,
+    () => pipe(this.groupStore.unjoinedApplets, async (appletsAndKeys) =>
+      Promise.all(appletsAndKeys.map(async ([appletHash, agentKey]) => {
+        const appletEntry = await toPromise(this.groupStore.applets.get(appletHash));
+        let appstoreAppEntry: Entity<AppEntry> | undefined;
+        let appletLogo: string | undefined;
+        if (appletEntry) {
+          appstoreAppEntry = await toPromise(
+            this.weStore.appletBundlesStore.appletBundles.get(
+              appletEntry.appstore_app_hash
+            )
+          )
+          appletLogo = await toPromise(
+            this.weStore.appletBundlesStore.appletBundleLogo.get(
+              appletEntry.appstore_app_hash
+            )
+          )
+        }
+        return [
+          appletHash,
+          appletEntry,
+          appstoreAppEntry?.content? appstoreAppEntry.content : undefined,
+          appletLogo,
+          agentKey,
+        ] as [AppletHash, Applet | undefined, AppEntry | undefined, string | undefined, AgentPubKey]
+      }))
+    ),
+    () => [this.groupStore, this.weStore]
+  );
+
   @state()
   view: View = { view: "main" };
+
+  @state()
+  _joiningNewApplet: boolean = false;
+
 
   groupProfile = new StoreSubscriber(
     this,
@@ -97,6 +137,11 @@ export class GroupHome extends LitElement {
     },
     () => [this.groupStore, this.weStore]
   );
+
+  async firstUpdated() {
+    const allGroupApplets = await this.groupStore.groupClient.getGroupApplets();
+    console.log("allGroupApplets: ", allGroupApplets)
+  }
 
   async updateUi(e: CustomEvent) {
     (this.shadowRoot!.getElementById("loading-dialog") as LoadingDialog).show();
@@ -126,10 +171,59 @@ export class GroupHome extends LitElement {
     }
   }
 
+  async joinNewApplet(appletHash: AppletHash) {
+    this._joiningNewApplet = true;
+    try {
+      console.log("Trying to join applet.");
+      await this.groupStore.installApplet(appletHash)
+      console.log("Successfully installed applet.");
+    } catch (e) {
+      notifyError(`Failed to join Applet (See console for details).`);
+      console.error(e);
+    }
+    this._joiningNewApplet = false;
+  }
+
+  renderNewApplets() {
+    switch (this._unjoinedApplets.value.status) {
+      case "complete":
+        return html`
+          <span class="title">New Group Applets</span>
+          <sl-divider style="--color: grey"></sl-divider>
+
+          <div class="row" style="flex-wrap: wrap;">
+            ${this._unjoinedApplets.value.value.map(
+              ([appletHash, appletEntry, appEntry, logo, agentKey]) => html`
+                <sl-card class="applet-card">
+                  <div class="column" style="flex: 1;">
+                    <div class="row" style="align-items: center; margin-bottom: 10px;">
+                      ${logo ? html`<img src=${logo} alt="Applet logo" style="height: 45px;"/>` : html``}
+                      <span style="margin-left: 10px; font-size: 20px;">${appEntry ? appEntry.title : "<i>unknwon</i>"}&nbsp;</span>
+                    </div>
+                    <div class="row" style="align-items: center; margin-bottom: 5px;">
+                      <b>name:</b>&nbsp;${appletEntry ? appletEntry.custom_name : "<i>unknown</i>"}
+                    </div>
+                    <div class="row" style="align-items: center; margin-bottom: 20px;">
+                      <span><b>added by:</b></span>
+                      <profile-detail style="margin-left: 5px;" .agentPubKey=${agentKey}></profile-detail>
+                    </div>
+                    <sl-button .loading=${this._joiningNewApplet} variant="primary" @click=${() => this.joinNewApplet(appletHash)}>Join</sl-button>
+                  <div>
+                </sl-card>
+              `
+            )}
+          </div>
+        `
+    }
+  }
+
   renderMain(groupProfile: GroupProfile, networkSeed: string) {
     return html`
       <div class="row" style="flex: 1">
         <div class="column" style="flex: 1; margin: 16px;">
+
+          <!-- Top Row -->
+
           <div class="row" style="align-items: center; margin-bottom: 24px">
             <div class="row" style="align-items: center; flex: 1;">
               <img
@@ -139,14 +233,6 @@ export class GroupHome extends LitElement {
               />
               <span class="title">${groupProfile.name}</span>
             </div>
-
-            <sl-icon-button
-              .src=${wrapPathInSvg(mdiToyBrickPlus)}
-              @click=${() => {
-                this.view = { view: "applets-library" };
-              }}
-              style="font-size: 2rem;"
-            ></sl-icon-button>
 
             <div style="position: relative;">
               ${
@@ -164,6 +250,11 @@ export class GroupHome extends LitElement {
               ></sl-icon-button>
             </div>
           </div>
+
+          <!-- NEW APPLETS -->
+          ${this.renderNewApplets()}
+
+          <!-- Related Groups Row -->
 
           <div class="row">
             <div class="column" style="flex: 1; margin-right: 16px">
@@ -227,100 +318,17 @@ export class GroupHome extends LitElement {
                 ) as SlDialog
               ).show();
             }}
-            >${msg("Invite")}</sl-button
+            >
+            <div class="row center-content">
+              <sl-icon
+                .src=${wrapPathInSvg(mdiLinkVariantPlus)}
+                style="color: white; height: 25px; width: 25px; margin-right: 12px;"
+              ></sl-icon>
+              <div style="font-size: 16px; margin-top: 4px;">${msg("Invite Member")}</div>
+            </div>
+          </sl-button
           >
         </div>
-      </div>
-    `;
-  }
-
-  renderSettings() {
-    return html`
-      <div class="column" style="margin: 16px; flex: 1">
-        <div class="row" style="margin-bottom: 16px; align-items: center">
-          <sl-icon-button
-            .src=${wrapPathInSvg(mdiArrowLeft)}
-            @click=${() => {
-              this.view = { view: "main" };
-            }}
-            style="margin-right: 16px; font-size: 1rem"
-          ></sl-icon-button>
-          <span class="title">${msg("Group Settings")}</span>
-        </div>
-
-        <sl-tab-group placement="start" style="flex: 1">
-          <sl-tab slot="nav" panel="applets">${msg("Applets")}</sl-tab>
-          <sl-tab slot="nav" panel="custom-views"
-            >${msg("Custom Views")}</sl-tab
-          >
-          <sl-tab slot="nav" panel="related-groups"
-            >${msg("Related Groups")}</sl-tab
-          >
-          <sl-tab slot="nav" panel="your-settings"
-            >${msg("Your Settings")}</sl-tab
-          >
-          <sl-tab-panel name="applets" style="display: flex; flex: 1;"
-            ><group-applets-settings></group-applets-settings>
-          </sl-tab-panel>
-          <sl-tab-panel name="custom-views">
-            <div class="column">
-              <span class="placeholder"
-                >${msg(
-                  "You can add custom views to this group, combining the relevant blocks from each applet."
-                )}</span
-              >
-              <all-custom-views
-                style="margin-top: 8px"
-                @edit-custom-view=${(e) => {
-                  this.view = {
-                    view: "edit-custom-view",
-                    customViewHash: e.detail.customViewHash,
-                  };
-                }}
-              ></all-custom-views>
-              <div class="row" style="flex: 1">
-                <span style="flex: 1"></span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => {
-                    this.view = { view: "create-custom-view" };
-                  }}
-                  >${msg("Create Custom View")}</sl-button
-                >
-              </div>
-            </div>
-          </sl-tab-panel>
-          <sl-tab-panel name="related-groups">
-            <add-related-group-dialog
-              id="add-related-group-dialog"
-            ></add-related-group-dialog>
-            <div class="column">
-              <span style="margin-bottom: 8px" class="placeholder"
-                >${msg(
-                  "You can add related groups to this group so that members of this group can see and join the related groups."
-                )}</span
-              >
-              <related-groups></related-groups>
-              <div class="row">
-                <span style="flex: 1"></span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => {
-                    (
-                      this.shadowRoot?.getElementById(
-                        "add-related-group-dialog"
-                      ) as AddRelatedGroupDialog
-                    ).show();
-                  }}
-                  >${msg("Add a related group")}</sl-button
-                >
-              </div>
-            </div>
-          </sl-tab-panel>
-          <sl-tab-panel name="your-settings">
-            <your-settings></your-settings>
-          </sl-tab-panel>
-        </sl-tab-group>
       </div>
     `;
   }
@@ -358,14 +366,14 @@ export class GroupHome extends LitElement {
     const tabs = [
       ["Applets", html`<group-applets-settings @update-ui=${async (e) => this.updateUi(e)} style="display: flex; flex: 1;"></group-applets-settings>`],
       ["Custom Views", html`
-        <div class="column">
-          <span class="placeholder"
+        <div class="column center-content" style="flex: 1;">
+          <span class="placeholder" style="margin-top: 200px;"
             >${msg(
               "You can add custom views to this group, combining the relevant blocks from each applet."
             )}</span
           >
           <all-custom-views
-            style="margin-top: 8px"
+            style="margin-top: 8px; flex: 1;"
             @edit-custom-view=${(e) => {
               this.view = {
                 view: "edit-custom-view",
@@ -385,34 +393,47 @@ export class GroupHome extends LitElement {
           </div>
         </div>
       `],
-      ["Related Groups", html`
-        <add-related-group-dialog
-          id="add-related-group-dialog"
-        ></add-related-group-dialog>
-        <div class="column">
-          <span style="margin-bottom: 8px" class="placeholder"
-            >${msg(
-              "You can add related groups to this group so that members of this group can see and join the related groups."
-            )}</span
-          >
-          <related-groups></related-groups>
-          <div class="row">
-            <span style="flex: 1"></span>
-            <sl-button
-              variant="primary"
-              @click=${() => {
-                (
-                  this.shadowRoot?.getElementById(
-                    "add-related-group-dialog"
-                  ) as AddRelatedGroupDialog
-                ).show();
-              }}
-              >${msg("Add a related group")}</sl-button
-            >
-          </div>
+      // ["Related Groups", html`
+      //   <add-related-group-dialog
+      //     id="add-related-group-dialog"
+      //   ></add-related-group-dialog>
+      //   <div class="column" style="flex: 1;">
+      //     <span style="margin-bottom: 8px" class="placeholder"
+      //       >${msg(
+      //         "You can add related groups to this group so that members of this group can see and join the related groups."
+      //       )}</span
+      //     >
+      //     <related-groups style="flex: 1;"></related-groups>
+      //     <div class="row" style="flex: 1;">
+      //       <span style="flex: 1"></span>
+      //       <sl-button
+      //         variant="primary"
+      //         @click=${() => {
+      //           (
+      //             this.shadowRoot?.getElementById(
+      //               "add-related-group-dialog"
+      //             ) as AddRelatedGroupDialog
+      //           ).show();
+      //         }}
+      //         >${msg("Add a related group")}</sl-button
+      //       >
+      //     </div>
+      //   </div>
+      // `],
+      ["Your Settings", html`
+        <div class="column center-content" style="flex: 1;">
+          <your-settings @group-left=${(e) => this.dispatchEvent(
+            new CustomEvent("group-left", {
+              detail: {
+                groupDnaHash: e.detail.groupDnaHash,
+              },
+              bubbles: true,
+              composed: true,
+            })
+          )}
+      ></your-settings>
         </div>
-      `],
-      ["Your Settings", html`<your-settings></your-settings>`]
+      `]
     ];
 
     return html`
@@ -441,40 +462,6 @@ export class GroupHome extends LitElement {
     switch (this.view.view) {
       case "main":
         return this.renderMain(groupProfile, networkSeed);
-      case "applets-library":
-        return html`
-          <div class="column" style="margin: 16px; flex: 1">
-            <div class="row" style="margin-bottom: 16px; align-items: center">
-              <sl-icon-button
-                .src=${wrapPathInSvg(mdiArrowLeft)}
-                @click=${() => {
-                  this.view = { view: "main" };
-                }}
-                style="margin-right: 16px"
-              ></sl-icon-button>
-              <span class="title" style="flex: 1"
-                >${msg("Applets Library")}</span
-              >
-              <publish-applet-button></publish-applet-button>
-            </div>
-
-            <installable-applets
-              style="display: flex; flex: 1; overflow-y: auto;"
-              @applet-installed=${(e) => {
-                // console.log("@group-home: GOT APPLET INSTALLED EVENT.");
-                // this.view = { view: "main" };
-                // re-dispatch event since for some reason it doesn't bubble further
-                this.dispatchEvent(
-                  new CustomEvent("applet-installed", {
-                    detail: e.detail,
-                    composed: true,
-                    bubbles: true,
-                  })
-                );
-              }}
-            ></installable-applets>
-          </div>
-        `;
       case "settings":
         return this.renderNewSettings();
       case "create-custom-view":
@@ -533,6 +520,14 @@ export class GroupHome extends LitElement {
       }
       .title {
         font-size: 25px;
+      }
+      .applet-card {
+        width: 300px;
+        height: 210px;
+        margin: 10px;
+        --border-radius: 15px;
+        border: none;
+        --border-color: transparent;
       }
     `,
   ];

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use futures::lock::Mutex;
 use holochain::{
     prelude::{AgentPubKeyB64, AppBundle},
@@ -25,7 +24,8 @@ pub async fn join_group(
     let mut admin_ws = admin_ws.lock().await;
 
     let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
-    let group_app_id = format!("group#{}", network_seed);
+
+    let group_app_id = format!("group#{}", sha256::digest(network_seed.clone()));
 
     let is_installed = apps
         .iter()

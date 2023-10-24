@@ -50,24 +50,20 @@ export class CreateGroupDialog extends LitElement {
         fields.logo_src
       );
 
-      // wait 4 seconds to have the new group be polled in the meantime
-      setTimeout(() => {
-        this.dispatchEvent(
-          new CustomEvent("group-created", {
-            detail: {
-              groupDnaHash:
-                groupAppInfo.cell_info["group"][0][CellType.Provisioned]
-                  .cell_id[0],
-            },
-            bubbles: true,
-            composed: true,
-          })
-        );
-        this._dialog.hide();
-        this.form.reset();
-        this.committing = false;
-      }, 4000);
-
+      this.dispatchEvent(
+        new CustomEvent("group-created", {
+          detail: {
+            groupDnaHash:
+              groupAppInfo.cell_info["group"][0][CellType.Provisioned]
+                .cell_id[0],
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      this._dialog.hide();
+      this.form.reset();
+      this.committing = false;
     } catch (e) {
       notifyError(msg("Error creating the group."));
       console.error(e);
@@ -88,7 +84,7 @@ export class CreateGroupDialog extends LitElement {
       >
         <form class="column" ${onSubmit((f) => this.createGroup(f))}>
           <div class="row" style="justify-content: center">
-            <select-avatar name="logo_src"></select-avatar>
+            <select-avatar required name="logo_src"></select-avatar>
 
             <sl-input
               name="name"

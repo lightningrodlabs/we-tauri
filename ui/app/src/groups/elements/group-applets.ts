@@ -52,8 +52,8 @@ export class GroupApplets extends LitElement {
               allCustomViews
             )
         ),
-        pipe(this._groupStore.allApplets, (allApplets) =>
-          sliceAndJoin(this.weStore.appletStores, allApplets)
+        pipe(this._groupStore.allMyRunningApplets, (myRunningApplets) =>
+          sliceAndJoin(this.weStore.appletStores, myRunningApplets)
         ),
       ]) as AsyncReadable<
         [

@@ -26,7 +26,7 @@ export class AppletsSidebar extends LitElement {
   @consume({ context: weStoreContext })
   _weStore!: WeStore;
 
-  applets = new StoreSubscriber(
+  _applets = new StoreSubscriber(
     this,
     () => this._weStore.allRunningApplets,
     () => []
@@ -83,7 +83,7 @@ export class AppletsSidebar extends LitElement {
   }
 
   renderAppletsLoading() {
-    switch (this.applets.value.status) {
+    switch (this._applets.value.status) {
       case "pending":
         return html`<sl-skeleton
           style="height: 58px; width: 58px; --border-radius: 8px; border-radius: 8px; margin-right: 10px;"
@@ -102,10 +102,10 @@ export class AppletsSidebar extends LitElement {
         return html`<display-error
           .headline=${msg("Error displaying the applets")}
           tooltip
-          .error=${this.applets.value.error}
+          .error=${this._applets.value.error}
         ></display-error>`;
       case "complete":
-        return this.renderApplets(this.applets.value.value);
+        return this.renderApplets(this._applets.value.value);
     }
   }
 

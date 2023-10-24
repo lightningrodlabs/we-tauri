@@ -1,11 +1,10 @@
 import { AppInfo, DnaHash, EntryHash, encodeHashToBase64 } from "@holochain/client";
-import { hashProperty, wrapPathInSvg } from "@holochain-open-dev/elements";
+import { hashProperty, notify, wrapPathInSvg } from "@holochain-open-dev/elements";
 import { consume } from "@lit-labs/context";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import { msg } from "@lit/localize";
-import { mdiArchiveArrowDown, mdiArchiveArrowUp, mdiExportVariant } from "@mdi/js";
-import { invoke } from "@tauri-apps/api";
+import { mdiArchiveArrowDown, mdiArchiveArrowUp, mdiShareVariant } from "@mdi/js";
 
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -24,7 +23,7 @@ import { Applet } from "../../applets/types.js";
 import { weStyles } from "../../shared-styles.js";
 import { weStoreContext } from "../../context.js";
 import { WeStore } from "../../we-store.js";
-import { appIdFromAppletHash, dnaHashForCell, getCellNetworkSeed, getProvisionedCells } from "../../utils.js";
+import { appIdFromAppletHash, dnaHashForCell, getCellNetworkSeed, getProvisionedCells, isAppDisabled, isAppRunning } from "../../utils.js";
 
 @customElement("applet-detail-card")
 export class AppletDetailCard extends LitElement {
@@ -38,13 +37,10 @@ export class AppletDetailCard extends LitElement {
   applet!: Applet;
 
   @property()
-  appInfo: AppInfo | undefined;
-
-  @property()
   federatedGroups!: ReadonlyMap<EntryHash, Array<DnaHash>>;
 
-  @property()
-  installationStatus: "installed" | "archived" = "installed"
+  @state()
+  appInfo: AppInfo | undefined;
 
   async firstUpdated() {
     this.appInfo = await this.weStore.appWebsocket.appInfo({ installed_app_id: appIdFromAppletHash(this.appletHash) })
@@ -59,122 +55,119 @@ export class AppletDetailCard extends LitElement {
   }
 
   render() {
-    switch (this.installationStatus) {
-      case "installed":
-        return html`
-          <sl-card style="flex: 1; margin-bottom: 16px; min-width: 800px;">
-            <div class="column" style="flex: 1;">
-              <div class="row" style="flex: 1; align-items: center">
-                <applet-logo
-                  .appletHash=${this.appletHash}
-                  style="margin-right: 16px"
-                ></applet-logo>
-                <span style="flex: 1">${this.applet.custom_name}</span>
-                ${
-                  this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(this.appletHash)}`]
-                    ? html`<sl-button variant="success" @click=${() => this.updateUi()} title="Update Applet">Update</sl-button>`
-                    : html``
-                }
-                ${Array.from(this.federatedGroups.get(this.appletHash)!).map(
-                  (groupDnaHash) => html`
-                    <group-context .groupDnaHash=${groupDnaHash}>
-                      <group-logo
-                        style="margin-right: 8px; --size: 32px"
-                      ></group-logo
-                    ></group-context>
+    return html`
+      <sl-card class="applet-card">
+        <div class="column" style="flex: 1;">
+          <div class="row" style="flex: 1; align-items: center">
+            <applet-logo
+              .appletHash=${this.appletHash}
+              style="margin-right: 16px"
+            ></applet-logo>
+            <span style="flex: 1; font-size: 23px; font-weight: 600;">${this.applet.custom_name}</span>
+            ${
+              this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(this.appletHash)}`]
+                ? html`<sl-button variant="success" @click=${() => this.updateUi()} title="Update Applet">Update</sl-button>`
+                : html``
+            }
+            <sl-tooltip .content=${msg("Federate")}>
+              <sl-icon-button
+                .src=${wrapPathInSvg(mdiShareVariant)}
+                style="font-size: 38px; margin-right: 10px;"
+                @click=${() => {
+                  this.dispatchEvent(new CustomEvent('federate-applet', {
+                    detail: this.appletHash,
+                    bubbles: true,
+                  }));
+                }}
+                @keypress.enter=${() => {
+                  this.dispatchEvent(new CustomEvent('federate-applet', {
+                    detail: this.appletHash,
+                    bubbles: true,
+                  }));
+                }}
+              ></sl-icon-button>
+            </sl-tooltip>
+            <sl-tooltip .content=${this.appInfo && isAppRunning(this.appInfo) ? msg("Disable") : msg("Enable")}>
+              <sl-switch
+                style="--sl-color-primary-600: #35bf20;"
+                size="large"
+                ?checked=${this.appInfo && isAppRunning(this.appInfo)}
+                ?disabled=${!this.appInfo}
+                @sl-change=${async () => {
+                  console.log("%%% SL-CHANGE %%%");
+                  if (this.appInfo && isAppRunning(this.appInfo)) {
+                    await this.weStore.disableApplet(this.appletHash);
+                    notify(msg("Applet disabled."));
+                  } else if (this.appInfo && !isAppRunning(this.appInfo)) {
+                    await this.weStore.enableApplet(this.appletHash);
+                    notify(msg("Applet enabled."));
+                  }
+                }}
+              >
+              </sl-switch>
+            </sl-tooltip>
+          </div>
+          <div class="row" style="margin-top: 15px;">
+            <span><b>appletHash:&nbsp;</b></span><span>${encodeHashToBase64(this.appletHash)}</span>
+            <span style="flex: 1;"></span>
+            ${
+              this.federatedGroups.get(this.appletHash) && this.federatedGroups.get(this.appletHash)!.length > 0
+                ? html`<span style="margin-right: 5px; margin-bottom: 5px;">Federated with:</span>`
+                : html`<div style="height: 30px;"></div>`
+            }
+          </div>
+          <div class="row" style="justify-content: flex-end">
+            ${Array.from(this.federatedGroups.get(this.appletHash)!).map(
+              (groupDnaHash) => html`
+                <group-context .groupDnaHash=${groupDnaHash}>
+                  <group-logo
+                    .groupDnaHash=${groupDnaHash}
+                    style="margin-right: 8px; --size: 40px"
+                  ></group-logo
+                ></group-context>
+              `
+            )}
+          </div>
+          <!-- Cells -->
+          <div style="margin-top: 5px; margin-bottom: 3px;font-size: 20px;">
+              <b>Cells:</b>
+          </div>
+          <div>
+            ${this.appInfo
+              ? getProvisionedCells(this.appInfo).map(([roleName, cellInfo]) =>
+                  html`
+                    <div class="column cell-card">
+                      <div class="row" style="justify-content: flex-end;">
+                        <span><b>${roleName} </b></span><br>
+                      </div>
+                      <div style="margin-bottom: 3px;"><b>DNA hash:</b> ${dnaHashForCell(cellInfo)}</div>
+                      <div style="margin-bottom: 4px;"><b>network seed:</b> ${getCellNetworkSeed(cellInfo)}</div>
+                    </div>
                   `
-                )}
-
-                <sl-tooltip .content=${msg("Federate")}>
-                  <sl-icon-button
-                    .src=${wrapPathInSvg(mdiExportVariant)}
-                    style="font-size: 2rem"
-                    @click=${() => {
-                      this.dispatchEvent(new CustomEvent('federate-applet', {
-                        detail: this.appletHash,
-                        bubbles: true,
-                      }));
-                    }}
-                    @keypress.enter=${() => {
-                      this.dispatchEvent(new CustomEvent('federate-applet', {
-                        detail: this.appletHash,
-                        bubbles: true,
-                      }));
-                    }}
-                  ></sl-icon-button>
-                </sl-tooltip>
-                <sl-tooltip .content=${msg("Archive")}>
-                  <sl-icon-button
-                    .src=${wrapPathInSvg(mdiArchiveArrowDown)}
-                    style="font-size: 2rem;"
-                    @click=${() => {
-                      this.dispatchEvent(new CustomEvent('archive-applet', {
-                        detail: this.appletHash,
-                        bubbles: true,
-                      }));
-                    }}
-                    @keypress.enter=${() => {
-                      this.dispatchEvent(new CustomEvent('archive-applet', {
-                        detail: this.appletHash,
-                        bubbles: true,
-                      }));
-                    }}
-                  ></sl-icon-button>
-                </sl-tooltip>
-              </div>
-              <div style="margin-top: 5px;">
-                <span><b>appletHash: </b></span><span>${encodeHashToBase64(this.appletHash)}</span>
-              </div>
-              <div>
-                ${this.appInfo
-                  ? getProvisionedCells(this.appInfo).map(([roleName, cellInfo]) =>
-                      html`
-                        <div style="border: 1px solid black; border-radius: 10px; padding: 8px 12px; margin-top: 5px;">
-                          <span><b>${roleName}: </b></span><br>
-                          <span><b>DNA hash:</b> </span><span>${dnaHashForCell(cellInfo)}</span><br>
-                          <span><b>network seed:</b> </span><span>${getCellNetworkSeed(cellInfo)}</span>
-                        </div>
-                      `
-                    )
-                  : html``
-                }
-              </div>
-            </div>
-          </sl-card>
-        `
-      case "archived":
-        return html`
-          <sl-card style="flex: 1; margin-bottom: 16px">
-            <div class="row" style="flex: 1; align-items: center">
-              <applet-logo
-                .appletHash=${this.appletHash}
-                style="margin-right: 16px"
-              ></applet-logo>
-              <span style="flex: 1">${this.applet.custom_name}</span>
-
-              <sl-tooltip .content=${msg("Unarchive")}>
-                <sl-icon-button
-                  .src=${wrapPathInSvg(mdiArchiveArrowUp)}
-                  style="font-size: 2rem;"
-                  @click=${() => {
-                    this.dispatchEvent(new CustomEvent('unarchive-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                  @keypress.enter=${() => {
-                    this.dispatchEvent(new CustomEvent('unarchive-applet', {
-                      detail: this.appletHash,
-                      bubbles: true,
-                    }));
-                  }}
-                ></sl-icon-button>
-              </sl-tooltip>
-            </div>
-          </sl-card>
-        `
-    }
+                )
+              : html``
+            }
+          </div>
+        </div>
+      </sl-card>
+    `
   }
 
-  static styles = weStyles;
+  static styles = [
+    weStyles,
+    css`
+      .applet-card {
+        flex: 1;
+        margin-bottom: 16px;
+        min-width: 800px;
+        --border-radius: 15px;"
+      }
+      .cell-card {
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-top: 5px;
+        box-shadow: 0 0 5px 0 black;
+      }
+    `
+  ];
 }
