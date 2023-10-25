@@ -9,6 +9,7 @@ import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-com
 import MethodListForDimension from "./method-list";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { generateHashHTML } from "../elements/components/helpers/functions";
+import { classMap } from "lit/directives/class-map.js";
 
 export default class DimensionList extends NHComponent {  
   @property()
@@ -17,6 +18,9 @@ export default class DimensionList extends NHComponent {
   @state()
   private _dimensionEntries!: Dimension[];
   
+  @state()
+  _selectedInputDimensionIndex: number = 0;
+
   @state()
   private _methodInputDimensions!: Array<Dimension & { methodEh: EntryHashB64 }>;
 
@@ -98,9 +102,15 @@ export default class DimensionList extends NHComponent {
             typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
               ? "No dimensions available"
               : html`<div style="display:flex; flex-direction: column-reverse; gap: 8px;">${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
-                                      .map((dimension: Dimension) => {
+                                      .map((dimension: Dimension, dimensionIndex: number) => {
                                           return html`
-                                            <nh-card class="nested-card" .theme=${"dark"} .title=${dimension.name} .textSize=${"sm"}>
+                                            <nh-card 
+                                              class="nested-card ${classMap({
+                                                  selected: this._selectedInputDimensionIndex == dimensionIndex,
+                                                })}" .theme=${"dark"}
+                                              .title=${dimension.name}
+                                              .textSize=${"sm"}
+                                            >
                                               <h2>Range: </h2>
                                               ${`TODO: get range details`}
                                               ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length 
@@ -111,7 +121,10 @@ export default class DimensionList extends NHComponent {
                                                       : null
                                                   })}
                                                 `
-                                                :html`<h2>No methods for this dimension</h2><nh-button .size=${"sm"} .variant=${"secondary"} @click=${() => this.dispatchEvent(new CustomEvent('request-method-create', { detail: {}}))}>Create Method</nh-button>` 
+                                                :html`<h2>No methods for this dimension</h2>
+                                                <nh-button .size=${"sm"} .variant=${"secondary"} @click=${() => this.dispatchEvent(new CustomEvent('request-method-create', { detail: {}}))}>Create Method</nh-button>
+                                                <nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>
+                                                ` 
                                               }
                                               ${this._methodInputDimensions.map(({methodEh, name}) => {
                                                 return name == dimension.name
@@ -144,6 +157,16 @@ export default class DimensionList extends NHComponent {
 
       h2 {
         margin: calc(1px * var(--nh-spacing-md)) 0;
+      }
+
+      nh-card {
+        border-style: solid;
+        border-width: 2px;
+        border-radius: calc(24px); 
+        border-color: transparent;
+      }
+      nh-card.selected {
+        border-color: var(--nh-theme-accent-default); 
       }
     `;
   }
