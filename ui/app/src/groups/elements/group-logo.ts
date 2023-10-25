@@ -1,9 +1,10 @@
 import { StoreSubscriber } from "@holochain-open-dev/stores";
 import { consume } from "@lit-labs/context";
 import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { msg } from "@lit/localize";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { DnaHash, encodeHashToBase64 } from "@holochain/client";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
@@ -18,6 +19,9 @@ export class GroupLogo extends LitElement {
   @consume({ context: groupStoreContext, subscribe: true })
   groupStore!: GroupStore;
 
+  @property()
+  groupDnaHash!: DnaHash;
+
   groupProfile = new StoreSubscriber(
     this,
     () => this.groupStore?.groupProfile,
@@ -27,11 +31,23 @@ export class GroupLogo extends LitElement {
   renderLogo(groupProfile: GroupProfile | undefined) {
     if (!groupProfile) return html``;
 
-    return html` <img .src=${groupProfile.logo_src} alt="${groupProfile.name}" style="border-radius: 50%"> `;
+    return html`
+      <img
+        .src=${groupProfile.logo_src}
+        alt="${groupProfile.name}"
+        title="${groupProfile.name}"
+        style="border-radius: 50%"
+      > `;
   }
 
   render() {
-    if (!this.groupProfile.value) return html``;
+    if (!this.groupProfile.value) return html`
+      <div
+        class="column center-content"
+        style="border-radius: 50%; height: 40px; width: 40px; background: #d1d1d1; font-weight: bold;"
+        title="Unknown Group\n(DNA hash: '${encodeHashToBase64(this.groupDnaHash)}')"
+      >?</div>
+    `;
 
     switch (this.groupProfile.value.status) {
       case "pending":

@@ -85,6 +85,7 @@ export class CreateCustomGroupView extends LitElement {
           this._blocks.value.value[1]
         );
       case "error":
+        console.error("Failed to fetch the blocks for this group: ", this._blocks.value.error);
         return html`<display-error
           .headline=${msg("Error fetching the blocks for this group")}
           .error=${this._blocks.value.error}

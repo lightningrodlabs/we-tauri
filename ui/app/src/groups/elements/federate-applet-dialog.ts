@@ -1,5 +1,6 @@
 import {
   hashProperty,
+  notify,
   notifyError,
   onSubmit,
 } from "@holochain-open-dev/elements";
@@ -54,7 +55,7 @@ export class FederateAppletDialog extends LitElement {
     () =>
       pipe(
         joinAsync([
-          this._weStore.allGroups,
+          this._weStore.groupStores,
           this._weStore.groupsForApplet.get(this.appletHash),
         ]) as AsyncReadable<
           [ReadonlyMap<DnaHash, GroupStore>, ReadonlyMap<DnaHash, GroupStore>]
@@ -93,17 +94,17 @@ export class FederateAppletDialog extends LitElement {
       const appletStore = await toPromise(
         this._weStore.appletStores.get(this.appletHash)
       );
-      const groupStore = await toPromise(
-        this._weStore.groups.get(groupDnaHash)
-      );
+      const groupStore = await this._weStore.groupStore(groupDnaHash);
+
+      if (!groupStore) throw new Error("Failed to federate Applet: GroupStore not found.");
 
       if (!appletStore) throw new Error("Applet not found");
 
       const applet = appletStore.applet;
-      await groupStore.groupClient.registerApplet(applet);
+      await groupStore.addFederatedApplet(applet);
 
       // Two way link from one group to the other
-      // TODO: what to do when the applet is uninstalled
+      // TODO: what to do when the applet is uninstalled?
       await this._groupStore.groupClient.registerAppletFederation(
         this.appletHash,
         groupDnaHash
@@ -112,6 +113,7 @@ export class FederateAppletDialog extends LitElement {
         this.appletHash,
         this._groupStore.groupDnaHash
       );
+        notify(msg("Applet federated."));
       const dialog = this.shadowRoot?.getElementById("dialog") as SlDialog;
       dialog.hide();
     } catch (e) {
@@ -153,6 +155,7 @@ export class FederateAppletDialog extends LitElement {
               name="groupDnaHash"
               @sl-hide=${(e) => e.stopPropagation()}
               style="margin-top: 16px"
+              hoist
               required
             >
               ${groups.map(

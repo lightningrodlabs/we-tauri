@@ -9,11 +9,13 @@
     "site"
   ],
   "scripts": {
-    "start": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"ADMIN_PORT=10002 npm run start:agent\"",
-    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently \"npm run start:ui\" \"ADMIN_PORT=10001 npm run start:agent\" \"DISABLE_DEEP_LINK=true ADMIN_PORT=10002 npm run start:agent\"",
+    "start:local": "concurrently \"hc run-local-services --bootstrap-port 35355 --signal-port 35356\" \"BOOTSTRAP_PORT=35355 SIGNAL_PORT=35356 npm run start\"",
+    "start": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently -k \"npm run start:ui\" \"cross-env ADMIN_PORT=10002 npm run start:agent\"",
+    "network:local": "concurrently \"hc run-local-services --bootstrap-port 35355 --signal-port 35356\" \"BOOTSTRAP_PORT=35355 SIGNAL_PORT=35356 npm run network\"",
+    "network": "npm run build:happ && npm run build -w @lightningrodlabs/we-applet && concurrently \"npm run start:ui\" \"cross-env ADMIN_PORT=10001 npm run start:agent\" \"cross-env DISABLE_DEEP_LINK=true ADMIN_PORT=10002 npm run start:agent\"",
     "start:ui": "concurrently -k \"npm run build:watch -w @lightningrodlabs/we-applet\" \"npm run start -w we-alpha\"",
     "start:agent": "concurrently \"npm run tauri:dev\" \"npm run publish:applets\"",
-    "tauri:dev": "RUST_LOG=info WASM_LOG=warn npm run tauri dev -- -- -- --profile ${ADMIN_PORT}",
+    "tauri:dev": "cross-env RUST_LOG=info WASM_LOG=warn npm run tauri dev -- -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "build:libs": "npm run build -w @lightningrodlabs/we-applet -w grapes-editor -w @lightningrodlabs/attachments",
     "build:ui": "npm run build:libs && npm run build -w we-alpha",

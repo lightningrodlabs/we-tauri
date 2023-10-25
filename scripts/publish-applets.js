@@ -16,7 +16,7 @@ function getAppletsPaths() {
 
 async function publishApplets() {
   const adminWs = await AdminWebsocket.connect(
-    new URL(`ws://localhost:${process.env.ADMIN_PORT}`),
+    new URL(`ws://127.0.0.1:${process.env.ADMIN_PORT}`),
     100000
   );
 
@@ -32,12 +32,12 @@ async function publishApplets() {
 
   const appPorts = await adminWs.listAppInterfaces();
   const devhubClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     devhubAppId,
     100000
   );
   const appstoreClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     appstoreAppId,
     100000
   );
@@ -418,6 +418,18 @@ async function publishAppletsRetry() {
     } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
       console.log("Failed to publish applets: Error: ", e);
       console.log("\n\nYou probably haven't installed the DevHub yet.");
+    } else if (e.toString().includes("syntax error near unexpected token")) {
+      console.log(
+        "Check the name of the webhapp file. There might be unexpected syntax in the name."
+      );
+    } else if (e.toString().includes("testing-applets")) {
+      console.log(
+        "You probably haven't add webhapp`s file to testing-applets directory"
+      );
+    } else if (e.toString().includes("hc: command not found")) {
+      console.log(
+        "Remember to run this script from within a nix-shell. So the hc command will be available."
+      );
     } else {
       console.log("Failed to publish applets. Error: ", e);
     }
