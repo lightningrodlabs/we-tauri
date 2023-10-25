@@ -1,9 +1,10 @@
-import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
+
 import { execSync } from "child_process";
-import yaml from "js-yaml";
 import fs from "fs";
 import crypto from "crypto";
 import AdmZip from "adm-zip";
+import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
+import yaml from "js-yaml";
 
 const WE_LOGO_PATH = `${process.cwd()}/logo.svg`;
 const TESTING_APPLETS_PATH = `${process.cwd()}/testing-applets`;
@@ -199,7 +200,8 @@ async function publishApplets() {
               .find((z) => z.name === ze.payload.content.name)
               .dependencies.map((d) => d.name),
           })),
-          origin_time: "2022-02-11T23:05:19.470323Z",
+          origin_time: dnaEntity.payload.origin_time ? dnaEntity.payload.origin_time : "2022-02-11T23:05:19.470323Z",
+          properties: dnaEntity.payload.properties ? dnaEntity.payload.properties : null,
         },
       });
 
