@@ -53,7 +53,7 @@ import { WeClient, AppletServices, HrlWithContext, EntryInfo } from '@lightningr
 // about the available block views etc.
 const appletServices: Appletservices = {
     // Types of attachment that this Applet offers for other Applets to attach
-    attachmentTypes: {
+    attachmentTypes: async (appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices) => {
         'post': {
             label: 'post',
             icon_src: 'data:image/png;base64,iVBORasdwsfvawe',
@@ -61,6 +61,8 @@ const appletServices: Appletservices = {
             // logic to create a new entry of that type. The attachToHrl can be used for
             // backlinking, i.e. it is the HRL that the entry which is being
             // created with this function is being attached to.
+            appletClient.callZome(...)
+            ...
             }
         },
         'comment': {
@@ -99,7 +101,7 @@ const appletServices: Appletservices = {
             icon_src: 'data:image/png;base64,iVBORasdwsfvawe'
         };
     },
-    search: async (appletClient: AppAgentClient, filter: string): Promise<Array<HrlWithContext>> => {
+    search: async (appletClient: AppAgentClient, appletHash: AppletHash, weServices: WeServices, searchFilter: string): Promise<Array<HrlWithContext>> => {
         // Your search logic here. For example
         let searchResults: Array<Record> = await appletClient.callZome({
             zome_name: 'search_posts',

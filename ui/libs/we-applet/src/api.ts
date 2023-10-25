@@ -14,9 +14,9 @@ export const isWeContext = () => window.location.protocol === "applet:";
 
 export class AppletServices {
   constructor() {
-    this.attachmentTypes = async (_appletClient, _weServices) => ({}),
+    this.attachmentTypes = async (_appletClient,_appletHash, _weServices) => ({}),
     this.blockTypes = {},
-    this.search = async (_appletClient, _searchFilter) => [],
+    this.search = async (_appletClient, _appletHash, _weServices, _searchFilter) => [],
     this.getEntryInfo = async (
       _appletClient,
       _roleName,
