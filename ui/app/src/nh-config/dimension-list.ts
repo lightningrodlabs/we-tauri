@@ -102,9 +102,18 @@ export default class DimensionList extends NHComponent {
                                           return html`
                                             <nh-card class="nested-card" .theme=${"dark"} .title=${dimension.name} .textSize=${"sm"}>
                                               <h2>Range: </h2>
-                                              ${JSON.stringify(dimension.range_eh, null, 2)}
-                                              <h2>Methods using this dimension: </h2>
-                                              ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.map(({methodEh, name}) => {
+                                              ${`TODO: get range details`}
+                                              ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length 
+                                                ? html`<h2>Methods using this dimension: </h2>
+                                                  ${this._methodInputDimensions.map(({methodEh, name}) => {
+                                                    return name == dimension.name
+                                                      ? html`${generateHashHTML(methodEh)}`
+                                                      : null
+                                                  })}
+                                                `
+                                                :html`<h2>No methods for this dimension</h2><nh-button .size=${"sm"} .variant=${"secondary"} @click=${() => this.dispatchEvent(new CustomEvent('request-method-create', { detail: {}}))}>Create Method</nh-button>` 
+                                              }
+                                              ${this._methodInputDimensions.map(({methodEh, name}) => {
                                                 return name == dimension.name
                                                   ? html`${generateHashHTML(methodEh)}`
                                                   : null
@@ -131,6 +140,10 @@ export default class DimensionList extends NHComponent {
         flex: 1;
         justify-content: center;
         align-items: center;
+      }
+
+      h2 {
+        margin: calc(1px * var(--nh-spacing-md)) 0;
       }
     `;
   }
