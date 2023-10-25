@@ -97,7 +97,7 @@ export default class DimensionList extends NHComponent {
           ${
             typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
               ? "No dimensions available"
-              : html`<div style="display:flex; flex-direction: column; gap: 8px;">${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+              : html`<div style="display:flex; flex-direction: column-reverse; gap: 8px;">${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
                                       .map((dimension: Dimension) => {
                                           return html`
                                             <nh-card class="nested-card" .theme=${"dark"} .title=${dimension.name} .textSize=${"sm"}>
