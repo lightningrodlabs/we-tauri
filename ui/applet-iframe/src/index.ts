@@ -113,7 +113,6 @@ const weApi: WeServices = {
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
-    console.log("HELLO FROM THE onload hook :)");
     window.__WE_API__ = weApi;
     window.__WE_APPLET_SERVICES__ = new AppletServices();
 
@@ -202,8 +201,6 @@ document.addEventListener(
 
       const appletHash = readAppletHash();
 
-      console.log("@iframe setup: setting window.__WE_RENDER_INFO__.");
-
       window.__WE_RENDER_INFO__ = {
         type: "applet-view",
         view: view.view,
@@ -212,7 +209,6 @@ document.addEventListener(
         appletHash
       };
 
-      console.log("@iframe setup: window.__WE_RENDER_INFO__ set.");
     } else if (view.type === "cross-applet-view") {
 
       const applets: EntryHashMap<{
@@ -252,10 +248,8 @@ document.addEventListener(
     } else {
       throw new Error("Bad RenderView type.");
     }
-    console.log("dispatching applet-iframe-ready event...");
-    document.dispatchEvent(new CustomEvent("applet-iframe-ready"));
 
-    console.log("Onload hook ready.");
+    document.dispatchEvent(new CustomEvent("applet-iframe-ready"));
 
     // get global attachment-types with setTimeout in order not to block subsequent stuff
     setTimeout(async () => {
