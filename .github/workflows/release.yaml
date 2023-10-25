@@ -32,7 +32,7 @@ jobs:
           npm install
           npm run download:devhub
           npm run download:appstore
-          curl -L --output workdir/we.happ https://drive.switch.ch/index.php/s/l1dFNGHxvk4KCpk/download
+          curl -L --output workdir/we.happ https://github.com/lightningrodlabs/we/releases/download/we-alpha-happ-v0.6.0/we.happ
 
       - name: Build zomes
         run: |
