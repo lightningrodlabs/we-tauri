@@ -44,14 +44,19 @@ export default class DimensionList extends NHComponent {
 
   render() {
     return html`
-      <nh-card .theme=${"light"} .title=${"Existing Dimensions"} .textSize=${"sm"}>
+      <nh-card .theme=${"light"} .title=${"Existing Input Dimensions"} .textSize=${"sm"}>
         <div class="content">
           ${
             typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
               ? "No dimensions available"
-              : this._dimensionEntries.map((dimension: Dimension) => {
-                  return html`Dimension`
-              })
+              : html`<div style="display:flex; flex-direction: column; gap: 8px;">${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+                                      .map((dimension: Dimension) => {
+                                          return html`
+                                            <nh-card class="nested-card" .theme=${"dark"} .title=${dimension.name} .textSize=${"sm"}>
+                                              <h2>Range: </h2>
+                                              ${JSON.stringify(dimension.range_eh, null, 2)}
+                                            </nh-card>`
+                                      })}</div>`
           }
         </div>
       </nh-card>
