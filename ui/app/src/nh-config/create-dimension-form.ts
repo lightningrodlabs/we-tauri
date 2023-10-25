@@ -1,4 +1,4 @@
-import { DnaHash } from "@holochain/client";
+import { AppInfo, DnaHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult } from "lit";
@@ -6,14 +6,17 @@ import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { SlInput, SlRange } from "@scoped-elements/shoelace";
 import { object, string, boolean, number } from 'yup';
-import { ConfigDimension, Range, RangeKind } from "@neighbourhoods/client";
-import { query, state } from "lit/decorators.js";
+import { ConfigDimension, Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
+import { property, query, state } from "lit/decorators.js";
+import { decode } from "@msgpack/msgpack";
 
 const MIN_RANGE = -1000000;
 const MAX_RANGE = 1000000;
 
 export default class CreateDimension extends NHComponentShoelace {
-
+  @property()
+  sensemakerStore!: SensemakerStore;
+  
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
@@ -76,7 +79,8 @@ export default class CreateDimension extends NHComponentShoelace {
           this._dimensionSchema.validate(this._dimension)
           .then(async _ => {
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-            // await this.createPost()
+            const range = await this.createRange()
+            await this.createDimension()
           })
           .catch(this.handleValidationError.bind(this))
         }
@@ -126,6 +130,42 @@ export default class CreateDimension extends NHComponentShoelace {
     }
   }
   
+  async createRange() {
+    try {
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      console.log('{ ...this._dimension, range: { ...this._dimensionRange, kind: JSON.stringify(this._dimensionRange.kind)}} :>> ', { ...this._dimension, range: { ...this._dimensionRange, kind: JSON.stringify(this._dimensionRange.kind)}});
+      const response = await this.sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'create_range',
+        payload: {
+          "name": "10-scale",
+          "kind": `{
+            "Integer": { "min": 0, "max": 10 }
+          }`,
+        },
+      });
+      console.log('response :>> ', decode(response));
+    } catch (error) {
+      console.log('Error creating new range for dimension: ', error);
+    }
+  }
+  
+  async createDimension() {
+    try {
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      await this.sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'create_dimension',
+        payload: null,
+      });
+    } catch (error) {
+      console.log('Error creating new dimension: ', error);
+    }
+  }
 
   render() {
     return html`
