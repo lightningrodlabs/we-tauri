@@ -63,6 +63,24 @@ export default class CreateDimension extends NHComponentShoelace {
     return existsUntouched
   }
 
+  async resetForm() {
+    this._dimension = { name: "", computed: false, range_eh: undefined };
+    this._dimensionRange = { name: "", kind: { Integer: {
+      min: 0,
+      max: 0,
+    }} as RangeKind };
+    (this.renderRoot.querySelector('sl-input') as any).value = '';
+    delete (this.renderRoot.querySelector('sl-input') as any).dataset.touched;
+    
+    (this.renderRoot.querySelectorAll('sl-range') as any).forEach(range => {
+      range.value = 0;
+      delete range.dataset.touched;
+    })
+
+    this.submitBtn.loading = false;
+    await this.updateComplete
+  }
+
   onSubmit() {
     const inputs = this.renderRoot.querySelectorAll("sl-input, sl-range");
     this.resetInputErrorLabels(inputs);
@@ -80,7 +98,6 @@ export default class CreateDimension extends NHComponentShoelace {
             this._dimension.range_eh = rangeEh;
             const dimensionEh = await this.createDimension()
 
-            this._dimension = { name: "", computed: false, range_eh: undefined };
             this.dispatchEvent(
               new CustomEvent("dimension-created", {
                 detail: { dimensionEh },
@@ -221,7 +238,7 @@ export default class CreateDimension extends NHComponentShoelace {
       :host {
         display: grid;
         flex: 1;
-        place-content: center;
+        place-content: start;
         color: var(--nh-theme-fg-default); 
       }
 
