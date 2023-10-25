@@ -96,6 +96,9 @@ jobs:
       - name: Build @lightningrodlabs/we-applet
         run: npm run build -w @lightningrodlabs/we-applet
 
+      - name: Build applet-iframe
+        run: npm run build -w applet-iframe
+
       - name: Build grapes-editor
         # if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'windows-2019'
         run: |

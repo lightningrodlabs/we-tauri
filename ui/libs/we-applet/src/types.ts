@@ -167,6 +167,7 @@ export type RenderInfo = {
   view: AppletView,
   appletClient: AppAgentClient,
   profilesClient: ProfilesClient,
+  appletHash: AppletHash,
 } | {
   type: "cross-applet-view",
   view: CrossAppletView,

@@ -201,7 +201,7 @@ pub async fn read_asset(
     };
 
     let assets_dir = we_fs.ui_store().assets_dir(UiIdentifier::GuiReleaseHash(gui_release_hash));
-    let asset_file = assets_dir.join(asset_name);
+    let asset_file = assets_dir.join(asset_name.clone());
 
     println!("Reading asset file: {:?}", asset_file);
 
@@ -216,11 +216,31 @@ pub async fn read_asset(
         }
     };
 
-    match std::fs::read(asset_file.clone()) {
-        Ok(asset) => Ok(Some((asset, mime_type))),
-        Err(e) => {
-            println!("Failed to read asset. Error: {}", e);
-            Ok(None)
+    match asset_name.as_str() {
+        "index.html" => {
+            // inject
+            match std::fs::read_to_string(asset_file.clone()) {
+                Ok(index_html) => {
+                    let modified_index_html = index_html.replacen(
+                        "<head>",
+                        format!("<head>\n<script type=\"module\">{}</script>\n", include_str!("../../ui/applet-iframe/dist/index.mjs")).as_str(),
+                        1
+                    );
+                    Ok(Some((modified_index_html.as_bytes().to_vec(), mime_type)))
+                },
+                Err(e) => {
+                    println!("Failed to read index.html to String. Error: {}", e);
+                    Ok(None)
+                },
+            }
         },
+        _ => match std::fs::read(asset_file.clone()) {
+            Ok(asset) => Ok(Some((asset, mime_type))),
+            Err(e) => {
+                println!("Failed to read asset. Error: {}", e);
+                Ok(None)
+            },
+        }
     }
+
 }
