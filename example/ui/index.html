@@ -36,7 +36,7 @@
       (async function() {
 
         const appletServices = {
-          attachmetTypes: (_appletClient, _appletHash, _weServices) => ({}),
+          attachmetTypes: async (_appletClient, _appletHash, _weServices) => ({}),
           blockTypes: {},
           search: async (appletClient, _appletHash, _weServices, searchFilter) => {
             const postsClient = new PostsClient(weClient.renderInfo.appletClient, "forum");
