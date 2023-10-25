@@ -1,6 +1,6 @@
 {
   "name": "we-alpha",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "scripts": {
     "start": "vite --force --clearScreen false --port 1420",
     "build": "vite build",
@@ -11,9 +11,9 @@
     "@holochain-open-dev/elements": "^0.7.0",
     "@holochain-open-dev/peer-status": "^0.9.1",
     "@holochain-open-dev/profiles": "^0.16.1",
-    "@holochain-open-dev/stores": "^0.7.2",
-    "@holochain-open-dev/utils": "^0.15.0",
-    "@holochain/client": "^0.16.0",
+    "@holochain-open-dev/stores": "^0.7.4",
+    "@holochain-open-dev/utils": "^0.16.0",
+    "@holochain/client": "^0.16.3",
     "@lightningrodlabs/we-applet": "file:../libs/we-applet",
     "@lit-labs/context": "^0.2.0",
     "@lit-labs/task": "^1.1.2",

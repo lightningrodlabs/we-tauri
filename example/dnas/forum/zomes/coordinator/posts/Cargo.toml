@@ -19,7 +19,7 @@ posts_integrity = { workspace = true }
 fixt = "*"
 futures = { version = "0.3.1", default-features = false }
 hdk = { workspace = true, features = ["encoding", "test_utils"] }
-holochain = { worskpace = true, default-features = false, features = [
+holochain = { workspace = true, default-features = false, features = [
   "test_utils",
 ] }
 tokio = { version = "1.3", features = ["full"] }

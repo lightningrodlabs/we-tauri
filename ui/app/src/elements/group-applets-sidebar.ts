@@ -36,15 +36,17 @@ export class GroupAppletsSidebar extends LitElement {
   @property(hashProperty("applet-hash"))
   selectedAppletHash!: EntryHash;
 
+  // All the Applets that are running and part of this Group
   _groupApplets = new StoreSubscriber(
     this,
-    () => pipe(this._groupStore.allApplets, (allApplets) =>
-          sliceAndJoin(this.weStore.appletStores, allApplets)
+    () => pipe(this._groupStore.allMyRunningApplets, (myRunningApplets) =>
+          sliceAndJoin(this.weStore.appletStores, myRunningApplets)
         ) as AsyncReadable<ReadonlyMap<EntryHash, AppletStore>>,
     () => [this._groupStore]
   );
 
   renderApplets(applets: ReadonlyMap<EntryHash, AppletStore>) {
+    console.log("Rendering applets: ", applets);
     if (Array.from(applets.entries()).length === 0) {
       return html`
       <div class="row" style="align-items: center; font-size: 20px; padding-left: 10px; font-weight: 500;">
@@ -119,6 +121,7 @@ export class GroupAppletsSidebar extends LitElement {
         ></sl-skeleton>
         `;
       case "error":
+        console.error("ERROR: ", this._groupApplets.value.error);
         return html`<display-error
           .headline=${msg("Error displaying the applets")}
           tooltip

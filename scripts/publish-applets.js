@@ -1,9 +1,10 @@
-import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
+
 import { execSync } from "child_process";
-import yaml from "js-yaml";
 import fs from "fs";
 import crypto from "crypto";
 import AdmZip from "adm-zip";
+import { AdminWebsocket, AppAgentWebsocket } from "@holochain/client";
+import yaml from "js-yaml";
 
 const WE_LOGO_PATH = `${process.cwd()}/logo.svg`;
 const TESTING_APPLETS_PATH = `${process.cwd()}/testing-applets`;
@@ -16,7 +17,7 @@ function getAppletsPaths() {
 
 async function publishApplets() {
   const adminWs = await AdminWebsocket.connect(
-    new URL(`ws://localhost:${process.env.ADMIN_PORT}`),
+    new URL(`ws://127.0.0.1:${process.env.ADMIN_PORT}`),
     100000
   );
 
@@ -32,12 +33,12 @@ async function publishApplets() {
 
   const appPorts = await adminWs.listAppInterfaces();
   const devhubClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     devhubAppId,
     100000
   );
   const appstoreClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPorts[0]}`),
+    new URL(`ws://127.0.0.1:${appPorts[0]}`),
     appstoreAppId,
     100000
   );
@@ -199,7 +200,8 @@ async function publishApplets() {
               .find((z) => z.name === ze.payload.content.name)
               .dependencies.map((d) => d.name),
           })),
-          origin_time: "2022-02-11T23:05:19.470323Z",
+          origin_time: dnaEntity.payload.origin_time ? dnaEntity.payload.origin_time : "2022-02-11T23:05:19.470323Z",
+          properties: dnaEntity.payload.properties ? dnaEntity.payload.properties : null,
         },
       });
 
@@ -418,6 +420,18 @@ async function publishAppletsRetry() {
     } else if (e.toString().includes("TypeError: Cannot read properties of undefined (reading 'installed_app_id')")) {
       console.log("Failed to publish applets: Error: ", e);
       console.log("\n\nYou probably haven't installed the DevHub yet.");
+    } else if (e.toString().includes("syntax error near unexpected token")) {
+      console.log(
+        "Check the name of the webhapp file. There might be unexpected syntax in the name."
+      );
+    } else if (e.toString().includes("testing-applets")) {
+      console.log(
+        "You probably haven't add webhapp`s file to testing-applets directory"
+      );
+    } else if (e.toString().includes("hc: command not found")) {
+      console.log(
+        "Remember to run this script from within a nix-shell. So the hc command will be available."
+      );
     } else {
       console.log("Failed to publish applets. Error: ", e);
     }

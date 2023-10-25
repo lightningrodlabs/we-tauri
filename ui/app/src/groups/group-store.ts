@@ -9,15 +9,13 @@ import {
   AsyncStatus,
   completed,
   derived,
-  get,
-  joinAsync,
   joinMap,
   lazyLoad,
   lazyLoadAndPoll,
+  manualReloadStore,
   mapAndJoin,
   pipe,
   sliceAndJoin,
-  toPromise,
 } from "@holochain-open-dev/stores";
 import { LazyHoloHashMap, mapValues } from "@holochain-open-dev/utils";
 import {
@@ -31,7 +29,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { DnaModifiers } from "@holochain/client";
 
-import { GroupProfile } from "@lightningrodlabs/we-applet";
+import { AppletHash, GroupProfile } from "@lightningrodlabs/we-applet";
 
 import { GroupClient } from "./group-client.js";
 import { CustomViewsStore } from "../custom-views/custom-views-store.js";
@@ -39,8 +37,9 @@ import { CustomViewsClient } from "../custom-views/custom-views-client.js";
 import { WeStore } from "../we-store.js";
 import { AppEntry, Entity, HappReleaseEntry } from "../processes/appstore/types.js";
 import { Applet } from "../applets/types.js";
+import { isAppRunning } from "../utils.js";
 
-export const APPLETS_POLLING_FREQUENCY = 4000;
+export const NEW_APPLETS_POLLING_FREQUENCY = 15000;
 
 
 // Given a group, all the functionality related to that group
@@ -54,6 +53,8 @@ export class GroupStore {
   customViewsStore: CustomViewsStore;
 
   members: AsyncReadable<Array<AgentPubKey>>;
+
+  private constructed: boolean;
 
   constructor(
     public appAgentWebsocket: AppAgentWebsocket,
@@ -72,13 +73,17 @@ export class GroupStore {
       new CustomViewsClient(appAgentWebsocket, "group")
     );
     this.members = this.profilesStore.agentsWithProfile;
+
+    this.constructed = true;
   }
 
   public async addRelatedGroup(
     groupDnaHash: DnaHash,
     groupProfile: GroupProfile
   ) {
-    const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
+    const groupStore = await this.weStore.groupStore(groupDnaHash);
+
+    if (!groupStore) throw new Error("Failed to add related Group: GroupStore not found.");
 
     const modifiers = await groupStore.groupDnaModifiers();
 
@@ -87,6 +92,12 @@ export class GroupStore {
       network_seed: modifiers.network_seed,
       group_dna_hash: groupDnaHash,
     });
+  }
+
+  public async addFederatedApplet(applet: Applet) {
+    await this.groupClient.registerApplet(applet);
+    await this.allMyApplets.reload();
+    await this.allMyRunningApplets.reload();
   }
 
   async groupDnaModifiers(): Promise<DnaModifiers> {
@@ -116,11 +127,16 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    return this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    await this.groupClient.registerApplet(applet);
+    await this.weStore.installApplet(appletHash, applet);
   }
 
-  // Fetches the applet from the devhub, installs it in the current conductor, and registers it in the group DNA
-  async installAppletBundle(
+  /**
+   * Fetches the applet from the devhub, installs it in the current conductor
+   * and advertises it in the group DNA. To be called by the first agent
+   * installing this specific instance of the Applet.
+   */
+  async installAndAdvertiseApplet(
     appEntry: Entity<AppEntry>,
     customName: string,
     happRelease: Entity<HappReleaseEntry>,
@@ -147,10 +163,22 @@ export class GroupStore {
 
     const appletHash = await this.groupClient.hashApplet(applet);
 
-    await this.weStore.appletBundlesStore.installApplet(appletHash, applet);
+    await this.weStore.installApplet(appletHash, applet);
 
-    // --- Register hApp in the We DNA ---
-    await this.groupClient.registerApplet(applet);
+    try {
+      await this.groupClient.registerApplet(applet);
+    } catch (e) {
+      console.error(`Failed to register Applet after installation. Uninstalling again. Error:\n${e}.`);
+      try {
+        await this.weStore.uninstallApplet(appletHash);
+        return Promise.reject(new Error(`Failed to register Applet: ${e}.\nApplet uninstalled again.`))
+      } catch (err) {
+        console.error(`Failed to undo installation of Applet after failed registration: ${err}`)
+        return Promise.reject(
+          new Error(`Failed to register Applet (E1) and Applet could not be uninstalled again (E2):\nE1: ${e}\nE2: ${err}`)
+        );
+      }
+    }
 
     return appletHash;
   }
@@ -166,25 +194,86 @@ export class GroupStore {
     lazyLoad(async () => this.groupClient.getApplet(appletHash))
   );
 
-  allApplets = lazyLoadAndPoll(async () => this.groupClient.getApplets(), APPLETS_POLLING_FREQUENCY);
+  // need to change this. allApplets needs to come from the conductor
+  // Currently unused
+  // allGroupApplets = lazyLoadAndPoll(async () => this.groupClient.getGroupApplets(), APPLETS_POLLING_FREQUENCY);
 
-  archivedApplets = lazyLoadAndPoll(
-    async () => this.groupClient.getArchivedApplets(),
-    4000
-  );
-
-  installedApplets = asyncDerived(
-    joinAsync([this.allApplets, this.weStore.appletBundlesStore.installedApplets]),
-    ([allApplets, installedApplets]) =>
-      allApplets.filter((appletHash) =>
-        installedApplets.find(
-          (installedAppletHash) =>
-            installedAppletHash.toString() === appletHash.toString()
+  allMyRunningApplets = manualReloadStore(async () => {
+    const allMyApplets = await (async () => {
+      if (!this.constructed) {
+        return retryUntilResolved<Array<AppletHash>>(
+          () => this.groupClient.getMyApplets(),
+          200,
+          undefined,
+          false,
         )
-      )
-  );
+      }
+      return this.groupClient.getMyApplets();
+    })();
+    // const allMyApplets = await this.groupClient.getMyApplets();
+    const installedApps = await this.weStore.adminWebsocket.listApps({});
+    const runningAppIds = installedApps
+      .filter((app) => isAppRunning(app))
+      .map((appInfo) => appInfo.installed_app_id);
 
-  activeAppletStores = pipe(this.allApplets,
+    // console.log("Got runningAppIds: ", runningAppIds);
+    // console.log("Got allMyApplets: ", allMyApplets);
+
+    const output = allMyApplets
+      .filter((appletHash) => runningAppIds.includes(`applet#${encodeHashToBase64(appletHash)}`));
+    // console.log("Got allMyRunningApplets: ", output);
+    return output;
+  });
+
+  allMyApplets = manualReloadStore(async () => {
+    if (!this.constructed) {
+      return retryUntilResolved<Array<AppletHash>>(
+        () => this.groupClient.getMyApplets(),
+        200,
+        undefined,
+        false,
+      );
+    }
+    return this.groupClient.getMyApplets();
+  });
+
+
+  allAdvertisedApplets = manualReloadStore(async () => {
+    if (!this.constructed) {
+      return retryUntilResolved<Array<AppletHash>>(
+        () => this.groupClient.getGroupApplets(),
+        200,
+        undefined,
+        false,
+      )
+    }
+    return this.groupClient.getMyApplets();
+  });
+
+  // Applets that have been registered in the group by someone else but have never been installed
+  // in the local conductor yet (provided that storing the Applet entry to the local source chain has
+  // succeeded for every Applet that has been installed into the conductor)
+  unjoinedApplets = lazyLoadAndPoll(async () => this.groupClient.getUnjoinedApplets(), NEW_APPLETS_POLLING_FREQUENCY);
+
+  // Currently unused
+  // Would be nice to show archived applets also if explicitly desired by the user but should not be polling constantly
+  // archivedApplets = lazyLoadAndPoll(
+  //   async () => this.groupClient.getArchivedApplets(),
+  //   4000
+  // );
+
+  // installedApplets = asyncDerived(
+  //   joinAsync([this.allMyApplets, this.weStore.appletBundlesStore.installedApplets]),
+  //   ([myApplets, installedApplets]) =>
+  //     myApplets.filter((appletHash) =>
+  //       installedApplets.find(
+  //         (installedAppletHash) =>
+  //           installedAppletHash.toString() === appletHash.toString()
+  //       )
+  //     )
+  // );
+
+  activeAppletStores = pipe(this.allMyApplets,
     (allApplets) => sliceAndJoin(this.weStore.appletStores, allApplets)
   );
 
@@ -217,13 +306,39 @@ export class GroupStore {
     return completed([undefined, undefined] as [string | undefined, number | undefined]);
   });
 
-  appletUiUpdatesAvailable = asyncDerived(this.allApplets, (allApplets) => {
+  appletUiUpdatesAvailable = asyncDerived(this.allMyRunningApplets, (myApplets) => {
     let updatesAvailable = false;
-    allApplets.forEach((applet) => {
-      if (this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(applet)}`]) {
+    myApplets.forEach((appletHash) => {
+      if (this.weStore.availableUiUpdates[`applet#${encodeHashToBase64(appletHash)}`]) {
         updatesAvailable = true;
       }
     });
     return updatesAvailable
   });
+}
+
+
+async function retryUntilResolved<T>(
+  fn: () => Promise<T>,
+  retryInterval: number = 200,
+  maxRetries: number | undefined = undefined,
+  logErrors: boolean = false,
+) {
+  try {
+    return await fn();
+  } catch (e) {
+    if (logErrors) {
+      console.warn(`Failed to resolve fn in retryUntilResolved. Error: ${e}.\nfn: ${fn}`);
+    }
+    if (maxRetries && maxRetries <= 1) {
+      throw new Error(`Failed to to call function after ${maxRetries} attempts: ${e}.\nfn ${fn}`);
+    }
+    await delay(retryInterval);
+    return retryUntilResolved<T>(fn, retryInterval, maxRetries ? maxRetries - 1 : undefined, logErrors);
+  }
+}
+
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms) });
 }

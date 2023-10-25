@@ -36,9 +36,9 @@
       (async function() {
 
         const appletServices = {
-          attachmetTypes: (_appletClient) => ({}),
+          attachmetTypes: async (_appletClient, _appletHash, _weServices) => ({}),
           blockTypes: {},
-          search: async (appletClient, searchFilter) => {
+          search: async (appletClient, _appletHash, _weServices, searchFilter) => {
             const postsClient = new PostsClient(weClient.renderInfo.appletClient, "forum");
             const appInfo = await appletClient.appInfo();
             const dnaHash = (appInfo.cell_info.forum[0])[

@@ -11,9 +11,7 @@ import {
   toPromise,
 } from "@holochain-open-dev/stores";
 import {
-  decodeHashFromBase64,
   DnaHash,
-  encodeHashToBase64,
   EntryHash,
 } from "@holochain/client";
 import { consume } from "@lit-labs/context";
@@ -25,7 +23,7 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
-import { GroupProfile, AppletView, RenderView } from "@lightningrodlabs/we-applet";
+import { GroupProfile, AppletView, RenderView, AppletHash } from "@lightningrodlabs/we-applet";
 
 import { weStyles } from "../../shared-styles.js";
 import "./view-frame.js";
@@ -33,6 +31,7 @@ import { WeStore } from "../../we-store.js";
 import { weStoreContext } from "../../context.js";
 import { AppletStore } from "../../applets/applet-store.js";
 import { GroupStore } from "../../groups/group-store.js";
+import { Applet } from "../../applets/types.js";
 
 @localized()
 @customElement("applet-view")
@@ -58,7 +57,7 @@ export class AppletViewEl extends LitElement {
     () =>
       joinAsync([
         this.weStore.appletStores.get(this.appletHash),
-        this.weStore.appletBundlesStore.isInstalled.get(this.appletHash),
+        this.weStore.isInstalled.get(this.appletHash),
         this.weStore.groupsForApplet.get(this.appletHash),
         this.weStore.allGroupsProfiles,
       ]) as AsyncReadable<
@@ -87,34 +86,71 @@ export class AppletViewEl extends LitElement {
     if (this._unlisten) this._unlisten();
   }
 
-  async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
-    if (this.registering) return;
+  // async regitsterApplet(groupDnaHash: DnaHash, appletStore: AppletStore) {
+  //   if (this.registering) return;
 
-    this.registering = true;
+  //   this.registering = true;
+  //   try {
+  //     const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
+
+  //     if (!appletStore) throw new Error("Applet not found");
+
+  //     const applet = appletStore.applet;
+  //     await groupStore.groupClient.registerApplet(applet);
+  //     await this.weStore.appletBundlesStore.installApplet(
+  //       this.appletHash,
+  //       appletStore.applet
+  //     );
+  //   } catch (e) {
+  //     notifyError(msg("Error registering applet."));
+  //     console.error(e);
+  //   }
+
+  //   this.registering = false;
+  // }
+
+  /**
+   * Fetches the applet from the devhub, installs it in the current conductor
+   * and stores the Applet entry to the local source chain for each of the groups.
+   */
+  async joinAndInstallApplet(
+    appletHash: AppletHash,
+    applet: Applet,
+    groupsForApplet: ReadonlyMap<DnaHash, GroupStore>,
+  ): Promise<EntryHash> {
+
+    await this.weStore.installApplet(appletHash, applet);
+
     try {
-      const groupStore = await toPromise(this.weStore.groups.get(groupDnaHash));
-
-      if (!appletStore) throw new Error("Applet not found");
-
-      const applet = appletStore.applet;
-      await groupStore.groupClient.registerApplet(applet);
-      await this.weStore.appletBundlesStore.installApplet(
-        this.appletHash,
-        appletStore.applet
+      await Promise.all(
+        Array.from(groupsForApplet.values())
+          .map(async (groupStore) => {
+            await groupStore.groupClient.registerApplet(applet);
+            await groupStore.allMyApplets.reload();
+            await groupStore.allMyRunningApplets.reload();
+          })
       );
     } catch (e) {
-      notifyError(msg("Error registering applet."));
-      console.error(e);
+      console.error(`Failed to register Applet in groups after installation. Uninstalling again. Error:\n${e}.`);
+      try {
+        await this.weStore.uninstallApplet(appletHash);
+        return Promise.reject(new Error(`Failed to register Applet: ${e}.\nApplet uninstalled again.`))
+      } catch (err) {
+        console.error(`Failed to undo installation of Applet after failed registration: ${err}`)
+        return Promise.reject(
+          new Error(`Failed to register Applet (E1) and Applet could not be uninstalled again (E2):\nE1: ${e}\nE2: ${err}`)
+        );
+      }
     }
 
-    this.registering = false;
+    return appletHash;
   }
 
   renderAppletFrame([
     appletStore,
     isInstalled,
     groupsForThisApplet,
-    allGroups,
+    _allGroups,
   ]: [
     AppletStore | undefined,
     boolean,
@@ -148,75 +184,75 @@ export class AppletViewEl extends LitElement {
         </div>
       `;
 
-    if (groupsForThisApplet.size === 0) {
-      // Applet was just archived by another member of the group
-      return html`
-        <div class="row center-content" style="flex: 1">
-          <sl-card
-            ><form
-              style="flex: 1"
-              ${onSubmit((f) =>
-                this.regitsterApplet(
-                  decodeHashFromBase64(f.groupDnaHash),
-                  appletStore
-                )
-              )}
-            >
-              <div class="column center-content">
-                <sl-icon
-                  .src=${wrapPathInSvg(mdiAlertOutline)}
-                  style="font-size: 64px; margin-bottom: 16px"
-                ></sl-icon>
-                <span style="margin-bottom: 4px"
-                  >${msg(
-                    "This applet was just archived in all the groups that had it registered."
-                  )}</span
-                >
-                <span style="margin-bottom: 16px"
-                  >${msg(
-                    "If you want to continue to use it, you must register it in another group."
-                  )}</span
-                >
-                <span style="margin-bottom: 16px"
-                  >${msg(
-                    "You can also just close this window if you don't want to continue using it."
-                  )}</span
-                >
-                <sl-select
-                  .placeholder=${msg("Select Group")}
-                  name="groupDnaHash"
-                  @sl-hide=${(e) => e.stopPropagation()}
-                  style="margin-bottom: 16px"
-                  required
-                >
-                  ${Array.from(allGroups.entries()).map(
-                    ([groupDnaHash, groupProfile]) => html`
-                      <sl-option .value=${encodeHashToBase64(groupDnaHash)}>
-                        <img
-                          slot="prefix"
-                          .src=${groupProfile?.logo_src}
-                          alt="${groupProfile?.name}"
-                          style="height: 16px; width: 16px"
-                        />${groupProfile?.name}</sl-option
-                      >
-                    `
-                  )}
-                </sl-select>
-              </div>
-              <div class="row " style="flex: 1">
-                <span style="flex: 1"></span>
-                <sl-button
-                  variant="primary"
-                  .loading=${this.registering}
-                  type="submit"
-                  >${msg("Register Applet")}</sl-button
-                >
-              </div>
-            </form></sl-card
-          >
-        </div>
-      `;
-    }
+    // if (groupsForThisApplet.size === 0) {
+    //   // Applet was just archived by another member of the group
+    //   return html`
+    //     <div class="row center-content" style="flex: 1">
+    //       <sl-card
+    //         ><form
+    //           style="flex: 1"
+    //           ${onSubmit((f) =>
+    //             this.regitsterApplet(
+    //               decodeHashFromBase64(f.groupDnaHash),
+    //               appletStore
+    //             )
+    //           )}
+    //         >
+    //           <div class="column center-content">
+    //             <sl-icon
+    //               .src=${wrapPathInSvg(mdiAlertOutline)}
+    //               style="font-size: 64px; margin-bottom: 16px"
+    //             ></sl-icon>
+    //             <span style="margin-bottom: 4px"
+    //               >${msg(
+    //                 "This applet was just archived in all the groups that had it registered."
+    //               )}</span
+    //             >
+    //             <span style="margin-bottom: 16px"
+    //               >${msg(
+    //                 "If you want to continue to use it, you must register it in another group."
+    //               )}</span
+    //             >
+    //             <span style="margin-bottom: 16px"
+    //               >${msg(
+    //                 "You can also just close this window if you don't want to continue using it."
+    //               )}</span
+    //             >
+    //             <sl-select
+    //               .placeholder=${msg("Select Group")}
+    //               name="groupDnaHash"
+    //               @sl-hide=${(e) => e.stopPropagation()}
+    //               style="margin-bottom: 16px"
+    //               required
+    //             >
+    //               ${Array.from(allGroups.entries()).map(
+    //                 ([groupDnaHash, groupProfile]) => html`
+    //                   <sl-option .value=${encodeHashToBase64(groupDnaHash)}>
+    //                     <img
+    //                       slot="prefix"
+    //                       .src=${groupProfile?.logo_src}
+    //                       alt="${groupProfile?.name}"
+    //                       style="height: 16px; width: 16px"
+    //                     />${groupProfile?.name}</sl-option
+    //                   >
+    //                 `
+    //               )}
+    //             </sl-select>
+    //           </div>
+    //           <div class="row " style="flex: 1">
+    //             <span style="flex: 1"></span>
+    //             <sl-button
+    //               variant="primary"
+    //               .loading=${this.registering}
+    //               type="submit"
+    //               >${msg("Register Applet")}</sl-button
+    //             >
+    //           </div>
+    //         </form></sl-card
+    //       >
+    //     </div>
+    //   `;
+    // }
 
     if (!isInstalled) {
       return html`
@@ -239,10 +275,7 @@ export class AppletViewEl extends LitElement {
                 @click=${async () => {
                   this.installing = true;
                   try {
-                    await this.weStore.appletBundlesStore.installApplet(
-                      this.appletHash,
-                      appletStore.applet
-                    );
+                    await this.joinAndInstallApplet(this.appletHash, appletStore.applet, groupsForThisApplet);
                     this.dispatchEvent(
                       new CustomEvent("applet-installed", {
                         detail: {

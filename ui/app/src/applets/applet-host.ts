@@ -53,7 +53,7 @@ export async function setupAppletMessageHandler(
         message.origin
       );
       const installedApplets = await toPromise(
-        weStore.appletBundlesStore.installedApplets
+        weStore.installedApplets
       );
       const appletHash = installedApplets.find(
         (a) => encodeHashToBase64(a).toLowerCase() === lowerCaseAppletId
@@ -117,15 +117,13 @@ export function buildHeadlessWeClient(weStore: WeStore): WeServices {
         return undefined;
       }
     },
-    async groupProfile(groupId: DnaHash): Promise<GroupProfile | undefined> {
-      const groupProfile = await toPromise(
-        pipe(
-          weStore.groups.get(groupId),
-          (groupStore) => groupStore.groupProfile
-        )
-      );
-
-      return groupProfile;
+    async groupProfile(groupDnaHash: DnaHash): Promise<GroupProfile | undefined> {
+      const groupStore = await weStore.groupStore(groupDnaHash);
+      if (groupStore) {
+        const groupProfile = await toPromise(groupStore.groupProfile);
+        return groupProfile;
+      }
+      return undefined;
     },
     async appletInfo(appletHash: AppletHash) {
       const applet = await toPromise(weStore.appletStores.get(appletHash));
@@ -202,7 +200,7 @@ export async function handleAppletIframeMessage(
   switch (message.type) {
     case "get-iframe-config":
       const isInstalled = await toPromise(
-        weStore.appletBundlesStore.isInstalled.get(appletHash)
+        weStore.isInstalled.get(appletHash)
       );
 
       const appletStore = await toPromise(weStore.appletStores.get(appletHash));

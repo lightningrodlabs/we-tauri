@@ -66,8 +66,12 @@ export class YourSettings extends LitElement {
         }
       }}
     >
-      <span>${msg("Are you sure you want to leave this group?")}</span>
-
+      <div class="column">
+        <div>${msg("Are you sure you want to leave this group?")}</div><br>
+        <div><b>${msg("⚠️ This will delete all your applets of this group and the data therein")}</b>
+          ${msg(" (unless an Applet is shared with another group of yours).")}
+        </div>
+      </div>
       <sl-button slot="footer" @click=${() => this.dialog.hide()}
         >${msg("Cancel")}</sl-button
       >
@@ -84,15 +88,14 @@ export class YourSettings extends LitElement {
   render() {
     return html`
       ${this.renderLeaveGroupDialog()}
-      <div class="column" style="flex: 1">
+      <div class="column" style="flex: 1; align-items: center;">
         <profiles-context .store=${this.groupStore.profilesStore}>
           <sl-card>
             <span class="title" slot="header">${msg("Your Profile")}</span>
             <my-profile style="flex: 1"></my-profile
           ></sl-card>
         </profiles-context>
-        <div class="row">
-          <span style="flex: 1"></span>
+        <div class="row" style="flex: 1; margin-top: 60px;">
           <sl-button
             variant="danger"
             @click=${() => this.dialog.show()}

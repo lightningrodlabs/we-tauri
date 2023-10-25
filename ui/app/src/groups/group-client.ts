@@ -6,6 +6,8 @@ import {
   AppAgentCallZomeRequest,
   Record,
   AppAgentWebsocket,
+  AgentPubKey,
+  encodeHashToBase64,
 } from "@holochain/client";
 import { GroupProfile } from "@lightningrodlabs/we-applet";
 
@@ -44,8 +46,25 @@ export class GroupClient {
 
   /** Applets */
 
-  async getApplets(): Promise<Array<EntryHash>> {
-    return this.callZome("get_applets", null);
+  async getGroupApplets(): Promise<Array<EntryHash>> {
+    return this.callZome("get_group_applets", null);
+  }
+
+  /**
+   * Gets all the private Applet entries from the source chain
+   * @returns
+   */
+  async getMyApplets(): Promise<Array<EntryHash>> {
+    return this.callZome("get_my_applets", null);
+  }
+
+  /**
+   * Gets Applet entries that have been advertised by other agents in the
+   * group but have never been installed into the local conductor yet.
+   * @returns
+   */
+  async getUnjoinedApplets(): Promise<Array<[EntryHash, AgentPubKey]>> {
+    return this.callZome("get_unjoined_applets", null);
   }
 
   async getArchivedApplets(): Promise<Array<EntryHash>> {
@@ -54,9 +73,19 @@ export class GroupClient {
 
   async getApplet(appletHash: EntryHash): Promise<Applet | undefined> {
     const record = await this.callZome("get_applet", appletHash);
+    if (!record) {
+      console.warn(`@group-client: @getApplet: No applet found for hash: ${encodeHashToBase64(appletHash)}`);
+      return undefined;
+    };
     return new EntryRecord<Applet>(record).entry;
   }
 
+  /**
+   * First checks whether the same Applet has already been added to the group by someone
+   * else and if not, will advertise it in the group DNA. Then it adds the Applet
+   * entry as a private entry to the source chain.
+   * @param applet
+   */
   async registerApplet(applet: Applet): Promise<EntryHash> {
     return this.callZome("register_applet", applet);
   }
