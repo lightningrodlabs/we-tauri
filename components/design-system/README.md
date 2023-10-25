@@ -26,9 +26,19 @@ Currently this package exports these components, all of which are under developm
 
 `NHPagination`
 
+`NHProfileCard`
+
+`NHProfileIdenticon`
+
+`NHPagination`
+
 `NHPageHeaderCard`
 
 `NHAssessmentWidget`
+
+`NHSelectAvatar`
+
+`NHSlide`
 
 `NHMenu` -- currently same as NHButtonGroup
 

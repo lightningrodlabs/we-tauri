@@ -1,9 +1,11 @@
 import { css, CSSResult, html } from "lit";
-import { property, query } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { NHComponentShoelace } from "../ancestors/base";
 import NHCard from "../card";
 import NHButton from "../button";
+import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
+import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
 
 export default class NHProfileCard extends NHComponentShoelace {
   @property()
@@ -14,16 +16,17 @@ export default class NHProfileCard extends NHComponentShoelace {
   agentHashB64!: string;
   @property()
   loading: boolean = false;
+  @state()
+  _tooltipText: string = "Copy";
   @query(".hash-container")
-  hashContainer!: HTMLElement;
+  _hashContainer!: HTMLElement;
 
   static elementDefinitions = {
     'nh-card': NHCard,
     'nh-button': NHButton,
+    'sl-skeleton': SlSkeleton,
+    'sl-tooltip': SlTooltip,
   }
-
-  // @query('#copied-snackbar')
-  // _copiedSnackbar!: HTMLElement; TODO implement this
 
   renderHash(hash: string) {
     return html`
@@ -91,16 +94,19 @@ export default class NHProfileCard extends NHComponentShoelace {
               <h3 style="margin-top: calc(1px * var(--nh-spacing-lg));">HOLOCHAIN AGENT HASH</h3>
               <div class="hash-flex">
               ${this.renderHash(this.agentHashB64)}
+              <sl-tooltip content=${this._tooltipText} placement="top" style="color: var(--nh-theme-fg-default)">
                 <nh-button
                   .variant=${"primary"}
                   .size=${"icon-sm"}
                   .iconImageB64=${"PHN2ZyB3aWR0aD0iMjEiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyMSAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMSIgeT0iNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPHJlY3QgeD0iNiIgeT0iMSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE4IiByeD0iMyIgZmlsbD0iIzI2MUYyQiIgc3Ryb2tlPSIjNDMzQTRBIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+Cg=="}
-                  .clickHandler=${() => {
-                    navigator.clipboard.writeText((this.hashContainer.textContent as string)?.trim());
+                  @click=${() => {
+                    navigator.clipboard.writeText((this._hashContainer.textContent as string)?.trim());
+                    this._tooltipText = "Hash Copied!";
+                    this.requestUpdate();
                 }}
                 >
-                  <img class="copy-hash" src="icons/copy.svg" alt="user identicon" />
-                </nh-button>       
+                  </nh-button>       
+                </sl-tooltip>
               </div>
             </nh-card>`
           }

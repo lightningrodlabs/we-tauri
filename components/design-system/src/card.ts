@@ -56,7 +56,6 @@ export default class NHCard extends NHComponentShoelace {
   }
 
   static styles: CSSResult[] = [
-    super.styles as CSSResult,
     css`
 
     /* Layout */
@@ -74,6 +73,9 @@ export default class NHCard extends NHComponentShoelace {
     }
     :host(.nested-card) .container {
       min-width: calc(264px - calc(2px * var(--nh-spacing-3xl)));
+    }
+    :host(.squarish) {
+      max-width: calc(200px);
     }
     :host(.responsive) .container {
       max-width: initial;

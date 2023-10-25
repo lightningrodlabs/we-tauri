@@ -1,9 +1,11 @@
 import { b64images } from '@neighbourhoods/design-system-styles';
 import NHButtonGroup from "./button-group";
+import NHTabButton from "./tab-button";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { StaticValue, literal } from "lit/static-html.js";
 
+customElements.define('nh-tab-button', NHTabButton)
 customElements.define('nh-button-group', NHButtonGroup)
 
 export interface ButtonGroupProps {
@@ -57,7 +59,7 @@ export const VerticalButtons: Story = {
     direction: "vertical",
     itemLabels: ["Posts", "Popular", "Recent", "Review"],
     itemComponentTag: literal`nh-button`,
-    itemComponentProps: { variant: "primary", size: "stretch" },
+    itemComponentProps: { variant: "primary", size: "auto" },
     fixedFirstItem: false,
     addItemButton: false,
     theme: "dark",
@@ -119,7 +121,7 @@ export const VerticalIconButtons: Story = {
     itemComponentProps: {
       variant: "primary",
       iconImageB64: b64images.icons.forwardArrow,
-      size: "stretch",
+      size: "auto",
     },
     fixedFirstItem: false,
     addItemButton: false,

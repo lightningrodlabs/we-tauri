@@ -20,7 +20,7 @@ class TestRoot extends NHComponent {
     .textAreaValue=${this.sampleInput}
     .placeholder=${this.placeholder}
   >
-    <nh-button .disabled=${!this.valid} slot="footer" .variant=${"primary"} .size=${"md"} .label=${"Post"} .onClick=${() => {}}></nh-button>
+    <nh-button .disabled=${!this.valid} slot="footer" .variant=${"primary"} .size=${"md"} .onClick=${() => {}}>Post</nh-button>
   </nh-create-post>`
   }
 }
