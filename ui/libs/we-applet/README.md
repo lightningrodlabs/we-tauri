@@ -11,7 +11,7 @@ The differences between a We Applet and a normal Holochain App are:
   * UI elements to display single DHT entries
   * UI widgets/blocks of any kind
   * UI elements ("main" view or "blocks") that render information across all instances of that same Applet type
-* A We Applet can provide AppletServices for We or other Applets to use, including:
+* A We Applet can provide `AppletServices` for We or other Applets to use, including:
   * search: Searching in the Applet that returns Holochain Resource Locators (HRLs) pointing to DHT content
   * attachmentTypes: Entry types that can be attached by other Applets, alongside with a `create()` method that creates a new entry type to be attached ad hoc.
   * getEntryInfo(): A function that returns info for the entry associated to the HRL if it exists in the Applet and the method is implemented.

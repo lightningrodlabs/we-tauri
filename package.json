@@ -4,6 +4,7 @@
   "workspaces": [
     "ui/libs/*",
     "ui/app",
+    "ui/applet-iframe",
     "example/ui",
     "e2e",
     "site"
@@ -18,7 +19,7 @@
     "tauri:dev": "cross-env RUST_LOG=info WASM_LOG=warn npm run tauri dev -- -- -- --profile ${ADMIN_PORT}",
     "publish:applets": "run-singleton \"node scripts/publish-applets.js\"",
     "build:libs": "npm run build -w @lightningrodlabs/we-applet -w grapes-editor -w @lightningrodlabs/attachments",
-    "build:ui": "npm run build:libs && npm run build -w we-alpha",
+    "build:ui": "npm run build:libs && npm run build -w applet-iframe && npm run build -w we-alpha",
     "test": "npm run build:happ && cargo nextest run -j 1",
     "e2e": "npm run build:happ && cargo build --release -p we && npm test -w e2e-tests",
     "tauri": "tauri",
