@@ -43,6 +43,16 @@ use window::build_main_window;
 pub const APP_NAME: &str = "We";
 
 fn main() {
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "freebsd",
+        target_os = "dragonfly",
+        target_os = "openbsd",
+        target_os = "netbsd"
+    ))]
+    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+
+
     let disable_deep_link = std::env::var("DISABLE_DEEP_LINK").is_ok();
 
     if !disable_deep_link {
