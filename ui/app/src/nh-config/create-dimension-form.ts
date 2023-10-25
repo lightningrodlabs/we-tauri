@@ -6,9 +6,8 @@ import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { SlInput, SlRange } from "@scoped-elements/shoelace";
 import { object, string, boolean, number } from 'yup';
-import { ConfigDimension, Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension, Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
-import { decode } from "@msgpack/msgpack";
 
 const MIN_RANGE = -1000000;
 const MAX_RANGE = 1000000;
@@ -26,15 +25,13 @@ export default class CreateDimension extends NHComponentShoelace {
   _dimensionSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
     computed: boolean().required(),
-    range: object<Range>().required()
   });
   
-  _minRangeBoundary : number = 0;
+  _currentMinRange : number = 0;
   _dimensionRangeSchema = () => object({
     min: number().min(MIN_RANGE, "Must be at least " + MIN_RANGE).required(),
-    max: number().min(this._minRangeBoundary + 1, "Must be > " + this._minRangeBoundary).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
+    max: number().min(this._currentMinRange + 1, "Must be > " + this._currentMinRange).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
   });
-
 
   @state()
   _dimensionRange: Range = { name: "", kind: { Integer: {
@@ -42,7 +39,7 @@ export default class CreateDimension extends NHComponentShoelace {
     max: 1,
   }} as RangeKind };
   @state()
-  _dimension: Partial<ConfigDimension> = { name: "", computed: false, range: this._dimensionRange };
+  _dimension: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
 
   @query("nh-button")
   submitBtn!: NHButton;
@@ -79,8 +76,18 @@ export default class CreateDimension extends NHComponentShoelace {
           this._dimensionSchema.validate(this._dimension)
           .then(async _ => {
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-            const range = await this.createRange()
-            await this.createDimension()
+            const rangeEh = await this.createRange();
+            this._dimension.range_eh = rangeEh;
+            const dimensionEh = await this.createDimension()
+
+            this._dimension = { name: "", computed: false, range_eh: undefined };
+            this.dispatchEvent(
+              new CustomEvent("dimension-created", {
+                detail: { dimensionEh },
+                bubbles: true,
+                composed: true,
+              })
+            );
           })
           .catch(this.handleValidationError.bind(this))
         }
@@ -108,13 +115,12 @@ export default class CreateDimension extends NHComponentShoelace {
     })
   }
 
-
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.currentTarget as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
     switch (inputControl.name) {
       case 'min':
-        this._minRangeBoundary = inputControl.value;
+        this._currentMinRange = inputControl.value;
         this._dimensionRange.kind['Integer'].min = inputControl.value;
         break;
       case 'max':
@@ -134,19 +140,14 @@ export default class CreateDimension extends NHComponentShoelace {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
       const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      console.log('{ ...this._dimension, range: { ...this._dimensionRange, kind: JSON.stringify(this._dimensionRange.kind)}} :>> ', { ...this._dimension, range: { ...this._dimensionRange, kind: JSON.stringify(this._dimensionRange.kind)}});
+      
       const response = await this.sensemakerStore.client.callZome({
         cell_id,
         zome_name: 'sensemaker',
         fn_name: 'create_range',
-        payload: {
-          "name": "10-scale",
-          "kind": `{
-            "Integer": { "min": 0, "max": 10 }
-          }`,
-        },
+        payload:  this._dimensionRange,
       });
-      console.log('response :>> ', decode(response));
+      return response
     } catch (error) {
       console.log('Error creating new range for dimension: ', error);
     }
@@ -156,12 +157,13 @@ export default class CreateDimension extends NHComponentShoelace {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
       const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      await this.sensemakerStore.client.callZome({
+      const response = await this.sensemakerStore.client.callZome({
         cell_id,
         zome_name: 'sensemaker',
         fn_name: 'create_dimension',
-        payload: null,
+        payload: this._dimension,
       });
+      return response;
     } catch (error) {
       console.log('Error creating new dimension: ', error);
     }
