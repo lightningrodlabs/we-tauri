@@ -5,8 +5,6 @@ import { NHComponent } from './ancestors/base';
 
 export default class NHTabButton extends NHComponent {
   @property()
-  label!: string;
-  @property()
   selected: boolean = false;
   @property()
   disabled: boolean = false;
@@ -29,7 +27,7 @@ export default class NHTabButton extends NHComponent {
           [this.size]: !!this.size
         })}"
       >
-        ${this.label}
+        <slot> </slot>
       </button>
     `;
   }
@@ -100,7 +98,7 @@ export default class NHTabButton extends NHComponent {
         font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-sm));
       }
-      button.md, button.stretch {
+      button.md, button.auto {
         line-height: var(--nh-line-heights-headlines-default);
         font-weight: 600;
         font-size: calc(1px * var(--nh-font-size-md));

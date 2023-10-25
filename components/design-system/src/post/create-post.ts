@@ -15,7 +15,8 @@ export default class NHCreatePost extends NHComponentShoelace {
   render() {
     return html`
       <nh-card
-        .theme=${"dark"}
+        class="squarish"  
+        .theme=${"light"}
         .heading=${this.prompt}
         .hasContextMenu=${false}
         .hasPrimaryAction=${true}

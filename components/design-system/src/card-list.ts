@@ -2,6 +2,8 @@ import { css, CSSResult, html } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
+import NHCard from "./card";
+import NHButton from "./button";
 
 export default class NHCardList extends NHComponentShoelace {
   @property()
@@ -10,6 +12,11 @@ export default class NHCardList extends NHComponentShoelace {
   @property()
   type!: 'linear' | 'grid';
 
+  static elementDefinitions = {
+    'nh-card': NHCard,
+    'nh-button': NHButton,
+  }
+  
   render() {
     return html`
       <div class="list-container ${classMap({

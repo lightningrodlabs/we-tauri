@@ -1,5 +1,5 @@
 import { css, CSSResult, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { classMap } from "lit/directives/class-map.js";
 import { AlertType } from './alert'
@@ -11,11 +11,18 @@ import SlButton from '@shoelace-style/shoelace/dist/components/button/button.js'
 
 export enum DialogType {
   createNeighbourhood = 'create-neighbourhood',
+  leaveNeighbourhood = 'leave-neighbourhood',
   widgetConfig = 'widget-config',
   confirmation = 'confirmation',
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
-} 
+}
+
+function preventOverlayClose(event: CustomEvent) : void {
+  if (event.detail.source === 'overlay') {
+    event.preventDefault();
+  }
+}
 
 export default class NHDialog extends NHComponentShoelace {
   @property()
@@ -29,8 +36,8 @@ export default class NHDialog extends NHComponentShoelace {
   @property()
   handleOk!: () => void;
 
-  @property({ attribute: false })
-  onDialogClosed!: () => void;
+  @property()
+  handleClose!: () => void;
 
   @property({ type: Boolean })
   isOpen = false;
@@ -47,21 +54,31 @@ export default class NHDialog extends NHComponentShoelace {
   @property()
   openButtonRef!: HTMLElement;
 
-  connectedCallback() {
-    super.connectedCallback();
-  }
+  @query('sl-dialog')
+  _dialog!: HTMLElement;
 
   disconnectedCallback() {
-    this.openButtonRef?.removeEventListener('click', this.showDialog);
     super.disconnectedCallback();
+    if(this.openButtonRef && typeof this.openButtonRef?.removeEventListener == 'function') {
+      this.openButtonRef?.removeEventListener('click', this.showDialog);
+    }
+    this._dialog.removeEventListener('sl-request-close', preventOverlayClose)
+    typeof this.handleClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.handleClose);
   }
 
   updated(changedProperties: any) {
     if (changedProperties.has('openButtonRef')) {
+      // Bind the open event to the appropriate button in the UI
       if (typeof changedProperties.get('openButtonRef') !== 'undefined') {
         this.openButtonRef?.addEventListener('click', this.showDialog);
       }
     }
+  }
+
+  firstUpdated() {
+    if(!this._dialog) return
+    this._dialog.addEventListener('sl-request-close', preventOverlayClose)
+    typeof this.handleClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.handleClose);
   }
     
   chooseButtonText() {
@@ -69,6 +86,12 @@ export default class NHDialog extends NHComponentShoelace {
       case DialogType.createNeighbourhood:
       return {
         primary: 'Save',
+        secondary: 'Cancel',
+      }
+    
+      case DialogType.leaveNeighbourhood:
+      return {
+        primary: 'Leave',
         secondary: 'Cancel',
       }
     
@@ -83,6 +106,12 @@ export default class NHDialog extends NHComponentShoelace {
         primary: 'Install',
         secondary: 'Cancel',
       }
+
+      case DialogType.appletUninstall:
+      return {
+        primary: 'Uninstall',
+        secondary: 'Cancel',
+      }
     
       default:
         return {
@@ -94,36 +123,33 @@ export default class NHDialog extends NHComponentShoelace {
 
   renderActions() {
     switch (true) {
-      case ['applet-install', 'create-neighbourhood'].includes(this.dialogType):
+      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
-          <sl-button
+          <nh-button
             id="secondary-action-button"
-            size="large"
-            variant="neutral"
+            .size=${"md"}
+            variant=${"neutral"}
             @click=${this.hideDialog}
-          >
-            ${this.chooseButtonText().secondary}
-          </sl-button>
+          >${this.chooseButtonText().secondary}
+          </nh-button>
           <nh-button
             id="primary-action-button"
             .size=${"md"}
-            .variant=${"primary"}
-            .clickHandler=${this.onOkClicked}
+            .variant=${this.dialogType.match(/uninstall|leave/) ? "danger" : "primary"}
+            @click=${this.onOkClicked}
             ?disabled=${this.primaryButtonDisabled}
-            .label=${this.chooseButtonText().primary}
-            >
-            </nh-button>
-            </sl-button-group>`;
-            case 'widget-config' === this.dialogType:
-              return html`<sl-button-group id="buttons">
+            >${this.chooseButtonText().primary}
+          </nh-button>
+        </sl-button-group>`;
+      case 'widget-config' === this.dialogType:
+        return html`<sl-button-group id="buttons">
           <nh-button
           id="primary-action-button"
           size=${"md"}
           variant=${"primary"}
-          .clickHandler=${this.onOkClicked}
+          @click=${this.onOkClicked}
           ?disabled=${this.primaryButtonDisabled}
-          .label=${this.chooseButtonText().primary}
-          >
+          >${this.chooseButtonText().primary}
           </nh-button>
         </sl-button-group>`;
 
@@ -142,11 +168,11 @@ export default class NHDialog extends NHComponentShoelace {
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
-        @sl-after-hide=${this.onDialogClosed}
+        @sl-hide=${() => typeof this.handleClose == 'function' && this.handleClose()}
       >
         <div class="container">
           ${this.alertMessage
-          ? html`<nh-alert><span>${this.alertMessage}</span></nh-alert>`
+          ? html`<nh-alert .type=${this.alertType}><span>${this.alertMessage}</span></nh-alert>`
           : null}
           <slot name="inner-content">
           </slot>
@@ -235,8 +261,7 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-md));
         align-items: flex-start;
       }
-      #main::part(title),
-      #main::part(close-button) {
+      #main::part(title) {
         text-transform: uppercase;
         font-weight: var(--nh-font-weights-body-bold);
         font-family: var(--nh-font-families-headlines);
@@ -247,13 +272,8 @@ export default class NHDialog extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-sm));
         letter-spacing: 0.5px;
       }
-      #main::part(close-button):hover {
-        color: var(--nh-theme-bg-canvas);
-      }
       #main::part(close-button) {
-        position: absolute;
-        right: 0;
-        top: 0;
+        display: none;
       }
       ::slotted(div), #buttons {
         display: flex;
