@@ -22,7 +22,7 @@ export default class NHGlobalConfig extends NHComponent {
 
   render() {
     return html`
-      <create-dimension></create-dimension>
+      <create-dimension .sensemakerStore=${this._sensemakerStore.value}></create-dimension>
       <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
       <create-method></create-method>
     `;
