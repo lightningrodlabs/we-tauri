@@ -17,6 +17,9 @@ export default class DimensionList extends NHComponent {
 
   @state()
   private _dimensionEntries!: Dimension[];
+
+  @state()
+  private _rangeEntries!: Range[];
   
   @state()
   _selectedInputDimensionIndex: number = 0;
@@ -75,9 +78,32 @@ export default class DimensionList extends NHComponent {
     }
   }
 
+  async fetchRangeEntries() {
+    try {
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      const response = await this.sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'get_ranges',
+        payload: null,
+      });
+      this._rangeEntries = response.map(payload => {
+        try {
+          return decode(payload.entry.Present.entry) as Range;
+        } catch (error) {
+          console.log('Error decoding range payload: ', error);
+        }
+      }) as Range[];
+    } catch (error) {
+      console.log('Error fetching range details: ', error);
+    }
+  }
+
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     await this.fetchDimensionEntries()
-
+    await this.fetchRangeEntries()
+    
     if(typeof this._methodMapping.value == 'undefined') return;
     
     const dimensions : any = [];
