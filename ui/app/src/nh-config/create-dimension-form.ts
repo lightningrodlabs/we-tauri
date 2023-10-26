@@ -16,6 +16,9 @@ export default class CreateDimension extends NHComponentShoelace {
   @property()
   sensemakerStore!: SensemakerStore;
   
+  @property()
+  dimensionType!: "input" | "output";
+  
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
