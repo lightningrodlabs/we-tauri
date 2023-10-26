@@ -1,27 +1,23 @@
-import { DnaHash } from "@holochain/client";
-import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
+import { SensemakerStore } from "@neighbourhoods/client";
+import { property } from "lit/decorators.js";
+import CreateDimension from "./create-dimension-form";
 
 export default class CreateMethod extends NHComponent {
-
-  @contextProvided({ context: matrixContext, subscribe: true })
-  _matrixStore!: MatrixStore;
-
-  @contextProvided({ context: weGroupContext, subscribe: true })
-  weGroupId!: DnaHash;
+  @property()
+  sensemakerStore!: SensemakerStore;
 
   render() {
     return html`
-      
+      <create-dimension .dimensionType=${"output"} .sensemakerStore=${this.sensemakerStore}></create-dimension>
     `;
   }
 
 
   static elementDefinitions = {
     "nh-button": NHButton,
+    'create-dimension': CreateDimension,
   }
 
   static get styles() {
@@ -29,7 +25,7 @@ export default class CreateMethod extends NHComponent {
       :host {
         display: grid;
         flex: 1;
-        place-content: center;
+        place-content: start;
         color: var(--nh-theme-fg-default); 
       }
     `;
