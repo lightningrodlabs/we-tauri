@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 
 import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
-import { Dimension, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension,  Range, SensemakerStore } from "@neighbourhoods/client";
 
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import MethodListForDimension from "./method-list";
@@ -19,7 +19,7 @@ export default class DimensionList extends NHComponent {
   private _dimensionEntries!: Dimension[];
 
   @state()
-  private _rangeEntries!: Range[];
+  private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
   
   @state()
   _selectedInputDimensionIndex: number = 0;
@@ -42,6 +42,21 @@ export default class DimensionList extends NHComponent {
       });
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
+    }
+  }
+
+  async fetchRange(entryHash: EntryHash) : Promise<CallZomeResponse> {
+    try {
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      return this.sensemakerStore.client.callZome({
+            cell_id,
+            zome_name: 'sensemaker',
+            fn_name: 'get_range',
+            payload: entryHash,
+      });
+    } catch (error) {
+      console.log('Error fetching range details: ', error);
     }
   }
 
@@ -78,32 +93,21 @@ export default class DimensionList extends NHComponent {
     }
   }
 
-  async fetchRangeEntries() {
-    try {
-      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
-      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      const response = await this.sensemakerStore.client.callZome({
-        cell_id,
-        zome_name: 'sensemaker',
-        fn_name: 'get_ranges',
-        payload: null,
-      });
-      this._rangeEntries = response.map(payload => {
-        try {
-          return decode(payload.entry.Present.entry) as Range;
-        } catch (error) {
-          console.log('Error decoding range payload: ', error);
-        }
-      }) as Range[];
-    } catch (error) {
-      console.log('Error fetching range details: ', error);
-    }
+  async fetchRangeEntriesFromHashes(rangeEhs: EntryHash[]) {
+    const response = await Promise.all(rangeEhs.map(eH => this.fetchRange(eH)))
+    return response.map((payload, index) => {
+      try {
+        return { ...decode(payload.entry.Present.entry) as Range, range_eh: rangeEhs[index]}
+      } catch (error) {
+        console.log('Error decoding range payload: ', error);
+      }
+    }) as Array<Range & { range_eh: EntryHash }>;
   }
 
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     await this.fetchDimensionEntries()
-    await this.fetchRangeEntries()
-    
+    this._rangeEntries = await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
+
     if(typeof this._methodMapping.value == 'undefined') return;
     
     const dimensions : any = [];
@@ -138,7 +142,7 @@ export default class DimensionList extends NHComponent {
                                               .textSize=${"sm"}
                                             >
                                               <h2>Range: </h2>
-                                              ${`TODO: get range details`}
+                                              ${JSON.stringify(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
                                               ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length 
                                                 ? html`<h2>Methods using this dimension: </h2>
                                                   ${this._methodInputDimensions.map(({methodEh, name}) => {
