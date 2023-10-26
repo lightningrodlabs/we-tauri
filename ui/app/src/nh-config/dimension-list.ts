@@ -122,7 +122,16 @@ export default class DimensionList extends NHComponent {
                                                   })}
                                                 `
                                                 :html`<h2>No methods for this dimension</h2>
-                                                ${this._selectedInputDimensionIndex !== dimensionIndex ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>` : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => this.dispatchEvent(new CustomEvent('request-method-create', { detail: {}}))}>Create Method</nh-button>` }
+                                                ${this._selectedInputDimensionIndex !== dimensionIndex
+                                                  ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>` 
+                                                  : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
+                                                      this.dispatchEvent(new CustomEvent("request-method-create", {
+                                                        detail: {},
+                                                        bubbles: true,
+                                                        composed: true,
+                                                      }
+                                                    ))
+                                                  }}>Create Method</nh-button>` }
                                                 ` 
                                               }
                                               ${this._methodInputDimensions.map(({methodEh, name}) => {
