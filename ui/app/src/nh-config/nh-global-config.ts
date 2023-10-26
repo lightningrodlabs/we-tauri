@@ -10,7 +10,7 @@ import { NHButton, NHComponent } from '@neighbourhoods/design-system-components'
 import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
-import { query } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 
 export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -24,6 +24,9 @@ export default class NHGlobalConfig extends NHComponent {
   @query('create-dimension')
   _dimensionForm;
 
+  @state()
+  private _formType: "input-dimension" | "method" = "input-dimension";
+
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
@@ -34,12 +37,19 @@ export default class NHGlobalConfig extends NHComponent {
         @dimension-created=${async (_: CustomEvent) => {
           await this._dimensionForm.resetForm(); 
           await this._dimensionForm.requestUpdate();
-          await this._list.fetchDimensionEntries()}
-        }
+          await this._list.fetchDimensionEntries()}}
+        @request-method-create=${async (_: CustomEvent) => {
+          this._formType = "method"
+        }}
+        @reset-form-type=${async (_: CustomEvent) => {
+          this._formType = "input-dimension"
+        }}
       >
-        <create-dimension .sensemakerStore=${this._sensemakerStore.value}></create-dimension>
+        ${this._formType == "input-dimension" 
+          ? html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
+          : html`<create-method .sensemakerStore=${this._sensemakerStore.value}></create-method>`
+        }
         <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
-        <create-method></create-method>
       </main>
     `;
   }
