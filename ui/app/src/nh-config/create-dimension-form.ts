@@ -18,6 +18,9 @@ export default class CreateDimension extends NHComponentShoelace {
   
   @property()
   dimensionType!: "input" | "output";
+
+  @property()
+  methodComputation!: "AVG" | "SUM";
   
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -42,7 +45,7 @@ export default class CreateDimension extends NHComponentShoelace {
     max: 1,
   }} as RangeKind };
   @state()
-  _dimension: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
+  _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
 
   @query("nh-button")
   submitBtn!: NHButton;
@@ -191,7 +194,7 @@ export default class CreateDimension extends NHComponentShoelace {
 
   render() {
     return html`
-      <nh-card .theme=${"dark"} .title=${"Create a Dimension"} .textSize=${"md"}>
+      <nh-card .theme=${"dark"} .title=${"Create an " + this.dimensionType + " Dimension"} .textSize=${"md"}>
         <form>
           <fieldset>
             <div class="field">
@@ -199,18 +202,24 @@ export default class CreateDimension extends NHComponentShoelace {
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
             </div>
           </fieldset>
-          <fieldset>
-            <div class="field">
-              <sl-range label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
-              <label class="error" for="min" name="min">⁎</label>
-            </div>
-          </fieldset>
-          <fieldset>
-            <div class="field">
-              <sl-range label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
-              <label class="error" for="max" name="max">⁎</label>
-            </div>
-          </fieldset>
+          ${this.dimensionType == "input"
+            ? html`
+              <fieldset>
+                <div class="field">
+                  <sl-range label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+                  <label class="error" for="min" name="min">⁎</label>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="field">
+                  <sl-range label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+                  <label class="error" for="max" name="max">⁎</label>
+                </div>
+              </fieldset>
+            `
+            : html`
+            `
+          }
         </form>
 
         <div slot="footer">
