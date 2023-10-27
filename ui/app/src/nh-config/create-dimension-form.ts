@@ -91,11 +91,44 @@ export default class CreateDimension extends NHComponentShoelace {
     await this.updateComplete
   }
 
+  getSumComputationRange(min: number, max: number) : RangeKind {     
+    switch (true) {
+      case (max <= min):
+        throw new Error('Invalid RangeKind limits')
+      case (min >=0):
+        // range is [0, x], where x is a positive integer the output range will be [0, INF].
+        return { Integer: {
+          min: 0,
+          max: Infinity,
+        }} as RangeKind
+      case (min < 0 && max > 0):
+        // range is [x, y], where x is a negative integer and y is a positive integer the output range will be [-INF, INF].
+        return { Integer: {
+          min: -Infinity,
+          max: Infinity,
+        }} as RangeKind
+      default:
+        // range is [x, 0], where x is a negative integer the output range will be [-INF, 0].
+        return { Integer: {
+          min: -Infinity,
+          max: 0,
+        }} as RangeKind
+    }
+  }
+
   computeOutputDimensionRange() {
     if(this.computationMethod === "SUM") {
-      // TODO: compute output range from input range
+      const rangeKindLimits = Object.values(this.inputRange.kind)[0];
+      const {min, max} = rangeKindLimits;
+      try {
+        this._dimensionRange = {...this._dimensionRange, kind: this.getSumComputationRange(min, max)};
+        this._dimension.range_eh = undefined
+      } catch (error) {
+        console.log("Error calculating output range: ", error)
+      }
       return
     }
+    // Else it is AVG...
     this._dimensionRange = this.inputRange
     this._dimension.range_eh = this.inputRange.range_eh
   }
@@ -213,6 +246,7 @@ export default class CreateDimension extends NHComponentShoelace {
     if(this.dimensionType == "output" && (_changedProperties.has('inputRange') || _changedProperties.has('computationMethod') )) {
       if(typeof this.computationMethod !== "undefined") {
         this.computeOutputDimensionRange()
+        console.log('this._dimensionRange :>> ', this._dimensionRange);
       }
     } 
   }
