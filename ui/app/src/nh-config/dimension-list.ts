@@ -71,6 +71,10 @@ export default class DimensionList extends NHComponent {
     }) as Dimension[];
   }
 
+  async fetchRangeEntries() {
+    await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
+  }
+
   async fetchDimensionEntries() {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
@@ -95,7 +99,7 @@ export default class DimensionList extends NHComponent {
 
   async fetchRangeEntriesFromHashes(rangeEhs: EntryHash[]) {
     const response = await Promise.all(rangeEhs.map(eH => this.fetchRange(eH)))
-    return response.map((payload, index) => {
+    this._rangeEntries = response.map((payload, index) => {
       try {
         return { ...decode(payload.entry.Present.entry) as Range, range_eh: rangeEhs[index]}
       } catch (error) {
@@ -106,7 +110,7 @@ export default class DimensionList extends NHComponent {
 
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     await this.fetchDimensionEntries()
-    this._rangeEntries = await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
+    await this.fetchRangeEntries()
 
     if(typeof this._methodMapping.value == 'undefined') return;
     
@@ -157,7 +161,7 @@ export default class DimensionList extends NHComponent {
                             .textSize=${"sm"}
                           >
                             <h1>Range: </h1>
-                            ${this.renderRangeDetails(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
+                            ${this._rangeEntries?.length && this.renderRangeDetails(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
                             ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length > 0 
                               ? html`<h2>Methods using this dimension: </h2>
                                 ${this._methodInputDimensions.map(({methodEh, name}) => {
@@ -188,11 +192,11 @@ export default class DimensionList extends NHComponent {
                                 }}>Create Method</nh-button>` }
                               ` 
                             }
-                            ${this._methodInputDimensions.map(({methodEh, name}) => {
+                            ${this._methodInputDimensions?.length ? this._methodInputDimensions.map(({methodEh, name}) => {
                               return name == dimension.name
                                 ? html`${generateHashHTML(methodEh)}`
                                 : null
-                            })}
+                            }) : null}
                           </nh-card>`
                     }
                   )}</div>`
