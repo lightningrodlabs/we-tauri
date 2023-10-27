@@ -220,17 +220,17 @@ export default class CreateDimension extends NHComponentShoelace {
             : html`
             `
           }
+          <slot name="method-computation"></slot>
         </form>
-
-        <div slot="footer">
-        <nh-button
-          .size=${"auto"}
-          .variant=${"primary"}
-          @click=${() => this.onSubmit()}
-          .disabled=${false}
-          .loading=${false}
-        >Create Dimension</nh-button>
-        </div>
+        <slot name="submit-action" slot="footer">
+          <nh-button
+            .size=${"auto"}
+            .variant=${"primary"}
+            @click=${() => this.onSubmit()}
+            .disabled=${false}
+            .loading=${false}
+          >Create Dimension</nh-button>
+        </slot>
       </nh-card>  
     `;
   }
@@ -277,6 +277,20 @@ export default class CreateDimension extends NHComponentShoelace {
       .field-row {
         justify-content: space-between;
         align-items: center;
+      }
+
+      sl-input::part(base) {
+        margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+        padding: 0;
+      }
+      sl-input::part(label) {
+        margin: 0 calc(1px * var(--nh-spacing-md));
+      }
+      sl-input::part(help-text) {
+        margin: 0 1rem 1rem;
+      }
+      form {
+        margin: calc(1px * var(--nh-spacing-md)) 0;
       }
       
       sl-input::part(form-control) {
