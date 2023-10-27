@@ -21,6 +21,7 @@ export default class CreateMethod extends NHComponent {
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
+    
     this.computationMethod = inputControl.value;
     this._dimensionForm.requestUpdate()
   }
