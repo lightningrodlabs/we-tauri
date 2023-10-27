@@ -1,4 +1,4 @@
-import { html, css, PropertyValueMap } from "lit";
+import { html, css, PropertyValueMap, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
@@ -124,6 +124,19 @@ export default class DimensionList extends NHComponent {
     this._methodInputDimensions = dimensions;
   }
 
+  renderRangeDetails(range: Range & { range_eh: EntryHash }) : TemplateResult {
+    return html`
+      <nh-card .theme=${"light"} .title=${range.name} >
+        <h3><em>Kind:</em></h3>
+        <div>${Object.keys(range.kind)[0]}</div>
+        <h3><em>Min:</em></h3>
+        <span>${Object.values(range.kind)[0].min}</span>
+        <h3><em>Max:</em></h3>
+        <span>${Object.values(range.kind)[0].max}</span>
+      </nh-card>
+    `
+  }
+
   render() {
     return html`
       <nh-card .theme=${"light"} .title=${"Existing Input Dimensions"} .textSize=${"sm"}>
@@ -131,46 +144,48 @@ export default class DimensionList extends NHComponent {
           ${
             typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
               ? "No dimensions available"
-              : html`<div style="display:flex; flex-direction: column-reverse; gap: 8px;">${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
-                                      .map((dimension: Dimension, dimensionIndex: number) => {
-                                          return html`
-                                            <nh-card 
-                                              class="nested-card ${classMap({
-                                                  selected: this._selectedInputDimensionIndex == dimensionIndex,
-                                                })}" .theme=${"dark"}
-                                              .title=${dimension.name}
-                                              .textSize=${"sm"}
-                                            >
-                                              <h2>Range: </h2>
-                                              ${JSON.stringify(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
-                                              ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length 
-                                                ? html`<h2>Methods using this dimension: </h2>
-                                                  ${this._methodInputDimensions.map(({methodEh, name}) => {
-                                                    return name == dimension.name
-                                                      ? html`${generateHashHTML(methodEh)}`
-                                                      : null
-                                                  })}
-                                                `
-                                                :html`<h2>No methods for this dimension</h2>
-                                                ${this._selectedInputDimensionIndex !== dimensionIndex
-                                                  ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>` 
-                                                  : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
-                                                      this.dispatchEvent(new CustomEvent("request-method-create", {
-                                                        detail: {},
-                                                        bubbles: true,
-                                                        composed: true,
-                                                      }
-                                                    ))
-                                                  }}>Create Method</nh-button>` }
-                                                ` 
-                                              }
-                                              ${this._methodInputDimensions.map(({methodEh, name}) => {
-                                                return name == dimension.name
-                                                  ? html`${generateHashHTML(methodEh)}`
-                                                  : null
-                                              })}
-                                            </nh-card>`
-                                      })}</div>`
+              : html`<div style="display:flex; flex-direction: column-reverse; gap: 8px;">
+                  ${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+                    .map((dimension: Dimension, dimensionIndex: number) => {
+                        return html`
+                          <nh-card 
+                            class="nested-card ${classMap({
+                                selected: this._selectedInputDimensionIndex == dimensionIndex,
+                              })}" .theme=${"dark"}
+                            .heading=${dimension.name}
+                            .textSize=${"sm"}
+                          >
+                            <h1>Range: </h1>
+                            ${this.renderRangeDetails(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
+                            ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length > 0 
+                              ? html`<h2>Methods using this dimension: </h2>
+                                ${this._methodInputDimensions.map(({methodEh, name}) => {
+                                  return name == dimension.name
+                                    ? html`${generateHashHTML(methodEh)}`
+                                    : null
+                                })}
+                              `
+                              :html`<h1>No methods for this dimension</h1>
+                              ${this._selectedInputDimensionIndex !== dimensionIndex
+                                ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>` 
+                                : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
+                                    this.dispatchEvent(new CustomEvent("request-method-create", {
+                                      detail: {},
+                                      bubbles: true,
+                                      composed: true,
+                                    }
+                                  ))
+                                }}>Create Method</nh-button>` }
+                              ` 
+                            }
+                            ${this._methodInputDimensions.map(({methodEh, name}) => {
+                              return name == dimension.name
+                                ? html`${generateHashHTML(methodEh)}`
+                                : null
+                            })}
+                          </nh-card>`
+                    }
+                  )}</div>`
           }
         </div>
       </nh-card>
