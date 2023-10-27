@@ -25,6 +25,9 @@ export default class NHGlobalConfig extends NHComponent {
   _dimensionForm;
 
   @state()
+  private _selectedInputDimensionRange!: Range;
+
+  @state()
   private _formType: "input-dimension" | "method" = "input-dimension";
 
   _sensemakerStore = new StoreSubscriber(this, () =>
@@ -44,10 +47,13 @@ export default class NHGlobalConfig extends NHComponent {
         @reset-form-type=${async (_: CustomEvent) => {
           this._formType = "input-dimension"
         }}
+        @input-dimension-selected=${async (e: CustomEvent) => {
+          this._selectedInputDimensionRange = e.detail.range
+        }}
       >
         ${this._formType == "input-dimension" 
           ? html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
-          : html`<create-method .sensemakerStore=${this._sensemakerStore.value}></create-method>`
+          : html`<create-method .dimensionType=${"outpu"} .inputRange=${this._selectedInputDimensionRange} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
         }
         <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
       </main>

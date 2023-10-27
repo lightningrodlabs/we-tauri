@@ -124,7 +124,8 @@ export default class DimensionList extends NHComponent {
     this._methodInputDimensions = dimensions;
   }
 
-  renderRangeDetails(range: Range & { range_eh: EntryHash }) : TemplateResult {
+  renderRangeDetails(range: Range & { range_eh: EntryHash } | undefined) : TemplateResult {
+    if(typeof range == "undefined") return html``;
     return html`
       <nh-card .theme=${"light"} .title=${range.name} >
         <h3><em>Kind:</em></h3>
@@ -167,7 +168,16 @@ export default class DimensionList extends NHComponent {
                               `
                               :html`<h1>No methods for this dimension</h1>
                               ${this._selectedInputDimensionIndex !== dimensionIndex
-                                ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => this._selectedInputDimensionIndex = dimensionIndex}>Select</nh-button>` 
+                                ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => {
+                                  this._selectedInputDimensionIndex = dimensionIndex;
+                                  const selectedRange = this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
+                                  this.dispatchEvent(new CustomEvent("input-dimension-selected", {
+                                    detail: { range: selectedRange },
+                                    bubbles: true,
+                                    composed: true,
+                                  }
+                                ))
+                                }}>Select</nh-button>` 
                                 : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
                                     this.dispatchEvent(new CustomEvent("request-method-create", {
                                       detail: {},
