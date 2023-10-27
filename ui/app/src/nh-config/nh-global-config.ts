@@ -37,9 +37,11 @@ export default class NHGlobalConfig extends NHComponent {
   render() {
     return html`
       <main
-        @dimension-created=${async (_: CustomEvent) => {
-          await this._dimensionForm.resetForm(); 
-          await this._dimensionForm.requestUpdate();
+        @dimension-created=${async (e: CustomEvent) => {
+          if(e.detail.dimensionType == "input") {
+            await this._dimensionForm.resetForm(); 
+            await this._dimensionForm.requestUpdate();
+          }
           await this._list.fetchDimensionEntries()
           await this._list.fetchRangeEntries()
           }
