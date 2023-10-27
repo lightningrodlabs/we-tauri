@@ -85,7 +85,7 @@ export class AppletStore {
         const attachmentTypes = await host.getAppletAttachmentTypes();
         return attachmentTypes;
       } catch (e) {
-        // console.warn(`Failed to get attachment types from applet "${host.appletId}": ${e}`);
+        console.warn(`Failed to get attachment types from applet "${host.appletId}": ${e}`);
         return Promise.resolve({});
       }
     }, 10000)

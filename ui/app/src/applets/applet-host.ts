@@ -344,7 +344,7 @@ export async function handleAppletIframeMessage(
       console.log("@applet-host: got 'get-entry-info' message: ", message);
       return weServices.entryInfo(message.hrl);
     case "get-global-attachment-types":
-      return toPromise(weStore.allAttachmentTypes);
+      return toPromise(weStore.allAttachmentTypes)
     case "sign-zome-call":
       return signZomeCallTauri(message.request);
     case "create-attachment":

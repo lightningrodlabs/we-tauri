@@ -275,7 +275,6 @@ export class MainDashboard extends LitElement {
           }))
         }}
         @sl-hide=${() => {
-          console.log("@sl-hide bubbled up to we-clipboard.")
           this.dynamicLayout.dispatchEvent(new CustomEvent("cancel-select-hrl", {
             bubbles: false,
             composed: false,
