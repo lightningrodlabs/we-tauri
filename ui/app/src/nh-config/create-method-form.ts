@@ -1,31 +1,45 @@
-import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
+import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
 import { SensemakerStore } from "@neighbourhoods/client";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 
 export default class CreateMethod extends NHComponent {
   @property()
   sensemakerStore!: SensemakerStore;
+  
+  @query('create-dimension')
+  _dimensionForm;
 
   render() {
     return html`
-      <create-dimension .dimensionType=${"output"} .sensemakerStore=${this.sensemakerStore}></create-dimension>
-      <fieldset>
-        <div class="field">
-          <sl-radio-group label="Select an option" name="a" value="1">
-            <sl-radio value="1">AVG</sl-radio>
-            <sl-radio value="2">SUM</sl-radio>
-          </sl-radio-group>
+      <create-dimension .dimensionType=${"output"} .sensemakerStore=${this.sensemakerStore}>
+        <div class="field" slot="method-computation">
+          <nh-card class="nested-card" slot="submit-action" .theme=${"light"} .textSize=${"sm"} .heading=${"Select:"}>
+            <sl-radio-group class="field-row" label="Select an option" name="a" value="1">
+              <sl-radio value="1">AVG</sl-radio>
+              <sl-radio value="2">SUM</sl-radio>
+            </sl-radio-group>
+          </nh-card>
         </div>
-      </fieldset>
+
+        <nh-button
+          slot="submit-action"
+          .size=${"auto"}
+          .variant=${"primary"}
+          @click=${async () => {await this._dimensionForm.onSubmit()}}
+          .disabled=${false}
+          .loading=${false}
+        >Create Method</nh-button>
+      </create-dimension>
     `;
   }
 
 
   static elementDefinitions = {
     "nh-button": NHButton,
+    "nh-card": NHCard,
     'create-dimension': CreateDimension,
     'sl-radio': SlRadio,
     'sl-radio-group': SlRadioGroup,
@@ -39,6 +53,22 @@ export default class CreateMethod extends NHComponent {
         place-content: start;
         color: var(--nh-theme-fg-default); 
       }
+
+      fieldset {
+        border: none;
+        flex-direction: column;
+      }
+
+      sl-radio-group::part(base) {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+      }
+      
+      sl-radio::part(base) {
+        color: white;
+      }
+      
     `;
   }
 }
