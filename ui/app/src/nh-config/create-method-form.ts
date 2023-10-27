@@ -8,11 +8,15 @@ import { SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 export default class CreateMethod extends NHComponent {
   @property()
   sensemakerStore!: SensemakerStore;
+
+  @property()
+  inputRange!: Range;
   
   @query('create-dimension')
   _dimensionForm;
 
   render() {
+    console.log('this.inputRange :>> ', this.inputRange);
     return html`
       <create-dimension .dimensionType=${"output"} .sensemakerStore=${this.sensemakerStore}>
         <div class="field" slot="method-computation">

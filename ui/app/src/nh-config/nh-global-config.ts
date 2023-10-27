@@ -53,7 +53,7 @@ export default class NHGlobalConfig extends NHComponent {
       >
         ${this._formType == "input-dimension" 
           ? html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
-          : html`<create-method .dimensionType=${"outpu"} .inputRange=${this._selectedInputDimensionRange} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
+          : html`<create-method .inputRange=${this._selectedInputDimensionRange} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
         }
         <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
       </main>
