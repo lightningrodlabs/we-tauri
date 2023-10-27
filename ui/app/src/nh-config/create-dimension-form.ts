@@ -1,4 +1,4 @@
-import { AppInfo, DnaHash } from "@holochain/client";
+import { AppInfo, DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult, PropertyValueMap } from "lit";
@@ -39,7 +39,9 @@ export default class CreateDimension extends NHComponentShoelace {
     max: number().min(this._currentMinRange + 1, "Must be > " + this._currentMinRange).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
   });
   @property() // Only needed when an output dimension range is being computed
-  inputRange!: Range;
+  inputRange!: Range & { range_eh: EntryHash }
+  @property() // Only needed when an output dimension range is being computed
+  computationMethod!: "AVG" | "SUM";
 
   @state()
   _dimensionRange: Range = { name: "", kind: { Integer: {
@@ -72,7 +74,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   async resetForm() {
-    this._dimension = { name: "", computed: false, range_eh: undefined };
+    this._dimension = { name: "", computed: undefined, range_eh: undefined };
     this._dimensionRange = { name: "", kind: { Integer: {
       min: 0,
       max: 0,
@@ -90,7 +92,12 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   computeOutputDimensionRange() {
-    console.log('this :>> ', this.inputRange);
+    if(this.computationMethod === "SUM") {
+      // TODO: compute output range from input range
+      return
+    }
+    this._dimensionRange = this.inputRange
+    this._dimension.range_eh = this.inputRange.range_eh
   }
 
   onSubmit() {
@@ -198,12 +205,18 @@ export default class CreateDimension extends NHComponentShoelace {
     }
   }
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if(this.dimensionType == "output" && _changedProperties.has('inputRange')) {
-      this.computeOutputDimensionRange()
-    } 
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    this._dimension.computed = (this.dimensionType == "output");
   }
   
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(this.dimensionType == "output" && (_changedProperties.has('inputRange') || _changedProperties.has('computationMethod') )) {
+      if(typeof this.computationMethod !== "undefined") {
+        this.computeOutputDimensionRange()
+      }
+    } 
+  }
+
   render() {
     return html`
       <nh-card .theme=${"dark"} .title=${"Create an " + this.dimensionType + " Dimension"} .textSize=${"md"}>
