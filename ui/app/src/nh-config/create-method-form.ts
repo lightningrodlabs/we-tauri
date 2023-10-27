@@ -21,14 +21,25 @@ export default class CreateMethod extends NHComponent {
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
-    
+
     this.computationMethod = inputControl.value;
     this._dimensionForm.requestUpdate()
   }
 
   render() {
     return html`
-      <create-dimension .dimensionType=${"output"} .inputRange=${this.inputRange} .computationMethod=${this.computationMethod} .sensemakerStore=${this.sensemakerStore}>
+      <create-dimension
+        .dimensionType=${"output"}
+        .inputRange=${this.inputRange}
+        .computationMethod=${this.computationMethod}
+        .sensemakerStore=${this.sensemakerStore}
+        @dimension-created=${async (e: CustomEvent) => {
+          if(e.detail.dimensionType == "output") {
+            await this._dimensionForm.resetForm(); 
+            await this._dimensionForm.requestUpdate();
+          }
+        }}
+      >
         <div class="field" slot="method-computation">
           <nh-card class="nested-card" slot="submit-action" .theme=${"light"} .textSize=${"sm"} .heading=${"Select:"}>
             <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} class="field-row" label="Select an option" name="method" value="AVG">
