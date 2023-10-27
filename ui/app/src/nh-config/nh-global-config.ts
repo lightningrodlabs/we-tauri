@@ -40,7 +40,10 @@ export default class NHGlobalConfig extends NHComponent {
         @dimension-created=${async (_: CustomEvent) => {
           await this._dimensionForm.resetForm(); 
           await this._dimensionForm.requestUpdate();
-          await this._list.fetchDimensionEntries()}}
+          await this._list.fetchDimensionEntries()
+          await this._list.fetchRangeEntries()
+          }
+        }
         @request-method-create=${async (_: CustomEvent) => {
           this._formType = "method"
         }}
