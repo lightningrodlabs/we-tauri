@@ -6,11 +6,12 @@ import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
 import { DnaHash } from '@holochain/client';
 
-import { NHButton, NHComponent } from '@neighbourhoods/design-system-components';
+import { NHButton, NHComponent, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
 import { query, state } from 'lit/decorators.js';
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -56,6 +57,21 @@ export default class NHGlobalConfig extends NHComponent {
           this._selectedInputDimensionRange = e.detail.range
         }}
       >
+        <nh-page-header-card .heading=${"Neighbourhood Config"}>
+          <nh-button
+            slot="secondary-action"
+            .variant=${"neutral"}
+            .size=${"icon"}
+            .iconImageB64=${b64images.icons.backCaret}
+            @click=${() => { !this._dimensionForm
+              ? this._formType = "input-dimension"
+              : null // TODO emit event to navigate back to home
+              console.log('this._dimensionForm :>> ', this._dimensionForm);
+              this.requestUpdate()
+            }}
+          >
+          </nh-button>
+        </nh-page-header-card>
         ${this._formType == "input-dimension" 
           ? html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
           : html`<create-method .inputRange=${this._selectedInputDimensionRange} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
@@ -67,6 +83,7 @@ export default class NHGlobalConfig extends NHComponent {
 
   static elementDefinitions = {
     'nh-button': NHButton,
+    'nh-page-header-card': NHPageHeaderCard,
     'create-dimension': CreateDimension,
     'create-method': CreateMethod,
     'dimension-list': DimensionList,
@@ -80,14 +97,17 @@ export default class NHGlobalConfig extends NHComponent {
         place-content: start;
         color: var(--nh-theme-fg-default);
         grid-template-columns: 2fr 1fr;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 4rem 1fr 1fr;
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
       }
-
+      nh-page-header-card {
+        grid-column: 1/-1;
+        grid-row: 1/2;
+      }
       dimension-list {
         grid-column: -2/-1;
-        grid-row: 1/-1;
+        grid-row: 2/-1;
         display: flex;
         align-items: start;
       }
