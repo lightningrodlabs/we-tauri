@@ -16,9 +16,8 @@ export default class CreateMethod extends NHComponent {
   _dimensionForm;
 
   render() {
-    console.log('this.inputRange :>> ', this.inputRange);
     return html`
-      <create-dimension .dimensionType=${"output"} .sensemakerStore=${this.sensemakerStore}>
+      <create-dimension .dimensionType=${"output"} .inputRange=${this.inputRange} .sensemakerStore=${this.sensemakerStore}>
         <div class="field" slot="method-computation">
           <nh-card class="nested-card" slot="submit-action" .theme=${"light"} .textSize=${"sm"} .heading=${"Select:"}>
             <sl-radio-group class="field-row" label="Select an option" name="a" value="1">

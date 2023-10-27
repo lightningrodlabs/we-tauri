@@ -1,7 +1,7 @@
 import { AppInfo, DnaHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
-import { html, css, CSSResult } from "lit";
+import { html, css, CSSResult, PropertyValueMap } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { SlInput, SlRange } from "@scoped-elements/shoelace";
@@ -38,6 +38,8 @@ export default class CreateDimension extends NHComponentShoelace {
     min: number().min(MIN_RANGE, "Must be at least " + MIN_RANGE).required(),
     max: number().min(this._currentMinRange + 1, "Must be > " + this._currentMinRange).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
   });
+  @property() // Only needed when an output dimension range is being computed
+  inputRange!: Range;
 
   @state()
   _dimensionRange: Range = { name: "", kind: { Integer: {
@@ -85,6 +87,10 @@ export default class CreateDimension extends NHComponentShoelace {
 
     this.submitBtn.loading = false;
     await this.updateComplete
+  }
+
+  computeOutputDimensionRange() {
+    console.log('this :>> ', this.inputRange);
   }
 
   onSubmit() {
@@ -192,6 +198,12 @@ export default class CreateDimension extends NHComponentShoelace {
     }
   }
 
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(this.dimensionType == "output" && _changedProperties.has('inputRange')) {
+      this.computeOutputDimensionRange()
+    } 
+  }
+  
   render() {
     return html`
       <nh-card .theme=${"dark"} .title=${"Create an " + this.dimensionType + " Dimension"} .textSize=${"md"}>
