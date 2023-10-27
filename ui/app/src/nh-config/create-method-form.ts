@@ -1,7 +1,7 @@
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
 import { SensemakerStore } from "@neighbourhoods/client";
-import { property, query } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 
@@ -11,18 +11,28 @@ export default class CreateMethod extends NHComponent {
 
   @property()
   inputRange!: Range;
+
+  @state()
+  computationMethod: "AVG" | "SUM" = "AVG";
   
   @query('create-dimension')
   _dimensionForm;
 
+  onChangeValue(e: CustomEvent) {
+    const inputControl = (e.target as any);
+    if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
+    this.computationMethod = inputControl.value;
+    this._dimensionForm.requestUpdate()
+  }
+
   render() {
     return html`
-      <create-dimension .dimensionType=${"output"} .inputRange=${this.inputRange} .sensemakerStore=${this.sensemakerStore}>
+      <create-dimension .dimensionType=${"output"} .inputRange=${this.inputRange} .computationMethod=${this.computationMethod} .sensemakerStore=${this.sensemakerStore}>
         <div class="field" slot="method-computation">
           <nh-card class="nested-card" slot="submit-action" .theme=${"light"} .textSize=${"sm"} .heading=${"Select:"}>
-            <sl-radio-group class="field-row" label="Select an option" name="a" value="1">
-              <sl-radio value="1">AVG</sl-radio>
-              <sl-radio value="2">SUM</sl-radio>
+            <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} class="field-row" label="Select an option" name="method" value="AVG">
+              <sl-radio value="AVG">AVG</sl-radio>
+              <sl-radio value="SUM">SUM</sl-radio>
             </sl-radio-group>
           </nh-card>
         </div>
