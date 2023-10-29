@@ -4,6 +4,7 @@ members = [
   "dnas/*/zomes/integrity/*",
   "crates/*",
   "src-tauri",
+  "test_applet/src-tauri",
 ]
 resolver = "2"
 
@@ -23,3 +24,4 @@ hdi = { version = "0.3.3-beta-rc.0" }
 hdk = { version = "0.2.3-beta-rc.0" }
 serde = "1"
 holochain = { version = "0.2.3-beta-rc.1" }
+we_types = { path = "crates/types" }

@@ -10,6 +10,7 @@ web_assets.zip
 DevHub/web-app
 testing-applets/
 .running
+bin/
 
 *.tsbuildinfo
 
