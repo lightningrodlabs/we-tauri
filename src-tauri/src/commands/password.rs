@@ -1,6 +1,4 @@
-use futures::lock::Mutex;
-use holochain_client::AdminWebsocket;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 use crate::{
     config::WeConfig,
@@ -40,7 +38,7 @@ pub async fn create_password(
         println!("### Called tauri command 'create_password'.");
     }
     let (_meta_lair_client, _admin_port, _app_port) =
-        launch(&app_handle, &config, &fs, password, None, None).await?;
+        launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }
@@ -60,7 +58,7 @@ pub async fn enter_password(
         println!("### Called tauri command 'enter_password'.");
     }
     let (_meta_lair_client, _admin_port, _app_port) =
-        launch(&app_handle, &config, &fs, password, None, None).await?;
+        launch(&app_handle, &config, &fs, password).await?;
 
     Ok(())
 }

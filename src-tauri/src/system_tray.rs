@@ -1,5 +1,7 @@
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTrayMenu, Wry, SystemTrayMenuItem, api::process};
 use crate::window::build_main_window;
+use tauri::{
+    api::process, AppHandle, CustomMenuItem, Manager, SystemTrayMenu, SystemTrayMenuItem, Wry,
+};
 
 pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
     match event_id.as_str() {
@@ -19,11 +21,11 @@ pub fn handle_system_tray_event(app: &AppHandle<Wry>, event_id: String) {
         "restart" => {
             process::kill_children();
             app.app_handle().restart();
-        },
+        }
         "quit" => {
             process::kill_children();
             app.exit(0);
-        },
+        }
         _ => (),
     }
 }

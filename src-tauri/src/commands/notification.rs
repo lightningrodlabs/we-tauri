@@ -3,7 +3,7 @@ use tauri::api::notification::Notification;
 use tauri::{AppHandle, Icon, Manager};
 
 use crate::error::WeError;
-use crate::{error::WeResult, filesystem::WeFileSystem};
+use crate::error::WeResult;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

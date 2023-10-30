@@ -13,20 +13,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[[bin]]
-name = "we-alpha"
-path = "src/bin/we.rs"
-
-[lib]
-name = "we_alpha"
-path = "src/lib.rs"
-
-
 [build-dependencies]
 tauri-build = { version = "=1.5", features = [] }
 
 [dependencies]
-tauri = { version = "=1.5", features = [
+we_types = { workspace = true }
+fixt = "0.2.2"
+
+tauri = { version = "=1.5", features = [ "system-tray",
   "cli",
   "clipboard-write-text",
   "http-all",
@@ -35,10 +29,10 @@ tauri = { version = "=1.5", features = [
   "process-command-api",
   "protocol-all",
   "shell-open",
-  "system-tray",
 ] }
 tauri-plugin-deep-link = "0.1"
 
+uuid = "1.5.0"
 anyhow = "1"
 nanoid = "0.4.0"
 opener = "0.5.0"

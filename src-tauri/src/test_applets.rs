@@ -1,20 +1,12 @@
-//! Definitions of StructOpt options for use in the CLI
+use std::{env::temp_dir, fs, path::PathBuf};
 
-// use holochain_types::prelude::InstalledAppId;
-// use std::path::Path;
-use clap::Parser;
 use futures::lock::Mutex;
-use holochain_types::web_app::WebAppBundle;
 use std::collections::{BTreeMap, HashMap};
-use std::env::temp_dir;
-use std::fs;
-use std::path::PathBuf;
-use tauri::{AppHandle, Manager, RunEvent};
-use we_alpha::commands::install_applet_bundle::AppAgentWebsocket;
+use tauri::{AppHandle, Manager};
+use uuid::Uuid;
 use we_types::{Applet, GroupProfile};
 
 use fixt::fixt;
-use holochain_cli_sandbox::cmds::{Network, NetworkCmd, NetworkType};
 use holochain_client::AdminWebsocket;
 use holochain_types::prelude::{
     ActionHashB64, ActionHashFixturator, AnyDhtHash, AnyDhtHashB64, DnaHashB64Fixturator,
@@ -24,135 +16,27 @@ use holochain_types::prelude::{
     AppManifest, EntryHash, EntryHashB64, ExternIO, FunctionName, InstallAppPayload, RoleName,
     ZomeName,
 };
+use holochain_types::web_app::WebAppBundle;
 
-use uuid::Uuid;
-
-use we_alpha::commands::notification::{IconState, SysTrayIconState};
-use we_alpha::error::{LaunchHolochainError, WeResult};
-use we_alpha::filesystem::{Profile, ReleaseInfo, ResourceLocatorB64, UiIdentifier, WeFileSystem};
-use we_alpha::{
-    applet_iframes::start_applet_uis_server, commands::join_group::join_group, config::WeConfig,
-    error::WeError, launch::launch, window::build_main_window,
+use crate::config::WeConfig;
+use crate::error::{LaunchHolochainError, WeError};
+use crate::filesystem::{ReleaseInfo, ResourceLocatorB64, UiIdentifier};
+use crate::window::build_main_window;
+use crate::{
+    commands::{install_applet_bundle::AppAgentWebsocket, join_group::join_group},
+    error::WeResult,
+    filesystem::{Profile, WeFileSystem},
+    launch::launch,
 };
 
-#[derive(Debug, Parser)]
-/// Helper for launching holochain apps in a Holochain Launcher environment for testing and development purposes.
-///
-pub struct WeTestApplets {
-    /// Path to multiple applets .webhapp files to install in the group to test with.
-    #[clap( num_args = 1.., value_delimiter = ' ')]
-    applets_paths: Vec<PathBuf>,
-
-    /// Install the group and the applets with this network seed.
-    #[arg(long)]
-    network_seed: String,
-
-    /// (flattened)
-    #[command(subcommand)]
-    network: NetworkCmd,
-
-    /// Explicitly allow to use the official production signaling and/or bootstrap server(s)
-    /// NOTE: It is strongly recommended to use local signaling and bootstrap servers during development.
-    /// Bootstrap and signaling server for development can be started via `hc run-local-services`.
-    #[arg(long)]
-    force_production: bool,
-}
-
-impl WeTestApplets {
-    /// Run this command
-    pub fn run(self) -> WeResult<()> {
-        let network = self.network.into_inner();
-        // Fail if production signaling server is used unless the --force-production flag is used
-
-        match network.transport.clone() {
-            NetworkType::WebRTC { signal_url: s } => {
-                if (s == String::from("ws://signal.holo.host")
-                    || s == String::from("wss://signal.holo.host"))
-                    && self.force_production == false
-                {
-                    eprintln!(
-                        r#"
-ERROR
-
-You are attempting to use the official production signaling server of holochain.
-It is recommended to instead use the `hc run-local-services` command of the holochain CLI to spawn a local bootstrap and signaling server for testing.
-If you are sure that you want to use the production signaling server with hc launch, use the --force-production flag.
-
-"#
-                    );
-
-                    panic!("Attempted to use production signaling server without explicitly allowing it.");
-                }
-            }
-            _ => (),
-        }
-
-        match network.bootstrap.clone() {
-            Some(url) => {
-                if (url.to_string() == "https://bootstrap.holo.host")
-                    || (url.to_string() == "http://bootstrap.holo.host")
-                        && self.force_production == false
-                {
-                    eprintln!(
-                        r#"
-ERROR
-
-You are attempting to use the official production bootstrap server of holochain.
-It is recommended to instead use the `hc run-local-services` command of the holochain CLI to spawn a local bootstrap and signaling server for testing.
-If you are sure that you want to use the production bootstrap server with hc launch, use the --force-production flag.
-
-"#
-                    );
-
-                    panic!("Attempted to use production bootstrap server without explicitly allowing it.");
-                }
-            }
-            _ => (),
-        }
-
-        let id = Uuid::new_v4();
-        let we_test_applet_id = id.to_string();
-
-        we_alpha::tauri_builder()
-            .setup(move |app| {
-                let app_handle = app.handle();
-                tauri::async_runtime::block_on(async move {
-                    setup_agent(
-                        app_handle,
-                        format!("test_applet_{}", we_test_applet_id),
-                        network,
-                        self.network_seed,
-                        self.applets_paths,
-                    )
-                    .await
-                })?;
-                Ok(())
-            })
-            .build(tauri::generate_context!())
-            .expect("error while running tauri application")
-            .run(|_app_handle, event| {
-                match event {
-                    // This event is emitted upon quitting the App via cmq+Q on macOS.
-                    // Sidecar binaries need to get explicitly killed in this case (https://github.com/holochain/launcher/issues/141)
-                    RunEvent::Exit => {
-                        tauri::api::process::kill_children();
-                    }
-
-                    _ => (),
-                }
-            });
-        Ok(())
-    }
-}
-
-async fn setup_agent(
+pub async fn launch_test_applets_agent(
     app_handle: AppHandle,
-    profile: Profile,
-    network: Network,
-    network_seed: String,
+    test_applets_network_seed: String,
     applets_paths: Vec<PathBuf>,
 ) -> WeResult<()> {
     let temp_dir = temp_dir();
+    let id = Uuid::new_v4();
+    let profile: Profile = id.to_string();
     let temp_folder = temp_dir.join(&profile);
     println!("Using temporary directory: {:?}", temp_folder);
     if temp_folder.exists() {
@@ -175,42 +59,19 @@ async fn setup_agent(
 
     app_handle.manage(fs.clone());
     app_handle.manage(profile);
-    app_handle.manage(Mutex::new(SysTrayIconState {
-        icon_state: IconState::Clean,
-    }));
 
-    let window = build_main_window(&app_handle)?;
-
-    let ui_server_port = portpicker::pick_unused_port().expect("No ports free");
-    start_applet_uis_server(app_handle.clone(), ui_server_port);
-
-    let config = WeConfig {
-        network_seed: Some(String::from("test_applet")),
-        applets_ui_port: ui_server_port,
-    };
-
-    app_handle.manage(config.clone());
-
+    let config = app_handle.state::<WeConfig>();
     // Launch holochain
-    let (lair_client, admin_port, app_port) = launch(
-        &app_handle,
-        &config,
-        &fs,
-        String::from("UNSECURE"),
-        network.bootstrap,
-        match network.transport {
-            NetworkType::WebRTC { signal_url } => Some(signal_url),
-            _ => None,
-        },
-    )
-    .await?;
+    let (lair_client, admin_port, app_port) =
+        launch(&app_handle, &config, &fs, String::from("UNSECURE")).await?;
     println!("Joining group...");
 
+    let window = build_main_window(&app_handle)?;
     // Join a group
     let app_info = join_group(
         window,
         app_handle.state::<Mutex<AdminWebsocket>>(),
-        network_seed.clone(),
+        test_applets_network_seed.clone(),
     )
     .await?;
     println!("Joined group, {:?}", app_info.installed_app_id);
@@ -270,7 +131,7 @@ async fn setup_agent(
             devhub_happ_release_hash: fixt!(ActionHash),
             initial_devhub_gui_release_hash: None, // headless applets are possible as well
 
-            network_seed: Some(network_seed.clone()),
+            network_seed: Some(test_applets_network_seed.clone()),
 
             properties: BTreeMap::new(),
         };
@@ -301,7 +162,7 @@ async fn setup_agent(
             .install_app(InstallAppPayload {
                 source: holochain_types::prelude::AppBundleSource::Bundle(app_bundle),
                 agent_key,
-                network_seed: Some(network_seed.clone()),
+                network_seed: Some(test_applets_network_seed.clone()),
                 installed_app_id: Some(app_id.clone()),
                 membrane_proofs: HashMap::new(),
             })

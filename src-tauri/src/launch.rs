@@ -34,8 +34,6 @@ pub async fn launch(
     we_config: &WeConfig,
     fs: &WeFileSystem,
     password: String,
-    bootstrap_service_url: Option<Url2>,
-    signaling_server_url: Option<String>,
 ) -> WeResult<(MetaLairClient, AdminPort, AppPort)> {
     let log_level = log::Level::Warn;
 
@@ -84,16 +82,16 @@ pub async fn launch(
 
     let mut network_config = KitsuneP2pConfig::default();
 
-    let bootstrap_url = bootstrap_service_url.unwrap_or(match option_env!("BOOTSTRAP_PORT") {
+    let bootstrap_url = match option_env!("BOOTSTRAP_PORT") {
         Some(p) => url2::url2!("http://127.0.0.1:{}", p),
         None => url2::url2!("https://bootstrap.holo.host"),
-    });
+    };
     network_config.bootstrap_service = Some(bootstrap_url);
 
-    let signaling_server_url = signaling_server_url.unwrap_or(match option_env!("SIGNAL_PORT") {
+    let signaling_server_url = match option_env!("SIGNAL_PORT") {
         Some(p) => format!("ws://127.0.0.1:{}", p),
         None => String::from("wss://signal.holo.host"),
-    });
+    };
     network_config.transport_pool.push(TransportConfig::WebRTC {
         signal_url: signaling_server_url,
     });

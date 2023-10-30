@@ -14,6 +14,13 @@ pub async fn join_group(
     if window.label() != "main" {
         return Err(WeError::UnauthorizedWindow(String::from("join_group")));
     }
+    inner_join_group(admin_ws, network_seed).await
+}
+
+pub async fn inner_join_group(
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
+    network_seed: String,
+) -> WeResult<AppInfo> {
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'join_group'.");
     }
