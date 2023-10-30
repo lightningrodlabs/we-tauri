@@ -4,7 +4,9 @@ CLI to launch a we instance to test applets, useful only during development of t
 
 ## Install
 
-If you want to install it from source:
+Go to the github release page and download the appropriate binary for your distribution.
+
+Alternatively, if you want to install it from source:
 
 ```
 cargo install we-test-applets --git https://github.com/lightningrodlabs/we
