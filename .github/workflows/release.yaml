@@ -183,4 +183,4 @@ jobs:
         with:
           file: "we-test-applets-pc-windows-msvc.exe"
           release_id: "${{steps.publishtauri.outputs.releaseId}}"
-          
+

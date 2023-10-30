@@ -39,3 +39,4 @@ we-test-applets --help
 ## Limitations
 
 - There is currently no way run run two separate tauri instances from the same binary. This is why we can't have a "--number-of-agents" argument, and we need to run a separate command for each agent.
+- The icon for the applet won't be shown, as it needs to be fetched from the app store, and the applet itself is not published to the app store to test it.
