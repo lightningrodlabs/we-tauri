@@ -176,13 +176,19 @@ export class WeStore {
         // actually return all groups that depend on this applet
         const groupsForApplet = await this.getGroupsForApplet(appletHash);
 
-        console.warn(`@leaveGroup: found groups for applet ${encodeHashToBase64(appletHash)}: ${groupsForApplet.map(hash => encodeHashToBase64(hash))}`);
+        // console.warn(`@leaveGroup: found groups for applet ${encodeHashToBase64(appletHash)}: ${groupsForApplet.map(hash => encodeHashToBase64(hash))}`);
 
         if (groupsForApplet.length === 0) {
-          console.warn("@leaveGroup: Uninstalling applet with app id: ", encodeHashToBase64(appletHash));
+          // console.warn("@leaveGroup: Uninstalling applet with app id: ", encodeHashToBase64(appletHash));
           await this.adminWebsocket.uninstallApp({
             installed_app_id: appIdFromAppletHash(appletHash),
           });
+          const backgroundIframe = document.getElementById(encodeHashToBase64(appletHash)) as
+            | HTMLIFrameElement
+            | undefined;
+          if (backgroundIframe) {
+            backgroundIframe.remove();
+          }
         }
       })
     );
@@ -528,7 +534,15 @@ export class WeStore {
   }
 
   async uninstallApplet(appletHash: EntryHash): Promise<void> {
+    // console.warn("@we-store: Uninstalling applet.");
     await this.adminWebsocket.uninstallApp({ installed_app_id: appIdFromAppletHash(appletHash) })
+    const iframe = document.getElementById(encodeHashToBase64(appletHash)) as
+      | HTMLIFrameElement
+      | undefined;
+    if (iframe) {
+      // console.warn("Got iframe with id. Removing it from DOM.");
+      iframe.remove();
+    }
     await this.reloadManualStores();
   }
 

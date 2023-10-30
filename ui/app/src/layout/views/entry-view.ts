@@ -3,6 +3,8 @@ import { consume } from "@lit-labs/context";
 import { msg } from "@lit/localize";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { notifyError, wrapPathInSvg } from "@holochain-open-dev/elements";
+import { mdiHomeImportOutline } from "@mdi/js";
 
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
@@ -46,6 +48,22 @@ export class EntryView extends LitElement {
     () => [this.hrl]
   );
 
+  jumpToApplet() {
+    if (this.location.value.status !== "complete" || this.location.value.value === undefined) {
+      console.error("Entry location not defined (yet).");
+      notifyError("Failed to jump to Applet (see console for details).");
+    } else {
+      this.dispatchEvent(new CustomEvent(
+        "jump-to-applet",
+        {
+          detail: this.location.value.value?.dnaLocation.appletHash,
+          bubbles: true,
+          composed: true,
+        }
+      ))
+    }
+  }
+
   renderGroupView(
     dnaLocation: DnaLocation,
     entryTypeLocation: EntryDefLocation
@@ -64,8 +82,22 @@ export class EntryView extends LitElement {
     ></applet-view>
     <div id="we-toolbar" class="column toolbar">
       <we-client-context .weClient=${buildHeadlessWeClient(this._weStore)}>
-        <share-hrl .hrl=${this.hrl} class="toolbar-btn" style="margin-bottom: 10px;"></share-hrl>
+        <sl-tooltip content="Jump to parent Applet">
+          <div
+            class="row btn toolbar-btn"
+            tabindex="0"
+            @click=${() => this.jumpToApplet()}
+            @keypress=${(e: KeyboardEvent) => {
+              if (e.key === "Enter") {
+                this.jumpToApplet()}
+              }
+            }
+          >
+            <sl-icon .src=${wrapPathInSvg(mdiHomeImportOutline)}></sl-icon>
+          </div>
+        </sl-tooltip>
         <hrl-to-clipboard .hrl=${this.hrl} class="toolbar-btn" ></hrl-to-clipboard>
+        <share-hrl .hrl=${this.hrl} class="toolbar-btn"></share-hrl>
       </we-client-context>
     </div>
     `;
@@ -100,6 +132,20 @@ export class EntryView extends LitElement {
         flex: 1;
       }
 
+      .btn {
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-color, white);
+        padding: 9px;
+        border-radius: 50%;
+        box-shadow: 1px 1px 3px #6b6b6b;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: var(--bg-color-hover, #e4e4e4);
+      }
+
       .toolbar {
         position: fixed;
         bottom: 30px;
@@ -116,6 +162,7 @@ export class EntryView extends LitElement {
         --bg-color: #5804a8;
         --bg-color-hover: #913ede;
         color: white;
+        margin: 3px 0;
       }
     `,
     weStyles,

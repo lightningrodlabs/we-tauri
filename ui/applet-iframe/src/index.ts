@@ -253,9 +253,12 @@ document.addEventListener(
 
     // get global attachment-types with setTimeout in order not to block subsequent stuff
     setTimeout(async () => {
+      console.log(`@applet-iframe setup: Getting global attachment types...`)
       const globalAttachmentTypes = await getGlobalAttachmentTypes();
+      console.log(`@applet-iframe setup: Got global attachment types: ${JSON.stringify(globalAttachmentTypes)}`);
       window.__WE_API__.attachmentTypes = globalAttachmentTypes;
-    })
+      console.log(`@applet-iframe setup: reading window.__WE_APPLET_SERVICES__: ${JSON.stringify(window.__WE_APPLET_SERVICES__)}`);
+    },)
   }
 );
 
@@ -280,13 +283,34 @@ const handleMessage = async (appletClient: AppAgentClient, appletHash: AppletHas
         request.hrl,
       );
     case "get-applet-attachment-types":
-      return window.__WE_APPLET_SERVICES__.attachmentTypes(appletClient, appletHash, window.__WE_API__);
+      const types = await window.__WE_APPLET_SERVICES__.attachmentTypes(appletClient, appletHash, window.__WE_API__);
+
+      const internalAttachmentTypes: Record<string, InternalAttachmentType> =
+        {};
+      for (const [name, attachmentType] of Object.entries(types)) {
+        internalAttachmentTypes[name] = {
+          icon_src: attachmentType.icon_src,
+          label: attachmentType.label,
+        };
+      }
+
+      return internalAttachmentTypes;
     case "get-block-types":
       return window.__WE_APPLET_SERVICES__.blockTypes;
     case "search":
       return window.__WE_APPLET_SERVICES__.search(appletClient, appletHash, window.__WE_API__, request.filter);
     case "create-attachment":
-      return window.__WE_APPLET_SERVICES__.attachmentTypes(appletClient, appletHash, window.__WE_API__)[request.attachmentType].create(request.attachToHrl);
+      const attachments = await window.__WE_APPLET_SERVICES__.attachmentTypes(appletClient, appletHash, window.__WE_API__);
+      const postAttachment = attachments[request.attachmentType];
+      if (!postAttachment) {
+        throw new Error(`Necessary attachment type not provided by the applet.`);
+      }
+      try {
+        const hrl = await postAttachment.create(request.attachToHrl);
+        return hrl
+      } catch (e) {
+        return Promise.reject(new Error(`Failed to create attachment of type '${request.attachmentType}' for applet with hash '${encodeHashToBase64(appletHash)}': ${e}`));
+      }
     default:
       throw new Error("Unknown ParentToAppletRequest");
   }
