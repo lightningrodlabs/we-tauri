@@ -1,8 +1,8 @@
 [package]
 edition = "2021"
-name = "we_test_applet"
+name = "we_test_applets"
 version = "0.0.1"
-description = "A CLI to test a we applet"
+description = "A CLI to test we applets"
 license-file = "LICENSE_CAL-1.0"
 homepage = "https://developer.holochain.org"
 documentation = "https://docs.rs/holochain_cli_launch"
@@ -11,8 +11,8 @@ readme = "README.md"
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
-name = "we-test-applet"
-path = "src/bin/we-test-applet.rs"
+name = "we-test-applets"
+path = "src/bin/we-test-applets.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -42,7 +42,14 @@ tempdir = "0.3.7"
 thiserror = "1.0.22"
 
 serde = { version = "1", features = ["derive"] }
-tauri = { version = "=1.5", features = ["clipboard-write-text", "dialog-all", "icon-png", "notification", "process-command-api", "shell-open", "system-tray"] }
+tauri = { version = "=1.5", features = [
+  "clipboard-write-text",
+  "dialog-all",
+  "icon-png",
+  "notification",
+  "process-command-api",
+  "shell-open",
+] }
 tauri-plugin-localhost = "0.1.0"
 
 tokio = "1.21.2"

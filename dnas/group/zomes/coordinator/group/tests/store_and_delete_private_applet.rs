@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use group_integrity::Applet;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
-use holochain::test_utils::consistency_10s;
+
 use holochain::{conductor::config::ConductorConfig, sweettest::*};
 
 #[tokio::test(flavor = "multi_thread")]
@@ -44,11 +44,19 @@ async fn store_and_delete_private_applet_entry() {
     let all_my_applets: Vec<Record> = conductor.call(&group_zome, "get_my_applets", ()).await;
 
     assert_eq!(all_my_applets.len(), 1);
-    assert_eq!(all_my_applets.first().unwrap().to_owned(), private_applet_record);
+    assert_eq!(
+        all_my_applets.first().unwrap().to_owned(),
+        private_applet_record
+    );
 
-    let _delete_action: ActionHash = conductor.call(&group_zome, "delete_joined_applet", private_applet_record.action_address()).await;
+    let _delete_action: ActionHash = conductor
+        .call(
+            &group_zome,
+            "delete_joined_applet",
+            private_applet_record.action_address(),
+        )
+        .await;
 
     let my_remaining_applets: Vec<Record> = conductor.call(&group_zome, "get_my_applets", ()).await;
     assert_eq!(my_remaining_applets.len(), 0);
-
 }

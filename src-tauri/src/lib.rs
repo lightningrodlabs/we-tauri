@@ -3,10 +3,7 @@ use std::path::PathBuf;
 use futures::lock::Mutex;
 use holochain_client::AdminWebsocket;
 use hyper::StatusCode;
-use tauri::{
-    http::ResponseBuilder, Manager, RunEvent, Runtime, SystemTray, SystemTrayEvent,
-    UserAttentionType, WindowEvent,
-};
+use tauri::{http::ResponseBuilder, Manager};
 
 pub const APP_NAME: &str = "We";
 pub mod applet_iframes;
@@ -34,25 +31,18 @@ use crate::{
             update_applet_ui,
         },
         join_group::join_group,
-        notification::SysTrayIconState,
-        notification::{clear_systray_notification_state, notify_tauri, IconState},
+        notification::{clear_systray_notification_state, notify_tauri},
         password::{create_password, enter_password, is_keystore_initialized},
         sign_zome_call::sign_zome_call,
     },
     filesystem::WeFileSystem,
     menu::{build_menu, handle_menu_event},
-    system_tray::{app_system_tray, handle_system_tray_event},
 };
 
 pub fn tauri_builder() -> tauri::Builder<tauri::Wry> {
     tauri::Builder::default()
         .menu(build_menu())
         .on_menu_event(|event| handle_menu_event(event.menu_item_id(), event.window()))
-        .system_tray(SystemTray::new().with_menu(app_system_tray()))
-        .on_system_tray_event(|app, event| match event {
-            SystemTrayEvent::MenuItemClick { id, .. } => handle_system_tray_event(app, id),
-            _ => {}
-        })
         .invoke_handler(tauri::generate_handler![
             clear_systray_notification_state,
             create_password,

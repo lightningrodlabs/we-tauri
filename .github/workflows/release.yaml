@@ -125,6 +125,7 @@ jobs:
 
       - name: build the app
         uses: tauri-apps/tauri-action@dev
+        id: publishtauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -134,5 +135,52 @@ jobs:
           prerelease: true
           args: --verbose
 
+      - name: install we-test-applets (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          cargo install --path crates/test_applets
+          WE_TEST_APPLETS=$(which we-test-applets)
+          cp $WE_TEST_APPLETS we-test-applets-unknown-linux-gnu
 
+      - name: upload we-test-applets to the github release
+        if: matrix.platform == 'ubuntu-20.04'
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "we-test-applets-unknown-linux-gnu"
+          release_id: "${{steps.publishtauri.outputs.releaseId}}"
 
+      - name: install we-test-applets (macos only)
+        if: matrix.platform == 'macos-11'
+        run: |
+          cargo install --path crates/test_applets
+          WE_TEST_APPLETS=$(which we-test-applets)
+          cp $WE_TEST_APPLETS we-test-applets-apple-darwin
+
+      - name: upload we-test-applets to the github release (macos only)
+        if: matrix.platform == 'macos-11'
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "we-test-applets-apple-darwin"
+          release_id: "${{steps.publishtauri.outputs.releaseId}}"
+          
+
+      - name: install we-test-applets (windows only)
+        if: matrix.platform == 'windows-2019'
+        run: |
+          cargo install --path crates/test_applets
+          $WeTestAppletsPath = Get-Command we-test-applets | Select-Object -ExpandProperty Definition
+          Copy-Item $WeTestAppletsPath -Destination we-test-applets-pc-windows-msvc.exe
+
+      - name: upload we-test-applets to the github release (windows only)
+        if: matrix.platform == 'windows-2019'
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "we-test-applets-pc-windows-msvc.exe"
+          release_id: "${{steps.publishtauri.outputs.releaseId}}"
+          

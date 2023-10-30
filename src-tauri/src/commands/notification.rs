@@ -1,17 +1,10 @@
-use std::path::PathBuf;
-
 use futures::lock::Mutex;
-use holochain_types::prelude::{ActionHashB64, ActionHash};
-use tauri::{AppHandle, Icon, Manager};
 use tauri::api::notification::Notification;
+use tauri::{AppHandle, Icon, Manager};
 
 use crate::error::WeError;
-use crate::{
-    error::WeResult,
-    filesystem::WeFileSystem,
-};
+use crate::{error::WeResult, filesystem::WeFileSystem};
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
@@ -33,7 +26,7 @@ pub enum IconState {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SysTrayIconState {
-    pub icon_state: IconState
+    pub icon_state: IconState,
 }
 
 impl SysTrayIconState {
@@ -42,13 +35,10 @@ impl SysTrayIconState {
     }
 }
 
-
-
 #[tauri::command]
 pub async fn notify_tauri(
     window: tauri::Window,
     app_handle: AppHandle,
-    we_fs: tauri::State<'_, WeFileSystem>,
     message: WeNotification,
     systray: bool,
     os: bool,
@@ -81,38 +71,56 @@ pub async fn notify_tauri(
                 match systray_icon_state {
                     IconState::Clean | IconState::Low => {
                         println!("Current icon state: clean or low");
-                        let icon_path_option = app_handle.path_resolver().resolve_resource("icons/icon_priority_medium_32x32.png");
+                        let icon_path_option = app_handle
+                            .path_resolver()
+                            .resolve_resource("icons/icon_priority_medium_32x32.png");
                         if let Some(icon_path) = icon_path_option {
                             app_handle.tray_handle().set_icon(Icon::File(icon_path))?;
                         }
-                        *mutex.lock().await = SysTrayIconState { icon_state: IconState::Medium };
+                        *mutex.lock().await = SysTrayIconState {
+                            icon_state: IconState::Medium,
+                        };
 
-                        println!("Current icon state after medium message: {:?}", (*mutex).lock().await.get_icon_state());
-                    },
+                        println!(
+                            "Current icon state after medium message: {:?}",
+                            (*mutex).lock().await.get_icon_state()
+                        );
+                    }
                     _ => (),
                 }
-            },
+            }
             "high" => {
-                let icon_path_option = app_handle.path_resolver().resolve_resource("icons/icon_priority_high_32x32.png");
+                let icon_path_option = app_handle
+                    .path_resolver()
+                    .resolve_resource("icons/icon_priority_high_32x32.png");
                 if let Some(icon_path) = icon_path_option {
                     app_handle.tray_handle().set_icon(Icon::File(icon_path))?;
                 }
-                *mutex.lock().await = SysTrayIconState { icon_state: IconState::High };
+                *mutex.lock().await = SysTrayIconState {
+                    icon_state: IconState::High,
+                };
 
-                println!("Current icon state after urgent message: {:?}", (*mutex).lock().await.get_icon_state());
-            },
-            _ => log::error!("Got invalid notification urgency level: {}", message.urgency),
+                println!(
+                    "Current icon state after urgent message: {:?}",
+                    (*mutex).lock().await.get_icon_state()
+                );
+            }
+            _ => log::error!(
+                "Got invalid notification urgency level: {}",
+                message.urgency
+            ),
         }
     }
 
     // send os notification
     if os {
-
-        let mut notification =  Notification::new(&app_handle.config().tauri.bundle.identifier)
-            .body(message.body);
+        let mut notification =
+            Notification::new(&app_handle.config().tauri.bundle.identifier).body(message.body);
 
         match applet_name {
-            Some(name) => notification = notification.title(format!("{} - {}", name, message.title)),
+            Some(name) => {
+                notification = notification.title(format!("{} - {}", name, message.title))
+            }
             None => notification = notification.title(message.title),
         }
 
@@ -123,8 +131,10 @@ pub async fn notify_tauri(
         //   Err(e) => println!("Failed to convert icon_path into path_string: {:?}", e),
         // }
 
-
-        if let Some(icon_path) = app_handle.path_resolver().resolve_resource("icons/32x32.png") {
+        if let Some(icon_path) = app_handle
+            .path_resolver()
+            .resolve_resource("icons/32x32.png")
+        {
             match icon_path.into_os_string().into_string() {
                 Ok(path_string) => notification = notification.icon(path_string),
                 Err(e) => log::error!("Failed to convert icon path into os string: {:?}", e),
@@ -146,38 +156,41 @@ pub async fn notify_tauri(
         //   }
         // }
 
-        notification.show()
-            .map_err(|e| WeError::TauriApiError(e))?;
+        notification.show().map_err(|e| WeError::TauriApiError(e))?;
     }
 
     Ok(())
-
 }
-
 
 #[tauri::command]
 pub async fn clear_systray_notification_state(
-  window: tauri::Window,
-  app_handle: AppHandle,
+    window: tauri::Window,
+    app_handle: AppHandle,
 ) -> WeResult<()> {
     if window.label() != "main" {
-        return Err(WeError::UnauthorizedWindow(String::from("clear_systray_notification_state")));
+        return Err(WeError::UnauthorizedWindow(String::from(
+            "clear_systray_notification_state",
+        )));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'clear_systray_notification_state'.");
     }
 
     // clear notification dots
-    let icon_path_option = app_handle.path_resolver().resolve_resource("icons/32x32.png");
+    let icon_path_option = app_handle
+        .path_resolver()
+        .resolve_resource("icons/32x32.png");
     if let Some(icon_path) = icon_path_option {
         match app_handle.tray_handle().set_icon(Icon::File(icon_path)) {
             Ok(()) => (),
-            Err(e) => log::error!("Failed to set system tray icon: {}", e)
+            Err(e) => log::error!("Failed to set system tray icon: {}", e),
         };
     }
 
     let mutex = app_handle.state::<Mutex<SysTrayIconState>>();
-    *mutex.lock().await = SysTrayIconState { icon_state: IconState::Clean };
+    *mutex.lock().await = SysTrayIconState {
+        icon_state: IconState::Clean,
+    };
 
     Ok(())
 }

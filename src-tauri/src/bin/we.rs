@@ -1,17 +1,16 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::PathBuf;
-
 use futures::lock::Mutex;
 use serde_json::Value;
-use tauri::{Manager, RunEvent, UserAttentionType, WindowEvent};
+use tauri::{Manager, RunEvent, SystemTray, SystemTrayEvent, UserAttentionType, WindowEvent};
 
 use we_alpha::applet_iframes::start_applet_uis_server;
 use we_alpha::commands::notification::{IconState, SysTrayIconState};
 use we_alpha::config::WeConfig;
 use we_alpha::filesystem::{Profile, WeFileSystem};
 use we_alpha::logs::setup_logs;
+use we_alpha::system_tray::{app_system_tray, handle_system_tray_event};
 use we_alpha::window::build_main_window;
 
 fn main() {
@@ -32,6 +31,11 @@ fn main() {
     }
 
     we_alpha::tauri_builder()
+        .system_tray(SystemTray::new().with_menu(app_system_tray()))
+        .on_system_tray_event(|app, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => handle_system_tray_event(app, id),
+            _ => {}
+        })
         .setup(move |app| {
             let handle = app.handle();
 

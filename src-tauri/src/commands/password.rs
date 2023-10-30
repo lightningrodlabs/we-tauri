@@ -4,15 +4,20 @@ use tauri::{AppHandle, Manager};
 
 use crate::{
     config::WeConfig,
-    error::{WeResult, WeError},
+    error::{WeError, WeResult},
     filesystem::WeFileSystem,
     launch::launch,
 };
 
 #[tauri::command]
-pub async fn is_keystore_initialized(window: tauri::Window, fs: tauri::State<'_, WeFileSystem>) -> WeResult<bool> {
+pub async fn is_keystore_initialized(
+    window: tauri::Window,
+    fs: tauri::State<'_, WeFileSystem>,
+) -> WeResult<bool> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("is_keystore_initialized")));
+        return Err(WeError::UnauthorizedWindow(String::from(
+            "is_keystore_initialized",
+        )));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'is_keystore_initialized'.");
@@ -29,12 +34,13 @@ pub async fn create_password(
     password: String,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("create_password")));
+        return Err(WeError::UnauthorizedWindow(String::from("create_password")));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'create_password'.");
     }
-    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
+    let (_meta_lair_client, _admin_port, _app_port) =
+        launch(&app_handle, &config, &fs, password, None, None).await?;
 
     Ok(())
 }
@@ -48,12 +54,13 @@ pub async fn enter_password(
     password: String,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("enter_password")));
+        return Err(WeError::UnauthorizedWindow(String::from("enter_password")));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'enter_password'.");
     }
-    let (_meta_lair_client, _admin_port, _app_port) = launch(&app_handle, &config, &fs, password).await?;
+    let (_meta_lair_client, _admin_port, _app_port) =
+        launch(&app_handle, &config, &fs, password, None, None).await?;
 
     Ok(())
 }

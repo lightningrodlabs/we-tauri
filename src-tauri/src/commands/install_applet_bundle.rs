@@ -14,10 +14,7 @@ use essence::EssenceResponse;
 use futures::lock::Mutex;
 use hc_crud::Entity;
 use holochain::{
-    conductor::{
-        api::{CellInfo, ClonedCell, ProvisionedCell},
-        ConductorHandle,
-    },
+    conductor::api::{CellInfo, ClonedCell, ProvisionedCell},
     prelude::{
         kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::lair_keystore_api::LairClient,
         ActionHash, ActionHashB64, AgentPubKeyB64, AppBundleSource, CellId, CreateCloneCellPayload,
@@ -600,7 +597,7 @@ pub async fn fetch_available_ui_updates(
                         }
                         break;
                     }
-                    Err(e) => (),
+                    Err(_e) => (),
                 }
             }
         }
@@ -918,7 +915,7 @@ async fn fetch_and_assemble_happ(
                     zomes: coordinator_zomes,
                 },
             },
-            resources: resources,
+            resources,
         };
 
         let dna_pack_bytes = encode_bundle(dna_bundle).map_err(|e| {

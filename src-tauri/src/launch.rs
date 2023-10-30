@@ -1,4 +1,4 @@
-use std::{time::Duration, path::PathBuf, collections::HashMap};
+use std::{collections::HashMap, path::PathBuf, time::Duration};
 
 use futures::lock::Mutex;
 use holochain::{
@@ -6,21 +6,24 @@ use holochain::{
         config::{AdminInterfaceConfig, ConductorConfig, KeystoreConfig},
         interface::InterfaceDriver,
     },
-    prelude::{
-        KitsuneP2pConfig, TransportConfig,
-    },
+    prelude::{KitsuneP2pConfig, TransportConfig},
 };
 use holochain_client::AdminWebsocket;
 use holochain_keystore::MetaLairClient;
-use tauri::{api::process::{Command, CommandChild, CommandEvent}, Manager};
+use tauri::{
+    api::process::{Command, CommandChild, CommandEvent},
+    Manager,
+};
 use url2::Url2;
-
 
 use crate::{
     config::WeConfig,
     default_apps::install_default_apps_if_necessary,
-    error::{WeError, WeResult, LairKeystoreError, LaunchHolochainError, LaunchChildError, InitializeConductorError},
-    filesystem::{WeFileSystem, create_dir_if_necessary},
+    error::{
+        InitializeConductorError, LairKeystoreError, LaunchChildError, LaunchHolochainError,
+        WeError, WeResult,
+    },
+    filesystem::{create_dir_if_necessary, WeFileSystem},
 };
 
 pub type AppPort = u16;
@@ -31,36 +34,42 @@ pub async fn launch(
     we_config: &WeConfig,
     fs: &WeFileSystem,
     password: String,
+    bootstrap_service_url: Option<Url2>,
+    signaling_server_url: Option<String>,
 ) -> WeResult<(MetaLairClient, AdminPort, AppPort)> {
-
     let log_level = log::Level::Warn;
 
     // initialize lair keystore if necessary
     if !fs.keystore_initialized() {
         println!("Keystore not initialized. Initializing keystore...");
-        create_dir_if_necessary(&fs.keystore_dir())
-            .map_err(|e| WeError::FileSystemError(format!("Failed to create lair keystore directory: {:?}", e)))?;
+        create_dir_if_necessary(&fs.keystore_dir()).map_err(|e| {
+            WeError::FileSystemError(format!("Failed to create lair keystore directory: {:?}", e))
+        })?;
         initialize_keystore(fs.keystore_dir(), password.clone()).await?;
     }
 
     println!("Launching lair keystore process...");
     // spawn lair keystore process and connect to it
-    let lair_url = launch_lair_keystore_process(log_level.clone(), fs.keystore_dir(), password.clone()).await?;
+    let lair_url =
+        launch_lair_keystore_process(log_level.clone(), fs.keystore_dir(), password.clone())
+            .await?;
     println!("Launched lair keystore process.");
     let meta_lair_client = holochain_keystore::lair_keystore::spawn_lair_keystore(
         lair_url.clone(),
-        sodoken::BufRead::from(password.clone().into_bytes())
-        ).await
-        .map_err(|e| LairKeystoreError::SpawnMetaLairClientError(format!("{}", e)))?;
+        sodoken::BufRead::from(password.clone().into_bytes()),
+    )
+    .await
+    .map_err(|e| LairKeystoreError::SpawnMetaLairClientError(format!("{}", e)))?;
 
     println!("Spawned lair keystore and got MetaLairClient.");
-
 
     // write conductor config to file
 
     let mut config = ConductorConfig::default();
     config.environment_path = fs.conductor_dir().into();
-    config.keystore = KeystoreConfig::LairServer { connection_url: lair_url };
+    config.keystore = KeystoreConfig::LairServer {
+        connection_url: lair_url,
+    };
 
     let admin_port = match option_env!("ADMIN_PORT") {
         Some(p) => p.parse().unwrap(),
@@ -75,16 +84,16 @@ pub async fn launch(
 
     let mut network_config = KitsuneP2pConfig::default();
 
-    let bootstrap_url = match option_env!("BOOTSTRAP_PORT") {
+    let bootstrap_url = bootstrap_service_url.unwrap_or(match option_env!("BOOTSTRAP_PORT") {
         Some(p) => url2::url2!("http://127.0.0.1:{}", p),
-        None => url2::url2!("https://bootstrap.holo.host")
-    };
+        None => url2::url2!("https://bootstrap.holo.host"),
+    });
     network_config.bootstrap_service = Some(bootstrap_url);
 
-    let signaling_server_url = match option_env!("SIGNAL_PORT") {
+    let signaling_server_url = signaling_server_url.unwrap_or(match option_env!("SIGNAL_PORT") {
         Some(p) => format!("ws://127.0.0.1:{}", p),
-        None => String::from("wss://signal.holo.host")
-    };
+        None => String::from("wss://signal.holo.host"),
+    });
     network_config.transport_pool.push(TransportConfig::WebRTC {
         signal_url: signaling_server_url,
     });
@@ -92,7 +101,8 @@ pub async fn launch(
     config.network = Some(network_config);
 
     // TODO more graceful error handling
-    let config_string = serde_yaml::to_string(&config).expect("Could not convert conductor config to string");
+    let config_string =
+        serde_yaml::to_string(&config).expect("Could not convert conductor config to string");
 
     create_dir_if_necessary(&fs.conductor_dir())?;
     let conductor_config_path = fs.conductor_dir().join("conductor-config.yaml");
@@ -103,26 +113,22 @@ pub async fn launch(
     println!("Wrote conductor config.");
 
     // NEW_VERSION change holochain version number here if necessary
-    let command = Command::new_sidecar("holochain-v0.2.3-beta-rc.1")
-        .map_err(|err| WeError::LaunchHolochainError(
-            LaunchHolochainError::SidecarBinaryCommandError(format!("{}", err)))
-        )?;
+    let command = Command::new_sidecar("holochain-v0.2.3-beta-rc.1").map_err(|err| {
+        WeError::LaunchHolochainError(LaunchHolochainError::SidecarBinaryCommandError(format!(
+            "{}",
+            err
+        )))
+    })?;
 
-    let _command_child = launch_holochain_process(
-        log_level,
-        command,
-        conductor_config_path,
-        password
-    ).await?;
+    let _command_child =
+        launch_holochain_process(log_level, command, conductor_config_path, password).await?;
 
     println!("Launched holochain process.");
-
 
     std::thread::sleep(Duration::from_millis(100));
 
     // Try to connect twice. This fixes the os(111) error for now that occurs when the conducor is not ready yet.
-    let mut admin_ws = match AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
-    .await
+    let mut admin_ws = match AdminWebsocket::connect(format!("ws://localhost:{}", admin_port)).await
     {
         Ok(ws) => ws,
         Err(_) => {
@@ -130,15 +136,17 @@ pub async fn launch(
             std::thread::sleep(Duration::from_millis(5000));
             AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
                 .await
-                .map_err(|err| LaunchHolochainError::CouldNotConnectToConductor(format!("{}", err)))?
+                .map_err(|err| {
+                    LaunchHolochainError::CouldNotConnectToConductor(format!("{}", err))
+                })?
         }
     };
 
     let app_port = {
         let app_interfaces = admin_ws.list_app_interfaces().await.map_err(|e| {
             LaunchHolochainError::CouldNotConnectToConductor(format!(
-            "Could not list app interfaces: {:?}",
-            e
+                "Could not list app interfaces: {:?}",
+                e
             ))
         })?;
 
@@ -148,19 +156,24 @@ pub async fn launch(
             let free_port = portpicker::pick_unused_port().expect("No ports free");
 
             admin_ws.attach_app_interface(free_port).await.or(Err(
-            LaunchHolochainError::CouldNotConnectToConductor("Could not attach app interface".into()),
+                LaunchHolochainError::CouldNotConnectToConductor(
+                    "Could not attach app interface".into(),
+                ),
             ))?;
             free_port
         }
     };
 
-    install_default_apps_if_necessary(app_handle, we_config, &fs,&mut admin_ws).await?;
+    install_default_apps_if_necessary(app_handle, we_config, &fs, &mut admin_ws).await?;
 
     app_handle.manage((admin_port, app_port));
     app_handle.manage(Mutex::new(admin_ws));
     app_handle.manage(Mutex::new(meta_lair_client.clone()));
 
-    println!("############\nLaunched holochain with app port {} and admin port {}", app_port, admin_port);
+    println!(
+        "############\nLaunched holochain with app port {} and admin port {}",
+        app_port, admin_port
+    );
 
     Ok((meta_lair_client, admin_port, app_port))
 }
@@ -183,19 +196,19 @@ pub async fn launch_holochain_process(
 
     let (mut holochain_rx, mut holochain_child) = command
         .args(&[
-        "-c",
-        conductor_config_path.into_os_string().to_str().unwrap(),
-        "-p",
+            "-c",
+            conductor_config_path.into_os_string().to_str().unwrap(),
+            "-p",
         ])
         .envs(envs)
         .spawn()
         .map_err(|err| {
-        WeError::LaunchHolochainError(LaunchHolochainError::LaunchChildError(LaunchChildError::FailedToExecute(format!("{}", err))))
+            WeError::LaunchHolochainError(LaunchHolochainError::LaunchChildError(
+                LaunchChildError::FailedToExecute(format!("{}", err)),
+            ))
         })?;
 
-
     let mut launch_state = LaunchHolochainProcessState::Pending;
-
 
     holochain_child
         .write(password.as_bytes())
@@ -204,50 +217,49 @@ pub async fn launch_holochain_process(
         .write("\n".as_bytes())
         .map_err(|err| LaunchHolochainError::ErrorWritingPassword(format!("{:?}", err)))?;
 
-
     let mut fatal_error = false;
 
     // this loop will end in still pending when the conductor crashes before being ready
     // read events such as stdout
     while let Some(event) = holochain_rx.recv().await {
-
-
         match event.clone() {
-        CommandEvent::Stdout(line) => {
-            log::info!("[HOLOCHAIN] {}", line);
-            if line.contains("Conductor ready.") {
-            launch_state = LaunchHolochainProcessState::Success;
-            break;
+            CommandEvent::Stdout(line) => {
+                log::info!("[HOLOCHAIN] {}", line);
+                if line.contains("Conductor ready.") {
+                    launch_state = LaunchHolochainProcessState::Success;
+                    break;
+                }
             }
-        },
-        CommandEvent::Stderr(line) => {
+            CommandEvent::Stderr(line) => {
+                log::info!("[HOLOCHAIN] {}", line);
 
-            log::info!("[HOLOCHAIN] {}", line);
-
-            // Windows error handling:
-            // --------------------------------------
-            #[cfg(target_family="windows")]
-            if line.contains("websocket_error_from_network=Io") && line.contains("ConnectionReset") {
-            launch_state = LaunchHolochainProcessState::InitializeConductorError(
+                // Windows error handling:
+                // --------------------------------------
+                #[cfg(target_family = "windows")]
+                if line.contains("websocket_error_from_network=Io")
+                    && line.contains("ConnectionReset")
+                {
+                    launch_state = LaunchHolochainProcessState::InitializeConductorError(
                 InitializeConductorError::AddressAlreadyInUse(
                 String::from("Could not initialize Conductor from configuration: Address already in use")
                 )
             );
-            break;
-            }
-            // --------------------------------------
+                    break;
+                }
+                // --------------------------------------
 
-            // UNIX error handling:
-            // --------------------------------------
-            #[cfg(target_family="unix")]
-            if line.contains("FATAL PANIC PanicInfo") {
-            fatal_error = true;
-            }
-            #[cfg(target_family="unix")]
-            if line.contains("Well, this is embarrassing") { // This line occurs below FATAL PANIC but may potentially also appear without FATAL PANIC PanicInfo
-            fatal_error = true;
-            }
-            #[cfg(target_family="unix")]
+                // UNIX error handling:
+                // --------------------------------------
+                #[cfg(target_family = "unix")]
+                if line.contains("FATAL PANIC PanicInfo") {
+                    fatal_error = true;
+                }
+                #[cfg(target_family = "unix")]
+                if line.contains("Well, this is embarrassing") {
+                    // This line occurs below FATAL PANIC but may potentially also appear without FATAL PANIC PanicInfo
+                    fatal_error = true;
+                }
+                #[cfg(target_family="unix")]
             if line.contains("Could not initialize Conductor from configuration: InterfaceError(WebsocketError(Io(Os") && line.contains("Address already in use") {
             launch_state = LaunchHolochainProcessState::InitializeConductorError(
                 InitializeConductorError::AddressAlreadyInUse(
@@ -256,7 +268,7 @@ pub async fn launch_holochain_process(
             );
             break;
             }
-            #[cfg(target_family="unix")]
+                #[cfg(target_family="unix")]
             if fatal_error == true && line.contains("DatabaseError(SqliteError(SqliteFailure(Error { code: NotADatabase, extended_code: 26 }, Some(\"file is not a database\"))))") {
             launch_state = LaunchHolochainProcessState::InitializeConductorError(
                 InitializeConductorError::SqliteError(
@@ -265,57 +277,54 @@ pub async fn launch_holochain_process(
             );
             break;
             }
-            // if no known error was found between the line saying "FATAL PANIC ..." or "Well, this is embarrassing" and
-            // the line saying "Thank you kindly" it is an unknown error
-            #[cfg(target_family="unix")]
-            if fatal_error == true && line.contains("Thank you kindly!"){
-            launch_state = LaunchHolochainProcessState::InitializeConductorError(
+                // if no known error was found between the line saying "FATAL PANIC ..." or "Well, this is embarrassing" and
+                // the line saying "Thank you kindly" it is an unknown error
+                #[cfg(target_family = "unix")]
+                if fatal_error == true && line.contains("Thank you kindly!") {
+                    launch_state = LaunchHolochainProcessState::InitializeConductorError(
                 InitializeConductorError::UnknownError(
                 String::from("Unknown error when trying to initialize conductor. See log file for details.")
                 )
             );
+                }
             }
-        },
-        // --------------------------------------
-        _ => {
-            log::info!("[HOLOCHAIN] {:?}", event);
-        },
+            // --------------------------------------
+            _ => {
+                log::info!("[HOLOCHAIN] {:?}", event);
+            }
         };
-
-    };
+    }
 
     log::info!("Launched holochain");
-
 
     tauri::async_runtime::spawn(async move {
         // read events such as stdout
         while let Some(event) = holochain_rx.recv().await {
-        match event.clone() {
-            CommandEvent::Stdout(line) => log::info!("[HOLOCHAIN] {}", line),
-            CommandEvent::Stderr(line) => log::info!("[HOLOCHAIN] {}", line),
-            _ => log::info!("[HOLOCHAIN] {:?}", event),
-        };
+            match event.clone() {
+                CommandEvent::Stdout(line) => log::info!("[HOLOCHAIN] {}", line),
+                CommandEvent::Stderr(line) => log::info!("[HOLOCHAIN] {}", line),
+                _ => log::info!("[HOLOCHAIN] {:?}", event),
+            };
         }
     });
 
-
     match launch_state {
         LaunchHolochainProcessState::Success => {
-        log::info!("LaunchHolochainProcessState::Success");
-        Ok(holochain_child)
-        },
+            log::info!("LaunchHolochainProcessState::Success");
+            Ok(holochain_child)
+        }
         LaunchHolochainProcessState::InitializeConductorError(e) => {
-        log::info!("LaunchHolochainProcessState::InitializeConductorError");
-        Err(WeError::LaunchHolochainError(LaunchHolochainError::CouldNotInitializeConductor(e)))
-        },
+            log::info!("LaunchHolochainProcessState::InitializeConductorError");
+            Err(WeError::LaunchHolochainError(
+                LaunchHolochainError::CouldNotInitializeConductor(e),
+            ))
+        }
         LaunchHolochainProcessState::Pending => {
-        log::info!("LaunchHolochainProcessState::Pending");
-        Err(WeError::LaunchHolochainError(LaunchHolochainError::ImpossibleError("LaunchHolochainProcessState still pending after launching the holochain process.".into())))
+            log::info!("LaunchHolochainProcessState::Pending");
+            Err(WeError::LaunchHolochainError(LaunchHolochainError::ImpossibleError("LaunchHolochainProcessState still pending after launching the holochain process.".into())))
         }
     }
-
 }
-
 
 pub async fn launch_lair_keystore_process(
     log_level: log::Level,
@@ -331,7 +340,7 @@ pub async fn launch_lair_keystore_process(
 
     // On Unix systems, there is a limit to the path length of a domain socket. Create a symlink to the lair directory from the tempdir
     // instead and overwrite the connectionUrl in the lair-keystore-config.yaml
-    if cfg!(target_family="unix") {
+    if cfg!(target_family = "unix") {
         let uid = nanoid::nanoid!(13);
         let src_path = std::env::temp_dir().join(format!("lair.{}", uid));
         symlink::symlink_dir(keystore_path, src_path.clone())
@@ -340,11 +349,15 @@ pub async fn launch_lair_keystore_process(
 
         // overwrite connectionUrl in lair-keystore-config.yaml to symlink directory
         // 1. read to string
-        let mut lair_config_string = std::fs::read_to_string(keystore_path.join("lair-keystore-config.yaml"))
-            .map_err(|e| LairKeystoreError::ErrorReadingLairConfig(e.to_string()))?;
+        let mut lair_config_string =
+            std::fs::read_to_string(keystore_path.join("lair-keystore-config.yaml"))
+                .map_err(|e| LairKeystoreError::ErrorReadingLairConfig(e.to_string()))?;
 
         // 2. filter out the line with the connectionUrl
-        let connection_url_line = lair_config_string.lines().filter(|line| line.contains("connectionUrl:")).collect::<String>();
+        let connection_url_line = lair_config_string
+            .lines()
+            .filter(|line| line.contains("connectionUrl:"))
+            .collect::<String>();
 
         // 3. replace the part unix:///home/[user]/.local/share/holochain-launcher/profiles/default/lair/0.2/socket?k=[some_key]
         //    with unix://[path to tempdir]/socket?k=[some_key]
@@ -355,25 +368,34 @@ pub async fn launch_lair_keystore_process(
             keystore_path.join(socket).to_str().unwrap(),
         )) {
             Ok(url) => url,
-            Err(e) => return Err(LairKeystoreError::OtherError(format!("Failed to parse URL for symlink lair path: {}", e))),
+            Err(e) => {
+                return Err(LairKeystoreError::OtherError(format!(
+                    "Failed to parse URL for symlink lair path: {}",
+                    e
+                )))
+            }
         };
 
         let new_line = &format!("connectionUrl: {}\n", tempdir_connection_url);
 
         // 4. Replace the existing connectionUrl line with that new line
-        lair_config_string = LinesWithEndings::from(lair_config_string.as_str()).map(|line| {
-        if line.contains("connectionUrl:") {
-            new_line
-        } else {
-            line
-        }
-        }).collect::<String>();
+        lair_config_string = LinesWithEndings::from(lair_config_string.as_str())
+            .map(|line| {
+                if line.contains("connectionUrl:") {
+                    new_line
+                } else {
+                    line
+                }
+            })
+            .collect::<String>();
 
         // 5. Overwrite the lair-keystore-config.yaml with the modified content
-        std::fs::write(keystore_data_dir.join("lair-keystore-config.yaml"), lair_config_string)
-            .map_err(|e| LairKeystoreError::ErrorWritingLairConfig(e.to_string()))?;
+        std::fs::write(
+            keystore_data_dir.join("lair-keystore-config.yaml"),
+            lair_config_string,
+        )
+        .map_err(|e| LairKeystoreError::ErrorWritingLairConfig(e.to_string()))?;
     }
-
 
     println!("Launching lair sidecar binary...");
 
@@ -387,11 +409,13 @@ pub async fn launch_lair_keystore_process(
         .envs(envs.clone())
         .spawn()
         .map_err(|err| {
-            LairKeystoreError::LaunchChildError(LaunchChildError::FailedToExecute(format!("{:?}", err)))
-    })?;
+            LairKeystoreError::LaunchChildError(LaunchChildError::FailedToExecute(format!(
+                "{:?}",
+                err
+            )))
+        })?;
 
     println!("Writing password...");
-
 
     tauri::async_runtime::spawn(async move {
         std::thread::sleep(Duration::from_millis(10));
@@ -402,7 +426,6 @@ pub async fn launch_lair_keystore_process(
 
     println!("Password written...");
 
-
     let mut started = false;
     while !started {
         if let Some(event) = lair_rx.recv().await {
@@ -410,13 +433,13 @@ pub async fn launch_lair_keystore_process(
                 CommandEvent::Stdout(line) => {
                     log::info!("[LAIR] {}", line);
                     if line.contains("lair-keystore running") {
-                    started = true;
+                        started = true;
                     }
                 }
                 CommandEvent::Stderr(line) => {
                     log::error!("[LAIR] {}", line);
                     if line.contains("InternalSodium") {
-                    return Err(LairKeystoreError::IncorrectPassword);
+                        return Err(LairKeystoreError::IncorrectPassword);
                     }
                 }
                 _ => {
@@ -439,7 +462,6 @@ pub async fn launch_lair_keystore_process(
 
     println!("Trying to print lair version...");
 
-
     // NEW_VERSION Check whether lair-keystore version needs to get updated
     let output = Command::new_sidecar("lair-keystore-v0.3.0")
         .or(Err(LairKeystoreError::LaunchChildError(
@@ -450,8 +472,11 @@ pub async fn launch_lair_keystore_process(
         .envs(envs.clone())
         .output()
         .map_err(|err| {
-            LairKeystoreError::LaunchChildError(LaunchChildError::FailedToExecute(format!("{:?}", err)))
-    })?;
+            LairKeystoreError::LaunchChildError(LaunchChildError::FailedToExecute(format!(
+                "{:?}",
+                err
+            )))
+        })?;
 
     if output.stderr.len() > 0 {
         return Err(LairKeystoreError::LaunchChildError(
@@ -468,12 +493,14 @@ pub async fn launch_lair_keystore_process(
     Ok(url)
 }
 
-
-pub async fn initialize_keystore(keystore_dir: PathBuf, password: String) -> Result<(), LairKeystoreError> {
-// NEW_VERSION Check whether lair-keystore version needs to get updated
+pub async fn initialize_keystore(
+    keystore_dir: PathBuf,
+    password: String,
+) -> Result<(), LairKeystoreError> {
+    // NEW_VERSION Check whether lair-keystore version needs to get updated
     let (mut lair_rx, mut command_child) = Command::new_sidecar("lair-keystore-v0.3.0")
         .or(Err(LairKeystoreError::LaunchChildError(
-        LaunchChildError::BinaryNotFound,
+            LaunchChildError::BinaryNotFound,
         )))?
         .args(&["init", "-p"])
         .current_dir(keystore_dir)
@@ -513,7 +540,6 @@ pub async fn initialize_keystore(keystore_dir: PathBuf, password: String) -> Res
     Ok(())
 }
 
-
 /// Iterator yielding every line in a string. The line includes newline character(s).
 /// https://stackoverflow.com/questions/40455997/iterate-over-lines-in-a-string-including-the-newline-characters
 struct LinesWithEndings<'a> {
@@ -522,9 +548,7 @@ struct LinesWithEndings<'a> {
 
 impl<'a> LinesWithEndings<'a> {
     pub fn from(input: &'a str) -> LinesWithEndings<'a> {
-        LinesWithEndings {
-            input: input,
-        }
+        LinesWithEndings { input: input }
     }
 }
 
@@ -536,7 +560,11 @@ impl<'a> Iterator for LinesWithEndings<'a> {
         if self.input.is_empty() {
             return None;
         }
-        let split = self.input.find('\n').map(|i| i + 1).unwrap_or(self.input.len());
+        let split = self
+            .input
+            .find('\n')
+            .map(|i| i + 1)
+            .unwrap_or(self.input.len());
         let (line, rest) = self.input.split_at(split);
         self.input = rest;
         Some(line)

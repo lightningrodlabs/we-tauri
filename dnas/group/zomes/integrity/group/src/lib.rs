@@ -1,5 +1,5 @@
 use hdi::prelude::*;
-pub use we_types::Applet;
+pub use we_types::{Applet, GroupProfile};
 
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
@@ -35,11 +35,4 @@ pub struct RelatedGroup {
 pub struct RegisterAppletFederationInput {
     pub applet_hash: EntryHash,
     pub group_dna_hash: EntryHash,
-}
-
-#[hdk_entry_helper]
-#[derive(Clone)]
-pub struct GroupProfile {
-    pub name: String,
-    pub logo_src: String,
 }

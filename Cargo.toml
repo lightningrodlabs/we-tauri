@@ -4,7 +4,6 @@ members = [
   "dnas/*/zomes/integrity/*",
   "crates/*",
   "src-tauri",
-  "test_applet/src-tauri",
 ]
 resolver = "2"
 

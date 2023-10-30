@@ -22,3 +22,10 @@ pub struct Applet {
 
     pub properties: BTreeMap<String, SerializedBytes>, // Segmented by RoleName
 }
+
+#[hdk_entry_helper]
+#[derive(Clone)]
+pub struct GroupProfile {
+    pub name: String,
+    pub logo_src: String,
+}

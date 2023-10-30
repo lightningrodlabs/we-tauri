@@ -25,8 +25,8 @@
         "../../src-tauri/icons/icon.ico"
       ],
       "externalBin": [
-        "../../bins/holochain-v0.2.3-beta-rc.1",
-        "../../bins/lair-keystore-v0.3.0"
+        "../../src-tauri/bins/holochain-v0.2.3-beta-rc.1",
+        "../../src-tauri/bins/lair-keystore-v0.3.0"
       ],
       "identifier": "org.lightningrodlabs.we-alpha",
       "resources": [
@@ -39,9 +39,6 @@
     "security": {
       "csp": null,
       "dangerousDisableAssetCspModification": true
-    },
-    "systemTray": {
-      "iconPath": "../../src-tauri/icons/32x32.png"
     },
     "windows": []
   }
