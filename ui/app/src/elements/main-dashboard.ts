@@ -275,7 +275,6 @@ export class MainDashboard extends LitElement {
           }))
         }}
         @sl-hide=${() => {
-          console.log("@sl-hide bubbled up to we-clipboard.")
           this.dynamicLayout.dispatchEvent(new CustomEvent("cancel-select-hrl", {
             bubbles: false,
             composed: false,
@@ -322,6 +321,11 @@ export class MainDashboard extends LitElement {
             this._weStore.selectAppletHash(e.detail.appletEntryHash);
             this.selectedGroupDnaHash = e.detail.groupDnaHash;
             this.dashboardMode = "groupView";
+          }}
+          @jump-to-applet=${(e: CustomEvent) => {
+            this.dashboardMode = "browserView";
+            this.selectedGroupDnaHash = undefined;
+            this.dynamicLayout.openViews.openAppletMain(e.detail);
           }}
           .rootItemConfig=${{
             type: "row",

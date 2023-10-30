@@ -24,9 +24,9 @@ Go to [the releases page](https://github.com/lightningrodlabs/we/releases) and d
 
 1. Install the holochain dev environment: https://developer.holochain.org/docs/install/.
 2. Clone this repo: `git clone https://github.com/lightningrodlabs/we && cd ./we`.
-3. Enter the nix shell: `nix develop`.
-4. Run: `npm install`.
-5. Compile holochain and lair. On Linux/macOS you can simply run `bash ./scripts/install_binaries.sh`. On Windows, follow the instructions in [docs/install-binaries.md](./docs/install-binaries.md).
+3. Compile holochain and lair. On Linux/macOS you can simply run `bash ./scripts/install_binaries.sh`. On Windows, follow the instructions in [docs/install-binaries.md](./docs/install-binaries.md). **DO NOT RUN THIS STEP IN NIX SHELL**.
+4. Enter the nix shell: `nix develop`.
+5. Run: `npm install`.
 6. Run `npm run start`.
 
 ### Running the DNA tests

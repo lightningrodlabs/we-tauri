@@ -1,6 +1,6 @@
 {
   "name": "we-alpha",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "scripts": {
     "start": "vite --force --clearScreen false --port 1420",
     "build": "vite build",
