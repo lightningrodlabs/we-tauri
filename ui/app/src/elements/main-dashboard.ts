@@ -322,6 +322,11 @@ export class MainDashboard extends LitElement {
             this.selectedGroupDnaHash = e.detail.groupDnaHash;
             this.dashboardMode = "groupView";
           }}
+          @jump-to-applet=${(e: CustomEvent) => {
+            this.dashboardMode = "browserView";
+            this.selectedGroupDnaHash = undefined;
+            this.dynamicLayout.openViews.openAppletMain(e.detail);
+          }}
           .rootItemConfig=${{
             type: "row",
             content: [
