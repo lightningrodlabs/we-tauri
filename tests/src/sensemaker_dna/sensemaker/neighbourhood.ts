@@ -364,7 +364,6 @@ export default () => {
         // create a method
         const totalLikenessMethod = {
           name: "total_likeness_method",
-          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -397,6 +396,7 @@ export default () => {
         // compute objective dimension
         const runMethodInput = {
           resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
@@ -762,9 +762,9 @@ export default () => {
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
+        //@ts-ignore
         const totalLikenessMethod: Method = {
           name: "total_likeness_method",
-          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -797,6 +797,7 @@ export default () => {
         // compute objective dimension
         const runMethodInput = {
           resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
@@ -810,6 +811,7 @@ export default () => {
 
         const runMethodInput2 = {
           resource_eh: createPostEntryHash2,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
@@ -823,6 +825,7 @@ export default () => {
 
         const runMethodInput3 = {
           resource_eh: createPostEntryHash3,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
@@ -1227,7 +1230,6 @@ export default () => {
         // create a method
         const totalHeatMethod = {
           name: "total_heat_method",
-          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createDimensionEntryHash2,
           program: { Average: null },
@@ -1248,6 +1250,7 @@ export default () => {
         // compute objective dimension
         const runMethodInput = {
           resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
@@ -1463,7 +1466,6 @@ export default () => {
         // create a method
         const totalHeatMethod = {
           name: "total_heat_method",
-          target_resource_def_eh: createResourceDefEntryHash,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createDimensionEntryHash2,
           program: { Average: null },
@@ -1484,6 +1486,7 @@ export default () => {
         // compute objective dimension
         const runMethodInput = {
           resource_eh: createPostEntryHash,
+          resource_def_eh: createResourceDefEntryHash,
           method_eh: createMethodEntryHash,
         };
 
