@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.12-alpha - 2023-10-31
+- `Method` and `ConfigMethod` no longer contains the `target_resource_def_eh` field.
+- `RunMethodInput` now contains a `resource_def_eh` field.
 ## v0.0.11-alpha - 2023-08-30
 - `get_assessments_for_resources` input type `GetAssessmentsForResourcesInput` now optionally takes a vector of resource hashes. If no resource hashes are provided, all assessments are fetched.
 - `get_all_assessments` returns `ExternResult<Vec<Assessment>>` instead of `ExternResult<Vec<AssessmentWithDimensionAndResource>>`.
