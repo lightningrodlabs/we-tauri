@@ -143,7 +143,6 @@ export default () =>
                 t.ok(resourceDefEh);
 
                 const methodName = "total_importance_method"
-                //@ts-ignore
                 const totalImportanceMethod: Method = {
                     name: methodName,
                     input_dimension_ehs: [dimensionHash],
@@ -153,7 +152,6 @@ export default () =>
                     requires_validation: false,
                 };
 
-                //@ts-ignore
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
                     input_dimensions: [configDimension], // check if it's subjective (for now)

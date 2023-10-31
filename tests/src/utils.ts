@@ -150,20 +150,6 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
     methods: [
       {
         name: "total_likeness_method",
-        target_resource_def: {
-          name: "angryPost",
-          base_types: [resource_base_def],
-          dimensions: [
-            {
-              name: "likeness",
-              range: {
-                name: "10-scale",
-                kind: { Integer: { min: 0, max: 10 } },
-              },
-              computed: false,
-            },
-          ],
-        },
         input_dimensions: [
           {
             name: "likeness",

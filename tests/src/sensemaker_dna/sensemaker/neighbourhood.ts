@@ -762,7 +762,6 @@ export default () => {
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
-        //@ts-ignore
         const totalLikenessMethod: Method = {
           name: "total_likeness_method",
           input_dimension_ehs: [createDimensionEntryHash],

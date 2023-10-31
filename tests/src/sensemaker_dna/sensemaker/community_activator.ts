@@ -145,7 +145,6 @@ export default () => test("test CA progenitor pattern", async (t) => {
         // Alice creates a method
         const totalLikenessMethod = {
             "name": "total_likeness_method",
-            "target_resource_def_eh": createResourceDefEntryHash,
             "input_dimension_ehs": [createDimensionEntryHash],
             "output_dimension_eh": createDimensionEntryHash,
             "program": { "Sum": null },
