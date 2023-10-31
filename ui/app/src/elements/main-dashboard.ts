@@ -297,7 +297,7 @@ export class MainDashboard extends LitElement {
       <!-- dashboard -->
       <!-- golden-layout (display: none if not in browserView) -->
       <!-- Contains the applet message handler -->
-      <div class="row hover-browser" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
+      <div class="row hover-browser invisible-scrollbars" style="${this.dashboardMode === "browserView" ? "" : "display: none;"}"></div>
       <div style="${this.dashboardMode === "browserView" ? "" : "display: none"}; position: fixed; top: 24px; left: 74px; bottom: 0px; right: 0px;">
         <dynamic-layout
           id="dynamic-layout"
@@ -481,6 +481,15 @@ export class MainDashboard extends LitElement {
           right: 0;
           background: var(--sl-color-primary-200);
           height: var(--sidebar-width);
+        }
+
+        .invisible-scrollbars {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+
+        .invisible-scrollbars::-webkit-scrollbar {
+          display: none;
         }
 
         .selected {
