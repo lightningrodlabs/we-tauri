@@ -127,7 +127,6 @@ impl ConfigResourceDef {
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigMethod {
     pub name: String,
-    pub target_resource_def: ConfigResourceDef,
     pub input_dimensions: Vec<ConfigDimension>, // check if it's subjective (for now)
     pub output_dimension: ConfigDimension,      // check if it's objective
     pub program: Program,                       // making enum for now, in design doc it is `AST`

@@ -43,7 +43,7 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<Assessment>> {
         // if doing multiple input dimensions, will want to make sure they are of compatible types for arithmetic.
 
         let maybe_objective_assessment =
-            compute_objective_assessment(method, assessments, input.resource_eh)?;
+            compute_objective_assessment(method, assessments, input.resource_eh, input.resource_def_eh)?;
         if let Some(objective_assessment) = maybe_objective_assessment {
             // TODO: may want to change `create_assessment` to return the created assessment rather than the hash. For now sticking with this for minimal side-effects.
             let assessment_eh = create_assessment(objective_assessment)?;
@@ -71,6 +71,7 @@ fn compute_objective_assessment(
     method: Method,
     assessments: BTreeMap<EntryHash, Vec<Assessment>>,
     resource_eh: EntryHash,
+    resource_def_eh: EntryHash,
 ) -> ExternResult<Option<CreateAssessmentInput>> {
     //
     match method.program {
@@ -102,7 +103,7 @@ fn compute_objective_assessment(
                 value: assessment_value,
                 dimension_eh: method.output_dimension_eh,
                 resource_eh,
-                resource_def_eh: method.target_resource_def_eh,
+                resource_def_eh,
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))
@@ -137,7 +138,7 @@ fn compute_objective_assessment(
                 value: assessment_value,
                 dimension_eh: method.output_dimension_eh,
                 resource_eh,
-                resource_def_eh: method.target_resource_def_eh,
+                resource_def_eh,
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))
@@ -148,6 +149,7 @@ fn compute_objective_assessment(
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RunMethodInput {
     resource_eh: EntryHash,
+    resource_def_eh: EntryHash,
     method_eh: EntryHash,
 }
 #[derive(Serialize, Deserialize, Debug)]
