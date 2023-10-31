@@ -143,9 +143,9 @@ export default () =>
                 t.ok(resourceDefEh);
 
                 const methodName = "total_importance_method"
+                //@ts-ignore
                 const totalImportanceMethod: Method = {
                     name: methodName,
-                    target_resource_def_eh: resourceDefEh,
                     input_dimension_ehs: [dimensionHash],
                     output_dimension_eh: objectiveDimensionHash,
                     program: { Sum: null },
@@ -153,9 +153,9 @@ export default () =>
                     requires_validation: false,
                 };
 
+                //@ts-ignore
                 const configMethod: ConfigMethod = {
                     name: totalImportanceMethod.name,
-                    target_resource_def: configResourceDef,
                     input_dimensions: [configDimension], // check if it's subjective (for now)
                     output_dimension: configObjectiveDimension,      // check if it's objective
                     program: totalImportanceMethod.program,                 // making enum for now, in design doc it is `AST`
