@@ -1,5 +1,5 @@
 import { AgentPubKey, AppAgentCallZomeRequest, AppAgentClient, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, ResourceDef, RunMethodInput } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, Range, ResourceDef, RunMethodInput } from './index';
 import { Option } from './utils';
 
 export class SensemakerService {
@@ -17,12 +17,40 @@ export class SensemakerService {
     return this.callZome('get_all_agents', null);
   }
   
+  async createRange(range: Range): Promise<EntryHash> {
+    return this.callZome('create_range', range);
+  }
+
+  async getRange(rangeEh: EntryHash): Promise<HolochainRecord> {
+    return this.callZome('get_range', rangeEh);
+  }
+
+  async getRanges(): Promise<Array<HolochainRecord>> {
+    return this.callZome('get_ranges', null);
+  }
+
   async createDimension(dimension: Dimension): Promise<EntryHash> {
     return this.callZome('create_dimension', dimension);
   }
 
+  async createDimensions(dimension: Dimension): Promise<EntryHash> {
+    return this.callZome('create_dimension', dimension);
+  }
+
+  async getDimension(dimensionEh: EntryHash): Promise<HolochainRecord> {
+    return this.callZome('get_dimension', dimensionEh);
+  }
+
+  async getDimensions(): Promise<Array<HolochainRecord>> {
+    return this.callZome('get_dimensions', null);
+  }
+
   async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
     return this.callZome('create_resource_def', resourceDef);
+  }
+
+  async getResourceDef(dimensionEh: EntryHash): Promise<HolochainRecord> {
+    return this.callZome('get_resource_def', dimensionEh);
   }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
@@ -39,6 +67,10 @@ export class SensemakerService {
   
   async createMethod(method: Method): Promise<EntryHash> {
     return this.callZome('create_method', method);
+  }
+
+  async getMethod(methodEh: EntryHash): Promise<HolochainRecord> {
+    return this.callZome('get_method', methodEh);
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {

@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -143,24 +143,49 @@ export class SensemakerStore {
     return await this.service.getAllAgents();
   }
   
-  // TODO: update applet config update to key by applet name
-  // async createDimension(dimension: Dimension): Promise<EntryHash> {
-  //   const dimensionEh = await this.service.createDimension(dimension);
-  //   this._appletConfig.update(appletConfig => {
-  //     appletConfig.dimensions[dimension.name] = dimensionEh;
-  //     return appletConfig;
-  //   });
-  //   return dimensionEh;
-  // }
+  async createRange(range: Range): Promise<EntryHash> {
+    const rangeEh = await this.service.createRange(range);
+    return rangeEh;
+  }
 
-  // async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
-  //   const resourceDefEh = await this.service.createResourceDef(resourceDef);
-  //   this._appletConfig.update(appletConfig => {
-  //     appletConfig.resource_defs[resourceDef.name] = resourceDefEh;
-  //     return appletConfig;
-  //   });
-  //   return resourceDefEh;
-  // }
+  async getRange(rangeEh: EntryHash): Promise<HolochainRecord> {
+    return await this.service.getRange(rangeEh) 
+  }
+
+  async getRanges(): Promise<Array<HolochainRecord>> {
+    return await this.service.getRanges() 
+  }
+
+  // TODO: update applet config update to key by applet name
+  async createDimension(dimension: Dimension): Promise<EntryHash> {
+    const dimensionEh = await this.service.createDimension(dimension);
+    // this._appletConfig.update(appletConfig => {
+    //   appletConfig.dimensions[dimension.name] = dimensionEh;
+    //   return appletConfig;
+    // });
+    return dimensionEh;
+  }
+
+  async getDimension(dimensionEh: EntryHash): Promise<HolochainRecord> {
+    return await this.service.getDimension(dimensionEh) 
+  }
+
+  async getDimensions(): Promise<Array<HolochainRecord>> {
+    return await this.service.getDimensions() 
+  }
+
+  async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
+    const resourceDefEh = await this.service.createResourceDef(resourceDef);
+    // this._appletConfig.update(appletConfig => {
+    //   appletConfig.resource_defs[resourceDef.name] = resourceDefEh;
+    //   return appletConfig;
+    // });
+    return resourceDefEh;
+  }
+
+  async getResourceDef(resourceDefEh: EntryHash): Promise<HolochainRecord> {
+    return await this.service.getResourceDef(resourceDefEh) 
+  }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
     const assessmentEh = await this.service.createAssessment(assessment);
@@ -191,14 +216,18 @@ export class SensemakerStore {
     return resourceAssessments;
   }
   
-  // async createMethod(method: Method): Promise<EntryHash> {
-  //   const methodEh = await this.service.createMethod(method);
-  //   this._appletConfig.update(appletConfig => {
-  //     appletConfig.methods[method.name] = methodEh;
-  //     return appletConfig;
-  //   });
-  //   return methodEh;
-  // }
+  async createMethod(method: Method): Promise<EntryHash> {
+    const methodEh = await this.service.createMethod(method);
+    // this._appletConfig.update(appletConfig => {
+    //   appletConfig.methods[method.name] = methodEh;
+    //   return appletConfig;
+    // });
+    return methodEh;
+  }
+
+  async getMethod(methodEh: EntryHash): Promise<HolochainRecord> {
+    return await this.service.getMethod(methodEh) 
+  }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
     let assessment = await this.service.runMethod(runMethodInput);
@@ -211,14 +240,14 @@ export class SensemakerStore {
     return assessment;
   }
 
-  // async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
-  //   const contextEh = await this.service.createCulturalContext(culturalContext);
-  //   this._appletConfig.update(appletConfig => {
-  //     appletConfig.cultural_contexts[culturalContext.name] = contextEh;
-  //     return appletConfig;
-  //   });
-  //   return contextEh;
-  // }
+  async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
+    const contextEh = await this.service.createCulturalContext(culturalContext);
+    // this._appletConfig.update(appletConfig => {
+    //   appletConfig.cultural_contexts[culturalContext.name] = contextEh;
+    //   return appletConfig;
+    // });
+    return contextEh;
+  }
 
   async getCulturalContext(culturalContextEh: EntryHash): Promise<HolochainRecord> {
     return await this.service.getCulturalContext(culturalContextEh) 
