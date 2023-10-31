@@ -9,19 +9,18 @@ interface CoreMethod {
     requires_validation: boolean,
 }
 export type Method = CoreMethod & {
-    target_resource_def_eh: EntryHash,
     input_dimension_ehs: Array<EntryHash>,
     output_dimension_eh: EntryHash,
 }
 
 export type ConfigMethod = CoreMethod & {
-    target_resource_def: ConfigResourceDef,
     input_dimensions: Array<ConfigDimension>,
     output_dimension: ConfigDimension,
 }
 
 export interface RunMethodInput {
     resource_eh: EntryHash,
+    resource_def_eh: EntryHash,
     method_eh: EntryHash,
 }
 export interface DataSet {

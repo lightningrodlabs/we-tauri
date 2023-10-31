@@ -50,6 +50,7 @@ export abstract class AssessDimensionWidget extends ScopedElementsMixin(LitEleme
         try {
             const objectiveAssessment = await this.sensemakerStore.runMethod({
                 resource_eh: assessment.resource_eh,
+                resource_def_eh: assessment.resource_def_eh,
                 method_eh: this.methodEh,
             })
             console.log('method output', objectiveAssessment)
