@@ -1,22 +1,26 @@
-use std::collections::HashMap;
 use futures::lock::Mutex;
-use holochain::{
-    prelude::{AgentPubKeyB64, AppBundle},
-};
-use holochain_client::{AgentPubKey, AppInfo, AppStatusFilter, InstallAppPayload, AdminWebsocket};
+use holochain::prelude::AppBundle;
+use holochain_client::{AdminWebsocket, AppInfo, AppStatusFilter, InstallAppPayload};
+use std::collections::HashMap;
 
-use crate::{error::{WeResult, WeError}};
+use crate::error::{WeError, WeResult};
 
 #[tauri::command]
 pub async fn join_group(
     window: tauri::Window,
     admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
-    agent_pub_key: String, // TODO: remove when every applet has a different key
     network_seed: String,
 ) -> WeResult<AppInfo> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("join_group")));
+        return Err(WeError::UnauthorizedWindow(String::from("join_group")));
     }
+    inner_join_group(admin_ws, network_seed).await
+}
+
+pub async fn inner_join_group(
+    admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
+    network_seed: String,
+) -> WeResult<AppInfo> {
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'join_group'.");
     }
@@ -38,8 +42,7 @@ pub async fn join_group(
         return Ok(response.app);
     }
 
-    let agent_key =
-        AgentPubKey::from(AgentPubKeyB64::from_b64_str(agent_pub_key.as_str()).unwrap());
+    let agent_key = apps[0].agent_pub_key.clone(); // TODO: change when every app has a different public key
     let we_bundle = AppBundle::decode(include_bytes!("../../../workdir/we.happ"))?;
 
     let app_info = admin_ws

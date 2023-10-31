@@ -1,10 +1,9 @@
-use std::fmt::Display;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 use std::{fs, io::Write};
 
 use holochain::prelude::{ActionHash, ActionHashB64};
 use holochain_client::InstalledAppId;
-use holochain_types::prelude::{DnaHashB64, AnyDhtHash, DnaHash, AnyDhtHashB64, AppBundle};
+use holochain_types::prelude::{AnyDhtHash, AnyDhtHashB64, AppBundle, DnaHash, DnaHashB64};
 use holochain_types::web_app::WebAppBundle;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
@@ -12,7 +11,6 @@ use tauri::AppHandle;
 use crate::error::{WeError, WeResult};
 
 pub type Profile = String;
-
 
 #[derive(Clone)]
 pub struct WeFileSystem {
@@ -50,16 +48,22 @@ impl WeFileSystem {
             .join(breaking_app_version(app_handle))
             .join(profile);
 
-        fs::create_dir_all(app_data_dir.join("happs"))?;
-        fs::create_dir_all(app_data_dir.join("apps"))?;
-        fs::create_dir_all(app_data_dir.join("icons"))?;
-        fs::create_dir_all(app_data_dir.join("uis"))?;
-
-        Ok(WeFileSystem {
+        let fs = WeFileSystem {
             app_data_dir,
             app_config_dir,
             app_log_dir,
-        })
+        };
+
+        fs.create_initial_directory_structure()?;
+        Ok(fs)
+    }
+
+    pub fn create_initial_directory_structure(&self) -> WeResult<()> {
+        fs::create_dir_all(self.app_data_dir.join("happs"))?;
+        fs::create_dir_all(self.app_data_dir.join("apps"))?;
+        fs::create_dir_all(self.app_data_dir.join("icons"))?;
+        fs::create_dir_all(self.app_data_dir.join("uis"))?;
+        Ok(())
     }
 
     pub fn app_data_dir(&self) -> PathBuf {
@@ -79,7 +83,9 @@ impl WeFileSystem {
     }
 
     pub fn keystore_initialized(&self) -> bool {
-        self.keystore_dir().join("lair-keystore-config.yaml").exists()
+        self.keystore_dir()
+            .join("lair-keystore-config.yaml")
+            .exists()
     }
 
     pub fn conductor_dir(&self) -> PathBuf {
@@ -109,7 +115,6 @@ impl WeFileSystem {
             path: self.app_data_dir.join("uis"),
         }
     }
-
 }
 
 pub struct AppsStore {
@@ -121,114 +126,203 @@ impl AppsStore {
         self.path.clone()
     }
 
-    pub fn store_gui_release_info(&self, installed_app_id: &InstalledAppId, info: ReleaseInfo) -> WeResult<()> {
-
+    pub fn store_gui_release_info(
+        &self,
+        installed_app_id: &InstalledAppId,
+        info: ReleaseInfo,
+    ) -> WeResult<()> {
         let app_dir = &self.path.join(installed_app_id);
 
-        create_dir_if_necessary(app_dir)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing gui release info: {:?}", e)))?;
+        create_dir_if_necessary(app_dir).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to create directory before storing gui release info: {:?}",
+                e
+            ))
+        })?;
 
         let gui_release_path = app_dir.join("gui-release.yaml");
         // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
         // to revert upgrades if necessary
         if gui_release_path.exists() {
-          let gui_release_dot_previous_path = app_dir.join("gui-release.previous.yaml");
+            let gui_release_dot_previous_path = app_dir.join("gui-release.previous.yaml");
 
-          std::fs::rename(gui_release_path.clone(), gui_release_dot_previous_path)
+            std::fs::rename(gui_release_path.clone(), gui_release_dot_previous_path)
             .map_err(|e| WeError::FileSystemError(format!("Failed to rename gui-release.yaml file to gui-release.previous.yaml file: {:?}", e)))?;
         }
 
-        let info_value = serde_yaml::to_value(info)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}", e)))?;
+        let info_value = serde_yaml::to_value(info).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}",
+                e
+            ))
+        })?;
 
-        let info_string = serde_yaml::to_string(&info_value)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of GUI release from serde_yaml Value to string: {}", e)))?;
+        let info_string = serde_yaml::to_string(&info_value).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert info of GUI release from serde_yaml Value to string: {}",
+                e
+            ))
+        })?;
 
-        std::fs::write(gui_release_path, info_string)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to write GUI release info to gui-release.yaml file: {:?}", e)))
+        std::fs::write(gui_release_path, info_string).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to write GUI release info to gui-release.yaml file: {:?}",
+                e
+            ))
+        })
     }
 
-    pub fn store_happ_release_info(&self, installed_app_id: &InstalledAppId, info: ReleaseInfo) -> WeResult<()> {
-
+    pub fn store_happ_release_info(
+        &self,
+        installed_app_id: &InstalledAppId,
+        info: ReleaseInfo,
+    ) -> WeResult<()> {
         let app_dir = &self.path.join(installed_app_id);
 
-        create_dir_if_necessary(app_dir)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing happ release info: {:?}", e)))?;
+        create_dir_if_necessary(app_dir).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to create directory before storing happ release info: {:?}",
+                e
+            ))
+        })?;
 
         let happ_release_path = app_dir.join("happ-release.yaml");
         // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
         // to revert upgrades if necessary
         if happ_release_path.exists() {
-          let happ_release_dot_previous_path = app_dir.join("happ-release.previous.yaml");
+            let happ_release_dot_previous_path = app_dir.join("happ-release.previous.yaml");
 
-          std::fs::rename(happ_release_path.clone(), happ_release_dot_previous_path)
+            std::fs::rename(happ_release_path.clone(), happ_release_dot_previous_path)
             .map_err(|e| WeError::FileSystemError(format!("Failed to rename happ-release.yaml file to happ-release.previous.yaml file: {:?}", e)))?;
         }
 
-        let info_value = serde_yaml::to_value(info)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of happ release info to serde_yaml Value: {}", e)))?;
+        let info_value = serde_yaml::to_value(info).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert ResourceLocator of happ release info to serde_yaml Value: {}",
+                e
+            ))
+        })?;
 
-        let info_string = serde_yaml::to_string(&info_value)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of happ release from serde_yaml Value to string: {}", e)))?;
+        let info_string = serde_yaml::to_string(&info_value).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert info of happ release from serde_yaml Value to string: {}",
+                e
+            ))
+        })?;
 
-        std::fs::write(happ_release_path, info_string)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to write happ release info to happ-release.yaml file: {:?}", e)))
+        std::fs::write(happ_release_path, info_string).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to write happ release info to happ-release.yaml file: {:?}",
+                e
+            ))
+        })
     }
 
-    pub fn store_happ_entry_locator(&self, installed_app_id: &InstalledAppId, locator: ResourceLocatorB64) -> WeResult<()> {
-
+    pub fn store_happ_entry_locator(
+        &self,
+        installed_app_id: &InstalledAppId,
+        locator: ResourceLocatorB64,
+    ) -> WeResult<()> {
         let app_dir = &self.path.join(installed_app_id);
 
-        create_dir_if_necessary(app_dir)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to create directory before storing HappEntry info: {:?}", e)))?;
+        create_dir_if_necessary(app_dir).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to create directory before storing HappEntry info: {:?}",
+                e
+            ))
+        })?;
 
         let happ_entry_path = app_dir.join("happ-entry.yaml");
         // if there is already a gui-release.yaml file, store its contents to a gui-release.previous.yaml file in order to be able
         // to revert upgrades if necessary
         if happ_entry_path.exists() {
-          let happ_entry_dot_previous_path = app_dir.join("happ-entry.previous.yaml");
+            let happ_entry_dot_previous_path = app_dir.join("happ-entry.previous.yaml");
 
-          std::fs::rename(happ_entry_path.clone(), happ_entry_dot_previous_path)
+            std::fs::rename(happ_entry_path.clone(), happ_entry_dot_previous_path)
             .map_err(|e| WeError::FileSystemError(format!("Failed to rename happ-entry.yaml file to happ-entry.previous.yaml file: {:?}", e)))?;
         }
 
-        let locator_value = serde_yaml::to_value(locator)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}", e)))?;
+        let locator_value = serde_yaml::to_value(locator).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert ResourceLocator of GUI release info to serde_yaml Value: {}",
+                e
+            ))
+        })?;
 
-        let locator_string = serde_yaml::to_string(&locator_value)
-          .map_err(|e| WeError::SerdeYamlError(format!("Failed to convert info of HappEntry from serde_yaml Value to string: {}", e)))?;
+        let locator_string = serde_yaml::to_string(&locator_value).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to convert info of HappEntry from serde_yaml Value to string: {}",
+                e
+            ))
+        })?;
 
-        std::fs::write(happ_entry_path, locator_string)
-          .map_err(|e| WeError::FileSystemError(format!("Failed to write HappEntry info to happ-entry.yaml file: {:?}", e)))
+        std::fs::write(happ_entry_path, locator_string).map_err(|e| {
+            WeError::FileSystemError(format!(
+                "Failed to write HappEntry info to happ-entry.yaml file: {:?}",
+                e
+            ))
+        })
     }
 
     pub fn get_gui_release_info(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
         let s = fs::read_to_string(self.path.join(installed_app_id).join("gui-release.yaml"))
-            .map_err(|e| WeError::FileSystemError(format!("Failed to read gui-release.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
-        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
-            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize gui-release.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+            .map_err(|e| {
+                WeError::FileSystemError(format!(
+                    "Failed to read gui-release.yaml file for installed_app_id '{}'. Error: {}",
+                    installed_app_id, e
+                ))
+            })?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str()).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to deserialize gui-release.yaml for installed_app_id '{}'. Error: {}",
+                installed_app_id, e
+            ))
+        })
     }
 
-    pub fn get_gui_release_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<ActionHashB64>> {
+    pub fn get_gui_release_hash(
+        &self,
+        installed_app_id: &InstalledAppId,
+    ) -> WeResult<Option<ActionHashB64>> {
         let gui_release_info = self.get_gui_release_info(installed_app_id)?;
         match gui_release_info.resource_locator {
-            Some(locator) => {
-                Ok(Some(ActionHash::try_from(AnyDhtHash::from(locator.resource_hash))
-                .map_err(|e| WeError::CustomError(format!("Failed to convert AnyDhtHash to ActionHash: {:?}", e)))?
-                .into()))
-            },
+            Some(locator) => Ok(Some(
+                ActionHash::try_from(AnyDhtHash::from(locator.resource_hash))
+                    .map_err(|e| {
+                        WeError::CustomError(format!(
+                            "Failed to convert AnyDhtHash to ActionHash: {:?}",
+                            e
+                        ))
+                    })?
+                    .into(),
+            )),
             None => Ok(None),
         }
     }
 
-    pub fn get_happ_release_info(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
+    pub fn get_happ_release_info(
+        &self,
+        installed_app_id: &InstalledAppId,
+    ) -> WeResult<ReleaseInfo> {
         let s = fs::read_to_string(self.path.join(installed_app_id).join("happ-release.yaml"))
-            .map_err(|e| WeError::FileSystemError(format!("Failed to read happ-release.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
-        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
-            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize happ-release.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+            .map_err(|e| {
+                WeError::FileSystemError(format!(
+                    "Failed to read happ-release.yaml file for installed_app_id '{}'. Error: {}",
+                    installed_app_id, e
+                ))
+            })?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str()).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to deserialize happ-release.yaml for installed_app_id '{}'. Error: {}",
+                installed_app_id, e
+            ))
+        })
     }
 
-    pub fn get_happ_release_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<AnyDhtHashB64>> {
+    pub fn get_happ_release_hash(
+        &self,
+        installed_app_id: &InstalledAppId,
+    ) -> WeResult<Option<AnyDhtHashB64>> {
         let happ_release_info = self.get_happ_release_info(installed_app_id)?;
         match happ_release_info.resource_locator {
             Some(locator) => Ok(Some(locator.resource_hash)),
@@ -236,23 +330,36 @@ impl AppsStore {
         }
     }
 
-    pub fn get_happ_entry_locator(&self, installed_app_id: &InstalledAppId) -> WeResult<ReleaseInfo> {
+    pub fn get_happ_entry_locator(
+        &self,
+        installed_app_id: &InstalledAppId,
+    ) -> WeResult<ReleaseInfo> {
         let s = fs::read_to_string(self.path.join(installed_app_id).join("happ-entry.yaml"))
-            .map_err(|e| WeError::FileSystemError(format!("Failed to read happ-entry.yaml file for installed_app_id '{}'. Error: {}", installed_app_id, e)))?;
-        serde_yaml::from_str::<ReleaseInfo>(s.as_str())
-            .map_err(|e| WeError::SerdeYamlError(format!("Failed to deserialize happ-entry.yaml for installed_app_id '{}'. Error: {}", installed_app_id, e)))
+            .map_err(|e| {
+                WeError::FileSystemError(format!(
+                    "Failed to read happ-entry.yaml file for installed_app_id '{}'. Error: {}",
+                    installed_app_id, e
+                ))
+            })?;
+        serde_yaml::from_str::<ReleaseInfo>(s.as_str()).map_err(|e| {
+            WeError::SerdeYamlError(format!(
+                "Failed to deserialize happ-entry.yaml for installed_app_id '{}'. Error: {}",
+                installed_app_id, e
+            ))
+        })
     }
 
-    pub fn get_happ_entry_action_hash(&self, installed_app_id: &InstalledAppId) -> WeResult<Option<AnyDhtHashB64>> {
+    pub fn get_happ_entry_action_hash(
+        &self,
+        installed_app_id: &InstalledAppId,
+    ) -> WeResult<Option<AnyDhtHashB64>> {
         let happ_entry_info = self.get_happ_release_info(installed_app_id)?;
         match happ_entry_info.resource_locator {
             Some(locator) => Ok(Some(locator.resource_hash)),
             None => Ok(None),
         }
     }
-
 }
-
 
 /// Stores ui assets by gui release hash
 pub struct UiStore {
@@ -306,7 +413,6 @@ impl UiStore {
         bytes: Vec<u8>,
         gui_version: Option<String>,
     ) -> WeResult<()> {
-
         let assets_dir = self.assets_dir(ui_identifier);
 
         fs::create_dir_all(&assets_dir)?;
@@ -469,8 +575,6 @@ pub fn unzip_file(reader: std::fs::File, outpath: PathBuf) -> WeResult<()> {
     Ok(())
 }
 
-
-
 /// Returns a string considering the relevant part of the version regarding breaking changes
 /// Examples:
 /// 3.2.0 becomes 3.x.x
@@ -485,16 +589,13 @@ pub fn breaking_app_version(app_handle: &AppHandle) -> String {
     }
 
     match app_version.major {
-        0 => {
-            match app_version.minor {
-                0 => format!("0.0.{}", app_version.patch),
-                _ => format!("0.{}.x", app_version.minor),
-            }
+        0 => match app_version.minor {
+            0 => format!("0.0.{}", app_version.patch),
+            _ => format!("0.{}.x", app_version.minor),
         },
-        _ => format!("{}.x.x", app_version.major)
+        _ => format!("{}.x.x", app_version.major),
     }
 }
-
 
 pub fn create_dir_if_necessary(path: &PathBuf) -> WeResult<()> {
     if !path_exists(path) {
@@ -507,10 +608,6 @@ pub fn create_dir_if_necessary(path: &PathBuf) -> WeResult<()> {
 pub fn path_exists(path: &PathBuf) -> bool {
     Path::new(path).exists()
 }
-
-
-
-
 
 //// NOTE: This is not necessarily an HRL. For example UI's stored on the
 /// DevHub need to be accessed via the `happs` cell despite being actually
@@ -552,4 +649,3 @@ pub struct ReleaseInfo {
     pub resource_locator: Option<ResourceLocatorB64>,
     pub version: Option<String>,
 }
-

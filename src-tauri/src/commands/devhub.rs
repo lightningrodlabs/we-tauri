@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
 use futures::lock::Mutex;
-use holochain::conductor::ConductorHandle;
 use holochain_client::AdminWebsocket;
 use holochain_client::AppStatusFilter;
 use holochain_client::InstallAppPayload;
-use holochain_launcher_utils::window_builder;
 use holochain_launcher_utils::window_builder::happ_window_builder;
 use holochain_types::web_app::WebAppBundle;
 use tauri::CustomMenuItem;
@@ -20,9 +18,9 @@ use crate::default_apps::devhub_app_id;
 use crate::default_apps::network_seed;
 use crate::error::WeError;
 use crate::error::WeResult;
+use crate::filesystem::create_dir_if_necessary;
 use crate::filesystem::UiIdentifier;
 use crate::filesystem::WeFileSystem;
-use crate::filesystem::create_dir_if_necessary;
 use crate::launch::AdminPort;
 use crate::launch::AppPort;
 
@@ -33,7 +31,9 @@ pub async fn is_dev_mode_enabled(
     admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
 ) -> WeResult<bool> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("is_dev_mode_enabled")));
+        return Err(WeError::UnauthorizedWindow(String::from(
+            "is_dev_mode_enabled",
+        )));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'is_dev_mode_enabled'.");
@@ -58,7 +58,7 @@ pub async fn enable_dev_mode(
     config: tauri::State<'_, WeConfig>,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("enable_dev_mode")));
+        return Err(WeError::UnauthorizedWindow(String::from("enable_dev_mode")));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'enable_dev_mode'.");
@@ -80,7 +80,7 @@ pub async fn enable_dev_mode(
 
     let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
-    let agent_key = admin_ws.generate_agent_pub_key().await?;
+    let agent_key = apps[0].agent_pub_key.clone(); // TODO: change when each app is associated with a different agent key
     admin_ws
         .install_app(InstallAppPayload {
             source: holochain_types::prelude::AppBundleSource::Bundle(
@@ -97,7 +97,10 @@ pub async fn enable_dev_mode(
     admin_ws.close();
 
     fs.ui_store()
-        .extract_and_store_ui(UiIdentifier::Other(devhub_app_id(&app_handle)), &dev_hub_bundle)
+        .extract_and_store_ui(
+            UiIdentifier::Other(devhub_app_id(&app_handle)),
+            &dev_hub_bundle,
+        )
         .await?;
 
     Ok(())
@@ -110,7 +113,9 @@ pub async fn disable_dev_mode(
     admin_ws: tauri::State<'_, Mutex<AdminWebsocket>>,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("disable_dev_mode")));
+        return Err(WeError::UnauthorizedWindow(String::from(
+            "disable_dev_mode",
+        )));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'disable_dev_mode'.");
@@ -132,7 +137,7 @@ pub async fn open_devhub(
     ports: tauri::State<'_, (AdminPort, AppPort)>,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("open_devhub")));
+        return Err(WeError::UnauthorizedWindow(String::from("open_devhub")));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'open_devhub'.");
@@ -147,7 +152,9 @@ pub async fn open_devhub(
 
     let devhub_app_id = devhub_app_id(&app_handle);
 
-    let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
+    let ui_dir = fs
+        .ui_store()
+        .assets_dir(UiIdentifier::Other(devhub_app_id.clone()));
 
     let app_dir = fs.apps_store().root_dir().join(&devhub_app_id);
     create_dir_if_necessary(&app_dir)?;
@@ -185,7 +192,7 @@ pub async fn open_appstore(
     ports: tauri::State<'_, (AdminPort, AppPort)>,
 ) -> WeResult<()> {
     if window.label() != "main" {
-      return Err(WeError::UnauthorizedWindow(String::from("open_appstore")));
+        return Err(WeError::UnauthorizedWindow(String::from("open_appstore")));
     }
     if cfg!(debug_assertions) {
         println!("### Called tauri command 'open_appstore'.");
@@ -200,7 +207,9 @@ pub async fn open_appstore(
 
     let appstore_app_id = appstore_app_id(&app_handle);
 
-    let ui_dir = fs.ui_store().assets_dir(UiIdentifier::Other(appstore_app_id.clone()));
+    let ui_dir = fs
+        .ui_store()
+        .assets_dir(UiIdentifier::Other(appstore_app_id.clone()));
 
     let app_dir = fs.apps_store().root_dir().join(&appstore_app_id);
     create_dir_if_necessary(&app_dir)?;
@@ -229,7 +238,6 @@ pub async fn open_appstore(
 
     Ok(())
 }
-
 
 fn add_window_menu(mut window_builder: WindowBuilder) -> WindowBuilder {
     if cfg!(not(target_os = "macos")) {
