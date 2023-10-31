@@ -389,9 +389,10 @@ async function signZomeCall(
 
 function readAppletHash(): EntryHash {
   const urlWithoutProtocol = window.location.href.split("://")[1];
-  const appletId = urlWithoutProtocol.split("?")[0].split("/")[0];
+  const appletId = urlWithoutProtocol.split("?")[0].split(".")[0];
   return decodeHashFromBase64(appletId);
 }
+
 
 function appIdFromAppletHash(appletHash: EntryHash): string {
   return `applet#${encodeHashToBase64(appletHash)}`
