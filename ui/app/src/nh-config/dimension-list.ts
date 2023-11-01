@@ -14,6 +14,9 @@ import { classMap } from "lit/directives/class-map.js";
 export default class DimensionList extends NHComponent {  
   @property()
   sensemakerStore!: SensemakerStore;
+  
+  @property()
+  dimensionSelected: boolean = false;
 
   @state()
   private _dimensionEntries!: Dimension[];
@@ -172,7 +175,7 @@ export default class DimensionList extends NHComponent {
                               `
                               :html`<h1>No methods for this dimension</h1>
                               ${this._selectedInputDimensionIndex !== dimensionIndex
-                                ? html`<nh-button .size=${"sm"} .variant=${"success"} @click=${() => {
+                                ? html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
                                   this._selectedInputDimensionIndex = dimensionIndex;
                                   const selectedRange = this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
                                   this.dispatchEvent(new CustomEvent("input-dimension-selected", {
@@ -180,16 +183,18 @@ export default class DimensionList extends NHComponent {
                                     bubbles: true,
                                     composed: true,
                                   }
-                                ))
-                                }}>Select</nh-button>` 
-                                : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
-                                    this.dispatchEvent(new CustomEvent("request-method-create", {
-                                      detail: { inputDimensionEh: this._selectedInputDimensionEh },
+                                  
+                                  ))
+                                  this.dispatchEvent(new CustomEvent("request-method-create", {
+                                      detail: { },
                                       bubbles: true,
                                       composed: true,
                                     }
                                   ))
-                                }}>Create Method</nh-button>` }
+                                }}>Create Method</nh-button>` 
+                                : html`<nh-button .size=${"sm"} .variant=${"warning"} disabled=${this.dimensionSelected} @click=${() => {
+                                    
+                                }}>Creating Method</nh-button>` }
                               ` 
                             }
                             ${this._methodInputDimensions?.length ? this._methodInputDimensions.map(({methodEh, name}) => {
