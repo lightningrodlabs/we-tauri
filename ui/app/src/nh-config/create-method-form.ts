@@ -1,9 +1,10 @@
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { SensemakerStore } from "@neighbourhoods/client";
+import { Method, Program, SensemakerStore } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
+import { EntryHash } from "@holochain/client";
 
 export default class CreateMethod extends NHComponent {
   @property()
@@ -14,6 +15,23 @@ export default class CreateMethod extends NHComponent {
 
   @state()
   computationMethod: "AVG" | "SUM" = "AVG";
+
+  @state()
+  _inputDimensionEhs: EntryHash[] = [];
+
+  @state()
+  _program: Program = {
+    Average: null
+  };
+  @state()
+  _method: Partial<Method> = {
+    name: '',
+    program: this._program,
+    can_compute_live: false,
+    requires_validation: false,
+    input_dimension_ehs: [],
+    output_dimension_eh: undefined,
+  };
   
   @query('create-dimension')
   _dimensionForm;
@@ -23,6 +41,11 @@ export default class CreateMethod extends NHComponent {
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
 
     this.computationMethod = inputControl.value;
+    this._program = this.computationMethod == "AVG" ? {
+      Average: null
+    } : {
+      Sum: null
+    };
     this._dimensionForm.requestUpdate()
   }
 
@@ -35,9 +58,17 @@ export default class CreateMethod extends NHComponent {
         .sensemakerStore=${this.sensemakerStore}
         @dimension-created=${async (e: CustomEvent) => {
           if(e.detail.dimensionType == "output") {
+            this._method.output_dimension_eh = e.detail.dimensionEh;
             await this._dimensionForm.resetForm(); 
             await this._dimensionForm.requestUpdate();
+          } else {
+            this._inputDimensionEhs.push(e.detail.dimensionEh); // TEMP
+            // TODO: (once an API change is made to sensemaker-lite to provide Wrapped<Dimension> from one of the zomes)
+            // Move this code to the correct place on line 71 - and when a new dimension is selected dispatch an event with the same name.
           }
+        }}
+        @input-dimension-selected=${async (e: CustomEvent) => {
+
         }}
       >
         <div class="field" slot="method-computation">

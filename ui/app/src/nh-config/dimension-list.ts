@@ -184,7 +184,7 @@ export default class DimensionList extends NHComponent {
                                 }}>Select</nh-button>` 
                                 : html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
                                     this.dispatchEvent(new CustomEvent("request-method-create", {
-                                      detail: {},
+                                      detail: { inputDimensionEh: this._selectedInputDimensionEh },
                                       bubbles: true,
                                       composed: true,
                                     }
