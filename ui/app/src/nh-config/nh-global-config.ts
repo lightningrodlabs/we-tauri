@@ -4,7 +4,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash } from '@holochain/client';
+import { DnaHash, EntryHash } from '@holochain/client';
 
 import { NHButton, NHComponent, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import CreateMethod from './create-method-form';
@@ -29,6 +29,9 @@ export default class NHGlobalConfig extends NHComponent {
   private _selectedInputDimensionRange!: Range;
 
   @state()
+  private _inputDimensionEhs: EntryHash[] = [];
+
+  @state()
   private _formType: "input-dimension" | "method" = "input-dimension";
 
   _sensemakerStore = new StoreSubscriber(this, () =>
@@ -40,8 +43,12 @@ export default class NHGlobalConfig extends NHComponent {
       <main
         @dimension-created=${async (e: CustomEvent) => {
           if(e.detail.dimensionType == "input") {
+            this._inputDimensionEhs.push(e.detail.dimensionEh); // TEMP
+            // TODO: (once an API change is made to sensemaker-lite to provide Wrapped<Dimension> from one of the zomes)
+            // Move this code to the correct place on line 71 - and when a new dimension is selected dispatch an event with the same name (and the wrapped dimension entry hash).
             await this._dimensionForm.resetForm(); 
             await this._dimensionForm.requestUpdate();
+
           }
           await this._list.fetchDimensionEntries()
           await this._list.fetchRangeEntries()
@@ -50,11 +57,17 @@ export default class NHGlobalConfig extends NHComponent {
         @request-method-create=${async (_: CustomEvent) => {
           this._formType = "method"
         }}
+        @method-created=${async (_: CustomEvent) => {
+          this._formType = "input-dimension"
+          this._list.dimensionSelected = false;
+        }}
         @reset-form-type=${async (_: CustomEvent) => {
           this._formType = "input-dimension"
+          this._list.dimensionSelected = false;
         }}
         @input-dimension-selected=${async (e: CustomEvent) => {
           this._selectedInputDimensionRange = e.detail.range
+          this._list.dimensionSelected = true;
         }}
       >
         <nh-page-header-card .heading=${"Neighbourhood Config"}>
@@ -66,7 +79,6 @@ export default class NHGlobalConfig extends NHComponent {
             @click=${() => { !this._dimensionForm
               ? this._formType = "input-dimension"
               : null // TODO emit event to navigate back to home
-              console.log('this._dimensionForm :>> ', this._dimensionForm);
               this.requestUpdate()
             }}
           >
@@ -74,7 +86,7 @@ export default class NHGlobalConfig extends NHComponent {
         </nh-page-header-card>
         ${this._formType == "input-dimension" 
           ? html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
-          : html`<create-method .inputRange=${this._selectedInputDimensionRange} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
+          : html`<create-method .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`
         }
         <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
       </main>
