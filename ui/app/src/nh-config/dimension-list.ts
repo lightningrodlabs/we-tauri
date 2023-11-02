@@ -115,7 +115,7 @@ export default class DimensionList extends NHComponent {
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     await this.fetchDimensionEntries()
     await this.fetchRangeEntries()
-    
+    // NOTE: The following retrieves a mapping for method entry hashes to their respective input/output dimension hashes, but ONLY for those registered in an appletConfig.
     if(typeof this._methodMapping.value == 'undefined') return;
     
     const dimensions : any = [];
@@ -129,7 +129,7 @@ export default class DimensionList extends NHComponent {
         console.log('Error decoding dimension payload: ', error);
       }
     }
-    this._methodInputDimensions = dimensions;
+    this._methodInputDimensions = [...this._methodInputDimensions, ...dimensions];
   }
 
   renderRangeDetails(range: Range & { range_eh: EntryHash } | undefined) : TemplateResult {
@@ -166,6 +166,7 @@ export default class DimensionList extends NHComponent {
                           >
                             <h1>Range: </h1>
                             ${this._rangeEntries?.length && this.renderRangeDetails(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
+                            
                             ${typeof this._methodInputDimensions !== 'undefined' && this._methodInputDimensions.length > 0 
                               ? html`<h2>Methods using this dimension: </h2>
                                 ${this._methodInputDimensions.map(({methodEh, name}) => {
@@ -175,6 +176,7 @@ export default class DimensionList extends NHComponent {
                                 })}
                               `
                               :html`<h1>No methods for this dimension</h1>
+
                               ${this._selectedInputDimensionIndex !== dimensionIndex
                                 ? html`<nh-button .size=${"sm"} .variant=${"warning"} @click=${() => {
                                   this._selectedInputDimensionIndex = dimensionIndex;
