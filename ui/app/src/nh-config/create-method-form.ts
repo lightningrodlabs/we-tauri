@@ -4,7 +4,7 @@ import { Method, Program, SensemakerStore } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
-import { EntryHash } from "@holochain/client";
+import { AppInfo, EntryHash } from "@holochain/client";
 import { boolean, object, string } from "yup";
 
 export default class CreateMethod extends NHComponent {
@@ -30,7 +30,7 @@ export default class CreateMethod extends NHComponent {
     program: this._program,
     can_compute_live: false,
     requires_validation: false,
-    input_dimension_ehs: this.inputDimensionEhs,
+    input_dimension_ehs: undefined,
     output_dimension_eh: undefined,
   };
   
@@ -113,13 +113,13 @@ export default class CreateMethod extends NHComponent {
   }
 
   onSubmit() {
+    this._method.input_dimension_ehs = this.inputDimensionEhs;
     this._methodSchema.validate(this._method)
-      .catch((e) => { debugger; this.handleValidationError.call(this, e)})
+      .catch((e) => { this.handleValidationError.call(this, e)})
       .then(async validMethod => {
         if(validMethod) {
           this._submitBtn.loading = true; this._submitBtn.requestUpdate("loading");
           const methodEh = await this.createMethod()
-          
           this.dispatchEvent(
             new CustomEvent("method-created", {
               detail: { methodEh },
@@ -136,15 +136,15 @@ export default class CreateMethod extends NHComponent {
 
   async createMethod() {
     try {
-      // const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
-      // const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      // const response = await this.sensemakerStore.client.callZome({
-      //   cell_id,
-      //   zome_name: 'sensemaker',
-      //   fn_name: 'create_dimension',
-      //   payload: this._dimension,
-      // });
-      // return response;
+      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
+      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+      const response = await this.sensemakerStore.client.callZome({
+        cell_id,
+        zome_name: 'sensemaker',
+        fn_name: 'create_method',
+        payload: this._method,
+      });
+      return response;
     } catch (error) {
       console.log('Error creating new method: ', error);
     }

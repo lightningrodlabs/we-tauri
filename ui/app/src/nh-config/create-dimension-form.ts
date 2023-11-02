@@ -120,6 +120,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   computeOutputDimensionRange() {
+    if(!this.inputRange) return;
     if(this.computationMethod === "SUM") {
       const rangeKindLimits = Object.values(this.inputRange.kind)[0];
       const {min, max} = rangeKindLimits;
@@ -200,10 +201,10 @@ export default class CreateDimension extends NHComponentShoelace {
     switch (inputControl.name) {
       case 'min':
         this._currentMinRange = inputControl.value;
-        this._dimensionRange.kind['Integer'].min = inputControl.value;
+        this._dimensionRange.kind['Integer'].min = parseInt(inputControl.value);
         break;
       case 'max':
-        this._dimensionRange.kind['Integer'].max = inputControl.value;
+        this._dimensionRange.kind['Integer'].max = parseInt(inputControl.value);
         break;
       case 'dimension-name':
         this._dimension['name'] = inputControl.value; 
@@ -271,11 +272,11 @@ export default class CreateDimension extends NHComponentShoelace {
           ${this.dimensionType == "input"
             ? html`
               <div class="field">
-                <sl-range label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+                <sl-input label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="min" name="min">⁎</label>
               </div>
               <div class="field">
-                <sl-range label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-range>
+                <sl-input label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="max" name="max">⁎</label>
               </div>
             `
@@ -301,8 +302,7 @@ export default class CreateDimension extends NHComponentShoelace {
   static elementDefinitions = {
     "nh-button": NHButton,
     "nh-card": NHCard,
-    "sl-input": SlInput,
-    "sl-range": SlRange,
+    "sl-input": SlInput
   }
 
   static get styles() {
