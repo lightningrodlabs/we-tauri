@@ -18,6 +18,7 @@ use holochain_types::prelude::{
 };
 use holochain_types::web_app::WebAppBundle;
 
+use crate::commands::join_group::inner_join_group;
 use crate::config::WeConfig;
 use crate::error::{LaunchHolochainError, WeError};
 use crate::filesystem::{ReleaseInfo, ResourceLocatorB64, UiIdentifier};
@@ -31,7 +32,6 @@ use crate::{
 
 pub async fn launch_test_applets_agent(
     app_handle: AppHandle,
-    test_applets_network_seed: String,
     applets_paths: Vec<PathBuf>,
 ) -> WeResult<()> {
     let temp_dir = temp_dir();
@@ -66,12 +66,13 @@ pub async fn launch_test_applets_agent(
         launch(&app_handle, &config, &fs, String::from("UNSECURE")).await?;
     println!("Joining group...");
 
+    let network_seed = config.network_seed.clone();
+
     let window = build_main_window(&app_handle)?;
     // Join a group
-    let app_info = join_group(
-        window,
+    let app_info = inner_join_group(
         app_handle.state::<Mutex<AdminWebsocket>>(),
-        test_applets_network_seed.clone(),
+        network_seed.clone().unwrap_or(String::from("")),
     )
     .await?;
     println!("Joined group, {:?}", app_info.installed_app_id);
@@ -131,7 +132,7 @@ pub async fn launch_test_applets_agent(
             devhub_happ_release_hash: fixt!(ActionHash),
             initial_devhub_gui_release_hash: None, // headless applets are possible as well
 
-            network_seed: Some(test_applets_network_seed.clone()),
+            network_seed: network_seed.clone(),
 
             properties: BTreeMap::new(),
         };
@@ -162,7 +163,7 @@ pub async fn launch_test_applets_agent(
             .install_app(InstallAppPayload {
                 source: holochain_types::prelude::AppBundleSource::Bundle(app_bundle),
                 agent_key,
-                network_seed: Some(test_applets_network_seed.clone()),
+                network_seed: network_seed.clone(),
                 installed_app_id: Some(app_id.clone()),
                 membrane_proofs: HashMap::new(),
             })

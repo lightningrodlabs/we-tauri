@@ -18,7 +18,7 @@
           "multiple": false
         },
         {
-          "name": "default-apps-network-seed",
+          "name": "network-seed",
           "takesValue": true,
           "multiple": false
         },
@@ -26,11 +26,6 @@
           "name": "test-applets",
           "takesValue": true,
           "multiple": true
-        },
-        {
-          "name": "test-applets-network-seed",
-          "takesValue": true,
-          "multiple": false
         }
       ]
     },

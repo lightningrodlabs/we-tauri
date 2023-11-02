@@ -19,7 +19,7 @@ pub fn appstore_app_id(app_handle: &AppHandle) -> String {
 }
 
 pub fn network_seed(app_handle: &AppHandle, config: &WeConfig) -> String {
-    let network_seed = if let Some(network_seed) = &config.default_apps_network_seed {
+    let network_seed = if let Some(network_seed) = &config.network_seed {
         network_seed.clone()
     } else if cfg!(debug_assertions) {
         format!("lightningrodlabs-we-dev")

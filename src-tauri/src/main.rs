@@ -201,7 +201,7 @@ fn main() {
                 None => String::from("default"),
             };
             // reading network seed from cli
-            let default_apps_network_seed = match cli_matches.args.get("default-apps-network-seed") {
+            let network_seed = match cli_matches.args.get("network-seed") {
                 Some(data) => match data.value.clone() {
                     Value::String(network_seed) => Some(network_seed),
                     _ => None,
@@ -232,7 +232,7 @@ fn main() {
             start_applet_uis_server(app_handle.clone(), ui_server_port);
 
             app.manage(WeConfig {
-                default_apps_network_seed,
+                network_seed,
                 applets_ui_port: ui_server_port,
             });
             app.manage(Mutex::new(SysTrayIconState {
@@ -240,21 +240,10 @@ fn main() {
             }));
 
             if let Some(test_applets) = maybe_test_applets {
-
-                let test_applets_network_seed_not_found_err = WeError::CustomError(String::from("the --test-applets-network-seed argument must be set if the --test-applets argument is present: the --test-applets-network-seed is used to join the group and install the applets, while the --default-apps-network-seed argument is used to install the AppStore and the DevHub"));
-                
-            let test_applets_network_seed = match cli_matches.args.get("test-applets-network-seed") {
-                Some(data) => match data.value.clone() {
-                    Value::String(network_seed) => Ok(network_seed),
-                    _ => Err(test_applets_network_seed_not_found_err),
-                },
-                None => Err(test_applets_network_seed_not_found_err),
-            }?;
-
-                    let _ = tauri::async_runtime::block_on(async move {
-                        launch_test_applets_agent(app.handle(), test_applets_network_seed, test_applets).await
-                    })?;
-                    return Ok(());
+                let _ = tauri::async_runtime::block_on(async move {
+                    launch_test_applets_agent(app.handle(), test_applets).await
+                })?;
+                return Ok(());
             }
 
             let fs = WeFileSystem::new(&handle, &profile)?;
