@@ -43,12 +43,11 @@ export default class NHGlobalConfig extends NHComponent {
       <main
         @dimension-created=${async (e: CustomEvent) => {
           if(e.detail.dimensionType == "input") {
-            this._inputDimensionEhs.push(e.detail.dimensionEh); // TEMP
-            // TODO: (once an API change is made to sensemaker-lite to provide Wrapped<Dimension> from one of the zomes)
-            // Move this code to the correct place on line 71 - and when a new dimension is selected dispatch an event with the same name (and the wrapped dimension entry hash).
             await this._dimensionForm.resetForm(); 
             await this._dimensionForm.requestUpdate();
 
+            this._formType = "method"
+            this._list.dimensionSelected = true;
           }
           await this._list.fetchDimensionEntries()
           await this._list.fetchRangeEntries()
@@ -66,6 +65,7 @@ export default class NHGlobalConfig extends NHComponent {
           this._list.dimensionSelected = false;
         }}
         @input-dimension-selected=${async (e: CustomEvent) => {
+          this._inputDimensionEhs = [e.detail.dimensionEh];
           this._selectedInputDimensionRange = e.detail.range
           this._list.dimensionSelected = true;
         }}

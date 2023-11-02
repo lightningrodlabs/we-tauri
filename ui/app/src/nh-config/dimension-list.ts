@@ -14,12 +14,12 @@ import { classMap } from "lit/directives/class-map.js";
 export default class DimensionList extends NHComponent {  
   @property()
   sensemakerStore!: SensemakerStore;
-  
+
   @property()
   dimensionSelected: boolean = false;
 
   @state()
-  private _dimensionEntries!: Dimension[];
+  private _dimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
 
   @state()
   private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
@@ -90,11 +90,12 @@ export default class DimensionList extends NHComponent {
       });
       this._dimensionEntries = response.map(payload => {
         try {
-          return decode(payload.entry.Present.entry) as Dimension;
+          const entryHash = payload.signed_action.hashed.content.entry_hash;
+          return { ...decode(payload.entry.Present.entry) as Dimension & { dimension_eh: EntryHash }, dimension_eh: entryHash};
         } catch (error) {
           console.log('Error decoding dimension payload: ', error);
         }
-      }) as Dimension[];
+      }) as Array<Dimension & { dimension_eh: EntryHash }>;
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
     }
@@ -114,7 +115,7 @@ export default class DimensionList extends NHComponent {
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     await this.fetchDimensionEntries()
     await this.fetchRangeEntries()
-
+    
     if(typeof this._methodMapping.value == 'undefined') return;
     
     const dimensions : any = [];
@@ -152,9 +153,9 @@ export default class DimensionList extends NHComponent {
           ${
             typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
               ? "No dimensions available"
-              : html`<div style="display:flex; flex-direction: column-reverse; gap: 8px;">
+              : html`<div style="display:flex; flex-direction: column; gap: 8px;">
                   ${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
-                    .map((dimension: Dimension, dimensionIndex: number) => {
+                    .map((dimension: Dimension & { dimension_eh: EntryHash} , dimensionIndex: number) => {
                         return html`
                           <nh-card 
                             class="nested-card ${classMap({
@@ -179,7 +180,7 @@ export default class DimensionList extends NHComponent {
                                   this._selectedInputDimensionIndex = dimensionIndex;
                                   const selectedRange = this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
                                   this.dispatchEvent(new CustomEvent("input-dimension-selected", {
-                                    detail: { range: selectedRange },
+                                    detail: { range: selectedRange, dimensionEh: dimension.dimension_eh },
                                     bubbles: true,
                                     composed: true,
                                   }
