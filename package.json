@@ -6,9 +6,10 @@
     "ui/libs/*"
   ],
   "scripts": {
-    "start": "dotenv -- npm run network",
-    "dev": "dotenv -- npm run network:dev",
-    "dev2": "dotenv -- npm run network:dev2",
+    "check-env": "test ! -f .env && cp .env.example .env",
+    "start": "npm run check-env && dotenv -- npm run network",
+    "dev": "npm run check-env && dotenv -- npm run network:dev",
+    "dev2": "npm run check-env && dotenv -- npm run network:dev2",
     "network": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && npm run build -w nh-launcher && concurrently \"npm run launch:happ\" \"npm run build:watch -w ui/app\"",
     "network:dev": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && dotenv -- concurrently \"open-cli http://localhost:${UI_PORT} && cd ui/app && npm run dev\" \"dotenv -- npm run start:dev\"",
     "network:dev2": "hc s clean && npm run build:happ && npm run build -w @neighbourhoods/nh-launcher-applet && dotenv -- concurrently \"open-cli http://localhost:${UI_PORT} && open-cli http://localhost:${UI_PORT_2} && cd ui/app && npm run dev2\" \"dotenv -- npm run start:dev2\"",
