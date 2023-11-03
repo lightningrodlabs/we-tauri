@@ -1,6 +1,6 @@
 [package]
 name = "we-alpha"
-version = "0.6.1"
+version = "0.6.2"
 description = "An alternative Holochain runtime focused on groups."
 authors = [
   "eric@harris-braun.com",
