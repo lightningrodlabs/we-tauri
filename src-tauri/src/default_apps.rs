@@ -4,8 +4,11 @@ use holochain_client::{AdminWebsocket, InstallAppPayload};
 use holochain_types::web_app::WebAppBundle;
 use tauri::AppHandle;
 
-use crate::{config::WeConfig, error::WeResult, filesystem::{WeFileSystem, breaking_app_version, UiIdentifier}};
-
+use crate::{
+    config::WeConfig,
+    error::WeResult,
+    filesystem::{breaking_app_version, UiIdentifier, WeFileSystem},
+};
 
 pub fn devhub_app_id(app_handle: &AppHandle) -> String {
     format!("DevHub-{}", breaking_app_version(app_handle))
@@ -61,7 +64,10 @@ pub async fn install_default_apps_if_necessary(
 
         we_fs
             .ui_store()
-            .extract_and_store_ui(UiIdentifier::Other(appstore_app_id(app_handle)), &appstore_hub_bundle)
+            .extract_and_store_ui(
+                UiIdentifier::Other(appstore_app_id(app_handle)),
+                &appstore_hub_bundle,
+            )
             .await?;
     }
 

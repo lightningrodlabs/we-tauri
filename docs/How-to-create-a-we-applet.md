@@ -28,24 +28,29 @@ And run through the instructions for that command.
 
 From this point on, you can continue scaffolding your we applet like any normal holochain app, with commands like `hc scaffold dna` or `hc scaffold zome`. For an introduction on how to scaffold a hApp using the scaffolding tool, go [here](https://developer.holochain.org/get-building/).
 
-### [⚠️ Currently Outdated ⚠️] Testing
+### Testing
 
-This template includes very basic testing for your we applet. If you run `npm run start:applet`, it will launch a tauri window simulating we requesting your applet to render your main applet view.
+The easiest way to test your applets is to use the [main we desktop executable](https://github.com/lightningrodlabs/we/releases) in testing mode, and setting the `test-applets` and `network-seed` CLI arguments.
 
-### Testing directly in We
+- `test-applets` is a list of paths to .webhapp applets that you want to test.
+- `network-seed` is the network-seed that will be used to create the group and install the applets in the group, and also the default apps (DevHub and AppStore).
 
-For more thorought testing, you can start the [main we desktop executable](https://github.com/lightningrodlabs/we/releases) in testing mode, by setting the `profile` and `network-seed` CLI arguments.
+If you set these CLI arguments, `we` will start in a completely separate profile in a temporary directory, it will create a new empty group, and install the given applets to that group, without uploading them to the appstore.
 
-- `profile` is the name of the internal folder that we will use to store all its data. Changing the profile allows for setting up test networks without losing the data for your default installation of we.
-- `network-seed` will override the network seed by which the we and devhub hApps will get installed. This will only be used if they are not yet installed, so this argument is only read the first time we is run for this profile.
+It is also important to set the `BOOTSTRAP_PORT` and `SIGNAL_PORT` environment variables if you don't want to use the production services. If those variables are set, `we` will try to connect to `ws://localhost:$BOOTSTRAP_PORT` and `ws://localhost:SIGNAL_PORT`. You can run these services using `hc run-local-services`.
 
 On Linux, this would be:
 
 ```bash
-./we-alpha_[latest_version]_amd64.AppImage --profile test --network-seed test
+./we-alpha_[latest_version]_amd64.AppImage --test-applets applet1.webhapp applet2.webhapp --network-seed test
 ```
 
-And then publish your Applet in that testing network by following the guide below.
+Run this command in a separate terminal for each agent that you want to test your applet with.
+
+#### Other CLI arguments
+
+- `profile` is the name of the internal folder that we will use to store all its data. Changing the profile allows for setting up test networks without losing the data for your default installation of we. 
+  - Using `test-applets` will ignore this argument and just use a temporary directory.
 
 ### Publishing applets to the DevHub
 

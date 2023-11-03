@@ -127,6 +127,7 @@ jobs:
 
       - name: build the app
         uses: tauri-apps/tauri-action@dev
+        id: publishtauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -135,6 +136,3 @@ jobs:
           releaseDraft: true
           prerelease: true
           args: --verbose
-
-
-

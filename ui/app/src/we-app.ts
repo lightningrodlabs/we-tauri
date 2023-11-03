@@ -1,6 +1,10 @@
 import { provide } from "@lit-labs/context";
 import { state, customElement } from "lit/decorators.js";
-import { AdminWebsocket, AppWebsocket, encodeHashToBase64 } from "@holochain/client";
+import {
+  AdminWebsocket,
+  AppWebsocket,
+  encodeHashToBase64,
+} from "@holochain/client";
 import { LitElement, html, css } from "lit";
 import { invoke } from "@tauri-apps/api";
 
@@ -12,7 +16,6 @@ import "./password/create-password.js";
 import "./password/factory-reset.js";
 import "./elements/main-dashboard.js";
 
-
 import { listen } from "@tauri-apps/api/event";
 import { weStyles } from "./shared-styles.js";
 import { weStoreContext } from "./context.js";
@@ -22,7 +25,11 @@ import {
   isKeystoreInitialized,
   isLaunched,
 } from "./tauri.js";
-import { getCellNetworkSeed, getProvisionedCells, initAppClient } from "./utils.js";
+import {
+  getCellNetworkSeed,
+  getProvisionedCells,
+  initAppClient,
+} from "./utils.js";
 import { AppletBundlesStore } from "./applet-bundles/applet-bundles-store.js";
 
 type State =
@@ -44,21 +51,24 @@ export class WeApp extends LitElement {
   _weStore!: WeStore;
 
   async firstUpdated() {
-
     await listen("clear-systray-notification-state", async () => {
-      await invoke('clear_systray_notification_state', {});
-    })
+      await invoke("clear_systray_notification_state", {});
+    });
 
     await listen("request-factory-reset", () => {
       console.log("Received factory reset event.");
       this.previousState = this.state;
-      this.state = { state: "factoryReset" }
+      this.state = { state: "factoryReset" };
     });
 
     const launched = await isLaunched();
 
     if (launched) {
-      await this.connect();
+      try {
+        await this.connect();
+      } catch (e) {
+        console.error(e);
+      }
     } else {
       const initialized = await isKeystoreInitialized();
       this.state = { state: "password", initialized };
@@ -66,7 +76,6 @@ export class WeApp extends LitElement {
   }
 
   async connect() {
-
     this.state = { state: "loading" };
 
     const info = await getConductorInfo();
@@ -94,12 +103,21 @@ export class WeApp extends LitElement {
       new AppletBundlesStore(appStoreClient, adminWebsocket, info)
     );
 
-    const appStoreAppInfo = await appWebsocket.appInfo({"installed_app_id": "AppStore-0.6.x"});
-    const devhubAppInfo = await appWebsocket.appInfo({"installed_app_id": "DevHub-0.6.x"});
+    const appStoreAppInfo = await appWebsocket.appInfo({
+      installed_app_id: info.appstore_app_id,
+    });
+    const devhubAppInfo = await appWebsocket.appInfo({
+      installed_app_id: info.devhub_app_id,
+    });
     // console.log("MY DEVHUB PUBLIC KEY: ", encodeHashToBase64(devhubAppInfo.agent_pub_key));
 
-    getProvisionedCells(appStoreAppInfo).map(([_roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
-    if (devhubAppInfo) getProvisionedCells(devhubAppInfo).map(([_roleName, cellInfo]) => console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`));
+    getProvisionedCells(appStoreAppInfo).map(([_roleName, cellInfo]) =>
+      console.log(`Appstore network seed: ${getCellNetworkSeed(cellInfo)}`)
+    );
+    if (devhubAppInfo)
+      getProvisionedCells(devhubAppInfo).map(([_roleName, cellInfo]) =>
+        console.log(`DevHub network seed: ${getCellNetworkSeed(cellInfo)}`)
+      );
 
     // const allApps = await adminWebsocket.listApps({});
     // console.log("ALL APPS: ", allApps);
@@ -141,7 +159,11 @@ export class WeApp extends LitElement {
       case "factoryReset":
         return html`
           <div class="column center-content" style="flex: 1">
-            <factory-reset @cancel-factory-reset=${() => { this.state = this.previousState; }}></factory-reset>
+            <factory-reset
+              @cancel-factory-reset=${() => {
+                this.state = this.previousState;
+              }}
+            ></factory-reset>
           </div>
         `;
     }

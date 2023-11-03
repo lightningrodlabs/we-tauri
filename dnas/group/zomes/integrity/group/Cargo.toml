@@ -12,3 +12,4 @@ name = "group_integrity"
 hdk = { workspace = true }
 hdi = { workspace = true }
 serde = { workspace = true }
+we_types = { workspace = true }

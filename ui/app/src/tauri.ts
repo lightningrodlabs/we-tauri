@@ -72,13 +72,9 @@ async function fetchPing(origin: string) {
   });
 }
 
-export async function joinGroup(
-  networkSeed: string,
-  agentPubKey: AgentPubKey
-): Promise<AppInfo> {
+export async function joinGroup(networkSeed: string): Promise<AppInfo> {
   const appInfo: AppInfo = await invoke("join_group", {
     networkSeed,
-    agentPubKey: encodeHashToBase64(agentPubKey),
   });
 
   for (const [role, cells] of Object.entries(appInfo.cell_info)) {
@@ -170,7 +166,9 @@ export async function disableDevMode(): Promise<void> {
   return invoke("disable_dev_mode");
 }
 
-export async function fetchAvailableUiUpdates(): Promise<Record<InstalledAppId, ResourceLocatorB64>> {
+export async function fetchAvailableUiUpdates(): Promise<
+  Record<InstalledAppId, ResourceLocatorB64>
+> {
   return invoke("fetch_available_ui_updates");
 }
 
@@ -179,10 +177,10 @@ export async function notifyTauri(
   systray: boolean,
   os: boolean,
   // appstoreAppHashB64: ActionHashB64 | undefined,
-  appletName: string | undefined,
+  appletName: string | undefined
 ): Promise<void> {
   try {
-    await invoke('notify_tauri', { message, systray, os, appletName });
+    await invoke("notify_tauri", { message, systray, os, appletName });
   } catch (e) {
     console.error("Failed to invoke tauri command 'notify': ", e);
   }

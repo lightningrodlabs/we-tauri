@@ -1,6 +1,6 @@
 [package]
 name = "we-alpha"
-version = "0.6.1"
+version = "0.6.2"
 description = "An alternative Holochain runtime focused on groups."
 authors = [
   "eric@harris-braun.com",
@@ -17,9 +17,22 @@ edition = "2021"
 tauri-build = { version = "=1.5", features = [] }
 
 [dependencies]
-tauri = { version = "=1.5", features = ["cli", "clipboard-write-text", "http-all", "icon-png", "notification", "process-command-api", "protocol-all", "shell-open", "system-tray"] }
+we_types = { workspace = true }
+fixt = "0.2.2"
+
+tauri = { version = "=1.5", features = [ "system-tray",
+  "cli",
+  "clipboard-write-text",
+  "http-all",
+  "icon-png",
+  "notification",
+  "process-command-api",
+  "protocol-all",
+  "shell-open",
+] }
 tauri-plugin-deep-link = "0.1"
 
+uuid = "1.5.0"
 anyhow = "1"
 nanoid = "0.4.0"
 opener = "0.5.0"
