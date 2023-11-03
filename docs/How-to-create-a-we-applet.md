@@ -30,10 +30,10 @@ From this point on, you can continue scaffolding your we applet like any normal 
 
 ### Testing
 
-The easiest way to test your applets is to use the [main we desktop executable](https://github.com/lightningrodlabs/we/releases) in testing mode, and setting the `test-applets` and `test-applets-network-seed` CLI arguments.
+The easiest way to test your applets is to use the [main we desktop executable](https://github.com/lightningrodlabs/we/releases) in testing mode, and setting the `test-applets` and `network-seed` CLI arguments.
 
 - `test-applets` is a list of paths to .webhapp applets that you want to test.
-- `test-applets-network-seed` is the network that will be used to create the group and install the applets in the group.
+- `network-seed` is the network-seed that will be used to create the group and install the applets in the group, and also the default apps (DevHub and AppStore).
 
 If you set these CLI arguments, `we` will start in a completely separate profile in a temporary directory, it will create a new empty group, and install the given applets to that group, without uploading them to the appstore.
 
@@ -42,7 +42,7 @@ It is also important to set the `BOOTSTRAP_PORT` and `SIGNAL_PORT` environment v
 On Linux, this would be:
 
 ```bash
-./we-alpha_[latest_version]_amd64.AppImage --test-applets applet1.webhapp applet2.webhapp --test-applets-network-seed test
+./we-alpha_[latest_version]_amd64.AppImage --test-applets applet1.webhapp applet2.webhapp --network-seed test
 ```
 
 Run this command in a separate terminal for each agent that you want to test your applet with.
@@ -51,8 +51,6 @@ Run this command in a separate terminal for each agent that you want to test you
 
 - `profile` is the name of the internal folder that we will use to store all its data. Changing the profile allows for setting up test networks without losing the data for your default installation of we. 
   - Using `test-applets` will ignore this argument and just use a temporary directory.
-- `default-apps-network-seed` will override the network seed by which the AppStore and DevHub hApps will get installed. This will only be used if they are not yet installed, so this argument is only read the first time we is run for this profile.
-
 
 ### Publishing applets to the DevHub
 
