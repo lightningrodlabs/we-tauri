@@ -68,7 +68,7 @@ export default class CreateDimension extends NHComponentShoelace {
       // Just validate text field for an input dimension as range will be calculated
       if(this.dimensionType == "output" && input.name !== "dimension-name") return
 
-      if(input.dataset.touched !== "1") {
+      if(input.dataset.touched !== "1" && input.required) {
         this.handleValidationError.call(this, { path: input.name, err: 'untouched'})
         existsUntouched = true;
       }
@@ -200,7 +200,7 @@ export default class CreateDimension extends NHComponentShoelace {
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
     switch (inputControl.name) {
       case 'min':
-        this._currentMinRange = inputControl.value;
+        this._currentMinRange = parseInt(inputControl.value);
         this._dimensionRange.kind['Integer'].min = parseInt(inputControl.value);
         break;
       case 'max':
@@ -276,7 +276,7 @@ export default class CreateDimension extends NHComponentShoelace {
                 <label class="error" for="min" name="min">⁎</label>
               </div>
               <div class="field">
-                <sl-input label="Range Maximum" name="max" value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                <sl-input label="Range Maximum" name="max" required value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="max" name="max">⁎</label>
               </div>
             `
