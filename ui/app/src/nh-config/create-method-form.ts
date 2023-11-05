@@ -5,7 +5,7 @@ import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 import { AppInfo, EntryHash } from "@holochain/client";
-import { boolean, object, string } from "yup";
+import { array, boolean, object, string } from "yup";
 
 export default class CreateMethod extends NHComponent {
   @property()
@@ -37,6 +37,7 @@ export default class CreateMethod extends NHComponent {
   _methodSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
     can_compute_live: boolean().required(),
+    input_dimension_ehs: array().min(1, 'Must have an input dimension').required(),
     requires_validation: boolean().required(),
   });
 
@@ -122,7 +123,7 @@ export default class CreateMethod extends NHComponent {
           const methodEh = await this.createMethod()
           this.dispatchEvent(
             new CustomEvent("method-created", {
-              detail: { methodEh },
+              detail: { methodEh, inputDimensionEhs: this.inputDimensionEhs },
               bubbles: true,
               composed: true,
             })
