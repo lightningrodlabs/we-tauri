@@ -121,6 +121,7 @@ export default class CreateMethod extends NHComponent {
         if(validMethod) {
           this._submitBtn.loading = true; this._submitBtn.requestUpdate("loading");
           const methodEh = await this.createMethod()
+          if(!methodEh) throw new Error ("Method could not be created")
           this.dispatchEvent(
             new CustomEvent("method-created", {
               detail: { methodEh, inputDimensionEhs: this.inputDimensionEhs },
@@ -166,7 +167,11 @@ export default class CreateMethod extends NHComponent {
               this._dimensionForm.disable()
               return;
             }
-            await this.onSubmit()
+            try {
+              await this.onSubmit()
+            } catch (error) {
+              console.log("Error creating new method: ", error);
+            }
           }
         }}
       >
