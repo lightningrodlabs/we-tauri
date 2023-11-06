@@ -69,7 +69,6 @@ export default class NHGlobalConfig extends NHComponent {
           const inputMethods = [...this._list.methodInputDimensions];
           const dimensionOfThisMethod = inputMethods?.find(dimension => encodeHashToBase64(dimension.dimension_eh) === encodeHashToBase64(e.detail.inputDimensionEhs[0]))
           if(dimensionOfThisMethod) {
-            debugger;
             dimensionOfThisMethod.methodEh = encodeHashToBase64(e.detail.methodEh)
             this._list.methodInputDimensions = inputMethods;
             await this._list.requestUpdate('methodInputDimensions');
