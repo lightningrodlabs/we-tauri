@@ -4,7 +4,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash, EntryHash } from '@holochain/client';
+import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 
 import { NHButton, NHComponent, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import CreateMethod from './create-method-form';
@@ -38,32 +38,47 @@ export default class NHGlobalConfig extends NHComponent {
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
 
+  resetConfig() {
+    this._formType = "input-dimension"
+    this._list.dimensionSelected = false;
+  }
+
   render() {
     return html`
       <main
         @dimension-created=${async (e: CustomEvent) => {
-          if(e.detail.dimensionType == "input") {
-            await this._dimensionForm.resetForm(); 
-            await this._dimensionForm.requestUpdate();
+            if(e.detail.dimensionType == "input") {
+              await this._dimensionForm.resetForm(); 
+              await this._dimensionForm.requestUpdate();
 
-            this._formType = "method"
-            this._list.dimensionSelected = true;
-          }
-          await this._list.fetchDimensionEntries()
-          await this._list.fetchRangeEntries()
+              this._formType = "method"
+              this._list.dimensionSelected = true;
+              // this._list.methodInputDimensions.push({...e.detail.dimension, dimensionEh: e.detail.dimensionEh});
+            }
+            await this._list.fetchDimensionEntries()
+            await this._list.fetchRangeEntries()
+            this._list.resetSelectedInputDimensionIndex()
+            await this._list.firstUpdated()
           }
         }
         @request-method-create=${async (_: CustomEvent) => {
           this._formType = "method"
         }}
-        @method-created=${async (_: CustomEvent) => {
-          this._formType = "input-dimension"
+        @method-created=${async (e: CustomEvent) => {
+          // Add this to the state of the dimension list (WORKAROUND until we get a getMethods fn in the store)
+          const inputMethods = [...this._list.methodInputDimensions];
+          const dimensionOfThisMethod = inputMethods?.find(dimension => encodeHashToBase64(dimension.dimension_eh) === encodeHashToBase64(e.detail.inputDimensionEhs[0]))
+          if(dimensionOfThisMethod) {
+            debugger;
+            dimensionOfThisMethod.methodEh = encodeHashToBase64(e.detail.methodEh)
+            this._list.methodInputDimensions = inputMethods;
+            await this._list.requestUpdate('methodInputDimensions');
+          }
+
           this._list.dimensionSelected = false;
-        }}
-        @reset-form-type=${async (_: CustomEvent) => {
           this._formType = "input-dimension"
-          this._list.dimensionSelected = false;
         }}
+        @reset-form-type=${() => this.resetConfig()}
         @input-dimension-selected=${async (e: CustomEvent) => {
           this._inputDimensionEhs = [e.detail.dimensionEh];
           this._selectedInputDimensionRange = e.detail.range
@@ -77,7 +92,7 @@ export default class NHGlobalConfig extends NHComponent {
             .size=${"icon"}
             .iconImageB64=${b64images.icons.backCaret}
             @click=${() => { !this._dimensionForm
-              ? this._formType = "input-dimension"
+              ? this.resetConfig()
               : null // TODO emit event to navigate back to home
               this.requestUpdate()
             }}
