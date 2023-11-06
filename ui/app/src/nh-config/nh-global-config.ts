@@ -92,8 +92,7 @@ export default class NHGlobalConfig extends NHComponent {
             .iconImageB64=${b64images.icons.backCaret}
             @click=${() => { !this._dimensionForm
               ? this.resetConfig()
-              : null // TODO emit event to navigate back to home
-              this.requestUpdate()
+              : this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true})) // TODO emit event to navigate back to home
             }}
           >
           </nh-button>
