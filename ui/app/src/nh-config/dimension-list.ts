@@ -1,5 +1,6 @@
 import { html, css, PropertyValueMap, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
+import {keyed} from 'lit/directives/keyed.js';
 
 import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
@@ -25,10 +26,13 @@ export default class DimensionList extends NHComponent {
   private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
   
   @state()
-  _selectedInputDimensionIndex: number = 0;
+  _selectedInputDimensionIndex!: number;
 
   @state()
   methodInputDimensions: Array<Dimension & { methodEh: EntryHashB64, dimensionEh?: EntryHashB64 }> = [];
+
+  @state()
+  filteredMethodInputDimensions: Array<Dimension & { methodEh?: EntryHashB64, dimensionEh?: EntryHashB64 }> = [];
 
   @state()
   private _methodMapping = new StoreSubscriber(this, () => this.sensemakerStore.methodDimensionMapping());
@@ -118,6 +122,7 @@ export default class DimensionList extends NHComponent {
     // NOTE: The following retrieves a mapping for method entry hashes to their respective input/output dimension hashes, but ONLY for those registered in an appletConfig.
     if(typeof this._methodMapping.value == 'undefined') return;
     
+    // If there is a method mapping (from applet config) it will be included here
     const dimensions : any = [];
     for (const [methodEh,{inputDimensionEh}] of Object.entries(this._methodMapping.value)) {
       const response = await this.fetchDimension(inputDimensionEh);
@@ -130,6 +135,20 @@ export default class DimensionList extends NHComponent {
       }
     }
     this.methodInputDimensions = [...this.methodInputDimensions, ...this._dimensionEntries, ...dimensions];
+
+    // Select the first item in the list:
+    this.dispatchEvent(new CustomEvent("input-dimension-selected", {
+      detail: { range: this._rangeEntries[this._rangeEntries.length-1], dimensionEh: this._dimensionEntries[this._dimensionEntries.length-1].dimension_eh },
+      bubbles: true,
+      composed: true,
+    }));
+    this.dimensionSelected = true;
+  }
+
+  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(_changedProperties.has('methodInputDimensions') && !!_changedProperties.get('methodInputDimensions')) {
+      this.filteredMethodInputDimensions = this.methodInputDimensions.filter(dimension => dimension?.methodEh);
+    }
   }
 
   renderRangeDetails(range: Range & { range_eh: EntryHash } | undefined) : TemplateResult {
@@ -146,6 +165,10 @@ export default class DimensionList extends NHComponent {
     `
   }
 
+  resetSelectedInputDimensionIndex() {
+    this._selectedInputDimensionIndex = 0;
+  }
+
   render() {
     return html`
       <nh-card .theme=${"light"} .title=${"Existing Input Dimensions"} .textSize=${"sm"}>
@@ -155,8 +178,9 @@ export default class DimensionList extends NHComponent {
               ? "No dimensions available"
               : html`<div style="display:flex; flex-direction: column; gap: 8px;">
                   ${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+                    .reverse()
                     .map((dimension: Dimension & { dimension_eh: EntryHash} , dimensionIndex: number) => {
-                        return html`
+                      return keyed(encodeHashToBase64(dimension.dimension_eh), html`
                           <nh-card 
                             class="nested-card ${classMap({
                                 selected: this._selectedInputDimensionIndex == dimensionIndex,
@@ -167,13 +191,11 @@ export default class DimensionList extends NHComponent {
                             <h1>Range: </h1>
                             ${this._rangeEntries?.length && this.renderRangeDetails(this._rangeEntries.find((range: Range & { range_eh: EntryHash }) => encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh)))}
                             
-                            ${typeof this.methodInputDimensions !== 'undefined' && this.methodInputDimensions.length > 0 && this.methodInputDimensions.some(inputDimension => inputDimension.dimensionEh === encodeHashToBase64(dimension.dimension_eh) && inputDimension?.methodEh) 
+                            ${this.filteredMethodInputDimensions.length > 0 && this.filteredMethodInputDimensions.some(({name}) => name === dimension.name)
                               ? html`<h2>Methods using this dimension: </h2>
-                                ${this.methodInputDimensions
-                                  .filter(inputDimension => inputDimension.dimensionEh === encodeHashToBase64(dimension.dimension_eh) && inputDimension?.methodEh)
-                                  .map(({methodEh, name}) => {
+                                ${this.filteredMethodInputDimensions.map(({methodEh, name}) => {
                                   return name == dimension.name
-                                    ? html`${generateHashHTML(methodEh)}`
+                                    ? html`${generateHashHTML(methodEh as string)}`
                                     : null
                                 })}
                               `
@@ -196,13 +218,11 @@ export default class DimensionList extends NHComponent {
                                       composed: true,
                                     }
                                   ))
-                                }}>Create Method</nh-button>` 
-                                : html`<nh-button .size=${"sm"} .variant=${"warning"} disabled=${this.dimensionSelected} @click=${() => {
-                                    
-                                }}>Creating Method</nh-button>` }
+                                }}>Create Method</nh-button>`
+                                : html`<nh-button .size=${"sm"} .variant=${"warning"} disabled=${this.dimensionSelected}>Creating Method</nh-button>` }
                               ` 
                             }
-                          </nh-card>`
+                      </nh-card>`)
                     }
                   )}</div>`
           }
