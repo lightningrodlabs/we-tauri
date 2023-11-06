@@ -2,17 +2,24 @@ use hdk::prelude::*;
 use sensemaker_integrity::{EntryTypes, LinkTypes, Range};
 
 #[hdk_extern]
-pub fn create_range(range: Range) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::Range(range.clone()))?;
+pub fn create_range(range: Range) -> ExternResult<Record> {
+    let action_hash = create_entry(&EntryTypes::Range(range.clone()))?;
     let range_eh = hash_entry(&EntryTypes::Range(range.clone()))?;
 
-    create_link(
-        ranges_typed_path()?.path_entry_hash()?,
-        range_eh.clone(),
-        LinkTypes::Ranges,
-        (),
-    )?;
-    Ok(range_eh)
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    if let Some(record) = record {
+        create_link(
+            ranges_typed_path()?.path_entry_hash()?,
+            range_eh.clone(),
+            LinkTypes::Ranges,
+            (),
+        )?;
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get method record after create"
+        ))))
+    } 
 }
 
 #[hdk_extern]

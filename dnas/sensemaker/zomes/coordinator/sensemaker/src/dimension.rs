@@ -2,16 +2,23 @@ use hdk::prelude::*;
 use sensemaker_integrity::{Dimension, EntryTypes, LinkTypes};
 
 #[hdk_extern]
-pub fn create_dimension(dimension: Dimension) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::Dimension(dimension.clone()))?;
+pub fn create_dimension(dimension: Dimension) -> ExternResult<Record> {
+    let action_hash = create_entry(&EntryTypes::Dimension(dimension.clone()))?;
     let dimension_eh = hash_entry(&EntryTypes::Dimension(dimension.clone()))?;
-    create_link(
-        dimensions_typed_path()?.path_entry_hash()?,
-        dimension_eh.clone(),
-        LinkTypes::Dimensions,
-        (),
-    )?;
-    Ok(dimension_eh)
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    if let Some(record) = record {
+        create_link(
+            dimensions_typed_path()?.path_entry_hash()?,
+            dimension_eh.clone(),
+            LinkTypes::Dimensions,
+            (),
+        )?;
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get cultural context record after create"
+        ))))
+    } 
 }
 
 #[hdk_extern]

@@ -75,3 +75,13 @@ pub fn reduce_assessments_to_latest(mut assessments: Vec<Assessment>) -> Vec<Ass
 
     filtered_assessments
 }
+
+pub fn entry_hash_from_record(record: Record) -> ExternResult<EntryHash> {
+    Ok(record
+        .action()
+        .entry_hash()
+        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
+            "Unable to get entry hash from record"
+        ))))?
+        .clone())
+}

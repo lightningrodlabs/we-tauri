@@ -81,7 +81,7 @@ pub struct CreateAssessmentInput {
 }
 
 #[hdk_extern]
-pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_eh, resource_def_eh, maybe_input_dataset }: CreateAssessmentInput) -> ExternResult<EntryHash> {
+pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_eh, resource_def_eh, maybe_input_dataset }: CreateAssessmentInput) -> ExternResult<Record> {
     let assessment = Assessment {
         value,
         dimension_eh,
@@ -91,24 +91,33 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
         author: agent_info()?.agent_latest_pubkey,
         timestamp: sys_time()?.into(),
     };
-    create_entry(&EntryTypes::Assessment(assessment.clone()))?;
+    let action_hash = create_entry(&EntryTypes::Assessment(assessment.clone()))?;
+    // get the record with the action_hash
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    // if the record doesn't exist, return an error
     let assessment_eh = hash_entry(&EntryTypes::Assessment(assessment.clone()))?;
     let assessment_path = assessment_typed_path(assessment.resource_eh.clone(), assessment.dimension_eh.clone())?;
     // ensure the path components are created so we can fetch child paths later
     assessment_path.clone().ensure()?;
-    create_link(
-        assessment_path.path_entry_hash()?,
-        assessment_eh.clone(),
-        LinkTypes::Assessment,
-        (),
-    )?;
     
-    // send signal after assessment is created
-    let signal = Signal::NewAssessment { assessment: assessment.clone() };
-    let encoded_signal = ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
-    remote_signal(encoded_signal, get_all_agents(())?)?;
-    
-    Ok(assessment_eh)
+    if let Some(record) = record {
+        create_link(
+            assessment_path.path_entry_hash()?,
+            assessment_eh.clone(),
+            LinkTypes::Assessment,
+            (),
+        )?;
+        
+        // send signal after assessment is created
+        let signal = Signal::NewAssessment { assessment: assessment.clone() };
+        let encoded_signal = ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
+        remote_signal(encoded_signal, get_all_agents(())?)?;
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get assessment record after create"
+        ))))
+    }
 }
 
 #[hdk_extern]

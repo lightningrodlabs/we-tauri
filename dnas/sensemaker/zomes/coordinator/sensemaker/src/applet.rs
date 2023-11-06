@@ -8,7 +8,7 @@ use sensemaker_integrity::{
 
 use crate::{
     create_cultural_context, create_dimension, create_method, create_range, create_resource_def,
-    utils::entry_from_record,
+    utils::{entry_from_record, entry_hash_from_record},
 };
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -71,7 +71,7 @@ pub fn create_entries_from_applet_config(
     // ranges
     let mut ranges: BTreeMap<String, EntryHash> = BTreeMap::new();
     for range in config.ranges {
-        ranges.insert(range.name.clone(), create_range(range)?);
+        ranges.insert(range.name.clone(), entry_hash_from_record(create_range(range)?)?);
     }
 
     // dimensions
@@ -79,7 +79,7 @@ pub fn create_entries_from_applet_config(
     for config_dimension in config.dimensions {
         dimensions.insert(
             config_dimension.name.clone(),
-            create_dimension(Dimension::try_from(config_dimension)?)?,
+            entry_hash_from_record(create_dimension(Dimension::try_from(config_dimension)?)?)?,
         );
     }
 
@@ -93,7 +93,7 @@ pub fn create_entries_from_applet_config(
             for config_resource_def in config_resource_defs {
                 resource_def_map.insert(
                     config_resource_def.name.clone(),
-                    create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
+                    entry_hash_from_record(create_resource_def(ResourceDef::try_from(config_resource_def)?)?)?,
                 );
             }
             zome_map.insert(zome_name, resource_def_map);
@@ -106,7 +106,7 @@ pub fn create_entries_from_applet_config(
     for config_method in config.methods {
         methods.insert(
             config_method.name.clone(),
-            create_method(Method::try_from(config_method)?)?,
+            entry_hash_from_record(create_method(Method::try_from(config_method)?)?)?,
         );
     }
 
@@ -115,7 +115,7 @@ pub fn create_entries_from_applet_config(
     for config_context in config.cultural_contexts {
         cultural_contexts.insert(
             config_context.name.clone(),
-            create_cultural_context(CulturalContext::try_from(config_context)?)?,
+            entry_hash_from_record(create_cultural_context(CulturalContext::try_from(config_context)?)?)?,
         );
     }
 

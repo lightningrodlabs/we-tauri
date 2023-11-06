@@ -18,9 +18,16 @@ pub fn get_cultural_context(entry_hash: EntryHash) -> ExternResult<Option<Record
 }
 
 #[hdk_extern]
-pub fn create_cultural_context(cultural_context: CulturalContext) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::CulturalContext(cultural_context.clone()))?;
-    hash_entry(&EntryTypes::CulturalContext(cultural_context.clone()))
+pub fn create_cultural_context(cultural_context: CulturalContext) -> ExternResult<Record> {
+    let action_hash = create_entry(&EntryTypes::CulturalContext(cultural_context.clone()))?;
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    if let Some(record) = record {
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get cultural context record after create"
+        ))))
+    } 
 }
 
 #[derive(Serialize, Deserialize, Debug)]

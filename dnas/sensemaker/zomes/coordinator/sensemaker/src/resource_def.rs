@@ -8,9 +8,16 @@ pub fn get_resource_def(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-pub fn create_resource_def(resource_def: ResourceDef) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
-    hash_entry(&EntryTypes::ResourceDef(resource_def.clone()))
+pub fn create_resource_def(resource_def: ResourceDef) -> ExternResult<Record> {
+    let action_hash = create_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    if let Some(record) = record {
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get method record after create"
+        ))))
+    } 
 }
 
 #[derive(Serialize, Deserialize, Debug)]

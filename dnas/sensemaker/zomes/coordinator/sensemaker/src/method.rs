@@ -8,7 +8,6 @@ use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
 use crate::create_assessment;
-use crate::get_assessment;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
@@ -20,9 +19,16 @@ pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-pub fn create_method(method: Method) -> ExternResult<EntryHash> {
-    create_entry(&EntryTypes::Method(method.clone()))?;
-    hash_entry(&EntryTypes::Method(method.clone()))
+pub fn create_method(method: Method) -> ExternResult<Record> {
+    let action_hash = create_entry(&EntryTypes::Method(method.clone()))?;
+    let record = get(action_hash.clone(), GetOptions::default())?;
+    if let Some(record) = record {
+        Ok(record)
+    } else {
+        Err(wasm_error!(WasmErrorInner::Guest(String::from(
+            "not able to get method record after create"
+        ))))
+    } 
 }
 
 #[hdk_extern]
@@ -46,15 +52,8 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<Assessment>> {
             compute_objective_assessment(method, assessments, input.resource_eh, input.resource_def_eh)?;
         if let Some(objective_assessment) = maybe_objective_assessment {
             // TODO: may want to change `create_assessment` to return the created assessment rather than the hash. For now sticking with this for minimal side-effects.
-            let assessment_eh = create_assessment(objective_assessment)?;
-            let maybe_assessment = get_assessment(assessment_eh)?;
-            if let Some(assessment) = maybe_assessment {
-                Ok(Some(entry_from_record::<Assessment>(assessment)?))
-            } else {
-                Err(wasm_error!(WasmErrorInner::Guest(String::from(
-                    "not able to get method created assessment"
-                ))))
-            }
+            let assessment_record = create_assessment(objective_assessment)?;
+            Ok(Some(entry_from_record::<Assessment>(assessment_record)?))
         } else {
             Err(wasm_error!(WasmErrorInner::Guest(String::from(
                 "Issue With Computation"
