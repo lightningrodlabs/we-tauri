@@ -1,0 +1,18 @@
+[package]
+edition = "2021"
+name = "nh_zome_sensemaker_widgets_config"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "nh_zome_sensemaker_widgets_config"
+
+[dependencies]
+serde = { workspace = true }
+
+nh_sensemaker_zome_lib = { path = "../../lib" }
+nh_zome_sensemaker_widgets_integrity = { path = "../../integrity/widgets" }
+sensemaker_integrity = { path = "../../integrity/sensemaker" }
+
+hdk = { workspace = true }
+holo_hash = {version = "0.1.0", features = ["encoding"]}
