@@ -2,21 +2,9 @@ use std::collections::BTreeMap;
 
 use hdk::prelude::*;
 use sensemaker_integrity::{Assessment, LinkTypes};
+pub use nh_sensemaker_zome_lib::entry_from_record;
 
 use crate::{assessment_typed_path, get_assessment};
-
-pub fn entry_from_record<T: TryFrom<SerializedBytes, Error = SerializedBytesError>>(
-    record: Record,
-) -> ExternResult<T> {
-    Ok(record
-        .entry()
-        .to_app_option()
-        // .map_err(|err| wasm_error!(err.into()))?
-        .map_err(|err| wasm_error!(WasmErrorInner::from(err)))?
-        .ok_or(wasm_error!(WasmErrorInner::Guest(String::from(
-            "Malformed bytes"
-        ))))?)
-}
 
 // NOTE: when using the to get objective assessments, we need to clarify what it means for multiple objective assessments to be created for a resource
 // do we always assume the most up to date? how will these affect checking against thresholds?
@@ -25,7 +13,7 @@ pub fn get_assessments_for_resource_inner(
     dimension_ehs: Vec<EntryHash>,
 ) -> ExternResult<BTreeMap<EntryHash, Vec<Assessment>>> {
     let mut assessments: BTreeMap<EntryHash, Vec<Assessment>> = BTreeMap::new();
-    
+
     for dimension_eh in dimension_ehs {
         let mut dimension_assessments: Vec<Assessment> = Vec::new();
         let links = get_links(

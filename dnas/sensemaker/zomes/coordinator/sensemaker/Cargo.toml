@@ -12,6 +12,7 @@ serde = { workspace = true }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
 derive_more = "0"
 sensemaker_integrity = { path = "../../integrity/sensemaker" }
+nh_sensemaker_zome_lib = { path = "../../lib" }
 
 hdk = { workspace = true }
 holo_hash = {version = "0.1.0", features = ["encoding"]}
