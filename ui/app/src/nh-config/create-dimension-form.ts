@@ -35,8 +35,8 @@ export default class CreateDimension extends NHComponentShoelace {
   
   _currentMinRange : number = 0;
   _dimensionRangeSchema = () => object({
-    min: number().min(MIN_RANGE, "Must be at least " + MIN_RANGE).required(),
-    max: number().min(this._currentMinRange + 1, "Must be > " + this._currentMinRange).max(MAX_RANGE, "Must be at most " + MAX_RANGE),
+    min: number().min(MIN_RANGE, "The lower extent of this range cannot be lower than " + MIN_RANGE).required(),
+    max: number().min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange).max(MAX_RANGE, "The higher extent of this range cannot be higher than " + MAX_RANGE),
   });
   @property() // Only needed when an output dimension range is being computed
   inputRange!: Range & { range_eh: EntryHash }
@@ -278,10 +278,8 @@ export default class CreateDimension extends NHComponentShoelace {
               <div class="field">
                 <sl-input label="Range Maximum" name="max" required value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="max" name="max">⁎</label>
-              </div>
-            `
-            : html`
-            `
+              </div>`
+            : null
           }
           <slot name="method-computation"></slot>
         </form>
@@ -317,11 +315,11 @@ export default class CreateDimension extends NHComponentShoelace {
       }
 
       /* Layout */
-      fieldset, .field, .field-row {
+      .field, .field-row {
         display: flex;
       }
 
-      form, fieldset {
+      form {
         padding: 0;
       }
 
@@ -329,11 +327,6 @@ export default class CreateDimension extends NHComponentShoelace {
         visibility: hidden;
         opacity: 0;
         height: 0;
-      }
-
-      fieldset {
-        border: none;
-        flex-direction: column;
       }
 
       .field-row {
