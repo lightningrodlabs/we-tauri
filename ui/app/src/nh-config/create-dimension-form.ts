@@ -9,8 +9,8 @@ import { object, string, boolean, number } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 
-const MIN_RANGE = -1_000_000;
-const MAX_RANGE = 1_000_000;
+const MIN_RANGE = 0;
+const MAX_RANGE = 4294967295;
 
 export default class CreateDimension extends NHComponentShoelace {
   @property()
