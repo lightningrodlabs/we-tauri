@@ -66,9 +66,9 @@ export default class CreateMethod extends NHComponent {
     }
   }
 
-  fetchValidationErrorText({ path, err }: any) {
-    if(err && err == 'untouched') return path + " is required";
-    // TODO handle touched but invalid messages
+  fetchValidationErrorText({ path, errors }: any) {
+    if(errors && errors[0] == 'untouched') return path + " is required";
+    return errors[0];
   }
 
   resetInputErrorLabels(inputs: NodeListOf<any>) {
@@ -79,7 +79,7 @@ export default class CreateMethod extends NHComponent {
     });
   }
 
-  handleValidationError(err: any) {
+  handleValidationError(err: { path: string, errors: string[] }) {
     console.log("Error validating for field: ", err.path);
 
     const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
@@ -99,7 +99,7 @@ export default class CreateMethod extends NHComponent {
       if(!input.name) { input.name = input.dataset.name  // Fix for radio-group name
       }
       if(input.dataset.touched !== "1") {
-        this.handleValidationError.call(this, { path: input.name, err: 'untouched'})
+        this.handleValidationError.call(this, { path: input.name, errors: ['untouched']})
         existsUntouched = true;
       }
     });
