@@ -168,6 +168,13 @@ export type RenderInfo = {
   appletClient: AppAgentClient,
   profilesClient: ProfilesClient,
   appletHash: AppletHash,
+  /**
+   * Non-exhaustive array of profiles of the groups the given applet is shared with.
+   * Note that an applet may be shared with other groups beyond the ones returned
+   * by this array if the applet has been federated with groups that the agent
+   * of the given We instance is not part of.
+   */
+  groupProfiles: GroupProfile[],
 } | {
   type: "cross-applet-view",
   view: CrossAppletView,
@@ -336,8 +343,8 @@ export type IframeConfig =
       type: "applet";
       appPort: number;
       appletHash: EntryHash;
-
       profilesLocation: ProfilesLocation;
+      groupProfiles: GroupProfile[];
     }
   | {
       type: "cross-applet";

@@ -182,7 +182,8 @@ document.addEventListener(
         view: { type: "main" },
         appletClient,
         profilesClient,
-        appletHash
+        appletHash,
+        groupProfiles: iframeConfig.groupProfiles,
       };
     } else if (view.type === "applet-view") {
       if (iframeConfig.type !== "applet") throw new Error("Bad iframe config");
@@ -206,7 +207,8 @@ document.addEventListener(
         view: view.view,
         appletClient,
         profilesClient,
-        appletHash
+        appletHash,
+        groupProfiles: iframeConfig.groupProfiles,
       };
 
     } else if (view.type === "cross-applet-view") {
