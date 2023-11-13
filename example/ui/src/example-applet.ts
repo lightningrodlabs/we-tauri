@@ -9,7 +9,7 @@ import "./elements/create-post.js";
 import "./elements/post-detail.js";
 import "./elements/posts-context.js";
 
-import { WeClient, type RenderInfo, AppletServices, weClientContext } from "@lightningrodlabs/we-applet";
+import { WeClient, type RenderInfo, AppletServices, weClientContext, weLinkFromAppletHash } from "@lightningrodlabs/we-applet";
 
 import "@lightningrodlabs/we-applet/dist/elements/we-client-context.js";
 import "@lightningrodlabs/attachments/dist/elements/attachments-context.js";
@@ -33,6 +33,15 @@ export class ExampleApplet extends LitElement {
 
   @property()
   attachmentsStore!: AttachmentsStore;
+
+  firstUpdated() {
+    if (this.weClient.renderInfo.type === "applet-view") {
+      const groupProfiles = this.weClient.renderInfo.groupProfiles;
+      console.log("Got group profiles: ", groupProfiles);
+      const appletHash = this.weClient.renderInfo.appletHash;
+      console.log("we link for applet: ", weLinkFromAppletHash(appletHash));
+    }
+  }
 
   render() {
     if (!this.weClient.renderInfo) return html`loading...`;

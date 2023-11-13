@@ -14,6 +14,7 @@ import { hashState, notifyError, wrapPathInSvg } from "@holochain-open-dev/eleme
 import { decodeHashFromBase64 } from "@holochain/client";
 import { msg } from "@lit/localize";
 import { mdiMagnify } from "@mdi/js";
+import { AppletHash } from "@lightningrodlabs/we-applet";
 
 import "@holochain-open-dev/elements/dist/elements/display-error.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
@@ -103,6 +104,12 @@ export class MainDashboard extends LitElement {
     this.dynamicLayout.openViews.openHrl([dnaHash, hash], {});
   }
 
+  async handleOpenAppletMain(appletHash: AppletHash) {
+    this.selectedGroupDnaHash = undefined;
+    this.dashboardMode = "browserView";
+    this.dynamicLayout.openViews.openAppletMain(appletHash);
+  }
+
   async firstUpdated() {
     this._unlisten = await listen("deep-link-received", async (e) => {
       const deepLink = e.payload as string;
@@ -117,6 +124,8 @@ export class MainDashboard extends LitElement {
           );
         } else if (split2[0] === "group") {
           await this.handleOpenGroup(split2[1]);
+        } else if (split2[0] === "applet") {
+          await this.handleOpenAppletMain(decodeHashFromBase64(split2[1]));
         }
       } catch (e) {
         console.error(e);

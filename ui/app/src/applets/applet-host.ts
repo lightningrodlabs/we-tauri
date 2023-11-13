@@ -229,6 +229,12 @@ export async function handleAppletIframeMessage(
           weStore.groupsForApplet.get(appletHash)
         );
 
+        const groupProfiles = await Promise.all(
+          Array.from(groupsStores.values()).map((store) => toPromise(store.groupProfile))
+        );
+
+        const filteredGroupProfiles = groupProfiles.filter(profile => !!profile) as GroupProfile[];
+
         // TODO: change this when personas and profiles is integrated
         const groupStore = Array.from(groupsStores.values())[0];
         const config: IframeConfig = {
@@ -239,6 +245,7 @@ export async function handleAppletIframeMessage(
             profilesAppId: groupStore.groupClient.appAgentClient.installedAppId,
             profilesRoleName: "group",
           },
+          groupProfiles: filteredGroupProfiles
         };
         return config;
       }

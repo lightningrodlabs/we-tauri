@@ -65,7 +65,7 @@ pub async fn enable_dev_mode(
     }
     let mut admin_ws = admin_ws.lock().await;
 
-    let apps = admin_ws.list_apps(Some(AppStatusFilter::Disabled)).await?;
+    let apps = admin_ws.list_apps(None).await?;
 
     let is_devhub_installed = apps
         .iter()
@@ -80,7 +80,8 @@ pub async fn enable_dev_mode(
 
     let dev_hub_bundle = WebAppBundle::decode(include_bytes!("../../../DevHub.webhapp"))?;
 
-    let agent_key = apps[0].agent_pub_key.clone(); // TODO: change when each app is associated with a different agent key
+    let agent_key = admin_ws.generate_agent_pub_key().await?;
+
     admin_ws
         .install_app(InstallAppPayload {
             source: holochain_types::prelude::AppBundleSource::Bundle(
