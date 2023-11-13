@@ -1,4 +1,4 @@
-import { ActionHash, AppAgentClient, EntryHash, RoleName, ZomeName, decodeHashFromBase64, } from "@holochain/client";
+import { ActionHash, AppAgentClient, EntryHash, RoleName, ZomeName, decodeHashFromBase64, encodeHashToBase64, } from "@holochain/client";
 import { BlockType, AttachmentType, EntryInfo, Hrl, HrlWithContext, WeNotification, RenderInfo, AttachmentName, BlockName, AppletHash, AppletInfo, EntryLocationAndInfo,  } from "./types";
 
 
@@ -10,7 +10,26 @@ declare global {
   }
 }
 
+/**
+ *
+ * @returns bool: Returns whether this function is being called in a We context.
+ */
 export const isWeContext = () => window.location.protocol === "applet:";
+
+/**
+ *
+ * @param appletHash Hash of the applet to generate the link for
+ * @param webPrefix Whether to make the link work via web browsers. Default is true.
+ * @returns
+ */
+export const weLinkFromAppletHash = (appletHash: AppletHash, webPrefix = true) => {
+  let link: string = "";
+  if (webPrefix) {
+    link = "https://lightningrodlabs.org/we?"
+  }
+  link = link + `we://applet/${encodeHashToBase64(appletHash)}`;
+  return link
+}
 
 export class AppletServices {
   constructor() {
