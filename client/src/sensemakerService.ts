@@ -33,10 +33,6 @@ export class SensemakerService {
     return this.callZome('create_dimension', dimension);
   }
 
-  async createDimensions(dimension: Dimension): Promise<EntryHash> {
-    return this.callZome('create_dimension', dimension);
-  }
-
   async getDimension(dimensionEh: EntryHash): Promise<HolochainRecord> {
     return this.callZome('get_dimension', dimensionEh);
   }
