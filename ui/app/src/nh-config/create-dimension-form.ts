@@ -4,9 +4,9 @@ import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-sy
 import { html, css, CSSResult, PropertyValueMap } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
-import { SlInput, SlRange } from "@scoped-elements/shoelace";
+import { SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
 import { object, string, boolean, number } from 'yup';
-import { Dimension, Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 
 const MIN_RANGE = 0;
@@ -18,9 +18,6 @@ export default class CreateDimension extends NHComponentShoelace {
   
   @property()
   dimensionType!: "input" | "output";
-
-  @property()
-  methodComputation!: "AVG" | "SUM";
   
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
@@ -43,11 +40,14 @@ export default class CreateDimension extends NHComponentShoelace {
   @property() // Only needed when an output dimension range is being computed
   computationMethod!: "AVG" | "SUM";
 
+  @property()
+  _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
+
   @state()
-  _dimensionRange: Range = { name: "", kind: { Integer: {
+  _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
     min: 0,
     max: 1,
-  }} as RangeKind };
+  }} as any };
   @state()
   _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
 
@@ -195,9 +195,10 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   onChangeValue(e: CustomEvent) {
-    const inputControl = (e.currentTarget as any);
+    const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
-    switch (inputControl.name) {
+    
+    switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
         this._currentMinRange = parseInt(inputControl.value);
         this._dimensionRange.kind['Integer'].min = parseInt(inputControl.value);
@@ -208,6 +209,10 @@ export default class CreateDimension extends NHComponentShoelace {
       case 'dimension-name':
         this._dimension['name'] = inputControl.value; 
         this._dimensionRange['name'] = inputControl.value + '-range'; 
+        break;
+      case 'number-type':
+        this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat); 
+        this._dimensionRange.kind = { [this._numberType] : { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind}; 
         break;
       default:
         this._dimension[inputControl.name] = inputControl.value; 
@@ -268,6 +273,13 @@ export default class CreateDimension extends NHComponentShoelace {
               <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
             </div>
+            <div class="field">
+              <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
+                <sl-radio value="Integer">Integer</sl-radio>
+                <sl-radio value="Float">Float</sl-radio>
+              </sl-radio-group>
+              <label class="error" for="method" name="method" data-name="method">⁎</label>
+            </div>
           ${this.dimensionType == "input"
             ? html`
               <div class="field">
@@ -299,7 +311,9 @@ export default class CreateDimension extends NHComponentShoelace {
   static elementDefinitions = {
     "nh-button": NHButton,
     "nh-card": NHCard,
-    "sl-input": SlInput
+    "sl-input": SlInput,
+    "sl-radio": SlRadio,
+    "sl-radio-group": SlRadioGroup,
   }
 
   static get styles() {
