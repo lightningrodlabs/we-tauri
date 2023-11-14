@@ -8,6 +8,7 @@ import { SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoela
 import { object, string, boolean, number } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
+import { capitalize } from "../elements/components/helpers/functions";
 
 const MIN_RANGE = 0;
 const MAX_RANGE = 4294967295;
@@ -181,7 +182,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   fetchValidationErrorText({ path, errors }: any) {
-    if(errors && errors[0] == 'untouched') return path + " is required";
+    if(errors && errors[0] == 'untouched') return path.split('-').map((word: string, i: number) => !i ? capitalize(word) : word ).join(' ') + " is required";
     return errors[0];
   }
 
@@ -235,8 +236,6 @@ export default class CreateDimension extends NHComponentShoelace {
         this._dimension[inputControl.name] = inputControl.value; 
         break;
     }
-
-    console.log('this._dimensionRange.kind :>> ', this._dimensionRange.kind);
   }
   
   async createRange() {
@@ -292,10 +291,10 @@ export default class CreateDimension extends NHComponentShoelace {
               <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
             </div>
-            <div class="field">
+            <div class="field" style="justify-content: center;">
               <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
-                <sl-radio value="Integer">Integer</sl-radio>
-                <sl-radio value="Float">Float</sl-radio>
+                <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
+                <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
               </sl-radio-group>
               <label class="error" for="method" name="method" data-name="method">⁎</label>
             </div>
@@ -349,6 +348,7 @@ export default class CreateDimension extends NHComponentShoelace {
       /* Layout */
       .field, .field-row {
         display: flex;
+        margin-bottom: calc(1px * var(--nh-spacing-md));
       }
 
       form {
@@ -364,6 +364,15 @@ export default class CreateDimension extends NHComponentShoelace {
       .field-row {
         justify-content: space-between;
         align-items: center;
+      }
+
+      sl-radio-group::part(base) {
+        display: flex;
+        gap: calc(1px * var(--nh-spacing-md));
+      }
+      
+      sl-radio::part(label) {
+        color: var(--nh-theme-fg-default);
       }
 
       sl-input::part(base) {
