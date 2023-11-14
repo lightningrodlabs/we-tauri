@@ -20,6 +20,7 @@ pub struct DimensionAppletFeatureBinding {
 
 #[hdk_entry_helper]
 #[serde(tag = "type", rename_all = "camelCase")]
+#[derive(Clone)]
 pub enum DimensionBinding {
     // For when components are separated out into their own DHT entry
     // (or sequence of DHT entries to allow extra large codebases to be stored).
