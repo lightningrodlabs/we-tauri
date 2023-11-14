@@ -43,6 +43,11 @@ export default class CreateDimension extends NHComponentShoelace {
   @property()
   _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
 
+  @query('sl-input[name="min"]')
+  _minInput;
+  @query('sl-input[name="max"]')
+  _maxInput;
+  
   @state()
   _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
     min: 0,
@@ -150,7 +155,7 @@ export default class CreateDimension extends NHComponentShoelace {
     const fieldsUntouched = this.validateIfUntouched(inputs);
     if(fieldsUntouched) return;
 
-    this._dimensionRangeSchema().validate(this._dimensionRange.kind['Integer'])
+    this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
       .catch((e) => {this.handleValidationError.call(this, e)})
       .then(async validRange => {
         if(validRange) {
@@ -200,11 +205,15 @@ export default class CreateDimension extends NHComponentShoelace {
     
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
-        this._currentMinRange = parseInt(inputControl.value);
-        this._dimensionRange.kind['Integer'].min = parseInt(inputControl.value);
+        const newMin = this._numberType == 'Integer' ? parseInt(inputControl.value) : inputControl.value
+        this._minInput.value = newMin;
+        this._currentMinRange = newMin;
+        this._dimensionRange.kind[this._numberType].min = newMin;
         break;
       case 'max':
-        this._dimensionRange.kind['Integer'].max = parseInt(inputControl.value);
+        const newMax = this._numberType == 'Integer' ? parseInt(inputControl.value) : inputControl.value
+        this._maxInput.value = newMax;
+        this._dimensionRange.kind[this._numberType].max = newMax;
         break;
       case 'dimension-name':
         this._dimension['name'] = inputControl.value; 
@@ -212,12 +221,22 @@ export default class CreateDimension extends NHComponentShoelace {
         break;
       case 'number-type':
         this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat); 
+        if(this._numberType == "Integer") {
+          this._dimensionRange.kind['Float'].min = parseInt(this._dimensionRange.kind['Float'].min)
+          this._dimensionRange.kind['Float'].max = parseInt(this._dimensionRange.kind['Float'].max)
+          this._minInput.value = this._dimensionRange.kind['Float'].min;
+          this._maxInput.value = this._dimensionRange.kind['Float'].max;
+        }
+        //@ts-ignore
         this._dimensionRange.kind = { [this._numberType] : { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind}; 
+        this.requestUpdate()
         break;
       default:
         this._dimension[inputControl.name] = inputControl.value; 
         break;
     }
+
+    console.log('this._dimensionRange.kind :>> ', this._dimensionRange.kind);
   }
   
   async createRange() {
@@ -283,11 +302,11 @@ export default class CreateDimension extends NHComponentShoelace {
           ${this.dimensionType == "input"
             ? html`
               <div class="field">
-                <sl-input label="Range Minimum" name="min" value=${this._dimensionRange.kind['Integer'].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                <sl-input label="Range Minimum" name="min" value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="min" name="min">⁎</label>
               </div>
               <div class="field">
-                <sl-input label="Range Maximum" name="max" required value=${this._dimensionRange.kind['Integer'].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                <sl-input label="Range Maximum" name="max" required value=${this._dimensionRange.kind[this._numberType].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="max" name="max">⁎</label>
               </div>`
             : null
