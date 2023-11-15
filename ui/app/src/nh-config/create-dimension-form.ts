@@ -5,7 +5,7 @@ import { html, css, CSSResult, PropertyValueMap } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
-import { object, string, boolean, number } from 'yup';
+import { object, string, boolean, number, TestFunction } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import { capitalize } from "../elements/components/helpers/functions";
@@ -33,8 +33,18 @@ export default class CreateDimension extends NHComponentShoelace {
   
   _currentMinRange : number = 0;
   _dimensionRangeSchema = () => object({
-    min: number().min(MIN_RANGE, "The lower extent of this range cannot be lower than " + MIN_RANGE).required(),
-    max: number().min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange).max(MAX_RANGE, "The higher extent of this range cannot be higher than " + MAX_RANGE),
+    min: (this._numberType == "Integer" 
+        ? number().integer('Must be an integer') 
+        : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+      )
+      .min(MIN_RANGE, "The lower extent of this range cannot be lower than " + MIN_RANGE)
+      .required(),
+    max:(this._numberType == "Integer" 
+        ? number().integer('Must be an integer') 
+        : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+      )
+      .min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange)
+      .max(MAX_RANGE, "The higher extent of this range cannot be higher than " + MAX_RANGE),
   });
   @property() // Only needed when an output dimension range is being computed
   inputRange!: Range & { range_eh: EntryHash }
@@ -44,11 +54,6 @@ export default class CreateDimension extends NHComponentShoelace {
   @property()
   _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
 
-  @query('sl-input[name="min"]')
-  _minInput;
-  @query('sl-input[name="max"]')
-  _maxInput;
-  
   @state()
   _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
     min: 0,
@@ -84,10 +89,11 @@ export default class CreateDimension extends NHComponentShoelace {
 
   async resetForm() {
     this._dimension = { name: "", computed: false, range_eh: undefined };
-    this._dimensionRange = { name: "", kind: { Integer: {
+    //@ts-ignore
+    this._dimensionRange = { name: "", kind: { [this._numberType as (keyof RangeKindInteger | keyof RangeKindFloat)]: {
       min: 0,
       max: 0,
-    }} as RangeKind };
+    }} as (RangeKindInteger | RangeKindFloat) };
     (this.renderRoot.querySelector('sl-input') as any).value = '';
     delete (this.renderRoot.querySelector('sl-input') as any).dataset.touched;
     
@@ -164,9 +170,10 @@ export default class CreateDimension extends NHComponentShoelace {
           .then(async _ => {
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
             const rangeEh = await this.createRange();
+            if(!rangeEh) return
+            console.log('this._dimensionRange :>> ', this._dimensionRange);
             this._dimension.range_eh = rangeEh;
             const dimensionEh = await this.createDimension()
-
             this.dispatchEvent(
               new CustomEvent("dimension-created", {
                 detail: { dimensionEh, dimensionType: this.dimensionType, dimension: this._dimension },
@@ -206,14 +213,12 @@ export default class CreateDimension extends NHComponentShoelace {
     
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
-        const newMin = this._numberType == 'Integer' ? parseInt(inputControl.value) : inputControl.value
-        this._minInput.value = newMin;
+        const newMin = Number(inputControl.value);
         this._currentMinRange = newMin;
         this._dimensionRange.kind[this._numberType].min = newMin;
         break;
       case 'max':
-        const newMax = this._numberType == 'Integer' ? parseInt(inputControl.value) : inputControl.value
-        this._maxInput.value = newMax;
+        const newMax = Number(inputControl.value);
         this._dimensionRange.kind[this._numberType].max = newMax;
         break;
       case 'dimension-name':
@@ -221,13 +226,7 @@ export default class CreateDimension extends NHComponentShoelace {
         this._dimensionRange['name'] = inputControl.value + '-range'; 
         break;
       case 'number-type':
-        this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat); 
-        if(this._numberType == "Integer") {
-          this._dimensionRange.kind['Float'].min = parseInt(this._dimensionRange.kind['Float'].min)
-          this._dimensionRange.kind['Float'].max = parseInt(this._dimensionRange.kind['Float'].max)
-          this._minInput.value = this._dimensionRange.kind['Float'].min;
-          this._maxInput.value = this._dimensionRange.kind['Float'].max;
-        }
+        this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat);
         //@ts-ignore
         this._dimensionRange.kind = { [this._numberType] : { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind}; 
         this.requestUpdate()
@@ -242,7 +241,7 @@ export default class CreateDimension extends NHComponentShoelace {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
       const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      
+      console.log('this._dimensionRange :>> ', this._dimensionRange);
       const response = await this.sensemakerStore.client.callZome({
         cell_id,
         zome_name: 'sensemaker',
