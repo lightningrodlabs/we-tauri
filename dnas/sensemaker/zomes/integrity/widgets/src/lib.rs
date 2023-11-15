@@ -18,9 +18,8 @@ pub struct DimensionAppletFeatureBinding {
     pub component_name: String,
 }
 
-#[hdk_entry_helper]
+#[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(tag = "type", rename_all = "camelCase")]
-#[derive(Clone)]
 pub enum DimensionBinding {
     // For when components are separated out into their own DHT entry
     // (or sequence of DHT entries to allow extra large codebases to be stored).
@@ -28,11 +27,19 @@ pub enum DimensionBinding {
     AppletFeature(DimensionAppletFeatureBinding),
 }
 
+#[hdk_entry_helper]
+#[serde(rename_all = "camelCase")]
+#[derive(Clone)]
+pub struct AssessmentWidgetBlockConfig {
+    input_assessment_widget: DimensionBinding,
+    output_assessment_widget: DimensionBinding,
+}
+
 #[hdk_entry_defs]
 #[unit_enum(UnitEntryTypes)]
 pub enum EntryTypes {
     #[entry_def()]
-    DimensionBinding(DimensionBinding),
+    AssessmentWidgetBlockConfig(AssessmentWidgetBlockConfig),
 }
 
 #[hdk_link_types]
