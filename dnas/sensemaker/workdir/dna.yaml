@@ -8,6 +8,8 @@ integrity:
   zomes:
     - name: sensemaker_integrity
       bundled: ../../../target/wasm32-unknown-unknown/release/sensemaker_integrity.wasm
+    - name: widgets_integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/nh_zome_sensemaker_widgets_integrity.wasm
 
 coordinator:
   zomes:
@@ -15,4 +17,7 @@ coordinator:
       bundled: ../../../target/wasm32-unknown-unknown/release/sensemaker.wasm
       dependencies:
         - name: sensemaker_integrity
-
+    - name: widgets
+      bundled: ../../../target/wasm32-unknown-unknown/release/nh_zome_sensemaker_widgets_config.wasm
+      dependencies:
+        - name: widgets_integrity
