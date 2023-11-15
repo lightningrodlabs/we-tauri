@@ -119,21 +119,21 @@ export default class CreateDimension extends NHComponentShoelace {
       case (max <= min):
         throw new Error('Invalid RangeKind limits')
       case (min >=0):
-        // range is [0, x], where x is a positive integer the output range will be [0, INF].
+        // range is [0, x], where x is positive the output range will be [0, INF].
         //@ts-ignore
         return { [this._numberType]: {
           min: 0,
           max: rangeMax,
         }} as RangeKind
       case (min < 0 && max > 0):
-        // range is [x, RangeKindy], where x is a negative integer and y is a positive integer the output range will be [-INF, INF].
+        // range is [x, RangeKindy], where x is negative and y is positive the output range will be [-INF, INF].
         //@ts-ignore
         return { [this._numberType]: {
           min: rangeMin,
           max: rangeMax,
         }} as RangeKind
       default:
-        // range is [x, 0], where x is a negative integer the output range will be [-INF, 0].
+        // range is [x, 0], where x is negative the output range will be [-INF, 0].
         //@ts-ignore
         return { [this._numberType]: {
           min: rangeMin,
@@ -182,7 +182,7 @@ export default class CreateDimension extends NHComponentShoelace {
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
             const rangeEh = await this.createRange();
             if(!rangeEh) return
-            console.log('this._dimensionRange :>> ', this._dimensionRange);
+            
             this._dimension.range_eh = rangeEh;
             const dimensionEh = await this.createDimension()
             this.dispatchEvent(
@@ -205,6 +205,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   handleValidationError(err: { path: string, errors: string[] }) {
+    console.log("Error validating profile for field: ", err.path);
     console.log("Error validating profile for field: ", err.path);
 
     const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
