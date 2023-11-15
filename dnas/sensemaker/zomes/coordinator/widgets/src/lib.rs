@@ -10,7 +10,7 @@ struct QueryParams {
 }
 
 #[hdk_extern]
-fn get_widget_config(QueryParams { resource_def_eh }: QueryParams) -> ExternResult<AssessmentWidgetBlockConfig> {
+fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParams) -> ExternResult<AssessmentWidgetBlockConfig> {
     let links = get_links(
         resource_def_eh,
         LinkTypes::WidgetConfigs,
@@ -48,7 +48,7 @@ struct UpdateParams {
 }
 
 #[hdk_extern]
-fn set_widget_config(UpdateParams { resource_def_eh, widget_config }: UpdateParams) -> ExternResult<EntryHash> {
+fn set_assessment_widget_tray_config(UpdateParams { resource_def_eh, widget_config }: UpdateParams) -> ExternResult<EntryHash> {
     // check existing configuration links
     let existing_links = get_links(
         resource_def_eh.to_owned(),
