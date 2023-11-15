@@ -206,7 +206,6 @@ export default class CreateDimension extends NHComponentShoelace {
 
   handleValidationError(err: { path: string, errors: string[] }) {
     console.log("Error validating profile for field: ", err.path);
-    console.log("Error validating profile for field: ", err.path);
 
     const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
     if(errorDOM.length == 0) return;
