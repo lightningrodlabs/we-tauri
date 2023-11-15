@@ -10,8 +10,10 @@ import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKind
 import { property, query, state } from "lit/decorators.js";
 import { capitalize } from "../elements/components/helpers/functions";
 
-const MIN_RANGE = 0;
-const MAX_RANGE = 4294967295;
+const MIN_RANGE_INT = 0;
+const MAX_RANGE_INT = 4294967295;
+const MIN_RANGE_FLOAT = -Number.MAX_SAFE_INTEGER;
+const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
 
 export default class CreateDimension extends NHComponentShoelace {
   @property()
@@ -32,20 +34,23 @@ export default class CreateDimension extends NHComponentShoelace {
   });
   
   _currentMinRange : number = 0;
-  _dimensionRangeSchema = () => object({
-    min: (this._numberType == "Integer" 
-        ? number().integer('Must be an integer') 
-        : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
-      )
-      .min(MIN_RANGE, "The lower extent of this range cannot be lower than " + MIN_RANGE)
-      .required(),
-    max:(this._numberType == "Integer" 
-        ? number().integer('Must be an integer') 
-        : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
-      )
-      .min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange)
-      .max(MAX_RANGE, "The higher extent of this range cannot be higher than " + MAX_RANGE),
-  });
+  _dimensionRangeSchema = () => {
+    const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
+    const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+    return object({
+      min: (this._numberType == "Integer" 
+          ? number().integer('Must be an integer') 
+          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+        )
+        .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin)
+        .required(),
+      max:(this._numberType == "Integer" 
+          ? number().integer('Must be an integer') 
+          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+        )
+        .min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange)
+        .max(rangeMax, "The higher extent of this range cannot be higher than " + rangeMax),
+    })};
   @property() // Only needed when an output dimension range is being computed
   inputRange!: Range & { range_eh: EntryHash }
   @property() // Only needed when an output dimension range is being computed
@@ -106,26 +111,32 @@ export default class CreateDimension extends NHComponentShoelace {
     await this.updateComplete
   }
 
-  getSumComputationRange(min: number, max: number) : RangeKind {     
+  getSumComputationRange(min: number, max: number) : RangeKind {
+    const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
+    const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+
     switch (true) {
       case (max <= min):
         throw new Error('Invalid RangeKind limits')
       case (min >=0):
         // range is [0, x], where x is a positive integer the output range will be [0, INF].
-        return { Integer: {
+        //@ts-ignore
+        return { [this._numberType]: {
           min: 0,
-          max: MAX_RANGE,
+          max: rangeMax,
         }} as RangeKind
       case (min < 0 && max > 0):
-        // range is [x, y], where x is a negative integer and y is a positive integer the output range will be [-INF, INF].
-        return { Integer: {
-          min: MIN_RANGE,
-          max: MAX_RANGE,
+        // range is [x, RangeKindy], where x is a negative integer and y is a positive integer the output range will be [-INF, INF].
+        //@ts-ignore
+        return { [this._numberType]: {
+          min: rangeMin,
+          max: rangeMax,
         }} as RangeKind
       default:
         // range is [x, 0], where x is a negative integer the output range will be [-INF, 0].
-        return { Integer: {
-          min: MIN_RANGE,
+        //@ts-ignore
+        return { [this._numberType]: {
+          min: rangeMin,
           max: 0,
         }} as RangeKind
     }
