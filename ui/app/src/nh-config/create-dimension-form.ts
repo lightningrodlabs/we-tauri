@@ -4,7 +4,7 @@ import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-sy
 import { html, css, CSSResult, PropertyValueMap } from "lit";
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
-import { SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
+import { SlCheckbox, SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, TestFunction } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
@@ -40,7 +40,7 @@ export default class CreateDimension extends NHComponentShoelace {
     return object({
       min: (this._numberType == "Integer" 
           ? number().integer('Must be an integer') 
-          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
         )
         .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin)
         .required(),
@@ -59,6 +59,10 @@ export default class CreateDimension extends NHComponentShoelace {
   @property()
   _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
 
+  @state()
+  _useGlobalMin: boolean = false;
+  @state()
+  _useGlobalMax: boolean = false;
   @state()
   _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
     min: 0,
@@ -94,20 +98,27 @@ export default class CreateDimension extends NHComponentShoelace {
 
   async resetForm() {
     this._dimension = { name: "", computed: false, range_eh: undefined };
+    this._numberType = "Integer";
     //@ts-ignore
     this._dimensionRange = { name: "", kind: { [this._numberType as (keyof RangeKindInteger | keyof RangeKindFloat)]: {
       min: 0,
       max: 0,
     }} as (RangeKindInteger | RangeKindFloat) };
-    (this.renderRoot.querySelector('sl-input') as any).value = '';
-    delete (this.renderRoot.querySelector('sl-input') as any).dataset.touched;
+    this._useGlobalMin = false;
+    this._useGlobalMax = false;
     
-    (this.renderRoot.querySelectorAll('sl-range') as any).forEach(range => {
-      range.value = 0;
-      delete range.dataset.touched;
+    (this.renderRoot.querySelectorAll('sl-input') as any)?.forEach(input => {
+      input.value = '';
+      delete input.dataset.touched;
+    })    
+    const checkboxes = this.renderRoot.querySelectorAll('sl-checkbox') as any;
+    checkboxes?.length && checkboxes?.forEach(checkbox => {
+      checkbox.checked = false;
+      delete checkbox.dataset.touched;
     })
 
     this.submitBtn.loading = false;
+    // console.log('this._dimensionRange :>> ', this._dimension, this._dimensionRange);
     await this.updateComplete
   }
 
@@ -168,7 +179,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   onSubmit() {
-    const inputs = this.renderRoot.querySelectorAll("sl-input, sl-range");
+    const inputs = this.renderRoot.querySelectorAll("sl-input");
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
     if(fieldsUntouched) return;
@@ -221,7 +232,7 @@ export default class CreateDimension extends NHComponentShoelace {
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
-    
+
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
         const newMin = Number(inputControl.value);
@@ -232,6 +243,14 @@ export default class CreateDimension extends NHComponentShoelace {
         const newMax = Number(inputControl.value);
         this._dimensionRange.kind[this._numberType].max = newMax;
         break;
+      case 'use-global-min':
+        this._useGlobalMin = !this._useGlobalMin
+        this._dimensionRange.kind[this._numberType].min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
+        break;
+      case 'use-global-max':
+        this._useGlobalMax = !this._useGlobalMax
+        this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+        break;
       case 'dimension-name':
         this._dimension['name'] = inputControl.value; 
         this._dimensionRange['name'] = inputControl.value + '-range'; 
@@ -240,7 +259,12 @@ export default class CreateDimension extends NHComponentShoelace {
         this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat);
         //@ts-ignore
         this._dimensionRange.kind = { [this._numberType] : { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind}; 
-        this.requestUpdate()
+        if(this._useGlobalMin) {
+          this._dimensionRange.kind[this._numberType].min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
+        }
+        if(this._useGlobalMax) {
+          this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
+        }
         break;
       default:
         this._dimension[inputControl.name] = inputControl.value; 
@@ -311,13 +335,22 @@ export default class CreateDimension extends NHComponentShoelace {
           ${this.dimensionType == "input"
             ? html`
               <div class="field">
-                <sl-input label="Range Minimum" name="min" value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="min" name="min">⁎</label>
               </div>
+              <div class="field checkbox">
+                <label for="global-min" name="use-global-min">Lowest possible</label>
+                <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+              </div>
               <div class="field">
-                <sl-input label="Range Maximum" name="max" required value=${this._dimensionRange.kind[this._numberType].max} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
                 <label class="error" for="max" name="max">⁎</label>
-              </div>`
+              </div>
+              <div class="field checkbox">
+                <label for="global-max" name="use-global-max">Highest possible</label>
+                <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+              </div>
+            `
             : null
           }
           <slot name="method-computation"></slot>
@@ -342,6 +375,7 @@ export default class CreateDimension extends NHComponentShoelace {
     "sl-input": SlInput,
     "sl-radio": SlRadio,
     "sl-radio-group": SlRadioGroup,
+    "sl-checkbox": SlCheckbox,
   }
 
   static get styles() {
@@ -408,6 +442,11 @@ export default class CreateDimension extends NHComponentShoelace {
 
       :host *::part(form-control-label) {
         color: red;
+      }
+
+      .field.checkbox {
+        justify-content: end;
+        gap: 1rem;
       }
 
       label.error {
