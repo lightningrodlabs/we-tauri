@@ -133,7 +133,7 @@ export default () => {
         t.deepEqual(configCheck1, [testWidgetConfig1, testWidgetConfig2], "tray config retrievable by other agent");
 
         // swap the configs
-        const update2 = await callZomeAlice(
+        const update2: EntryHash[] = await callZomeAlice(
           "widgets",
           "set_assessment_widget_tray_config",
           {
@@ -142,10 +142,11 @@ export default () => {
           }
         );
         t.ok(update2, "updating tray config with a new ordering succeeds");
+        console.info('AssessmentWidgetBlockConfig hashes: ', update2);
         await pause(pauseDuration);
 
         // read config back out & check for correctness
-        const configCheck2: AssessmentWidgetBlockConfig[] = await callZomeBob(
+        const configCheck2: AssessmentWidgetBlockConfig[] = await callZomeAlice(
           "widgets",
           "get_assessment_widget_tray_config",
           { resourceDefEh: dummyEntryHash }
