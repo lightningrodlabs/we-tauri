@@ -78,7 +78,6 @@ import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import { PeerStatusStore, PeerStatusClient } from "@holochain-open-dev/peer-status";
 import md5 from "md5";
 import { getCellId } from "./utils";
-import { defaultAppletConfig } from "./defaultAppletConfig";
 import { AverageStarDimensionDisplay, StarDimensionAssessment, ThumbsUpDimenionAssessment, TotalThumbsUpDimensionDisplay } from "./widgets";
 
 /**Data of a group */
@@ -789,20 +788,6 @@ export class MatrixStore {
         const peerStatusStore = new PeerStatusStore(new PeerStatusClient(weGroupAgentWebsocket, 'we')); // TODO: check this
         const sensemakerStore = new SensemakerStore(weGroupAgentWebsocket, sensemakerGroupCellInfo.clone_id!);
         await this.adminWebsocket.authorizeSigningCredentials(sensemakerGroupCellId)
-        // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-        // sensemakerStore.registerWidget(
-        //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-        //   TotalThumbsUpDimensionDisplay,
-        //   ThumbsUpDimenionAssessment,
-        // );
-
-        // sensemakerStore.registerWidget(
-        //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-        //   AverageStarDimensionDisplay,
-        //   StarDimensionAssessment,
-        // );
-
-
         // create WeGroupData object
         const weInfo = await weGroupAgentWebsocket.callZome({
           cell_id: weGroupCellId,
@@ -1129,21 +1114,6 @@ export class MatrixStore {
     const peerStatusStore = new PeerStatusStore(new PeerStatusClient(appAgentWebsocket, 'we'));
     const sensemakerStore = new SensemakerStore(appAgentWebsocket, sensemakerCell.clone_id!);
 
-    // Delay widget registration until new Sensemaker cell is cached.
-    setTimeout(async () => {
-      // const appletConfig = await sensemakerStore.registerApplet(defaultAppletConfig);
-      // sensemakerStore.registerWidget(
-      //   [encodeHashToBase64(appletConfig.dimensions["thumbs_up"]), encodeHashToBase64(appletConfig.dimensions["total_thumbs_up"])],
-      //   TotalThumbsUpDimensionDisplay,
-      //   ThumbsUpDimenionAssessment,
-      // );
-      // sensemakerStore.registerWidget(
-      //   [encodeHashToBase64(appletConfig.dimensions["five_star"]), encodeHashToBase64(appletConfig.dimensions["average_star"])],
-      //   AverageStarDimensionDisplay,
-      //   StarDimensionAssessment,
-      //   );
-      }, 1500);
-    
     this._matrix.update((matrix) => {
       const weInfo: NeighbourhoodInfo = {
         logoSrc: properties.logoSrc,
