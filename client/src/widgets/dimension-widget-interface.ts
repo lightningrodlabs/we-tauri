@@ -7,6 +7,24 @@ import { LitElement } from 'lit';
 import { SensemakerStore } from '../sensemakerStore';
 import { html } from 'lit-html';
 
+// configuration data as stored by the `widgets` zome API
+export type AssessmentWidgetConfig = {
+  dimensionEh: EntryHash,
+  widgetEh: EntryHash // This is specifically for when components are separated out into their own DHT entry (or sequence of DHT entries to allow extra large codebases to be stored).
+} | {
+  dimensionEh: EntryHash,
+  appletEh: EntryHash, // This is whatever the id for the Applet is
+  componentName: string // This is the name of the component as exposed by the applet interface
+}
+
+// configuration data as stored by the `widgets` zome API
+export interface AssessmentWidgetBlockConfig {
+  // This is the widget that allows making an assessment and displaying the user's chosen selection if the user can select one of many options
+  inputAssessmentWidget: AssessmentWidgetConfig,
+  // This is the widget that displays the computed result, for the case where output and input and separate, as in the Todo applet.
+  outputAssessmentWidget: AssessmentWidgetConfig
+}
+
 interface IDimensionWidget {
     render(): TemplateResult
 }
@@ -57,7 +75,7 @@ export abstract class AssessDimensionWidget extends ScopedElementsMixin(LitEleme
         }
         catch (e) {
             console.log('method error', e)
-        } 
+        }
     }
 }
 
