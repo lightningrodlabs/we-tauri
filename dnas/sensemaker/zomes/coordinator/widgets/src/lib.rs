@@ -44,52 +44,51 @@ struct UpdateParams {
 }
 
 #[hdk_extern]
-fn set_assessment_widget_tray_config(UpdateParams { resource_def_eh, widget_configs }: UpdateParams) -> ExternResult<bool> {
+fn set_assessment_widget_tray_config(UpdateParams { resource_def_eh, widget_configs }: UpdateParams) -> ExternResult<Vec<EntryHash>> {
     // check existing configuration links
     let existing_links = get_links(
         resource_def_eh.to_owned(),
         LinkTypes::WidgetConfigs,
         None,
     )?;
-    let link_targets: Vec<Option<EntryHash>> = existing_links.iter()
-        .map(|l| l.target.to_owned().into_entry_hash())
+    // find EntryHashes the links point to, and unlink them
+    let _link_targets: Vec<Option<EntryHash>> = existing_links.iter()
+        .map(|l| {
+            // remove the link as a side-effect; this is a lazy way
+            // of ensuring that link ordering is honoured upon updates
+            let dr = delete_link(l.create_link_hash.clone());
+            debug!("link deletion for block config {:?} returned {:?}", l.target, dr);
+
+            l.target.to_owned().into_entry_hash()
+        })
         .collect();
 
-    // process all passed configs
-    let widget_config_hashes: Vec<EntryHash> = widget_configs.iter()
+    // process & link all passed configs
+    let widget_config_hashes = widget_configs.iter()
         .filter_map(|c| {
             let config_hash = hash_entry(c).ok();
 
-            // ignore previously saved values
-            if config_hash == None || link_targets.contains(&config_hash) {
+            // ignore unhashable values; should never happen
+            if config_hash == None {
                 // return hash for comparing when removing stale configs
                 return config_hash.to_owned()
             }
 
             // store new config blocks and link to Resource Def
             // :TODO: error handling
-            create_entry(&EntryTypes::AssessmentWidgetBlockConfig(c.clone()));
-            create_link(
+            let er = create_entry(&EntryTypes::AssessmentWidgetBlockConfig(c.clone()));
+            debug!("entry creation for block config {:?} returned {:?}", config_hash, er);
+            let lr = create_link(
                 resource_def_eh.to_owned(),
                 config_hash.clone().unwrap(),
                 LinkTypes::WidgetConfigs,
                 (),
             );
+            debug!("link creation for block config {:?} returned {:?}", config_hash, lr);
 
             config_hash
         })
         .collect();
 
-    // unlink any existing configs which were not found in the input
-    // :TODO: error handling
-    existing_links.iter()
-        .for_each(|l| {
-            if widget_config_hashes.contains(&l.target.clone().into_entry_hash().unwrap()) {
-                return
-            }
-
-            delete_link(l.create_link_hash.clone());
-        });
-
-    Ok(true)
+    Ok(widget_config_hashes)
 }
