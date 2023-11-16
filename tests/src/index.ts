@@ -6,6 +6,7 @@ import applet_config from './sensemaker_dna/sensemaker/applet_config';
 import range from './sensemaker_dna/sensemaker/range';
 import dashboard from './sensemaker_dna/sensemaker/dashboard';
 import agent from './sensemaker_dna/sensemaker/agent';
+import widget_config from './sensemaker_dna/widget/widget_config';
 range();
 neighbourhood();
 applet_config();
@@ -13,4 +14,4 @@ sensemaker_config();
 sensemaker_community_activator();
 dashboard();
 agent();
-
+widget_config();
