@@ -10,7 +10,7 @@ name = "nh_zome_sensemaker_widgets_config"
 [dependencies]
 serde = { workspace = true }
 
-nh_sensemaker_zome_lib = { path = "../../lib" }
+nh_sensemaker_zome_lib = { path = "../../../lib/api_helpers" }
 nh_zome_sensemaker_widgets_integrity = { path = "../../integrity/widgets" }
 sensemaker_integrity = { path = "../../integrity/sensemaker" }
 

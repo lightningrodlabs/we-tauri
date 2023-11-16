@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-  "dnas/sensemaker/zomes/lib",
+  "dnas/sensemaker/lib/*",
   "dnas/sensemaker/zomes/coordinator/*",
   "dnas/sensemaker/zomes/integrity/*",
   "dnas/test_provider/zomes/coordinator/*",
