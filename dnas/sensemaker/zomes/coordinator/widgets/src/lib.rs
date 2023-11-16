@@ -10,7 +10,7 @@ struct QueryParams {
 }
 
 #[hdk_extern]
-fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParams) -> ExternResult<Vec<DimensionBinding>> {
+fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParams) -> ExternResult<Vec<AssessmentWidgetBlockConfig>> {
     let links = get_links(
         resource_def_eh,
         LinkTypes::WidgetConfigs,
@@ -28,7 +28,7 @@ fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParam
                 Err(_) => None, // :TODO: error handling
                 Ok(None) => None,
                 Ok(Some(record)) =>
-                    entry_from_record::<DimensionBinding>(record)
+                    entry_from_record::<AssessmentWidgetBlockConfig>(record)
                         .map_or(None, |f| Some(f))
             }
         })
@@ -40,7 +40,7 @@ fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParam
 #[serde(rename_all = "camelCase")]
 struct UpdateParams {
     pub resource_def_eh: EntryHash,
-    pub widget_configs: Vec<DimensionBinding>,
+    pub widget_configs: Vec<AssessmentWidgetBlockConfig>,
 }
 
 #[hdk_extern]
@@ -68,7 +68,7 @@ fn set_assessment_widget_tray_config(UpdateParams { resource_def_eh, widget_conf
 
             // store new config blocks and link to Resource Def
             // :TODO: error handling
-            create_entry(&EntryTypes::DimensionBinding(c.clone()));
+            create_entry(&EntryTypes::AssessmentWidgetBlockConfig(c.clone()));
             create_link(
                 resource_def_eh.to_owned(),
                 config_hash.clone().unwrap(),
