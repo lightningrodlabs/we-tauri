@@ -11,6 +11,7 @@ import MethodListForDimension from "./method-list";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { generateHashHTML } from "../elements/components/helpers/functions";
 import { classMap } from "lit/directives/class-map.js";
+import { FieldDefinition, FieldDefinitions, Table, TableStore } from "@adaburrows/table-web-component";
 
 export default class DimensionList extends NHComponent {  
   @property()
@@ -149,6 +150,23 @@ export default class DimensionList extends NHComponent {
     if(_changedProperties.has('methodInputDimensions') && !!_changedProperties.get('methodInputDimensions')) {
       this.filteredMethodInputDimensions = this.methodInputDimensions.filter(dimension => dimension?.methodEh);
     }
+    if(_changedProperties.has('_dimensionEntries') || _changedProperties.has('_rangeEntries')) {
+      if(typeof this._rangeEntries == 'undefined') return;
+      
+      const tableRecords = this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+      .reverse()
+      .map((dimension: Dimension & { dimension_eh: EntryHash; }, dimensionIndex: number) => {
+        const range = this._rangeEntries
+        .find((range: Range & { range_eh: EntryHash; }) =>
+          encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
+
+        return {
+          name: dimension.name,
+          range_type: range?.kind
+        }
+      })
+      console.log('this._dimensionEntries tableRecords:>> ', tableRecords);
+    }
   }
 
   handleCreateMethod = (dimension: Partial<Dimension> & { range_eh: Uint8Array; }, dimensionIndex: number) => {
@@ -175,10 +193,35 @@ export default class DimensionList extends NHComponent {
     this._selectedInputDimensionIndex = 0;
   }
 
+  @property({ type: Object })
+  tableStore!: TableStore<Dimension>;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    /**
+     * This is a simple example for a truth table of two bits
+     */
+    const fieldDefs: FieldDefinitions<Dimension> = {
+      'dimension-name': new FieldDefinition<Dimension>({heading: 'Name'}),
+      'range-type': new FieldDefinition<Dimension>({heading: 'Type'}),
+      'range-min': new FieldDefinition<Dimension>({heading: 'Min'}),
+      'range-max': new FieldDefinition<Dimension>({heading: 'Max'}),
+    }
+    //@ts-ignore
+    this.tableStore = new TableStore({
+      tableId: 'dimensions',
+      fieldDefs,
+      showHeader: true,
+      records: []
+    });
+  }
+  
   render() {
     return html`
       <nh-card .theme=${"light"} .title=${"Existing Input Dimensions"} .textSize=${"sm"}>
         <div class="content">
+
+        <wc-table .tableStore=${this.tableStore}></wc-table>
           ${ this.renderInputDimensions() }
         </div>
       </nh-card>
@@ -250,7 +293,8 @@ export default class DimensionList extends NHComponent {
   static elementDefinitions = {
     "nh-button": NHButton,
     "nh-card": NHCard,
-    "method-list-for-dimension": MethodListForDimension
+    "method-list-for-dimension": MethodListForDimension,
+    'wc-table': Table,
   }
 
   static get styles() {
