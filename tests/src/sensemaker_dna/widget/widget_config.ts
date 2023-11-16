@@ -113,7 +113,7 @@ export default () => {
             componentName: 'test-widget-component',
           },
         };
-        const configHash: EntryHash = await callZomeAlice(
+        const update1 = await callZomeAlice(
           "widgets",
           "set_assessment_widget_tray_config",
           {
@@ -121,16 +121,52 @@ export default () => {
             widgetConfigs: [testWidgetConfig1, testWidgetConfig2],
           }
         );
-        t.ok(configHash, "creating a new tray config succeeds");
+        t.ok(update1, "creating a new tray config succeeds");
         await pause(pauseDuration);
 
         // read config back out & check for correctness
-        const configCheck: AssessmentWidgetBlockConfig[] = await callZomeBob(
+        const configCheck1: AssessmentWidgetBlockConfig[] = await callZomeBob(
           "widgets",
           "get_assessment_widget_tray_config",
           { resourceDefEh: dummyEntryHash }
         );
-        t.deepEqual(configCheck, [testWidgetConfig1, testWidgetConfig2], "tray config retrievable by other agent");
+        t.deepEqual(configCheck1, [testWidgetConfig1, testWidgetConfig2], "tray config retrievable by other agent");
+
+        // swap the configs
+        const update2 = await callZomeAlice(
+          "widgets",
+          "set_assessment_widget_tray_config",
+          {
+            resourceDefEh: dummyEntryHash,
+            widgetConfigs: [testWidgetConfig2, testWidgetConfig1],
+          }
+        );
+        t.ok(update2, "updating tray config with a new ordering succeeds");
+        await pause(pauseDuration);
+
+        // read config back out & check for correctness
+        const configCheck2: AssessmentWidgetBlockConfig[] = await callZomeBob(
+          "widgets",
+          "get_assessment_widget_tray_config",
+          { resourceDefEh: dummyEntryHash }
+        );
+        t.deepEqual(configCheck2, [testWidgetConfig2, testWidgetConfig1], "tray config reordering succeeded");
+
+        // create a new widget config and replace one of the prior ones with it
+        const testWidgetConfig1b = {
+          inputAssessmentWidget: {
+            type: 'appletWidget',
+            dimensionEh: dummyEntryHash,
+            appletId: dummyEntryHash,
+            componentName: 'test-widget-component',
+          },
+          outputAssessmentWidget: {
+            type: 'appletWidget',
+            dimensionEh: dummyEntryHash,
+            appletId: dummyEntryHash,
+            componentName: 'test-widget-component',
+          },
+        };
       } catch (e) {
         console.error(e);
         t.ok(null);
