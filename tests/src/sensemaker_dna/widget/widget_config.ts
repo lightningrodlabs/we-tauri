@@ -186,6 +186,23 @@ export default () => {
           { resourceDefEh: dummyEntryHash }
         );
         t.deepEqual(configCheck3, [testWidgetConfig2, testWidgetConfig1b, testWidgetConfig1], "tray config reordering preserved upon injecting blocks");
+
+        // assert 'permission denied' error, only the CA can create
+        try {
+          let config: AssessmentWidgetBlockConfig = await callZomeBob(
+            "widgets",
+            "set_assessment_widget_tray_config",
+            {
+              resourceDefEh: dummyEntryHash,
+              widgetConfigs: [testWidgetConfig2, testWidgetConfig1],
+            }
+          );
+        } catch (e) {
+          //@ts-ignore
+          console.info(e.data)
+          //@ts-ignore
+          t.ok(e.data.data.match("only the community activator can create this entry"), "only network CA can configure resource widget trays; more complex permission structures planned in future");
+        }
       } catch (e) {
         console.error(e);
         t.ok(null);
