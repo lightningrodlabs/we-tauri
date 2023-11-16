@@ -96,9 +96,6 @@ export class MainDashboard extends NHComponentShoelace {
   private _selectedAppletInstanceId: EntryHash | undefined; // hash of the Applet's entry in group's we dna of the selected Applet instance
 
   @state()
-  private _defaultAppletInstanceId: EntryHash | undefined; // hash of the default applet, used when going to config
-
-  @state()
   private _selectedAppletRolename: string | undefined;
 
   @state()
