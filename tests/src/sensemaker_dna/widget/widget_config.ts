@@ -88,12 +88,12 @@ export default () => {
         // create a config
         const testWidgetConfig1 = {
           inputAssessmentWidget: {
-            type: 'widget',
+            type: 'standaloneWidget',
             dimensionEh: dummyEntryHash,
             widgetEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'appletFeature',
+            type: 'appletWidget',
             dimensionEh: dummyEntryHash,
             appletId: dummyEntryHash,
             componentName: 'test-widget-component',
