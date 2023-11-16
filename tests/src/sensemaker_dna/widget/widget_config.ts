@@ -168,6 +168,24 @@ export default () => {
             componentName: 'test-widget-component',
           },
         };
+        const update3: EntryHash[] = await callZomeAlice(
+          "widgets",
+          "set_assessment_widget_tray_config",
+          {
+            resourceDefEh: dummyEntryHash,
+            widgetConfigs: [testWidgetConfig2, testWidgetConfig1b, testWidgetConfig1],
+          }
+        );
+        t.ok(update3, "updating tray config with a newly inserted widget block succeeds");
+        await pause(pauseDuration);
+
+        // read config back out & check for correctness
+        const configCheck3: AssessmentWidgetBlockConfig[] = await callZomeBob(
+          "widgets",
+          "get_assessment_widget_tray_config",
+          { resourceDefEh: dummyEntryHash }
+        );
+        t.deepEqual(configCheck3, [testWidgetConfig2, testWidgetConfig1b, testWidgetConfig1], "tray config reordering preserved upon injecting blocks");
       } catch (e) {
         console.error(e);
         t.ok(null);
