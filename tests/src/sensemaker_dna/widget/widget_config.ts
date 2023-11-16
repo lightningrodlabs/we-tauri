@@ -99,24 +99,38 @@ export default () => {
             componentName: 'test-widget-component',
           },
         };
+        const testWidgetConfig2 = {
+          inputAssessmentWidget: {
+            type: 'appletWidget',
+            dimensionEh: dummyEntryHash,
+            appletId: dummyEntryHash,
+            componentName: 'test-widget-component',
+          },
+          outputAssessmentWidget: {
+            type: 'appletWidget',
+            dimensionEh: dummyEntryHash,
+            appletId: dummyEntryHash,
+            componentName: 'test-widget-component',
+          },
+        };
         const configHash: EntryHash = await callZomeAlice(
           "widgets",
           "set_assessment_widget_tray_config",
           {
             resourceDefEh: dummyEntryHash,
-            widgetConfig: testWidgetConfig1,
+            widgetConfigs: [testWidgetConfig1, testWidgetConfig2],
           }
         );
-        t.ok(configHash, "creating a new widget config succeeds");
+        t.ok(configHash, "creating a new tray config succeeds");
         await pause(pauseDuration);
 
         // read config back out & check for correctness
-        const configCheck: AssessmentWidgetBlockConfig = await callZomeBob(
+        const configCheck: AssessmentWidgetBlockConfig[] = await callZomeBob(
           "widgets",
           "get_assessment_widget_tray_config",
           { resourceDefEh: dummyEntryHash }
         );
-        t.deepEqual(configCheck, testWidgetConfig1, "widget config retrievable by other agent");
+        t.deepEqual(configCheck, [testWidgetConfig1, testWidgetConfig2], "tray config retrievable by other agent");
       } catch (e) {
         console.error(e);
         t.ok(null);
