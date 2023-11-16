@@ -6,7 +6,7 @@ import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 
-import { NHButton, NHComponent, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHComponent, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
@@ -19,6 +19,8 @@ export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
+  @query('nh-button')
+  _openDialogButton;
   @query('dimension-list')
   _list;
   @query('create-dimension')
@@ -61,8 +63,18 @@ export default class NHGlobalConfig extends NHComponent {
           >
           </nh-button>
         </nh-page-header-card>
-        ${this.renderMainForm()}
         <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
+        <nh-dialog
+          id="create-dimension-dialog"
+          dialogType="create-neighbourhood"
+          title="Create Neighbourhood"
+          .handleOk=${() => {debugger;}}
+          openButtonRef=${this._openDialogButton}
+          .primaryButtonDisabled=${false}
+          .isOpen=${false}
+        >
+          ${this.renderMainForm()}
+        </nh-dialog>
       </main>
     `;
   }
@@ -76,6 +88,7 @@ export default class NHGlobalConfig extends NHComponent {
 
   static elementDefinitions = {
     'nh-button': NHButton,
+    'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
     'create-dimension': CreateDimension,
     'create-method': CreateMethod,
@@ -128,7 +141,13 @@ export default class NHGlobalConfig extends NHComponent {
 
   static get styles() {
     return css`
+      :host {
+        display: flex;
+        width: 100% 
+      }
+      
       main {
+        width: 100%;
         display: grid;
         flex: 1;
         place-content: start;
@@ -138,12 +157,12 @@ export default class NHGlobalConfig extends NHComponent {
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
       }
+
       nh-page-header-card {
-        grid-column: 1/-1;
-        grid-row: 1/2;
+        grid-column: 1 / -1;
       }
       dimension-list {
-        grid-column: -2/-1;
+        grid-column: 1 / -1;
         grid-row: 2/-1;
         display: flex;
         align-items: start;
