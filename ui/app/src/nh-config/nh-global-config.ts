@@ -19,8 +19,8 @@ export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  @query('nh-button')
-  _openDialogButton;
+  @query('nh-dialog')
+  _dialog;
   @query('dimension-list')
   _list;
   @query('create-dimension')
@@ -63,17 +63,36 @@ export default class NHGlobalConfig extends NHComponent {
           >
           </nh-button>
         </nh-page-header-card>
-        <dimension-list .sensemakerStore=${this._sensemakerStore.value}></dimension-list>
+        <dimension-list .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'input'}></dimension-list>
+        <nh-button
+          id="add-dimension"
+          .variant=${"primary"}
+          .size=${"md"}
+          @click=${() => {this._formType = "input-dimension";this._dialog.showDialog()} }
+        >
+          Add Dimension
+        </nh-button>
+        <dimension-list .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'output'}></dimension-list>
+        <nh-button
+          id="add-dimension"
+          .variant=${"primary"}
+          .size=${"md"}
+          @click=${() => {this._formType = "method"; this._dialog.showDialog()} }
+        >
+          Add Dimension
+        </nh-button>
         <nh-dialog
           id="create-dimension-dialog"
-          dialogType="create-neighbourhood"
-          title="Create Neighbourhood"
-          .handleOk=${() => {debugger;}}
-          openButtonRef=${this._openDialogButton}
+          .dialogType=${'widget-config'}
+          .title="Add Dimension"
+          .handleOk=${() => {}}
+          .openButtonRef=${null}
           .primaryButtonDisabled=${false}
           .isOpen=${false}
         >
+          <div slot="inner-content">
           ${this.renderMainForm()}
+          </div>
         </nh-dialog>
       </main>
     `;
@@ -153,7 +172,7 @@ export default class NHGlobalConfig extends NHComponent {
         place-content: start;
         color: var(--nh-theme-fg-default);
         grid-template-columns: 2fr 1fr;
-        grid-template-rows: 4rem 1fr 1fr;
+        grid-template-rows: 4rem auto;
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
       }
@@ -163,7 +182,6 @@ export default class NHGlobalConfig extends NHComponent {
       }
       dimension-list {
         grid-column: 1 / -1;
-        grid-row: 2/-1;
         display: flex;
         align-items: start;
       }
