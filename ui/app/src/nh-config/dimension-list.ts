@@ -4,14 +4,21 @@ import {keyed} from 'lit/directives/keyed.js';
 
 import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
-import { Dimension,  Range, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension,  Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
 
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import MethodListForDimension from "./method-list";
 import { StoreSubscriber } from "lit-svelte-stores";
-import { generateHashHTML } from "../elements/components/helpers/functions";
+import { capitalize, generateHashHTML } from "../elements/components/helpers/functions";
 import { classMap } from "lit/directives/class-map.js";
 import { FieldDefinition, FieldDefinitions, Table, TableStore } from "@adaburrows/table-web-component";
+
+type DimensionTableRecord = {
+  ['dimension-name']: string,
+  ['range-type']: string,
+  ['range-min']: number,
+  ['range-max']: number,
+}
 
 export default class DimensionList extends NHComponent {  
   @property()
@@ -19,6 +26,12 @@ export default class DimensionList extends NHComponent {
 
   @property()
   dimensionSelected: boolean = false;
+
+  @property()
+  dimensionType: "input" | "output" = "input";
+
+  @state()
+  tableStore!: TableStore<DimensionTableRecord>;
 
   @state()
   private _dimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
@@ -150,22 +163,32 @@ export default class DimensionList extends NHComponent {
     if(_changedProperties.has('methodInputDimensions') && !!_changedProperties.get('methodInputDimensions')) {
       this.filteredMethodInputDimensions = this.methodInputDimensions.filter(dimension => dimension?.methodEh);
     }
+
     if(_changedProperties.has('_dimensionEntries') || _changedProperties.has('_rangeEntries')) {
       if(typeof this._rangeEntries == 'undefined') return;
       
-      const tableRecords = this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
-      .reverse()
-      .map((dimension: Dimension & { dimension_eh: EntryHash; }, dimensionIndex: number) => {
-        const range = this._rangeEntries
-        .find((range: Range & { range_eh: EntryHash; }) =>
-          encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
+      try {
+        const tableRecords = this._dimensionEntries.filter((dimension: Dimension) => this.dimensionType == 'input' ? !dimension.computed : dimension.computed)
+          .reverse()
+          .map((dimension: Dimension & { dimension_eh: EntryHash; }, dimensionIndex: number) => {
+            const range = this._rangeEntries
+            .find((range: Range & { range_eh: EntryHash; }) =>
+              encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
 
-        return {
-          name: dimension.name,
-          range_type: range?.kind
-        }
-      })
-      console.log('this._dimensionEntries tableRecords:>> ', tableRecords);
+            const [[rangeType, rangeValues]] : any = Object.entries(range?.kind as RangeKind);
+            if(!rangeType || typeof rangeValues !== 'object') throw Error('Error formulating ranges for table record');
+            return {
+              ['dimension-name']: dimension.name,
+              ['range-type']: rangeType,
+              ['range-min']: rangeValues?.min,
+              ['range-max']: rangeValues?.max,
+            }
+          });
+        this.tableStore.records = tableRecords;
+        console.log('this._dimensionEntries tableRecords:>> ', tableRecords);
+      } catch (error) {
+        console.log('Error mapping dimensions and ranges to table values: ', error)
+      }
     }
   }
 
@@ -193,19 +216,14 @@ export default class DimensionList extends NHComponent {
     this._selectedInputDimensionIndex = 0;
   }
 
-  @property({ type: Object })
-  tableStore!: TableStore<Dimension>;
-
   async connectedCallback() {
     super.connectedCallback();
-    /**
-     * This is a simple example for a truth table of two bits
-     */
-    const fieldDefs: FieldDefinitions<Dimension> = {
-      'dimension-name': new FieldDefinition<Dimension>({heading: 'Name'}),
-      'range-type': new FieldDefinition<Dimension>({heading: 'Type'}),
-      'range-min': new FieldDefinition<Dimension>({heading: 'Min'}),
-      'range-max': new FieldDefinition<Dimension>({heading: 'Max'}),
+    
+    const fieldDefs: FieldDefinitions<DimensionTableRecord> = {
+      'dimension-name': new FieldDefinition<DimensionTableRecord>({heading: 'Name'}),
+      'range-type': new FieldDefinition<DimensionTableRecord>({heading: 'Type'}),
+      'range-min': new FieldDefinition<DimensionTableRecord>({heading: 'Min'}),
+      'range-max': new FieldDefinition<DimensionTableRecord>({heading: 'Max'}),
     }
     //@ts-ignore
     this.tableStore = new TableStore({
@@ -218,45 +236,42 @@ export default class DimensionList extends NHComponent {
   
   render() {
     return html`
-      <nh-card .theme=${"light"} .title=${"Existing Input Dimensions"} .textSize=${"sm"}>
-        <div class="content">
-
+      <div class="content">
+        <h1>${capitalize(this.dimensionType)} Dimensions</h1>
         <wc-table .tableStore=${this.tableStore}></wc-table>
-          ${ this.renderInputDimensions() }
-        </div>
-      </nh-card>
+      </div>
     `;
   }
 
-  private renderInputDimensions(): TemplateResult {
-    return typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
-      ? html`No dimensions available`
-      : html`<div style="display:flex; flex-direction: column; gap: 8px;">
-        ${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
-          .reverse()
-          .map((dimension: Dimension & { dimension_eh: EntryHash; }, dimensionIndex: number) => {
-            return keyed(encodeHashToBase64(dimension.dimension_eh), html`
-              <nh-card 
-                class="nested-card ${classMap({
-                    selected: this._selectedInputDimensionIndex == dimensionIndex,
-                  })}" .theme=${"dark"}
-                .heading=${dimension.name}
-                .textSize=${"sm"}
-              >
-                <h1>Range: </h1>
-                ${this._rangeEntries?.length
-                  ? this.renderRangeDetails(this._rangeEntries
-                    .find((range: Range & { range_eh: EntryHash; }) =>
-                      encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh))) 
-                  : null}
+  // private renderInputDimensions(): TemplateResult {
+  //   return typeof this._dimensionEntries == 'undefined' || this._dimensionEntries.length == 0
+  //     ? html`No dimensions available`
+  //     : html`<div style="display:flex; flex-direction: column; gap: 8px;">
+  //       ${this._dimensionEntries.filter((dimension: Dimension) => !dimension.computed)
+  //         .reverse()
+  //         .map((dimension: Dimension & { dimension_eh: EntryHash; }, dimensionIndex: number) => {
+  //           return keyed(encodeHashToBase64(dimension.dimension_eh), html`
+  //             <nh-card 
+  //               class="nested-card ${classMap({
+  //                   selected: this._selectedInputDimensionIndex == dimensionIndex,
+  //                 })}" .theme=${"dark"}
+  //               .heading=${dimension.name}
+  //               .textSize=${"sm"}
+  //             >
+  //               <h1>Range: </h1>
+  //               ${this._rangeEntries?.length
+  //                 ? this.renderRangeDetails(this._rangeEntries
+  //                   .find((range: Range & { range_eh: EntryHash; }) =>
+  //                     encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh))) 
+  //                 : null}
 
-                ${this.renderMethodList(dimension, dimensionIndex)}
-              </nh-card>`);
-          }
-          )
-        }
-      </div>`;
-  }
+  //               ${this.renderMethodList(dimension, dimensionIndex)}
+  //             </nh-card>`);
+  //         }
+  //         )
+  //       }
+  //     </div>`;
+  // }
 
   private renderRangeDetails(range: Range & { range_eh: EntryHash } | undefined) : TemplateResult {
     if(typeof range == "undefined") return html``;
@@ -304,6 +319,10 @@ export default class DimensionList extends NHComponent {
         flex: 1;
         justify-content: center;
         align-items: center;
+      }
+
+      .content{
+        width: 100%;
       }
 
       h2 {
