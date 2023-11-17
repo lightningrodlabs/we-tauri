@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "TRYORAMA_LOG_LEVEL=debug RUST_BACKTRACE=1 RUST_LOG=holochain::core::ribosome::host_fn::debug=debug TRYORAMA_HOLOCHAIN_PATH=\"holochain\" node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts"
+    "test:debug": "TRYORAMA_LOG_LEVEL=debug RUST_BACKTRACE=1 RUST_LOG=holochain::core::ribosome::host_fn::debug=debug TRYORAMA_HOLOCHAIN_PATH=\"holochain\" node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts",
+    "test": "TRYORAMA_LOG_LEVEL=info TRYORAMA_HOLOCHAIN_PATH=\"holochain\" node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts | tap-diff"
   },
   "author": "",
   "license": "CAL-1.0",
@@ -20,10 +21,12 @@
     "uuidv4": "^6.2.11"
   },
   "devDependencies": {
+    "@detools/tap-diff": "^0.2.2",
     "@holochain/client": "0.12.0",
-    "@holochain/tryorama": "0.11.0",
+    "@holochain/tryorama": "0.11.2",
     "@types/lodash": "^4.14.158",
     "@types/node": "^14.0.14",
+    "@types/tape": "^4.13.4",
     "tape-promise": "^4.0.0",
     "@neighbourhoods/client": "file:../client"
   },
