@@ -93,10 +93,10 @@ export class SensemakerService {
     return this.callZome('register_applet', appletConfig);
   }
 
-  private callZome(fn_name: string, payload: any) {
+  private callZome(fn_name: string, payload: any, zomeName = this.zomeName) {
     const req: AppAgentCallZomeRequest = {
       role_name: this.roleName,
-      zome_name: this.zomeName,
+      zome_name: zomeName,
       fn_name,
       payload
     }
