@@ -2,8 +2,10 @@ import { AppEntryDef, EntryHash } from "@holochain/client";
 import { ConfigDimension, Dimension } from "./dimension";
 
 interface CoreResourceDef {
-    name: string,
+    resource_name: string,
     base_types: Array<AppEntryDef>,
+    role_name: string,
+    zome_name: string,
 }
 export type ResourceDef = CoreResourceDef & {
     dimension_ehs: Array<EntryHash>,
