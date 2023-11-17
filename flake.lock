@@ -182,11 +182,7 @@
         "flake-compat": "flake-compat_2",
         "flake-parts": "flake-parts",
         "holochain": "holochain",
-        "lair": [
-          "holochain-dev",
-          "versions",
-          "lair"
-        ],
+        "lair": "lair",
         "launcher": [
           "holochain-dev",
           "versions",
@@ -220,21 +216,38 @@
     "holochain_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1692965835,
-        "narHash": "sha256-tylLGAliWQnnYjTdjTN8N7xxlcHgso085wkQ8NgmOpI=",
+        "lastModified": 1697824272,
+        "narHash": "sha256-4hkleGaiYeeUw2/rk/OSY1/eHejUstbvAhYmebq7eVQ=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "6d424d347d5296bc8e92ff5233f5a6ed22ed736f",
+        "rev": "4e3eacc8473d9bef0467b3465f20c6f63eed636b",
         "type": "github"
       },
       "original": {
         "owner": "holochain",
-        "ref": "holochain-0.1.6",
+        "ref": "holochain-0.1.7",
         "repo": "holochain",
         "type": "github"
       }
     },
     "lair": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1670953460,
+        "narHash": "sha256-cqOr7iWzsNeomYQiiFggzG5Dr4X0ysnTkjtA8iwDLAQ=",
+        "owner": "holochain",
+        "repo": "lair",
+        "rev": "cbfbefefe43073904a914c8181a450209a74167b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "holochain",
+        "ref": "lair_keystore-v0.2.3",
+        "repo": "lair",
+        "type": "github"
+      }
+    },
+    "lair_2": {
       "flake": false,
       "locked": {
         "lastModified": 1691746070,
@@ -425,17 +438,17 @@
     "versions": {
       "inputs": {
         "holochain": "holochain_2",
-        "lair": "lair",
+        "lair": "lair_2",
         "launcher": "launcher",
         "scaffolding": "scaffolding"
       },
       "locked": {
         "dir": "versions/0_1",
-        "lastModified": 1699251646,
-        "narHash": "sha256-qexvfp2qfcpLfM/UCPLVTZyFgqZCyXkV0O2U4QVI0E8=",
+        "lastModified": 1700250541,
+        "narHash": "sha256-cj2YB/JGOJEEqCsMUpGVQKE9bf4ovuvJcYF2LFrCv9s=",
         "owner": "holochain",
         "repo": "holochain",
-        "rev": "791672c1e0652b2b651a5bfc4c68a6281532a92d",
+        "rev": "2e873f9b131dc7591090abcc596dd59f53817c48",
         "type": "github"
       },
       "original": {
