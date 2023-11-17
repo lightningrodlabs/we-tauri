@@ -95,7 +95,7 @@ pub fn create_entries_from_applet_config(
             let mut resource_def_map = BTreeMap::new();
             for config_resource_def in config_resource_defs {
                 resource_def_map.insert(
-                    config_resource_def.name.clone(),
+                    config_resource_def.resource_name.clone(),
                     entry_hash_from_record(create_resource_def(ResourceDef::try_from(config_resource_def)?)?)?,
                 );
             }

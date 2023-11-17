@@ -98,9 +98,11 @@ pub type HappZomeMap<T> = BTreeMap<String, BTreeMap<String, T>>; // role name > 
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigResourceDef {
-    pub name: String,
+    pub resource_name: String,
     pub base_types: Vec<AppEntryDef>,
     pub dimensions: Vec<ConfigDimension>,
+    pub role_name: String,
+    pub zome_name: String,
 }
 
 impl ConfigResourceDef {
@@ -116,7 +118,7 @@ impl ConfigResourceDef {
         {
             let error = format!(
                 "resource type name {} has one or more dimensions not found in root dimensions",
-                self.name
+                self.resource_name
             );
             return Err(wasm_error!(WasmErrorInner::Guest(error)));
         }
