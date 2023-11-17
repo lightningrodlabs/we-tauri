@@ -127,8 +127,17 @@ export class GroupStore {
 
     if (!applet) throw new Error("Given applet instance hash was not found");
 
-    await this.groupClient.registerApplet(applet);
     await this.weStore.installApplet(appletHash, applet);
+    try {
+      await this.groupClient.registerApplet(applet);
+    } catch (e) {
+      console.error(`Failed to register applet in group dna after installation: ${e}\nUninstalling again.`);
+      try {
+        await this.weStore.uninstallApplet(appletHash);
+      } catch (err) {
+        console.error(`Failed to uninstall applet after registration of applet in group dna failed: ${err}`);
+      }
+    }
   }
 
   /**
