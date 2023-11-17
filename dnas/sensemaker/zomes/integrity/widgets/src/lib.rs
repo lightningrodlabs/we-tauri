@@ -3,7 +3,7 @@ use sensemaker_integrity_structs::Properties;
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]
-pub struct DimensionWidgetBinding {
+pub struct DimensionStandaloneWidgetBinding {
     pub dimension_eh: EntryHash,
     // id of the widget CustomElement stored in companion zome
     pub widget_eh: EntryHash,
@@ -11,7 +11,7 @@ pub struct DimensionWidgetBinding {
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]
-pub struct DimensionAppletFeatureBinding {
+pub struct DimensionAppletWidgetBinding {
     pub dimension_eh: EntryHash,
     // id of the AppletConfig stored in companion zome
     pub applet_id: EntryHash,
@@ -24,8 +24,8 @@ pub struct DimensionAppletFeatureBinding {
 pub enum DimensionBinding {
     // For when components are separated out into their own DHT entry
     // (or sequence of DHT entries to allow extra large codebases to be stored).
-    StandaloneWidget(DimensionWidgetBinding),
-    AppletWidget(DimensionAppletFeatureBinding),
+    StandaloneWidget(DimensionStandaloneWidgetBinding),
+    AppletWidget(DimensionAppletWidgetBinding),
 }
 
 #[hdk_entry_helper]
