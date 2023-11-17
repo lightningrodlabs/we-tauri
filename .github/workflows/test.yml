@@ -36,4 +36,4 @@ jobs:
       - name: run-tests
         run: |
           cd $GITHUB_WORKSPACE
-          nix develop --command bash -c "npm ci && npm run test"
+          nix develop --command bash -c "pnpm i && pnpm test"
