@@ -7,6 +7,7 @@ use tauri::AppHandle;
 use crate::{
     config::WeConfig,
     error::WeResult,
+    error::WeError,
     filesystem::{breaking_app_version, UiIdentifier, WeFileSystem},
 };
 
@@ -62,13 +63,21 @@ pub async fn install_default_apps_if_necessary(
             .await?;
         admin_ws.enable_app(appstore_app_id(app_handle)).await?;
 
-        we_fs
+        match we_fs
             .ui_store()
             .extract_and_store_ui(
                 UiIdentifier::Other(appstore_app_id(app_handle)),
                 &appstore_hub_bundle,
             )
-            .await?;
+            .await {
+            Ok(()) => (),
+            Err(e) => {
+                log::error!("ERROR: Failed to store appstore UI: {}", e);
+                log::error!("Uninstalling appstore app again.");
+                admin_ws.uninstall_app(appstore_app_id(app_handle)).await?;
+                return Err(WeError::CustomError(format!("Failed to store appstore UI. Uninstalled appstore again.")));
+            }
+        };
     }
 
     Ok(())
