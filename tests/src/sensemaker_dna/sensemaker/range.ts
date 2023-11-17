@@ -1,12 +1,13 @@
 
 import { DnaSource, Record, ActionHash, AppBundleSource, AppEntryDef, EntryHash } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
+import { EntryRecord } from "@holochain-open-dev/utils";
 import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
 const { test } = pkg;
 
 import { sensemakerDna } from "../../utils";
-import { setUpAliceandBob } from "./neighbourhood";
+import { setUpAliceandBob } from "../../utils";
 
 const app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () => test("range CRUD tests", async (t) => {
@@ -58,20 +59,22 @@ export default () => test("range CRUD tests", async (t) => {
       };
 
       // Alice creates a range
-      const tenScaleRangeEntryHash: EntryHash = await callZomeAlice(
+      const tenScaleRangeRecord: Record = await callZomeAlice(
         "sensemaker",
         "create_range",
         tenScaleRange,
         true
       );
+      const tenScaleRangeEntryHash = new EntryRecord<Range>(tenScaleRangeRecord).entryHash;
       t.ok(tenScaleRangeEntryHash);
 
-      const twentyScaleRangeEntryHash: EntryHash = await callZomeAlice(
+      const twentyScaleRangeRecord: Record = await callZomeAlice(
         "sensemaker",
         "create_range",
         twentyScaleRange,
         true
       );
+      const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
       t.ok(twentyScaleRangeEntryHash);
 
       // Wait for the created entry to be propagated to the other node.

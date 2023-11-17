@@ -11,8 +11,8 @@ import { decode } from "@msgpack/msgpack";
 import { AppletConfig, AppletConfigInput, Assessment, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
-import { installAgent, sampleAppletConfig } from "../../utils";
-import { setUpAliceandBob } from "./neighbourhood";
+import { installAgent, sampleAppletConfig, setUpAliceandBob } from "../../utils";
+import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
 
 interface TestPost {
@@ -138,12 +138,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP1AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP1AssessmentRecord = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP1Assessment,
           true
         );
+        const createP1AssessmentEntryHash = new EntryRecord<Assessment>(createP1AssessmentRecord).entryHash;
         t.ok(createP1AssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -158,12 +159,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP1AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP1AssessmentRecord2 = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP1Assessment2,
           true
         );
+        const createP1AssessmentEntryHash2 = new EntryRecord<Assessment>(createP1AssessmentRecord2).entryHash;
         t.ok(createP1AssessmentEntryHash2);
 
         const createP2Assessment: CreateAssessmentInput = {
@@ -174,12 +176,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP2AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP2AssessmentRecord = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP2Assessment,
           true
         );
+        const createP2AssessmentEntryHash = new EntryRecord<Assessment>(createP2AssessmentRecord).entryHash;
         t.ok(createP2AssessmentEntryHash);
 
         // create an assessment on the Post
@@ -191,12 +194,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP2AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP2AssessmentRecord2 = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP2Assessment2,
           true
         );
+        const createP2AssessmentEntryHash2 = new EntryRecord<Assessment>(createP2AssessmentRecord2).entryHash;
         t.ok(createP2AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -211,12 +215,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP3AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP3AssessmentRecord = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP3Assessment,
           true
         );
+        const createP3AssessmentEntryHash = new EntryRecord<Assessment>(createP3AssessmentRecord).entryHash;
         t.ok(createP3AssessmentEntryHash);
 
         const createP3Assessment2: CreateAssessmentInput = {
@@ -227,12 +232,13 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP3AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP3AssessmentRecord2 = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP3Assessment2,
           true
         );
+        const createP3AssessmentEntryHash2 = new EntryRecord<Assessment>(createP3AssessmentRecord2).entryHash;
         t.ok(createP3AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.

@@ -1,10 +1,11 @@
-import { AppEntryDef, EntryHash } from "@holochain/client";
+import { Action, AppEntryDef, Create, EntryHash, Record } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
 import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/client";
 import pkg from "tape-promise/tape";
 
-import { setUpAliceandBob } from "./neighbourhood";
+import { setUpAliceandBob } from "../../utils";
+import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
 
 const app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
@@ -50,12 +51,13 @@ export default () =>
                     },
                 };
 
-                const rangeHash: EntryHash = await callZomeAlice(
+                const rangeRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_range",
                     integerRange,
                     true
                 );
+                const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
 
                 t.ok(rangeHash);
 
@@ -72,12 +74,13 @@ export default () =>
                     computed: false,
                 }
 
-                const dimensionHash: EntryHash = await callZomeAlice(
+                const dimensionRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
                     dimension,
                     true
                 );
+                const dimensionHash = new EntryRecord<Dimension>(dimensionRecord).entryHash;
                 t.ok(dimensionHash);
                 console.log('dimension hash', dimensionHash)
 
@@ -88,13 +91,13 @@ export default () =>
                     },
                 };
 
-                const rangeHash2: EntryHash = await callZomeAlice(
+                const rangeRecord2: Record = await callZomeAlice(
                     "sensemaker",
                     "create_range",
                     integerRange2,
                     true
                 );
-                t.ok(rangeHash2);
+                const rangeHash2 = new EntryRecord<Range>(rangeRecord2).entryHash;
 
                 const objectiveDimension: Dimension = {
                     name: "total_importance",
@@ -108,12 +111,13 @@ export default () =>
                     computed: true,
                 }
 
-                const objectiveDimensionHash: EntryHash = await callZomeAlice(
+                const objectiveDimensionRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_dimension",
                     objectiveDimension,
                     true
                 );
+                const objectiveDimensionHash = new EntryRecord<Dimension>(objectiveDimensionRecord).entryHash;
                 t.ok(objectiveDimensionHash);
 
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
@@ -133,12 +137,13 @@ export default () =>
                     dimensions: [configDimension]
                 }
 
-                const resourceDefEh: EntryHash = await callZomeAlice(
+                const resourceDefRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_resource_def",
                     resourceDef,
                     true
                 );
+                const resourceDefEh = new EntryRecord<ConfigResourceDef>(resourceDefRecord).entryHash;
                 t.ok(resourceDefEh);
 
                 const methodName = "total_importance_method"
@@ -160,12 +165,13 @@ export default () =>
                     requires_validation: totalImportanceMethod.requires_validation,
                 }
 
-                const methodEh: EntryHash = await callZomeAlice(
+                const methodRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_method",
                     totalImportanceMethod,
                     true
                 );
+                const methodEh = new EntryRecord<Method>(methodRecord).entryHash;
                 t.ok(methodEh);
                 const threshold: Threshold = {
                     dimension_eh: objectiveDimensionHash,
@@ -193,12 +199,13 @@ export default () =>
                     order_by: [[configObjectiveDimension, { Biggest: null }]], // DimensionEh
                 }
 
-                const contextEh: EntryHash = await callZomeAlice(
+                const contextRecord: Record = await callZomeAlice(
                     "sensemaker",
                     "create_cultural_context",
                     culturalContext,
                     true
                 );
+                const contextEh = new EntryRecord<CulturalContext>(contextRecord).entryHash;
                 t.ok(contextEh);
 
                 // create a config type

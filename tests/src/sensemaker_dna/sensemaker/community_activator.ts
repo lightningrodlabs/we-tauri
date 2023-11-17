@@ -4,6 +4,7 @@ import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
 import { installAgent } from "../../utils";
 import { setUpAliceandBob } from "./neighbourhood";
+import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
 
 export default () => test("test CA progenitor pattern", async (t) => {
@@ -63,12 +64,14 @@ export default () => test("test CA progenitor pattern", async (t) => {
             },
         };
 
-        const rangeHash = await callZomeAlice(
+        const rangeRecord = await callZomeAlice(
             "sensemaker",
             "create_range",
             integerRange,
             true
         );
+        
+        const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
         t.ok(rangeHash);
 
         const createDimension = {
@@ -78,12 +81,13 @@ export default () => test("test CA progenitor pattern", async (t) => {
         }
 
         // Alice creates a dimension
-        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+        const createDimensionRecord: Record = await callZomeAlice(
             "sensemaker",
             "create_dimension",
             createDimension,
             true
         )
+        const createDimensionEntryHash = new EntryRecord<Range>(createDimensionRecord).entryHash;
 
         // Bob creates a dimension but fails
         try {
@@ -111,12 +115,13 @@ export default () => test("test CA progenitor pattern", async (t) => {
         }
 
         // Alice creates a resource type
-        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefRecord: Record = await callZomeAlice(
             "sensemaker",
             "create_resource_def",
             createResourceDef,
             true
         );
+        const createResourceDefEntryHash = new EntryRecord<Range>(createResourceDefRecord).entryHash;
 
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
@@ -152,12 +157,13 @@ export default () => test("test CA progenitor pattern", async (t) => {
             "requires_validation": false,
         }
 
-        const createMethodEntryHash: EntryHash = await callZomeAlice(
+        const createMethodRecord: Record = await callZomeAlice(
             "sensemaker",
             "create_method",
             totalLikenessMethod,
             true
         )
+        const createMethodEntryHash = new EntryRecord<Range>(createMethodRecord).entryHash;
 
         // bob creates a method but fails
         try {
