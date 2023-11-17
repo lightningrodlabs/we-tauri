@@ -39,11 +39,13 @@ export class SelectGroupDialog extends LitElement {
 
   show() {
     this._selectedGroupDnaHash = undefined;
+    this._groupSelector.value = '';
     this._dialog.show();
   }
 
   hide() {
     this._selectedGroupDnaHash = undefined;
+    this._groupSelector.value = '';
     this._dialog.hide();
   }
 

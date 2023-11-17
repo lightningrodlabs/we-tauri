@@ -35,7 +35,7 @@ export class EnterPassword extends LitElement {
       } else {
         notifyError((e as Error).toString());
       }
-      console.log(JSON.stringify(e));
+      console.error(JSON.stringify(e));
     }
     this._entering = false;
   }

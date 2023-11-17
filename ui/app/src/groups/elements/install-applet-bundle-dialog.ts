@@ -19,6 +19,7 @@ import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/alert/alert.js";
 import "@shoelace-style/shoelace/dist/components/spinner/spinner.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import SlInput from "@shoelace-style/shoelace/dist/components/input/input.js";
 
 import { groupStoreContext } from "../context.js";
 import { weStyles } from "../../shared-styles.js";
@@ -92,7 +93,7 @@ export class InstallAppletBundleDialog extends LitElement {
     setTimeout(() => {
       this.form.reset();
       this._appletDialog.show();
-    });
+    }, 200);
   }
 
   close() {
@@ -207,11 +208,13 @@ export class InstallAppletBundleDialog extends LitElement {
             @input=${(e) => {
               if (allAppletsNames.includes(e.target.value)) {
                 e.target.setCustomValidity("Name already exists");
+              } else if (e.target.value === '') {
+                e.target.setCustomValidity("You need to choose a name for the Applet.");
               } else {
                 e.target.setCustomValidity("");
               }
             }}
-            .defaultValue=${this._appletInfo!.content.title}
+            .defaultValue=${this._appletInfo.content.title}
           ></sl-input>
 
           <span
