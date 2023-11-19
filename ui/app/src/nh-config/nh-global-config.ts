@@ -39,6 +39,10 @@ export default class NHGlobalConfig extends NHComponent {
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
 
+  getDialogAlertMessage() {
+    return (this._dimensionForm && this._dimensionForm.touched && !this._dimensionForm.valid) ? "Some of your fields need to be updated:" : ""
+  }
+
   resetConfig() {
     this._formType = "input-dimension"
     this._list.dimensionSelected = false;
@@ -83,13 +87,18 @@ export default class NHGlobalConfig extends NHComponent {
         </nh-button>
         <nh-dialog
           id="create-dimension-dialog"
-          .dialogType=${'widget-config'}
-          .title="Add Dimension"
-          .handleOk=${() => {}}
-          .openButtonRef=${null}
+          .dialogType=${"create-dimension"}
+          .title=${"Add " + (this._formType == "input-dimension" ? "Input" : "Output") + " Dimension"}
+          .size=${"medium"}
+          .alertType=${this?._dimensionForm?.valid ? null: "warning"}
+          .alertMessage=${this.getDialogAlertMessage()}
+          .handleOk=${() => { this._dimensionForm.submitBtn.click() }}
           .primaryButtonDisabled=${false}
-          .isOpen=${false}
-        >
+          .isOpen=${true}
+          .handleClose=${(e: any) => { if(!this._dimensionForm.valid) {
+            e?.target?.show()
+          }}}
+        >           
           <div slot="inner-content">
           ${this.renderMainForm()}
           </div>

@@ -22,6 +22,11 @@ export default class CreateDimension extends NHComponentShoelace {
   @property()
   dimensionType!: "input" | "output";
   
+  @state()
+  valid: boolean = false;
+  @state()
+  touched: boolean = false;
+  
   @contextProvided({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
@@ -106,6 +111,8 @@ export default class CreateDimension extends NHComponentShoelace {
     }} as (RangeKindInteger | RangeKindFloat) };
     this._useGlobalMin = false;
     this._useGlobalMax = false;
+    this.valid = false;
+    this.touched = false;
     
     (this.renderRoot.querySelectorAll('sl-input') as any)?.forEach(input => {
       input.value = '';
@@ -118,7 +125,6 @@ export default class CreateDimension extends NHComponentShoelace {
     })
 
     this.submitBtn.loading = false;
-    // console.log('this._dimensionRange :>> ', this._dimension, this._dimensionRange);
     await this.updateComplete
   }
 
@@ -190,6 +196,7 @@ export default class CreateDimension extends NHComponentShoelace {
         if(validRange) {
           this._dimensionSchema.validate(this._dimension)
           .then(async _ => {
+            this.valid = true;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
             const rangeEh = await this.createRange();
             if(!rangeEh) return
@@ -232,6 +239,7 @@ export default class CreateDimension extends NHComponentShoelace {
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
+    if(!this.touched) this.touched = true;
 
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
@@ -319,7 +327,7 @@ export default class CreateDimension extends NHComponentShoelace {
 
   render() {
     return html`
-      <nh-card .theme=${"dark"} .title=${"Create an " + this.dimensionType + " Dimension"} .textSize=${"md"}>
+      <nh-card .theme=${"dark"} .textSize=${"md"}>
         <form>
             <div class="field">
               <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
@@ -357,6 +365,7 @@ export default class CreateDimension extends NHComponentShoelace {
         </form>
         <slot name="submit-action" slot="footer">
           <nh-button
+            style="visibility:hidden; opacity: 0"
             .size=${"auto"}
             .variant=${"primary"}
             @click=${() => this.onSubmit()}
