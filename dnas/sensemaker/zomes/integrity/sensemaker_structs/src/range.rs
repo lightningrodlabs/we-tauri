@@ -13,7 +13,7 @@ pub struct Range {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RangeKind {
     Integer { min: u32, max: u32 },
-    Float { min: f32, max: f32 },
+    Float { min: f64, max: f64 },
     // Tag(Vec<String>),
     // Emoji(Vec<char>),
     // TagTree(HashMap<String, String>)
@@ -22,7 +22,7 @@ pub enum RangeKind {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum RangeValue {
     Integer(u32),
-    Float(f32),
+    Float(f64),
     // Tag(String),
     // Emoji(char),
     // TagTree((String, String))

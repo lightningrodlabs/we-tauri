@@ -79,7 +79,7 @@ fn compute_objective_assessment(
             let mut is_int: bool = true;
             let flat_assessments = flatten_btree_map(assessments);
             let mut sum: u32 = 0;
-            let mut sum_float: f32 = 0.0;
+            let mut sum_float: f64 = 0.0;
             for assessment in flat_assessments {
                 match assessment.value {
                     RangeValue::Integer(value) => {
@@ -112,7 +112,7 @@ fn compute_objective_assessment(
             let mut is_int: bool = true;
             let flat_assessments = flatten_btree_map(assessments);
             let mut sum: u32 = 0;
-            let mut sum_float: f32 = 0.0;
+            let mut sum_float: f64 = 0.0;
 
             for assessment in flat_assessments.clone() {
                 match assessment.value {
@@ -130,7 +130,7 @@ fn compute_objective_assessment(
                 assessment_value = RangeValue::Integer(average);
             }
             else {
-                let average = sum_float / flat_assessments.len() as f32;
+                let average = sum_float / flat_assessments.len() as f64;
                 assessment_value = RangeValue::Float(average);
             }
             let assessment = CreateAssessmentInput {
