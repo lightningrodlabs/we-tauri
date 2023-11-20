@@ -5,24 +5,21 @@ import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
 import { get } from "svelte/store";
+import { EntryRecord, HoloHashMap } from '@holochain-open-dev/utils';
 
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
 }
 
 export class SensemakerStore {
-  // store any value here that would benefit from being a store
-  // like cultural context entry hash and then the context result vec
-
-  _appletConfigs: Writable<{ [appletName: string]: AppletConfig}> = writable({});
   _contextResults: Writable<ContextResults> = writable({});
 
-  // TODO: update the structure of this store to include dimension and resource type
-  /*
-  {
-    [resourceEh: string]: Array<Assessment>
-  }
-  */
+  _ranges: Writable<HoloHashMap<EntryHash, Range>> = writable(new HoloHashMap<EntryHash, Range>());
+  _dimensions: Writable<HoloHashMap<EntryHash, Dimension>> = writable(new HoloHashMap<EntryHash, Dimension>());
+  _methods: Writable<HoloHashMap<EntryHash, Method>> = writable(new HoloHashMap<EntryHash, Method>());
+  _resourceDefinitions: Writable<HoloHashMap<EntryHash, ResourceDef>> = writable(new HoloHashMap<EntryHash, ResourceDef>());
+  _contexts: Writable<Map<string, HoloHashMap<EntryHash, CulturalContext>>> = writable(new Map<string, HoloHashMap<EntryHash, CulturalContext>>());
+
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
   _widgetRegistry: Writable<WidgetRegistry> = writable({});
@@ -61,6 +58,11 @@ export class SensemakerStore {
     this.myAgentPubKey = this.service.myPubKey();
   }
 
+  primitives() {
+    return derived([this._ranges, this._dimensions, this._methods, this._resourceDefinitions, this._contexts], ([ranges, dimensions, methods, resourceDefinitions, contexts]) => {
+      return {ranges, dimensions, methods, resource_defs: resourceDefinitions, contexts};
+    })
+  }
   // if provided a list of resource ehs, filter the assessments to only those resources, and return that object, otherwise return the whole thing.
   resourceAssessments(resource_ehs?: Array<EntryHashB64>) {
     return derived(this._resourceAssessments, resourceAssessments => {
@@ -76,23 +78,6 @@ export class SensemakerStore {
       else {
         return resourceAssessments;
       }
-    })
-  }
-
-  appletConfigs() {
-    return derived(this._appletConfigs, appletConfigs => appletConfigs)
-  }
-  
-  flattenedAppletConfigs() {
-    return derived(this._appletConfigs, appletConfigs => {
-      const flattenedAppletConfigs = Object.values(appletConfigs).reduce((flattenedAppletConfigs, appletConfig) => {
-        flattenedAppletConfigs.dimensions = {...flattenedAppletConfigs.dimensions, ...appletConfig.dimensions};
-        flattenedAppletConfigs.methods = {...flattenedAppletConfigs.methods, ...appletConfig.methods};
-        flattenedAppletConfigs.resource_defs = {...flattenedAppletConfigs.resource_defs, ...appletConfig.resource_defs};
-        flattenedAppletConfigs.cultural_contexts = {...flattenedAppletConfigs.cultural_contexts, ...appletConfig.cultural_contexts};
-        return flattenedAppletConfigs;
-      }, {dimensions: {}, methods: {}, resource_defs: {}, cultural_contexts: {}} as AppletConfig);
-      return flattenedAppletConfigs;
     })
   }
 
@@ -144,12 +129,29 @@ export class SensemakerStore {
   }
   
   async createRange(range: Range): Promise<EntryHash> {
-    const rangeEh = await this.service.createRange(range);
-    return rangeEh;
+    const rangeRecord = await this.service.createRange(range);
+    const entryRecord = new EntryRecord<Range>(rangeRecord);
+    this._ranges.update(ranges => {
+      ranges.set(entryRecord.entryHash, entryRecord.entry);
+      return ranges;
+    });
+    return entryRecord.entryHash;
   }
 
-  async getRange(rangeEh: EntryHash): Promise<HolochainRecord> {
-    return await this.service.getRange(rangeEh) 
+  async getRange(rangeEh: EntryHash): Promise<Range> {
+    const range = get(this._ranges).get(rangeEh);
+    if(range) {
+      return range;
+    }
+    else {
+      const rangeRecord = await this.service.getRange(rangeEh) 
+      const entryRecord = new EntryRecord<Range>(rangeRecord);
+      this._ranges.update(ranges => {
+        ranges.set(entryRecord.entryHash, entryRecord.entry);
+        return ranges;
+      });
+      return entryRecord.entry;
+    }
   }
 
   async getRanges(): Promise<Array<HolochainRecord>> {
@@ -158,16 +160,29 @@ export class SensemakerStore {
 
   // TODO: update applet config update to key by applet name
   async createDimension(dimension: Dimension): Promise<EntryHash> {
-    const dimensionEh = await this.service.createDimension(dimension);
-    // this._appletConfig.update(appletConfig => {
-    //   appletConfig.dimensions[dimension.name] = dimensionEh;
-    //   return appletConfig;
-    // });
-    return dimensionEh;
+    const dimensionRecord = await this.service.createDimension(dimension);
+    const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
+    this._dimensions.update(dimensions => {
+      dimensions.set(entryRecord.entryHash, entryRecord.entry);
+      return dimensions;
+    });
+    return entryRecord.entryHash;
   }
 
-  async getDimension(dimensionEh: EntryHash): Promise<HolochainRecord> {
-    return await this.service.getDimension(dimensionEh) 
+  async getDimension(dimensionEh: EntryHash): Promise<Dimension> {
+    const dimension = get(this._dimensions).get(dimensionEh);
+    if(dimension) {
+      return dimension;
+    }
+    else {
+      const dimensionRecord = await this.service.getDimension(dimensionEh) 
+      const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
+      this._dimensions.update(dimensions => {
+        dimensions.set(entryRecord.entryHash, entryRecord.entry);
+        return dimensions;
+      });
+      return entryRecord.entry;
+    }
   }
 
   async getDimensions(): Promise<Array<HolochainRecord>> {
@@ -175,31 +190,41 @@ export class SensemakerStore {
   }
 
   async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
-    const resourceDefEh = await this.service.createResourceDef(resourceDef);
-    // this._appletConfig.update(appletConfig => {
-    //   appletConfig.resource_defs[resourceDef.name] = resourceDefEh;
-    //   return appletConfig;
-    // });
-    return resourceDefEh;
+    const resourceDefRecord = await this.service.createResourceDef(resourceDef);
+    const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
+    this._resourceDefinitions.update(resourceDefs => {
+      resourceDefs.set(entryRecord.entryHash, entryRecord.entry);
+      return resourceDefs;
+    });
+    return entryRecord.entryHash;
   }
 
-  async getResourceDef(resourceDefEh: EntryHash): Promise<HolochainRecord> {
-    return await this.service.getResourceDef(resourceDefEh) 
+  async getResourceDef(resourceDefEh: EntryHash): Promise<ResourceDef> {
+    const resourceDef = get(this._resourceDefinitions).get(resourceDefEh);
+    if(resourceDef) {
+      return resourceDef;
+    }
+    else {
+      const resourceDefRecord = await this.service.getResourceDef(resourceDefEh) 
+      const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
+      this._resourceDefinitions.update(resourceDefs => {
+        resourceDefs.set(entryRecord.entryHash, entryRecord.entry);
+        return resourceDefs;
+      });
+      return entryRecord.entry;
+    }
   }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
-    const assessmentEh = await this.service.createAssessment(assessment);
+    const assessmentRecord = await this.service.createAssessment(assessment);
+    const entryRecord = new EntryRecord<Assessment>(assessmentRecord);
     this._resourceAssessments.update(resourceAssessments => {
       const maybePrevAssessments = resourceAssessments[encodeHashToBase64(assessment.resource_eh)];
       const prevAssessments = maybePrevAssessments ? maybePrevAssessments : [];
-      // TODO: here is an instance where returning the assessment instead of the hash would be useful
-      // NOTE: there will be a slight discrepancy between the assessment returned from the service and the one stored in the store
-      // because we are not returning the assessment, and so recreating the timestamp. This works enough for now, but would be worth it to change
-      // it such that the assessment itself is return.
-      resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, {...assessment, author: this.myAgentPubKey, timestamp: Date.now() * 1000}]
+      resourceAssessments[encodeHashToBase64(assessment.resource_eh)] = [...prevAssessments, entryRecord.entry]
       return resourceAssessments;
     })
-    return assessmentEh;
+    return entryRecord.entryHash;
   }
 
   async getAssessment(assessmentEh: EntryHash): Promise<HolochainRecord> {
@@ -217,16 +242,29 @@ export class SensemakerStore {
   }
   
   async createMethod(method: Method): Promise<EntryHash> {
-    const methodEh = await this.service.createMethod(method);
-    // this._appletConfig.update(appletConfig => {
-    //   appletConfig.methods[method.name] = methodEh;
-    //   return appletConfig;
-    // });
-    return methodEh;
+    const methodRecord = await this.service.createMethod(method);
+    const entryRecord = new EntryRecord<Method>(methodRecord);
+    this._methods.update((methods) => {
+      methods.set(entryRecord.entryHash, entryRecord.entry);
+      return methods;
+    });
+    return entryRecord.entryHash;
   }
 
-  async getMethod(methodEh: EntryHash): Promise<HolochainRecord> {
-    return await this.service.getMethod(methodEh) 
+  async getMethod(methodEh: EntryHash): Promise<Method> {
+    const method = get(this._methods).get(methodEh);
+    if (method) {
+      return method;
+    }
+    else {
+      const methodRecord = await this.service.getMethod(methodEh) 
+      const entryRecord = new EntryRecord<Method>(methodRecord);
+      this._methods.update((methods) => {
+        methods.set(entryRecord.entryHash, entryRecord.entry);
+        return methods;
+      });
+      return entryRecord.entry;
+    }
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
@@ -240,16 +278,25 @@ export class SensemakerStore {
     return assessment;
   }
 
-  async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
-    const contextEh = await this.service.createCulturalContext(culturalContext);
-    // this._appletConfig.update(appletConfig => {
-    //   appletConfig.cultural_contexts[culturalContext.name] = contextEh;
-    //   return appletConfig;
-    // });
-    return contextEh;
+  async createCulturalContext(culturalContext: CulturalContext, appletName: string): Promise<EntryHash> {
+    const contextRecord = await this.service.createCulturalContext(culturalContext);
+    const entryRecord = new EntryRecord<CulturalContext>(contextRecord);
+    this._contexts.update(contexts => {
+      const appletContexts = contexts.get(appletName);
+      if (appletContexts) {
+        appletContexts.set(entryRecord.entryHash, entryRecord.entry);
+        contexts.set(appletName, appletContexts);
+      }
+      else {
+        contexts.set(appletName, new HoloHashMap<EntryHash, CulturalContext>([[entryRecord.entryHash, entryRecord.entry]]));
+      }
+      return contexts;
+    }); 
+    return entryRecord.entryHash;
   }
 
   async getCulturalContext(culturalContextEh: EntryHash): Promise<HolochainRecord> {
+    // :TODO: if we want cultural contexts to be bound to applets, it should be part of the cultural context entry.
     return await this.service.getCulturalContext(culturalContextEh) 
   }
 
@@ -271,48 +318,68 @@ export class SensemakerStore {
     return true
   }
 
+  async updateAppletConfig(appletConfig: AppletConfig): Promise<AppletConfig> {
+    // update all the primitives in their respective store
+    for (const rangeEh of Object.values(appletConfig.ranges)) {
+      await this.getRange(rangeEh);
+    }
+    for (const dimensionEh of Object.values(appletConfig.dimensions)) {
+      await this.getDimension(dimensionEh);
+    }
+    for (const methodEh of Object.values(appletConfig.methods)) {
+      const method = await this.getMethod(methodEh);
+
+      // update the method dimension mapping
+      // NOTE: this will be removed when we have widget configurations implemented
+      this._methodDimensionMapping.update((methodDimensionMapping) => {
+        methodDimensionMapping[encodeHashToBase64(methodEh)] = {
+          inputDimensionEh: method.input_dimension_ehs[0],
+          outputDimensionEh: method.output_dimension_eh,
+        };
+        return methodDimensionMapping;
+      });
+    }
+    for (const resourceDefEh of Object.values(appletConfig.resource_defs)) {
+      await this.getResourceDef(resourceDefEh);
+      // initialize the active method to the first method for each resource def
+      this.updateActiveMethod(
+        encodeHashToBase64(resourceDefEh),
+        encodeHashToBase64(get(this._methods).keys[0])
+      );
+    }
+    for (const contextEh of Object.values(appletConfig.cultural_contexts)) {
+      const contextRecord = await this.getCulturalContext(contextEh);
+      const entryRecord = new EntryRecord<CulturalContext>(contextRecord);
+      this._contexts.update((contexts) => {
+        const appletContexts = contexts.get(appletConfig.name);
+        if (appletContexts) {
+          appletContexts.set(entryRecord.entryHash, entryRecord.entry);
+          contexts.set(appletConfig.name, appletContexts);
+        } else {
+          contexts.set(
+            appletConfig.name,
+            new HoloHashMap<EntryHash, CulturalContext>([
+              [entryRecord.entryHash, entryRecord.entry],
+            ])
+          );
+        }
+        return contexts;
+      });
+    }
+    return appletConfig;
+  }
+  
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
     if (maybeAppletConfig) {
-      this._appletConfigs.update((appletConfigs) => 
-        {
-          appletConfigs[appletName] = maybeAppletConfig;
-          return appletConfigs;
-        }
-      )
+      await this.updateAppletConfig(maybeAppletConfig);
     }
     return maybeAppletConfig;
   }
 
   async registerApplet(appletConfigInput: AppletConfigInput): Promise<AppletConfig> {
     const appletConfig = await this.service.registerApplet(appletConfigInput);
-    this._appletConfigs.update((appletConfigs) => {
-      appletConfigs[appletConfig.name] = appletConfig;
-      return appletConfigs;
-    });
-
-    this._methodDimensionMapping.update(methodDimensionMapping => {
-      appletConfigInput.methods.forEach(method => {
-        methodDimensionMapping[encodeHashToBase64(appletConfig.methods[method.name])] = {
-          inputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.input_dimensions[0].name],
-          outputDimensionEh: get(this.appletConfigs())[appletConfig.name].dimensions[method.output_dimension.name],
-        };
-      });
-      return methodDimensionMapping;
-    });
-
-    // initialize the active method to the first method for each resource def
-    Object.values(appletConfig.resource_defs).forEach(dnaResourceDefMap => {
-      // if the active method hasn't been set yet, set it.
-      Object.values(dnaResourceDefMap).forEach(zomeResourceDefMap => {
-      Object.values(zomeResourceDefMap).forEach(resourceDef => {
-        if (!get(this._activeMethod)[encodeHashToBase64(resourceDef)]) {
-          this.updateActiveMethod(encodeHashToBase64(resourceDef), encodeHashToBase64(Object.values(appletConfig.methods)[0]));
-        }
-      })
-    })
-    });
-    return appletConfig;
+    return await this.updateAppletConfig(appletConfig);
   }
 
   updateActiveMethod(resourceDefEh: EntryHashB64, methodEh: EntryHashB64) {
