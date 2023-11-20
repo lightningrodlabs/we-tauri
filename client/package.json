@@ -21,7 +21,8 @@
     "lit-svelte-stores": "^0.2.5",
     "svelte": "^3.59.0",
     "lit": "^2.7.0",
-    "lit-html": "^2.7.0"
+    "lit-html": "^2.7.0",
+    "@holochain-open-dev/utils": "^0.10.1"
   },
   "devDependencies": {
     "typescript": "^4.9.5"
