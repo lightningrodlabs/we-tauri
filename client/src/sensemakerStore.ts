@@ -5,7 +5,7 @@ import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
 import { get } from "svelte/store";
-import { EntryRecord, HoloHashMap } from '@holochain-open-dev/utils';
+import { EntryRecord } from '@holochain-open-dev/utils';
 
 interface ContextResults {
   [culturalContextName: string]: EntryHash[],
@@ -14,11 +14,11 @@ interface ContextResults {
 export class SensemakerStore {
   _contextResults: Writable<ContextResults> = writable({});
 
-  _ranges: Writable<HoloHashMap<EntryHash, Range>> = writable(new HoloHashMap<EntryHash, Range>());
-  _dimensions: Writable<HoloHashMap<EntryHash, Dimension>> = writable(new HoloHashMap<EntryHash, Dimension>());
-  _methods: Writable<HoloHashMap<EntryHash, Method>> = writable(new HoloHashMap<EntryHash, Method>());
-  _resourceDefinitions: Writable<HoloHashMap<EntryHash, ResourceDef>> = writable(new HoloHashMap<EntryHash, ResourceDef>());
-  _contexts: Writable<Map<string, HoloHashMap<EntryHash, CulturalContext>>> = writable(new Map<string, HoloHashMap<EntryHash, CulturalContext>>());
+  _ranges: Writable<Map<EntryHashB64, Range>> = writable(new Map<EntryHashB64, Range>());
+  _dimensions: Writable<Map<EntryHashB64, Dimension>> = writable(new Map<EntryHashB64, Dimension>());
+  _methods: Writable<Map<EntryHashB64, Method>> = writable(new Map<EntryHashB64, Method>());
+  _resourceDefinitions: Writable<Map<EntryHashB64, ResourceDef>> = writable(new Map<EntryHashB64, ResourceDef>());
+  _contexts: Writable<Map<string, Map<EntryHashB64, CulturalContext>>> = writable(new Map<string, Map<EntryHashB64, CulturalContext>>());
 
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
@@ -132,14 +132,14 @@ export class SensemakerStore {
     const rangeRecord = await this.service.createRange(range);
     const entryRecord = new EntryRecord<Range>(rangeRecord);
     this._ranges.update(ranges => {
-      ranges.set(entryRecord.entryHash, entryRecord.entry);
+      ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
       return ranges;
     });
     return entryRecord.entryHash;
   }
 
   async getRange(rangeEh: EntryHash): Promise<Range> {
-    const range = get(this._ranges).get(rangeEh);
+    const range = get(this._ranges).get(encodeHashToBase64(rangeEh));
     if(range) {
       return range;
     }
@@ -147,7 +147,7 @@ export class SensemakerStore {
       const rangeRecord = await this.service.getRange(rangeEh) 
       const entryRecord = new EntryRecord<Range>(rangeRecord);
       this._ranges.update(ranges => {
-        ranges.set(entryRecord.entryHash, entryRecord.entry);
+        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
         return ranges;
       });
       return entryRecord.entry;
@@ -163,14 +163,14 @@ export class SensemakerStore {
     const dimensionRecord = await this.service.createDimension(dimension);
     const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
     this._dimensions.update(dimensions => {
-      dimensions.set(entryRecord.entryHash, entryRecord.entry);
+      dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
       return dimensions;
     });
     return entryRecord.entryHash;
   }
 
   async getDimension(dimensionEh: EntryHash): Promise<Dimension> {
-    const dimension = get(this._dimensions).get(dimensionEh);
+    const dimension = get(this._dimensions).get(encodeHashToBase64(dimensionEh));
     if(dimension) {
       return dimension;
     }
@@ -178,7 +178,7 @@ export class SensemakerStore {
       const dimensionRecord = await this.service.getDimension(dimensionEh) 
       const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
       this._dimensions.update(dimensions => {
-        dimensions.set(entryRecord.entryHash, entryRecord.entry);
+        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
         return dimensions;
       });
       return entryRecord.entry;
@@ -193,14 +193,14 @@ export class SensemakerStore {
     const resourceDefRecord = await this.service.createResourceDef(resourceDef);
     const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
     this._resourceDefinitions.update(resourceDefs => {
-      resourceDefs.set(entryRecord.entryHash, entryRecord.entry);
+      resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
       return resourceDefs;
     });
     return entryRecord.entryHash;
   }
 
   async getResourceDef(resourceDefEh: EntryHash): Promise<ResourceDef> {
-    const resourceDef = get(this._resourceDefinitions).get(resourceDefEh);
+    const resourceDef = get(this._resourceDefinitions).get(encodeHashToBase64(resourceDefEh));
     if(resourceDef) {
       return resourceDef;
     }
@@ -208,7 +208,7 @@ export class SensemakerStore {
       const resourceDefRecord = await this.service.getResourceDef(resourceDefEh) 
       const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
       this._resourceDefinitions.update(resourceDefs => {
-        resourceDefs.set(entryRecord.entryHash, entryRecord.entry);
+        resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
         return resourceDefs;
       });
       return entryRecord.entry;
@@ -245,14 +245,14 @@ export class SensemakerStore {
     const methodRecord = await this.service.createMethod(method);
     const entryRecord = new EntryRecord<Method>(methodRecord);
     this._methods.update((methods) => {
-      methods.set(entryRecord.entryHash, entryRecord.entry);
+      methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
       return methods;
     });
     return entryRecord.entryHash;
   }
 
   async getMethod(methodEh: EntryHash): Promise<Method> {
-    const method = get(this._methods).get(methodEh);
+    const method = get(this._methods).get(encodeHashToBase64(methodEh));
     if (method) {
       return method;
     }
@@ -260,7 +260,7 @@ export class SensemakerStore {
       const methodRecord = await this.service.getMethod(methodEh) 
       const entryRecord = new EntryRecord<Method>(methodRecord);
       this._methods.update((methods) => {
-        methods.set(entryRecord.entryHash, entryRecord.entry);
+        methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
         return methods;
       });
       return entryRecord.entry;
@@ -284,11 +284,11 @@ export class SensemakerStore {
     this._contexts.update(contexts => {
       const appletContexts = contexts.get(appletName);
       if (appletContexts) {
-        appletContexts.set(entryRecord.entryHash, entryRecord.entry);
+        appletContexts.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
         contexts.set(appletName, appletContexts);
       }
       else {
-        contexts.set(appletName, new HoloHashMap<EntryHash, CulturalContext>([[entryRecord.entryHash, entryRecord.entry]]));
+        contexts.set(appletName, new Map<EntryHashB64, CulturalContext>([[encodeHashToBase64(entryRecord.entryHash), entryRecord.entry]]));
       }
       return contexts;
     }); 
@@ -353,13 +353,13 @@ export class SensemakerStore {
       this._contexts.update((contexts) => {
         const appletContexts = contexts.get(appletConfig.name);
         if (appletContexts) {
-          appletContexts.set(entryRecord.entryHash, entryRecord.entry);
+          appletContexts.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
           contexts.set(appletConfig.name, appletContexts);
         } else {
           contexts.set(
             appletConfig.name,
-            new HoloHashMap<EntryHash, CulturalContext>([
-              [entryRecord.entryHash, entryRecord.entry],
+            new Map<EntryHashB64, CulturalContext>([
+              [encodeHashToBase64(entryRecord.entryHash), entryRecord.entry],
             ])
           );
         }
