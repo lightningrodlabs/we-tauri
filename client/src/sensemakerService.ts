@@ -17,7 +17,7 @@ export class SensemakerService {
     return this.callZome('get_all_agents', null);
   }
   
-  async createRange(range: Range): Promise<EntryHash> {
+  async createRange(range: Range): Promise<HolochainRecord> {
     return this.callZome('create_range', range);
   }
 
@@ -29,7 +29,7 @@ export class SensemakerService {
     return this.callZome('get_ranges', null);
   }
 
-  async createDimension(dimension: Dimension): Promise<EntryHash> {
+  async createDimension(dimension: Dimension): Promise<HolochainRecord> {
     return this.callZome('create_dimension', dimension);
   }
 
@@ -41,7 +41,7 @@ export class SensemakerService {
     return this.callZome('get_dimensions', null);
   }
 
-  async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
+  async createResourceDef(resourceDef: ResourceDef): Promise<HolochainRecord> {
     return this.callZome('create_resource_def', resourceDef);
   }
 
@@ -49,7 +49,7 @@ export class SensemakerService {
     return this.callZome('get_resource_def', dimensionEh);
   }
 
-  async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
+  async createAssessment(assessment: CreateAssessmentInput): Promise<HolochainRecord> {
     return this.callZome('create_assessment', assessment);
   }
 
@@ -61,7 +61,7 @@ export class SensemakerService {
     return this.callZome('get_assessments_for_resources', getAssessmentsInput);
   }
   
-  async createMethod(method: Method): Promise<EntryHash> {
+  async createMethod(method: Method): Promise<HolochainRecord> {
     return this.callZome('create_method', method);
   }
 
@@ -81,7 +81,7 @@ export class SensemakerService {
     return this.callZome('set_assessment_widget_tray_config', { resourceDefEh, widgetConfigs }, 'widgets')
   }
 
-  async createCulturalContext(culturalContext: CulturalContext): Promise<EntryHash> {
+  async createCulturalContext(culturalContext: CulturalContext): Promise<HolochainRecord> {
     return this.callZome('create_cultural_context', culturalContext);
   }
 
