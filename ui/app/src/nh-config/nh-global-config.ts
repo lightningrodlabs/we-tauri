@@ -40,12 +40,19 @@ export default class NHGlobalConfig extends NHComponent {
   );
 
   getDialogAlertMessage() {
-    return (this._dimensionForm && this._dimensionForm.touched && !this._dimensionForm.valid) ? "Some of your fields need to be updated:" : ""
+  
+    return this.isDimensionFormValid() ? "Some of your fields need to be updated:" : ""
   }
 
   resetConfig() {
     this._formType = "input-dimension"
     this._list.dimensionSelected = false;
+  }
+
+  isDimensionFormValid() {
+    if(!this._dimensionForm) return false;
+
+    return this._dimensionForm.touched
   }
 
   render() {
@@ -90,14 +97,21 @@ export default class NHGlobalConfig extends NHComponent {
           .dialogType=${"create-dimension"}
           .title=${"Add " + (this._formType == "input-dimension" ? "Input" : "Output") + " Dimension"}
           .size=${"medium"}
-          .alertType=${this?._dimensionForm?.valid ? null: "warning"}
-          .alertMessage=${this.getDialogAlertMessage()}
-          .handleOk=${() => { this._dimensionForm.submitBtn.click() }}
-          .primaryButtonDisabled=${false}
-          .isOpen=${true}
-          .handleClose=${(e: any) => { if(!this._dimensionForm.valid) {
-            e?.target?.show()
-          }}}
+          .handleOk=${ () => {
+            this._dimensionForm.onSubmit({validateOnly: true});
+
+            if(!this.isDimensionFormValid()) {
+              return { preventDefault: true }
+            }
+
+            ;
+          }}
+          .handleClose=${async () => {
+            if(!this._dimensionForm.valid) {
+              return
+            }
+            await this._dimensionForm.onSubmit() 
+          }}
         >           
           <div slot="inner-content">
           ${this.renderMainForm()}
@@ -138,7 +152,7 @@ export default class NHGlobalConfig extends NHComponent {
       await this._dimensionForm.resetForm();
       await this._dimensionForm.requestUpdate();
 
-      this._formType = "method";
+      // this._formType = "method";
       this._list.dimensionSelected = true;
     }
     await this._list.fetchDimensionEntries();

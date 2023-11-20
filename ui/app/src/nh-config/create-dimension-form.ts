@@ -98,6 +98,7 @@ export default class CreateDimension extends NHComponentShoelace {
         existsUntouched = true;
       }
     });
+    this.touched = !existsUntouched;
     return existsUntouched
   }
 
@@ -184,7 +185,7 @@ export default class CreateDimension extends NHComponentShoelace {
     });
   }
 
-  onSubmit() {
+  onSubmit({validateOnly} = {validateOnly: false}) {
     const inputs = this.renderRoot.querySelectorAll("sl-input");
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
@@ -197,6 +198,7 @@ export default class CreateDimension extends NHComponentShoelace {
           this._dimensionSchema.validate(this._dimension)
           .then(async _ => {
             this.valid = true;
+            if(validateOnly) return;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
             const rangeEh = await this.createRange();
             if(!rangeEh) return
@@ -223,7 +225,7 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   handleValidationError(err: { path: string, errors: string[] }) {
-    console.log("Error validating profile for field: ", err.path);
+    console.log("Error validating dimension for field: ", err.path);
 
     const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
     if(errorDOM.length == 0) return;
@@ -239,7 +241,7 @@ export default class CreateDimension extends NHComponentShoelace {
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
-    if(!this.touched) this.touched = true;
+    if(!this.touched) {this.touched = true};
 
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
