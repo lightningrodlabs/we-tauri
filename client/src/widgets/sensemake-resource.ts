@@ -8,8 +8,9 @@ import { getLatestAssessment } from "../utils";
 import { EntryHash, encodeHashToBase64, decodeHashFromBase64 } from "@holochain/client";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { get } from "svelte/store";
+import { dedupeMixin } from "@open-wc/dedupe-mixin";
 
-export class SensemakeResource extends ScopedElementsMixin(LitElement) {
+export class SensemakeResource extends dedupeMixin(ScopedElementsMixin)(LitElement) {
     @contextProvided({ context: sensemakerStoreContext, subscribe: true })
     @state()
     public  sensemakerStore!: SensemakerStore

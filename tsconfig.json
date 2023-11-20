@@ -13,8 +13,8 @@
     "noImplicitAny": false,
     "sourceMap": true,
     "inlineSources": true,
-    "declaration": false,
-    "declarationMap": false,
+    "declaration": true,
+    "declarationMap": true,
     "skipLibCheck": true,
     "incremental": true,
   }

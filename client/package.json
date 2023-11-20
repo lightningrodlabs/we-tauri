@@ -18,6 +18,7 @@
     "@holochain/client": "0.12.0",
     "@lit-labs/context": "^0.1.2",
     "@open-wc/scoped-elements": "^2.1.5",
+    "@open-wc/dedupe-mixin": "1.4.0",
     "lit-svelte-stores": "^0.2.5",
     "svelte": "^3.59.0",
     "lit": "^2.7.0",
