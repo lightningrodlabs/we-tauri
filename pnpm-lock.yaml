@@ -35,6 +35,9 @@ importers:
 
   client:
     dependencies:
+      '@holochain-open-dev/utils':
+        specifier: ^0.10.1
+        version: 0.10.1(ws@8.14.2)
       '@holochain/client':
         specifier: 0.12.0
         version: 0.12.0(ws@8.14.2)
@@ -158,6 +161,18 @@ packages:
       tap-parser: 9.3.3
       through2: 3.0.2
     dev: true
+
+  /@holochain-open-dev/utils@0.10.1(ws@8.14.2):
+    resolution: {integrity: sha512-GgrSsWQYSrGaMr2PN/pIESVARo4bxj13vg9ZGKJUtwJVdFoSZDjXrwu4KEhg3yC28Fl7PNc3u1slDWHBXuWiPg==}
+    dependencies:
+      '@holochain/client': 0.12.0(ws@8.14.2)
+      '@msgpack/msgpack': 2.8.0
+      emittery: 1.0.1
+      lit: 2.7.0
+      lodash-es: 4.17.21
+    transitivePeerDependencies:
+      - ws
+    dev: false
 
   /@holochain-playground/cli@0.1.1:
     resolution: {integrity: sha512-JbapAe+uBaec52rTePjdlP0mq3zQhJG/hrdbCd+eecZLA3cXWEGgISR5YwLtx6udN+0ghCDH4U6KILjPiwWZMg==}
