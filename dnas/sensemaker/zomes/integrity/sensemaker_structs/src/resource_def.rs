@@ -8,6 +8,7 @@ pub struct ResourceDef {
     pub resource_name: String,
     pub base_types: Vec<AppEntryDef>,
     pub dimension_ehs: Vec<EntryHash>,
+    pub installed_app_id: String,
     pub role_name: String,
     pub zome_name: String,
 }
@@ -27,6 +28,7 @@ impl TryFrom<ConfigResourceDef> for ResourceDef {
             resource_name: value.resource_name,
             base_types: value.base_types,
             dimension_ehs,
+            installed_app_id: value.installed_app_id,
             role_name: value.role_name,
             zome_name: value.zome_name,
         };

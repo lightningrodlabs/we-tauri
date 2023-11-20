@@ -101,6 +101,7 @@ pub struct ConfigResourceDef {
     pub resource_name: String,
     pub base_types: Vec<AppEntryDef>,
     pub dimensions: Vec<ConfigDimension>,
+    pub installed_app_id: String,
     pub role_name: String,
     pub zome_name: String,
 }
