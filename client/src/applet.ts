@@ -14,9 +14,9 @@ export interface AppletConfig {
     dimensions: {
         [dimensionName: string]: EntryHash,
     },
-    resource_defs: HappZomeMap<{
+    resource_defs: {
         [resourceDefName: string]: EntryHash,
-    }>,
+    },
     methods: {
         [methodName: string]: EntryHash,
     },
@@ -29,15 +29,9 @@ export interface AppletConfigInput {
     name: string,
     ranges: Array<Range>,
     dimensions: Array<ConfigDimension>,
-    resource_defs: HappZomeMap<Array<ConfigResourceDef>>,
+    resource_defs: Array<ConfigResourceDef>,
     methods: Array<ConfigMethod>,
     cultural_contexts: Array<ConfigCulturalContext>,
-}
-
-export interface HappZomeMap<T> {
-    [roleName: string]: {
-        [zomeName: string]: T,
-    }
 }
 
 export interface WidgetMappingConfig {
