@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry, AssessmentWidgetBlockConfig, GetMethodsForDimensionQueryParams } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry, AssessmentWidgetBlockConfig, GetMethodsForDimensionQueryParams, AssessmentWidgetRegistration } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -410,9 +410,8 @@ export class SensemakerStore {
     return appletConfig;
   }
   
-  async registerWidget(widgetRegistration: AssessmentWidgetRegistration): Promise<Boolean> {
-    await this.service.registerWidget(widgetRegistration)
-    return true // TODO: update return value when zome fn written
+  async registerWidget(widgetRegistration: AssessmentWidgetRegistrationInput): Promise<AssessmentWidgetRegistration> {
+    return await this.service.registerWidget(widgetRegistration)
   }
 
   async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
