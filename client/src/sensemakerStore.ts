@@ -149,8 +149,16 @@ export class SensemakerStore {
     }
   }
 
-  async getRanges(): Promise<Array<HolochainRecord>> {
-    return await this.service.getRanges() 
+  async getRanges(): Promise<Array<Range>> {
+    const rangeRecords = await this.service.getRanges();
+    const entryRecords = rangeRecords.map(rangeRecord => new EntryRecord<Range>(rangeRecord));
+    this.ranges.update(ranges => {
+      entryRecords.forEach(entryRecord => {
+        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      });
+      return ranges;
+    });
+    return entryRecords.map(entryRecord => entryRecord.entry);
   }
 
   // TODO: update applet config update to key by applet name
@@ -180,8 +188,16 @@ export class SensemakerStore {
     }
   }
 
-  async getDimensions(): Promise<Array<HolochainRecord>> {
-    return await this.service.getDimensions() 
+  async getDimensions(): Promise<Array<Dimension>> {
+    const dimensionRecords = await this.service.getDimensions();
+    const entryRecords = dimensionRecords.map(dimensionRecord => new EntryRecord<Dimension>(dimensionRecord));
+    this.dimensions.update(dimensions => {
+      entryRecords.forEach(entryRecord => {
+        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      });
+      return dimensions;
+    });
+    return entryRecords.map(entryRecord => entryRecord.entry);
   }
 
   async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
