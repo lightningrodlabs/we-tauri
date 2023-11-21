@@ -79,12 +79,15 @@ export default () => {
         bob,
         alice_happs,
         bob_happs,
+        alice_conductor,
+        bob_conductor,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
         ss_cell_id_bob,
         provider_cell_id_alice,
         provider_cell_id_bob,
+        cleanup,
       } = await setUpAliceandBob();
 
       const callZomeAlice = async (
@@ -93,7 +96,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -108,7 +111,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -328,7 +331,7 @@ export default () => {
         t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
 
         const getAssessmentsForResourceInput2: GetAssessmentsForResourceInput = {};
-        
+
         assessmentsForResources = await callZomeBob(
           "sensemaker",
           "get_assessments_for_resources",
@@ -443,9 +446,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup()
     });
   });
   test("test context result creation", async (t) => {
@@ -455,12 +456,15 @@ export default () => {
         bob,
         alice_happs,
         bob_happs,
+        alice_conductor,
+        bob_conductor,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
         ss_cell_id_bob,
         provider_cell_id_alice,
         provider_cell_id_bob,
+        cleanup,
       } = await setUpAliceandBob();
 
       const callZomeAlice = async (
@@ -469,7 +473,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -484,7 +488,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -1062,9 +1066,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup();
     });
   });
   test("average method computation", async (t) => {
@@ -1074,12 +1076,15 @@ export default () => {
         bob,
         alice_happs,
         bob_happs,
+        alice_conductor,
+        bob_conductor,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
         ss_cell_id_bob,
         provider_cell_id_alice,
         provider_cell_id_bob,
+        cleanup,
       } = await setUpAliceandBob();
 
       const callZomeAlice = async (
@@ -1088,7 +1093,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -1103,7 +1108,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -1288,7 +1293,7 @@ export default () => {
           author: alice_agent_key,
           timestamp: runMethodOutput.timestamp,
         };
-        
+
         t.deepEqual(
           objectiveAssessment,
           runMethodOutput
@@ -1298,9 +1303,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup();
     });
   });
   test("average method computation with float", async (t) => {
@@ -1310,12 +1313,15 @@ export default () => {
         bob,
         alice_happs,
         bob_happs,
+        alice_conductor,
+        bob_conductor,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
         ss_cell_id_bob,
         provider_cell_id_alice,
         provider_cell_id_bob,
+        cleanup,
       } = await setUpAliceandBob();
 
       const callZomeAlice = async (
@@ -1324,7 +1330,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -1339,7 +1345,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -1524,7 +1530,7 @@ export default () => {
           author: alice_agent_key,
           timestamp: runMethodOutput.timestamp,
         };
-        
+
         t.deepEqual(
           objectiveAssessment,
           runMethodOutput
@@ -1534,9 +1540,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup();
     });
   });
 };
