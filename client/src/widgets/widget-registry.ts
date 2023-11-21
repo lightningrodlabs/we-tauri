@@ -5,14 +5,15 @@ export interface AssessmentWidgetRegistrationInput {
   applet_eh: EntryHash, // Applet entry hash
   widget_key: string,  // keyof an AssessmentWidgetConfigDict
   name: string,
-  range_eh: EntryHash, // The EntryHash for the created Range object (should probably just be the range object when returned from the API)
+  range_eh: EntryHash, // The EntryHash for the created Range object (should probably just be the range object when returned from the API) - see below
   kind: AssessmentWidgetKind
 }
 export type AssessmentWidgetRegistration = AssessmentWidgetRegistrationInput & {
-  assessment_registration_eh: EntryHash
+  assessment_registration_eh: EntryHash,
+  range: Range
 }
 
-type AssessmentWidgetConfigDict = Record<string, AssessmentWidgetConfig>
+export type AssessmentWidgetConfigDict = Record<string, AssessmentWidgetConfig>
 // e.g.
 // {
 //   "importance": { // widget_key
