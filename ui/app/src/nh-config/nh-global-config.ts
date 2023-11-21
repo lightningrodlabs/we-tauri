@@ -139,9 +139,7 @@ export default class NHGlobalConfig extends NHComponent {
   };
 
   private onClickBackButton() {
-    !this._dimensionForm
-      ? this.resetConfig()
-      : this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
   }
 
   private onMethodCreateRequest = () => {
