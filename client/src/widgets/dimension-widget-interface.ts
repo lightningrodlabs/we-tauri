@@ -29,7 +29,7 @@ interface IDimensionWidget {
     render(): TemplateResult
 }
 
-type IAssessDimensionWidget = IDimensionWidget & {
+export type IAssessDimensionWidget = IDimensionWidget & {
     resourceEh: EntryHash
     resourceDefEh: EntryHash
     dimensionEh: EntryHash
@@ -38,7 +38,7 @@ type IAssessDimensionWidget = IDimensionWidget & {
     assessResource(value: RangeValue): Promise<void>
 }
 
-type IDisplayDimensionWidget = IDimensionWidget & {
+export type IDisplayDimensionWidget = IDimensionWidget & {
     assessment: Assessment | null;
 }
 
