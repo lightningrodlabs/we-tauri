@@ -10,7 +10,7 @@ pub struct Properties {
 
 impl Properties {
     pub fn get() -> ExternResult<Self> {
-        let properties = dna_info()?.properties;
+        let properties = dna_info()?.modifiers.properties;
         Ok(Properties::try_from(properties).map_err(|err| wasm_error!(err.to_string()))?)
     }
     pub fn is_community_activator(author: AgentPubKey) -> ExternResult<bool> {
