@@ -238,7 +238,10 @@ export default class DimensionList extends NHComponent {
     return html`
       <div class="content">
         <h1>${capitalize(this.dimensionType)} Dimensions</h1>
-        <wc-table .tableStore=${this.tableStore}></wc-table>
+        ${this.tableStore.records && this.tableStore.records.length > 0
+          ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
+          : 'No dimensions present'
+        }
       </div>
     `;
   }
