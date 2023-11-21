@@ -410,6 +410,15 @@ export class SensemakerStore {
     return appletConfig;
   }
   
+  async registerWidget(widgetRegistration: AssessmentWidgetRegistration): Promise<Boolean> {
+    await this.service.registerWidget(widgetRegistration)
+    return true // TODO: update return value when zome fn written
+  }
+
+  async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
+    return await this.service.getRegisteredWidgets()
+  }
+
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
     if (maybeAppletConfig) {
@@ -428,23 +437,6 @@ export class SensemakerStore {
       activeMethods[resourceDefEh] = methodEh;
       return activeMethods;
     });
-  }
-
-  registerWidget(
-    dimensionEhs: EntryHashB64[], 
-    displayWidget: typeof ConcreteDisplayDimensionWidget,
-    assessWidget: typeof ConcreteAssessDimensionWidget
-  ) {
-      this._widgetRegistry.update(widgetRegistry => {
-        dimensionEhs.forEach(dimensionEh => {
-        widgetRegistry[dimensionEh] = {
-          display: displayWidget,
-          assess: assessWidget
-        } 
-      })
-        return widgetRegistry;
-      }
-    )
   }
 }
 
