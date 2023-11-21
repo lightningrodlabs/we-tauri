@@ -11,12 +11,6 @@ use crate::{
     utils::{entry_from_record, entry_hash_from_record},
 };
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct CreateAppletConfigInput {
-    pub applet_config_input: AppletConfigInput,
-    pub role_name: String,
-}
-
 #[hdk_extern]
 pub fn register_applet(
     applet_config_input: AppletConfigInput
@@ -90,8 +84,8 @@ pub fn create_entries_from_applet_config(
     let mut resource_defs: BTreeMap<String, EntryHash> = BTreeMap::new();
     for config_resource_def in config.resource_defs {
         resource_defs.insert(
-            config_resource_def.name.clone(),
-            create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
+            config_resource_def.resource_name.clone(),
+            entry_hash_from_record(create_resource_def(ResourceDef::try_from(config_resource_def)?)?)?,
         );
     }
 
