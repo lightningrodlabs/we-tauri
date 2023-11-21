@@ -14,7 +14,7 @@ pub struct AppletConfig {
     pub ranges: BTreeMap<String, EntryHash>,
     pub dimensions: BTreeMap<String, EntryHash>,
     // the base_type field in ResourceDef needs to be bridged call
-    pub resource_defs: BTreeMap<String, BTreeMap<String, BTreeMap<String, EntryHash>>>, // role name > zome name > resource def name > resource def EH
+    pub resource_defs: BTreeMap<String, EntryHash>,
     pub methods: BTreeMap<String, EntryHash>,
     pub cultural_contexts: BTreeMap<String, EntryHash>,
 }
@@ -25,7 +25,7 @@ pub struct AppletConfigInput {
     pub ranges: Vec<Range>,
     pub dimensions: Vec<ConfigDimension>,
     // the base_type field in ResourceDef needs to be bridged call
-    pub resource_defs: HappZomeMap<Vec<ConfigResourceDef>>,
+    pub resource_defs: Vec<ConfigResourceDef>,
     pub methods: Vec<ConfigMethod>,
     pub cultural_contexts: Vec<ConfigCulturalContext>,
 }
@@ -48,13 +48,11 @@ impl AppletConfigInput {
             .collect::<ExternResult<Vec<EntryHash>>>()?;
 
         // Mapping to detect errors. There may be better ways to handle this other than map
-        let flattened_config_resource_defs = flatten_config_resource_def_map(self.resource_defs);
-
-        let _check_result_resources: Vec<bool> = flattened_config_resource_defs
+        let _check_result_resources: Vec<bool> = self
+            .resource_defs
             .into_iter()
             .map(|resource| resource.check_format(dimension_ehs.clone()))
             .collect::<ExternResult<Vec<bool>>>()?;
-        
         let _check_result_methods: Vec<bool> = self
             .methods
             .into_iter()
@@ -93,8 +91,6 @@ impl ConfigDimension {
         Ok(hash_entry(converted_dimension)?)
     }
 }
-
-pub type HappZomeMap<T> = BTreeMap<String, BTreeMap<String, T>>; // role name > zome name > entry
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
 pub struct ConfigResourceDef {
@@ -250,15 +246,4 @@ pub struct ConfigThreshold {
     pub dimension: ConfigDimension,
     pub kind: ThresholdKind,
     pub value: RangeValue,
-}
-
-pub fn flatten_config_resource_def_map(resource_def_happ_map: HappZomeMap<Vec<ConfigResourceDef>>) -> Vec<ConfigResourceDef> {
-    // flatten the resource def happ map into a vec of ConfigResourceDef
-        let mut flattened: Vec<Vec<ConfigResourceDef>> = Vec::new();
-        for (_, resource_defs) in resource_def_happ_map {
-            for (_, resource_def) in resource_defs {
-                flattened.push(resource_def);
-            }
-        }
-        flattened.into_iter().flatten().collect()
 }

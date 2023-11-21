@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use hdk::prelude::*;
 use sensemaker_integrity::{
     AppletConfig, AppletConfigInput, CulturalContext, Dimension, EntryTypes, LinkTypes, Method,
-    ResourceDef
+    ResourceDef,
 };
 
 use crate::{
@@ -87,21 +87,12 @@ pub fn create_entries_from_applet_config(
     }
 
     // resource defs
-    let mut resource_defs: BTreeMap<String, BTreeMap<String, BTreeMap<String, EntryHash>>> = BTreeMap::new();
-
-    for (role_name, resource_defs_in_zomes) in config.resource_defs {
-        let mut zome_map = BTreeMap::new();
-        for (zome_name, config_resource_defs) in resource_defs_in_zomes {
-            let mut resource_def_map = BTreeMap::new();
-            for config_resource_def in config_resource_defs {
-                resource_def_map.insert(
-                    config_resource_def.resource_name.clone(),
-                    entry_hash_from_record(create_resource_def(ResourceDef::try_from(config_resource_def)?)?)?,
-                );
-            }
-            zome_map.insert(zome_name, resource_def_map);
-        }
-        resource_defs.insert(role_name, zome_map);
+    let mut resource_defs: BTreeMap<String, EntryHash> = BTreeMap::new();
+    for config_resource_def in config.resource_defs {
+        resource_defs.insert(
+            config_resource_def.name.clone(),
+            create_resource_def(ResourceDef::try_from(config_resource_def)?)?,
+        );
     }
 
     // methods
@@ -141,5 +132,17 @@ pub fn create_entries_from_applet_config(
         LinkTypes::AppletConfig,
         (),
     )?;
+    // for each resource type entry hash, create a link
+    resource_defs
+        .into_iter()
+        .map(|(_, resource_def_eh)| {
+            create_link(
+                EntryHash::from(resource_def_eh),
+                applet_config_eh.clone(),
+                LinkTypes::ResourceDefEhToAppletConfig,
+                (),
+            )
+        })
+        .collect::<ExternResult<Vec<ActionHash>>>()?;
     Ok((applet_config, applet_config_eh))
 }
