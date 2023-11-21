@@ -12,6 +12,7 @@ import { AppletConfig, AppletConfigInput, Assessment, CreateAssessmentInput, Met
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, sampleAppletConfig } from "../../utils";
+import { setUpAliceandBob } from "./neighbourhood";
 const { test } = pkg;
 
 interface TestPost {
@@ -19,59 +20,13 @@ interface TestPost {
   content: string;
 }
 
-export const setUpAliceandBob = async (
-  with_config: boolean = false,
-  resource_base_type?: any
-) => {
-  const alice = await createConductor();
-  const bob = await createConductor();
-  const {
-    agentsHapps: alice_happs,
-    agent_key: alice_agent_key,
-    ss_cell_id: ss_cell_id_alice,
-    provider_cell_id: provider_cell_id_alice,
-  } = await installAgent(
-    alice,
-    "alice",
-    undefined,
-    with_config,
-    resource_base_type
-  );
-  const {
-    agentsHapps: bob_happs,
-    agent_key: bob_agent_key,
-    ss_cell_id: ss_cell_id_bob,
-    provider_cell_id: provider_cell_id_bob,
-  } = await installAgent(
-    bob,
-    "bob",
-    alice_agent_key,
-    with_config,
-    resource_base_type
-  );
-  await addAllAgentsToAllConductors([alice, bob]);
-  return {
-    alice,
-    bob,
-    alice_happs,
-    bob_happs,
-    alice_agent_key,
-    bob_agent_key,
-    ss_cell_id_alice,
-    ss_cell_id_bob,
-    provider_cell_id_alice,
-    provider_cell_id_bob,
-  };
-};
-
 export default () => {
   test("test fetching dashboard data", async (t) => {
     await runScenario(async (scenario) => {
       const {
         alice,
         bob,
-        alice_happs,
-        bob_happs,
+        cleanup,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
@@ -86,7 +41,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -101,7 +56,7 @@ export default () => {
         payload,
         is_ss = false
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -299,10 +254,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup();
     });
   });
 };
-

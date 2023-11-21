@@ -14,8 +14,7 @@ export default () => test("range CRUD tests", async (t) => {
     const {
       alice,
       bob,
-      alice_happs,
-      bob_happs,
+      cleanup,
       alice_agent_key,
       bob_agent_key,
       ss_cell_id_alice,
@@ -30,7 +29,7 @@ export default () => test("range CRUD tests", async (t) => {
       payload,
       is_ss = false
     ) => {
-      return await alice.appWs().callZome({
+      return await alice.callZome({
         cap_secret: null,
         cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
         zome_name,
@@ -113,8 +112,6 @@ export default () => test("range CRUD tests", async (t) => {
       t.ok(null);
     }
 
-    await alice.shutDown();
-    await bob.shutDown();
-    await cleanAllConductors();
+    await cleanup();
   });
 });

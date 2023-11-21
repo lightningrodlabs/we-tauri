@@ -8,10 +8,10 @@ const { test } = pkg;
 
 export default () => test("test CA progenitor pattern", async (t) => {
     await runScenario(async scenario => {
-        const { alice, bob, alice_happs, bob_happs, alice_agent_key, bob_agent_key, ss_cell_id_alice, ss_cell_id_bob, provider_cell_id_alice, provider_cell_id_bob } = await setUpAliceandBob();
+        const { alice, bob, cleanup, alice_agent_key, bob_agent_key, ss_cell_id_alice, ss_cell_id_bob, provider_cell_id_alice, provider_cell_id_bob } = await setUpAliceandBob();
 
         const callZomeAlice = async (zome_name, fn_name, payload, is_ss = false) => {
-            return await alice.appWs().callZome({
+            return await alice.callZome({
                 cap_secret: null,
                 cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
                 zome_name,
@@ -21,7 +21,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             });
         }
         const callZomeBob = async (zome_name, fn_name, payload, is_ss = false) => {
-            return await bob.appWs().callZome({
+            return await bob.callZome({
                 cap_secret: null,
                 cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
                 zome_name,
@@ -205,8 +205,6 @@ export default () => test("test CA progenitor pattern", async (t) => {
             }
             await pause(100)
         }
-        await alice.shutDown();
-        await bob.shutDown();
-        await cleanAllConductors();
+        await cleanup();
     })
 })
