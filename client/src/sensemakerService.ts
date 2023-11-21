@@ -112,6 +112,14 @@ export class SensemakerService {
   async registerApplet(appletConfig: AppletConfigInput): Promise<AppletConfig> {
     return this.callZome('register_applet', appletConfig);
   }
+  
+  async registerWidget(widgetRegistration: AssessmentWidgetRegistration) {
+    return this.callZome('register_widget', widgetRegistration, 'widgets');
+  }
+
+  async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
+    return this.callZome('get_registered_widgets', null, 'widgets');
+  }
 
   private callZome(fn_name: string, payload: any, zomeName = this.zomeName) {
     const req: AppAgentCallZomeRequest = {
