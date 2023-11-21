@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.8 - 2023-11-21
+- `ResourceDef` fields have been updated: `name` is now `resource_name`, and the following three fields have been added to store where the resource entry is stored: `installed_app_id`, `role_name` and `zome_name`. 
+- `resource_defs` in `AppletConfig` has been reverted to type `{ [resourceDefName: string]: EntryHash, }` and `resource_defs` in `AppletConfigInput` has been reverted to type `Array<ConfigResourceDef>`.
+- the `_appletConfigs` store in `SensemakerStore` has been removed and replaced with five stores: `ranges`, `dimensions`, `resourceDefs`, `methods`, and `culturalContexts`. Additionally, `appletConfigs()` and `flattenedAppletConfigs()` methods have been removed. These new five stores can be accessed directly to obtain these primitive entries in the consuming application.
+- all get methods (for getting primitive entries) return their respective primitive type rather than a Holochain `Record`.
 ## v0.0.7 - 2023-10-31
 - `createRange`, `getRange`, `getRanges`, `createDimension`, `getDimension`, `getDimensions`, `getResourceDef`, `getMethod` methods added to `SensemakerStore`.
 - `RunMethodInput` (`runMethod`'s parameter type) now contains a `resource_def_eh` field.
