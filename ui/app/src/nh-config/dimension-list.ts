@@ -151,11 +151,11 @@ export default class DimensionList extends NHComponent {
     this.methodInputDimensions = [...this.methodInputDimensions, ...this._dimensionEntries, ...dimensions];
 
     // Select the first item in the list:
-    this.dispatchEvent(new CustomEvent("input-dimension-selected", {
-      detail: { range: this._rangeEntries[this._rangeEntries.length-1], dimensionEh: this._dimensionEntries[this._dimensionEntries.length-1].dimension_eh },
-      bubbles: true,
-      composed: true,
-    }));
+    // this.dispatchEvent(new CustomEvent("input-dimension-selected", {
+    //   detail: { range: this._rangeEntries[this._rangeEntries.length-1], dimensionEh: this._dimensionEntries[this._dimensionEntries.length-1].dimension_eh },
+    //   bubbles: true,
+    //   composed: true,
+    // }));
     this.dimensionSelected = true;
   }
 
@@ -199,16 +199,16 @@ export default class DimensionList extends NHComponent {
         .find((range: Range & { range_eh: EntryHash; }) => 
           encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
 
-      this.dispatchEvent(new CustomEvent("input-dimension-selected", {
-        detail: { range: selectedRange, dimensionEh: dimension.dimension_eh },
-        bubbles: true,
-        composed: true,
-      }));
-      this.dispatchEvent(new CustomEvent("request-method-create", {
-        detail: {},
-        bubbles: true,
-        composed: true,
-      }));
+      // this.dispatchEvent(new CustomEvent("input-dimension-selected", {
+      //   detail: { range: selectedRange, dimensionEh: dimension.dimension_eh },
+      //   bubbles: true,
+      //   composed: true,
+      // }));
+      // this.dispatchEvent(new CustomEvent("request-method-create", {
+      //   detail: {},
+      //   bubbles: true,
+      //   composed: true,
+      // }));
 
   }
 
