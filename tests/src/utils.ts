@@ -1,6 +1,7 @@
 import {
   AppEntryDef,
   AppInfo,
+  AppAgentWebsocket,
   InstallAppRequest,
   encodeHashToBase64,
   CellInfo,
@@ -34,6 +35,7 @@ export const installAgent = async (
   resource_base_type?: any
 ) => {
   let agentsHapps: Array<any> = [];
+  let appAgentWs: AppAgentWebsocket;
   let agent_key;
   let ss_cell_id;
   let provider_cell_id;
@@ -64,6 +66,7 @@ export const installAgent = async (
               //@ts-ignore
               modifiers: {
                 properties: {
+                  //@ts-ignore
                   sensemaker_config: {
                     neighbourhood: "Rated Agenda",
                     wizard_version: "v0.1",
@@ -100,13 +103,20 @@ export const installAgent = async (
     provider_cell_id = (CellType.Provisioned in providerCellInfo) ? (providerCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id : provider_cell_id
     await admin.enableApp({ installed_app_id: agentHapp.installed_app_id });
     console.log("app installed", agentHapp);
+    const port = await conductor.attachAppInterface();
+    appAgentWs = await conductor.connectAppAgentWs(
+      port,
+      agentHapp.installed_app_id
+    );
     agentsHapps.push(agentHapp);
   } catch (e) {
     console.log("error has happened in installation: ", e);
+    throw e
   }
 
   return {
     agentsHapps,
+    appAgentWs,
     agent_key,
     ss_cell_id,
     provider_cell_id,
