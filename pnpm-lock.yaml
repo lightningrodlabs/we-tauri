@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 importers:
 
   .:
@@ -91,11 +95,11 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@holochain/client':
-        specifier: 0.12.0
-        version: 0.12.0(ws@8.14.2)
+        specifier: 0.16.5
+        version: 0.16.5
       '@holochain/tryorama':
-        specifier: 0.11.2
-        version: 0.11.2
+        specifier: 0.15.2
+        version: 0.15.2
       '@neighbourhoods/client':
         specifier: 'workspace: *'
         version: link:../client
@@ -174,15 +178,34 @@ packages:
       tweetnacl: 1.0.3
     transitivePeerDependencies:
       - ws
+    dev: false
+
+  /@holochain/client@0.16.5:
+    resolution: {integrity: sha512-cJkhMQb3Biy1udgbqUAhRFQx4e+8QGGgkEO8xYxmdptPXn7wtnRsnVYgUSTVBl8U0lEpY6L92VuOAQoKK7gcPQ==}
+    engines: {node: '>=18.0.0 || >=20.0.0'}
+    dependencies:
+      '@holochain/serialization': 0.1.0-beta-rc.3
+      '@msgpack/msgpack': 2.8.0
+      '@tauri-apps/api': 1.5.1
+      emittery: 1.0.1
+      isomorphic-ws: 5.0.0(ws@8.14.2)
+      js-base64: 3.7.5
+      libsodium-wrappers: 0.7.13
+      lodash-es: 4.17.21
+      ws: 8.14.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: true
 
   /@holochain/serialization@0.1.0-beta-rc.3:
     resolution: {integrity: sha512-DJx4V2KXHVLciyOGjOYKTM/JLBpBEZ3RsPIRCgf7qmwhQdxXvhi2p+oFFRD51yUT5uC1/MzIVeJCl/R60PwFbw==}
 
-  /@holochain/tryorama@0.11.2:
-    resolution: {integrity: sha512-RCi7QtGejpzfGIx1EKyTX+QnkooGaUAY0TiFHDc5uamCvNNX1Ya6Esgvyrt2zpO5YBUUrSbdbB1gBB3a8bwr7A==}
-    engines: {node: ^14.13.1 || >=16.0.0 || >=18.0.0}
+  /@holochain/tryorama@0.15.2:
+    resolution: {integrity: sha512-Hgec9/KiQRxqZm/1LPN3EQ0GWOqusyhu+dC+XA5nJfARTDVM178mMmnQ08Uqk1s7FwA50Lq+/YAGpr4kIz7kBg==}
+    engines: {node: '>=16.0.0 || >=18.0.0'}
     dependencies:
-      '@holochain/client': 0.12.0(ws@8.14.2)
+      '@holochain/client': 0.16.5
       get-port: 6.1.2
       lodash: 4.17.21
       uuid: 8.3.2
@@ -1014,6 +1037,16 @@ packages:
     resolution: {integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==}
     dev: true
 
+  /libsodium-wrappers@0.7.13:
+    resolution: {integrity: sha512-kasvDsEi/r1fMzKouIDv7B8I6vNmknXwGiYodErGuESoFTohGSKZplFtVxZqHaoQ217AynyIFgnOVRitpHs0Qw==}
+    dependencies:
+      libsodium: 0.7.13
+    dev: true
+
+  /libsodium@0.7.13:
+    resolution: {integrity: sha512-mK8ju0fnrKXXfleL53vtp9xiPq5hKM0zbDQtcxQIsSmxNgSxqCj6R7Hl9PkrNe2j29T4yoDaF7DJLK9/i5iWUw==}
+    dev: true
+
   /lit-element@3.3.3:
     resolution: {integrity: sha512-XbeRxmTHubXENkV4h8RIPyr8lXc+Ff28rkcQzw3G6up2xg5E8Zu1IgOWIwBLEQsu3cOVFqdYwiVi0hv0SlpqUA==}
     dependencies:
@@ -1540,6 +1573,7 @@ packages:
 
   /tweetnacl@1.0.3:
     resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
+    dev: false
 
   /typed-array-buffer@1.0.0:
     resolution: {integrity: sha512-Y8KTSIglk9OZEr8zywiIHG/kmQ7KWyjseXs1CbSo8vC42w7hg2HgYTxSWwP0+is7bWDc1H+Fo026CpHFwm8tkw==}
