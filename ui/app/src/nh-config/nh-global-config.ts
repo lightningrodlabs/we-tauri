@@ -107,8 +107,9 @@ export default class NHGlobalConfig extends NHComponent {
             ;
           }}
           .handleClose=${async () => {
+            await this._dimensionForm.updateComplete;
             if(!this._dimensionForm.valid) {
-              return
+              return ({ preventDefault: true })
             }
             await this._dimensionForm.onSubmit() 
           }}
