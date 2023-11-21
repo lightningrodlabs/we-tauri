@@ -3,6 +3,7 @@ import {
   pause,
   runScenario,
   Scenario,
+  runLocalServices, stopLocalServices,
   createConductor,
   addAllAgentsToAllConductors,
   cleanAllConductors,
@@ -18,36 +19,41 @@ export const setUpAliceandBob = async (
   with_config: boolean = false,
   resource_base_type?: any
 ) => {
-  const alice = await createConductor();
-  const bob = await createConductor();
+  const { servicesProcess, signalingServerUrl } = await runLocalServices();
+  const alice_conductor = await createConductor(signalingServerUrl);
+  const bob_conductor = await createConductor(signalingServerUrl);
   const {
+    appAgentWs: alice,
     agentsHapps: alice_happs,
     agent_key: alice_agent_key,
     ss_cell_id: ss_cell_id_alice,
     provider_cell_id: provider_cell_id_alice,
   } = await installAgent(
-    alice,
+    alice_conductor,
     "alice",
     undefined,
     with_config,
     resource_base_type
   );
   const {
+    appAgentWs: bob,
     agentsHapps: bob_happs,
     agent_key: bob_agent_key,
     ss_cell_id: ss_cell_id_bob,
     provider_cell_id: provider_cell_id_bob,
   } = await installAgent(
-    bob,
+    bob_conductor,
     "bob",
     alice_agent_key,
     with_config,
     resource_base_type
   );
-  await addAllAgentsToAllConductors([alice, bob]);
+  await addAllAgentsToAllConductors([alice_conductor, bob_conductor]);
   return {
     alice,
     bob,
+    alice_conductor,
+    bob_conductor,
     alice_happs,
     bob_happs,
     alice_agent_key,
@@ -56,6 +62,12 @@ export const setUpAliceandBob = async (
     ss_cell_id_bob,
     provider_cell_id_alice,
     provider_cell_id_bob,
+    cleanup: async () => {
+      await stopLocalServices(servicesProcess);
+      await alice_conductor.shutDown();
+      await bob_conductor.shutDown();
+      await cleanAllConductors();
+    },
   };
 };
 
