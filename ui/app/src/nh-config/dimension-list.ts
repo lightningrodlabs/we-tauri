@@ -13,12 +13,19 @@ import { capitalize, generateHashHTML } from "../elements/components/helpers/fun
 import { classMap } from "lit/directives/class-map.js";
 import { FieldDefinition, FieldDefinitions, Table, TableStore } from "@adaburrows/table-web-component";
 
-type DimensionTableRecord = {
+type InputDimensionTableRecord = {
   ['dimension-name']: string,
   ['range-type']: string,
   ['range-min']: number,
   ['range-max']: number,
 }
+
+type OutputDimensionTableRecord = InputDimensionTableRecord & {
+  ['input-dimension-name'] : string,
+  ['method-operation'] : string,
+}
+
+type DimensionTableRecord = InputDimensionTableRecord | OutputDimensionTableRecord;
 
 export default class DimensionList extends NHComponent {  
   @property()
@@ -219,12 +226,19 @@ export default class DimensionList extends NHComponent {
   async connectedCallback() {
     super.connectedCallback();
     
-    const fieldDefs: FieldDefinitions<DimensionTableRecord> = {
-      'dimension-name': new FieldDefinition<DimensionTableRecord>({heading: 'Name'}),
-      'range-type': new FieldDefinition<DimensionTableRecord>({heading: 'Type'}),
-      'range-min': new FieldDefinition<DimensionTableRecord>({heading: 'Min'}),
-      'range-max': new FieldDefinition<DimensionTableRecord>({heading: 'Max'}),
-    }
+    const fieldDefs: FieldDefinitions<DimensionTableRecord> = this.dimensionType == "input"
+      ? {
+        'dimension-name': new FieldDefinition<DimensionTableRecord>({heading: 'Name'}),
+        'range-type': new FieldDefinition<DimensionTableRecord>({heading: 'Type'}),
+        'range-min': new FieldDefinition<DimensionTableRecord>({heading: 'Min'}),
+        'range-max': new FieldDefinition<DimensionTableRecord>({heading: 'Max'}) }
+      : {
+        'dimension-name': new FieldDefinition<DimensionTableRecord>({heading: 'Name'}),
+        'input-dimension-name': new FieldDefinition<DimensionTableRecord>({heading: 'Input Dimension'}),
+        'range-type': new FieldDefinition<DimensionTableRecord>({heading: 'Operation'}),
+        'method-operation': new FieldDefinition<DimensionTableRecord>({heading: 'Type'}),
+        'range-min': new FieldDefinition<DimensionTableRecord>({heading: 'Min'}),
+        'range-max': new FieldDefinition<DimensionTableRecord>({heading: 'Max'}) }
     //@ts-ignore
     this.tableStore = new TableStore({
       tableId: 'dimensions',
