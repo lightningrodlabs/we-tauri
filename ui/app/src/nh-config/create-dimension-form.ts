@@ -332,37 +332,40 @@ export default class CreateDimension extends NHComponentShoelace {
       <nh-card .theme=${"dark"} .textSize=${"md"}>
         <form>
             <div class="field">
-              <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+              <sl-input help-text=${this.dimensionType == "output" ? "Your dimension's range will be calculated automatically" : ""} label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="dimension-name" name="dimension-name">⁎</label>
             </div>
-            <div class="field" style="justify-content: center;">
-              <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
-                <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
-                <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
-              </sl-radio-group>
-              <label class="error" for="method" name="method" data-name="method">⁎</label>
-            </div>
-          ${this.dimensionType == "input"
-            ? html`
-              <div class="field">
-                <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
-                <label class="error" for="min" name="min">⁎</label>
-              </div>
-              <div class="field checkbox">
-                <label for="global-min" name="use-global-min">Lowest possible</label>
-                <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
-              </div>
-              <div class="field">
-                <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
-                <label class="error" for="max" name="max">⁎</label>
-              </div>
-              <div class="field checkbox">
-                <label for="global-max" name="use-global-max">Highest possible</label>
-                <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
-              </div>
-            `
-            : null
-          }
+            ${this.dimensionType == "input"
+              ? html`<div class="field" style="justify-content: center;">
+                      <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
+                        <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
+                        <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
+                      </sl-radio-group>
+                      <label class="error" for="method" name="method" data-name="method">⁎</label>
+                    </div>`
+              : null
+            }
+            ${this.dimensionType == "input"
+              ? html`
+                <div class="field">
+                  <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                  <label class="error" for="min" name="min">⁎</label>
+                </div>
+                <div class="field checkbox">
+                  <label for="global-min" name="use-global-min">Lowest possible</label>
+                  <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+                </div>
+                <div class="field">
+                  <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+                  <label class="error" for="max" name="max">⁎</label>
+                </div>
+                <div class="field checkbox">
+                  <label for="global-max" name="use-global-max">Highest possible</label>
+                  <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+                </div>
+              `
+              : null
+            }
           <slot name="method-computation"></slot>
         </form>
         <slot name="submit-action" slot="footer">
