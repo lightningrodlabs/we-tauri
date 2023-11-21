@@ -1,10 +1,10 @@
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { Method, Program, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension, Method, Program, SensemakerStore } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
-import { SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
-import { AppInfo, EntryHash } from "@holochain/client";
+import { SlInput, SlRadio, SlRadioGroup, SlSelect } from "@scoped-elements/shoelace";
+import { AppInfo, EntryHash, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { array, boolean, object, string } from "yup";
 
 export default class CreateMethod extends NHComponent {
@@ -19,6 +19,9 @@ export default class CreateMethod extends NHComponent {
 
   @property()
   inputDimensionEhs!: EntryHash[];
+  
+  @state()
+  inputDimensions!: Array<Dimension & { dimension_eh: EntryHash }>;
 
   @state()
   _program: Program = {
@@ -53,6 +56,9 @@ export default class CreateMethod extends NHComponent {
     switch (inputControl.name) {
       case 'method-name':
         this._method['name'] = inputControl.value; 
+        break;
+      case 'input-dimension':
+        this.inputDimensionEhs = [decodeHashFromBase64(inputControl.value)]
         break;
       default:
         this.computationMethod = inputControl.value;
@@ -107,7 +113,7 @@ export default class CreateMethod extends NHComponent {
   }
 
   validate() {
-    const inputs = this.renderRoot.querySelectorAll("sl-input, sl-radio-group");
+    const inputs = this.renderRoot.querySelectorAll("sl-input, sl-radio-group, select");
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
     return fieldsUntouched;
@@ -176,15 +182,25 @@ export default class CreateMethod extends NHComponent {
         }}
       >
         <div slot="method-computation">
-          <nh-card class="nested-card" .theme=${"light"} .textSize=${"sm"} .heading=${"Create a method:"}>
+          <nh-card class="nested-card" .theme=${"dark"} .textSize=${"sm"} .heading=${"Create a method:"}>
+            <div class="field select">
+              <label for="input-dimension" name="input-dimension" data-name="input-dimension">Select input dimension:</label>
+              <select name="input-dimension" placeholder="Select an input dimension" @change=${(e) => { this.onChangeValue(e) }}>
+              ${this.inputDimensions.map((dimension) => html`
+                  <option value=${encodeHashToBase64(dimension.dimension_eh)}>${dimension.name}</option>
+              `)
+              }
+              </select> <label class="error" for="input-dimension" name="input-dimension" data-name="input-dimension">⁎</label>
+            </div>
             <div class="field">
               <sl-input label="Name of Method" name="method-name" data-name=${"method-name"} value=${this._method.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="method-name" name="method-name" data-name="method-name">⁎</label>
             </div>
-            <div class="field">
+            <div class="field select">
+              <label for="method" name="method" data-name="method">Choose operation:</label>
               <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} label=${"Select an option"} data-name=${"method"} value=${this.computationMethod}>
-                <sl-radio value="AVG">AVG</sl-radio>
-                <sl-radio value="SUM">SUM</sl-radio>
+                <sl-radio .checked=${this.computationMethod == "AVG"} value="AVG">AVG</sl-radio>
+                <sl-radio .checked=${this.computationMethod == "SUM"} value="SUM">SUM</sl-radio>
               </sl-radio-group>
               <label class="error" for="method" name="method" data-name="method">⁎</label>
             </div>
@@ -227,6 +243,20 @@ export default class CreateMethod extends NHComponent {
         flex-direction: column;
       }
 
+      .field.select {
+        display: flex;
+        flex-direction: column;
+        gap: calc(1px * var(--nh-spacing-md));
+      }
+
+      .field.select select, .field.select select option {
+        height: 2.5rem;
+      }
+
+      .field.select label:not(.error) {
+        font-size: calc(1px * var(--nh-font-size-md));
+      }
+
       sl-radio-group::part(base) {
         display: flex;
         justify-content: space-evenly;
@@ -235,6 +265,10 @@ export default class CreateMethod extends NHComponent {
       
       sl-radio::part(base) {
         color: white;
+      }
+      
+      sl-input::part(base) {
+        margin: calc(1px * var(--nh-font-size-sm)) 0 calc(1px * var(--nh-font-size-md)) 0;
       }
 
       label.error {
