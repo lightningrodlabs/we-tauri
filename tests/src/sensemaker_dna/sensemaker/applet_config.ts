@@ -1,7 +1,7 @@
 import { Action, AppEntryDef, Create, EntryHash, Record } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 //@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, Threshold } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, ResourceDef, Threshold } from "@neighbourhoods/client";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "../../utils";
@@ -123,18 +123,24 @@ export default () =>
                 let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
                 // waiting for sensemaker-lite-types to be updated
                 // const resourceDef: ResourceDef = {
-                const resourceDef: any = {
-                    name: "task_item",
+                const resourceDef: ResourceDef = {
+                    resource_name: "task_item",
                     base_types: [app_entry_def],
-                    dimension_ehs: [dimensionHash]
+                    dimension_ehs: [dimensionHash],
+                    installed_app_id: "test_applet",
+                    role_name: "test_provider_dna",
+                    zome_name: "test_provider",
                 }
 
                 // waiting for sensemaker-lite-types to be updated
                 // const configResourceDef: ConfigResourceDef = {
-                const configResourceDef: any = {
-                    name: resourceDef.name,
+                const configResourceDef: ConfigResourceDef = {
+                    resource_name: resourceDef.resource_name,
                     base_types: resourceDef.base_types,
-                    dimensions: [configDimension]
+                    dimensions: [configDimension],
+                    installed_app_id: resourceDef.installed_app_id,
+                    role_name: resourceDef.role_name,
+                    zome_name: resourceDef.zome_name,
                 }
 
                 const resourceDefRecord: Record = await callZomeAlice(
@@ -220,11 +226,7 @@ export default () =>
                         importance: dimensionHash,
                         total_importance: objectiveDimensionHash
                     },
-                    resource_defs: {
-                        "test_provider_dna": {
-                            "test_provider": { task_item: resourceDefEh }
-                        }
-                    },
+                    resource_defs: { task_item: resourceDefEh },
                     methods: { total_importance_method: methodEh },
                     cultural_contexts: { most_important_tasks: contextEh },
                 }
@@ -233,10 +235,7 @@ export default () =>
                     name: appletConfig.name,
                     ranges: [integerRange, integerRange2],
                     dimensions: [configDimension, configObjectiveDimension],
-                    resource_defs: {
-                        "test_provider_dna": {
-                            "test_provider": [configResourceDef]
-                    }},
+                    resource_defs: [configResourceDef],
                     methods: [configMethod],
                     cultural_contexts: [configCulturalContext],
                 }
