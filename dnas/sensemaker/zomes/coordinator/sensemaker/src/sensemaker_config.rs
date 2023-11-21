@@ -24,7 +24,7 @@ pub fn get_latest_sensemaker_config(_: ()) -> ExternResult<Option<Record>> {
 
     // get the SM config eh from first link assuming that there is only one sensemaker config created, since subsequent ones are all udpates.
     // can unwrap since links is not empty
-    let original_config_eh: EntryHash = links.get(0).unwrap().target.clone().into();
+    let original_config_eh: EntryHash = links.get(0).unwrap().target.clone().into_entry_hash().ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?;
     // get detail and immediately return None if None
     let detail = get_details(original_config_eh.clone(), GetOptions::default())?;
 

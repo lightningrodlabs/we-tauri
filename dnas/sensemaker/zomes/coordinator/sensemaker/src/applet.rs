@@ -46,7 +46,10 @@ pub fn check_if_applet_config_exists(applet_name: String) -> ExternResult<Option
     let maybe_last_link = links.last();
 
     if let Some(link) = maybe_last_link {
-        let maybe_record = get(EntryHash::from(link.clone().target), GetOptions::default())?;
+        let maybe_record = get(link.target.clone().into_entry_hash()
+          .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?,
+          GetOptions::default()
+        )?;
         if let Some(record) = maybe_record {
             Ok(Some(entry_from_record::<AppletConfig>(record)?))
         } else {

@@ -19,7 +19,7 @@ pub fn create_range(range: Range) -> ExternResult<Record> {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
             "not able to get method record after create"
         ))))
-    } 
+    }
 }
 
 #[hdk_extern]
@@ -35,7 +35,9 @@ pub fn get_ranges(_: ()) -> ExternResult<Vec<Option<Record>>> {
         None,
     )?
     .into_iter()
-    .map(|link| get_range(link.target.into()))
+    .map(|link| get_range(link.target.into_entry_hash()
+      .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?
+    ))
     .collect::<ExternResult<Vec<Option<Record>>>>()
 }
 

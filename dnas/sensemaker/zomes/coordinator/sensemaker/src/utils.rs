@@ -22,7 +22,9 @@ pub fn get_assessments_for_resource_inner(
             None,
         )?;
         for link in links {
-            let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
+            let maybe_assessment = get_assessment(link.target.into_entry_hash()
+              .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?
+            )?;
             if let Some(record) = maybe_assessment {
                 let assessment = entry_from_record::<Assessment>(record)?;
                 dimension_assessments.push(assessment)

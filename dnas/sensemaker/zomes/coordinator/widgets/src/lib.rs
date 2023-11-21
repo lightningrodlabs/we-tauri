@@ -20,7 +20,7 @@ fn get_assessment_widget_tray_config(QueryParams { resource_def_eh }: QueryParam
     Ok(links.iter()
         .filter_map(|link| {
             let maybe_record = get(
-                EntryHash::from(link.clone().target),
+                link.target.clone().into_entry_hash()?,
                 GetOptions::default(),
             );
 

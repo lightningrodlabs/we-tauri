@@ -18,7 +18,7 @@ pub fn create_dimension(dimension: Dimension) -> ExternResult<Record> {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
             "not able to get cultural context record after create"
         ))))
-    } 
+    }
 }
 
 #[hdk_extern]
@@ -34,7 +34,9 @@ pub fn get_dimensions(_: ()) -> ExternResult<Vec<Option<Record>>> {
         None,
     )?
     .into_iter()
-    .map(|link| get_dimension(link.target.into()))
+    .map(|link| get_dimension(link.target.into_entry_hash()
+      .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?
+    ))
     .collect::<ExternResult<Vec<Option<Record>>>>()
 }
 

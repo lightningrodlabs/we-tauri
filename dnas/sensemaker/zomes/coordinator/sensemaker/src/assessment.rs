@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 
 use hdk::prelude::*;
-use holo_hash::EntryHashB64;
 use sensemaker_integrity::Assessment;
 use sensemaker_integrity::DataSet;
 use sensemaker_integrity::EntryTypes;
@@ -35,8 +34,8 @@ pub fn get_assessments_for_resources(
         resource_ehs,
         dimension_ehs,
     }: GetAssessmentsForResourceInput,
-) -> ExternResult<BTreeMap<EntryHashB64, Vec<Assessment>>> {
-    let mut resource_assessments = BTreeMap::<EntryHashB64, Vec<Assessment>>::new();
+) -> ExternResult<BTreeMap<String, Vec<Assessment>>> {
+    let mut resource_assessments = BTreeMap::<String, Vec<Assessment>>::new();
     let all_or_some_dimension_ehs: Vec<EntryHash>;
     match dimension_ehs {
         Some(dimension_ehs) => all_or_some_dimension_ehs = dimension_ehs,
@@ -47,7 +46,7 @@ pub fn get_assessments_for_resources(
                 None,
             )?
             .into_iter()
-            .map(|link| EntryHash::from(link.target))
+            .filter_map(|link| link.target.into_entry_hash())
             .collect();
         }
     }
@@ -55,7 +54,7 @@ pub fn get_assessments_for_resources(
         Some(resource_ehs) => {
             for resource_eh in resource_ehs {
                 let assessments = get_assessments_for_resource_inner(resource_eh.clone(), all_or_some_dimension_ehs.clone())?;
-                resource_assessments.insert(resource_eh.into(), flatten_btree_map(assessments));
+                resource_assessments.insert(resource_eh.to_string(), flatten_btree_map(assessments));
             }
         },
         None => {
@@ -63,7 +62,7 @@ pub fn get_assessments_for_resources(
             let all_assessments = get_all_assessments(())?;
             all_assessments.into_iter().for_each(|assessment| {
                 let resource_eh = assessment.resource_eh.clone();
-                let assessments = resource_assessments.entry(resource_eh.into()).or_insert(vec![]);
+                let assessments = resource_assessments.entry(resource_eh.to_string()).or_insert(vec![]);
                 assessments.push(assessment);
             });
         }
@@ -99,7 +98,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
     let assessment_path = assessment_typed_path(assessment.resource_eh.clone(), assessment.dimension_eh.clone())?;
     // ensure the path components are created so we can fetch child paths later
     assessment_path.clone().ensure()?;
-    
+
     if let Some(record) = record {
         create_link(
             assessment_path.path_entry_hash()?,
@@ -107,7 +106,7 @@ pub fn create_assessment(CreateAssessmentInput { value, dimension_eh, resource_e
             LinkTypes::Assessment,
             (),
         )?;
-        
+
         // send signal after assessment is created
         let signal = Signal::NewAssessment { assessment: assessment.clone() };
         let encoded_signal = ExternIO::encode(signal).map_err(|err| wasm_error!(WasmErrorInner::Guest(err.into())))?;
@@ -129,11 +128,14 @@ pub fn get_all_assessments(_:()) -> ExternResult<Vec<Assessment>> {
     // for each resource that has been assessed, crawl all children to get each dimension that it has been assessed along
     for assessed_resource_path in assessed_resources_typed_paths {
         let assessed_dimensions_for_resource_typed_paths = assessed_resource_path.children_paths()?;
-        
+
         // for each dimension that a resource has been assessed, get the assessment
         for assessed_dimension_path in assessed_dimensions_for_resource_typed_paths {
             let assessments = get_links(assessed_dimension_path.path_entry_hash()?, LinkTypes::Assessment, None)?.into_iter().map(|link| {
-                let maybe_assessment = get_assessment(EntryHash::from(link.target))?;
+                let maybe_assessment = get_assessment(
+                  link.target.into_entry_hash()
+                    .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?
+                )?;
                 if let Some(record) = maybe_assessment {
                     let assessment = entry_from_record::<Assessment>(record)?;
                     Ok(Some(assessment))
@@ -169,8 +171,8 @@ pub fn assessment_typed_path(
     resource_eh: EntryHash,
     dimension_eh: EntryHash,
 ) -> ExternResult<TypedPath> {
-    let resource_eh_string = EntryHashB64::from(resource_eh).to_string();
-    let dimension_eh_string = EntryHashB64::from(dimension_eh).to_string();
+    let resource_eh_string = resource_eh.to_string();
+    let dimension_eh_string = dimension_eh.to_string();
     Ok(Path::from(format!(
         "{}.{}.{}",
         ALL_ASSESSED_RESOURCES_BASE, resource_eh_string, dimension_eh_string
