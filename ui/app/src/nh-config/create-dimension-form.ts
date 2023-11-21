@@ -116,8 +116,8 @@ export default class CreateDimension extends NHComponentShoelace {
     this.touched = false;
     
     (this.renderRoot.querySelectorAll('sl-input') as any)?.forEach(input => {
-      input.value = '';
       delete input.dataset.touched;
+      input.requestUpdate();
     })    
     const checkboxes = this.renderRoot.querySelectorAll('sl-checkbox') as any;
     checkboxes?.length && checkboxes?.forEach(checkbox => {
