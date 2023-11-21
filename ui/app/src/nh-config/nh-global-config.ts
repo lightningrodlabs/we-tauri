@@ -1,4 +1,4 @@
-import { html, css, TemplateResult } from 'lit';
+import { html, css, TemplateResult, PropertyValueMap } from 'lit';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
@@ -10,7 +10,7 @@ import { NHButton, NHComponent, NHDialog, NHPageHeaderCard } from '@neighbourhoo
 import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
-import { query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 export default class NHGlobalConfig extends NHComponent {
@@ -23,7 +23,7 @@ export default class NHGlobalConfig extends NHComponent {
   _dialog;
   @query('dimension-list')
   _list;
-  @query('create-dimension')
+  @property()
   _dimensionForm;
 
   @state()
@@ -38,9 +38,21 @@ export default class NHGlobalConfig extends NHComponent {
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (_changedProperties.has('_formType')) {
+      this._dimensionForm = this.renderRoot.querySelector('create-dimension');
+    }
+    
+  }
+
+  protected async updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    if (_changedProperties.has('_formType') && typeof _changedProperties.get('_formType') !== "undefined") {
+      await this.updateComplete;
+      this._dimensionForm = this.renderRoot.querySelector(this._formType == 'input-dimension' ? 'create-dimension' : 'create-method');
+    }
+  }
 
   getDialogAlertMessage() {
-  
     return this.isDimensionFormValid() ? "Some of your fields need to be updated:" : ""
   }
 
@@ -56,6 +68,7 @@ export default class NHGlobalConfig extends NHComponent {
   }
 
   render() {
+    console.log('this._dimensionForm :>> ',this._formType, this._dimensionForm);
     return html`
       <main
         @dimension-created=${async (e: CustomEvent) => await this.onDimensionCreated(e)}
@@ -79,7 +92,7 @@ export default class NHGlobalConfig extends NHComponent {
           id="add-dimension"
           .variant=${"primary"}
           .size=${"md"}
-          @click=${() => {this._formType = "input-dimension";this._dialog.showDialog()} }
+          @click=${() => {this._formType = "input-dimension"; this._dialog.showDialog(); this.requestUpdate()} }
         >
           Add Dimension
         </nh-button>
@@ -88,7 +101,7 @@ export default class NHGlobalConfig extends NHComponent {
           id="add-dimension"
           .variant=${"primary"}
           .size=${"md"}
-          @click=${() => {this._formType = "method"; this._dialog.showDialog()} }
+          @click=${() => {this._formType = "method"; this._dialog.showDialog(); this.requestUpdate()} }
         >
           Add Dimension
         </nh-button>
