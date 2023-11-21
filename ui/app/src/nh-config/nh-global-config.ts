@@ -138,7 +138,7 @@ export default class NHGlobalConfig extends NHComponent {
     if(this._formType == "input-dimension") {
       return html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
     }
-    return html`<create-method .inputDimensions=${this._list._dimensionEntries} .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`;
+    return html`<create-method .inputDimensions=${this._list._dimensionEntries} .inputDimensionRanges=${this._list._rangeEntries} .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`;
   }
 
   static elementDefinitions = {

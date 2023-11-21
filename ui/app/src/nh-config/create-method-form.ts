@@ -1,6 +1,6 @@
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { html, css } from "lit";
-import { Dimension, Method, Program, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension, Method, Program, SensemakerStore, Range } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlInput, SlRadio, SlRadioGroup, SlSelect } from "@scoped-elements/shoelace";
@@ -24,6 +24,9 @@ export default class CreateMethod extends NHComponent {
   inputDimensions!: Array<Dimension & { dimension_eh: EntryHash }>;
 
   @state()
+  inputDimensionRanges!: Array<Range & { range_eh: EntryHash }>;
+
+  @state()
   _program: Program = {
     Average: null
   };
@@ -41,6 +44,7 @@ export default class CreateMethod extends NHComponent {
     name: string().min(1, "Must be at least 1 characters").required(),
     can_compute_live: boolean().required(),
     input_dimension_ehs: array().min(1, 'Must have an input dimension').required(),
+    output_dimension_eh: array().min(39, 'Must have an output dimension').required(),
     requires_validation: boolean().required(),
   });
 
@@ -58,7 +62,17 @@ export default class CreateMethod extends NHComponent {
         this._method['name'] = inputControl.value; 
         break;
       case 'input-dimension':
-        this.inputDimensionEhs = [decodeHashFromBase64(inputControl.value)]
+        this.inputDimensionEhs = [decodeHashFromBase64(inputControl.value)];
+        
+        // Find the new range so that output dimension range can be calculated
+        const newDimension = this.inputDimensions
+            .find((dimension: Dimension & { dimension_eh: EntryHash; }) =>
+              encodeHashToBase64(dimension.dimension_eh) === inputControl.value);
+        const newRange = this.inputDimensionRanges
+            .find((range: Range & { range_eh: EntryHash; }) =>
+              encodeHashToBase64(range.range_eh) === encodeHashToBase64(newDimension!.range_eh)) as Range & { range_eh: EntryHash };
+        if(!newRange) break;
+        this.inputRange = { name: newRange.name, kind: newRange.kind } as Range;
         break;
       default:
         this.computationMethod = inputControl.value;
@@ -119,8 +133,10 @@ export default class CreateMethod extends NHComponent {
     return fieldsUntouched;
   }
 
-  onSubmit() {
+  async onSubmit() {
+    await this._dimensionForm.onSubmit();
     this._method.input_dimension_ehs = this.inputDimensionEhs;
+
     this._methodSchema.validate(this._method)
       .catch((e) => { this.handleValidationError.call(this, e)})
       .then(async validMethod => {
@@ -173,20 +189,16 @@ export default class CreateMethod extends NHComponent {
               this._dimensionForm.disable()
               return;
             }
-            try {
-              await this.onSubmit()
-            } catch (error) {
-              console.log("Error creating new method: ", error);
-            }
+            console.log('e.detail.dimensionEh :>> ', e.detail.dimensionEh);
           }
         }}
       >
         <div slot="method-computation">
           <nh-card class="nested-card" .theme=${"dark"} .textSize=${"sm"} .heading=${"Create a method:"}>
             <div class="field select">
-              <label for="input-dimension" name="input-dimension" data-name="input-dimension">Select input dimension:</label>
+              <label for="input-dimension" data-name="input-dimension">Select input dimension:</label>
               <select name="input-dimension" placeholder="Select an input dimension" @change=${(e) => { this.onChangeValue(e) }}>
-              ${this.inputDimensions.map((dimension) => html`
+              ${this.inputDimensions.filter(dimension => !dimension.computed).map((dimension) => html`
                   <option value=${encodeHashToBase64(dimension.dimension_eh)}>${dimension.name}</option>
               `)
               }
@@ -196,25 +208,19 @@ export default class CreateMethod extends NHComponent {
               <sl-input label="Name of Method" name="method-name" data-name=${"method-name"} value=${this._method.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
               <label class="error" for="method-name" name="method-name" data-name="method-name">⁎</label>
             </div>
-            <div class="field select">
-              <label for="method" name="method" data-name="method">Choose operation:</label>
-              <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} label=${"Select an option"} data-name=${"method"} value=${this.computationMethod}>
-                <sl-radio .checked=${this.computationMethod == "AVG"} value="AVG">AVG</sl-radio>
-                <sl-radio .checked=${this.computationMethod == "SUM"} value="SUM">SUM</sl-radio>
-              </sl-radio-group>
-              <label class="error" for="method" name="method" data-name="method">⁎</label>
+            <div class="field radio">
+              <label for="method" data-name="method">Choose operation:</label>
+              <div style="display: flex; justify-content:space-between; align-items: center;">
+                <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} label=${"Select an option"} data-name=${"method"} value=${this.computationMethod}>
+                  <sl-radio .checked=${this.computationMethod == "AVG"} value="AVG">AVG</sl-radio>
+                  <sl-radio .checked=${this.computationMethod == "SUM"} value="SUM">SUM</sl-radio>
+                </sl-radio-group>
+                <label class="error" for="method" name="method" data-name="method">⁎</label>
+              </div>
             </div>
           </nh-card>
         </div>
 
-        <nh-button
-          slot="submit-action"
-          .size=${"auto"}
-          .variant=${"primary"}
-          @click=${async () => {await this._dimensionForm.onSubmit()}}
-          .disabled=${false}
-          .loading=${false}
-        >Create Method</nh-button>
       </create-dimension>
     `;
   }
@@ -231,6 +237,7 @@ export default class CreateMethod extends NHComponent {
 
   static get styles() {
     return css`
+      /* Layout */
       :host {
         display: grid;
         flex: 1;
@@ -238,12 +245,17 @@ export default class CreateMethod extends NHComponent {
         color: var(--nh-theme-fg-default); 
       }
 
+      .field, .field-row {
+        display: flex;
+        margin-bottom: calc(1px * var(--nh-spacing-md));
+      }
+
       fieldset {
         border: none;
         flex-direction: column;
       }
 
-      .field.select {
+      .field.select, .field.radio {
         display: flex;
         flex-direction: column;
         gap: calc(1px * var(--nh-spacing-md));
@@ -253,7 +265,7 @@ export default class CreateMethod extends NHComponent {
         height: 2.5rem;
       }
 
-      .field.select label:not(.error) {
+      label:not(.error) {
         font-size: calc(1px * var(--nh-font-size-md));
       }
 
@@ -261,8 +273,12 @@ export default class CreateMethod extends NHComponent {
         display: flex;
         justify-content: space-evenly;
         align-items: center;
+        gap: calc(1px * var(--nh-spacing-md));
       }
-      
+      sl-radio:not(:last-of-type) {
+        margin: 0;
+      }
+
       sl-radio::part(base) {
         color: white;
       }
