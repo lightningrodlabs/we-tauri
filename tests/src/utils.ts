@@ -126,7 +126,10 @@ export const installAgent = async (
 export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
   let config: AppletConfigInput = {
     name: "sample applet config",
-    ranges: [{ name: "10-scale", kind: { Integer: { min: 0, max: 10 } } }, { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } }],
+    ranges: [
+      { name: "10-scale", kind: { Integer: { min: 0, max: 10 } } },
+      { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } },
+    ],
     dimensions: [
       {
         name: "likeness",
@@ -135,28 +138,29 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
       },
       {
         name: "total_likeness",
-        range: { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } },
+        range: {
+          name: "10-scale",
+          kind: { Integer: { min: 0, max: 1000000 } },
+        },
         computed: true,
       },
     ],
-    resource_defs: {
-      "test_provider_dna": {
-        "test_provider":
-        [
+    resource_defs: [
+      {
+        resource_name: "angryPost",
+        base_types: [resource_base_def],
+        dimensions: [
           {
-            name: "angryPost",
-            base_types: [resource_base_def],
-            dimensions: [
-              {
-                name: "likeness",
-                range: { name: "10-scale", kind: { Integer: { min: 0, max: 10 } } },
-                computed: false,
-              },
-            ],
+            name: "likeness",
+            range: { name: "10-scale", kind: { Integer: { min: 0, max: 10 } } },
+            computed: false,
           },
         ],
-      }
-    },
+        installed_app_id: "test_applet",
+        role_name: "test_provider_dna",
+        zome_name: "test_provider",
+      },
+    ],
     methods: [
       {
         name: "total_likeness_method",
@@ -186,7 +190,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
       {
         name: "more than 5 total likeness, biggest to smallest",
         resource_def: {
-          name: "angryPost",
+          resource_name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
             {
@@ -198,12 +202,18 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
               computed: false,
             },
           ],
+          installed_app_id: "test_applet",
+          role_name: "test_provider_dna",
+          zome_name: "test_provider",
         },
         thresholds: [
           {
             dimension: {
               name: "total_likeness",
-              range: { name: "10-scale", kind: { Integer: { min: 0, max: 1000000 } } },
+              range: {
+                name: "10-scale",
+                kind: { Integer: { min: 0, max: 1000000 } },
+              },
               computed: true,
             },
             kind: { GreaterThan: null },
@@ -229,7 +239,7 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
       {
         name: "more than 5 total likeness, smallest to biggest",
         resource_def: {
-          name: "angryPost",
+          resource_name: "angryPost",
           base_types: [resource_base_def],
           dimensions: [
             {
@@ -241,6 +251,9 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
               computed: false,
             },
           ],
+          installed_app_id: "test_applet",
+          role_name: "test_provider_dna",
+          zome_name: "test_provider",
         },
         thresholds: [
           {
