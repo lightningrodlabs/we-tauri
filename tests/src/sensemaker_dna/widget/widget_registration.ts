@@ -1,3 +1,4 @@
+import { AssessmentWidgetRegistration, AssessmentWidgetRegistrationUpdateInput } from './../../../../client/src/widgets/widget-registry';
 import { AgentPubKey, EntryHash } from "@holochain/client";
 import {
   pause,
@@ -97,17 +98,35 @@ export default () => {
           range_eh: twentyScaleRangeEntryHash,
           kind: 'input'
         };
-        const create1 = await callZomeAlice(
+        const widgetRegistrationCreationRecord : Record = await callZomeAlice(
           "widgets",
           "register_assessment_widget",
           testWidgetRegistration
         );
-        t.ok(create1, "creating a new assessment widget registration");
+        t.ok(widgetRegistrationCreationRecord, "creating a new assessment widget registration");
+
+        const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
         await pause(pauseDuration);
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
-        
+
         // Test 3: Given a created registration entry Then Alice can update that widget registration entry
+
+        const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
+          assessment_registration_eh: widgetRegistrationCreationEntryHash,
+          applet_eh: dummyEntryHash,
+          widget_key: 'total-importance', 
+          name: 'Importance Widget Updated',
+          range_eh: twentyScaleRangeEntryHash,
+          kind: 'output'
+        };
+        const update1 = await callZomeAlice(
+          "widgets",
+          "update_assessment_widget_registration",
+          testWidgetRegistrationUpdate
+        );
+        t.ok(update1, "updated an assessment widget registration");
+        await pause(pauseDuration);
 
         // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
