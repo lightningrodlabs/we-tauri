@@ -110,6 +110,13 @@ export default () => {
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
 
+        const get1 = await callZomeAlice(
+          "widgets",
+          "get_assessment_widget_registration",
+          widgetRegistrationCreationEntryHash
+        );
+        t.ok(get1, "get an assessment widget registration");
+
         // Test 3: Given a created registration entry Then Alice can update that widget registration entry
 
         const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
