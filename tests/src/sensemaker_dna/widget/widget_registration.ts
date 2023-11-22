@@ -11,7 +11,7 @@ import pkg from "tape-promise/tape";
 const { test } = pkg;
 
 export default () => {
-  test.only("test registering agent", async (t) => {
+  test("Widget registration", async (t) => {
     await runScenario(async (scenario) => {
       const {
         alice,
@@ -60,15 +60,16 @@ export default () => {
         const pauseDuration = 1000
         await scenario.shareAllAgents();
         await pause(pauseDuration*2);
-        let agents: Array<AgentPubKey> = await callZomeAlice(
-          "sensemaker",
-          "get_all_agents",
-          null,
-          true
-        );
-        t.ok(agents);
-        t.equal(agents.length, 0);
-        console.log("agents", agents);
+
+        // Test 0: Given no registered widgets Then Alice can read all registered widgets and get an empty array
+
+        // Test 1: Alice can create a widget registration entry
+
+        // Test 2: Given a created registration entry Then Alice can read that widget registration entry
+        
+        // Test 3: Given a created registration entry Then Alice can update that widget registration entry
+
+        // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
       } catch (e) {
         console.error(e);
