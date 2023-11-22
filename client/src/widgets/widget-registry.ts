@@ -13,6 +13,10 @@ export type AssessmentWidgetRegistration = AssessmentWidgetRegistrationInput & {
   range: Range
 }
 
+export type AssessmentWidgetRegistrationUpdateInput = AssessmentWidgetRegistrationInput & {
+  assessment_registration_eh: EntryHash,
+}
+
 export type AssessmentWidgetConfigDict = Record<string, AssessmentWidgetConfig>
 // e.g.
 // {
