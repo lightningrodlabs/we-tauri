@@ -73,16 +73,11 @@ export default () =>
 
         let dimension_ehs: EntryHash[] = Object.values(maybe_applet_config.dimensions);
         // given maybe_applet_config.resource_defs return a flat list of the ehs
-        let resource_ehs: Uint8Array[] = [];
-        Object.values(maybe_applet_config.resource_defs).forEach((zome_list) => {
-          Object.values(zome_list).forEach((eh) => {
-            resource_ehs = [...Object.values(eh), ...resource_ehs];
-          })
-        });
+        let resource_def_ehs: EntryHash[] = Object.values(maybe_applet_config.resource_defs);
         let method_ehs: EntryHash[] = Object.values(maybe_applet_config.methods);
         let context_ehs: EntryHash[] = Object.values(maybe_applet_config.cultural_contexts);
         t.equal(dimension_ehs.length, 2);
-        t.equal(resource_ehs.length, 1);
+        t.equal(resource_def_ehs.length, 1);
         t.equal(method_ehs.length, 1);
         t.equal(context_ehs.length, 2);
 
@@ -97,7 +92,7 @@ export default () =>
 
         // Alice gets all resources created from config
         let resources = await Promise.all(
-          resource_ehs.map(async (eh) => {
+          resource_def_ehs.map(async (eh) => {
             return await callZomeAlice(
               "sensemaker",
               "get_resource_def",
