@@ -9,10 +9,12 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat } from "@neighbourhoods/client";
+import { Assessment, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat, Dimension, ResourceDef, CulturalContext } from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent } from "../../utils";
+import { EntryRecord } from "@holochain-open-dev/utils";
+import { create } from "lodash";
 const { test } = pkg;
 
 export const setUpAliceandBob = async (
@@ -160,12 +162,14 @@ export default () => {
           },
         };
 
-        const rangeHash = await callZomeAlice(
+        const rangeRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange,
           true
         );
+        const rangeEntryRecord = new EntryRecord<Range>(rangeRecord);
+        const rangeHash = rangeEntryRecord.entryHash;
         t.ok(rangeHash);
 
         const createDimension = {
@@ -181,20 +185,26 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+        const createDimensionRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension,
           true
         );
+        const createDimensionEntryHash = new EntryRecord<Dimension>(
+          createDimensionRecord
+        ).entryHash;
         t.ok(createDimensionEntryHash);
 
-        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
+        const createDimensionRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension2,
           true
         );
+        const createDimensionEntryHash2 = new EntryRecord<Dimension>(
+          createDimensionRecord2
+        ).entryHash;
         t.ok(createDimensionEntryHash2);
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
@@ -226,23 +236,29 @@ export default () => {
           readPostOutput.signed_action.hashed.content.entry_type.App
         );
 
-        const createResourceDef = {
-          name: "angryPost",
+        const createResourceDef: ResourceDef = {
+          resource_name: "angryPost",
           //@ts-ignore
           base_types: [
             //@ts-ignore
             readPostOutput.signed_action.hashed.content.entry_type.App,
           ],
           dimension_ehs: [createDimensionEntryHash],
+          installed_app_id: "test_provider",
+          role_name: "test_provider_dna",
+          zome_name: "provider",
         };
 
         // Alice creates a resource type
-        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",
           createResourceDef,
           true
         );
+        const createResourceDefEntryHash = new EntryRecord<ResourceDef>(
+          createResourceDefRecord
+        ).entryHash;
         t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -271,12 +287,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createAssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment,
           true
         );
+        const createAssessmentEntryHash = new EntryRecord<Assessment>(
+          createAssessmentRecord
+        ).entryHash;
         t.ok(createAssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -291,12 +310,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createAssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment2,
           true
         );
+        const createAssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createAssessmentRecord2
+        ).entryHash;
         t.ok(createAssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -352,12 +374,13 @@ export default () => {
           },
         };
 
-        const rangeHash2 = await callZomeAlice(
+        const rangeRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange2,
           true
         );
+        const rangeHash2 = new EntryRecord<Range>(rangeRecord2).entryHash;
         t.ok(rangeHash2);
 
         const createObjectiveDimension = {
@@ -367,13 +390,16 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createObjectiveDimensionEntryHash: EntryHash =
+        const createObjectiveDimensionRecord: Record =
           await callZomeAlice(
             "sensemaker",
             "create_dimension",
             createObjectiveDimension,
             true
           );
+        const createObjectiveDimensionEntryHash = new EntryRecord<Dimension>(
+          createObjectiveDimensionRecord
+        ).entryHash;
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
@@ -386,12 +412,15 @@ export default () => {
           requires_validation: false,
         };
 
-        const createMethodEntryHash: EntryHash = await callZomeAlice(
+        const createMethodRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
           totalLikenessMethod,
           true
         );
+        const createMethodEntryHash = new EntryRecord<Method>(
+          createMethodRecord
+        ).entryHash;
         t.ok(createMethodEntryHash);
 
         await pause(pauseDuration);
@@ -561,12 +590,13 @@ export default () => {
           },
         };
 
-        const rangeHash: EntryHash = await callZomeAlice(
+        const rangeRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange,
           true
         );
+        const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
         t.ok(rangeHash);
 
         const createDimension = {
@@ -576,12 +606,15 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+        const createDimensionRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension,
           true
         );
+        const createDimensionEntryHash = new EntryRecord<Dimension>(
+          createDimensionRecord
+        ).entryHash;
         t.ok(createDimensionEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -599,23 +632,29 @@ export default () => {
           decode((createReadOutput.entry as any).Present.entry) as any
         );
 
-        const createResourceDef = {
-          name: "angryPost",
+        const createResourceDef: ResourceDef = {
+          resource_name: "angryPost",
           //@ts-ignore
           base_types: [
             //@ts-ignore
             readPostOutput.signed_action.hashed.content.entry_type.App,
           ],
           dimension_ehs: [createDimensionEntryHash],
+          installed_app_id: "test_provider",
+          role_name: "test_provider_dna",
+          zome_name: "provider",
         };
 
         // Alice creates a resource type
-        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",
           createResourceDef,
           true
         );
+        const createResourceDefEntryHash = new EntryRecord<ResourceDef>(
+          createResourceDefRecord
+        ).entryHash;
         t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -644,12 +683,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP1AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP1AssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP1Assessment,
           true
         );
+        const createP1AssessmentEntryHash = new EntryRecord<Assessment>(
+          createP1AssessmentRecord
+        ).entryHash;
         t.ok(createP1AssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -664,12 +706,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP1AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP1AssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP1Assessment2,
           true
         );
+        const createP1AssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createP1AssessmentRecord2
+        ).entryHash;
         t.ok(createP1AssessmentEntryHash2);
 
         const createP2Assessment: CreateAssessmentInput = {
@@ -680,12 +725,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP2AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP2AssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP2Assessment,
           true
         );
+        const createP2AssessmentEntryHash = new EntryRecord<Assessment>(
+          createP2AssessmentRecord
+        ).entryHash;
         t.ok(createP2AssessmentEntryHash);
 
         // create an assessment on the Post
@@ -697,12 +745,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP2AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP2AssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP2Assessment2,
           true
         );
+        const createP2AssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createP2AssessmentRecord2
+        ).entryHash;
         t.ok(createP2AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -717,12 +768,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP3AssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createP3AssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP3Assessment,
           true
         );
+        const createP3AssessmentEntryHash = new EntryRecord<Assessment>(
+          createP3AssessmentRecord
+        ).entryHash;
         t.ok(createP3AssessmentEntryHash);
 
         const createP3Assessment2: CreateAssessmentInput = {
@@ -733,12 +787,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createP3AssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createP3AssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createP3Assessment2,
           true
         );
+        const createP3AssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createP3AssessmentRecord2
+        ).entryHash;
         t.ok(createP3AssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -753,12 +810,13 @@ export default () => {
           },
         };
 
-        const rangeHash2: EntryHash = await callZomeAlice(
+        const rangeRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange2,
           true
         );
+        const rangeHash2 = new EntryRecord<Range>(rangeRecord2).entryHash;
         t.ok(rangeHash2);
 
         const createObjectiveDimension = {
@@ -768,13 +826,16 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createObjectiveDimensionEntryHash: EntryHash =
+        const createObjectiveDimensionRecord: Record =
           await callZomeAlice(
             "sensemaker",
             "create_dimension",
             createObjectiveDimension,
             true
           );
+          const createObjectiveDimensionEntryHash = new EntryRecord<Dimension>(
+            createObjectiveDimensionRecord
+          ).entryHash;
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
@@ -787,12 +848,15 @@ export default () => {
           requires_validation: false,
         };
 
-        const createMethodEntryHash: EntryHash = await callZomeAlice(
+        const createMethodRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
           totalLikenessMethod,
           true
         );
+        const createMethodEntryHash = new EntryRecord<Method>(
+          createMethodRecord
+        ).entryHash;
         t.ok(createMethodEntryHash);
 
         await pause(pauseDuration);
@@ -926,12 +990,15 @@ export default () => {
           order_by: [[createObjectiveDimensionEntryHash, { Biggest: null }]], // DimensionEh
         };
 
-        const createContextEntryHash: EntryHash = await callZomeAlice(
+        const createContextRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_cultural_context",
           culturalContext,
           true
         );
+        const createContextEntryHash = new EntryRecord<CulturalContext>(
+          createContextRecord
+        ).entryHash;
         t.ok(createContextEntryHash);
 
         const culturalContext2 = {
@@ -941,12 +1008,15 @@ export default () => {
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
 
-        const createContextEntryHash2: EntryHash = await callZomeAlice(
+        const createContextRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_cultural_context",
           culturalContext2,
           true
         );
+        const createContextEntryHash2 = new EntryRecord<CulturalContext>(
+          createContextRecord2
+        ).entryHash;
         t.ok(createContextEntryHash2);
 
         const culturalContext3 = {
@@ -956,12 +1026,15 @@ export default () => {
           order_by: [[createObjectiveDimensionEntryHash, { Smallest: null }]], // DimensionEh
         };
 
-        const createContextEntryHash3: EntryHash = await callZomeAlice(
+        const createContextRecord3: Record = await callZomeAlice(
           "sensemaker",
           "create_cultural_context",
           culturalContext3,
           true
         );
+        const createContextEntryHash3 = new EntryRecord<CulturalContext>(
+          createContextRecord3
+        ).entryHash;
         t.ok(createContextEntryHash3);
         await pause(pauseDuration);
 
@@ -1140,12 +1213,13 @@ export default () => {
           },
         };
 
-        const rangeHash = await callZomeAlice(
+        const rangeRecord = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange,
           true
         );
+        const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
         t.ok(rangeHash);
 
         const createDimension = {
@@ -1161,41 +1235,53 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+        const createDimensionRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension,
           true
         );
+        const createDimensionEntryHash = new EntryRecord<Dimension>(
+          createDimensionRecord
+        ).entryHash;
         t.ok(createDimensionEntryHash);
 
-        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
+        const createDimensionRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension2,
           true
         );
+        const createDimensionEntryHash2 = new EntryRecord<Dimension>(
+          createDimensionRecord2
+        ).entryHash;
         t.ok(createDimensionEntryHash2);
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
-        const createResourceDef = {
-          name: "angryPost",
+        const createResourceDef: ResourceDef = {
+          resource_name: "angryPost",
           //@ts-ignore
           base_types: [
             //@ts-ignore
             { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
+          installed_app_id: "test_provider",
+          role_name: "test_provider_dna",
+          zome_name: "provider",
         };
 
         // Alice creates a resource type
-        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",
           createResourceDef,
           true
         );
+        const createResourceDefEntryHash = new EntryRecord<ResourceDef>(
+          createResourceDefRecord
+        ).entryHash;
         t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1211,12 +1297,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createAssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment,
           true
         );
+        const createAssessmentEntryHash = new EntryRecord<Assessment>(
+          createAssessmentRecord
+        ).entryHash;
         t.ok(createAssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1231,12 +1320,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createAssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment2,
           true
         );
+        const createAssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createAssessmentRecord2
+        ).entryHash;
         t.ok(createAssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1253,12 +1345,15 @@ export default () => {
           requires_validation: false,
         };
 
-        const createMethodEntryHash: EntryHash = await callZomeAlice(
+        const createMethodRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
           totalHeatMethod,
           true
         );
+        const createMethodEntryHash = new EntryRecord<Method>(
+          createMethodRecord
+        ).entryHash;
         t.ok(createMethodEntryHash);
 
         await pause(pauseDuration);
@@ -1377,12 +1472,13 @@ export default () => {
           },
         };
 
-        const rangeHash = await callZomeAlice(
+        const rangeRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_range",
           integerRange,
           true
         );
+        const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
         t.ok(rangeHash);
 
         const createDimension = {
@@ -1398,41 +1494,53 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createDimensionEntryHash: EntryHash = await callZomeAlice(
+        const createDimensionRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension,
           true
         );
+        const createDimensionEntryHash = new EntryRecord<Dimension>(
+          createDimensionRecord
+        ).entryHash;
         t.ok(createDimensionEntryHash);
 
-        const createDimensionEntryHash2: EntryHash = await callZomeAlice(
+        const createDimensionRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_dimension",
           createDimension2,
           true
         );
+        const createDimensionEntryHash2 = new EntryRecord<Dimension>(
+          createDimensionRecord2
+        ).entryHash;
         t.ok(createDimensionEntryHash2);
         // Wait for the created entry to be propagated to the other node.
         await pause(pauseDuration);
 
-        const createResourceDef = {
-          name: "angryPost",
+        const createResourceDef: ResourceDef = {
+          resource_name: "angryPost",
           //@ts-ignore
           base_types: [
             //@ts-ignore
             { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
+          installed_app_id: "test_provider",
+          role_name: "test_provider_dna",
+          zome_name: "provider",
         };
 
         // Alice creates a resource type
-        const createResourceDefEntryHash: EntryHash = await callZomeAlice(
+        const createResourceDefRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",
           createResourceDef,
           true
         );
+        const createResourceDefEntryHash = new EntryRecord<ResourceDef>(
+          createResourceDefRecord
+        ).entryHash;
         t.ok(createResourceDefEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1448,12 +1556,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash: EntryHash = await callZomeAlice(
+        const createAssessmentRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment,
           true
         );
+        const createAssessmentEntryHash = new EntryRecord<Assessment>(
+          createAssessmentRecord
+        ).entryHash;
         t.ok(createAssessmentEntryHash);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1468,12 +1579,15 @@ export default () => {
           maybe_input_dataset: null,
         };
 
-        const createAssessmentEntryHash2: EntryHash = await callZomeAlice(
+        const createAssessmentRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_assessment",
           createAssessment2,
           true
         );
+        const createAssessmentEntryHash2 = new EntryRecord<Assessment>(
+          createAssessmentRecord2
+        ).entryHash;
         t.ok(createAssessmentEntryHash2);
 
         // Wait for the created entry to be propagated to the other node.
@@ -1490,12 +1604,15 @@ export default () => {
           requires_validation: false,
         };
 
-        const createMethodEntryHash: EntryHash = await callZomeAlice(
+        const createMethodRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
           totalHeatMethod,
           true
         );
+        const createMethodEntryHash = new EntryRecord<Method>(
+          createMethodRecord
+        ).entryHash;
         t.ok(createMethodEntryHash);
 
         await pause(pauseDuration);
