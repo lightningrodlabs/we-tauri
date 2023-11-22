@@ -23,6 +23,8 @@ export default class NHGlobalConfig extends NHComponent {
   _dialog;
   @query('dimension-list')
   _list;
+  @query('#output-dimension-list')
+  _outputDimensionList;
   @property()
   _dimensionForm;
 
@@ -94,7 +96,7 @@ export default class NHGlobalConfig extends NHComponent {
         >
           Add Dimension
         </nh-button>
-        <dimension-list .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'output'}></dimension-list>
+        <dimension-list id="output-dimension-list" .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'output'}></dimension-list>
         <nh-button
           id="add-dimension"
           .variant=${"primary"}
@@ -169,12 +171,13 @@ export default class NHGlobalConfig extends NHComponent {
     this._list.resetSelectedInputDimensionIndex();
     await this._list.firstUpdated();
   }
-
+  
   private onMethodCreated = async (e: CustomEvent) => {  
     console.log('method created!')
     this._dialog.hideDialog();
-    await this._list.fetchDimensionEntries();
-    this.requestUpdate()
+    await this._outputDimensionList.fetchRangeEntries();
+    await this._outputDimensionList.fetchDimensionEntries();
+    await this._outputDimensionList.firstUpdated();
   }
 
   private onInputDimensionSelected = (e: CustomEvent) => {
