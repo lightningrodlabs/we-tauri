@@ -346,7 +346,7 @@ async function postMessage(request: AppletToParentRequest): Promise<any> {
 async function setupAppAgentClient(appPort: number, installedAppId: string) {
 
   const appletClient = await AppAgentWebsocket.connect(
-    new URL(`ws://localhost:${appPort}`),
+    new URL(`ws://127.0.0.1:${appPort}`),
     installedAppId
   );
 

@@ -37,7 +37,7 @@ The easiest way to test your applets is to use the [main we desktop executable](
 
 If you set these CLI arguments, `we` will start in a completely separate profile in a temporary directory, it will create a new empty group, and install the given applets to that group, without uploading them to the appstore.
 
-It is also important to set the `BOOTSTRAP_PORT` and `SIGNAL_PORT` environment variables if you don't want to use the production services. If those variables are set, `we` will try to connect to `ws://localhost:$BOOTSTRAP_PORT` and `ws://localhost:SIGNAL_PORT`. You can run these services using `hc run-local-services`.
+It is also important to set the `BOOTSTRAP_PORT` and `SIGNAL_PORT` environment variables if you don't want to use the production services. If those variables are set, `we` will try to connect to `ws://127.0.0.1:$BOOTSTRAP_PORT` and `ws://127.0.0.1:SIGNAL_PORT`. You can run these services using `hc run-local-services`.
 
 On Linux, this would be:
 
@@ -49,7 +49,7 @@ Run this command in a separate terminal for each agent that you want to test you
 
 #### Other CLI arguments
 
-- `profile` is the name of the internal folder that we will use to store all its data. Changing the profile allows for setting up test networks without losing the data for your default installation of we. 
+- `profile` is the name of the internal folder that we will use to store all its data. Changing the profile allows for setting up test networks without losing the data for your default installation of we.
   - Using `test-applets` will ignore this argument and just use a temporary directory.
 
 ### Publishing applets to the DevHub

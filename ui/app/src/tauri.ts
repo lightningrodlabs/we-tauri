@@ -28,7 +28,7 @@ export async function isLaunched(): Promise<boolean> {
 
 // Here we are trying to cover all platforms in different ways
 // Windows doesn't support requests of type applet://APPLETID
-// MacOs doesn't support requests of type http://APPLETID.localhost:4040
+// MacOs doesn't support requests of type http://APPLETID.127.0.0.1:4040
 export enum AppletIframeProtocol {
   Assets,
   LocalhostSubdomain,
@@ -110,7 +110,7 @@ export async function getConductorInfo(): Promise<ConductorInfo> {
   if (isWindows()) {
     try {
       await fetchPing(
-        `http://ping.localhost:${conductor_info.applets_ui_port}`
+        `http://ping.127.0.0.1:${conductor_info.applets_ui_port}`
       );
       applet_iframe_protocol = AppletIframeProtocol.LocalhostSubdomain;
     } catch (e) {
@@ -123,7 +123,7 @@ export async function getConductorInfo(): Promise<ConductorInfo> {
     } catch (e) {
       try {
         await fetchPing(
-          `http://ping.localhost:${conductor_info.applets_ui_port}`
+          `http://ping.127.0.0.1:${conductor_info.applets_ui_port}`
         );
         applet_iframe_protocol = AppletIframeProtocol.LocalhostSubdomain;
       } catch (e) {

@@ -70,7 +70,7 @@ pub async fn fetch_icon(
     }
 
     let mut app_agent_client = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", ports.1,),
+        format!("ws://127.0.0.1:{}", ports.1,),
         appstore_app_id(&app_handle),
         meta_lair_client.lock().await.lair_client(),
     )
@@ -193,7 +193,7 @@ pub async fn install_applet_bundle_if_necessary(
     );
 
     let mut app_agent_websocket = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", ports.1,),
+        format!("ws://127.0.0.1:{}", ports.1,),
         appstore_app_id(&app_handle),
         meta_lair_client.lock().await.lair_client(),
     )
@@ -380,7 +380,7 @@ pub async fn update_applet_ui(
         }
         false => {
             let mut app_agent_websocket = AppAgentWebsocket::connect(
-                format!("ws://localhost:{}", ports.1,),
+                format!("ws://127.0.0.1:{}", ports.1,),
                 appstore_app_id(&app_handle),
                 meta_lair_client.lock().await.lair_client(),
             )
@@ -519,7 +519,7 @@ pub async fn fetch_available_ui_updates(
     }
 
     let mut app_agent_websocket = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", ports.1,),
+        format!("ws://127.0.0.1:{}", ports.1,),
         appstore_app_id(&app_handle),
         meta_lair_client.lock().await.lair_client(),
     )
@@ -1447,7 +1447,7 @@ impl AppWebsocket {
 // ) -> WeResult<Vec<u8>> {
 //     let mut client = AppAgentWebsocket::connect(
 //         format!(
-//             "ws://localhost:{}",
+//             "ws://127.0.0.1:{}",
 //             conductor.list_app_interfaces().await?[0]
 //         ),
 //         appstore_app_id(&app_handle),

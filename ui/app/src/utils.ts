@@ -47,7 +47,7 @@ export function appletOrigin(
     conductorInfo.applet_iframe_protocol ===
     AppletIframeProtocol.LocalhostSubdomain
   ) {
-    return `http://${encodeHashToBase64(appletHash)}.localhost:${
+    return `http://${encodeHashToBase64(appletHash)}.127.0.0.1:${
       conductorInfo.applets_ui_port
     }`;
   } else {

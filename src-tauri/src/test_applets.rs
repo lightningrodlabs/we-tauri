@@ -78,7 +78,7 @@ pub async fn launch_test_applets_agent(
     println!("Joined group, {:?}", app_info.installed_app_id);
 
     let mut group_app_client = AppAgentWebsocket::connect(
-        format!("ws://localhost:{}", app_port),
+        format!("ws://127.0.0.1:{}", app_port),
         app_info.installed_app_id,
         lair_client.lair_client(),
     )
@@ -151,7 +151,7 @@ pub async fn launch_test_applets_agent(
 
         // Create the applet in the group to get the app id
 
-        let mut admin_ws = AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
+        let mut admin_ws = AdminWebsocket::connect(format!("ws://127.0.0.1:{}", admin_port))
             .await
             .map_err(|err| LaunchHolochainError::CouldNotConnectToConductor(format!("{}", err)))?;
 

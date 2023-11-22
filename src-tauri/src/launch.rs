@@ -126,13 +126,13 @@ pub async fn launch(
     std::thread::sleep(Duration::from_millis(100));
 
     // Try to connect twice. This fixes the os(111) error for now that occurs when the conducor is not ready yet.
-    let mut admin_ws = match AdminWebsocket::connect(format!("ws://localhost:{}", admin_port)).await
+    let mut admin_ws = match AdminWebsocket::connect(format!("ws://127.0.0.1:{}", admin_port)).await
     {
         Ok(ws) => ws,
         Err(_) => {
             log::error!("[HOLOCHAIN] Could not connect to the AdminWebsocket. Starting another attempt in 5 seconds.");
             std::thread::sleep(Duration::from_millis(5000));
-            AdminWebsocket::connect(format!("ws://localhost:{}", admin_port))
+            AdminWebsocket::connect(format!("ws://127.0.0.1:{}", admin_port))
                 .await
                 .map_err(|err| {
                     LaunchHolochainError::CouldNotConnectToConductor(format!("{}", err))
@@ -413,16 +413,12 @@ pub async fn launch_lair_keystore_process(
             )))
         })?;
 
-    println!("Writing password...");
-
     tauri::async_runtime::spawn(async move {
         std::thread::sleep(Duration::from_millis(10));
         command_child
             .write(password.as_bytes())
             .expect("Could not write password");
     });
-
-    println!("Password written...");
 
     let mut started = false;
     while !started {
@@ -457,8 +453,6 @@ pub async fn launch_lair_keystore_process(
             }
         }
     });
-
-    println!("Trying to print lair version...");
 
     // NEW_VERSION Check whether lair-keystore version needs to get updated
     let output = Command::new_sidecar("lair-keystore-v0.3.0")

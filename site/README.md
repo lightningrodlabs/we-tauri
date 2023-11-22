@@ -35,7 +35,7 @@ All commands are run from the root of the project, from a terminal:
 | Command           | Action                                       |
 | :---------------- | :------------------------------------------- |
 | `npm install`     | Installs dependencies                        |
-| `npm run start`   | Starts local dev server at `localhost:8000`  |
+| `npm run start`   | Starts local dev server at `127.0.0.1:8000`  |
 | `npm run build`   | Build your production site to `./_site/`     |
 | `npm run preview` | Preview your build locally, before deploying |
 

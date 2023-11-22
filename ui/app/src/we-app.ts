@@ -87,11 +87,11 @@ export class WeApp extends LitElement {
     };
 
     const adminWebsocket = await AdminWebsocket.connect(
-      new URL(`ws://localhost:${info.admin_port}`)
+      new URL(`ws://127.0.0.1:${info.admin_port}`)
     );
 
     const appWebsocket = await AppWebsocket.connect(
-      new URL(`ws://localhost:${info.app_port}`)
+      new URL(`ws://127.0.0.1:${info.app_port}`)
     );
 
     const appStoreClient = await initAppClient(info.appstore_app_id);
