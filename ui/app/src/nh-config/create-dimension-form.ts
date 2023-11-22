@@ -190,7 +190,6 @@ export default class CreateDimension extends NHComponentShoelace {
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
     if(fieldsUntouched) return;
-
     this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
       .catch((e) => {this.handleValidationError.call(this, e)})
       .then(async validRange => {
@@ -205,6 +204,7 @@ export default class CreateDimension extends NHComponentShoelace {
             
             this._dimension.range_eh = rangeEh;
             const dimensionEh = await this.createDimension()
+            await this.updateComplete;
             this.dispatchEvent(
               new CustomEvent("dimension-created", {
                 detail: { dimensionEh, dimensionType: this.dimensionType, dimension: this._dimension },
@@ -286,7 +286,6 @@ export default class CreateDimension extends NHComponentShoelace {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
       const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      console.log('this._dimensionRange :>> ', this._dimensionRange);
       const response = await this.sensemakerStore.client.callZome({
         cell_id,
         zome_name: 'sensemaker',
