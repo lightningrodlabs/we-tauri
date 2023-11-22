@@ -4,10 +4,11 @@ import {
   runScenario,
   cleanAllConductors,
 } from "@holochain/tryorama";
-import { AssessmentWidgetBlockConfig } from "@neighbourhoods/client";
+import { Record } from "@neighbourhoods/client";
 import { setUpAliceandBob } from "../sensemaker/neighbourhood";
 
 import pkg from "tape-promise/tape";
+import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
 
 export default () => {
@@ -64,6 +65,45 @@ export default () => {
         // Test 0: Given no registered widgets Then Alice can read all registered widgets and get an empty array
 
         // Test 1: Alice can create a widget registration entry
+          // use provider DNA method to get some entry hash for applet_eh
+          const dummyEntryHash: EntryHash = await callZomeAlice(
+            "test_provider",
+            "create_post",
+            { title: 'dummy', content: 'test' },
+            false,
+          );
+          console.log('dummy ResourceDef hash', dummyEntryHash)
+
+          // create range
+          const twentyScaleRange = {
+            "name": "20-scale",
+            "kind": {
+              "Integer": { "min": 0, "max": 20 }
+            },
+          };
+          const twentyScaleRangeRecord: Record = await callZomeAlice(
+            "sensemaker",
+            "create_range",
+            twentyScaleRange,
+            true
+          );
+          await pause(pauseDuration);
+          const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
+
+        const testWidgetRegistration = {
+          applet_eh: dummyEntryHash,
+          widget_key: 'importance', 
+          name: 'Importance Widget',
+          range_eh: twentyScaleRangeEntryHash,
+          kind: 'input'
+        };
+        const create1 = await callZomeAlice(
+          "widgets",
+          "register_assessment_widget",
+          testWidgetRegistration
+        );
+        t.ok(create1, "creating a new assessment widget registration");
+        await pause(pauseDuration);
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
         
