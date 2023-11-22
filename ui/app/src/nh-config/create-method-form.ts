@@ -1,11 +1,12 @@
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
-import { html, css } from "lit";
+import { html, css, PropertyValueMap } from "lit";
 import { Dimension, Method, Program, SensemakerStore, Range } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import CreateDimension from "./create-dimension-form";
 import { SlInput, SlRadio, SlRadioGroup, SlSelect } from "@scoped-elements/shoelace";
-import { AppInfo, EntryHash, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
+import { AppInfo, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from "@holochain/client";
 import { array, boolean, object, string } from "yup";
+const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 
 export default class CreateMethod extends NHComponent {
   @property()
@@ -14,17 +15,17 @@ export default class CreateMethod extends NHComponent {
   @property()
   inputRange!: Range;
 
-  @state()
-  computationMethod: "AVG" | "SUM" = "AVG";
-
   @property()
   inputDimensionEhs!: EntryHash[];
-  
-  @state()
+  @property()
   inputDimensions!: Array<Dimension & { dimension_eh: EntryHash }>;
+  @property()
+  inputDimensionRanges!: Array<Range & { range_eh: EntryHash }>;
+  @state()
+  outputDimensionCreated: boolean = false;
 
   @state()
-  inputDimensionRanges!: Array<Range & { range_eh: EntryHash }>;
+  computationMethod: "AVG" | "SUM" = "AVG";
 
   @state()
   _program: Program = {
@@ -36,7 +37,7 @@ export default class CreateMethod extends NHComponent {
     program: this._program,
     can_compute_live: false,
     requires_validation: false,
-    input_dimension_ehs: undefined,
+    input_dimension_ehs: [],
     output_dimension_eh: undefined,
   };
   
@@ -44,15 +45,29 @@ export default class CreateMethod extends NHComponent {
     name: string().min(1, "Must be at least 1 characters").required(),
     can_compute_live: boolean().required(),
     input_dimension_ehs: array().min(1, 'Must have an input dimension').required(),
-    output_dimension_eh: array().min(39, 'Must have an output dimension').required(),
     requires_validation: boolean().required(),
   });
 
   @query('create-dimension')
   _dimensionForm;
 
-  @query('nh-button')
-  _submitBtn;
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(typeof this.inputDimensions[0]?.dimension_eh !== 'undefined') {
+      this._method.input_dimension_ehs = [this.inputDimensions[0].dimension_eh]
+    }  
+  }
+
+  getInputDimensionAndRangeForOutput(dimensionEh: EntryHashB64) {
+    // Find the new range so that output dimension range can be calculated
+    const inputDimension = this.inputDimensions
+      .find((dimension: Dimension & { dimension_eh: EntryHash; }) =>
+        encodeHashToBase64(dimension.dimension_eh) === dimensionEh);
+    const inputRange = this.inputDimensionRanges
+      .find((range: Range & { range_eh: EntryHash; }) =>
+        encodeHashToBase64(range.range_eh) === encodeHashToBase64(inputDimension!.range_eh)) as Range & { range_eh: EntryHash };
+    console.log('New { inputDimension, inputRange } calculated :>> ', { inputDimension, inputRange });
+    return { inputDimension, inputRange }
+  }
 
   onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
@@ -63,16 +78,11 @@ export default class CreateMethod extends NHComponent {
         break;
       case 'input-dimension':
         this.inputDimensionEhs = [decodeHashFromBase64(inputControl.value)];
+        const { inputRange } = this.getInputDimensionAndRangeForOutput(inputControl.value);
         
-        // Find the new range so that output dimension range can be calculated
-        const newDimension = this.inputDimensions
-            .find((dimension: Dimension & { dimension_eh: EntryHash; }) =>
-              encodeHashToBase64(dimension.dimension_eh) === inputControl.value);
-        const newRange = this.inputDimensionRanges
-            .find((range: Range & { range_eh: EntryHash; }) =>
-              encodeHashToBase64(range.range_eh) === encodeHashToBase64(newDimension!.range_eh)) as Range & { range_eh: EntryHash };
-        if(!newRange) break;
-        this.inputRange = { name: newRange.name, kind: newRange.kind } as Range;
+        if(!inputRange) break;
+        this.inputRange = { name: inputRange.name, kind: inputRange.kind } as Range;
+
         break;
       default:
         this.computationMethod = inputControl.value;
@@ -116,6 +126,7 @@ export default class CreateMethod extends NHComponent {
   validateIfUntouched(inputs: NodeListOf<any>) {
     let existsUntouched = false;
     inputs.forEach((input) => {
+      if(input.name == 'input-dimension') return // select is already touched
       if(!input.name) { input.name = input.dataset.name  // Fix for radio-group name
       }
       if(input.dataset.touched !== "1") {
@@ -126,6 +137,26 @@ export default class CreateMethod extends NHComponent {
     return existsUntouched
   }
 
+  resetForm() {
+    this._method = {
+      name: '',
+      program: this._program,
+      can_compute_live: false,
+      requires_validation: false,
+      input_dimension_ehs: [this.inputDimensions[0].dimension_eh],
+      output_dimension_eh: undefined,
+    };
+    const { inputRange } = this.getInputDimensionAndRangeForOutput(encodeHashToBase64(this.inputDimensions[0].dimension_eh))
+    this.inputRange  = inputRange;
+
+    const inputs = this.renderRoot.querySelectorAll("sl-input, sl-radio-group, select") as any;
+    this.resetInputErrorLabels(inputs);
+    inputs?.forEach(input => {
+      delete input!.dataset.touched;
+    })    
+    this.outputDimensionCreated = false;
+  }
+
   validate() {
     const inputs = this.renderRoot.querySelectorAll("sl-input, sl-radio-group, select");
     this.resetInputErrorLabels(inputs);
@@ -133,17 +164,28 @@ export default class CreateMethod extends NHComponent {
     return fieldsUntouched;
   }
 
-  async onSubmit() {
+  async onSubmitDimension() {
     await this._dimensionForm.onSubmit();
-    this._method.input_dimension_ehs = this.inputDimensionEhs;
+    await sleep(100); // workaround to prevent errors due to CustomEvents being sync 
+    await this.updateComplete;
+    this.outputDimensionCreated = true;
+  }
 
+  async onSubmit() {
+    if(!this.outputDimensionCreated) await this.onSubmitDimension();
+    
     this._methodSchema.validate(this._method)
       .catch((e) => { this.handleValidationError.call(this, e)})
       .then(async validMethod => {
+        if(typeof this._method.output_dimension_eh == 'undefined') {
+          this.outputDimensionCreated = false;
+          throw new Error ("Output dimension not present")
+        }
         if(validMethod) {
-          this._submitBtn.loading = true; this._submitBtn.requestUpdate("loading");
           const methodEh = await this.createMethod()
           if(!methodEh) throw new Error ("Method could not be created")
+
+          await this.updateComplete;
           this.dispatchEvent(
             new CustomEvent("method-created", {
               detail: { methodEh, inputDimensionEhs: this.inputDimensionEhs },
@@ -153,6 +195,7 @@ export default class CreateMethod extends NHComponent {
           );
 
           await this._dimensionForm.resetForm(); 
+          await this.resetForm(); 
           await this._dimensionForm.requestUpdate();
         }
       })
@@ -183,13 +226,14 @@ export default class CreateMethod extends NHComponent {
         .sensemakerStore=${this.sensemakerStore}
         @dimension-created=${async (e: CustomEvent) => {
           if(e.detail.dimensionType == "output") {
+            console.log('output dimension created!');
             this._method.output_dimension_eh = e.detail.dimensionEh;
             const needsMoreInput = this.validate();
             if(needsMoreInput) {
               this._dimensionForm.disable()
+              // TODO: add UI message explaining output dimension already created/named
               return;
             }
-            console.log('e.detail.dimensionEh :>> ', e.detail.dimensionEh);
           }
         }}
       >
@@ -198,10 +242,10 @@ export default class CreateMethod extends NHComponent {
             <div class="field select">
               <label for="input-dimension" data-name="input-dimension">Select input dimension:</label>
               <select name="input-dimension" placeholder="Select an input dimension" @change=${(e) => { this.onChangeValue(e) }}>
-              ${this.inputDimensions.filter(dimension => !dimension.computed).map((dimension) => html`
-                  <option value=${encodeHashToBase64(dimension.dimension_eh)}>${dimension.name}</option>
-              `)
-              }
+                ${this.inputDimensions.filter(dimension => !dimension.computed).map((dimension) => html`
+                    <option value=${encodeHashToBase64(dimension.dimension_eh)}>${dimension.name}</option>
+                  `)
+                }
               </select> <label class="error" for="input-dimension" name="input-dimension" data-name="input-dimension">⁎</label>
             </div>
             <div class="field">
@@ -220,11 +264,9 @@ export default class CreateMethod extends NHComponent {
             </div>
           </nh-card>
         </div>
-
       </create-dimension>
     `;
   }
-
 
   static elementDefinitions = {
     "nh-button": NHButton,
