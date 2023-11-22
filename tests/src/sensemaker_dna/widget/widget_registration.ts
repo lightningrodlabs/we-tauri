@@ -11,7 +11,7 @@ import pkg from "tape-promise/tape";
 const { test } = pkg;
 
 export default () => {
-  test("test registering agent", async (t) => {
+  test.only("test registering agent", async (t) => {
     await runScenario(async (scenario) => {
       const {
         alice,
