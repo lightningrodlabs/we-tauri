@@ -42,7 +42,6 @@ export default class NHGlobalConfig extends NHComponent {
     if (_changedProperties.has('_formType')) {
       this._dimensionForm = this.renderRoot.querySelector('create-dimension');
     }
-    
   }
 
   protected async updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -163,7 +162,6 @@ export default class NHGlobalConfig extends NHComponent {
       await this._dimensionForm.resetForm();
       await this._dimensionForm.requestUpdate();
 
-      // this._formType = "method";
       this._list.dimensionSelected = true;
     }
     await this._list.fetchDimensionEntries();
@@ -173,17 +171,10 @@ export default class NHGlobalConfig extends NHComponent {
   }
 
   private onMethodCreated = async (e: CustomEvent) => {  
-    // Add this to the state of the dimension list (WORKAROUND until we get a getMethods fn in the store)
-    const inputMethods = [...this._list.methodInputDimensions];
-    const dimensionOfThisMethod = inputMethods?.find(dimension => encodeHashToBase64(dimension.dimension_eh) === encodeHashToBase64(e.detail.inputDimensionEhs[0]));
-    if (dimensionOfThisMethod) {
-      dimensionOfThisMethod.methodEh = encodeHashToBase64(e.detail.methodEh);
-      this._list.methodInputDimensions = inputMethods;
-      await this._list.requestUpdate('methodInputDimensions');
-    }
-
-    this._list.dimensionSelected = false;
-    this._formType = "input-dimension";
+    console.log('method created!')
+    this._dialog.hideDialog();
+    await this._list.fetchDimensionEntries();
+    this.requestUpdate()
   }
 
   private onInputDimensionSelected = (e: CustomEvent) => {
