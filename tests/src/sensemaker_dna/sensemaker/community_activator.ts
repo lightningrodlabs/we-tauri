@@ -5,6 +5,7 @@ import pkg from 'tape-promise/tape';
 import { installAgent } from "../../utils";
 import { setUpAliceandBob } from "./neighbourhood";
 import { EntryRecord } from "@holochain-open-dev/utils";
+import { ResourceDef } from "@neighbourhoods/client";
 const { test } = pkg;
 
 export default () => test("test CA progenitor pattern", async (t) => {
@@ -107,11 +108,14 @@ export default () => test("test CA progenitor pattern", async (t) => {
             });
         }
 
-        const createResourceDef = {
-            "name": "angryPost",
+        const createResourceDef: ResourceDef = {
+            "resource_name": "angryPost",
             //@ts-ignore
             "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
             "dimension_ehs": [createDimensionEntryHash],
+            "installed_app_id": "test_provider",
+            "role_name": "test_provider_dna",
+            "zome_name": "provider",
         }
 
         // Alice creates a resource type
