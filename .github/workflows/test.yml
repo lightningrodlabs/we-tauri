@@ -42,7 +42,7 @@ jobs:
       - name: debug-tsc-version
         run: |
           cd $GITHUB_WORKSPACE/tests
-          npm run tsc-version
+          nix develop --command bash -c "npm run tsc-version"
 
       - name: run-tests
         run: |
