@@ -190,7 +190,6 @@ export default class CreateDimension extends NHComponentShoelace {
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
     if(fieldsUntouched) return;
-    console.log('this._dimensionRange, this._dimension :>> ', this._dimensionRange, this._dimension);
     this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
       .catch((e) => {this.handleValidationError.call(this, e)})
       .then(async validRange => {
@@ -200,7 +199,6 @@ export default class CreateDimension extends NHComponentShoelace {
             this.valid = true;
             if(validateOnly) return;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-            console.log('this._dimension :>> ', this._dimension);
             const rangeEh = await this.createRange();
             if(!rangeEh) return
             
