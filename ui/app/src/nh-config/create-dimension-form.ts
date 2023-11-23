@@ -318,7 +318,7 @@ export default class CreateDimension extends NHComponentShoelace {
   
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if(this.dimensionType == "output" && (_changedProperties.has('inputRange') || _changedProperties.has('computationMethod') )) {
-      if(typeof this.computationMethod !== "undefined" ||typeof this.computationMethod !== "undefined") {
+      if(typeof _changedProperties.get('inputRange') !== "undefined" || typeof _changedProperties.has('computationMethod') !== "undefined") {
         this.computeOutputDimensionRange()
       }
     } 
