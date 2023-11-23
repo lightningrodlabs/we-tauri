@@ -6,10 +6,15 @@ import {
   encodeHashToBase64,
   CellInfo,
   ProvisionedCell,
-  CellType
+  CellType,
 } from "@holochain/client";
 import {
-  Conductor, addAllAgentsToAllConductors, createConductor,
+  Conductor,
+  addAllAgentsToAllConductors,
+  createConductor,
+  runLocalServices,
+  stopLocalServices,
+  cleanAllConductors,
 } from "@holochain/tryorama";
 import { AppletConfigInput } from "@neighbourhoods/client";
 import path from "path";
@@ -55,52 +60,63 @@ export const installAgent = async (
           manifest_version: "1",
           name: "sensemaker_happ",
           description: "",
-          roles: [{
-            name: "sensemaker_dna",
-            provisioning: {
-              //@ts-ignore
-              strategy: 'create',
-              deferred: false,
-            },
-            dna: {
-              //@ts-ignore
-              modifiers: {
-                properties: {
-                  //@ts-ignore
-                  sensemaker_config: {
-                    neighbourhood: "Rated Agenda",
-                    wizard_version: "v0.1",
-                    community_activator: ca_key
-                      ? encodeHashToBase64(ca_key)
-                      : encodeHashToBase64(agent_key),
-                  },
-                  applet_configs: with_config ? [sampleAppletConfig(resource_base_type!)] : [],
-                },
+          roles: [
+            {
+              name: "sensemaker_dna",
+              provisioning: {
+                //@ts-ignore
+                strategy: "create",
+                deferred: false,
               },
-              //@ts-ignore
-              path: sensemakerDna,
-            }
-          }, {
-            name: "test_provider_dna",
-            provisioning: {
-              //@ts-ignore
-              strategy: 'create',
-              deferred: false,
+              dna: {
+                //@ts-ignore
+                modifiers: {
+                  properties: {
+                    //@ts-ignore
+                    sensemaker_config: {
+                      neighbourhood: "Rated Agenda",
+                      wizard_version: "v0.1",
+                      community_activator: ca_key
+                        ? encodeHashToBase64(ca_key)
+                        : encodeHashToBase64(agent_key),
+                    },
+                    applet_configs: with_config
+                      ? [sampleAppletConfig(resource_base_type!)]
+                      : [],
+                  },
+                },
+                //@ts-ignore
+                path: sensemakerDna,
+              },
             },
-            dna: {
-              //@ts-ignore
-              path: testProviderDna,
-            }
-          }],
+            {
+              name: "test_provider_dna",
+              provisioning: {
+                //@ts-ignore
+                strategy: "create",
+                deferred: false,
+              },
+              dna: {
+                //@ts-ignore
+                path: testProviderDna,
+              },
+            },
+          ],
         },
         resources: {},
-      }
+      },
     };
     const agentHapp: AppInfo = await admin.installApp(req);
-    const ssCellInfo: CellInfo = agentHapp.cell_info["sensemaker_dna"][0]
-    ss_cell_id = (CellType.Provisioned in ssCellInfo) ? (ssCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id : ss_cell_id
-    const providerCellInfo = agentHapp.cell_info["test_provider_dna"][0]
-    provider_cell_id = (CellType.Provisioned in providerCellInfo) ? (providerCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id : provider_cell_id
+    const ssCellInfo: CellInfo = agentHapp.cell_info["sensemaker_dna"][0];
+    ss_cell_id =
+      CellType.Provisioned in ssCellInfo
+        ? (ssCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id
+        : ss_cell_id;
+    const providerCellInfo = agentHapp.cell_info["test_provider_dna"][0];
+    provider_cell_id =
+      CellType.Provisioned in providerCellInfo
+        ? (providerCellInfo[CellType.Provisioned] as ProvisionedCell).cell_id
+        : provider_cell_id;
     await admin.enableApp({ installed_app_id: agentHapp.installed_app_id });
     console.log("app installed", agentHapp);
     const port = await conductor.attachAppInterface();
@@ -111,7 +127,7 @@ export const installAgent = async (
     agentsHapps.push(agentHapp);
   } catch (e) {
     console.log("error has happened in installation: ", e);
-    throw e
+    throw e;
   }
 
   return {
@@ -292,40 +308,90 @@ export const sampleAppletConfig = (resource_base_def: AppEntryDef) => {
   return config;
 };
 
+// export const setUpAliceandBob = async (
+//   with_config: boolean = false,
+//   resource_base_type?: any
+// ) => {
+//   const alice = await createConductor();
+//   const bob = await createConductor();
+//   const {
+//     agentsHapps: alice_happs,
+//     agent_key: alice_agent_key,
+//     ss_cell_id: ss_cell_id_alice,
+//     provider_cell_id: provider_cell_id_alice,
+//   } = await installAgent(
+//     alice,
+//     "alice",
+//     undefined,
+//     with_config,
+//     resource_base_type
+//   );
+//   const {
+//     agentsHapps: bob_happs,
+//     agent_key: bob_agent_key,
+//     ss_cell_id: ss_cell_id_bob,
+//     provider_cell_id: provider_cell_id_bob,
+//   } = await installAgent(
+//     bob,
+//     "bob",
+//     alice_agent_key,
+//     with_config,
+//     resource_base_type
+//   );
+//   await addAllAgentsToAllConductors([alice, bob]);
+//   return {
+//     alice,
+//     bob,
+//     alice_happs,
+//     bob_happs,
+//     alice_agent_key,
+//     bob_agent_key,
+//     ss_cell_id_alice,
+//     ss_cell_id_bob,
+//     provider_cell_id_alice,
+//     provider_cell_id_bob,
+//   };
+// };
+
 export const setUpAliceandBob = async (
   with_config: boolean = false,
   resource_base_type?: any
 ) => {
-  const alice = await createConductor();
-  const bob = await createConductor();
+  const { servicesProcess, signalingServerUrl } = await runLocalServices();
+  const alice_conductor = await createConductor(signalingServerUrl);
+  const bob_conductor = await createConductor(signalingServerUrl);
   const {
+    appAgentWs: alice,
     agentsHapps: alice_happs,
     agent_key: alice_agent_key,
     ss_cell_id: ss_cell_id_alice,
     provider_cell_id: provider_cell_id_alice,
   } = await installAgent(
-    alice,
+    alice_conductor,
     "alice",
     undefined,
     with_config,
     resource_base_type
   );
   const {
+    appAgentWs: bob,
     agentsHapps: bob_happs,
     agent_key: bob_agent_key,
     ss_cell_id: ss_cell_id_bob,
     provider_cell_id: provider_cell_id_bob,
   } = await installAgent(
-    bob,
+    bob_conductor,
     "bob",
     alice_agent_key,
     with_config,
     resource_base_type
   );
-  await addAllAgentsToAllConductors([alice, bob]);
+  await addAllAgentsToAllConductors([alice_conductor, bob_conductor]);
   return {
     alice,
     bob,
+    alice_conductor,
+    bob_conductor,
     alice_happs,
     bob_happs,
     alice_agent_key,
@@ -334,5 +400,11 @@ export const setUpAliceandBob = async (
     ss_cell_id_bob,
     provider_cell_id_alice,
     provider_cell_id_bob,
+    cleanup: async () => {
+      await stopLocalServices(servicesProcess);
+      await alice_conductor.shutDown();
+      await bob_conductor.shutDown();
+      await cleanAllConductors();
+    },
   };
 };
