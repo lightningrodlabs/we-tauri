@@ -47,8 +47,7 @@ export default class CreateDimension extends NHComponentShoelace {
           ? number().integer('Must be an integer') 
           : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
         )
-        .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin)
-        .required(),
+        .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin),
       max:(this._numberType == "Integer" 
           ? number().integer('Must be an integer') 
           : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
@@ -84,6 +83,7 @@ export default class CreateDimension extends NHComponentShoelace {
       input.helpText = "";
       input.nextElementSibling.style.opacity = 0;
       input.nextElementSibling.style.visibility = 'hidden';
+      if(input.disabled = true) input.disabled = false;
     });
   }
 
@@ -103,12 +103,12 @@ export default class CreateDimension extends NHComponentShoelace {
   }
 
   async resetForm() {
-    this._dimension = { name: "", computed: false, range_eh: undefined };
+    this._dimension = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
     this._numberType = "Integer";
     //@ts-ignore
     this._dimensionRange = { name: "", kind: { [this._numberType as (keyof RangeKindInteger | keyof RangeKindFloat)]: {
       min: 0,
-      max: 0,
+      max: 1,
     }} as (RangeKindInteger | RangeKindFloat) };
     this._useGlobalMin = false;
     this._useGlobalMax = false;
@@ -190,6 +190,7 @@ export default class CreateDimension extends NHComponentShoelace {
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
     if(fieldsUntouched) return;
+    console.log('this._dimensionRange, this._dimension :>> ', this._dimensionRange, this._dimension);
     this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
       .catch((e) => {this.handleValidationError.call(this, e)})
       .then(async validRange => {
@@ -199,6 +200,7 @@ export default class CreateDimension extends NHComponentShoelace {
             this.valid = true;
             if(validateOnly) return;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+            console.log('this._dimension :>> ', this._dimension);
             const rangeEh = await this.createRange();
             if(!rangeEh) return
             
@@ -320,7 +322,7 @@ export default class CreateDimension extends NHComponentShoelace {
   
   protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if(this.dimensionType == "output" && (_changedProperties.has('inputRange') || _changedProperties.has('computationMethod') )) {
-      if(typeof this.computationMethod !== "undefined") {
+      if(typeof this.computationMethod !== "undefined" ||typeof this.computationMethod !== "undefined") {
         this.computeOutputDimensionRange()
       }
     } 

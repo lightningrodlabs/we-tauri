@@ -81,8 +81,8 @@ export default class CreateMethod extends NHComponent {
         const { inputRange } = this.getInputDimensionAndRangeForOutput(inputControl.value);
         
         if(!inputRange) break;
-        this.inputRange = { name: inputRange.name, kind: inputRange.kind } as Range;
-
+        this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+        this._dimensionForm.requestUpdate();
         break;
       default:
         this.computationMethod = inputControl.value;
@@ -92,6 +92,7 @@ export default class CreateMethod extends NHComponent {
         } : {
           Sum: null
         };
+        this._method.program = this._program
         break;
     }
   }
@@ -228,6 +229,7 @@ export default class CreateMethod extends NHComponent {
           if(e.detail.dimensionType == "output") {
             console.log('output dimension created!');
             this._method.output_dimension_eh = e.detail.dimensionEh;
+            
             const needsMoreInput = this.validate();
             if(needsMoreInput) {
               this._dimensionForm.disable()
