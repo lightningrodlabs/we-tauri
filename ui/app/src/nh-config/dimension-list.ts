@@ -43,6 +43,7 @@ export default class DimensionList extends NHComponent {
   @state()
   private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
 
+  // TODO: replace fetches below with new SensemakerStore method calls
   async fetchDimension(entryHash: EntryHash) : Promise<CallZomeResponse> {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
@@ -221,20 +222,6 @@ export default class DimensionList extends NHComponent {
 
       .content{
         width: 100%;
-      }
-
-      h2 {
-        margin: calc(1px * var(--nh-spacing-md)) 0;
-      }
-
-      nh-card {
-        border-style: solid;
-        border-width: 2px;
-        border-radius: calc(24px); 
-        border-color: transparent;
-      }
-      nh-card.selected {
-        border-color: var(--nh-theme-accent-default); 
       }
     `;
   }

@@ -20,26 +20,25 @@ export default class NHGlobalConfig extends NHComponent {
   weGroupId!: DnaHash;
 
   @query('nh-dialog')
-  _dialog;
-  @query('dimension-list')
-  _list;
+  private _dialog;
+  @query('#input-dimension-list')
+  private _inputDimensionList;
   @query('#output-dimension-list')
-  _outputDimensionList;
+  private _outputDimensionList;
   @property()
-  _dimensionForm;
+  private _dimensionForm;
 
   @state()
   private _selectedInputDimensionRange!: Range;
-
   @state()
   private _inputDimensionEhs: EntryHash[] = [];
-
   @state()
   private _formType: "input-dimension" | "method" = "input-dimension";
 
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
+  
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (_changedProperties.has('_formType')) {
       this._dimensionForm = this.renderRoot.querySelector('create-dimension');
@@ -53,14 +52,10 @@ export default class NHGlobalConfig extends NHComponent {
     }
   }
 
-  getDialogAlertMessage() {
-    return this.isDimensionFormValid() ? "Some of your fields need to be updated:" : ""
-  }
-
   isDimensionFormValid() {
     if(!this._dimensionForm) return false;
 
-    return this._dimensionForm.touched
+    return this._dimensionForm.touched // && this._dimensionForm.valid 
   }
 
   render() {
@@ -68,7 +63,6 @@ export default class NHGlobalConfig extends NHComponent {
       <main
         @dimension-created=${async (e: CustomEvent) => await this.onDimensionCreated(e)}
         @method-created=${async (e: CustomEvent) => await this.onMethodCreated(e)}
-        @input-dimension-selected=${async (e: CustomEvent) => this.onInputDimensionSelected(e)}
       >
         <nh-page-header-card .heading=${"Neighbourhood Config"}>
           <nh-button
@@ -80,7 +74,7 @@ export default class NHGlobalConfig extends NHComponent {
           >
           </nh-button>
         </nh-page-header-card>
-        <dimension-list .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'input'}></dimension-list>
+        <dimension-list id="input-dimension-list" .sensemakerStore=${this._sensemakerStore.value} .dimensionType=${'input'}></dimension-list>
         <nh-button
           id="add-dimension"
           .variant=${"primary"}
@@ -105,11 +99,9 @@ export default class NHGlobalConfig extends NHComponent {
           .size=${"medium"}
           .handleOk=${ () => {
             this._dimensionForm.onSubmit({validateOnly: true});
-
-            if(!this.isDimensionFormValid()) {
-              return { preventDefault: true }
-            }
-
+              if(!this.isDimensionFormValid()) {
+                return { preventDefault: true }
+              }
             ;
           }}
           .handleClose=${async () => {
@@ -117,6 +109,7 @@ export default class NHGlobalConfig extends NHComponent {
             if(!this._dimensionForm.valid) {
               return ({ preventDefault: true })
             }
+            // TODO: adapt the dialog so that this is seamless (currently there are instances where form has invalid field but dialog is still closing)
             await this._dimensionForm.onSubmit() 
           }}
         >           
@@ -132,7 +125,7 @@ export default class NHGlobalConfig extends NHComponent {
     if(this._formType == "input-dimension") {
       return html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
     }
-    return html`<create-method .inputDimensions=${this._list._dimensionEntries} .inputDimensionRanges=${this._list._rangeEntries} .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`;
+    return html`<create-method .inputDimensions=${this._inputDimensionList._dimensionEntries} .inputDimensionRanges=${this._inputDimensionList._rangeEntries} .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`;
   }
 
   static elementDefinitions = {
@@ -153,8 +146,8 @@ export default class NHGlobalConfig extends NHComponent {
       await this._dimensionForm.resetForm();
       await this._dimensionForm.requestUpdate();
     }
-    await this._list.fetchDimensionEntries();
-    await this._list.fetchRangeEntries();
+    await this._inputDimensionList.fetchDimensionEntries();
+    await this._inputDimensionList.fetchRangeEntries();
     await this._outputDimensionList.fetchDimensionEntries();
     await this._outputDimensionList.fetchRangeEntries();
   }
@@ -164,11 +157,6 @@ export default class NHGlobalConfig extends NHComponent {
     this._dialog.hideDialog();
     await this._outputDimensionList.fetchRangeEntries();
     await this._outputDimensionList.fetchDimensionEntries();
-  }
-
-  private onInputDimensionSelected = (e: CustomEvent) => {
-    this._inputDimensionEhs = [e.detail.dimensionEh];
-    this._selectedInputDimensionRange = e.detail.range;
   }
 
   static get styles() {

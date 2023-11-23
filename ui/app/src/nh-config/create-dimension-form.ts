@@ -2,8 +2,7 @@ import { AppInfo, DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult, PropertyValueMap } from "lit";
-import { matrixContext, weGroupContext } from "../context";
-import { MatrixStore } from "../matrix-store";
+import {  weGroupContext } from "../context";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, TestFunction } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
@@ -21,25 +20,27 @@ export default class CreateDimension extends NHComponentShoelace {
   
   @property()
   dimensionType!: "input" | "output";
+
+  @property() // Only needed when an output dimension range is being computed
+  inputRange!: Range & { range_eh: EntryHash }
+  @property() // Only needed when an output dimension range is being computed
+  computationMethod!: "AVG" | "SUM";
   
   @state()
   valid: boolean = false;
   @state()
   touched: boolean = false;
-  
-  @contextProvided({ context: matrixContext, subscribe: true })
-  _matrixStore!: MatrixStore;
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  _dimensionSchema = object({
+  private _dimensionSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
     computed: boolean().required(),
   });
   
-  _currentMinRange : number = 0;
-  _dimensionRangeSchema = () => {
+  private _currentMinRange : number = 0;
+  private _dimensionRangeSchema = () => {
     const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
     const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
     return object({
@@ -55,30 +56,26 @@ export default class CreateDimension extends NHComponentShoelace {
         .min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange)
         .max(rangeMax, "The higher extent of this range cannot be higher than " + rangeMax),
     })};
-  @property() // Only needed when an output dimension range is being computed
-  inputRange!: Range & { range_eh: EntryHash }
-  @property() // Only needed when an output dimension range is being computed
-  computationMethod!: "AVG" | "SUM";
 
   @property()
-  _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
+  private _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
 
   @state()
-  _useGlobalMin: boolean = false;
+  private _useGlobalMin: boolean = false;
   @state()
-  _useGlobalMax: boolean = false;
+  private _useGlobalMax: boolean = false;
   @state()
-  _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
+  private _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
     min: 0,
     max: 1,
   }} as any };
   @state()
-  _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
+  private _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
 
   @query("nh-button")
-  submitBtn!: NHButton;
+  private submitBtn!: NHButton;
 
-  resetInputErrorLabels(inputs: NodeListOf<any>) {
+  private resetInputErrorLabels(inputs: NodeListOf<any>) {
     inputs.forEach(input => {
       input.helpText = "";
       input.nextElementSibling.style.opacity = 0;
@@ -87,7 +84,7 @@ export default class CreateDimension extends NHComponentShoelace {
     });
   }
 
-  validateIfUntouched(inputs: NodeListOf<any>) {
+  private validateIfUntouched(inputs: NodeListOf<any>) {
     let existsUntouched = false;
     inputs.forEach((input) => {
       // Just validate text field for an input dimension as range will be calculated
@@ -117,6 +114,7 @@ export default class CreateDimension extends NHComponentShoelace {
     
     (this.renderRoot.querySelectorAll('sl-input') as any)?.forEach(input => {
       delete input.dataset.touched;
+      if(input.disabled = true) input.disabled = false;
       input.requestUpdate();
     })    
     const checkboxes = this.renderRoot.querySelectorAll('sl-checkbox') as any;
@@ -129,7 +127,7 @@ export default class CreateDimension extends NHComponentShoelace {
     await this.updateComplete
   }
 
-  getSumComputationRange(min: number, max: number) : RangeKind {
+  private getSumComputationRange(min: number, max: number) : RangeKind {
     const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
     const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
 
@@ -144,7 +142,7 @@ export default class CreateDimension extends NHComponentShoelace {
           max: rangeMax,
         }} as RangeKind
       case (min < 0 && max > 0):
-        // range is [x, RangeKindy], where x is negative and y is positive the output range will be [-INF, INF].
+        // range is [x, y], where x is negative and y is positive the output range will be [-INF, INF].
         //@ts-ignore
         return { [this._numberType]: {
           min: rangeMin,
@@ -160,7 +158,7 @@ export default class CreateDimension extends NHComponentShoelace {
     }
   }
 
-  computeOutputDimensionRange() {
+  private computeOutputDimensionRange() {
     if(!this.inputRange) return;
     if(this.computationMethod === "SUM") {
       const rangeKindLimits = Object.values(this.inputRange.kind)[0];
@@ -219,12 +217,12 @@ export default class CreateDimension extends NHComponentShoelace {
 
   }
 
-  fetchValidationErrorText({ path, errors }: any) {
+  private fetchValidationErrorText({ path, errors }: any) {
     if(errors && errors[0] == 'untouched') return path.split('-').map((word: string, i: number) => !i ? capitalize(word) : word ).join(' ') + " is required";
     return errors[0];
   }
 
-  handleValidationError(err: { path: string, errors: string[] }) {
+  private handleValidationError(err: { path: string, errors: string[] }) {
     console.log("Error validating dimension for field: ", err.path);
 
     const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
@@ -238,7 +236,7 @@ export default class CreateDimension extends NHComponentShoelace {
     })
   }
 
-  onChangeValue(e: CustomEvent) {
+  private onChangeValue(e: CustomEvent) {
     const inputControl = (e.target as any);
     if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
     if(!this.touched) {this.touched = true};
@@ -281,7 +279,7 @@ export default class CreateDimension extends NHComponentShoelace {
         break;
     }
   }
-  
+  // TODO: replace with SM method calls
   async createRange() {
     try {
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
@@ -395,6 +393,7 @@ export default class CreateDimension extends NHComponentShoelace {
     return [
       super.styles as CSSResult,
       css`
+      /* Layout */
       :host {
         display: grid;
         flex: 1;
@@ -402,7 +401,6 @@ export default class CreateDimension extends NHComponentShoelace {
         color: var(--nh-theme-fg-default); 
       }
 
-      /* Layout */
       .field, .field-row {
         display: flex;
         margin-bottom: calc(1px * var(--nh-spacing-md));
@@ -410,6 +408,7 @@ export default class CreateDimension extends NHComponentShoelace {
 
       form {
         padding: 0;
+        margin: calc(1px * var(--nh-spacing-md)) 0;
       }
 
       legend {
@@ -418,6 +417,7 @@ export default class CreateDimension extends NHComponentShoelace {
         height: 0;
       }
 
+      /* Fields */
       .field-row {
         justify-content: space-between;
         align-items: center;
@@ -436,16 +436,7 @@ export default class CreateDimension extends NHComponentShoelace {
         margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
         padding: 0;
       }
-      sl-input::part(label) {
-        margin: 0 calc(1px * var(--nh-spacing-md));
-      }
-      sl-input::part(help-text) {
-        margin: 0 1rem 1rem;
-      }
-      form {
-        margin: calc(1px * var(--nh-spacing-md)) 0;
-      }
-      
+
       sl-input::part(form-control) {
         display: grid;
         grid: auto / var(--label-width) 1fr;
@@ -453,13 +444,23 @@ export default class CreateDimension extends NHComponentShoelace {
         align-items: center;
       }
 
-      :host *::part(form-control-label) {
-        color: red;
-      }
-
       .field.checkbox {
         justify-content: end;
         gap: 1rem;
+      }
+
+      /* Labels */
+
+      sl-input::part(help-text) {
+        margin: 0 1rem 1rem;
+      }
+      
+      sl-input::part(label) {
+        margin: 0 calc(1px * var(--nh-spacing-md));
+      }
+
+      :host *::part(form-control-label) {
+        color: red;
       }
 
       label.error {

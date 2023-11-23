@@ -14,25 +14,25 @@ export default class CreateMethod extends NHComponent {
 
   @property()
   inputRange!: Range;
-
   @property()
-  inputDimensionEhs!: EntryHash[];
+  private inputDimensionEhs!: EntryHash[];
   @property()
-  inputDimensions!: Array<Dimension & { dimension_eh: EntryHash }>;
+  private inputDimensions!: Array<Dimension & { dimension_eh: EntryHash }>;
   @property()
-  inputDimensionRanges!: Array<Range & { range_eh: EntryHash }>;
+  private inputDimensionRanges!: Array<Range & { range_eh: EntryHash }>;
+  
   @state()
-  outputDimensionCreated: boolean = false;
-
-  @state()
-  computationMethod: "AVG" | "SUM" = "AVG";
+  private outputDimensionCreated: boolean = false;
 
   @state()
-  _program: Program = {
+  private _computationMethod: "AVG" | "SUM" = "AVG";
+
+  @state()
+  private _program: Program = {
     Average: null
   };
   @state()
-  _method: Partial<Method> = {
+  private _method: Partial<Method> = {
     name: '',
     program: this._program,
     can_compute_live: false,
@@ -41,7 +41,7 @@ export default class CreateMethod extends NHComponent {
     output_dimension_eh: undefined,
   };
   
-  _methodSchema = object({
+  private _methodSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
     can_compute_live: boolean().required(),
     input_dimension_ehs: array().min(1, 'Must have an input dimension').required(),
@@ -49,7 +49,7 @@ export default class CreateMethod extends NHComponent {
   });
 
   @query('create-dimension')
-  _dimensionForm;
+  private _dimensionForm;
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if(typeof this.inputDimensions[0]?.dimension_eh !== 'undefined') {
@@ -65,7 +65,6 @@ export default class CreateMethod extends NHComponent {
     const inputRange = this.inputDimensionRanges
       .find((range: Range & { range_eh: EntryHash; }) =>
         encodeHashToBase64(range.range_eh) === encodeHashToBase64(inputDimension!.range_eh)) as Range & { range_eh: EntryHash };
-    console.log('New { inputDimension, inputRange } calculated :>> ', { inputDimension, inputRange });
     return { inputDimension, inputRange }
   }
 
@@ -85,9 +84,9 @@ export default class CreateMethod extends NHComponent {
         this._dimensionForm.requestUpdate();
         break;
       default:
-        this.computationMethod = inputControl.value;
+        this._computationMethod = inputControl.value;
         inputControl.parentElement.dataset.touched = "1";
-        this._program = this.computationMethod == "AVG" ? {
+        this._program = this._computationMethod == "AVG" ? {
           Average: null
         } : {
           Sum: null
@@ -223,7 +222,7 @@ export default class CreateMethod extends NHComponent {
       <create-dimension
         .dimensionType=${"output"}
         .inputRange=${this.inputRange}
-        .computationMethod=${this.computationMethod}
+        ._computationMethod=${this._computationMethod}
         .sensemakerStore=${this.sensemakerStore}
         @dimension-created=${async (e: CustomEvent) => {
           if(e.detail.dimensionType == "output") {
@@ -257,9 +256,9 @@ export default class CreateMethod extends NHComponent {
             <div class="field radio">
               <label for="method" data-name="method">Choose operation:</label>
               <div style="display: flex; justify-content:space-between; align-items: center;">
-                <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} label=${"Select an option"} data-name=${"method"} value=${this.computationMethod}>
-                  <sl-radio .checked=${this.computationMethod == "AVG"} value="AVG">AVG</sl-radio>
-                  <sl-radio .checked=${this.computationMethod == "SUM"} value="SUM">SUM</sl-radio>
+                <sl-radio-group @sl-change=${(e: any) => this.onChangeValue(e)} label=${"Select an option"} data-name=${"method"} value=${this._computationMethod}>
+                  <sl-radio .checked=${this._computationMethod == "AVG"} value="AVG">AVG</sl-radio>
+                  <sl-radio .checked=${this._computationMethod == "SUM"} value="SUM">SUM</sl-radio>
                 </sl-radio-group>
                 <label class="error" for="method" name="method" data-name="method">⁎</label>
               </div>
@@ -294,6 +293,7 @@ export default class CreateMethod extends NHComponent {
         margin-bottom: calc(1px * var(--nh-spacing-md));
       }
 
+      /* Fields */
       fieldset {
         border: none;
         flex-direction: column;
