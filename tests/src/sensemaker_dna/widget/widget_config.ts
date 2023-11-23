@@ -184,6 +184,7 @@ export default () => {
           "get_assessment_widget_tray_config",
           { resourceDefEh: dummyEntryHash }
         );
+        console.log('configCheck3 ====== test', configCheck3, [testWidgetConfig2, testWidgetConfig1b, testWidgetConfig1])
         t.deepEqual(configCheck3, [testWidgetConfig2, testWidgetConfig1b, testWidgetConfig1], "tray config reordering preserved upon injecting blocks");
 
         // assert 'permission denied' error, only the CA can create
@@ -198,9 +199,9 @@ export default () => {
           );
         } catch (e) {
           //@ts-ignore
-          console.info(e.data)
+          console.info(e.message)
           //@ts-ignore
-          t.ok(e.data.data.match("only the community activator can create this entry"), "only network CA can configure resource widget trays; more complex permission structures planned in future");
+          t.ok(e.message.match("only the community activator can create this entry"), "only network CA can configure resource widget trays; more complex permission structures planned in future");
         }
       } catch (e) {
         console.error(e);
