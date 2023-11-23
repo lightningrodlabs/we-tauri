@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { AssessmentWidgetBlockConfig } from "@neighbourhoods/client";
-import { setUpAliceandBob } from "../sensemaker/neighbourhood";
+import { setUpAliceandBob } from "../../utils";
 
 import pkg from "tape-promise/tape";
 const { test } = pkg;
