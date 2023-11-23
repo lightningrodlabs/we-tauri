@@ -57,11 +57,6 @@ export default class NHGlobalConfig extends NHComponent {
     return this.isDimensionFormValid() ? "Some of your fields need to be updated:" : ""
   }
 
-  resetConfig() {
-    this._formType = "input-dimension"
-    this._list.dimensionSelected = false;
-  }
-
   isDimensionFormValid() {
     if(!this._dimensionForm) return false;
 
@@ -72,9 +67,7 @@ export default class NHGlobalConfig extends NHComponent {
     return html`
       <main
         @dimension-created=${async (e: CustomEvent) => await this.onDimensionCreated(e)}
-        @request-method-create=${async (_: CustomEvent) => this.onMethodCreateRequest()}
         @method-created=${async (e: CustomEvent) => await this.onMethodCreated(e)}
-        @reset-form-type=${() => this.resetConfig()}
         @input-dimension-selected=${async (e: CustomEvent) => this.onInputDimensionSelected(e)}
       >
         <nh-page-header-card .heading=${"Neighbourhood Config"}>
@@ -155,21 +148,15 @@ export default class NHGlobalConfig extends NHComponent {
     this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
   }
 
-  private onMethodCreateRequest = () => {
-    this._formType = "method";
-  }
-
   private onDimensionCreated = async (e: CustomEvent) => {
     if (e.detail.dimensionType == "input") {
       await this._dimensionForm.resetForm();
       await this._dimensionForm.requestUpdate();
-
-      this._list.dimensionSelected = true;
     }
     await this._list.fetchDimensionEntries();
     await this._list.fetchRangeEntries();
-    this._list.resetSelectedInputDimensionIndex();
-    await this._list.firstUpdated();
+    await this._outputDimensionList.fetchDimensionEntries();
+    await this._outputDimensionList.fetchRangeEntries();
   }
   
   private onMethodCreated = async (e: CustomEvent) => {  
@@ -177,13 +164,11 @@ export default class NHGlobalConfig extends NHComponent {
     this._dialog.hideDialog();
     await this._outputDimensionList.fetchRangeEntries();
     await this._outputDimensionList.fetchDimensionEntries();
-    await this._outputDimensionList.firstUpdated();
   }
 
   private onInputDimensionSelected = (e: CustomEvent) => {
     this._inputDimensionEhs = [e.detail.dimensionEh];
     this._selectedInputDimensionRange = e.detail.range;
-    this._list.dimensionSelected = true;
   }
 
   static get styles() {
