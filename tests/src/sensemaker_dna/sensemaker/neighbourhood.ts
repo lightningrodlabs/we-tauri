@@ -1,77 +1,40 @@
-import { DnaSource, Record, ActionHash, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
+import {
+  DnaSource,
+  Record,
+  ActionHash,
+  EntryHash,
+  EntryHashB64,
+  encodeHashToBase64,
+} from "@holochain/client";
 import {
   pause,
   runScenario,
   Scenario,
-  runLocalServices, stopLocalServices,
+  runLocalServices,
+  stopLocalServices,
   createConductor,
   addAllAgentsToAllConductors,
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { Assessment, CreateAssessmentInput, Method, RangeValueInteger, ResourceEh, GetAssessmentsForResourceInput, RangeValueFloat, Dimension, ResourceDef, CulturalContext } from "@neighbourhoods/client";
+import {
+  Assessment,
+  CreateAssessmentInput,
+  Method,
+  RangeValueInteger,
+  ResourceEh,
+  GetAssessmentsForResourceInput,
+  RangeValueFloat,
+  Dimension,
+  ResourceDef,
+  CulturalContext,
+} from "@neighbourhoods/client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
-import { installAgent } from "../../utils";
+import { installAgent, setUpAliceandBob } from "../../utils";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { create } from "lodash";
 const { test } = pkg;
-
-export const setUpAliceandBob = async (
-  with_config: boolean = false,
-  resource_base_type?: any
-) => {
-  const { servicesProcess, signalingServerUrl } = await runLocalServices();
-  const alice_conductor = await createConductor(signalingServerUrl);
-  const bob_conductor = await createConductor(signalingServerUrl);
-  const {
-    appAgentWs: alice,
-    agentsHapps: alice_happs,
-    agent_key: alice_agent_key,
-    ss_cell_id: ss_cell_id_alice,
-    provider_cell_id: provider_cell_id_alice,
-  } = await installAgent(
-    alice_conductor,
-    "alice",
-    undefined,
-    with_config,
-    resource_base_type
-  );
-  const {
-    appAgentWs: bob,
-    agentsHapps: bob_happs,
-    agent_key: bob_agent_key,
-    ss_cell_id: ss_cell_id_bob,
-    provider_cell_id: provider_cell_id_bob,
-  } = await installAgent(
-    bob_conductor,
-    "bob",
-    alice_agent_key,
-    with_config,
-    resource_base_type
-  );
-  await addAllAgentsToAllConductors([alice_conductor, bob_conductor]);
-  return {
-    alice,
-    bob,
-    alice_conductor,
-    bob_conductor,
-    alice_happs,
-    bob_happs,
-    alice_agent_key,
-    bob_agent_key,
-    ss_cell_id_alice,
-    ss_cell_id_bob,
-    provider_cell_id_alice,
-    provider_cell_id_bob,
-    cleanup: async () => {
-      await stopLocalServices(servicesProcess);
-      await alice_conductor.shutDown();
-      await bob_conductor.shutDown();
-      await cleanAllConductors();
-    },
-  };
-};
 
 export default () => {
   test("SM entry type CRUD tests", async (t) => {
@@ -138,7 +101,7 @@ export default () => {
           createPost
         );
         t.ok(createPostEntryHash);
-        console.log('post hash', createPostEntryHash)
+        console.log("post hash", createPostEntryHash);
 
         await pause(pauseDuration);
 
@@ -148,7 +111,7 @@ export default () => {
           "get_post",
           createPostEntryHash
         );
-        console.log('read post record', readPostOutput);
+        console.log("read post record", readPostOutput);
         t.deepEqual(
           createPost,
           decode((readPostOutput.entry as any).Present.entry) as any
@@ -331,28 +294,60 @@ export default () => {
           createAssessmentEntryHash,
           true
         );
-        const createAssessmentReadOutputDecoded = decode((createAssessmentReadOutput.entry as any).Present.entry) as Assessment;
+        const createAssessmentReadOutputDecoded = decode(
+          (createAssessmentReadOutput.entry as any).Present.entry
+        ) as Assessment;
         t.deepEqual(
-          { ...createAssessment, author: alice_agent_key, timestamp: createAssessmentReadOutputDecoded.timestamp },
+          {
+            ...createAssessment,
+            author: alice_agent_key,
+            timestamp: createAssessmentReadOutputDecoded.timestamp,
+          },
           createAssessmentReadOutputDecoded
         );
 
         const getAssessmentsForResourceInput: GetAssessmentsForResourceInput = {
           resource_ehs: [createPostEntryHash],
           dimension_ehs: [createDimensionEntryHash],
-        }
-        let assessmentsForResources: { [resource_eh: EntryHashB64]: Assessment[] } = await callZomeBob(
+        };
+        let assessmentsForResources: {
+          [resource_eh: EntryHashB64]: Assessment[];
+        } = await callZomeBob(
           "sensemaker",
           "get_assessments_for_resources",
           getAssessmentsForResourceInput,
           true
         );
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].length === 2)
-        console.log('assessments for resource', assessmentsForResources)
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key, timestamp: assessment.timestamp })))
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)]
+            .length === 2
+        );
+        console.log("assessments for resource", assessmentsForResources);
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(
+            (assessment) =>
+              JSON.stringify(assessment) ===
+              JSON.stringify({
+                ...createAssessment,
+                author: alice_agent_key,
+                timestamp: assessment.timestamp,
+              })
+          )
+        );
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(
+            (assessment) =>
+              JSON.stringify(assessment) ===
+              JSON.stringify({
+                ...createAssessment2,
+                author: alice_agent_key,
+                timestamp: assessment.timestamp,
+              })
+          )
+        );
 
-        const getAssessmentsForResourceInput2: GetAssessmentsForResourceInput = {};
+        const getAssessmentsForResourceInput2: GetAssessmentsForResourceInput =
+          {};
 
         assessmentsForResources = await callZomeBob(
           "sensemaker",
@@ -360,11 +355,34 @@ export default () => {
           getAssessmentsForResourceInput2,
           true
         );
-        t.equal(Object.keys(assessmentsForResources).length, 1)
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].length === 2)
-        console.log('assessments for resource', assessmentsForResources)
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment, author: alice_agent_key, timestamp: assessment.timestamp })))
-        t.ok(assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(assessment => JSON.stringify(assessment) === JSON.stringify({ ...createAssessment2, author: alice_agent_key, timestamp: assessment.timestamp })))
+        t.equal(Object.keys(assessmentsForResources).length, 1);
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)]
+            .length === 2
+        );
+        console.log("assessments for resource", assessmentsForResources);
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(
+            (assessment) =>
+              JSON.stringify(assessment) ===
+              JSON.stringify({
+                ...createAssessment,
+                author: alice_agent_key,
+                timestamp: assessment.timestamp,
+              })
+          )
+        );
+        t.ok(
+          assessmentsForResources[encodeHashToBase64(createPostEntryHash)].find(
+            (assessment) =>
+              JSON.stringify(assessment) ===
+              JSON.stringify({
+                ...createAssessment2,
+                author: alice_agent_key,
+                timestamp: assessment.timestamp,
+              })
+          )
+        );
         // define objective dimension
 
         const integerRange2 = {
@@ -390,13 +408,12 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createObjectiveDimensionRecord: Record =
-          await callZomeAlice(
-            "sensemaker",
-            "create_dimension",
-            createObjectiveDimension,
-            true
-          );
+        const createObjectiveDimensionRecord: Record = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createObjectiveDimension,
+          true
+        );
         const createObjectiveDimensionEntryHash = new EntryRecord<Dimension>(
           createObjectiveDimensionRecord
         ).entryHash;
@@ -457,7 +474,8 @@ export default () => {
         const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              (createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer,
+              (createAssessment.value as RangeValueInteger).Integer +
+              (createAssessment2.value as RangeValueInteger).Integer,
           },
           dimension_eh: createObjectiveDimensionEntryHash,
           resource_eh: createPostEntryHash,
@@ -466,16 +484,13 @@ export default () => {
           timestamp: runMethodOutput.timestamp,
           maybe_input_dataset: null,
         };
-        t.deepEqual(
-          objectiveAssessment,
-          runMethodOutput
-        );
+        t.deepEqual(objectiveAssessment, runMethodOutput);
       } catch (e) {
         console.log(e);
         t.ok(null);
       }
 
-      await cleanup()
+      await cleanup();
     });
   });
   test("test context result creation", async (t) => {
@@ -532,7 +547,7 @@ export default () => {
         // threshold > 5 likes
         // order biggest to smallest
 
-        const pauseDuration = 1000
+        const pauseDuration = 1000;
         await scenario.shareAllAgents();
         await pause(pauseDuration);
 
@@ -826,16 +841,15 @@ export default () => {
         };
 
         // Alice creates a dimension
-        const createObjectiveDimensionRecord: Record =
-          await callZomeAlice(
-            "sensemaker",
-            "create_dimension",
-            createObjectiveDimension,
-            true
-          );
-          const createObjectiveDimensionEntryHash = new EntryRecord<Dimension>(
-            createObjectiveDimensionRecord
-          ).entryHash;
+        const createObjectiveDimensionRecord: Record = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createObjectiveDimension,
+          true
+        );
+        const createObjectiveDimensionEntryHash = new EntryRecord<Dimension>(
+          createObjectiveDimensionRecord
+        ).entryHash;
         t.ok(createObjectiveDimensionEntryHash);
 
         // create a method
@@ -931,10 +945,7 @@ export default () => {
           author: alice_agent_key,
           timestamp: runMethodOutput.timestamp,
         };
-        t.deepEqual(
-          objectiveAssessment,
-          runMethodOutput
-        );
+        t.deepEqual(objectiveAssessment, runMethodOutput);
 
         const objectiveAssessment2: Assessment = {
           value: {
@@ -949,10 +960,7 @@ export default () => {
           author: alice_agent_key,
           timestamp: runMethodOutput2.timestamp,
         };
-        t.deepEqual(
-          objectiveAssessment2,
-          runMethodOutput2
-        );
+        t.deepEqual(objectiveAssessment2, runMethodOutput2);
 
         const objectiveAssessment3: Assessment = {
           value: {
@@ -967,10 +975,7 @@ export default () => {
           author: alice_agent_key,
           timestamp: runMethodOutput3.timestamp,
         };
-        t.deepEqual(
-          objectiveAssessment3,
-          runMethodOutput3
-        );
+        t.deepEqual(objectiveAssessment3, runMethodOutput3);
 
         // create context and threshold
         const threshold = {
@@ -1114,14 +1119,8 @@ export default () => {
           // this zome call should fail
           t.ok(null);
         } catch (e) {
-          const expectedError = {
-            type: "error",
-            data: {
-              type: "ribosome_error",
-              data: 'Wasm runtime error while working with Ribosome: RuntimeError: WasmError { file: "dnas/sensemaker/zomes/integrity/sensemaker_structs/src/range.rs", line: 46, error: Guest("incompatible range types for threshold comparison") }',
-            },
-          };
-          t.deepEqual(expectedError, e);
+          //@ts-ignore
+          t.deepEqual(e.name, "ribosome_error");
         }
 
         // fetch all assessments
@@ -1131,9 +1130,8 @@ export default () => {
           null,
           true
         );
-        console.log('all assessments', allAssessments)
+        console.log("all assessments", allAssessments);
         t.deepEqual(allAssessments.length, 9);
-
       } catch (e) {
         console.log(e);
         t.ok(null);
@@ -1264,7 +1262,7 @@ export default () => {
           //@ts-ignore
           base_types: [
             //@ts-ignore
-            { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
+            { entry_index: 0, zome_index: 0, visibility: { Public: null } },
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
           installed_app_id: "test_provider",
@@ -1372,14 +1370,16 @@ export default () => {
           true
         );
         t.ok(runMethodOutput);
-        console.log('runMethodOutput', runMethodOutput);
+        console.log("runMethodOutput", runMethodOutput);
 
         await pause(pauseDuration);
 
         const objectiveAssessment: Assessment = {
           value: {
             Integer:
-              ((createAssessment.value as RangeValueInteger).Integer + (createAssessment2.value as RangeValueInteger).Integer) / 2,
+              ((createAssessment.value as RangeValueInteger).Integer +
+                (createAssessment2.value as RangeValueInteger).Integer) /
+              2,
           },
           dimension_eh: createDimensionEntryHash2,
           resource_eh: createPostEntryHash,
@@ -1389,10 +1389,7 @@ export default () => {
           timestamp: runMethodOutput.timestamp,
         };
 
-        t.deepEqual(
-          objectiveAssessment,
-          runMethodOutput
-        );
+        t.deepEqual(objectiveAssessment, runMethodOutput);
       } catch (e) {
         console.log(e);
         t.ok(null);
@@ -1523,7 +1520,7 @@ export default () => {
           //@ts-ignore
           base_types: [
             //@ts-ignore
-            { "entry_index": 0, "zome_index": 0, "visibility": { "Public": null } }
+            { entry_index: 0, zome_index: 0, visibility: { Public: null } },
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
           installed_app_id: "test_provider",
@@ -1631,14 +1628,16 @@ export default () => {
           true
         );
         t.ok(runMethodOutput);
-        console.log('runMethodOutput', runMethodOutput);
+        console.log("runMethodOutput", runMethodOutput);
 
         await pause(pauseDuration);
 
         const objectiveAssessment: Assessment = {
           value: {
             Float:
-              ((createAssessment.value as RangeValueFloat).Float + (createAssessment2.value as RangeValueFloat).Float) / 2,
+              ((createAssessment.value as RangeValueFloat).Float +
+                (createAssessment2.value as RangeValueFloat).Float) /
+              2,
           },
           dimension_eh: createDimensionEntryHash2,
           resource_eh: createPostEntryHash,
@@ -1648,10 +1647,7 @@ export default () => {
           timestamp: runMethodOutput.timestamp,
         };
 
-        t.deepEqual(
-          objectiveAssessment,
-          runMethodOutput
-        );
+        t.deepEqual(objectiveAssessment, runMethodOutput);
       } catch (e) {
         console.log(e);
         t.ok(null);

@@ -2,11 +2,16 @@ import { DnaSource, Record, ActionHash, EntryHash } from "@holochain/client";
 import { pause, runScenario, cleanAllConductors, createConductor, addAllAgentsToAllConductors } from "@holochain/tryorama";
 import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
-import { installAgent } from "../../utils";
-import { setUpAliceandBob } from "./neighbourhood";
+import { installAgent, setUpAliceandBob } from "../../utils";
 import { EntryRecord } from "@holochain-open-dev/utils";
 import { ResourceDef } from "@neighbourhoods/client";
 const { test } = pkg;
+
+const COMMUNITY_ACTIVATOR_ZOME_ERROR = JSON.stringify({
+  name: "internal_error",
+  message:
+    "Source chain error: InvalidCommit error: only the community activator can create this entry",
+});
 
 export default () => test("test CA progenitor pattern", async (t) => {
     await runScenario(async scenario => {
@@ -99,13 +104,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
                 true
             )
         } catch (e) {
-            t.deepEqual(e, {
-                type: "error",
-                data: {
-                    type: "internal_error",
-                    data: "Source chain error: InvalidCommit error: only the community activator can create this entry",
-                },
-            });
+            t.deepEqual(JSON.stringify(e), COMMUNITY_ACTIVATOR_ZOME_ERROR);
         }
 
         const createResourceDef: ResourceDef = {
@@ -139,13 +138,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
                 true
             );
         } catch (e) {
-            t.deepEqual(e, {
-                type: "error",
-                data: {
-                    type: "internal_error",
-                    data: "Source chain error: InvalidCommit error: only the community activator can create this entry",
-                },
-            });
+            t.deepEqual(JSON.stringify(e), COMMUNITY_ACTIVATOR_ZOME_ERROR);
         }
 
         // Wait for the created entry to be propagated to the other node.
@@ -178,13 +171,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
                 true
             )
         } catch (e) {
-            t.deepEqual(e, {
-                type: "error",
-                data: {
-                    type: "internal_error",
-                    data: "Source chain error: InvalidCommit error: only the community activator can create this entry",
-                },
-            });
+            t.deepEqual(JSON.stringify(e), COMMUNITY_ACTIVATOR_ZOME_ERROR);
 
             const threshold = {
                 "dimension_eh": createDimensionEntryHash,
@@ -205,13 +192,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
                     true
                 )
             } catch (e) {
-                t.deepEqual(e, {
-                    type: "error",
-                    data: {
-                        type: "internal_error",
-                        data: "Source chain error: InvalidCommit error: only the community activator can create this entry",
-                    },
-                });
+                t.deepEqual(JSON.stringify(e), COMMUNITY_ACTIVATOR_ZOME_ERROR);
             }
             await pause(100)
         }

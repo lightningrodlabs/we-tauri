@@ -1,12 +1,23 @@
-import { DnaSource, Record, ActionHash, EntryHash, AppEntryDef, encodeHashToBase64 } from "@holochain/client";
+import {
+  DnaSource,
+  Record,
+  ActionHash,
+  EntryHash,
+  AppEntryDef,
+  encodeHashToBase64,
+} from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
-import { setUpAliceandBob } from "./neighbourhood";
 import { AppletConfig } from "@neighbourhoods/client";
+import { setUpAliceandBob } from "../../utils";
 const { test } = pkg;
 
-let app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
+let app_entry_def: AppEntryDef = {
+  entry_index: 0,
+  zome_index: 0,
+  visibility: { Public: null },
+};
 export default () =>
   test("test Sensemaker and Applet Configuration in DNA Property", async (t) => {
     await runScenario(async (scenario) => {
@@ -50,7 +61,6 @@ export default () =>
         );
         t.ok(maybe_sm_config);
 
-
         let sm_config = decode(
           (maybe_sm_config.entry as any).Present.entry
         ) as any;
@@ -71,11 +81,19 @@ export default () =>
 
         console.log(maybe_applet_config);
 
-        let dimension_ehs: EntryHash[] = Object.values(maybe_applet_config.dimensions);
+        let dimension_ehs: EntryHash[] = Object.values(
+          maybe_applet_config.dimensions
+        );
         // given maybe_applet_config.resource_defs return a flat list of the ehs
-        let resource_def_ehs: EntryHash[] = Object.values(maybe_applet_config.resource_defs);
-        let method_ehs: EntryHash[] = Object.values(maybe_applet_config.methods);
-        let context_ehs: EntryHash[] = Object.values(maybe_applet_config.cultural_contexts);
+        let resource_def_ehs: EntryHash[] = Object.values(
+          maybe_applet_config.resource_defs
+        );
+        let method_ehs: EntryHash[] = Object.values(
+          maybe_applet_config.methods
+        );
+        let context_ehs: EntryHash[] = Object.values(
+          maybe_applet_config.cultural_contexts
+        );
         t.equal(dimension_ehs.length, 2);
         t.equal(resource_def_ehs.length, 1);
         t.equal(method_ehs.length, 1);
@@ -177,9 +195,7 @@ test("test updating of sensemaker config", async (t) => {
       );
       t.ok(maybe_sm_config);
 
-
-      let sm_config_action_hash =
-        maybe_sm_config.signed_action.hashed.hash
+      let sm_config_action_hash = maybe_sm_config.signed_action.hashed.hash;
 
       const sensemaker_config_update = {
         original_action_hash: sm_config_action_hash,
@@ -187,15 +203,15 @@ test("test updating of sensemaker config", async (t) => {
           neighbourhood: "Rated Agenda 2",
           wizard_version: "v0.2",
           community_activator: encodeHashToBase64(alice_agent_key),
-        }
-      }
+        },
+      };
 
       const updated_config_ah = await callZomeAlice(
         "sensemaker",
         "update_sensemaker_config",
         sensemaker_config_update,
         true
-      )
+      );
       console.log(updated_config_ah);
       t.ok(updated_config_ah);
 
@@ -206,7 +222,7 @@ test("test updating of sensemaker config", async (t) => {
         true
       );
       let updated_sm_config_action_hash =
-        maybe_updated_sm_config.signed_action.hashed.hash
+        maybe_updated_sm_config.signed_action.hashed.hash;
       t.ok(maybe_sm_config);
       t.deepEqual(updated_sm_config_action_hash, updated_config_ah);
     } catch (e) {
