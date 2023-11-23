@@ -33,6 +33,12 @@ jobs:
         run: |
           nix-env -iA cachix -f https://cachix.org/api/v1/install
           cachix use holochain-ci
+
+      - name: debug-tsc-version
+        run: |
+          cd $GITHUB_WORKSPACE/tests/
+          pnpm ls typescript
+
       - name: run-tests
         run: |
           cd $GITHUB_WORKSPACE
