@@ -34,6 +34,9 @@ jobs:
           nix-env -iA cachix -f https://cachix.org/api/v1/install
           cachix use holochain-ci
 
+      - name: Prepare Nix environment
+        run: nix develop --command bash -c "echo Completed"
+
       - name: debug-tsc-version
         run: |
           cd $GITHUB_WORKSPACE/tests/
