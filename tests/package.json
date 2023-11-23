@@ -28,7 +28,7 @@
     "@types/node": "^14.0.14",
     "@types/tape": "^4.13.4",
     "tape-promise": "^4.0.0",
-    "@holochain-open-dev/utils": "^0.10.1",
+    "@holochain-open-dev/utils": "^0.16.3",
     "@neighbourhoods/client": "workspace: *"
   },
   "type": "module"
