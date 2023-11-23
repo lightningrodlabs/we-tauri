@@ -51,6 +51,9 @@ export default class CreateMethod extends NHComponent {
   @query('create-dimension')
   private _dimensionForm;
 
+  @query('#choose-input-dimension')
+  private _inputDimensionSelect;
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if(typeof this.inputDimensions[0]?.dimension_eh !== 'undefined') {
       this._method.input_dimension_ehs = [this.inputDimensions[0].dimension_eh]
@@ -146,6 +149,7 @@ export default class CreateMethod extends NHComponent {
       input_dimension_ehs: [this.inputDimensions[0].dimension_eh],
       output_dimension_eh: undefined,
     };
+    this._inputDimensionSelect!.value = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
     const { inputRange } = this.getInputDimensionAndRangeForOutput(encodeHashToBase64(this.inputDimensions[0].dimension_eh))
     this.inputRange  = inputRange;
 
@@ -195,7 +199,9 @@ export default class CreateMethod extends NHComponent {
           );
 
           await this._dimensionForm.resetForm(); 
-          await this.resetForm(); 
+          await this.resetForm();
+          await this.requestUpdate(); 
+          await this._dimensionForm.computeOutputDimensionRange(); 
           await this._dimensionForm.requestUpdate();
         }
       })
@@ -242,7 +248,7 @@ export default class CreateMethod extends NHComponent {
           <nh-card class="nested-card" .theme=${"dark"} .textSize=${"sm"} .heading=${"Create a method:"}>
             <div class="field select">
               <label for="input-dimension" data-name="input-dimension">Select input dimension:</label>
-              <select name="input-dimension" placeholder="Select an input dimension" @change=${(e) => { this.onChangeValue(e) }}>
+              <select id="choose-input-dimension" name="input-dimension" placeholder="Select an input dimension" @change=${(e) => { this.onChangeValue(e) }}>
                 ${this.inputDimensions.filter(dimension => !dimension.computed).map((dimension) => html`
                     <option value=${encodeHashToBase64(dimension.dimension_eh)}>${dimension.name}</option>
                   `)
