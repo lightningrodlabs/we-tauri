@@ -41,10 +41,10 @@ jobs:
 
       - name: debug-tsc-version
         run: |
-          pushd tests/
-          pnpm ls typescript
-          popd
+          cd $GITHUB_WORKSPACE/tests
+          npm run tsc-version
 
       - name: run-tests
         run: |
-          nix develop --command bash -c "pnpm test"
+          cd $GITHUB_WORKSPACE
+          nix develop --command bash -c "npm t"
