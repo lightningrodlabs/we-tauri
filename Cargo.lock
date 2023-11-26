@@ -1427,6 +1427,7 @@ dependencies = [
  "nh_sensemaker_zome_lib",
  "nh_zome_sensemaker_widgets_integrity",
  "sensemaker_integrity",
+ "sensemaker_integrity_structs",
  "serde",
 ]
 

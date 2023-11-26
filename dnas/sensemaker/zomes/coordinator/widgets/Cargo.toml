@@ -13,6 +13,7 @@ serde = { workspace = true }
 nh_sensemaker_zome_lib = { path = "../../../lib/api_helpers" }
 nh_zome_sensemaker_widgets_integrity = { path = "../../integrity/widgets" }
 sensemaker_integrity = { path = "../../integrity/sensemaker" }
+sensemaker_integrity_structs = { path = "../../integrity/sensemaker_structs" }
 
 hdk = { workspace = true }
 holo_hash = {version = "0.1.0", features = ["encoding"]}

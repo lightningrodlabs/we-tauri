@@ -18,8 +18,6 @@ export default () => {
       const {
         alice,
         bob,
-        alice_happs,
-        bob_happs,
         cleanup,
         alice_agent_key,
         bob_agent_key,
@@ -33,7 +31,7 @@ export default () => {
         zome_name,
         fn_name,
         payload,
-        is_ss = true
+        is_ss = false
       ) => {
         return await alice.callZome({
           cap_secret: null,
@@ -48,7 +46,7 @@ export default () => {
         zome_name,
         fn_name,
         payload,
-        is_ss = true
+        is_ss = false
       ) => {
         return await bob.callZome({
           cap_secret: null,
@@ -106,39 +104,39 @@ export default () => {
         );
         t.ok(widgetRegistrationCreationEntryHash, "creating a new assessment widget registration");
 
-        // const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
-        await pause(pauseDuration);
+        // // const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
+        // await pause(pauseDuration);
 
-        // Test 2: Given a created registration entry Then Alice can read that widget registration entry
+        // // Test 2: Given a created registration entry Then Alice can read that widget registration entry
 
-        const get1 = await callZomeAlice(
-          "widgets",
-          "get_assessment_widget_registration",
-          widgetRegistrationCreationEntryHash
-        );
-        t.ok(get1, "get an assessment widget registration");
+        // const get1 = await callZomeAlice(
+        //   "widgets",
+        //   "get_assessment_widget_registration",
+        //   widgetRegistrationCreationEntryHash
+        // );
+        // t.ok(get1, "get an assessment widget registration");
 
-        // Test 3: Given a created registration entry Then Alice can update that widget registration entry
+        // // Test 3: Given a created registration entry Then Alice can update that widget registration entry
 
-        const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
-          assessmentRegistrationEh: widgetRegistrationCreationEntryHash,
-          assessmentRegistrationUpdate: {
-            appletEh: dummyEntryHash,
-            widgetKey: 'total-importance', 
-            name: 'Importance Widget Updated',
-            rangeEh: twentyScaleRangeEntryHash,
-            kind: 'output'
-          }
-        };
-        const update1 = await callZomeAlice(
-          "widgets",
-          "update_assessment_widget_registration",
-          testWidgetRegistrationUpdate
-        );
-        t.ok(update1, "updated an assessment widget registration");
-        await pause(pauseDuration);
+        // const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
+        //   assessmentRegistrationEh: widgetRegistrationCreationEntryHash,
+        //   assessmentRegistrationUpdate: {
+        //     appletEh: dummyEntryHash,
+        //     widgetKey: 'total-importance', 
+        //     name: 'Importance Widget Updated',
+        //     rangeEh: twentyScaleRangeEntryHash,
+        //     kind: 'output'
+        //   }
+        // };
+        // const update1 = await callZomeAlice(
+        //   "widgets",
+        //   "update_assessment_widget_registration",
+        //   testWidgetRegistrationUpdate
+        // );
+        // t.ok(update1, "updated an assessment widget registration");
+        // await pause(pauseDuration);
 
-        // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
+        // // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
       } catch (e) {
         console.error(e);

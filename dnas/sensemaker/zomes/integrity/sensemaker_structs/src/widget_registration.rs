@@ -1,7 +1,7 @@
 use hdi::prelude::*;
+use crate::Range;
 
 #[hdk_entry_helper]
-#[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AssessmentWidgetRegistration {
   applet_eh: EntryHash,
@@ -36,12 +36,12 @@ pub struct AssessmentWidgetRegistration {
 //     }
 // }
 
-#[derive(Serialize, Deserialize, SerializedBytes, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AssessmentWidgetRegistrationInput {
-    pub applet_eh: EntryHash,
-    pub widget_key: String,
-    pub name: String,
-    pub range_eh: EntryHash, 
-    pub kind: String
+  pub applet_eh: EntryHash,
+  pub widget_key: String,
+  pub name: String,
+  pub range_eh: EntryHash, 
+  pub kind: String
 }
