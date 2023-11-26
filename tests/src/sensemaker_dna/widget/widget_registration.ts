@@ -5,11 +5,11 @@ import {
   runScenario,
   cleanAllConductors,
 } from "@holochain/tryorama";
-import { Record } from "@neighbourhoods/client";
-import { setUpAliceandBob } from "../sensemaker/neighbourhood";
+
 
 import pkg from "tape-promise/tape";
 import { EntryRecord } from "@holochain-open-dev/utils";
+import { setUpAliceandBob } from '../../utils';
 const { test } = pkg;
 
 export default () => {
@@ -20,6 +20,7 @@ export default () => {
         bob,
         alice_happs,
         bob_happs,
+        cleanup,
         alice_agent_key,
         bob_agent_key,
         ss_cell_id_alice,
@@ -34,7 +35,7 @@ export default () => {
         payload,
         is_ss = true
       ) => {
-        return await alice.appWs().callZome({
+        return await alice.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_alice : provider_cell_id_alice,
           zome_name,
@@ -49,7 +50,7 @@ export default () => {
         payload,
         is_ss = true
       ) => {
-        return await bob.appWs().callZome({
+        return await bob.callZome({
           cap_secret: null,
           cell_id: is_ss ? ss_cell_id_bob : provider_cell_id_bob,
           zome_name,
@@ -82,14 +83,14 @@ export default () => {
               "Integer": { "min": 0, "max": 20 }
             },
           };
-          const twentyScaleRangeRecord: Record = await callZomeAlice(
+          const twentyScaleRangeEntryHash: EntryHash = await callZomeAlice(
             "sensemaker",
             "create_range",
             twentyScaleRange,
             true
           );
           await pause(pauseDuration);
-          const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
+          // const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
 
         const testWidgetRegistration = {
           applet_eh: dummyEntryHash,
@@ -98,14 +99,14 @@ export default () => {
           range_eh: twentyScaleRangeEntryHash,
           kind: 'input'
         };
-        const widgetRegistrationCreationRecord : Record = await callZomeAlice(
+        const widgetRegistrationCreationEntryHash : EntryHash = await callZomeAlice(
           "widgets",
           "register_assessment_widget",
           testWidgetRegistration
         );
-        t.ok(widgetRegistrationCreationRecord, "creating a new assessment widget registration");
+        t.ok(widgetRegistrationCreationEntryHash, "creating a new assessment widget registration");
 
-        const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
+        // const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
         await pause(pauseDuration);
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
@@ -120,12 +121,14 @@ export default () => {
         // Test 3: Given a created registration entry Then Alice can update that widget registration entry
 
         const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
-          assessment_registration_eh: widgetRegistrationCreationEntryHash,
-          applet_eh: dummyEntryHash,
-          widget_key: 'total-importance', 
-          name: 'Importance Widget Updated',
-          range_eh: twentyScaleRangeEntryHash,
-          kind: 'output'
+          assessmentRegistrationEh: widgetRegistrationCreationEntryHash,
+          assessmentRegistrationUpdate: {
+            appletEh: dummyEntryHash,
+            widgetKey: 'total-importance', 
+            name: 'Importance Widget Updated',
+            rangeEh: twentyScaleRangeEntryHash,
+            kind: 'output'
+          }
         };
         const update1 = await callZomeAlice(
           "widgets",
@@ -142,9 +145,7 @@ export default () => {
         t.ok(null);
       }
 
-      await alice.shutDown();
-      await bob.shutDown();
-      await cleanAllConductors();
+      await cleanup();
     });
   });
 };
