@@ -33,7 +33,9 @@ pub enum EntryTypes {
 
 #[hdk_link_types]
 pub enum LinkTypes {
-    WidgetConfigs
+    WidgetConfigs,
+    WidgetRegistrations,
+    WidgetConfigToWidgetRegistration,
 }
 
 // :DUPE: ca_validation_callback
