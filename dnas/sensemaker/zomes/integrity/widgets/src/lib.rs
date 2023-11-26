@@ -1,5 +1,5 @@
 use hdi::prelude::*;
-use sensemaker_integrity_structs::{Properties};
+use sensemaker_integrity_structs::{Properties, AssessmentWidgetRegistration};
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]
@@ -12,10 +12,7 @@ pub struct DimensionWidgetBinding {
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum DimensionBinding {
-    // For when components are separated out into their own DHT entry
-    // (or sequence of DHT entries to allow extra large codebases to be stored).
-    StandaloneWidget(DimensionStandaloneWidgetBinding),
-    Widget(DimensionAppletWidgetBinding),
+    Widget(DimensionWidgetBinding),
 }
 
 #[hdk_entry_helper]
