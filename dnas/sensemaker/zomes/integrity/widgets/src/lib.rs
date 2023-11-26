@@ -1,22 +1,12 @@
 use hdi::prelude::*;
-use sensemaker_integrity_structs::Properties;
+use sensemaker_integrity_structs::{Properties};
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]
-pub struct DimensionStandaloneWidgetBinding {
+pub struct DimensionWidgetBinding {
     pub dimension_eh: EntryHash,
-    // id of the widget CustomElement stored in companion zome
-    pub widget_eh: EntryHash,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
-#[serde(rename_all = "camelCase")]
-pub struct DimensionAppletWidgetBinding {
-    pub dimension_eh: EntryHash,
-    // id of the AppletConfig stored in companion zome
-    pub applet_id: EntryHash,
-    // name of the component as exposed by the applet interface
-    pub component_name: String,
+    // Widget Registration object that has all data needed to load the component from the matrix
+    pub widget_registry_eh: EntryHash,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
@@ -25,7 +15,7 @@ pub enum DimensionBinding {
     // For when components are separated out into their own DHT entry
     // (or sequence of DHT entries to allow extra large codebases to be stored).
     StandaloneWidget(DimensionStandaloneWidgetBinding),
-    AppletWidget(DimensionAppletWidgetBinding),
+    Widget(DimensionAppletWidgetBinding),
 }
 
 #[hdk_entry_helper]
@@ -41,6 +31,7 @@ pub struct AssessmentWidgetBlockConfig {
 pub enum EntryTypes {
     #[entry_def()]
     AssessmentWidgetBlockConfig(AssessmentWidgetBlockConfig),
+    AssessmentWidgetRegistration(AssessmentWidgetRegistration),
 }
 
 #[hdk_link_types]
