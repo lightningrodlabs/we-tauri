@@ -1,5 +1,5 @@
 import { AssessmentWidgetRegistration, AssessmentWidgetRegistrationUpdateInput } from './../../../../client/src/widgets/widget-registry';
-import { AgentPubKey, EntryHash } from "@holochain/client";
+import { AgentPubKey, EntryHash, Record } from "@holochain/client";
 import {
   pause,
   runScenario,
@@ -31,7 +31,7 @@ export default () => {
         zome_name,
         fn_name,
         payload,
-        is_ss = false
+        is_ss = true
       ) => {
         return await alice.callZome({
           cap_secret: null,
@@ -81,26 +81,27 @@ export default () => {
               "Integer": { "min": 0, "max": 20 }
             },
           };
-          const twentyScaleRangeEntryHash: EntryHash = await callZomeAlice(
+          const twentyScaleRangeRecord: Record = await callZomeAlice(
             "sensemaker",
             "create_range",
             twentyScaleRange,
             true
           );
           await pause(pauseDuration);
-          // const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
+          const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
 
         const testWidgetRegistration = {
-          applet_eh: dummyEntryHash,
-          widget_key: 'importance', 
+          appletEh: dummyEntryHash,
+          widgetKey: 'importance', 
           name: 'Importance Widget',
-          range_eh: twentyScaleRangeEntryHash,
+          rangeEh: twentyScaleRangeEntryHash,
           kind: 'input'
         };
         const widgetRegistrationCreationEntryHash : EntryHash = await callZomeAlice(
           "widgets",
           "register_assessment_widget",
-          testWidgetRegistration
+          testWidgetRegistration,
+          true
         );
         t.ok(widgetRegistrationCreationEntryHash, "creating a new assessment widget registration");
 
