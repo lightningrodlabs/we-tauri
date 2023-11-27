@@ -50,7 +50,7 @@ pub fn register_applet(input: RegisterAppletInput) -> ExternResult<EntryHash> {
 pub fn federate_applet(input: FederateAppletInput) -> ExternResult<ActionHash> {
     create_link(
         input.applet_hash,
-        input.we_group_dna_hash.retype(hash_type::Entry),
+        dnahash_to_linkable(input.we_group_dna_hash),
         LinkTypes::AppletToInvitedGroup,
         LinkTag::new(String::from("AppletToInvitedGroup"))
     )
@@ -65,7 +65,7 @@ pub fn get_federated_groups(applet_hash: EntryHash) -> ExternResult<Vec<DnaHash>
           Some(LinkTag::new("AppletToInvitedGroup"))
     )?;
     Ok(links.iter()
-        .map(|link| EntryHash::from(link.target.clone()).retype(hash_type::Dna))
+        .map(|link| linkable_to_dnahash(link.target.to_owned()))
         .collect::<Vec<DnaHash>>()
     )
 
@@ -94,13 +94,11 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
     let filter = ChainQueryFilter::new().action_type(ActionType::CreateLink);
     let create_links = query(filter)?;
 
-    let mut playing_applets: Vec<(EntryHash, PlayingApplet, Vec<DnaHash>)> = Vec::new();
-
-
     // let zid = zome_info()?.id;
     // debug!("%*%*%* ZomeId of get_applets_i_am_playing: {:?}", zid);
 
-    for record in create_links {
+    let playing_applets: Vec<(EntryHash, PlayingApplet, Vec<DnaHash>)>
+        = create_links.iter().filter_map(|record| {
         if let Action::CreateLink(create_link_action) = record.action() {
             // The conversion to a ScopedLinkType fails if the zome_id of the CreateLink Action is not the same as
             // the zome_id of this zome.
@@ -121,26 +119,32 @@ pub fn get_applets_i_am_playing(_: ()) -> ExternResult<Vec<(EntryHash, PlayingAp
             if link_tag == LinkTag::new(String::from("AppletToExternalAgent")) {
                 // debug!("%*%*%*%*%* SAME LinkTag !!! :)");
                 let applet_hash =
-                    EntryHash::from(create_link_action.base_address.clone());
+                    create_link_action.base_address.to_owned().into_entry_hash()?;
+
                 if let Some(applet) = applets.get(&applet_hash) {
                     // check for federation
-                    let federated_groups: Vec<DnaHash> = get_federated_groups(applet_hash.clone())?;
+                    let federated_groups: Vec<DnaHash> = get_federated_groups(applet_hash.clone()).ok()?;
 
-                    playing_applets.push(
+                    Some(
                         (applet_hash,
                         PlayingApplet {
                             applet: applet.clone(),
-                            agent_pub_key: (AgentPubKey::from(
-                                EntryHash::from(create_link_action.target_address.clone()),
-                            )),
+                            agent_pub_key: create_link_action.target_address.to_owned().into_agent_pub_key()?,
                         },
                         federated_groups,
                         ),
-                    );
+                    )
+                } else {
+                    None
                 }
+            } else {
+                None
             }
+        } else {
+            None
         }
-    }
+    })
+    .collect();
 
     // debug!(">>>>> playing_applets: {:?}", playing_applets);
     Ok(playing_applets)
@@ -154,7 +158,7 @@ fn get_all_applets(_: ()) -> ExternResult<Vec<(EntryHash, Applet, Vec<DnaHash>)>
 
     let get_input = links
         .into_iter()
-        .map(|link| GetInput::new(AnyDhtHash::from(EntryHash::from(link.target)), GetOptions::default()))
+        .filter_map(|link| Some(GetInput::new(link.target.into_any_dht_hash()?, GetOptions::default())))
         .collect();
 
     let applet_records = HDK.with(|hdk| hdk.borrow().get(get_input))?;
@@ -194,4 +198,14 @@ fn applets_from_records(applets_records: Vec<Record>) -> ExternResult<BTreeMap<E
         .collect::<ExternResult<BTreeMap<EntryHash, Applet>>>()?;
 
     Ok(applets)
+}
+
+// convert an `AnyLinkableHash` to a `DnaHash` for external representation
+pub fn linkable_to_dnahash(hash: AnyLinkableHash) -> DnaHash {
+    HoloHash::from_raw_36_and_type(hash.get_raw_36().to_vec(), hash_type::Dna)
+}
+
+// convert a `DnaHash` to an `ExternalHash` that is compatible with the `AnyLinkableHash` interface
+pub fn dnahash_to_linkable(hash: DnaHash) -> ExternalHash {
+    HoloHash::from_raw_36_and_type(hash.get_raw_36().to_vec(), hash_type::External)
 }
