@@ -14,4 +14,4 @@ crate-type = ["cdylib", "rlib"]
 name = "peer_status_integrity"
 
 [dependencies]
-hc_zome_peer_status_integrity = {git = "https://github.com/holochain-open-dev/peer-status", rev = "e77f6e9", package = "hc_zome_peer_status_integrity"}
+hc_zome_profiles_integrity = {git = "https://github.com/holochain-open-dev/peer-status", rev = "e77f6e9", package = "hc_zome_profiles_integrity"}
