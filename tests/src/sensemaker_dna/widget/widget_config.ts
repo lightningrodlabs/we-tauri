@@ -70,7 +70,7 @@ export default () => {
           { title: 'dummy', content: 'test' },
           false,
         );
-        console.log('dummy ResourceDef hash', dummyEntryHash)
+        // console.log('dummy ResourceDef hash', dummyEntryHash)
 
         // assert 'no configuration' error
         try {
@@ -87,29 +87,26 @@ export default () => {
         // create a config
         const testWidgetConfig1 = {
           inputAssessmentWidget: {
-            type: 'standaloneWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            widgetEh: dummyEntryHash,
+            widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'appletWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            appletId: dummyEntryHash,
-            componentName: 'test-widget-component',
+            widgetRegistryEh: dummyEntryHash,
           },
         };
         const testWidgetConfig2 = {
           inputAssessmentWidget: {
-            type: 'appletWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            appletId: dummyEntryHash,
-            componentName: 'test-widget-component',
+            widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'appletWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            appletId: dummyEntryHash,
-            componentName: 'test-widget-component',
+            widgetRegistryEh: dummyEntryHash,
           },
         };
         const update1 = await callZomeAlice(
@@ -155,16 +152,14 @@ export default () => {
         // create a new widget config and replace one of the prior ones with it
         const testWidgetConfig1b = {
           inputAssessmentWidget: {
-            type: 'appletWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            appletId: dummyEntryHash,
-            componentName: 'test-widget-component',
+            widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'appletWidget',
+            type: 'widget',
             dimensionEh: dummyEntryHash,
-            appletId: dummyEntryHash,
-            componentName: 'test-widget-component',
+            widgetRegistryEh: dummyEntryHash,
           },
         };
         const update3: EntryHash[] = await callZomeAlice(

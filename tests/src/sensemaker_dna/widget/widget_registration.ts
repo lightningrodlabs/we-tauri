@@ -141,16 +141,16 @@ export default () => {
 
         // Test 4: Given a created registration entry Then Alice can update that widget registration entry
 
-        // const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
-        //   assessmentRegistrationEh: widgetRegistrationCreationEntryHash,
-        //   assessmentRegistrationUpdate: {
-        //     appletEh: dummyEntryHash,
-        //     widgetKey: 'total-importance', 
-        //     name: 'Importance Widget Updated',
-        //     rangeEh: twentyScaleRangeEntryHash,
-        //     kind: 'output'
-        //   }
-        // };
+        const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
+          assessmentRegistrationEh: widgetRegistrationCreationEntryRecord.entryHash,
+          assessmentRegistrationUpdate: {
+            appletEh: dummyEntryHash,
+            widgetKey: 'total-importance', 
+            name: 'Importance Widget Updated',
+            rangeEh: twentyScaleRangeEntryHash,
+            kind: 'output'
+          }
+        };
         // const update1 = await callZomeAlice(
         //   "widgets",
         //   "update_assessment_widget_registration",
