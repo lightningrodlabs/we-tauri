@@ -26,6 +26,7 @@
     "download-sensemaker": "rimraf dnas/sensemaker.dna && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.11-alpha/sensemaker.dna",
     "postinstall": "npm run download-sensemaker",
     "test:ui": "cd ui/app && npm test",
+    "clean": "rm -Rf node_modules; for DIR in $(find -type d -iname node_modules); do\n rm -Rf \"$DIR\"\n done",
     "prepare": "husky install"
   },
   "devDependencies": {
