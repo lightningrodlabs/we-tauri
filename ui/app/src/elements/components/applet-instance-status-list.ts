@@ -16,7 +16,7 @@ import { matrixContext, weGroupContext } from "../../context";
 import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query, state } from "lit/decorators.js";
-import { HoloIdenticon } from "@holochain-open-dev/elements";
+import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";

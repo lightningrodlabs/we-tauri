@@ -5,7 +5,7 @@ import { html, css, CSSResult, unsafeCSS } from 'lit';
 import { StoreSubscriber, TaskSubscriber } from 'lit-svelte-stores';
 import { CircularProgress, Fab, Icon, Snackbar } from '@scoped-elements/material-web';
 import { classMap } from 'lit/directives/class-map.js';
-import { HoloIdenticon } from '@holochain-open-dev/elements';
+import { HoloIdenticon } from './elements/components/holo-identicon.js';
 
 import { matrixContext } from './context';
 import {

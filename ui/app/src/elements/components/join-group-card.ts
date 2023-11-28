@@ -18,7 +18,7 @@ import { MatrixStore } from '../../matrix-store';
 import { sharedStyles } from '../../sharedStyles';
 import { query, state } from 'lit/decorators.js';
 import { HoloHashMap } from '@holochain-open-dev/utils';
-import { HoloIdenticon } from '@holochain-open-dev/elements';
+import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
