@@ -219,7 +219,7 @@ export class MatrixStore {
   ) {
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
     console.log("hcPort in matrix connect: ", hcPort);
-    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, "we");
+    const appAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
     const membraneInvitationsStore = new MembraneInvitationsStore(new MembraneInvitationsClient(
@@ -443,7 +443,7 @@ export class MatrixStore {
       //instantiate the websocket
       console.log('app agent websocket being instantiated');
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-      appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      appletAppAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), appInfo.installed_app_id);
       this._matrix.update((matrix) => {
         matrix.get(weGroupId)[1].find(
           (info) =>
@@ -747,7 +747,7 @@ export class MatrixStore {
         // create dedicated AppAgentWebsocket for each We group
         const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
         console.log("hcPort in matrix fetchMatrix: ", hcPort)
-        const weGroupAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, "we");
+        const weGroupAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), "we");
 
 
         // TODO! Add unsubscribe handle to WeGroupData as well.
@@ -1027,7 +1027,7 @@ export class MatrixStore {
 
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
     console.log("hcPort in matrix installWeGroup: ", hcPort)
-    const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, weParentAppInfo.installed_app_id);
+    const appAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), weParentAppInfo.installed_app_id);
 
     // const newAppInfo: InstalledAppInfo = await this.adminWebsocket.installApp({
     //   installed_app_id,
@@ -1322,7 +1322,7 @@ export class MatrixStore {
       );
 
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-      const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+      const appletAppAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), appInfo.installed_app_id);
 
       // const devhubHappReleaseHash =
       //   this.releaseHashOfAppletInstance(appletInstanceId)!;
@@ -1521,7 +1521,7 @@ export class MatrixStore {
     );
 
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
+    const appletAppAgentWebsocket = await AppAgentWebsocket.connect(new URL(`ws://localhost:${hcPort}`), appInfo.installed_app_id);
 
       // const devhubHappReleaseHash =
       //   this.releaseHashOfAppletInstance(appletInstanceId)!;
