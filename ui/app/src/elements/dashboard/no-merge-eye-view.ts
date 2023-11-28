@@ -2,7 +2,6 @@ import { EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
 import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";

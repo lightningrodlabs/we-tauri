@@ -2,7 +2,6 @@ import { EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
 import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
@@ -19,12 +18,6 @@ export class AppletClassHome extends ScopedElementsMixin(LitElement) {
 
   @property()
   appletClassId!: EntryHash; // devHub hApp release hash
-
-  // _appletClassInfo = new TaskSubscriber(
-  //   this,
-  //   () => this._matrixStore.getAppletClassInfo(this.appletClassId),
-  //   () => [this._matrixStore, this.appletClassId]
-  // );
 
   @state()
   private _showHelp: boolean = false;
