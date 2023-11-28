@@ -1,12 +1,51 @@
 use hdk::prelude::*;
 use nh_sensemaker_zome_lib::*;
-use sensemaker_integrity_structs::{AssessmentWidgetRegistration, AssessmentWidgetRegistrationInput};
+use sensemaker_integrity_structs::{AssessmentWidgetRegistration, AssessmentWidgetRegistrationInput, Range};
 use nh_zome_sensemaker_widgets_integrity::*;
 
-
 #[hdk_extern]
-fn register_assessment_widget(AssessmentWidgetRegistrationInput { applet_eh, widget_key, name, range_eh, kind }: AssessmentWidgetRegistrationInput) -> ExternResult<bool> {
-    Ok(true)
+fn register_assessment_widget(AssessmentWidgetRegistrationInput { applet_eh, widget_key, name, range_eh, kind }: AssessmentWidgetRegistrationInput) -> ExternResult<Record> {
+    let action_hash;
+    let maybe_range = get(range_eh, GetOptions::default())?;
+
+    if let Some(range_record) = maybe_range {
+        let range_entry : Range = entry_from_record(range_record)?;
+        let input = AssessmentWidgetRegistration {
+            applet_eh: applet_eh.clone(),
+            widget_key: widget_key.clone(),
+            kind: kind.clone(),
+            name: name.clone(),
+            range: range_entry.clone()
+        };
+        // Create entry
+        action_hash = create_entry(&EntryTypes::AssessmentWidgetRegistration(input.clone()))?;
+
+        let eh = hash_entry(EntryTypes::AssessmentWidgetRegistration(input.clone()))?;
+        // Create links
+        // - applet entry hash to new entry hash
+        create_link(
+            applet_eh.clone(),
+            eh.clone(),
+            LinkTypes::AppletToWidgetRegistration,
+            (),
+        )?;
+        // - widget_registrations anchor to new entry hash
+        create_link(
+            registrations_typed_path()?.path_entry_hash()?,
+            eh.clone(),
+            LinkTypes::WidgetRegistrations,
+            (),
+        )?;
+
+        let record = get(action_hash.clone(), GetOptions::default())?
+            .ok_or(wasm_error!(WasmErrorInner::Guest("AssessmentWidgetRegistration could not be retrieved after creation".into())))?;
+
+        // debug!("_+_+_+_+_+_+_+_+_+_ Created record: {:#?}", record);
+        Ok(record)
+    } else {
+        // range doesn't exist
+        Err(wasm_error!(WasmErrorInner::Guest("No range found for range_eh".into())))
+    }
 }
 
 #[hdk_extern]
@@ -35,6 +74,10 @@ fn get_assessment_widget_registration(assessment_widget_registration_eh: EntryHa
     //     })
     //     .collect()
     // )
+}
+
+fn registrations_typed_path() -> ExternResult<TypedPath> {
+    Path::from("widget_registrations").typed(LinkTypes::WidgetRegistrations)
 }
 
 // #[hdk_extern]
