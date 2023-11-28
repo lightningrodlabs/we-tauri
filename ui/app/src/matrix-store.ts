@@ -41,6 +41,7 @@ import {
 import {
   CloneDnaRecipe,
   MembraneInvitationsStore,
+  MembraneInvitationsClient,
 } from "@holochain-open-dev/membrane-invitations";
 import { decode, encode } from "@msgpack/msgpack";
 import {
@@ -222,11 +223,11 @@ export class MatrixStore {
     const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, "we");
 
     console.log("@matrix-store: Creating new MembraneInvitationsStore");
-    const membraneInvitationsStore = new MembraneInvitationsStore(
+    const membraneInvitationsStore = new MembraneInvitationsStore(new MembraneInvitationsClient(
       (appAgentWebsocket as AppAgentClient),
       "lobby",
       "membrane_invitations_coordinator"
-    );
+    ));
     console.log("@matrix-store: MembraneInvitationsStore: ", membraneInvitationsStore);
 
     const appletsService = new GlobalAppletsService(appAgentWebsocket);
@@ -907,7 +908,7 @@ export class MatrixStore {
     const weDnaHash = getCellId(weCellInfo!)![0];
 
     const records =
-      await this.membraneInvitationsStore.service.getCloneRecipesForDna(
+      await this.membraneInvitationsStore.client.getCloneRecipesForDna(
         weDnaHash
       );
 
@@ -920,7 +921,7 @@ export class MatrixStore {
     )!;
 
     // membrane invitations API will need to change uid --> network_seed
-    await this.membraneInvitationsStore.service.inviteToJoinMembrane(
+    await this.membraneInvitationsStore.client.inviteToJoinMembrane(
       recipe.entry,
       agentPubKey,
       undefined
@@ -950,13 +951,13 @@ export class MatrixStore {
       networkSeed,
       caPubKey: encodeHashToBase64(this.myAgentPubKey),
     };
-
     const _recipeActionHash =
-      await this.membraneInvitationsStore.service.createCloneDnaRecipe({
-        originalDnaHash: weDnaHash,
-        networkSeed: undefined,
+      await this.membraneInvitationsStore.client.createCloneDnaRecipe({
+        original_dna_hash: weDnaHash,
+        network_seed: undefined,
         properties: encode(properties),
-        resultingDnaHash: newWeGroupDnaHash,
+        resulting_dna_hash: newWeGroupDnaHash,
+        custom_content: encode(null),
       });
 
     return newWeGroupDnaHash;
@@ -970,7 +971,7 @@ export class MatrixStore {
     caPubKey: string,
   ): Promise<DnaHash> {
     const newWeGroupDnaHash = await this.installWeGroup(name, logo, networkSeed, caPubKey);
-    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
+    await this.membraneInvitationsStore.client.removeInvitation(invitationActionHash);
     return newWeGroupDnaHash;
   }
 
@@ -1184,7 +1185,7 @@ export class MatrixStore {
   }
 
   public async removeInvitation(invitationActionHash: ActionHash) {
-    await this.membraneInvitationsStore.removeInvitation(invitationActionHash);
+    await this.membraneInvitationsStore.client.removeInvitation(invitationActionHash);
   }
 
   /**
