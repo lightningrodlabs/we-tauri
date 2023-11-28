@@ -411,12 +411,22 @@ export class SensemakerStore {
   }
   
   async registerWidget(widgetRegistration: AssessmentWidgetRegistrationInput): Promise<AssessmentWidgetRegistration> {
-    return await this.service.registerWidget(widgetRegistration)
+    const result = await this.service.registerWidget(widgetRegistration);
+    return new EntryRecord<AssessmentWidgetRegistration>(result).entry
   }
 
   async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
-    return await this.service.getRegisteredWidgets()
+    const result : HolochainRecord[] = await this.service.getRegisteredWidgets();
+    return result.reduce((record, value) => {
+      const entryRecord = new EntryRecord<AssessmentWidgetRegistration>(value);
+      const key: EntryHashB64 = encodeHashToBase64(entryRecord.entryHash);
+      const registration: AssessmentWidgetRegistration = entryRecord.entry;
+      
+      record[key] = registration;
+      return record
+    }, {} as Record<EntryHashB64, AssessmentWidgetRegistration>)
   }
+
   // async registerAppletConfigWidgets(appletEh: EntryHash, assessmentWidgets: AssessmentWidgetConfigDict) {
   //   try {
   //     await Promise.all(Object.entries(assessmentWidgets)

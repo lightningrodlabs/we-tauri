@@ -117,7 +117,7 @@ export class SensemakerService {
     return this.callZome('register_widget', widgetRegistration, 'widgets');
   }
 
-  async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
+  async getRegisteredWidgets(): Promise<Array<HolochainRecord>> {
     return this.callZome('get_registered_widgets', null, 'widgets');
   }
 

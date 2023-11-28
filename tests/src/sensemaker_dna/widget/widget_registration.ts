@@ -136,7 +136,7 @@ export default () => {
         );
         t.equal(1, getAll2.length);
         const firstRecord = new EntryRecord<AssessmentWidgetRegistration>(getAll2[0]);
-        t.deepEqual(firstRecord.entry.range, twentyScaleRange, "got assessment widgets registration with the correct range");
+        t.deepEqual(firstRecord.entry.range, twentyScaleRange, "got assessment widget registrations with the correct range");
 
 
         // Test 4: Given a created registration entry Then Alice can update that widget registration entry
