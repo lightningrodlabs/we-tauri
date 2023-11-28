@@ -35,7 +35,8 @@ pub enum EntryTypes {
 pub enum LinkTypes {
     WidgetConfigs,
     WidgetRegistrations,
-    WidgetConfigToWidgetRegistration,
+    // WidgetConfigToWidgetRegistration,
+    AppletToWidgetRegistration,
 }
 
 // :DUPE: ca_validation_callback
