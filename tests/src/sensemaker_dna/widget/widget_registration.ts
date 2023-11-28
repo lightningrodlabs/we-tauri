@@ -97,23 +97,26 @@ export default () => {
           rangeEh: twentyScaleRangeEntryHash,
           kind: 'input'
         };
-        const widgetRegistrationCreationEntryHash : EntryHash = await callZomeAlice(
+        const widgetRegistrationCreationRecord : Record = await callZomeAlice(
           "widgets",
           "register_assessment_widget",
           testWidgetRegistration,
           true
         );
-        t.ok(widgetRegistrationCreationEntryHash, "creating a new assessment widget registration");
+        t.ok(widgetRegistrationCreationRecord, "creating a new assessment widget registration");
 
-        // // const widgetRegistrationCreationEntryHash = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord).entryHash;
-        // await pause(pauseDuration);
+        const widgetRegistrationCreationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord);
 
-        // // Test 2: Given a created registration entry Then Alice can read that widget registration entry
+        await pause(pauseDuration);
+        t.deepEqual(widgetRegistrationCreationEntryRecord.entry.range, twentyScaleRange, "created assessment widget registration with the correct range");
+
+        await pause(pauseDuration);
+        // Test 2: Given a created registration entry Then Alice can read that widget registration entry
 
         // const get1 = await callZomeAlice(
         //   "widgets",
         //   "get_assessment_widget_registration",
-        //   widgetRegistrationCreationEntryHash
+        //   widgetRegistrationCreationEntryRecord.entryHash
         // );
         // t.ok(get1, "get an assessment widget registration");
 
@@ -137,7 +140,7 @@ export default () => {
         // t.ok(update1, "updated an assessment widget registration");
         // await pause(pauseDuration);
 
-        // // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
+        // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
       } catch (e) {
         console.error(e);
