@@ -54,7 +54,7 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
     this.matrixStore.fetchMatrix();
     this.requestUpdate();
   }
-  
+
   renderAppStates() {
     const appletInstanceInfos = this._uninstalledApplets.value;
     return html`${appletInstanceInfos?.length == 0 || !appletInstanceInfos
@@ -126,9 +126,9 @@ export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElemen
   static get styles() {
     let localStyles = css`
       p {
-        color: var(--nh-theme-fg-muted); 
+        color: var(--nh-theme-fg-muted);
       }
-      
+
       .refresh-button-row {
         margin: calc(1px * var(--nh-spacing-lg)) 0;
         display: grid;

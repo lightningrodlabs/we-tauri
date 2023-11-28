@@ -22,7 +22,7 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
   });
 
   _neighbourhood: InferType<typeof this._neighbourhoodSchema> = { name: "", image: "" };
-  
+
   @property()
   openDialogButton!: HTMLElement;
   @property()
@@ -34,7 +34,7 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
     this._neighbourhood.name = "";
     this._neighbourhood.image = "";
   }
-  
+
   private async onSubmit(e: any) {
     const root = this.renderRoot;
 
@@ -44,7 +44,7 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
     this._neighbourhoodSchema.validate(this._neighbourhood)
       .then(async valid => {
         if(!valid) throw new Error("Neighbourhood input data invalid");
-        
+
         this.dispatchEvent(new CustomEvent("creating-we", {})); // required to display loading screen in the dashboard
         const weId = await this._matrixStore.createWeGroup(this._neighbourhood.name!, this._neighbourhood.image!);
 
@@ -62,9 +62,9 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
         this._primaryButtonDisabled = true;
         const dialog = (root.querySelector("nh-dialog") as any).renderRoot.querySelector('sl-dialog');
         dialog.show() // Stop dialog from closing
-        
+
         console.log("Error validating profile for field: ", err.path);
-        
+
         const errorDOM = root.querySelectorAll("label[name=" + err.path + "]")
         if(errorDOM.length == 0) return;
         const asterisk : any = errorDOM[0];
@@ -135,7 +135,7 @@ export class CreateNeighbourhoodDialog extends NHComponentShoelace {
           flex: 1;
           flex-grow: 0;
           flex-basis: 8px;
-          color: var(--nh-theme-error-default); 
+          color: var(--nh-theme-error-default);
         }
       `,
     ];

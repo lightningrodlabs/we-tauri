@@ -155,7 +155,7 @@ export class JoinGroupCard extends NHComponent {
               <div class="column" style="align-items: right; width: 100%;">
                 <nh-card .theme=${"dark"} class="nested-card">
                   <nh-button-group .direction=${"horizontal"} >
-                    
+
                     <div slot="button-fixed" style="display: flex; gap: 1rem; align-items: baseline;">
                         <div style="display:flex; overflow: hidden; width: 6rem;">${generateHashHTML(encodeHashToBase64(this.inviter(invitation)))}</div>
                         <span style="text-align:center">invited you to join
@@ -231,7 +231,7 @@ export class JoinGroupCard extends NHComponent {
             <nh-card .theme=${"dark"} .title=${"Your public key:"} class="nested-card">
               <div
                 class="pubkey-field"
-              > 
+              >
                 <nh-button
                   .variant=${"primary"}
                   .size=${"auto"}
@@ -283,7 +283,7 @@ export class JoinGroupCard extends NHComponent {
           height: 3rem;
           border-radius: 100%;
         }
-        
+
         .refresh-button-row {
           margin: calc(1px * var(--nh-spacing-lg)) 0;
           display: grid;
@@ -299,7 +299,7 @@ export class JoinGroupCard extends NHComponent {
         }
 
         .pubkey-field nh-button:hover {
-          color: var(--nh-theme-accent-default) !important; 
+          color: var(--nh-theme-accent-default) !important;
         }
 
         p {

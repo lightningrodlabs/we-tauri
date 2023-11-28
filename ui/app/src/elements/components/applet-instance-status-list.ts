@@ -121,7 +121,7 @@ export class AppletInstanceStatusList extends NHComponent {
               }
             })
             .map((appletInfo: AppletInstanceInfo) => {
-              
+
               // return html`
               // ${this._widgetConfigDialogActivated ? html`
               //   <nh-dialog
@@ -216,7 +216,7 @@ export class AppletInstanceStatusList extends NHComponent {
   static get styles() {
     let localStyles = css`
       p {
-        color: var(--nh-theme-fg-muted); 
+        color: var(--nh-theme-fg-muted);
       }
 
       .refresh-button-row {

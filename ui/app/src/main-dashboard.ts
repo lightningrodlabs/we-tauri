@@ -108,11 +108,11 @@ export class MainDashboard extends NHComponentShoelace {
 
   @query('#component-card')
   _withProfile!: any;
-  
+
   @state()
   userProfileMenuVisible: boolean = false;
   private _appletName: string | undefined;
-  
+
   async refreshProfileCard(weGroupId: DnaHash) {
     if(!this._withProfile?.agentProfile?.value) {
       console.log("Unable to refresh profile card")
@@ -121,7 +121,7 @@ export class MainDashboard extends NHComponentShoelace {
     this._withProfile.weGroupId = weGroupId;
     await this._withProfile.updateComplete;
   }
-  
+
   toggleUserMenu () {
     this.userProfileMenuVisible = !this.userProfileMenuVisible;
     (this.renderRoot.querySelector(".user-profile-menu .context-menu") as HTMLElement).dataset.open = 'true';
@@ -179,7 +179,7 @@ export class MainDashboard extends NHComponentShoelace {
             </button>
           </sl-tooltip>
         </div>
-        <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));"> 
+        <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));">
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
           ? null
           : html`<span></span>`}
@@ -333,7 +333,7 @@ export class MainDashboard extends NHComponentShoelace {
     this._selectedAppletInstanceId = appletId;
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
   }
-  
+
   handleAppletClassIconClick(classId: EntryHash) {
     if (this._selectedAppletClassId !== classId) {
       this._selectedAppletClassId = classId;
@@ -345,12 +345,12 @@ export class MainDashboard extends NHComponentShoelace {
       this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     }
   }
-  
+
   handleMergeEyeViewClick() {
     this._dashboardMode = DashboardMode.AppletClassRendering;
     this._selectedAppletInstanceId = undefined;
   }
-  
+
   handleNavigationSwitch() {
     if (this._navigationMode === NavigationMode.AppletCentric) {
       if (this._selectedAppletInstanceId === undefined) {
@@ -878,11 +878,11 @@ export class MainDashboard extends NHComponentShoelace {
               >
                 <button class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
                 </sl-tooltip>
-                ${this._selectedWeGroupId 
+                ${this._selectedWeGroupId
                   ? html`<we-group-context .weGroupId=${this._selectedWeGroupId}><with-profile id="component-card" .agentHash=${encodeHashToBase64(this._matrixStore.myAgentPubKey)} .component=${"card"} class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}></with-profile></we-group-context>`
                   : html`<div id="component-card" class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}>No profile</div>`
                 }
-                
+
             </div>
           </div>
         </div>
@@ -985,7 +985,7 @@ export class MainDashboard extends NHComponentShoelace {
       }
       #nh-logo:hover {
         animation: crossfade 8s linear;
-      } 
+      }
 
       #nh-logo-col {
         z-index: 0;
@@ -1178,7 +1178,7 @@ export class MainDashboard extends NHComponentShoelace {
       }
       .groupCentricIconHover:hover,.highlightedGroupCentric {
         border-radius: calc(12px);
-        border-color: var(--nh-theme-bg-canvas); 
+        border-color: var(--nh-theme-bg-canvas);
       }
 
       .user-profile:hover,

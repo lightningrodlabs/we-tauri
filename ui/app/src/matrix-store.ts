@@ -435,9 +435,9 @@ export class MatrixStore {
         JSON.stringify(info.appletId) === JSON.stringify(appletInstanceId)
     )!;
     const appInfo = appInstanceInfo.appInfo;
-    
+
     let appletAppAgentWebsocket: AppAgentClient;
-    
+
     // check if the applets app agent websocket has been instantiated yet
     if (!appInstanceInfo.appAgentWebsocket) {
 
@@ -470,7 +470,7 @@ export class MatrixStore {
       [{ neighbourhoodInfo: this.getWeGroupInfo(weGroupId)!, appInfo }],
     );
 
-    // now that the applet instance renderers have been fetched and instantiated, add them to the AppletInstanceInfo 
+    // now that the applet instance renderers have been fetched and instantiated, add them to the AppletInstanceInfo
     this._matrix.update((matrix) => {
       matrix.get(weGroupId)[1].find(
         (info) =>
@@ -478,7 +478,7 @@ export class MatrixStore {
       )!.views = renderers;
       return matrix;
     })
-    
+
 
     return renderers;
   }
@@ -1025,7 +1025,7 @@ export class MatrixStore {
     const newWeGroupCellId = clonedCell.cell_id;
     await this.adminWebsocket.authorizeSigningCredentials(newWeGroupCellId);
 
-    
+
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
     console.log("hcPort in matrix installWeGroup: ", hcPort)
     const appAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, weParentAppInfo.installed_app_id);
@@ -1045,8 +1045,8 @@ export class MatrixStore {
     // });
 
     // add signal handler to listen for "NewApplet" events
-    
-    
+
+
     const sensemaker_properties = {
       ...properties,
       sensemaker_config: {
@@ -1102,7 +1102,7 @@ export class MatrixStore {
     // Because createCloneCell currently returns InstalledCell instead of Cell, we need to manually get
     // the clone_id via appInfo at the moment.
     const appInfo = await this.appAgentWebsocket.appInfo();
-    
+
     const cellInfo = appInfo.cell_info["we"].filter((cellInfo) => "cloned" in cellInfo)
       .find((cellInfo) => JSON.stringify((cellInfo as { [CellType.Cloned]: ClonedCell }).cloned.cell_id) === JSON.stringify(clonedCell.cell_id));
     const cell = (cellInfo as { [CellType.Cloned]: ClonedCell }).cloned!;
@@ -1265,23 +1265,23 @@ export class MatrixStore {
         const enabledAppInfo = await this.adminWebsocket.enableApp({
           installed_app_id: installedAppId,
         });
-        
+
         appInfo = enabledAppInfo.app;
         const installedCells = appInfo.cell_info;
-        
+
         for (const [roleName, cells] of Object.entries(installedCells)) {
           for (const cellInfo of cells) {
             await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
           }
         }
 
-      } 
+      }
       catch (e: any) {
           // exact same applet can only be installed once to the conductor
           if (!(e.data.data as string).includes("AppAlreadyInstalled")) {
             throw new Error(JSON.stringify(e.data, null, 2));
           }
-      }     
+      }
 
 
       // this.adminWebsocket
@@ -1324,7 +1324,7 @@ export class MatrixStore {
 
       const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
       const appletAppAgentWebsocket = await AppAgentWebsocket.connect(`ws://localhost:${hcPort}`, appInfo.installed_app_id);
-      
+
       // const devhubHappReleaseHash =
       //   this.releaseHashOfAppletInstance(appletInstanceId)!;
       // ATTENTION: IT IS ASSUMED HERE THAT THE APPLET IS ALREADY IN THE MATRIX!!
@@ -1348,7 +1348,7 @@ export class MatrixStore {
           widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(get(sensemakerStore!.appletConfigs())[installedAppId].dimensions[dimensionName])),
           widgetPair.display,
           widgetPair.assess,
-        ) 
+        )
       });
 
       const appInstanceInfo: AppletInstanceInfo = {
@@ -1547,7 +1547,7 @@ export class MatrixStore {
           widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
           widgetPair.display,
           widgetPair.assess,
-        ) 
+        )
       });
     const appInstanceInfo: AppletInstanceInfo = {
       appletId: appletInstanceId,
@@ -2122,7 +2122,7 @@ export class MatrixStore {
         profilesStore: weGroupData.profilesStore,
         sensemakerStore: weGroupData.sensemakerStore,
       });
-      
+
       const devhubHappReleaseHash =
         this.releaseHashOfAppletInstance(appletInstanceInfo.appletId)!;
 
@@ -2142,7 +2142,7 @@ export class MatrixStore {
           widgetPair.compatibleDimensions.map((dimensionName: string) => encodeHashToBase64(registeredConfig.dimensions[dimensionName])),
           widgetPair.display,
           widgetPair.assess,
-        ) 
+        )
       });
     });
   }
