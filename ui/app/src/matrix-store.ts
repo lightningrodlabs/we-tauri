@@ -910,12 +910,8 @@ export class MatrixStore {
         weDnaHash
       );
 
-    const clones: Array<EntryRecord<CloneDnaRecipe>> = records.map(
-      (r) => new EntryRecord(r)
-    );
-
-    const recipe = clones.find(
-      (c) => c.entry.resultingDnaHash.toString() === weGroupId.toString()
+    const recipe = records.find(
+      (c) => c.entry.resulting_dna_hash.toString() === weGroupId.toString()
     )!;
 
     // membrane invitations API will need to change uid --> network_seed
