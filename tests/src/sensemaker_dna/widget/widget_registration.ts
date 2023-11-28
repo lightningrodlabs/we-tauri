@@ -64,6 +64,13 @@ export default () => {
 
         // Test 0: Given no registered widgets Then Alice can read all registered widgets and get an empty array
 
+          const getAll1 : Record[] = await callZomeAlice(
+            "widgets",
+            "get_assessment_widget_registrations",
+            null
+          );
+          t.deepEqual([], getAll1);
+
         // Test 1: Alice can create a widget registration entry
           // use provider DNA method to get some entry hash for applet_eh
           const dummyEntryHash: EntryHash = await callZomeAlice(
@@ -72,8 +79,6 @@ export default () => {
             { title: 'dummy', content: 'test' },
             false,
           );
-          console.log('dummy ResourceDef hash', dummyEntryHash)
-
           // create range
           const twentyScaleRange = {
             "name": "20-scale",
@@ -122,7 +127,19 @@ export default () => {
         const getWidgetRegistrationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(get1);
         t.deepEqual(getWidgetRegistrationEntryRecord.entry.range, twentyScaleRange, "got assessment widget registration with the correct range");
 
-        // // Test 3: Given a created registration entry Then Alice can update that widget registration entry
+        // // Test 3: Given a created registration entry Then Alice can read all registered widgets and get an array of one
+
+        const getAll2 : Record[] = await callZomeAlice(
+          "widgets",
+          "get_assessment_widget_registrations",
+          null
+        );
+        t.equal(1, getAll2.length);
+        const firstRecord = new EntryRecord<AssessmentWidgetRegistration>(getAll2[0]);
+        t.deepEqual(firstRecord.entry.range, twentyScaleRange, "got assessment widgets registration with the correct range");
+
+
+        // Test 4: Given a created registration entry Then Alice can update that widget registration entry
 
         // const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
         //   assessmentRegistrationEh: widgetRegistrationCreationEntryHash,
@@ -141,8 +158,6 @@ export default () => {
         // );
         // t.ok(update1, "updated an assessment widget registration");
         // await pause(pauseDuration);
-
-        // Test 4: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
       } catch (e) {
         console.error(e);
