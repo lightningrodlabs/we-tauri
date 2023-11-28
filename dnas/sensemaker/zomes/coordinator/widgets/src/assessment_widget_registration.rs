@@ -49,31 +49,14 @@ fn register_assessment_widget(AssessmentWidgetRegistrationInput { applet_eh, wid
 }
 
 #[hdk_extern]
-fn get_assessment_widget_registration(assessment_widget_registration_eh: EntryHash) -> ExternResult<AssessmentWidgetRegistration> {
-    unimplemented!();
-    // let links = get_links(
-    //     resource_def_eh,
-    //     LinkTypes::WidgetConfigs,
-    //     None,
-    // )?;
+fn get_assessment_widget_registration(assessment_widget_registration_eh: EntryHash) -> ExternResult<Option<Record>> {
+    let maybe_registration = get(assessment_widget_registration_eh, GetOptions::default())?;
 
-    // Ok(links.iter()
-    //     .filter_map(|link| {
-    //         let maybe_record = get(
-    //             link.target.clone().into_entry_hash()?,
-    //             GetOptions::default(),
-    //         );
-
-    //         match maybe_record {
-    //             Err(_) => None, // :TODO: error handling
-    //             Ok(None) => None,
-    //             Ok(Some(record)) =>
-    //                 entry_from_record::<AssessmentWidgetBlockConfig>(record)
-    //                     .map_or(None, |f| Some(f))
-    //         }
-    //     })
-    //     .collect()
-    // )
+    if let Some(registration_record) = maybe_registration {
+        Ok(Some(registration_record))
+    } else {
+        Ok(None)
+    }
 }
 
 fn registrations_typed_path() -> ExternResult<TypedPath> {

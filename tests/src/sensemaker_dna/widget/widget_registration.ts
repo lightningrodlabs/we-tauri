@@ -103,22 +103,24 @@ export default () => {
           testWidgetRegistration,
           true
         );
-        t.ok(widgetRegistrationCreationRecord, "creating a new assessment widget registration");
+        t.ok(widgetRegistrationCreationRecord, "create a new assessment widget registration");
 
         const widgetRegistrationCreationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord);
 
-        await pause(pauseDuration);
+        // await pause(pauseDuration);
         t.deepEqual(widgetRegistrationCreationEntryRecord.entry.range, twentyScaleRange, "created assessment widget registration with the correct range");
 
-        await pause(pauseDuration);
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
 
-        // const get1 = await callZomeAlice(
-        //   "widgets",
-        //   "get_assessment_widget_registration",
-        //   widgetRegistrationCreationEntryRecord.entryHash
-        // );
-        // t.ok(get1, "get an assessment widget registration");
+        const get1 = await callZomeAlice(
+          "widgets",
+          "get_assessment_widget_registration",
+          widgetRegistrationCreationEntryRecord.entryHash
+        );
+        t.ok(get1, "get an assessment widget registration");
+
+        const getWidgetRegistrationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(get1);
+        t.deepEqual(getWidgetRegistrationEntryRecord.entry.range, twentyScaleRange, "got assessment widget registration with the correct range");
 
         // // Test 3: Given a created registration entry Then Alice can update that widget registration entry
 
