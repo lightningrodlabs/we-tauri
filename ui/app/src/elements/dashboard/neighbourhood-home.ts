@@ -9,13 +9,21 @@ import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } fro
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
-import { StoreSubscriber, TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, subscribe } from "lit-svelte-stores";
+import { get, readable, derived } from 'svelte/store';
 import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
 import { ProfilePrompt } from "../components/profile-prompt";
 import { AppletNotInstalled } from "./applet-not-installed";
+
+// :DUPE: provideWeGroupInfo
+function provideWeGroupInfo(matrixStore: MatrixStore, weGroupId: DnaHash) {
+  return readable(null, set => {
+    matrixStore.fetchWeGroupInfo(weGroupId).then(m => set(get(m)))
+  })
+}
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -32,22 +40,16 @@ export class NeighbourhoodHome extends NHComponentShoelace {
 
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
-  
-  _neighbourhoodInfo = new TaskSubscriber(
-    this,
-    () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
-    () => [this._matrixStore, this.weGroupId]
-  );
 
-  _neighbourhoodProfile = new TaskSubscriber(
+  _neighbourhoodInfo = new StoreSubscriber(
     this,
-    () => Promise.resolve(this._profilesStore.value!.myProfile),
+    () => provideWeGroupInfo(this._matrixStore, this.weGroupId),
     () => [this._matrixStore, this.weGroupId]
   );
 
   @state()
-  private _showLibrary: boolean = false; 
-  
+  private _showLibrary: boolean = false;
+
   @state()
   private _showInstallScreen: boolean = false;
 
@@ -91,14 +93,14 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       : html`
             <div class="container">
               <div class="nh-image">
-                ${this._neighbourhoodInfo.value
+                ${subscribe(this._neighbourhoodInfo.getStore(), value => value?.status === 'complete'
                   ? html`<img
                       class="logo-large"
-                      src=${this._neighbourhoodInfo.value.logoSrc}
+                      src=${value.logoSrc}
                     />`
-                  : null }
+                  : html``)}
                 <h1>
-                  ${this._neighbourhoodInfo.value?.name}
+                  ${subscribe(this._neighbourhoodInfo.getStore(), value => value?.status === 'complete' ? value?.name : html``)}
                 </h1>
               </div>
 
@@ -112,7 +114,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
                   <div slot="footer">
                     <nh-button .variant=${"primary"} @click=${() => this._showLibrary = true} .size=${"auto"}>Browse Applets</nh-button>
                   </div>
-                </nh-card>  
+                </nh-card>
               </div>
               <neighbourhood-settings class="settings"
                 @join-applet=${(e: CustomEvent) => {
@@ -140,19 +142,17 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   refresh() {
     this.requestUpdate()
   }
-    
+
   render() {
-    return this._neighbourhoodInfo.render({
-      pending: () => html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>`, // TODO: fix this loading transition - it is currently quite jarring
-      complete: (info: NeighbourhoodInfo) => {
-        return this._neighbourhoodProfile.render({
-          complete: (profileInfo) => {
-            return (profileInfo as any)?.value?.nickname
-            ? this.renderContent()
-            : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
-          }
-        })
-        }
+    return subscribe(this._neighbourhoodInfo.getStore(), info => {
+      console.info("NH home info:", info);
+      if (!info || info.status === 'pending') {
+        return html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>` // TODO: fix this loading transition - it is currently quite jarring
+      } else {
+        return info.value?.myProfile?.nickname
+          ? this.renderContent()
+          : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
+      }
     })
   }
 
@@ -174,7 +174,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     super.styles as CSSResult,
       css`
         /** Layout **/
-        
+
         main {
           display: flex;
           flex: 1;
@@ -194,9 +194,9 @@ export class NeighbourhoodHome extends NHComponentShoelace {
         .card-block { grid-area: card-block; align-self: center; }
         .settings { grid-area: nh-settings; display: flex; flex-direction: column;}
         applet-library { grid-column: -1/1; grid-row: -1/1; }
-        
+
         /** Sub-Layout **/
-        .to-join, .installed, .uninstalled, .danger-zone { 
+        .to-join, .installed, .uninstalled, .danger-zone {
           display: flex;
           flex: 1;
         }
@@ -211,7 +211,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
           flex-direction: column;
           gap: calc(1px * var(--nh-spacing-3xl));
         }
-        
+
         .logo-large {
           width: 200px;
           height: 200px;
