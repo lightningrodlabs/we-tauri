@@ -47,7 +47,6 @@ import { decode, encode } from "@msgpack/msgpack";
 import {
   DnaHashMap,
   EntryHashMap,
-  HoloHashMap,
 } from "@holochain-open-dev/utils";
 import {
   AppletRenderers,
@@ -310,8 +309,8 @@ export class MatrixStore {
    */
   public getAllWeGroupInfos(): Readable<WeGroupInfo[]> {
     return readable(
-      get(this._matrix)
-        .values()
+      [...get(this._matrix)
+        .values()]
         .map(([groupData, _]) => groupData.info)
     );
   }
@@ -322,8 +321,8 @@ export class MatrixStore {
     // const classStrings = get(this._installedAppletClasses).keys().map(())
 
     return derived(this._installedAppletClasses, (hashMap) => {
-      const maybeClass = hashMap
-        .entries()
+      const maybeClass = [...hashMap
+        .entries()]
         .find(
           ([classId, classInfo]) =>
             JSON.stringify(classId) === JSON.stringify(appletClassId)
@@ -339,8 +338,8 @@ export class MatrixStore {
    * @param appletInstanceId
    */
   public isInstalled(appletInstanceId: EntryHash): boolean {
-    const maybeInstalled = get(this._matrix)
-      .values()
+    const maybeInstalled = [...get(this._matrix)
+      .values()]
       .map(([_groupData, appletInfos]) => appletInfos)
       .flat()
       .find(
@@ -379,9 +378,8 @@ export class MatrixStore {
     return derived(this._matrix, (matrix) => {
       let groupInfos = new DnaHashMap<WeGroupInfo>();
       matrix
-        .entries()
-        .forEach(([groupId, [groupData, _appletInstanceInfos]]) => {
-          groupInfos.put(groupId, groupData.info);
+        .forEach(([groupData, _appletInstanceInfos], groupId) => {
+          groupInfos.set(groupId, groupData.info);
         });
       return groupInfos;
     });
@@ -535,7 +533,7 @@ export class MatrixStore {
     const gui = mod.default;
 
     // update the renderers
-    this._appletGuis.put(devhubHappReleaseHash, gui);
+    this._appletGuis.set(devhubHappReleaseHash, gui);
 
     return gui;
   }
@@ -582,7 +580,7 @@ export class MatrixStore {
     // todo
     return derived(this._matrix, (matrix) => {
       let result: [WeGroupInfo, AppletInstanceInfo][] = [];
-      matrix.values().forEach(([groupData, appletInfos]) => {
+      [...matrix.values()].forEach(([groupData, appletInfos]) => {
         // const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
 
         appletInfos
@@ -660,7 +658,7 @@ export class MatrixStore {
 
     // update the _newAppletInstances store
     this._newAppletInstances.update((hashMap) => {
-      hashMap.put(weGroupId, newAppletInstanceInfos);
+      hashMap.set(weGroupId, newAppletInstanceInfos);
       return hashMap;
     });
 
@@ -675,14 +673,14 @@ export class MatrixStore {
   public async fetchNewAppletInstances(): Promise<
     Readable<DnaHashMap<NewAppletInstanceInfo[]>>
   > {
-    const weGroups = get(this._matrix).keys();
+    const weGroups = [...get(this._matrix).keys()];
     const hashMap: DnaHashMap<NewAppletInstanceInfo[]> = new DnaHashMap<
       NewAppletInstanceInfo[]
     >();
 
     await Promise.all(
       weGroups.map(async (weGroupId) => {
-        hashMap.put(
+        hashMap.set(
           weGroupId,
           get(await this.fetchNewAppletInstancesForGroup(weGroupId))
         );
@@ -774,7 +772,7 @@ export class MatrixStore {
                 let updatedList = store.get(weGroupDnaHash);
                 updatedList.push(newAppletInstanceInfo);
 
-                store.put(weGroupDnaHash, updatedList);
+                store.set(weGroupDnaHash, updatedList);
 
                 return store;
               });
@@ -843,7 +841,7 @@ export class MatrixStore {
             };
 
             // populate installedAppletClasses along the way
-            installedAppletClasses.put(
+            installedAppletClasses.set(
               playingApplet.applet.devhubHappReleaseHash,
               appletClassInfo
             );
@@ -870,19 +868,19 @@ export class MatrixStore {
               return uninstalledAppletInstanceInfo;
             });
 
-        uninstalledAppletInstances.put(
+        uninstalledAppletInstances.set(
           weGroupDnaHash,
           uninstalledAppletInstanceInfos
         );
 
-        matrix.put(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
+        matrix.set(weGroupDnaHash, [weGroupData, appletInstanceInfos]);
       })
     );
 
     // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
     this._matrix.set(matrix);
     // this._matrix.update((m) => {
-    //   matrix.entries().forEach(([key, value]) => m.put(key, value));
+    //   matrix.entries().forEach(([key, value]) => m.set(key, value));
     //   return m;
     // });
 
@@ -1092,7 +1090,7 @@ export class MatrixStore {
             let updatedList = store.get(newWeGroupCellId[0]);
             updatedList.push(newAppletInstanceInfo);
 
-            store.put(newWeGroupCellId[0], updatedList);
+            store.set(newWeGroupCellId[0], updatedList);
 
             return store;
           });
@@ -1138,7 +1136,7 @@ export class MatrixStore {
       };
 
       if (!matrix.get(newWeGroupCellId[0])) {
-        matrix.put(newWeGroupCellId[0], [weGroupData, []]);
+        matrix.set(newWeGroupCellId[0], [weGroupData, []]);
       }
 
       return matrix;
@@ -1371,7 +1369,7 @@ export class MatrixStore {
         const filteredArray = hashMap
           .get(weGroupId)
           .filter((info) => info.appletId != appletInstanceId);
-        hashMap.put(weGroupId, filteredArray);
+        hashMap.set(weGroupId, filteredArray);
         return hashMap;
       });
 
@@ -1382,7 +1380,7 @@ export class MatrixStore {
         )
       ) {
         this._installedAppletClasses.update((hashMap) => {
-          hashMap.put(newAppletInfo!.applet.devhubHappReleaseHash, {
+          hashMap.set(newAppletInfo!.applet.devhubHappReleaseHash, {
             title: newAppletInfo!.applet.title,
             logoSrc: newAppletInfo!.applet.logoSrc,
             description: newAppletInfo!.applet.description,
@@ -1568,7 +1566,7 @@ export class MatrixStore {
     // update _installedAppletClasses
     if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
       this._installedAppletClasses.update((hashMap) => {
-        hashMap.put(applet.devhubHappReleaseHash, {
+        hashMap.set(applet.devhubHappReleaseHash, {
           title: applet.title,
           logoSrc: applet.logoSrc,
           description: applet.description,
@@ -1682,7 +1680,7 @@ export class MatrixStore {
         const filteredArray = hashMap
           .get(weGroupId)
           .filter((info) => info.appletId != appletInstanceId);
-        hashMap.put(weGroupId, filteredArray);
+        hashMap.set(weGroupId, filteredArray);
         return hashMap;
       });
 
@@ -1693,7 +1691,7 @@ export class MatrixStore {
         )
       ) {
         this._installedAppletClasses.update((hashMap) => {
-          hashMap.put(uninstalledAppletInfo!.applet.devhubHappReleaseHash, {
+          hashMap.set(uninstalledAppletInfo!.applet.devhubHappReleaseHash, {
             title: uninstalledAppletInfo!.applet.title,
             logoSrc: uninstalledAppletInfo!.applet.logoSrc,
             description: uninstalledAppletInfo!.applet.description,
@@ -1848,7 +1846,7 @@ export class MatrixStore {
     // update _installedAppletClasses
     if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
       this._installedAppletClasses.update((hashMap) => {
-        hashMap.put(applet.devhubHappReleaseHash, {
+        hashMap.set(applet.devhubHappReleaseHash, {
           title: applet.title,
           logoSrc: applet.logoSrc,
           description: applet.description,
@@ -1952,8 +1950,8 @@ export class MatrixStore {
   }
 
   getWeGroupInfoForAppletInstance(appletInstanceId: EntryHash): WeGroupInfo {
-    return get(this._matrix)
-      .values()
+    return [...get(this._matrix)
+      .values()]
       .filter(([_groupData, appletInfos]) => {
         return (
           appletInfos.filter(
@@ -1974,8 +1972,8 @@ export class MatrixStore {
   public getUninstalledAppletInstanceInfo(
     appletInstanceId: EntryHash
   ): NewAppletInstanceInfo | undefined {
-    return get(this._uninstalledAppletInstances)
-      .values()
+    return [...get(this._uninstalledAppletInstances)
+      .values()]
       .flat()
       .find(
         (info) =>
@@ -1996,8 +1994,8 @@ export class MatrixStore {
       "@matrix-store: @getNewAppletInstanceInfo: this._newAppletInstances: ",
       get(this._newAppletInstances)
     );
-    return get(this._newAppletInstances)
-      .values()
+    return [...get(this._newAppletInstances)
+      .values()]
       .flat()
       .find(
         (info) =>
@@ -2014,8 +2012,8 @@ export class MatrixStore {
   getAppletInstanceInfo(
     appletInstanceId: EntryHash
   ): AppletInstanceInfo | undefined {
-    return get(this._matrix)
-      .values()
+    return [...get(this._matrix)
+      .values()]
       .map(([_groupData, appletInfos]) => appletInfos)
       .flat()
       .find(
@@ -2048,7 +2046,7 @@ export class MatrixStore {
   ): AppletInfo[] {
     const matrix = get(this._matrix);
     let appletInfosOfClass: AppletInfo[] = [];
-    matrix.values().forEach(([weGroupData, appletInstanceInfos]) => {
+    [...matrix.values()].forEach(([weGroupData, appletInstanceInfos]) => {
       const weInfo: NeighbourhoodInfo = weGroupData.info.info;
       const relevantAppletInstanceInfos = appletInstanceInfos.filter(
         (info) =>
