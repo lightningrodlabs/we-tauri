@@ -2,13 +2,14 @@ use hdi::prelude::*;
 use crate::Range;
 
 #[hdk_entry_helper]
+#[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AssessmentWidgetRegistration {
-  applet_eh: EntryHash,
-  widget_key: String,
-  name: String,
-  range: Range, 
-  kind: String
+  pub applet_eh: EntryHash,
+  pub widget_key: String,
+  pub name: String,
+  pub range: Range, 
+  pub kind: String
 }
 
 // impl TryFrom<AssessmentWidgetRegistrationInput> for AssessmentWidgetRegistration {
