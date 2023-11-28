@@ -93,14 +93,14 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       : html`
             <div class="container">
               <div class="nh-image">
-                ${subscribe(this._neighbourhoodInfo.getStore(), value => value?.status === 'complete'
+                ${this._neighbourhoodInfo.value?.status === 'complete'
                   ? html`<img
                       class="logo-large"
-                      src=${value.logoSrc}
+                      src=${this._neighbourhoodInfo.value?.logoSrc}
                     />`
-                  : html``)}
+                  : html``}
                 <h1>
-                  ${subscribe(this._neighbourhoodInfo.getStore(), value => value?.status === 'complete' ? value?.name : html``)}
+                  ${this._neighbourhoodInfo.value?.status === 'complete' ? this._neighbourhoodInfo.value?.name : html``}
                 </h1>
               </div>
 
@@ -144,16 +144,16 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   }
 
   render() {
-    return subscribe(this._neighbourhoodInfo.getStore(), info => {
-      console.info("NH home info:", info);
-      if (!info || info.status === 'pending') {
-        return html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>` // TODO: fix this loading transition - it is currently quite jarring
-      } else {
-        return info.value?.myProfile?.nickname
-          ? this.renderContent()
-          : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
-      }
-    })
+    const info = this._neighbourhoodInfo
+
+    console.info("NH home info:", info);
+    if (!info.value || info.value?.status === 'pending') {
+      return html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>` // TODO: fix this loading transition - it is currently quite jarring
+    } else {
+      return info.value?.myProfile?.nickname
+        ? this.renderContent()
+        : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
+    }
   }
 
   static elementDefinitions = {
