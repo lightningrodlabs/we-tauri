@@ -1,4 +1,4 @@
-import { EntryHash } from "@holochain/client";
+import { EntryHash, Record } from "@holochain/client";
 import {
   pause,
   runScenario,
@@ -63,7 +63,28 @@ export default () => {
         await scenario.shareAllAgents();
         await pause(pauseDuration*2);
 
-        t.ok(true)
+        // Given no methods have been created, When Alice gets all methods Then an empty array is returned
+        const allMethodsOutput: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods",
+          null,
+          true
+        );
+        t.equal(allMethodsOutput.length, 0);
+
+        // Alice creates input/output dimensions and two methods
+
+        await pause(pauseDuration);
+        // Given two methods have been created, When Alice gets all methods Then array of length 2 is returned
+      
+        const allMethodsOutput2: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods",
+          null,
+          true
+        );
+        t.equal(allMethodsOutput.length, 2);
+
       } catch (e) {
         console.error(e);
         t.ok(null);
