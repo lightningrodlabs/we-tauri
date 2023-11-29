@@ -73,15 +73,31 @@ pub fn get_methods_for_dimension(input: GetMethodsForDimensionInput) -> ExternRe
     {
         let maybe_dimension = get_dimension(dimension_eh.clone())?;
 
-        if let Some(dimension) = maybe_dimension {
+        if let Some(_dimension) = maybe_dimension {
             match dimension_type.as_str() {
-                "input" => {
-                    // given an input dimension EH, should return a list of method objects which have the corresponding input.
+                "input" | "output" => {
+                    let link_tag = LinkTag::new(dimension_type.as_str());
+                    let links = get_links(
+                        dimension_eh,
+                        LinkTypes::DimensionToMethod,
+                        Some(link_tag),
+                    )?;
+            
+                    Ok(links.iter()
+                        .map(|link| {
+                            get_method(link.target.clone().into_entry_hash()
+                                .ok_or(wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?
+                            )
+                        })
+                        .collect::<ExternResult<Vec<Option<Record>>>>()?.into_iter().filter_map(|maybe_method| {
+                            maybe_method
+                        })
+                        .collect::<Vec<Record>>()
+                    )
                 }
-                "output" => {
-                    // given an output dimension EH, should return a list of method object which have the output dimension.
-                }
-                _ => (),
+                _ => Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                    "invalid query parameter dimension_type"
+                )))),
             }
         } else {
             Err(wasm_error!(WasmErrorInner::Guest(String::from(
@@ -104,7 +120,7 @@ pub fn create_method(method: Method) -> ExternResult<Record> {
             methods_typed_path()?.path_entry_hash()?,
             method_eh.clone(),
             LinkTypes::Method,
-            (),
+            LinkTag::new("input"),
         )?;
         // link from dimensions to method (assume validation of dimensions will happen via must_get_entry)
         create_link(
