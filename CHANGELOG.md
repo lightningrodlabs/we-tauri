@@ -1,10 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## v0.0.13-alpha - 2023-11-21
+## v0.0.13-alpha - 2023-11-29
 - `ResourceDef` fields have been updated: `name` is now `resource_name`, and the following three fields have been added to store where the resource entry is stored: `installed_app_id`, `role_name` and `zome_name`. 
 - Because of this change to `ResourceDef`, the `resource_defs` field of `AppletConfig` no longer needs to be of type `HappZomeMap<BTreeMap<String, EntryHash>>` and is now just `BTreeMap<String, ResourceDef>`. In fact, `HappZomeMap` has been removed from the codebase. Additionally, the `resource_defs` field in `AppletConfigInput` has been reverted to `Vec<ConfigResourceDef>`.
 - all `create_` zome functions that create an entry now return `Record` rather than `EntryHash`.
+- `set_assessment_widget_tray_config` and `get_assessment_widget_tray_config` zome function for configuring the assessment widget tray defined in the new entry type `AssessmentWidgetBlockConfig`. These are used for binding a widget to a dimension so we know which widget to display when creating an assessment.
 ## v0.0.12-alpha - 2023-10-31
 - `Method` and `ConfigMethod` no longer contains the `target_resource_def_eh` field.
 - `RunMethodInput` now contains a `resource_def_eh` field.
