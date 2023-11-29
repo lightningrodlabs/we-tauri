@@ -129,9 +129,9 @@ pub fn create_method(method: Method) -> ExternResult<Record> {
             LinkTypes::DimensionToMethod,
             LinkTag::new("output"),
         )?;
-        for &input_dimension in method.input_dimension_ehs.iter() {
+        for input_dimension in method.input_dimension_ehs.iter() {
             create_link(
-                input_dimension,
+                input_dimension.clone(),
                 method_eh.clone(),
                 LinkTypes::DimensionToMethod,
                 LinkTag::new("input"),
