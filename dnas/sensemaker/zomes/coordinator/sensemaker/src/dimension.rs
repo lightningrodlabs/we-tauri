@@ -16,7 +16,7 @@ pub fn create_dimension(dimension: Dimension) -> ExternResult<Record> {
         Ok(record)
     } else {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
-            "not able to get cultural context record after create"
+            "not able to get dimension record after create"
         ))))
     }
 }
