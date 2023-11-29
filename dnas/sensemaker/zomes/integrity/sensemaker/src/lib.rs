@@ -23,6 +23,7 @@ pub enum LinkTypes {
     Dimensions,
     Ranges,
     Assessment,
+    Method,
     CAToSensemakerConfig,
     AppletName,
     AppletConfig,

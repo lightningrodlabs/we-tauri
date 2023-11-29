@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use hdk::prelude::*;
 use sensemaker_integrity::Assessment;
 use sensemaker_integrity::EntryTypes;
+use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::Method;
 use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
@@ -180,4 +181,8 @@ pub fn update_method(input: UpdateMethodInput) -> ExternResult<ActionHash> {
 #[hdk_extern]
 pub fn delete_method(action_hash: ActionHash) -> ExternResult<ActionHash> {
     delete_entry(action_hash)
+}
+
+pub fn methods_typed_path() -> ExternResult<TypedPath> {
+    Path::from("methods").typed(LinkTypes::Method)
 }
