@@ -72,8 +72,19 @@ export default () => {
           "get_methods",
           null,
           true
-        );
+          );
         t.equal(allMethodsOutput2.length, 2);
+        
+        // Given two methods have been created, When Alice gets methods for dimension without QueryParams Then array of length 2 is returned (all methods)
+        const methodsForDimensionNoQuery: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: null },
+          true
+          );
+        t.equal(methodsForDimensionNoQuery.length, 2);
+        
+
       } catch (e) {
         console.error(e);
         t.ok(null);
