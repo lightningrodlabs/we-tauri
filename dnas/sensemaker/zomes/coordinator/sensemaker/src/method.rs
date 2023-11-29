@@ -18,6 +18,21 @@ pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
     get(entry_hash, GetOptions::default())
 }
 
+#[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryParams {
+    pub dimension_type: String,
+    dimension_eh: EntryHash
+}
+
+#[hdk_extern]
+pub fn get_method_for_dimension(QueryParams{ dimension_type, dimension_eh }: QueryParams) -> ExternResult<Option<Record>> {
+    // given an input dimension EH, should return a list of method objects which have the corresponding input.
+    // given an output dimension EH, should return a list of method object which have the output dimension.
+    // given no filter return all methods
+    get(dimension_eh, GetOptions::default())
+}
+
 #[hdk_extern]
 pub fn create_method(method: Method) -> ExternResult<Record> {
     let action_hash = create_entry(&EntryTypes::Method(method.clone()))?;
