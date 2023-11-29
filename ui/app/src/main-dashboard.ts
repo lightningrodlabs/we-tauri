@@ -1,8 +1,8 @@
-import { contextProvided, contextProvider } from '@lit-labs/context';
-import { state, query, property, queryAsync } from 'lit/decorators.js';
+import { contextProvided } from '@lit-labs/context';
+import { state, query, queryAsync } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 import { html, css, CSSResult, unsafeCSS } from 'lit';
-import { StoreSubscriber, TaskSubscriber } from 'lit-svelte-stores';
+import { StoreSubscriber } from 'lit-svelte-stores';
 import { CircularProgress, Fab, Icon, Snackbar } from '@scoped-elements/material-web';
 import { classMap } from 'lit/directives/class-map.js';
 import { HoloIdenticon } from './elements/components/holo-identicon.js';
@@ -41,15 +41,17 @@ import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/de
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
+import { provideMatrix, provideAppletInstances } from './matrix-helpers.js';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
-  _matrix = new TaskSubscriber(
+  // :SHONK: not accessed, only used to call `matrixStore.fetchMatrix` to populate below Readables
+  _matrix = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchMatrix(),
+    () => provideMatrix(this._matrixStore),
     () => [this._matrixStore],
   );
 
@@ -57,9 +59,9 @@ export class MainDashboard extends NHComponentShoelace {
 
   _allAppletClasses = new StoreSubscriber(this, () => this._matrixStore.installedAppletClasses());
 
-  _newAppletInstances = new TaskSubscriber(
+  _newAppletInstances = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchNewAppletInstances(),
+    () => provideAppletInstances(this._matrixStore),
     () => [this._selectedWeGroupId, this._matrixStore],
   );
 
@@ -130,14 +132,14 @@ export class MainDashboard extends NHComponentShoelace {
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
     if (this._navigationMode === NavigationMode.GroupCentric) {
-      return this.renderWeGroupIconsPrimary(this._allWeGroupInfos.value.values());
+      return this.renderWeGroupIconsPrimary([...this._allWeGroupInfos.value.values()]);
       // show all applet classes in appletClass mode
     } else if (this._navigationMode === NavigationMode.AppletCentric) {
-      return html`${this.renderAppletClassListPrimary(this._allAppletClasses.value.values())}
+      return html`${this.renderAppletClassListPrimary([...this._allAppletClasses.value.values()])}
         <div id="placeholder"></div>`;
       // show all we groups in mainHome mode
     } else {
-      return this.renderWeGroupIconsPrimary(this._allWeGroupInfos.value.values());
+      return this.renderWeGroupIconsPrimary([...this._allWeGroupInfos.value.values()]);
     }
   }
 
@@ -169,7 +171,7 @@ export class MainDashboard extends NHComponentShoelace {
           class="navigation-switch-container ${classMap({
             invisible:
               this._dashboardMode == DashboardMode.MainHome ||
-              this._allAppletClasses.value.keys().length == 0,
+              [...this._allAppletClasses.value.keys()].length == 0,
           })}
         "
         >
@@ -213,7 +215,7 @@ export class MainDashboard extends NHComponentShoelace {
           class="navigation-switch-container ${classMap({
             invisible:
               this._dashboardMode == DashboardMode.MainHome ||
-              this._allAppletClasses.value.keys().length == 0,
+              [...this._allAppletClasses.value.keys()].length == 0,
           })}
         "
           style="position: initial"
@@ -744,7 +746,7 @@ export class MainDashboard extends NHComponentShoelace {
     this._appletName = appletInstanceInfo?.appInfo.installed_app_id;
     this._selectedAppletClassId = applet!.devhubHappReleaseHash;
     this._selectedAppletRolename = Object.keys(applet!.dnaHashes)[0];
-    this._newAppletInstances.run();
+    this._newAppletInstances.store = provideAppletInstances(this._matrixStore)
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
