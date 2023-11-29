@@ -37,8 +37,16 @@ pub fn get_method_for_dimension(QueryParams{ dimension_type, dimension_eh }: Que
 #[hdk_extern]
 pub fn create_method(method: Method) -> ExternResult<Record> {
     let action_hash = create_entry(&EntryTypes::Method(method.clone()))?;
+    let method_eh = hash_entry(&EntryTypes::Method(method.clone()))?;
     let record = get(action_hash.clone(), GetOptions::default())?;
     if let Some(record) = record {
+        create_link(
+            methods_typed_path()?.path_entry_hash()?,
+            method_eh.clone(),
+            LinkTypes::Method,
+            (),
+        )?;
+
         Ok(record)
     } else {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
