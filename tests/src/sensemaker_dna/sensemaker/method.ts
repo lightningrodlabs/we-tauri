@@ -61,7 +61,7 @@ export default () => {
         t.equal(allMethodsOutput.length, 0);
 
         // Alice creates input/output dimensions and two methods
-        const { createMethodEntryHash, createMethodEntryHash2 } =
+        const { methods: [method1, method2], createMethodEntryHash, createMethodEntryHash2, inputDimensionEhs, outputDimensionEh } =
           await createMethods();
         t.ok(createMethodEntryHash);
         t.ok(createMethodEntryHash2);
@@ -83,6 +83,28 @@ export default () => {
           true
           );
         t.equal(methodsForDimensionNoQuery.length, 2);
+
+         // Given two methods have been created, When Alice gets methods for dimension with QueryParams for the first input dimension entry hash Then array of length 1 is returned
+        const methodsForDimensionInputDimensionQuery: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "input", dimensionEh: inputDimensionEhs[0] } },
+          true
+          );
+        t.equal(methodsForDimensionInputDimensionQuery.length, 1);
+        // And the only element of the array is the method created from the first input dimension entry hash
+        t.deepEqual(method1, new EntryRecord<Method>(methodsForDimensionInputDimensionQuery[0]).entry);
+
+         // Given two methods have been created, When Alice gets methods for dimension with QueryParams for the second input dimension entry hash Then array of length 1 is returned
+        const methodsForDimensionInputDimensionQuery2: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "input", dimensionEh: inputDimensionEhs[1] } },
+          true
+        );
+        t.equal(methodsForDimensionInputDimensionQuery2.length, 1);
+        // And the only element of the array is the method created from the second input dimension entry hash
+        t.deepEqual(method2, new EntryRecord<Method>(methodsForDimensionInputDimensionQuery2[0]).entry);
         
 
       } catch (e) {
@@ -93,7 +115,7 @@ export default () => {
       await cleanup();
 
       async function createMethods() {
-        // define subjective dimension
+        // define subjective dimensions
         const integerRange = {
           name: "10-scale",
           kind: {
@@ -123,6 +145,20 @@ export default () => {
         );
         const createDimensionEntryHash = new EntryRecord<Dimension>(
           createDimensionRecord
+        ).entryHash;
+        const createDimension2 = {
+          name: "awesomeness",
+          range_eh: rangeHash,
+          computed: false,
+        };
+        const createDimensionRecord2: Record = await callZomeAlice(
+          "sensemaker",
+          "create_dimension",
+          createDimension2,
+          true
+        );
+        const createDimensionEntryHash2 = new EntryRecord<Dimension>(
+          createDimensionRecord2
         ).entryHash;
 
         // define objective dimension
@@ -157,7 +193,7 @@ export default () => {
           createObjectiveDimensionRecord
         ).entryHash;
 
-        // create a method
+        // create methods
         const totalLikenessMethod = {
           name: "total_likeness_method",
           input_dimension_ehs: [createDimensionEntryHash],
@@ -176,10 +212,12 @@ export default () => {
         const createMethodEntryHash = new EntryRecord<Method>(
           createMethodRecord
         ).entryHash;
+
+        const anotherSimilarMethod = { ...totalLikenessMethod, name: "another_similar_method", input_dimension_ehs: [createDimensionEntryHash2]};
         const createMethodRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
-          totalLikenessMethod,
+          anotherSimilarMethod,
           true
         );
 
@@ -190,7 +228,7 @@ export default () => {
 
         await pause(pauseDuration);
 
-        return { createMethodEntryHash, createMethodEntryHash2 };
+        return { methods: [totalLikenessMethod, anotherSimilarMethod], createMethodEntryHash, createMethodEntryHash2, inputDimensionEhs: [createDimensionEntryHash, createDimensionEntryHash2], outputDimensionEh: createObjectiveDimensionEntryHash };
       }
     });
   });
