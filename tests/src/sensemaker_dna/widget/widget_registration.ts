@@ -86,20 +86,11 @@ export default () => {
               "Integer": { "min": 0, "max": 20 }
             },
           };
-          const twentyScaleRangeRecord: Record = await callZomeAlice(
-            "sensemaker",
-            "create_range",
-            twentyScaleRange,
-            true
-          );
-          await pause(pauseDuration);
-          const twentyScaleRangeEntryHash = new EntryRecord<Range>(twentyScaleRangeRecord).entryHash;
-
         const testWidgetRegistration = {
           appletEh: dummyEntryHash,
           widgetKey: 'importance', 
           name: 'Importance Widget',
-          rangeEh: twentyScaleRangeEntryHash,
+          range: twentyScaleRange,
           kind: 'input'
         };
         const widgetRegistrationCreationRecord : Record = await callZomeAlice(
@@ -147,7 +138,7 @@ export default () => {
             appletEh: dummyEntryHash,
             widgetKey: 'total-importance', 
             name: 'Importance Widget Updated',
-            rangeEh: twentyScaleRangeEntryHash,
+            range: twentyScaleRange,
             kind: 'output'
           }
         };
