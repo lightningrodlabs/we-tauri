@@ -1,5 +1,6 @@
 import { contextProvided } from "@lit-labs/context";
 import { html, css, CSSResult } from "lit";
+import { get } from "svelte/store";
 
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
@@ -9,7 +10,7 @@ import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } fro
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
-import { StoreSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber, subscribe } from "lit-svelte-stores";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
@@ -132,6 +133,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   }
 
   refresh() {
+    this._neighbourhoodInfo.store = provideWeGroupInfo(this._matrixStore, this.weGroupId)
     this.requestUpdate()
   }
 
@@ -139,11 +141,19 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     const info = this._neighbourhoodInfo
     if (!info.value) {
       return html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>` // TODO: fix this loading transition - it is currently quite jarring
+    } else if (!this._profilesStore.value?.myProfile || !get(this._profilesStore.value?.myProfile)) {
+      return this.renderProfilePrompt();
     } else {
-      return info.value?.myProfile?.nickname
-        ? this.renderContent()
-        : html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${info}></profile-prompt></main>`
+      return subscribe(this._profilesStore.value?.myProfile, p => {
+        return p && p.status === 'complete' && p.value?.entry.nickname
+          ? this.renderContent()
+          : this.renderProfilePrompt()
+    })
     }
+  }
+
+  renderProfilePrompt() {
+    return html`<main @profile-created=${this.refresh}><profile-prompt .profilesStore=${this._profilesStore.value} .neighbourhoodInfo=${this._neighbourhoodInfo.value}></profile-prompt></main>`
   }
 
   static elementDefinitions = {
