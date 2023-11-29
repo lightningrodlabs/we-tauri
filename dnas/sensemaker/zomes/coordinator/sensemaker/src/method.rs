@@ -9,6 +9,7 @@ use sensemaker_integrity::Program;
 use sensemaker_integrity::RangeValue;
 
 use crate::create_assessment;
+use crate::get_dimension;
 use crate::utils::entry_from_record;
 use crate::utils::flatten_btree_map;
 use crate::utils::get_assessments_for_resource_inner;
@@ -20,7 +21,7 @@ pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
-fn get_methods(_:()) -> ExternResult<Vec<Record>> {
+fn get_methods(_: ()) -> ExternResult<Vec<Record>> {
     let links = get_links(
         methods_typed_path()?.path_entry_hash()?,
         LinkTypes::Method,
@@ -28,35 +29,69 @@ fn get_methods(_:()) -> ExternResult<Vec<Record>> {
     )?;
     match links.last() {
         Some(_link) => {
-            let collected_get_results: ExternResult<Vec<Option<Record>>> = links.into_iter().map(|link| {
-                let entry_hash = link.target.into_entry_hash()
-                    .ok_or_else(|| wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?;
-    
+            let collected_get_results: ExternResult<Vec<Option<Record>>> = links
+                .into_iter()
+                .map(|link| {
+                    let entry_hash = link.target.into_entry_hash().ok_or_else(|| {
+                        wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target")))
+                    })?;
+
                     get_method(entry_hash)
-            }).collect();
-    
+                })
+                .collect();
+
             // Handle the Result and then filter_map to remove None values
             collected_get_results.map(|maybe_records| {
-                maybe_records.into_iter().filter_map(|maybe_record| maybe_record).collect::<Vec<Record>>()
+                maybe_records
+                    .into_iter()
+                    .filter_map(|maybe_record| maybe_record)
+                    .collect::<Vec<Record>>()
             })
-        } 
-        None => Ok(vec![])
+        }
+        None => Ok(vec![]),
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
-    pub dimension_type: String,
-    dimension_eh: EntryHash
+    dimension_type: String,
+    dimension_eh: EntryHash,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetMethodsForDimensionInput {
+    query: Option<QueryParams>,
 }
 
 #[hdk_extern]
-pub fn get_method_for_dimension(QueryParams{ dimension_type, dimension_eh }: QueryParams) -> ExternResult<Option<Record>> {
-    // given an input dimension EH, should return a list of method objects which have the corresponding input.
-    // given an output dimension EH, should return a list of method object which have the output dimension.
-    // given no filter return all methods
-    get(dimension_eh, GetOptions::default())
+pub fn get_methods_for_dimension(input: GetMethodsForDimensionInput) -> ExternResult<Vec<Record>> {
+    if let Some(QueryParams {
+        dimension_eh,
+        dimension_type,
+    }) = input.query
+    {
+        let maybe_dimension = get_dimension(dimension_eh.clone())?;
+
+        if let Some(dimension) = maybe_dimension {
+            match dimension_type.as_str() {
+                "input" => {
+                    // given an input dimension EH, should return a list of method objects which have the corresponding input.
+                }
+                "output" => {
+                    // given an output dimension EH, should return a list of method object which have the output dimension.
+                }
+                _ => (),
+            }
+        } else {
+            Err(wasm_error!(WasmErrorInner::Guest(String::from(
+                "not able to get dimension record from query parameters"
+            ))))
+        }
+    } else {
+        // given no filter return all methods
+        get_methods(())
+    }
 }
 
 #[hdk_extern]
@@ -77,7 +112,7 @@ pub fn create_method(method: Method) -> ExternResult<Record> {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
             "not able to get method record after create"
         ))))
-    } 
+    }
 }
 
 #[hdk_extern]
@@ -97,8 +132,12 @@ pub fn run_method(input: RunMethodInput) -> ExternResult<Option<Assessment>> {
         // now check what program it is, and depending on the range value type do math accordingly
         // if doing multiple input dimensions, will want to make sure they are of compatible types for arithmetic.
 
-        let maybe_objective_assessment =
-            compute_objective_assessment(method, assessments, input.resource_eh, input.resource_def_eh)?;
+        let maybe_objective_assessment = compute_objective_assessment(
+            method,
+            assessments,
+            input.resource_eh,
+            input.resource_def_eh,
+        )?;
         if let Some(objective_assessment) = maybe_objective_assessment {
             // TODO: may want to change `create_assessment` to return the created assessment rather than the hash. For now sticking with this for minimal side-effects.
             let assessment_record = create_assessment(objective_assessment)?;
@@ -133,7 +172,7 @@ fn compute_objective_assessment(
                 match assessment.value {
                     RangeValue::Integer(value) => {
                         sum = sum + value;
-                    },
+                    }
                     RangeValue::Float(value) => {
                         sum_float = sum_float + value;
                         is_int = false;
@@ -143,8 +182,7 @@ fn compute_objective_assessment(
             let assessment_value: RangeValue;
             if is_int {
                 assessment_value = RangeValue::Integer(sum);
-            }
-            else {
+            } else {
                 assessment_value = RangeValue::Float(sum_float);
             }
             let assessment = CreateAssessmentInput {
@@ -169,7 +207,7 @@ fn compute_objective_assessment(
                     RangeValue::Float(value) => {
                         sum_float = sum_float + value;
                         is_int = false;
-                    }, // TODO: complete this
+                    } // TODO: complete this
                 }
             }
             let assessment_value: RangeValue;
@@ -177,8 +215,7 @@ fn compute_objective_assessment(
             if is_int {
                 let average = sum / flat_assessments.len() as u32;
                 assessment_value = RangeValue::Integer(average);
-            }
-            else {
+            } else {
                 let average = sum_float / flat_assessments.len() as f64;
                 assessment_value = RangeValue::Float(average);
             }
@@ -190,7 +227,7 @@ fn compute_objective_assessment(
                 maybe_input_dataset: None,
             };
             Ok(Some(assessment))
-        },
+        }
     }
 }
 
