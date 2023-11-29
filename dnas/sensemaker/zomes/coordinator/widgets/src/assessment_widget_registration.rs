@@ -1,30 +1,20 @@
 use hdk::prelude::*;
-use nh_sensemaker_zome_lib::*;
 use sensemaker_integrity_structs::{AssessmentWidgetRegistration, AssessmentWidgetRegistrationInput, Range};
 use nh_zome_sensemaker_widgets_integrity::*;
 
 #[hdk_extern]
-fn register_assessment_widget(AssessmentWidgetRegistrationInput { applet_eh, widget_key, name, range_eh, kind }: AssessmentWidgetRegistrationInput) -> ExternResult<Record> {
+fn register_assessment_widget(registration_input: AssessmentWidgetRegistrationInput) -> ExternResult<Record> {
     let action_hash;
-    let maybe_range = get(range_eh, GetOptions::default())?;
-
-    if let Some(range_record) = maybe_range {
-        let range_entry : Range = entry_from_record(range_record)?;
-        let input = AssessmentWidgetRegistration {
-            applet_eh: applet_eh.clone(),
-            widget_key: widget_key.clone(),
-            kind: kind.clone(),
-            name: name.clone(),
-            range: range_entry.clone()
-        };
+    
+        let input: AssessmentWidgetRegistration = registration_input.clone().try_into()?;
         // Create entry
         action_hash = create_entry(&EntryTypes::AssessmentWidgetRegistration(input.clone()))?;
 
         let eh = hash_entry(EntryTypes::AssessmentWidgetRegistration(input.clone()))?;
         // Create links
-        // - applet entry hash to new entry hash
+        // - applet entry hash to new entry hash // TODO: validate applet_eh
         create_link(
-            applet_eh.clone(),
+            registration_input.applet_eh.clone(),
             eh.clone(),
             LinkTypes::AppletToWidgetRegistration,
             (),
@@ -42,10 +32,6 @@ fn register_assessment_widget(AssessmentWidgetRegistrationInput { applet_eh, wid
 
         // debug!("_+_+_+_+_+_+_+_+_+_ Created record: {:#?}", record);
         Ok(record)
-    } else {
-        // range doesn't exist
-        Err(wasm_error!(WasmErrorInner::Guest("No range found for range_eh".into())))
-    }
 }
 
 #[hdk_extern]
