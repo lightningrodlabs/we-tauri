@@ -106,6 +106,21 @@ pub fn create_method(method: Method) -> ExternResult<Record> {
             LinkTypes::Method,
             (),
         )?;
+        // link from dimensions to method (assume validation of dimensions will happen via must_get_entry)
+        create_link(
+            method.output_dimension_eh,
+            method_eh.clone(),
+            LinkTypes::DimensionToMethod,
+            LinkTag::new("output"),
+        )?;
+        for &input_dimension in method.input_dimension_ehs.iter() {
+            create_link(
+                input_dimension,
+                method_eh.clone(),
+                LinkTypes::DimensionToMethod,
+                LinkTag::new("input"),
+            )?;
+        }
 
         Ok(record)
     } else {
