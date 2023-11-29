@@ -1,5 +1,5 @@
 import { contextProvided } from "@lit-labs/context";
-import { html, css, CSSResult, PropertyValueMap } from "lit";
+import { html, css, CSSResult } from "lit";
 
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
@@ -93,14 +93,14 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       : html`
             <div class="container">
               <div class="nh-image">
-                ${this._neighbourhoodInfo.value?.status === 'complete'
+                ${this._neighbourhoodInfo.value
                   ? html`<img
                       class="logo-large"
                       src=${this._neighbourhoodInfo.value?.logoSrc}
                     />`
                   : html``}
                 <h1>
-                  ${this._neighbourhoodInfo.value?.status === 'complete' ? this._neighbourhoodInfo.value?.name : html``}
+                  ${this._neighbourhoodInfo.value?.name !== undefined ? this._neighbourhoodInfo.value?.name : ''}
                 </h1>
               </div>
 
@@ -145,9 +145,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
 
   render() {
     const info = this._neighbourhoodInfo
-
-    console.info("NH home info:", info);
-    if (!info.value || info.value?.status === 'pending') {
+    if (!info.value) {
       return html`<sl-skeleton effect="sheen" class="skeleton-part" style="width: 80%; height: 2rem; opacity: 0" ></sl-skeleton>` // TODO: fix this loading transition - it is currently quite jarring
     } else {
       return info.value?.myProfile?.nickname
