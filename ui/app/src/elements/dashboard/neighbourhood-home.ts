@@ -9,21 +9,13 @@ import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } fro
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
 import { AppletLibrary } from "../components/applet-library";
-import { StoreSubscriber, subscribe } from "lit-svelte-stores";
-import { get, readable, derived } from 'svelte/store';
+import { StoreSubscriber } from "lit-svelte-stores";
 import { DnaHash, EntryHash } from "@holochain/client";
 import { NeighbourhoodSettings } from "./neighbourhood-settings";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
 import { ProfilePrompt } from "../components/profile-prompt";
 import { AppletNotInstalled } from "./applet-not-installed";
-
-// :DUPE: provideWeGroupInfo
-function provideWeGroupInfo(matrixStore: MatrixStore, weGroupId: DnaHash) {
-  return readable(null, set => {
-    matrixStore.fetchWeGroupInfo(weGroupId).then(m => set(get(m)))
-  })
-}
+import { provideWeGroupInfo } from "../../matrix-helpers";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
