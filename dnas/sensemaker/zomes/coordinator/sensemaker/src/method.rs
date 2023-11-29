@@ -19,6 +19,31 @@ pub fn get_method(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
     get(entry_hash, GetOptions::default())
 }
 
+#[hdk_extern]
+fn get_methods(_:()) -> ExternResult<Vec<Record>> {
+    let links = get_links(
+        methods_typed_path()?.path_entry_hash()?,
+        LinkTypes::Method,
+        None,
+    )?;
+    match links.last() {
+        Some(_link) => {
+            let collected_get_results: ExternResult<Vec<Option<Record>>> = links.into_iter().map(|link| {
+                let entry_hash = link.target.into_entry_hash()
+                    .ok_or_else(|| wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target"))))?;
+    
+                    get_method(entry_hash)
+            }).collect();
+    
+            // Handle the Result and then filter_map to remove None values
+            collected_get_results.map(|maybe_records| {
+                maybe_records.into_iter().filter_map(|maybe_record| maybe_record).collect::<Vec<Record>>()
+            })
+        } 
+        None => Ok(vec![])
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, SerializedBytes, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryParams {
