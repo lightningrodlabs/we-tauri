@@ -1,20 +1,15 @@
 import { Entry, EntryHash } from "@holochain/client";
+import { Range } from "../range";
 import { IAssessDimensionWidget, IDisplayDimensionWidget } from ".";
 
 export interface AssessmentWidgetRegistrationInput {
   appletEh: EntryHash, // Applet entry hash
   widgetKey: string,  // keyof an AssessmentWidgetConfigDict
   name: string,
-  rangeEh: EntryHash, // The EntryHash for the created Range object (should probably just be the range object when returned from the API) - see below
+  range: Range, 
   kind: AssessmentWidgetKind
 }
-export type AssessmentWidgetRegistration = {
-  appletEh: EntryHash, 
-  widgetKey: string,
-  name: string,
-  range: Range
-  kind: AssessmentWidgetKind
-}
+export type AssessmentWidgetRegistration = AssessmentWidgetRegistrationInput;
 
 export type AssessmentWidgetRegistrationUpdateInput = {
   assessmentRegistrationEh: EntryHash,
