@@ -1,4 +1,4 @@
-import { EntryHash, Record } from "@holochain/client";
+import { Record } from "@holochain/client";
 import { pause, runScenario } from "@holochain/tryorama";
 import { setUpAliceandBob } from "../../utils";
 import { Method, Dimension } from "@neighbourhoods/client";
@@ -75,6 +75,8 @@ export default () => {
           );
         t.equal(allMethodsOutput2.length, 2);
         
+
+        /* Querying via Input/Output Dimension Ehs */
         // Given two methods have been created, When Alice gets methods for dimension without QueryParams Then array of length 2 is returned (all methods)
         const methodsForDimensionNoQuery: Record[] = await callZomeAlice(
           "sensemaker",
@@ -106,6 +108,53 @@ export default () => {
         // And the only element of the array is the method created from the second input dimension entry hash
         t.deepEqual(method2, new EntryRecord<Method>(methodsForDimensionInputDimensionQuery2[0]).entry);
         
+        
+         // Given two methods have been created, When Alice gets methods for dimension with QueryParams for the only output dimension entry hash Then array of length 2 is returned
+        const methodsForDimensionOutputDimensionQuery: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "output", dimensionEh: outputDimensionEh } },
+          true
+        );
+        t.equal(methodsForDimensionOutputDimensionQuery.length, 2);
+
+
+        // Given two more distinct methods have been created with distinct input dimensions
+        const { methods: [method3, method4], createMethodEntryHash: createMethodEntryHash3, createMethodEntryHash2: createMethodEntryHash4, inputDimensionEhs: inputDimensionEhs2, outputDimensionEh: outputDimensionEh2} =
+          await createMethods('my-seed');
+        t.ok(createMethodEntryHash3);
+        t.ok(createMethodEntryHash4);
+        
+        // When Alice gets methods for dimension without QueryParams Then array of length 4 is returned (all methods)
+        const methodsForDimensionNoQuery2: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: null },
+          true
+          );
+        t.equal(methodsForDimensionNoQuery2.length, 4);
+
+        // And When Alice gets methods for dimension with QueryParams for the third input dimension entry hash Then array of length 1 is returned
+        const methodsForDimensionInputDimensionQuery3: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "input", dimensionEh: inputDimensionEhs2[0] } },
+          true
+          );
+        t.equal(methodsForDimensionInputDimensionQuery3.length, 1);
+        // And the only element of the array is the method created from the third input dimension entry hash
+        t.deepEqual(method3, new EntryRecord<Method>(methodsForDimensionInputDimensionQuery3[0]).entry);
+
+        // And When Alice gets methods for dimension with QueryParams for the second output dimension entry hash Then array of length 2 returned
+        const methodsForDimensionOutputDimensionQuery2: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "output", dimensionEh: outputDimensionEh2 } },
+          true
+        );
+        t.equal(methodsForDimensionOutputDimensionQuery2.length, 2);
+        // And the methods are method 3 and method 4
+        t.deepEqual(methodsForDimensionOutputDimensionQuery2.map(record => new EntryRecord<Method>(record).entry), [method3, method4]);
 
       } catch (e) {
         console.error(e);
@@ -114,10 +163,10 @@ export default () => {
 
       await cleanup();
 
-      async function createMethods() {
+      async function createMethods(seed = '') {
         // define subjective dimensions
         const integerRange = {
-          name: "10-scale",
+          name: "10-scale" + seed,
           kind: {
             Integer: { min: 0, max: 10 },
           },
@@ -133,7 +182,7 @@ export default () => {
         const rangeHash = rangeEntryRecord.entryHash;
 
         const createDimension = {
-          name: "likeness",
+          name: "likeness" + seed,
           range_eh: rangeHash,
           computed: false,
         };
@@ -147,7 +196,7 @@ export default () => {
           createDimensionRecord
         ).entryHash;
         const createDimension2 = {
-          name: "awesomeness",
+          name: "awesomeness" + seed,
           range_eh: rangeHash,
           computed: false,
         };
@@ -164,7 +213,7 @@ export default () => {
         // define objective dimension
 
         const integerRange2 = {
-          name: "10-scale",
+          name: "10-scale" + seed,
           kind: {
             Integer: { min: 0, max: 1000000 },
           },
@@ -178,7 +227,7 @@ export default () => {
         const rangeHash2 = new EntryRecord<Range>(rangeRecord2).entryHash;
 
         const createObjectiveDimension = {
-          name: "total_likeness",
+          name: "total_likeness" + seed,
           range_eh: rangeHash2,
           computed: true,
         };
@@ -195,7 +244,7 @@ export default () => {
 
         // create methods
         const totalLikenessMethod = {
-          name: "total_likeness_method",
+          name: "total_likeness_method" + seed,
           input_dimension_ehs: [createDimensionEntryHash],
           output_dimension_eh: createObjectiveDimensionEntryHash,
           program: { Sum: null },
@@ -213,7 +262,7 @@ export default () => {
           createMethodRecord
         ).entryHash;
 
-        const anotherSimilarMethod = { ...totalLikenessMethod, name: "another_similar_method", input_dimension_ehs: [createDimensionEntryHash2]};
+        const anotherSimilarMethod = { ...totalLikenessMethod, name: "another_similar_method" + seed, input_dimension_ehs: [createDimensionEntryHash2]};
         const createMethodRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_method",
