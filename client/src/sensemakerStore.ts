@@ -1,6 +1,6 @@
 import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry, AssessmentWidgetBlockConfig } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry, AssessmentWidgetBlockConfig, GetMethodsForDimensionQueryParams } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -276,6 +276,24 @@ export class SensemakerStore {
       });
       return entryRecord.entry;
     }
+  }
+  async getMethods(): Promise<Array<Method>> {
+      const methodRecords : HolochainRecord[] = await this.service.getMethods(); 
+      const entryRecords = methodRecords.map((record: HolochainRecord) => new EntryRecord<Method>(record));
+      this.methods.update(methods => {
+        entryRecords.forEach(entryRecord => {
+          methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        });
+        return methods;
+      });
+      return entryRecords.map(entryRecord => entryRecord.entry);
+  }
+  async getMethodsForDimension(queryParams: GetMethodsForDimensionQueryParams): Promise<Array<Method>> {
+    // TODO: get from memory first?
+      const methodRecords : HolochainRecord[] = await this.service.getMethodsForDimensionEntryHash(queryParams); 
+      const entryRecords = methodRecords.map((record: HolochainRecord) => new EntryRecord<Method>(record));
+
+      return entryRecords.map(entryRecord => entryRecord.entry);
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
