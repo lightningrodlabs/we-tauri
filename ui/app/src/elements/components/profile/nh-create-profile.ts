@@ -34,7 +34,7 @@ export class NHCreateProfile extends NHComponentShoelace {
     const inputControl = (e.currentTarget as any);
     switch (inputControl.name) {
       case 'nickname':
-        this.user.nickname = inputControl.value; 
+        this.user.nickname = inputControl.value;
         break;
       default:
         this.user.image = e.detail.avatar;
@@ -52,7 +52,7 @@ export class NHCreateProfile extends NHComponentShoelace {
     })
     .catch(function (err) {
       console.log("Error validating profile for field: ", err.path);
-      
+
       const errorDOM = root.querySelectorAll("label[name=" + err.path + "]")
       if(errorDOM.length == 0) return;
       const element : any = errorDOM[0];
@@ -63,7 +63,7 @@ export class NHCreateProfile extends NHComponentShoelace {
       slInput.reportValidity()
     })
   }
-  
+
   async createProfile(profile: typeof this.user) {
     try {
       const payload : Profile = {
@@ -73,7 +73,6 @@ export class NHCreateProfile extends NHComponentShoelace {
         }
       }
       await this.profilesStore!.client.createProfile(payload);
-      await this.profilesStore!.myProfile.reload();
       this.dispatchEvent(
         new CustomEvent('profile-created', {
           detail: {
@@ -96,7 +95,7 @@ export class NHCreateProfile extends NHComponentShoelace {
             name="image"
             style="display: flex; margin-right: calc(1px * var(--nh-spacing-xl))"
             shape=${"circle"}
-            .label=${""} 
+            .label=${""}
             @avatar-selected=${(e: CustomEvent) => this.onChangeValue(e)}
           ></nh-select-avatar>
           <sl-input name="nickname" required @sl-input=${(e: CustomEvent) => this.onChangeValue(e)} value=${this.user.nickname} placeholder=${"Enter a name"}></sl-input>
@@ -145,7 +144,7 @@ export class NHCreateProfile extends NHComponentShoelace {
         flex: 1;
         flex-grow: 0;
         flex-basis: 8px;
-        color: var(--nh-theme-error-default); 
+        color: var(--nh-theme-error-default);
       }
     `,
   ];
