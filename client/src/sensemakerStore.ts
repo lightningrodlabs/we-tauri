@@ -355,7 +355,7 @@ export class SensemakerStore {
       // initialize the active method to the first method for each resource def
       this.updateActiveMethod(
         encodeHashToBase64(resourceDefEh),
-        encodeHashToBase64(get(this.methods).keys[0])
+        Array.from(get(this.methods).keys())[0]
       );
     }
     for (const contextEh of Object.values(appletConfig.cultural_contexts)) {
