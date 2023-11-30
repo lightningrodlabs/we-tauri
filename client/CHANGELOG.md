@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.10 - 2023-12-04
+- `getMethods()` method created on the store which returns all Methods from the global Sensemaking space (created from an applet config or through the UI).
+- `getMethodsForDimension()` method created on the store which returns all Methods created with a particular input or output dimension entry hash.
+- `GetMethodsForDimensionQueryParams` input type added for the above method, which needs a `dimensionEh` and a `dimensionType` `"output"` or `"input"`.
 ## v0.0.9 - 2023-11-30
 - fixed bug in `updateAppletConfig` where it was not properly grabbing the entry hash of a method for calling `updateActiveMethod`
 ## v0.0.8 - 2023-11-29
