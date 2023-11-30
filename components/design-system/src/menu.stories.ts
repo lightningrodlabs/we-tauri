@@ -1,6 +1,7 @@
 import NHMenu, { MenuSection } from "./menu";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 customElements.define("nh-menu", NHMenu);
 
