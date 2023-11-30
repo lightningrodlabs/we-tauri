@@ -3,7 +3,7 @@ import { DnaHash, EntryHash } from "@holochain/client";
 import { contextProvided } from "@lit-labs/context";
 import {  CircularProgress, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { css, html } from "lit";
-import { TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber } from "lit-svelte-stores";
 import { query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
@@ -13,6 +13,7 @@ import { JoinableAppletInstanceList } from "../components/joinable-applet-instan
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 import { LeaveNeighbourhood } from "../dialogs/leave-neighbourhood";
+import { provideWeGroupInfo } from "../../matrix-helpers";
 
 export class NeighbourhoodSettings extends NHComponent {
 
@@ -28,9 +29,9 @@ export class NeighbourhoodSettings extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 
-  _neighbourhoodInfo = new TaskSubscriber(
+  _neighbourhoodInfo = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchWeGroupInfo(this.weGroupId),
+    () => provideWeGroupInfo(this._matrixStore, this.weGroupId),
     () => [this._matrixStore, this.weGroupId]
   );
 
@@ -146,16 +147,15 @@ export class NeighbourhoodSettings extends NHComponent {
 
 
   render() {
-    return this._neighbourhoodInfo.render({
-      pending: () => html`
+    return !this._neighbourhoodInfo.value
+      ? html`
         <div class="center-content" style="flex: 1; width: 100%; height: 100%;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
-        `,
-      complete: (_neighbourhoodInfo) => html`
-          ${this.renderContent()}
-        `
-    })
+      `
+      : html`
+        ${this.renderContent()}
+      `
   }
 
   static get elementDefinitions() {
@@ -179,7 +179,7 @@ export class NeighbourhoodSettings extends NHComponent {
     }
 
     hr {
-      border-color: var(--nh-theme-bg-detail); 
+      border-color: var(--nh-theme-bg-detail);
       border-style: double;
       width: 100%;
     }
