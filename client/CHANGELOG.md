@@ -1,6 +1,8 @@
 # Changelog
 All notable changes to the `@neighbourhoods/client` package will be documented in this file.
 
+## v0.0.9 - 2023-11-30
+- fixed bug in `updateAppletConfig` where it was not properly grabbing the entry hash of a method for calling `updateActiveMethod`
 ## v0.0.8 - 2023-11-29
 - `ResourceDef` fields have been updated: `name` is now `resource_name`, and the following three fields have been added to store where the resource entry is stored: `installed_app_id`, `role_name` and `zome_name`. 
 - `resource_defs` in `AppletConfig` has been reverted to type `{ [resourceDefName: string]: EntryHash, }` and `resource_defs` in `AppletConfigInput` has been reverted to type `Array<ConfigResourceDef>`.
