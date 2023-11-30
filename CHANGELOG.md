@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## v0.0.14-alpha - 2023-11-30
+- `get_methods` and `get_methods_for_dimension` are added as zome functions. 
+- `get_methods` takes no parameters, while `get_methods_for_dimension` accepts a `GetMethodsForDimensionInput` struct, having one `query: Option<QueryParams>` field. Calling with `query` as `null` returns the same as `get_methods`, but providing a `dimension_type` and `dimension_eh` will return all methods created with that input/output dimension entry hash.  
+- All methods are now created with links to a `"methods"` anchor, plus a link from the input/output dimension entry hashes to the method entry hash - and tagged with the `dimension_type` ("input"/"output").
 ## v0.0.13-alpha - 2023-11-29
 - `ResourceDef` fields have been updated: `name` is now `resource_name`, and the following three fields have been added to store where the resource entry is stored: `installed_app_id`, `role_name` and `zome_name`. 
 - Because of this change to `ResourceDef`, the `resource_defs` field of `AppletConfig` no longer needs to be of type `HappZomeMap<BTreeMap<String, EntryHash>>` and is now just `BTreeMap<String, ResourceDef>`. In fact, `HappZomeMap` has been removed from the codebase. Additionally, the `resource_defs` field in `AppletConfigInput` has been reverted to `Vec<ConfigResourceDef>`.
