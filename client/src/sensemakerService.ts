@@ -1,5 +1,5 @@
 import { AgentPubKey, AppAgentCallZomeRequest, AppAgentClient, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
-import { AppletConfig, AppletConfigInput, Assessment, AssessmentWidgetBlockConfig, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, Range, ResourceDef, RunMethodInput } from './index';
+import { AppletConfig, AppletConfigInput, Assessment, AssessmentWidgetBlockConfig, ComputeContextInput, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, GetMethodsForDimensionQueryParams, Method, Range, ResourceDef, RunMethodInput } from './index';
 import { Option } from './utils';
 
 export class SensemakerService {
@@ -71,6 +71,14 @@ export class SensemakerService {
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
     return this.callZome('run_method', runMethodInput);
+  }
+
+  async getMethods(): Promise<Array<HolochainRecord>> {
+    return this.callZome('get_methods', null)
+  }
+
+  async getMethodsForDimensionEntryHash(queryParams?: GetMethodsForDimensionQueryParams): Promise<Array<HolochainRecord>> {
+    return this.callZome('get_methods_for_dimension', { query: queryParams || null })
   }
 
   async getAssessmentWidgetTrayConfig(resourceDefEh: EntryHash): Promise<Array<AssessmentWidgetBlockConfig>> {

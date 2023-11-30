@@ -39,3 +39,8 @@ export interface ProgramSum {
 export interface ProgramAverage {
     Average: null,
 }
+
+export interface GetMethodsForDimensionQueryParams {
+    dimensionType: "input" | "output",
+    dimensionEh: EntryHash,
+}
