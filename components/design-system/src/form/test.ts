@@ -3,8 +3,9 @@ import { state } from 'lit/decorators.js';
 import { CSSResult, css, html } from 'lit';
 import { NHBaseForm } from "../ancestors/base-form";
 import { ObjectSchema, object, string, boolean } from 'yup';
-import { SlButton, SlInput, SlRadioGroup } from '@shoelace-style/shoelace';
+import { SlInput, SlRadioGroup } from '@shoelace-style/shoelace';
 import { NHValidationError } from './validation-error';
+import NHButton from '../button';
 
 export default class CreateDimensionForm extends NHBaseForm {
   
@@ -37,7 +38,7 @@ export default class CreateDimensionForm extends NHBaseForm {
   static elementDefinitions = {
       'sl-radio-group': SlRadioGroup,
       'sl-input': SlInput,
-      'sl-button': SlButton,
+      'nh-button': NHButton,
       'nh-validation-error': NHValidationError,
   }
 
@@ -62,7 +63,7 @@ export default class CreateDimensionForm extends NHBaseForm {
           })}
           .message=${this.getErrorMessage('otherFieldName')}
         ></nh-validation-error>
-        <sl-button @click=${this.handleSubmit} type="submit">Create</sl-button>
+        <nh-button @click=${this.handleSubmit} type="submit">Create</nh-button>
       </form>
 
       ${this.isFormUntouched() && this.hasErrors() ? html`<p>Please fill in the form.</p>` : ''}
