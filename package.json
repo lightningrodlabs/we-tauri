@@ -29,6 +29,7 @@
     "@storybook/addon-links": "^7.4.0",
     "@storybook/blocks": "^7.4.0",
     "@storybook/builder-vite": "^7.4.0",
+    "@storybook/manager-api": "^7.6.1",
     "@storybook/test-runner": "^0.13.0",
     "@storybook/web-components": "^7.4.0",
     "@storybook/web-components-vite": "^7.4.0",
