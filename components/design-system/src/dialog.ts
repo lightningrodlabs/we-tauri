@@ -16,6 +16,7 @@ export enum DialogType {
   confirmation = 'confirmation',
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
+  createDimension = 'create-dimension',
 }
 
 function preventOverlayClose(event: CustomEvent) : void {
@@ -34,10 +35,10 @@ export default class NHDialog extends NHComponentShoelace {
   dialogType!: DialogType;
 
   @property()
-  handleOk!: () => void;
+  handleOk!: () => { preventDefault?: boolean };
 
   @property()
-  handleClose!: () => void;
+  handleClose!: () => { preventDefault?: boolean };
 
   @property({ type: Boolean })
   isOpen = false;
@@ -63,7 +64,7 @@ export default class NHDialog extends NHComponentShoelace {
       this.openButtonRef?.removeEventListener('click', this.showDialog);
     }
     this._dialog.removeEventListener('sl-request-close', preventOverlayClose)
-    typeof this.handleClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.handleClose);
+    typeof this.onClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.onClose);
   }
 
   updated(changedProperties: any) {
@@ -78,7 +79,7 @@ export default class NHDialog extends NHComponentShoelace {
   firstUpdated() {
     if(!this._dialog) return
     this._dialog.addEventListener('sl-request-close', preventOverlayClose)
-    typeof this.handleClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.handleClose);
+    typeof this.onClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.onClose);
   }
     
   chooseButtonText() {
@@ -112,6 +113,12 @@ export default class NHDialog extends NHComponentShoelace {
         primary: 'Uninstall',
         secondary: 'Cancel',
       }
+
+      case DialogType.createDimension:
+      return {
+        primary: 'Create Dimension',
+        secondary: 'Cancel',
+      }
     
       default:
         return {
@@ -123,7 +130,7 @@ export default class NHDialog extends NHComponentShoelace {
 
   renderActions() {
     switch (true) {
-      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood'].includes(this.dialogType):
+      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood', 'create-dimension'].includes(this.dialogType):
         return html`<sl-button-group id="buttons">
           <nh-button
             id="secondary-action-button"
@@ -168,7 +175,7 @@ export default class NHDialog extends NHComponentShoelace {
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
-        @sl-hide=${() => typeof this.handleClose == 'function' && this.handleClose()}
+        @sl-hide=${(e:any) => typeof this.onClose == 'function' && this.onClose(e)}
       >
         <div class="container">
           ${this.alertMessage
@@ -194,11 +201,24 @@ export default class NHDialog extends NHComponentShoelace {
     this.primaryButtonDisabled = !value;
   };
 
+  onClose = async (_e: any) => {
+    if(typeof this.handleClose !== 'function') return; 
+    
+    let result : { preventDefault?: boolean };
+    if (this.handleClose) {
+      result = await this.handleClose();
+    } else { result = { preventDefault: false }}
+    // TODO: stop this from closing when result.preventDefault is true
+    if(result && !(result.preventDefault)) this.hideDialog();
+  }
+
   onOkClicked = () => {
+    let result : { preventDefault?: boolean };
     if (this.handleOk) {
-      this.handleOk();
-    }
+      result = this.handleOk();
+    } else { result = { preventDefault: false }}
     this.hideDialog();
+    if(result && result.preventDefault) this.showDialog();
   };
 
   static get elementDefinitions() {
