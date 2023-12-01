@@ -2,7 +2,7 @@ import { JoinMembraneInvitation } from '@holochain-open-dev/membrane-invitations
 import { contextProvided } from '@lit-labs/context';
 import { decode } from '@msgpack/msgpack';
 import { html, css, CSSResult } from 'lit';
-import { TaskSubscriber } from 'lit-svelte-stores';
+import { StoreSubscriber } from 'lit-svelte-stores';
 import {
   Button,
   List,
@@ -18,6 +18,7 @@ import { MatrixStore } from '../../matrix-store';
 import { sharedStyles } from '../../sharedStyles';
 import { query, state } from 'lit/decorators.js';
 import { HoloHashMap } from '@holochain-open-dev/utils';
+import { AsyncStatus } from '@holochain-open-dev/stores';
 import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
@@ -30,9 +31,9 @@ export class JoinGroupCard extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
-  _myInvitations = new TaskSubscriber(
+  _myInvitations = new StoreSubscriber(
     this,
-    () => this.matrixStore.membraneInvitationsStore.fetchMyInvitations(),
+    () => this.matrixStore.membraneInvitationsStore.myInvitations,
     () => [this.matrixStore],
   );
 
@@ -40,7 +41,7 @@ export class JoinGroupCard extends NHComponent {
   _copiedSnackbar!: Snackbar;
 
   async joinGroup(invitationActionHash: ActionHash, invitation: JoinMembraneInvitation) {
-    const properties = decode(invitation.cloneDnaRecipe.properties) as any;
+    const properties = decode(invitation.clone_dna_recipe.properties) as any;
     await this.matrixStore
       .joinWeGroup(
         invitationActionHash,
@@ -72,11 +73,11 @@ export class JoinGroupCard extends NHComponent {
   }
 
   weName(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).name;
+    return (decode(invitation.clone_dna_recipe.properties) as any).name;
   }
 
   weImg(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
+    return (decode(invitation.clone_dna_recipe.properties) as any).logoSrc;
   }
 
   inviter(invitation: JoinMembraneInvitation) {
@@ -125,7 +126,7 @@ export class JoinGroupCard extends NHComponent {
   }
 
   renderInvitations(invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>) {
-    if (invitations.entries().length == 0) {
+    if ([...invitations.entries()].length == 0) {
       return html`
         <div style="display: flex; justify-content: space-between;">
           <p>You have no open invitations...</p>
@@ -139,14 +140,14 @@ export class JoinGroupCard extends NHComponent {
       `;
     } else {
       return html`
-        ${invitations
-          .entries()
+        ${[...invitations
+          .entries()]
           .sort(([hash_a, a], [hash_b, b]) => b.timestamp - a.timestamp)
           .filter((obj, idx, arr) => {
             return (
               arr
-                .map(mapObj => JSON.stringify(mapObj[1].cloneDnaRecipe.resultingDnaHash))
-                .indexOf(JSON.stringify(obj[1].cloneDnaRecipe.resultingDnaHash)) === idx
+                .map(mapObj => JSON.stringify(mapObj[1].clone_dna_recipe.resulting_dna_hash))
+                .indexOf(JSON.stringify(obj[1].clone_dna_recipe.resulting_dna_hash)) === idx
             );
           })
           .map(([actionHash, invitation]) => {
@@ -205,13 +206,13 @@ export class JoinGroupCard extends NHComponent {
     }
   }
 
-  renderInvitationsBlock(invitations: HoloHashMap<ActionHash, JoinMembraneInvitation>) {
+  renderInvitationsBlock(invitations: AsyncStatus<HoloHashMap<ActionHash, JoinMembraneInvitation>>) {
     return html`
       ${this.renderErrorSnackbar()}
       <h2>Your invitations:</h2>
       </div>
       <div>
-        ${this.renderInvitations(invitations)}
+        ${invitations.status === 'complete' ? this.renderInvitations(invitations.value) : html``}
       </div>
     `;
   }
@@ -253,9 +254,7 @@ export class JoinGroupCard extends NHComponent {
             </p>
           </div>
 
-          ${this._myInvitations.render({
-            complete: i => this.renderInvitationsBlock(i),
-          })}
+          ${this.renderInvitationsBlock(this._myInvitations.value)}
         </div>
       </nh-card>
     `;
