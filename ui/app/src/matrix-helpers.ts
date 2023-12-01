@@ -43,3 +43,11 @@ export function provideWeGroupInfo(matrixStore: MatrixStore, weGroupId: DnaHash)
     matrixStore.fetchWeGroupInfo(weGroupId).then(m => set(get(m)))
   })
 }
+
+export function provideNewAppletInstancesForGroup(matrixStore: MatrixStore, groupId: DnaHash) {
+  return readable([] as NewAppletInstanceInfo[], set => {
+    matrixStore.fetchNewAppletInstancesForGroup(groupId)
+      .then(get)
+      .then(set)
+  })
+}
