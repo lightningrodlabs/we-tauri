@@ -2148,7 +2148,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_membrane_invitations_coordinator"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=f4c1651#f4c1651f00c1aef63b6f34cc430cae0120b4eb56"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=99ebef7#99ebef7f4515360104da1eb8ed6ecff38b13068a"
 dependencies = [
  "derive_more",
  "hc_zome_membrane_invitations_integrity",
@@ -2159,7 +2159,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_membrane_invitations_integrity"
 version = "0.1.0"
-source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=f4c1651#f4c1651f00c1aef63b6f34cc430cae0120b4eb56"
+source = "git+https://github.com/holochain-open-dev/membrane-invitations?rev=99ebef7#99ebef7f4515360104da1eb8ed6ecff38b13068a"
 dependencies = [
  "derive_more",
  "hdi",
