@@ -12,8 +12,10 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
-import { TaskSubscriber } from "lit-svelte-stores";
+import { StoreSubscriber } from "lit-svelte-stores";
+import { get, readable } from 'svelte/store';
 import { MatrixStore } from "../../matrix-store";
+import { provideAllApplets } from "../../matrix-helpers";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 
@@ -24,9 +26,9 @@ export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  _allApplets = new TaskSubscriber(
+  _allApplets = new StoreSubscriber(
     this,
-    () => this._matrixStore.fetchAllApplets(this.weGroupId),
+    () => provideAllApplets(this._matrixStore, this.weGroupId),
     () => [this._matrixStore, this.weGroupId]
   );
 
