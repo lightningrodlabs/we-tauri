@@ -31,11 +31,11 @@ export class HomeScreen extends NHComponentShoelace {
   _copiedSnackbar!: Snackbar;
 
   weName(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).name;
+    return (decode(invitation.clone_dna_recipe.properties) as any).name;
   }
 
   weImg(invitation: JoinMembraneInvitation) {
-    return (decode(invitation.cloneDnaRecipe.properties) as any).logoSrc;
+    return (decode(invitation.clone_dna_recipe.properties) as any).logoSrc;
   }
 
   render() {
