@@ -52,22 +52,6 @@ export class WithProfile extends NHComponent {
     }
   }
 
-  firstUpdated() {
-      this.profilesStore!.client.client.on("signal", (signal: AppSignal) => {
-        console.log("received signal: ", signal)
-        if (signal.zome_name !== 'profiles') return;
-        const payload = signal.payload as ProfilesSignal;
-        if (payload.type !== 'EntryCreated') return;
-        if (payload.app_entry.type !== 'Profile') return;
-
-        this.agentProfile.value = {status: 'complete', value: { entry: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}}
-        if(this.agentHash && this.agentHash == encodeHashToBase64(this._matrixStore.myAgentPubKey)) {
-          this.agentProfile.value = {status: 'complete', value: { entry: {nickname: payload.app_entry.nickname, fields: payload.app_entry.fields}}};
-        }
-        this.requestUpdate()
-      })
-  }
-
   renderAgentIdenticon(status: AsyncStatus<EntryRecord<Profile> | undefined>) {
     if(status && status.status == 'complete') {
       return html`<nh-profile-identicon
