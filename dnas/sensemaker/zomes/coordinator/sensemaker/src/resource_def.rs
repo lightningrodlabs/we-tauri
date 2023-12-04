@@ -1,5 +1,6 @@
 use hdk::prelude::*;
 use sensemaker_integrity::EntryTypes;
+use sensemaker_integrity::LinkTypes;
 use sensemaker_integrity::ResourceDef;
 
 #[hdk_extern]
@@ -34,4 +35,9 @@ pub fn update_resource_def(input: UpdateResourceDefInput) -> ExternResult<Action
 #[hdk_extern]
 pub fn delete_resource_def(action_hash: ActionHash) -> ExternResult<ActionHash> {
     delete_entry(action_hash)
+}
+
+pub fn resource_defs_typed_path() -> ExternResult<TypedPath> {
+    // TODO: break up path to prevent hotspots
+    Path::from("resource_defs").typed(LinkTypes::ResourceDefs)
 }
