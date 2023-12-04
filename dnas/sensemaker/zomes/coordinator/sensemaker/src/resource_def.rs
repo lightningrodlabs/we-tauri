@@ -9,6 +9,38 @@ pub fn get_resource_def(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 }
 
 #[hdk_extern]
+fn get_resource_defs(_: ()) -> ExternResult<Vec<Record>> {
+    let links = get_links(
+        resource_defs_typed_path()?.path_entry_hash()?,
+        LinkTypes::ResourceDefs,
+        None,
+    )?;
+    match links.last() {
+        Some(_link) => {
+            let collected_get_results: ExternResult<Vec<Option<Record>>> = links
+                .into_iter()
+                .map(|link| {
+                    let entry_hash = link.target.into_entry_hash().ok_or_else(|| {
+                        wasm_error!(WasmErrorInner::Guest(String::from("Invalid link target")))
+                    })?;
+
+                    get_resource_def(entry_hash)
+                })
+                .collect();
+
+            // Handle the Result and then filter_map to remove None values
+            collected_get_results.map(|maybe_records| {
+                maybe_records
+                    .into_iter()
+                    .filter_map(|maybe_record| maybe_record)
+                    .collect::<Vec<Record>>()
+            })
+        }
+        None => Ok(vec![]),
+    }
+}
+
+#[hdk_extern]
 pub fn create_resource_def(resource_def: ResourceDef) -> ExternResult<Record> {
     let action_hash = create_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
     let resource_def_eh = hash_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;

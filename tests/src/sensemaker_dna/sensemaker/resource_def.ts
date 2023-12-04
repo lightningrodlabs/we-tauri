@@ -52,13 +52,13 @@ export default () => {
         await pause(pauseDuration);
 
         // Given no resource_defs have been created, When Alice gets all resource_defs Then an empty array is returned
-        // const allResourceDefsOutput: Record[] = await callZomeAlice(
-        //   "sensemaker",
-        //   "get_resource_defs",
-        //   null,
-        //   true
-        // );
-        // t.equal(allResourceDefsOutput.length, 0);
+        const allResourceDefsOutput: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_resource_defs",
+          null,
+          true
+        );
+        t.equal(allResourceDefsOutput.length, 0);
 
         // Alice creates two resource_defs
         const { resource_defs: [rd1, rd2], createResourceDefEntryHash, createResourceDefEntryHash2 } =
@@ -67,13 +67,13 @@ export default () => {
         t.ok(createResourceDefEntryHash2);
 
         // Given two resource_defs have been created, When Alice gets all resource_defs Then array of length 2 is returned
-        // const allResourceDefsOutput2: Record[] = await callZomeAlice(
-        //   "sensemaker",
-        //   "get_resource_defs",
-        //   null,
-        //   true
-        //   );
-        // t.equal(allResourceDefsOutput2.length, 2);
+        const allResourceDefsOutput2: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_resource_defs",
+          null,
+          true
+          );
+        t.equal(allResourceDefsOutput2.length, 2);
         
       } catch (e) {
         console.error(e);
