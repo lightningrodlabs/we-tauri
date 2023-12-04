@@ -11,14 +11,23 @@ pub fn get_resource_def(entry_hash: EntryHash) -> ExternResult<Option<Record>> {
 #[hdk_extern]
 pub fn create_resource_def(resource_def: ResourceDef) -> ExternResult<Record> {
     let action_hash = create_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
+    let resource_def_eh = hash_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
+    
     let record = get(action_hash.clone(), GetOptions::default())?;
+
     if let Some(record) = record {
+        create_link(
+            resource_defs_typed_path()?.path_entry_hash()?,
+            resource_def_eh.clone(),
+            LinkTypes::ResourceDefs,
+            (),
+        )?;
         Ok(record)
     } else {
         Err(wasm_error!(WasmErrorInner::Guest(String::from(
-            "not able to get method record after create"
+            "not able to get resource def record after create"
         ))))
-    } 
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
