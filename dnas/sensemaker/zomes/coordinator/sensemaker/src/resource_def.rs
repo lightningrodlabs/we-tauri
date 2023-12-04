@@ -42,8 +42,9 @@ fn get_resource_defs(_: ()) -> ExternResult<Vec<Record>> {
 
 #[hdk_extern]
 pub fn create_resource_def(resource_def: ResourceDef) -> ExternResult<Record> {
-    let action_hash = create_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
-    let resource_def_eh = hash_entry(&EntryTypes::ResourceDef(resource_def.clone()))?;
+    let entry = EntryTypes::ResourceDef(resource_def.clone());
+    let action_hash = create_entry(&entry)?;
+    let resource_def_eh = hash_entry(&entry)?;
     
     let record = get(action_hash.clone(), GetOptions::default())?;
 
