@@ -1,3 +1,4 @@
+import { CSSResult, css } from 'lit';
 import { SlCheckbox, SlInput, SlRadioGroup } from '@shoelace-style/shoelace';
 import { state } from 'lit/decorators.js';
 import { ValidationError, ObjectSchema } from 'yup';
@@ -6,6 +7,7 @@ import { NHComponentShoelace } from './base';
 export abstract class NHBaseForm extends NHComponentShoelace {
   @state() protected errors: Record<string, string> = {};
   @state() protected touched: Record<string, boolean> = {};
+  @state() protected formWasSubmitted: boolean = false;
   @state() protected _model: object = {};
 
   // Abstract method to define schema in derived classes
@@ -36,7 +38,7 @@ export abstract class NHBaseForm extends NHComponentShoelace {
 
   protected async validateForm() {
     try {
-      await this.validationSchema.validate(this, { abortEarly: false });
+      await this.validationSchema.validate(this._model, { abortEarly: false });
       this.errors = {}; // Clear all errors
       return true;
     } catch (error) {
@@ -57,6 +59,18 @@ export abstract class NHBaseForm extends NHComponentShoelace {
     return Object.values(this.touched).every(touched => !touched);
   }
   protected getErrorMessage(inputName: string): string | undefined {
-    return this.touched[inputName] && this.errors[inputName] ? this.errors[inputName] : undefined;
-  }
+    return this.showValidationErrorForField(inputName) ? this.errors[inputName] : undefined;
+  }  
+  protected showValidationErrorForField(inputName: string): boolean {
+    return this.formWasSubmitted && (!this.touched[inputName] || (this.touched[inputName] && this.errors[inputName] && !(this.errors[inputName] == ''))) as boolean
+  }  
+  
+  static styles: CSSResult[] = [
+    super.styles as CSSResult,
+    css`
+      :host {
+        display: flex;
+        max-width: 24rem;
+      }
+  `];
 }

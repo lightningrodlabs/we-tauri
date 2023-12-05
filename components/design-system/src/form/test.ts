@@ -12,7 +12,6 @@ export default class CreateDimensionForm extends NHBaseForm {
   protected get validationSchema(): ObjectSchema<any> {
     return object({
       dimensionName: string().min(3).required(),
-      computed: boolean().required()
     });
   }
 
@@ -22,6 +21,7 @@ export default class CreateDimensionForm extends NHBaseForm {
   private async handleSubmit(e: Event) {
     e.preventDefault();
     const isValid = await this.validateForm();
+    this.formWasSubmitted = true;
     if (isValid) {
       // Form is valid, proceed with submission logic
       console.log('valid! :>> ', isValid);
@@ -43,25 +43,20 @@ export default class CreateDimensionForm extends NHBaseForm {
   }
 
   render() {
-
-    console.log('this.touched :>> ', this.touched);
-    console.log('this.errors :>> ', this.errors);
-    console.log('this._model :>> ', this._model);
     return html`
-      <form @submit=${this.handleSubmit}>
+      <form @submit=${(e: Event) => this.handleSubmit(e)}>
         <sl-input
           label="Dimension Name"
           name="dimensionName"
           .value=${this._model.dimensionName}
           @input=${this.handleInputChange}
-          .helpText=${this.getErrorMessage('dimensionName')}
         ></sl-input>
         
         <nh-validation-error
-          class=${classMap({
-            hidden: this.hasErrors(),
-          })}
-          .message=${this.getErrorMessage('otherFieldName')}
+          class="${classMap({
+            hidden: !this.showValidationErrorForField('dimensionName'),
+          })}"
+          .message=${this.getErrorMessage('dimensionName')}
         ></nh-validation-error>
         <nh-button @click=${this.handleSubmit} type="submit">Create</nh-button>
       </form>
@@ -71,12 +66,18 @@ export default class CreateDimensionForm extends NHBaseForm {
     `;
   }
   static styles: CSSResult[] = [
-    super.styles as CSSResult,
+    ...super.styles,
     css`      
+        :host, form, form > * {
+          width: 100%;
+        }
         sl-input::part(base) {
           padding: calc(1px * var(--nh-spacing-sm));
           color:  var(--nh-theme-fg-default);
           background: var(--nh-theme-bg-element);
+        }
+        .hidden {
+          display: none;  
         }
     `,
   ];
