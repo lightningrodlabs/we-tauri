@@ -49,6 +49,10 @@ export class SensemakerService {
     return this.callZome('get_resource_def', dimensionEh);
   }
 
+  async getResourceDefs(): Promise<Array<HolochainRecord>> {
+    return this.callZome('get_resource_defs', null)
+  }
+
   async createAssessment(assessment: CreateAssessmentInput): Promise<HolochainRecord> {
     return this.callZome('create_assessment', assessment);
   }

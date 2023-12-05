@@ -226,6 +226,18 @@ export class SensemakerStore {
     }
   }
 
+  async getResourceDefs(): Promise<Array<ResourceDef>> {
+      const resourceDefRecords : HolochainRecord[] = await this.service.getResourceDefs(); 
+      const entryRecords = resourceDefRecords.map((record: HolochainRecord) => new EntryRecord<ResourceDef>(record));
+      this.resourceDefinitions.update(resourceDefinitions => {
+        entryRecords.forEach(entryRecord => {
+          resourceDefinitions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        });
+        return resourceDefinitions;
+      });
+      return entryRecords.map(entryRecord => entryRecord.entry);
+  }
+
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {
     const assessmentRecord = await this.service.createAssessment(assessment);
     const entryRecord = new EntryRecord<Assessment>(assessmentRecord);
