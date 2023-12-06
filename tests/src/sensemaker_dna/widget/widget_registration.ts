@@ -130,25 +130,15 @@ export default () => {
         t.deepEqual(firstRecord.entry.range, twentyScaleRange, "got assessment widget registrations with the correct range");
 
 
-        // Test 4: Given a created registration entry Then Alice can update that widget registration entry
+        // Test 4: Given a created registration entry Then Alice can delete that widget registration entry
 
-        const testWidgetRegistrationUpdate : AssessmentWidgetRegistrationUpdateInput = {
-          assessmentRegistrationEh: widgetRegistrationCreationEntryRecord.entryHash,
-          assessmentRegistrationUpdate: {
-            appletEh: dummyEntryHash,
-            widgetKey: 'total-importance', 
-            name: 'Importance Widget Updated',
-            range: twentyScaleRange,
-            kind: 'output'
-          }
-        };
-        // const update1 = await callZomeAlice(
-        //   "widgets",
-        //   "update_assessment_widget_registration",
-        //   testWidgetRegistrationUpdate
-        // );
-        // t.ok(update1, "updated an assessment widget registration");
-        // await pause(pauseDuration);
+        const delete1 = await callZomeAlice(
+          "widgets",
+          "delete_assessment_widget_registration",
+          widgetRegistrationCreationEntryRecord.actionHash
+        );
+        t.ok(delete1, "deleted an assessment widget registration");
+        await pause(pauseDuration);
 
       } catch (e) {
         console.error(e);

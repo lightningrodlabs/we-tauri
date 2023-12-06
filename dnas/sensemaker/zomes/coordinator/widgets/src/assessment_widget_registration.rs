@@ -1,5 +1,5 @@
 use hdk::prelude::*;
-use sensemaker_integrity_structs::{AssessmentWidgetRegistration, AssessmentWidgetRegistrationInput, Range};
+use sensemaker_integrity_structs::{AssessmentWidgetRegistration, AssessmentWidgetRegistrationInput};
 use nh_zome_sensemaker_widgets_integrity::*;
 
 #[hdk_extern]
