@@ -103,7 +103,6 @@ export default () => {
 
         const widgetRegistrationCreationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord);
 
-        // await pause(pauseDuration);
         t.deepEqual(widgetRegistrationCreationEntryRecord.entry.range, twentyScaleRange, "created assessment widget registration with the correct range");
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
@@ -118,7 +117,7 @@ export default () => {
         const getWidgetRegistrationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(get1);
         t.deepEqual(getWidgetRegistrationEntryRecord.entry.range, twentyScaleRange, "got assessment widget registration with the correct range");
 
-        // // Test 3: Given a created registration entry Then Alice can read all registered widgets and get an array of one
+        // Test 3: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
         const getAll2 : Record[] = await callZomeAlice(
           "widgets",
@@ -144,6 +143,14 @@ export default () => {
         console.error(e);
         t.ok(null);
       }
+
+      // And Then getting all registration entries returns an empty array
+      const getAll3 : Record[] = await callZomeAlice(
+        "widgets",
+        "get_assessment_widget_registrations",
+        null
+      );
+      t.equal(0, getAll3.length);
 
       await cleanup();
     });
