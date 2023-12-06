@@ -27,7 +27,7 @@ pub async fn inner_join_group(
 
     let mut admin_ws = admin_ws.lock().await;
 
-    let apps = admin_ws.list_apps(Some(AppStatusFilter::Enabled)).await?;
+    let apps = admin_ws.list_apps(None).await?;
 
     let group_app_id = format!("group#{}", sha256::digest(network_seed.clone()));
 

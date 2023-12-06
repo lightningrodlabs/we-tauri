@@ -109,11 +109,9 @@ impl serde::Serialize for WeError {
 
 pub type WeResult<T> = Result<T, WeError>;
 
-
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type", content = "content")]
 pub enum LairKeystoreError {
-
     #[error("Failed to launch child: `{0}`")]
     LaunchChildError(#[from] LaunchChildError),
 
@@ -145,7 +143,6 @@ pub enum LairKeystoreError {
     SpawnMetaLairClientError(String),
 }
 
-
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum LaunchHolochainError {
     #[error("Failed to launch child: `{0}`")]
@@ -173,7 +170,6 @@ pub enum LaunchHolochainError {
     ImpossibleError(String),
 }
 
-
 #[derive(Error, Serialize, Deserialize, Debug, Clone)]
 pub enum InitializeConductorError {
     #[error("Unknown Error: `{0}`")]
@@ -185,7 +181,6 @@ pub enum InitializeConductorError {
     #[error("Address already in use: `{0}`")]
     AddressAlreadyInUse(String),
 }
-
 
 #[derive(Error, Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", content = "content")]
