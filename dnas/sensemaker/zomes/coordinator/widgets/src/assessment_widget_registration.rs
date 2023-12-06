@@ -73,3 +73,8 @@ fn get_assessment_widget_registrations(_:()) -> ExternResult<Vec<Record>> {
 fn registrations_typed_path() -> ExternResult<TypedPath> {
     Path::from("widget_registrations").typed(LinkTypes::WidgetRegistrations)
 }
+
+#[hdk_extern]
+fn delete_assessment_widget_registration(action_hash: ActionHash) -> ExternResult<ActionHash> {
+    delete_entry(action_hash)
+}
