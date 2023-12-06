@@ -6,23 +6,30 @@ Using the Launcher, one can create and access personal profiles, search for and 
 
 NOTE: You may encounter slow/tedious data refresh and difficulty in multi-agent environments due to a known issue.  
 
-## Installation
+## Running the Neighbourhoods Launcher
 
-### Installation via the Holochain Launcher
-
-NH Launcher can be installed within the Holochain launcher. For instructions on how to install the launcher, see the corresponding [github repository](https://github.com/holochain/launcher).
-
-### Installation for Development
-
-#### Installing the repository
-
-1. Install the holochain dev environment: https://developer.holochain.org/docs/install/
+1. [Install Nix on your system](https://nixos.org/download#download-nix).
 2. Clone this repo (**IMPORTANT**: in `develop` branch): `git clone https://github.com/neighbour-hoods/nh-launcher && cd ./nh-launcher && git checkout develop`
 3. Enter the nix shell: `nix develop` (if you are having issues with this command, see: https://hackmd.io/BKCt3FckSiSDJ4aSJ1Ur6A, as you may have to enable nix commands with the following terminal commands: `mkdir -p ~/.config/nix && echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf`)
-4. Run: `pnpm install` ( you may first need to install pnpm globally with `npm install -g pnpm` )
-5. Rename `.env.example` to `.env` which will allow you to customise environment variables (although the defaults should be fine)
+4. Install the dependencies: `pnpm install`
+  - This will also:
+    - download the Sensemaker zome
+    - if you don't already have a `.env` file, it will copy `.env.example` to `.env`
+5. Run the NH Launcher by running one of the follwing options (not all options work bug free, so please report any bugs you find):
+  - Start up a single holochain agent in single browser window: `pnpm run dev` (browser opens after 20 seconds sleep, if the interface doesn't render, check the logs and refresh if there's no objevious error)
+  - Start up two holochain agents in two browser windows: `pnpm run dev2` (browser opens after 20 seconds sleep, if the interface doesn't render, check the logs and refresh if there's no objevious error)
+  - Start up two holochain agents using hc launch: `pnpm start`
+6. Stop the local services once you're done: `pnpm run stop:local-services`
 
-#### Building the DNA
+The above scripts all take care of the messy details of running the launcher (or any other multi agent system in Holochain). However, if you're interested in understanding what happens behind the scenes:
+- build everything (`pnpm run build:nh`)
+- start the bootstrap and signaling servers (`pnpm run start:local-services`)
+- clean the holochain sandbox (`pnpm run clean:sandbox`)
+- start up the holochain sandbox (this is a complicated command and is beyond the scope of these docs)
+- start watching the filesystem for changes to files and rebuild
+- either launch the launcher or the browser
+
+### Building the DNA
 
 Build the DNA (assumes you are still in the nix shell for correct rust/cargo versions from the step above):
 
@@ -30,20 +37,20 @@ Build the DNA (assumes you are still in the nix shell for correct rust/cargo ver
 npm run build:happ
 ```
 
-#### Running the UI tests
+### Running the UI tests
 
 ```bash
 npm run test:ui
 ```
 
-#### UI
+### UI
 
 To test out the UI:
 (for a Tauri environment)
 ``` bash
 npm run start
 ```
-(for a browser environment - applets not working as of yet)
+(for a browser environment)
 ``` bash
 npm run dev
 ```
