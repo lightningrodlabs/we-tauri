@@ -662,7 +662,7 @@ export class MatrixStore {
       return hashMap;
     });
 
-    return readable(newAppletInstanceInfos);
+    return derived(this._newAppletInstances, (groupInstances) => groupInstances.get(weGroupId));
   }
 
   /**
