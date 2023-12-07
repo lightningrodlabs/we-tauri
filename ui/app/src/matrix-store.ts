@@ -42,7 +42,7 @@ import {
   CloneDnaRecipe,
   MembraneInvitationsStore,
   MembraneInvitationsClient,
-} from "@holochain-open-dev/membrane-invitations";
+} from "@neighbourhoods/membrane-invitations";
 import { decode, encode } from "@msgpack/msgpack";
 import {
   DnaHashMap,

@@ -1,4 +1,4 @@
-import { JoinMembraneInvitation } from '@holochain-open-dev/membrane-invitations';
+import { JoinMembraneInvitation } from '@neighbourhoods/membrane-invitations';
 import { contextProvided } from '@lit-labs/context';
 import { decode } from '@msgpack/msgpack';
 import { html, css, CSSResult } from 'lit';
