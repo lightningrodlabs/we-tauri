@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "lib": ["es2017", "dom"],
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": "dist",
+    "declarationDir": "dist",
+    "skipLibCheck": true,
+    "rootDir": "./src",
+    "declaration": true,
+    "incremental": true
+  },
+
+  "include": ["src/**/*.ts"]
+}

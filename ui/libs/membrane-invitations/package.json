@@ -1,0 +1,29 @@
+{
+  "name": "@neighbourhoods/membrane-invitations",
+  "version": "0.2.0",
+  "contributors": ["Neighbourhoods contributors", "guillem.cordoba@gmail.com"],
+  "description": "Frontend module for the Holochain hc_zome_membrane_invitations zome",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch --preserveWatchOutput"
+  },
+  "type": "module",
+  "dependencies": {
+    "@holochain-open-dev/stores": "^0.8.2",
+    "@holochain-open-dev/utils": "^0.16.3",
+    "@holochain/client": "^0.16.6"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "typescript": "^4.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
