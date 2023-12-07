@@ -2169,7 +2169,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_peer_status_coordinator"
 version = "0.2.0"
-source = "git+https://github.com/holochain-open-dev/peer-status?rev=e77f6e9#e77f6e9f8368a1913721c9fd99ee5606ab637200"
+source = "git+https://github.com/holochain-open-dev/peer-status?rev=b4ceaa855996e417cc61513f290f5ffc67d0bd1a#b4ceaa855996e417cc61513f290f5ffc67d0bd1a"
 dependencies = [
  "hdk",
  "serde",
@@ -2178,28 +2178,18 @@ dependencies = [
 [[package]]
 name = "hc_zome_profiles_coordinator"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bae0ee9f90bdaa1fb3f0888817fd37447e8fd1ebf2b494cf81b1270188d75b2"
+source = "git+https://github.com/holochain-open-dev/profiles?rev=b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544#b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544"
 dependencies = [
  "derive_more",
- "hc_zome_profiles_integrity 0.2.0",
+ "hc_zome_profiles_integrity",
  "hdk",
  "serde",
 ]
 
 [[package]]
 name = "hc_zome_profiles_integrity"
-version = "0.0.1"
-source = "git+https://github.com/holochain-open-dev/peer-status?rev=e77f6e9#e77f6e9f8368a1913721c9fd99ee5606ab637200"
-dependencies = [
- "hc_zome_profiles_integrity 0.2.0",
-]
-
-[[package]]
-name = "hc_zome_profiles_integrity"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "536920780e20fffc9757a8f762f235b64fe1bb847d0bf494a927e22aa530be58"
+source = "git+https://github.com/holochain-open-dev/profiles?rev=b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544#b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544"
 dependencies = [
  "derive_more",
  "hdi",
@@ -4705,13 +4695,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "peer_status_integrity"
-version = "0.0.1"
-dependencies = [
- "hc_zome_profiles_integrity 0.0.1",
-]
-
-[[package]]
 name = "pem"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4968,7 +4951,7 @@ name = "profiles_integrity"
 version = "0.0.1"
 dependencies = [
  "derive_more",
- "hc_zome_profiles_integrity 0.2.0",
+ "hc_zome_profiles_integrity",
  "serde",
 ]
 
