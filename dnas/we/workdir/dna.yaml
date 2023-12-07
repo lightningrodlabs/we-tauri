@@ -12,8 +12,6 @@ integrity:
     bundled: ../../../target/wasm32-unknown-unknown/release/applets_integrity.wasm
   - name: profiles_integrity
     bundled: ../../../target/wasm32-unknown-unknown/release/profiles_integrity.wasm
-  - name: peer_status_integrity
-    bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_integrity.wasm
 
 coordinator:
   zomes:
@@ -31,5 +29,4 @@ coordinator:
         - name: profiles_integrity
     - name: peer_status
       bundled: ../../../target/wasm32-unknown-unknown/release/peer_status_coordinator.wasm
-      dependencies:
-        - name: peer_status_integrity
+      dependencies: ~

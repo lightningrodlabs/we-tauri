@@ -11,19 +11,14 @@ name = "we_coordinator"
 [dependencies]
 hdk = { workspace = true }
 serde = { workspace = true }
-thiserror = "1.0.20"
+thiserror = { workspace = true }
 
 we_integrity = { path = "../../integrity/we"}
 
-
 [dev-dependencies]
-#holochain = { git = "https://github.com/holochain/holochain.git", branch = "develop", features = ["test_utils"] }
-#holochain_types = { git = "https://github.com/holochain/holochain.git", branch = "develop", features = ["test_utils"] }
-# holochain = { path = "../../../chain/crates/holochain/"}
-# holochain_types = { path = "../../../chain/crates/holochain_types/"}
-futures = "0.3.1"
-nanoid = "0.3"
-observability = "0.1.2"
-stream-cancel = "0.8.0"
-tokio = {version = "1.3", features = ["full"]}
+futures = { workspace = true }
+nanoid = { workspace = true }
+observability = { workspace = true }
+stream-cancel = { workspace = true }
+tokio = { workspace = true }
 

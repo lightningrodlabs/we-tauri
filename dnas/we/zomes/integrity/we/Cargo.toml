@@ -11,4 +11,4 @@ name = "we_integrity"
 [dependencies]
 hdi = { workspace = true }
 serde = { workspace = true }
-thiserror = "1.0.20"
+thiserror = { workspace = true }

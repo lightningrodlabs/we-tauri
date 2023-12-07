@@ -8,6 +8,6 @@ crate-type = ["cdylib", "rlib"]
 name = "profiles_integrity"
 
 [dependencies]
-serde = "1"
-derive_more = "0"
-hc_zome_profiles_integrity = "0.2.0"
+serde = { workspace = true }
+derive_more = { workspace = true }
+hc_zome_profiles_integrity = { workspace = true }

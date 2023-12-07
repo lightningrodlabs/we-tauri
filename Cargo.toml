@@ -7,15 +7,21 @@ members = [
 ]
 resolver = "2"
 
-[profile.dev]
-opt-level = "z"
-
-[profile.release]
-opt-level = "z"
-
 [workspace.dependencies]
+fixt = { version = "0.2.2" }
+derive_more = "0"
+thiserror = "1.0.20"
+nanoid = "0.3"
+observability = "0.1.2"
+stream-cancel = "0.8.0"
+futures = { version = "0.3.1", default-features = false }
+tokio = { version = "1.3", features = ["full"] }
 hdi = { version = "0.3.0" }
 hdk = { version = "0.2.0" }
 serde = "1"
 holochain = {version = "0.2.0"}
-fixt = { version = "0.2.2" }
+hc_zome_membrane_invitations_coordinator = { git = "https://github.com/neighbour-hoods/membrane-invitations", rev = "99ebef7", package = "hc_zome_membrane_invitations_coordinator" }
+hc_zome_membrane_invitations_integrity = { git = "https://github.com/neighbour-hoods/membrane-invitations", rev = "99ebef7", package = "hc_zome_membrane_invitations_integrity" }
+hc_zome_peer_status_coordinator = { git = "https://github.com/holochain-open-dev/peer-status", rev = "b4ceaa855996e417cc61513f290f5ffc67d0bd1a", package = "hc_zome_peer_status_coordinator" }
+hc_zome_profiles_coordinator = { git = "https://github.com/holochain-open-dev/profiles", rev = "b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544" }
+hc_zome_profiles_integrity = { git = "https://github.com/holochain-open-dev/profiles", rev = "b4f0c579a1b0bc0a3a60c0e8c9fd5d0c39d42544" }
