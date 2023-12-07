@@ -114,6 +114,10 @@ export class JoinGroupCard extends NHComponent {
     }
   }
 
+  async refreshInvitations() {
+    this.matrixStore.membraneInvitationsStore.client.getMyInvitations()
+  }
+
   renderErrorSnackbar() {
     return html`
       <mwc-snackbar
@@ -132,7 +136,7 @@ export class JoinGroupCard extends NHComponent {
           <p>You have no open invitations...</p>
           <nh-button
             .variant=${"neutral"}
-            @click=${() => this._myInvitations.run()}
+            @click=${() => this.refreshInvitations()}
             .iconImageB64=${b64images.icons.refresh}
             .size=${"icon-lg"}
           >Refresh</nh-button>
@@ -197,7 +201,7 @@ export class JoinGroupCard extends NHComponent {
         <div class="refresh-button-row">
           <nh-button
             .variant=${"neutral"}
-            @click=${() => this._myInvitations.run()}
+            @click=${() => this.refreshInvitations()}
             .iconImageB64=${b64images.icons.refresh}
             .size=${"icon-lg"}
           >Refresh</nh-button>
