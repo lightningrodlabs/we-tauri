@@ -33,6 +33,10 @@ export class SensemakerService {
     return this.callZome('create_dimension', dimension);
   }
 
+  async createDimensionAndMethodAtomically(input: {output_dimension: Dimension, partial_method: Partial<Method>}): Promise<HolochainRecord[]> {
+    return this.callZome('atomic_create_dimension_with_method', input);
+  }
+
   async getDimension(dimensionEh: EntryHash): Promise<HolochainRecord> {
     return this.callZome('get_dimension', dimensionEh);
   }
