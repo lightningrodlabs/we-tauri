@@ -14,7 +14,7 @@ pub use cultural_context::{
     ContextResult, CulturalContext, OrderingKind, Threshold, ThresholdKind,
 };
 pub use dimension::Dimension;
-pub use method::{DataSet, Method, Program};
+pub use method::{DataSet, Method, PartialMethod, Program};
 pub use properties::{Properties, SensemakerConfig};
 pub use range::{Range, RangeValue};
 pub use resource_def::ResourceDef;

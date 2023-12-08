@@ -15,6 +15,17 @@ pub struct Method {
     pub requires_validation: bool, // if true, DataSet must be committed to be retrievable in the validation The Objective Assesment must have the DataSet.
 }
 
+// Used for atomic operation in method creation
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PartialMethod {
+    pub name: String,
+    pub input_dimension_ehs: Vec<EntryHash>,
+    pub output_dimension_eh: Option<EntryHash>, // This is now nullable
+    pub program: Program,                   
+    pub can_compute_live: bool,
+    pub requires_validation: bool
+}
+
 impl TryFrom<ConfigMethod> for Method {
     type Error = WasmError;
     fn try_from(value: ConfigMethod) -> Result<Self, Self::Error> {
