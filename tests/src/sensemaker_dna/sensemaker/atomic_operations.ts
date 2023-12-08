@@ -111,7 +111,7 @@ export default () => {
 
         // Given Alice has created 2 input dimensions and one (output dimension and method, atomically with the first input dimension),
         // When Alice attempts to create another output dimension & method atomically, with bad inputs (sad path 1)
-          // Declare inputs (objective dimension is not actually objective)
+          // (objective dimension is not actually objective)
           const totalLikenessMethod2: Partial<Method> = {
             name: "total_likeness_method_2",
             input_dimension_ehs: [inputDimensionEh2],
@@ -153,6 +153,52 @@ export default () => {
           t.ok(e.message.match("no output dimension entry hash is needed - use the create_method endpoint instead."), "using output dimension entry hash in the input returns an error");
         }
 
+        // Given the number of created dimensions
+        const getDimensionsOutput: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_dimensions",
+          null,
+          true
+        );
+        t.ok(getDimensionsOutput)
+
+        // When Alice attempts to create another output dimension & method atomically, with bad inputs (sad path 3)
+          // (good dimension input, bad partial method input)
+          const createObjectiveDimension3 = { // The same dimension input (but with a different name) was already tested to be valid
+            name: "total_likeness_3",
+            range_eh: outputDimensionRangeHash,
+            computed: true,
+          };
+
+          const invalidInputMethod = {
+            name: "totally_bogus_method",
+            input_dimension_ehs: ["oops"],
+            output_dimension_eh: null,
+            program: { Sum: null },
+            can_compute_live: false,
+            requires_validation: false,
+          };
+        try {
+          await callZomeAlice(
+            "sensemaker",
+            "atomic_create_dimension_with_method",
+            { partial_method: invalidInputMethod, output_dimension: createObjectiveDimension3 },
+            true
+          );
+        } catch (e) {
+          // Then we get an error (in this case a serialization error)
+          t.ok(e, "we get an error");
+
+          // And When we get all dimensions
+          const getDimensionsOutput2: Record[] = await callZomeAlice(
+            "sensemaker",
+            "get_dimensions",
+            null,
+            true
+          );
+          // Then no dimensions were created
+          t.equal(getDimensionsOutput.length, getDimensionsOutput2.length, 'no dimensions were created');
+        }
 
       } catch (e) {
         console.error(e);
