@@ -52,13 +52,13 @@ export default () => {
         await pause(pauseDuration);
 
         // Alice creates input dimension
-        const { inputDimensions: [dimension1, dimension2], inputDimensionEhs } =
+        const { inputDimensions: [dimension1, _], inputDimensionEhs: [inputDimensionEh, __] } =
           await createInputDimensions();
-        t.ok(inputDimensionEhs[0]);
-        t.ok(inputDimensionEhs[1]);
+        t.ok(inputDimensionEh);
+        // t.ok(inputDimensionEhs[1]);
 
-        // Given Alice creates output dimension and method atomically
-        // ...
+        // Given Alice creates output dimension and method atomically with the first input dimension
+        //
 
         // When Alice gets all methods Then array of length 1 is returned
         const allMethodsOutput1: Record[] = await callZomeAlice(
@@ -68,6 +68,15 @@ export default () => {
           true
           );
         t.equal(allMethodsOutput1.length, 1);
+
+        // And When Alice gets methods for dimension with QueryParams for the first input dimension entry hash Then array of length 1 is returned
+        const methodsForDimensionInputDimensionQuery1: Record[] = await callZomeAlice(
+          "sensemaker",
+          "get_methods_for_dimension",
+          { query: { dimensionType: "input", dimensionEh: inputDimensionEh } },
+          true
+        );
+        t.equal(methodsForDimensionInputDimensionQuery1.length, 1);
         
 
       } catch (e) {
