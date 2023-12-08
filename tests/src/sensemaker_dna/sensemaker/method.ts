@@ -7,7 +7,7 @@ import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
 
 export default () => {
-  test("test registering agent", async (t) => {
+  test("Method CRUD tests", async (t) => {
     await runScenario(async (scenario) => {
       const {
         alice,

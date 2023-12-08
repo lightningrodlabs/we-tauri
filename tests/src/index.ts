@@ -1,4 +1,4 @@
-
+import atomic_operations from './sensemaker_dna/sensemaker/atomic_operations';
 import neighbourhood from './sensemaker_dna/sensemaker/neighbourhood';
 import sensemaker_community_activator from './sensemaker_dna/sensemaker/community_activator';
 import sensemaker_config from './sensemaker_dna/sensemaker/sm_config';
@@ -10,6 +10,8 @@ import method from './sensemaker_dna/sensemaker/method';
 import resource_def from './sensemaker_dna/sensemaker/resource_def';
 import widget_config from './sensemaker_dna/widget/widget_config';
 import widget_registration from './sensemaker_dna/widget/widget_registration';
+
+atomic_operations();
 range();
 neighbourhood();
 applet_config();
