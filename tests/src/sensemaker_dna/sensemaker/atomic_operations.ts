@@ -51,9 +51,10 @@ export default () => {
         await scenario.shareAllAgents();
         await pause(pauseDuration);
         
-        // Given Alice creates output dimension and method atomically with the first input dimension (happy path)
+        // Given Alice has created 2 input dimensions,
+        // When Alice tries to create output dimension and method atomically with the first input dimension (happy path)
           // Alice creates input dimension
-          const { inputDimensions: [dimension1, _], inputDimensionEhs: [inputDimensionEh, __], outputDimensionRangeHash } =
+          const { inputDimensions: [dimension1, _], inputDimensionEhs: [inputDimensionEh, inputDimensionEh2], outputDimensionRangeHash } =
             await createInputDimensions();
           t.ok(inputDimensionEh);
           t.ok(outputDimensionRangeHash);
@@ -107,6 +108,37 @@ export default () => {
         // And the only element of the array is the method with an output dimension created at the same time
         t.deepEqual(methodEntryRecord.entry.output_dimension_eh, dimensionEntryRecord.entryHash);
 
+
+        // Given Alice has created 2 input dimensions and one (output dimension and method, atomically with the first input dimension),
+        // When Alice attempts to create another output dimension & method atomically, with bad inputs (sad path 1)
+          // Declare inputs (objective dimension is not actually objective)
+          const totalLikenessMethod2: Partial<Method> = {
+            name: "total_likeness_method_2",
+            input_dimension_ehs: [inputDimensionEh2],
+            output_dimension_eh: null,
+            program: { Sum: null },
+            can_compute_live: false,
+            requires_validation: false,
+          };
+          const createObjectiveDimension2 = {
+            name: "total_likeness_2",
+            range_eh: outputDimensionRangeHash,
+            computed: false,
+          };
+        // Then we get an error telling us to use another endpoint
+        try {
+          await callZomeAlice(
+            "sensemaker",
+            "atomic_create_dimension_with_method",
+            { partial_method: totalLikenessMethod2, output_dimension: createObjectiveDimension2 },
+            true
+          );
+        } catch (e) {
+          //@ts-ignore
+          t.ok(e.message.match("to succeed in atomic operation, this endpoint requires an objective/output dimension as input."), "using output dimension as input dimension returns an error");
+        }
+
+        
       } catch (e) {
         console.error(e);
         t.ok(null);
