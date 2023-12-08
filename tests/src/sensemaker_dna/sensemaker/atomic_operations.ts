@@ -50,17 +50,43 @@ export default () => {
       try {
         await scenario.shareAllAgents();
         await pause(pauseDuration);
+        
+        // Given Alice creates output dimension and method atomically with the first input dimension (happy path)
+          // Alice creates input dimension
+          const { inputDimensions: [dimension1, _], inputDimensionEhs: [inputDimensionEh, __], outputDimensionRangeHash } =
+            await createInputDimensions();
+          t.ok(inputDimensionEh);
+          t.ok(outputDimensionRangeHash);
 
-        // Alice creates input dimension
-        const { inputDimensions: [dimension1, _], inputDimensionEhs: [inputDimensionEh, __] } =
-          await createInputDimensions();
-        t.ok(inputDimensionEh);
-        // t.ok(inputDimensionEhs[1]);
+          // Declare inputs
+          const totalLikenessMethod: Partial<Method> = {
+            name: "total_likeness_method",
+            input_dimension_ehs: [inputDimensionEh],
+            output_dimension_eh: null,
+            program: { Sum: null },
+            can_compute_live: false,
+            requires_validation: false,
+          };
+          const createObjectiveDimension = {
+            name: "total_likeness",
+            range_eh: outputDimensionRangeHash,
+            computed: true,
+          };
 
-        // Given Alice creates output dimension and method atomically with the first input dimension
-        //
+        const [dimensionRecord, methodRecord] = await callZomeAlice(
+          "sensemaker",
+          "atomic_create_dimension_with_method",
+          { partial_method: totalLikenessMethod, output_dimension: createObjectiveDimension },
+          true
+        );
 
-        // When Alice gets all methods Then array of length 1 is returned
+        const dimensionEntryRecord = new EntryRecord<Dimension>(dimensionRecord);
+        const methodEntryRecord = new EntryRecord<Method>(methodRecord);
+        // Then two entries are created
+        t.ok(dimensionEntryRecord.entryHash, 'created an output dimension atomically');
+        t.ok(methodEntryRecord.entryHash, 'created a method atomically');
+
+        // And When Alice gets all methods Then array of length 1 is returned
         const allMethodsOutput1: Record[] = await callZomeAlice(
           "sensemaker",
           "get_methods",
@@ -77,7 +103,9 @@ export default () => {
           true
         );
         t.equal(methodsForDimensionInputDimensionQuery1.length, 1);
-        
+
+        // And the only element of the array is the method with an output dimension created at the same time
+        t.deepEqual(methodEntryRecord.entry.output_dimension_eh, dimensionEntryRecord.entryHash);
 
       } catch (e) {
         console.error(e);
@@ -103,6 +131,15 @@ export default () => {
         );
         const rangeEntryRecord = new EntryRecord<Range>(rangeRecord);
         const rangeHash = rangeEntryRecord.entryHash;
+
+        const rangeRecord2: Record = await callZomeAlice(
+          "sensemaker",
+          "create_range",
+          integerRange,
+          true
+        );
+        const rangeEntryRecord2 = new EntryRecord<Range>(rangeRecord2);
+        const outputDimensionRangeHash = rangeEntryRecord2.entryHash;
 
         const createDimension = {
           name: "likeness" + seed,
@@ -135,7 +172,7 @@ export default () => {
 
         await pause(pauseDuration);
 
-        return { inputDimensions: [createDimension, createDimension2], inputDimensionEhs: [createDimensionEntryHash, createDimensionEntryHash2] };
+        return { inputDimensions: [createDimension, createDimension2], inputDimensionEhs: [createDimensionEntryHash, createDimensionEntryHash2], outputDimensionRangeHash };
       }
     });
   });
