@@ -138,7 +138,22 @@ export default () => {
           t.ok(e.message.match("to succeed in atomic operation, this endpoint requires an objective/output dimension as input."), "using output dimension as input dimension returns an error");
         }
 
-        
+        // When Alice attempts to create another output dimension & method atomically, with bad inputs (sad path 2)
+          // (output dimension given as input is full, not partial)
+        // Then we get an error telling us to use create_method endpoint, as inputs should only have a null output_dimension_eh
+        try {
+          await callZomeAlice(
+            "sensemaker",
+            "atomic_create_dimension_with_method",
+            { partial_method: {...totalLikenessMethod2, output_dimension_eh: outputDimensionRangeHash }, output_dimension: createObjectiveDimension },
+            true
+          );
+        } catch (e) {
+          //@ts-ignore
+          t.ok(e.message.match("no output dimension entry hash is needed - use the create_method endpoint instead."), "using output dimension entry hash in the input returns an error");
+        }
+
+
       } catch (e) {
         console.error(e);
         t.ok(null);
