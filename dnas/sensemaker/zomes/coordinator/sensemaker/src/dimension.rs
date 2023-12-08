@@ -71,6 +71,7 @@ pub fn atomic_create_dimension_with_method(AtomicDimensionMethodInput{ output_di
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct AtomicDimensionMethodInput {
     output_dimension: Dimension,
     partial_method: PartialMethod,
