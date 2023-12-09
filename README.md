@@ -1,4 +1,16 @@
-# NH Launcher
+<h1 align="center">
+  <div>👋 Welcome to</div>
+  <img src="https://neighbourhoods.network/visual-assets/nh-white-banner.png" alt="Logo" width="500">
+  <div>Neighbourhoods Launcher</div>
+</h1>
+
+<div align="center">
+
+[![Join the Neighbourhoods discord server](https://img.shields.io/discord/854211588184735774.svg?label=&logo=discord&logoColor=ffffff&color=5865F2)](https://discord.gg/neighbourhoods)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg?)](https://github.com/neighbour-hoods/nh-launcher/issues)
+[![made with hearth by neighbourhoods](https://img.shields.io/badge/made%20with%20%E2%99%A5%20-cc14cc.svg?)](https://github.com/neighbour-hoods)
+
+</div>
 
 The Neighbourhoods Launcher, a Holochain app, is a common entryway into creating and joining p2p networks called Neighbourhoods. Using the Launcher, you can build and join Neighbourhoods that use NH-compatible "applets" along with the social-sensemaker. 
 
@@ -12,9 +24,7 @@ NOTE: You may encounter slow/tedious data refresh and difficulty in multi-agent 
 2. Clone this repo (**IMPORTANT**: in `develop` branch): `git clone https://github.com/neighbour-hoods/nh-launcher && cd ./nh-launcher && git checkout develop`
 3. Enter the nix shell: `nix develop` (if you are having issues with this command, see: https://hackmd.io/BKCt3FckSiSDJ4aSJ1Ur6A, as you may have to enable nix commands with the following terminal commands: `mkdir -p ~/.config/nix && echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf`)
 4. Install the dependencies: `pnpm install`
-  - This will also:
-    - download the Sensemaker zome
-    - if you don't already have a `.env` file, it will copy `.env.example` to `.env`
+  - If you don't already have a comfigured `.env` file, it will copy `.env.example` to `.env`. If you do have an existing `.env` file, please be sure to update it to have all the variables from the example file.
 5. Run the NH Launcher by running one of the follwing options (not all options work bug free, so please report any bugs you find):
   - Start up a single holochain agent in single browser window: `pnpm run dev` (browser opens after 20 seconds sleep, if the interface doesn't render, check the logs and refresh if there's no objevious error)
   - Start up two holochain agents in two browser windows: `pnpm run dev2` (browser opens after 20 seconds sleep, if the interface doesn't render, check the logs and refresh if there's no objevious error)
@@ -46,13 +56,15 @@ npm run test:ui
 ### UI
 
 To test out the UI:
+
 (for a Tauri environment)
 ``` bash
 npm run start
 ```
+
 (for a browser environment)
 ``` bash
-npm run dev
+npm run dev2
 ```
 
 #### Package
