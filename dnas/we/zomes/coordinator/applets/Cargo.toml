@@ -17,6 +17,6 @@ applets_integrity = { path = "../../integrity/applets" }
 [dev-dependencies]
 fixt = { workspace = true }
 futures = { workspace = true }
-hdk = { workspace = true, features = ["encoding", "test_utils"]}
-holochain = { workspace = true, default-features = false, features = ["test_utils"]}
+hdk = { workspace = true }
+holochain = { workspace = true }
 tokio = { workspace = true }

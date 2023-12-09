@@ -9,7 +9,5 @@ name = "sensemaker_integrity_structs"
 
 [dependencies]
 serde = { workspace = true }
-chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
-derive_more = "0"
-
+derive_more = { workspace = true }
 hdi = { workspace = true }

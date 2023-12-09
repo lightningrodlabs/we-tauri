@@ -20,7 +20,7 @@ observability = { workspace = true }
 stream-cancel = { workspace = true }
 fixt = { workspace = true }
 futures = { workspace = true }
-hdk = { workspace = true, features = ["encoding", "test_utils"]}
-holochain = { workspace = true , default-features = false, features = ["test_utils"]}
-tokio = { workspace = true , features = ["full"]}
+hdk = { workspace = true }
+holochain = { workspace = true }
+tokio = { workspace = true }
 

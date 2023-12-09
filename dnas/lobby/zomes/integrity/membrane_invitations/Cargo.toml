@@ -5,16 +5,15 @@ documentation = "https://holochain-open-dev.github.io/membrane_invitations"
 edition = "2021"
 homepage = "https://docs.rs/hc_zome_membrane_invitations"
 license = "MIT"
-name = "hc_zome_membrane_invitations_integrity"
+name = "membrane_invitations_integrity"
 repository = "https://github.com/holochain-open-dev/membrane_invitations"
 version = "0.1.0"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-name = "hc_zome_membrane_invitations_integrity"
+name = "membrane_invitations_integrity"
 
 [dependencies]
-derive_more = "0"
+derive_more = { workspace = true }
 serde = { workspace = true }
-
 hdi = { workspace = true }

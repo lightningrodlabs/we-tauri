@@ -32,7 +32,7 @@
 
     "package": "npm run build:happ && npm run build:es-libs && npm run package -w nh-launcher && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
-    "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir",
+    "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
     "build:es-libs": "npm run build:nh-launcher-applet && npm run build:membrane-invitations",
     "build:nh-launcher-applet": "npm run build -w @neighbourhoods/nh-launcher-applet",
@@ -40,15 +40,16 @@
     "build:nh-watch": "npm run build:watch -w nh-launcher",
     "build:nh": "npm run build:happ && npm run build:es-libs && npm run build -w nh-launcher",
 
-    "clean": "npm run clean:build && npm run clean:modules && npm run clean:sandbox",
-    "clean:build": "rimraf ui/app/dist; rimraf target; rm dnas/sensemaker.dna; exit 0",
-    "clean:modules": "rimraf node_modules; for DIR in $(find -type d -iname node_modules); do\n rm -Rf \"$DIR\"\n done",
+    "clean": "npm run clean:sandbox; npm run clean:build && npm run clean:modules",
+    "clean:happ": "rm workdir/we.happ; rm workdir/we.webhapp",
+    "clean:dnas": "rimraf dnas/**/workdir/*.dna",
+    "clean:build": "rimraf target; npm run clean:dnas; npm run clean:happ; rimraf ui/app/dist; exit 0",
+    "clean:modules": "rimraf **/node_modules",
     "clean:sandbox": "hc sandbox clean",
 
     "playground": "run-singleton \"holochain-playground\"",
     "check-env": "test ! -f .env && cp .env.example .env; exit 0",
-    "download-sensemaker": "[ ! -f \"dnas/sensemaker.dna\" ] && curl -L --output dnas/sensemaker.dna https://github.com/neighbour-hoods/sensemaker-lite/releases/download/v0.0.13-alpha/sensemaker.dna; exit 0",
-    "postinstall": "npm run download-sensemaker; npm run check-env",
+    "postinstall": "npm run check-env",
     "prepare": "husky install"
   },
   "devDependencies": {

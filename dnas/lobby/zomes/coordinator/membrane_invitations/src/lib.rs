@@ -6,7 +6,7 @@ use std::sync::Arc;
 use hdk::prelude::holo_hash::*;
 use hdk::prelude::*;
 
-use hc_zome_membrane_invitations_integrity::*;
+use membrane_invitations_integrity::*;
 
 #[hdk_extern]
 pub fn init(_: ()) -> ExternResult<InitCallbackResult> {
