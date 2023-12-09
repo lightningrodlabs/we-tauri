@@ -1,0 +1,12 @@
+[package]
+name = "nh_sensemaker_zome_lib"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true }
+hdk = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "nh_sensemaker_zome_lib"

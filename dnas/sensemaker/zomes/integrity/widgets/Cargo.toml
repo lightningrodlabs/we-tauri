@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+name = "nh_zome_sensemaker_widgets_integrity"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "nh_zome_sensemaker_widgets_integrity"
+
+[dependencies]
+serde = { workspace = true }
+hdi = { workspace = true }
+sensemaker_integrity_structs = { path = "../sensemaker_structs" }

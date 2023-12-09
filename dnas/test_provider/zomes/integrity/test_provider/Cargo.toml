@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+name = "test_provider_integrity"
+version = "0.0.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "test_provider_integrity"
+
+[dependencies]
+serde = { workspace = true }
+chrono = { version = "0.4.22", default-features = false, features = ["clock", "std", "oldtime", "serde"], optional = true }
+derive_more = "0"
+
+hdi = { workspace = true }
