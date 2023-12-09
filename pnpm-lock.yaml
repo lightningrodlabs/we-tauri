@@ -84,8 +84,8 @@ importers:
         specifier: ^2.7.2
         version: 2.8.0
       '@neighbourhoods/client':
-        specifier: 0.0.9
-        version: 0.0.9(ws@8.14.2)
+        specifier: workspace:*
+        version: link:../libs/sensemaker-client
       '@neighbourhoods/design-system-components':
         specifier: 0.0.14
         version: 0.0.14(@types/react@18.2.42)
@@ -221,8 +221,8 @@ importers:
         specifier: ^0.16.6
         version: 0.16.7
       '@neighbourhoods/client':
-        specifier: 0.0.6
-        version: 0.0.6(ws@8.14.2)
+        specifier: workspace:*
+        version: link:../sensemaker-client
     devDependencies:
       '@types/lodash-es':
         specifier: ^4.17.4
@@ -236,6 +236,43 @@ importers:
       watch-cli:
         specifier: ^0.2.3
         version: 0.2.3
+
+  ui/libs/sensemaker-client:
+    dependencies:
+      '@holochain-open-dev/utils':
+        specifier: ^0.10.1
+        version: 0.10.4(ws@8.14.2)
+      '@holochain/client':
+        specifier: 0.12.0
+        version: 0.12.0(ws@8.14.2)
+      '@lit-labs/context':
+        specifier: ^0.1.2
+        version: 0.1.3
+      '@open-wc/dedupe-mixin':
+        specifier: 1.4.0
+        version: 1.4.0
+      '@open-wc/scoped-elements':
+        specifier: ^2.1.5
+        version: 2.2.4
+      lit:
+        specifier: ^2.7.0
+        version: 2.8.0
+      lit-html:
+        specifier: ^2.7.0
+        version: 2.8.0
+      lit-svelte-stores:
+        specifier: ^0.2.5
+        version: 0.2.5
+      svelte:
+        specifier: ^3.59.0
+        version: 3.59.2
+    devDependencies:
+      tslib:
+        specifier: ^2.3.1
+        version: 2.6.2
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
 
 packages:
 
@@ -2808,34 +2845,6 @@ packages:
     engines: {node: '>= 10'}
     dev: false
 
-  /@neighbourhoods/client@0.0.6(ws@8.14.2):
-    resolution: {integrity: sha512-jqhpBTuFRYoTgWBRjruRG0vL1Hfv/voCwboaRAXTWBeJtk3S3xnMLYNmd/zn+dDxNd2etJBEbWfw4qJKomcggA==}
-    dependencies:
-      '@holochain/client': 0.12.0(ws@8.14.2)
-      '@lit-labs/context': 0.1.3
-      '@open-wc/scoped-elements': 2.2.4
-      lit-svelte-stores: 0.2.5
-      svelte: 3.59.2
-    transitivePeerDependencies:
-      - ws
-    dev: false
-
-  /@neighbourhoods/client@0.0.9(ws@8.14.2):
-    resolution: {integrity: sha512-nLIbEB8s/pbE1u27QLegRawAO3SuNc9jYn0lDNIwn5n0p/mCg5fzQw/hm7v4PV79nnkTgD6TUaVlG1H9EPUjmA==}
-    dependencies:
-      '@holochain-open-dev/utils': 0.10.4(ws@8.14.2)
-      '@holochain/client': 0.12.0(ws@8.14.2)
-      '@lit-labs/context': 0.1.3
-      '@open-wc/dedupe-mixin': 1.4.0
-      '@open-wc/scoped-elements': 2.2.4
-      lit: 2.8.0
-      lit-html: 2.8.0
-      lit-svelte-stores: 0.2.5
-      svelte: 3.59.2
-    transitivePeerDependencies:
-      - ws
-    dev: false
-
   /@neighbourhoods/design-system-components@0.0.14(@types/react@18.2.42):
     resolution: {integrity: sha512-mpIQqGXG7rqqiq9COc/2nTZWCCjd/ciGOAvQpXE7W1/A0lmzruPVaWWE8GMHCeXAfjxdu0dOSdYTzogrUj6VPg==}
     dependencies:
@@ -2921,7 +2930,7 @@ packages:
     dependencies:
       '@open-wc/scoped-elements': 2.2.4
       lit: 2.8.0
-      lit-html: 3.1.0
+      lit-html: 2.8.0
     dev: true
 
   /@open-wc/testing@3.2.2:
@@ -5576,6 +5585,7 @@ packages:
     resolution: {integrity: sha512-FwAjq3iNsaO6SOZXEIpeROlJLUlrbyMkn4iuv4f4u1H40Jw8wkeR/OUXZUHUoiYabGk8Y4Y0F/rgq+R4MrOLmA==}
     dependencies:
       '@types/trusted-types': 2.0.7
+    dev: false
 
   /lit-svelte-stores@0.2.5:
     resolution: {integrity: sha512-Ny8GtvQB1/fiJwC41CsnNYSO2P/I0Lyd9mCxqSanGBE9EWI1fD2qg1tADN8Vz8hX1plO1q0ZODyHdUf90/ADjg==}
@@ -7063,6 +7073,12 @@ packages:
     hasBin: true
     dev: true
 
+  /typescript@4.9.5:
+    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: true
+
   /ufo@1.3.2:
     resolution: {integrity: sha512-o+ORpgGwaYQXgqGDwd+hkS4PuZ3QnmqMMxRuajK/a38L6fTpcE5GPIfrf+L/KemFzfUpeUQc1rRS1iDBozvnFA==}
     dev: true
@@ -7702,7 +7718,6 @@ packages:
     resolution: {tarball: https://codeload.github.com/adaburrows/table-web-component/tar.gz/6ac0c957aed1e2233c2d98f20ec56a4f20e110d4}
     name: '@adaburrows/table-web-component'
     version: 0.9.6
-    prepare: true
     requiresBuild: true
     dependencies:
       '@lit-labs/context': 0.2.0
