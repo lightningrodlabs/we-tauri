@@ -1,7 +1,7 @@
 //! ## hc_zome_membrane_invitations
 
 use hdi::prelude::*;
-use crate::holo_hash::{hash_type, HashType, HOLO_HASH_PREFIX_LEN};
+use crate::holo_hash::{hash_type};
 
 #[hdk_entry_helper]
 #[derive(Clone)]
