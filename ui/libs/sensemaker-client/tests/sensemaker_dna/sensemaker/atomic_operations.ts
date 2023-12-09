@@ -63,7 +63,7 @@ export default () => {
           const totalLikenessMethod: Partial<Method> = {
             name: "total_likeness_method",
             input_dimension_ehs: [inputDimensionEh],
-            output_dimension_eh: null,
+            output_dimension_eh: undefined,
             program: { Sum: null },
             can_compute_live: false,
             requires_validation: false,
@@ -115,7 +115,7 @@ export default () => {
           const totalLikenessMethod2: Partial<Method> = {
             name: "total_likeness_method_2",
             input_dimension_ehs: [inputDimensionEh2],
-            output_dimension_eh: null,
+            output_dimension_eh: undefined,
             program: { Sum: null },
             can_compute_live: false,
             requires_validation: false,

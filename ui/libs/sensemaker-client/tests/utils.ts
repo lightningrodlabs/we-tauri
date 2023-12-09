@@ -25,11 +25,11 @@ const __dirname = path.dirname(__filename);
 
 export const sensemakerDna = path.join(
   __dirname,
-  "../../dnas/sensemaker/workdir/sensemaker.dna"
+  "../../../../dnas/sensemaker/workdir/sensemaker.dna"
 );
 export const testProviderDna = path.join(
   __dirname,
-  "../../dnas/test_provider/workdir/test_provider_dna.dna"
+  "../../../../dnas/test_provider/workdir/test_provider_dna.dna"
 );
 
 export const installAgent = async (

@@ -1,4 +1,4 @@
-import { AssessmentWidgetRegistration, AssessmentWidgetRegistrationUpdateInput } from './../../../../client/src/widgets/widget-registry';
+import { AssessmentWidgetRegistration, AssessmentWidgetRegistrationUpdateInput } from '@neighbourhoods/client/src/widgets/widget-registry';
 import { AgentPubKey, EntryHash, Record } from "@holochain/client";
 import {
   pause,
