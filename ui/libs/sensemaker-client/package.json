@@ -26,7 +26,8 @@
     "@holochain-open-dev/utils": "^0.10.1"
   },
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "tslib": "^2.3.1"
   },
   "publishConfig": {
     "access": "public"

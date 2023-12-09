@@ -17,7 +17,7 @@
   "dependencies": {
     "@holochain/client": "^0.16.6",
     "@holochain-open-dev/profiles": "^0.17.3",
-    "@neighbourhoods/client": "0.0.6"
+    "@neighbourhoods/client": "workspace:*"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.4",
