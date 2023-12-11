@@ -67,15 +67,9 @@ npm run start
 npm run dev2
 ```
 
-#### Package
+## Developing Apps
 
-To package the web happ:
-
-``` bash
-npm run package
-```
-
-You'll have the `we.webhapp` file in the `/workdir` folder and it's components `we.happ` and `ui.zip` in `dna/workdir/happ` and `ui/apps/we` respectively.
+To help develop applications, we've added a placeholder `applet-dev-workspace` directory to the project. This allows applet devs to use the same nix environment, holochain version, and other libraries. See the [./applet-dev-workspace/README.md] for more info.
 
 ## License
 
