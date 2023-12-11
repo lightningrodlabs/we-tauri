@@ -41,7 +41,7 @@ export default class NHMenu extends NHComponentShoelace {
     return html`
       ${this.menuSectionDetails.map(({ sectionName, sectionMembers }) => {
         return html`
-          <sl-menu class="dashboard-menu-section">
+          <sl-menu class="menu-section">
             <sl-menu-label class="menu-section-label">
               ${sectionName}
             </sl-menu-label>
@@ -76,21 +76,6 @@ export default class NHMenu extends NHComponentShoelace {
             })}
           </sl-menu>
         `;
-        // <div role="navigation" class="sub-nav indented">
-        //   ${applet?.appletRenderInfo?.resourceNames &&
-        //   applet?.appletRenderInfo?.resourceNames.map(
-        //     (resource, resourceIndex) => html`<sl-menu-item
-        //       class="nav-item"
-        //       value="${resource.toLowerCase()}"
-        //       @click=${() => {
-        //         this.selectedAppletIndex = i;
-        //         this.selectedResourceDefIndex = resourceIndex;
-        //         this.setupAssessmentsSubscription();
-        //       }}
-        //       >${resource}</sl-menu-item
-        //     >`,
-        //   )}
-        // </div>
       })}
     `;
   }
@@ -165,6 +150,17 @@ export default class NHMenu extends NHComponentShoelace {
       }
       .indented {
         padding-left: calc(1px * var(--nh-spacing-3xl));
+      }
+
+      /* Divider after section */
+      .menu-section {
+        background-color: transparent;
+        padding: calc(1px * var(--nh-spacing-md)) 0;
+      }
+      .menu-section:not(:last-child) {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-bottom-color: var(--nh-theme-bg-surface);
       }
 
       /* BG colors */
