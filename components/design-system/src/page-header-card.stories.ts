@@ -3,9 +3,9 @@ import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
-import { DashboardIconButtons, HorizontalTabButtons } from "./menu.stories";
+import { DashboardIconButtons, HorizontalTabButtons } from "./button-group.stories";
 import NHButton from './button'
-import NHMenu from './menu'
+import NHButtonGroup from './button-group'
 import NHPageHeaderCard from './page-header-card'
 
 import { NHComponent } from './ancestors/base'
@@ -13,7 +13,7 @@ import { NHComponent } from './ancestors/base'
 class TestRoot extends NHComponent {
   static elementDefinitions = {
     'nh-button': NHButton,
-    'nh-menu': NHMenu,
+    'nh-button-group': NHButtonGroup,
     'nh-page-header-card': NHPageHeaderCard,
   }
 
@@ -28,7 +28,7 @@ class TestRoot extends NHComponent {
           slot="secondary-action"
         />`
       : this.secondary == "dashboard-menu"
-      ? html`<nh-menu
+      ? html`<nh-button-group
           .direction=${(HorizontalTabButtons.args as any).direction}
           .itemLabels=${(HorizontalTabButtons.args as any).itemLabels}
           .itemComponentTag=${(HorizontalTabButtons.args as any).itemComponentTag}
@@ -38,10 +38,10 @@ class TestRoot extends NHComponent {
           .addItemButton=${(HorizontalTabButtons.args as any).addItemButton}
           slot="secondary-action"
         >
-        </nh-menu>`
+        </nh-button-group>`
       : null}
     ${this.primary == "dashboard-buttons"
-      ? html`<nh-menu
+      ? html`<nh-button-group
       .direction=${(DashboardIconButtons.args as any).direction}
       .itemLabels=${(DashboardIconButtons.args as any).itemLabels}
       .itemComponentTag=${(DashboardIconButtons.args as any).itemComponentTag}
@@ -51,7 +51,7 @@ class TestRoot extends NHComponent {
       .addItemButton=${(DashboardIconButtons.args as any).addItemButton}
       slot="primary-action"
     >
-    </nh-menu>`
+    </nh-button-group>`
       : this.primary == "button"
       ? html`<nh-button
           .variant=${"primary"}
