@@ -32,7 +32,7 @@ NOTE: You may encounter slow/tedious data refresh and difficulty in multi-agent 
 6. Stop the local services once you're done: `pnpm run stop:local-services`
 
 The above scripts all take care of the messy details of running the launcher (or any other multi agent system in Holochain). However, if you're interested in understanding what happens behind the scenes:
-- build everything (`pnpm run build:nh`)
+- build everything (`pnpm build`)
 - start the bootstrap and signaling servers (`pnpm run start:local-services`)
 - clean the holochain sandbox (`pnpm run clean:sandbox`)
 - start up the holochain sandbox (this is a complicated command and is beyond the scope of these docs)
@@ -47,22 +47,31 @@ Build the DNA (assumes you are still in the nix shell for correct rust/cargo ver
 npm run build:happ
 ```
 
-### Running the UI tests
+### Running tests
 
+Run all tests:
+```bash
+npm run test
+```
+
+Run the nh-launcher tests:
 ```bash
 npm run test:ui
 ```
 
-### UI
+Run the sensemaker tests:
+```bash
+npm run test:client
+```
 
-To test out the UI:
+### Run the UI
 
-(for a Tauri environment)
+For a Tauri environment:
 ``` bash
 npm run start
 ```
 
-(for a browser environment)
+For a browser environment:
 ``` bash
 npm run dev2
 ```
