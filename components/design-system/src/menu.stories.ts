@@ -32,13 +32,15 @@ export const Default: Story = {
         sectionName: "Sensemaker",
         sectionMembers: [
           {
-            label: "0",
+            label: "Overview",
+            subSectionMembers: ["0-0", "0-1"],
             callback: () => {
               console.log("hi!");
             },
           },
           {
-            label: "2",
+            label: "Roles",
+            subSectionMembers: ["1-0", "1-1"],
             callback: () => {
               console.log("hi!");
             },

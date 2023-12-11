@@ -12,6 +12,7 @@ export type MenuSection = {
 export type MenuSectionMember = {
   label: string;
   callback: () => void;
+  subSectionMembers: string[]
 };
 
 export default class NHMenu extends NHComponentShoelace {
@@ -19,7 +20,7 @@ export default class NHMenu extends NHComponentShoelace {
   theme: string = "dark";
 
   @state()
-  selectedMenuItemId!: string; // sectionName concatenated with sectionMember index e.g. Sensemaker-0
+  selectedMenuItemId!: string; // sectionName concatenated with sectionMember index, subSectionMember index e.g. Sensemaker-0-0
   @property()
   menuSectionDetails: MenuSection[] = [
     {
@@ -27,6 +28,7 @@ export default class NHMenu extends NHComponentShoelace {
       sectionMembers: [
         {
           label: "0",
+          subSectionMembers: ["0-0", "0-1"],
           callback: () => {
             console.log("hi!");
           },
@@ -40,21 +42,37 @@ export default class NHMenu extends NHComponentShoelace {
       ${this.menuSectionDetails.map(({ sectionName, sectionMembers }) => {
         return html`
           <sl-menu class="dashboard-menu-section">
-            <sl-menu-label class="menu-section-label"
-              >${sectionName}</sl-menu-label
-            >
-            ${sectionMembers.map(({ label, callback }, idx) => {
+            <sl-menu-label class="menu-section-label">
+              ${sectionName}
+            </sl-menu-label>
+            ${sectionMembers.map(({ label, callback, subSectionMembers }, idx) => {
               return html`<sl-menu-item
-                class="menu-item ${classMap({
-                  active: this.selectedMenuItemId === sectionName + idx,
-                })}"
-                value="${label}"
-                @click=${() => {
-                  this.selectedMenuItemId = sectionName + idx;
-                  callback();
-                }}
-                >${label}
-              </sl-menu-item>`;
+              class="menu-item ${classMap({
+                active: !!(this.selectedMenuItemId && this.selectedMenuItemId.match(sectionName + '-' + idx)),
+              })}"
+              value="${label}"
+              @click=${() => {
+                this.selectedMenuItemId = sectionName + '-' + idx + '-';
+                callback();
+              }}
+              >${label}
+              </sl-menu-item>
+              <div class="sub-nav indented">
+              ${subSectionMembers.map((label, idx2) => {
+                return html`<sl-menu-item
+                    class="menu-item ${classMap({
+                      active: !!(this.selectedMenuItemId && this.selectedMenuItemId.match(sectionName + '-' + idx + '-' + idx2)),
+                    })}"
+                    value="${label}"
+                    @click=${() => {
+                      this.selectedMenuItemId = sectionName + '-' + idx + '-' + idx2;
+                    }}
+                    >${label}
+                  </sl-menu-item>
+                `
+              })}
+              </div>
+            `;
             })}
           </sl-menu>
         `;
@@ -99,20 +117,66 @@ export default class NHMenu extends NHComponentShoelace {
     super.styles as CSSResult,
     css`
       /* Layout */
-
-      .container {
+      :host {
+        --menu-width: 138px;
+        --nh-theme-menu-sub-title: #A89CB0; /* TODO: check with design team if this is up to date */
       }
-      .container.light {
+      nav.container {
+        flex-basis: var(--menu-width);
+        padding: 0 calc(1px * var(--nh-spacing-sm));
+        background: var(--nh-theme-bg-canvas);
       }
-      .container.dark {
+      .menu-item::part(base), .menu-item::part(label), .menu-section-label::part(base) {
+        height: calc(1.125px * var(--nh-spacing-3xl));
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+      }
+      
+      .menu-section-label::part(base),
+      .menu-item::part(base) {
+        padding: 0 calc(1px * var(--nh-spacing-sm));
       }
 
-      /* Content */
-
-      .content {
+      /* Typo */
+      .menu-section-label::part(base) {
+        color: var(--nh-theme-menu-sub-title);
+        text-transform: uppercase;
+        font-size: calc(1px * var(--nh-font-size-md));
+        font-weight: var(--nh-font-weights-body-bold);
+        // font-family: var(--nh-font-families-headlines);
+        font-family: "Work Sans", "Open Sans";
+        letter-spacing: var(--nh-letter-spacing-buttons);
+      }
+      .menu-item::part(base) {
+        color: var(--nh-theme-fg-default);
+        font-size: calc(1px * var(--nh-font-size-md));
       }
 
-      /* Actions */
+      /* Alignment, borders etc */
+      .menu-item {
+        border-radius: calc(1px * var(--nh-radii-base) - 0px);
+        overflow: hidden;
+        margin-bottom: calc(1px * var(--nh-spacing-xs));
+      }
+      .menu-item::part(base) {
+        padding: calc(1px * var(--nh-spacing-xxs));
+        padding-left: calc(1px * var(--nh-spacing-sm));
+      }
+      .indented {
+        padding-left: calc(1px * var(--nh-spacing-3xl));
+      }
+
+      /* BG colors */
+      .menu-item.active::part(base) {
+        background: var(--nh-theme-bg-element);
+      }
+      .menu-item.active + .indented .menu-item.active::part(base) {
+        background: var(--nh-theme-bg-surface);
+      }
+      .menu-item:not(.active):hover::part(base) {
+        background: var(--nh-theme-bg-surface);
+      }
     `,
   ];
 }
