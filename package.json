@@ -31,7 +31,7 @@
 
     "stop:local-services": "kill `cat .local-services-pid`; rm .local-services-pid; rm .bootstrap-path; rm .signal-path",
 
-    "build": "npm run build:happ && npm run build:es-libs && npm run build -w nh-launcher && hc web-app pack workdir",
+    "build": "npm run build:happ && npm run build:es-libs && npm run build:nh-launcher && hc web-app pack workdir",
     "build:happ": "npm run build:dnas && hc app pack ./workdir",
     "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
@@ -39,6 +39,7 @@
     "build:nh-launcher-applet": "npm run build -w @neighbourhoods/nh-launcher-applet",
     "build:nh-client": "npm run build -w @neighbourhoods/client",
     "build:membrane-invitations": "npm run build -w @neighbourhoods/membrane-invitations",
+    "build:nh-launcher": "npm run build -w nh-launcher",
     "build:nh-watch": "npm run build:watch -w nh-launcher",
 
     "clean": "npm run clean:sandbox; npm run clean:build && npm run clean:modules",
