@@ -9,10 +9,8 @@ import { HoloIdenticon } from './elements/components/holo-identicon.js';
 
 import { matrixContext } from './context';
 import {
-  AppletClassInfo,
   AppletInstanceInfo,
   MatrixStore,
-  NewAppletInstanceInfo,
   WeGroupInfo,
 } from './matrix-store';
 import { sharedStyles } from './sharedStyles';
@@ -22,7 +20,6 @@ import { SlTooltip } from '@scoped-elements/shoelace';
 import { DashboardMode, NavigationMode, RenderingMode } from './types';
 import { SidebarButton } from './elements/components/sidebar-button';
 import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
-import { DnaHashMap } from '@holochain-open-dev/utils';
 import { WeGroupContext } from './elements/we-group-context';
 import { AppletClassHome } from './elements/dashboard/applet-class-home';
 import { NeighbourhoodHome } from './elements/dashboard/neighbourhood-home';
@@ -129,35 +126,10 @@ export class MainDashboard extends NHComponentShoelace {
 
   renderPrimaryNavigation() {
     // show all we groups in weGroup mode
-    if (this._navigationMode === NavigationMode.GroupCentric) {
-      return this.renderWeGroupIconsPrimary([...this._allWeGroupInfos.value.values()]);
-      // show all applet classes in appletClass mode
-    } else if (this._navigationMode === NavigationMode.AppletCentric) {
-      return html`${this.renderAppletClassListPrimary([...this._allAppletClasses.value.values()])}
-        <div id="placeholder"></div>`;
-      // show all we groups in mainHome mode
-    } else {
-      return this.renderWeGroupIconsPrimary([...this._allWeGroupInfos.value.values()]);
-    }
+    return this.renderWeGroupIconsPrimary([...this._allWeGroupInfos.value.values()]);
   }
 
   renderSecondaryNavigation() {
-    // show all applet instances of the selected group in weGroup mode
-    // <sl-tooltip
-    //       hoist
-    //       placement="bottom"
-    //       .content="${this._matrixStore.getWeGroupInfo(this._selectedWeGroupId!)?.name} Home"
-    //     >
-    //       <mwc-fab
-    //         style="margin-left: 18px; margin-right: 6px; border-radius: 50%;"
-    //         icon="home"
-    //         class="group-home-button"
-    //         @click=${() => {
-    //           this._selectedAppletInstanceId = undefined;
-    //           this._dashboardMode = DashboardMode.WeGroupHome;
-    //         }}
-    //       ></mwc-fab>
-    //     </sl-tooltip>
     if (this._navigationMode === NavigationMode.GroupCentric) {
       const appletInstanceInfos = get(
         this._matrixStore.getAppletInstanceInfosForGroup(this._selectedWeGroupId!),
@@ -165,20 +137,6 @@ export class MainDashboard extends NHComponentShoelace {
       return html`
         ${appletInstanceInfos ? this.renderAppletInstanceList(appletInstanceInfos) : html``}
 
-        <div
-          class="navigation-switch-container ${classMap({
-            invisible:
-              this._dashboardMode == DashboardMode.MainHome ||
-              [...this._allAppletClasses.value.keys()].length == 0,
-          })}
-        "
-        >
-          <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
-            <button class="navigation-switch" style="display:none" @click=${this.handleNavigationSwitch}>
-              Applet Centric
-            </button>
-          </sl-tooltip>
-        </div>
         <div style="display: flex; right: 16px; position: absolute; gap: calc(1px * var(--nh-spacing-lg));">
         ${this._dashboardMode !== DashboardMode.AssessmentsHome
           ? null
@@ -197,32 +155,6 @@ export class MainDashboard extends NHComponentShoelace {
               }}
             ></button>
           </sl-tooltip>`}
-
-        </div>
-      `;
-
-      // show all groups that have the currently selected applet class installed in NavigationMode.AppletCentric
-      // and show the special modes of the chosen applet class
-    } else if (this._navigationMode === NavigationMode.AppletCentric) {
-      return html`
-        ${this.renderWeGroupIconsSecondary(
-          get(this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId!)),
-        )}
-
-        <div
-          class="navigation-switch-container ${classMap({
-            invisible:
-              this._dashboardMode == DashboardMode.MainHome ||
-              [...this._allAppletClasses.value.keys()].length == 0,
-          })}
-        "
-          style="position: initial"
-        >
-          <sl-tooltip placement="right" content="Switch Navigation Mode" hoist>
-            <button class="navigation-switch" @click=${this.handleNavigationSwitch}>
-              Group Centric
-            </button>
-          </sl-tooltip>
         </div>
       `;
       // show all applet classes in NavigationMode.Agnostic
@@ -340,56 +272,6 @@ export class MainDashboard extends NHComponentShoelace {
   handleMergeEyeViewClick() {
     this._dashboardMode = DashboardMode.AppletClassRendering;
     this._selectedAppletInstanceId = undefined;
-  }
-
-  handleNavigationSwitch() {
-    if (this._navigationMode === NavigationMode.AppletCentric) {
-      if (this._selectedAppletInstanceId === undefined) {
-        // for example when "Merge Eye View" is selected
-        // select the first group in the list and show it's Group Home Page and set the selected class Id to undefined
-        this._selectedWeGroupId = this._allWeGroupInfos.value.keys()[0];
-        this._selectedAppletClassId = undefined;
-        this._dashboardMode = DashboardMode.WeGroupHome;
-      } else {
-        // if selected applet is not running, make selected applet Id undefined again
-        if (
-          getStatus(
-            this._matrixStore.getAppletInstanceInfo(this._selectedAppletInstanceId)?.appInfo!,
-          ) !== 'RUNNING'
-        ) {
-          this._selectedAppletInstanceId = undefined;
-          this._dashboardMode = DashboardMode.WeGroupHome;
-        }
-      }
-
-      this._navigationMode = NavigationMode.GroupCentric;
-      (this.shadowRoot?.getElementById('applet-centric-snackbar') as Snackbar).close();
-      (this.shadowRoot?.getElementById('group-centric-snackbar') as Snackbar).show();
-      if (this._dashboardMode === DashboardMode.AppletClassHome) {
-        // Not used currently as Applet Class Home is disabled and button removed.
-        this._dashboardMode = DashboardMode.WeGroupHome;
-      }
-    } else if (this._navigationMode === NavigationMode.GroupCentric) {
-      if (this._selectedAppletClassId === undefined) {
-        // choose the first class Id in the list
-        this._selectedAppletClassId = this._allAppletClasses.value.keys()[0];
-        // this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
-        this._selectedAppletInstanceId = get(
-          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId as any),
-        )[0][1].appletId;
-        this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-      }
-      this._navigationMode = NavigationMode.AppletCentric;
-      (this.shadowRoot?.getElementById('group-centric-snackbar') as Snackbar).close();
-      (this.shadowRoot?.getElementById('applet-centric-snackbar') as Snackbar).show();
-      if (this._dashboardMode === DashboardMode.WeGroupHome) {
-        //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
-        this._selectedAppletInstanceId = get(
-          this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId as any),
-        )[0][1].appletId;
-        this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-      }
-    }
   }
 
   /**
@@ -518,77 +400,6 @@ export class MainDashboard extends NHComponentShoelace {
     `;
   }
 
-  renderAppletClassListPrimary(appletClasses: AppletClassInfo[]) {
-    // do stuff
-    return appletClasses
-      .sort((a, b) => a.title.localeCompare(b.title))
-      .map(
-        appletClassInfo =>
-          html`
-            <sidebar-button
-              style="overflow: hidden; margin-top: 2px; margin-bottom: 2px; margin-left: 3px; margin-right: 3px; border-radius: 50%;"
-              .logoSrc=${appletClassInfo.logoSrc}
-              .tooltipText=${appletClassInfo.title}
-              @click=${() => {
-                this.handleAppletClassIconClick(appletClassInfo.devhubHappReleaseHash);
-              }}
-              class=${classMap({
-                highlightedAppletCentric:
-                  JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
-                  JSON.stringify(this._selectedAppletClassId),
-                appletCentricIconHover:
-                  appletClassInfo.devhubHappReleaseHash != this._selectedAppletClassId,
-              })}
-            >
-            </sidebar-button>
-          `,
-        // add special modes here
-      );
-  }
-
-  renderAppletClassListSecondary(appletClasses: AppletClassInfo[]) {
-    return html`
-      <div style="display:flex">
-        ${appletClasses
-          .sort((a, b) => a.title.localeCompare(b.title))
-          .map(
-            appletClassInfo =>
-              html`
-                <sidebar-button
-                  placement="bottom"
-                  style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
-                  .logoSrc=${appletClassInfo.logoSrc}
-                  .tooltipText=${appletClassInfo.title}
-                  @click=${() => {
-                    this._selectedAppletClassId = appletClassInfo.devhubHappReleaseHash;
-                    this._navigationMode = NavigationMode.GroupCentric;
-                    //this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below instead.
-                    const [weGroupInfo, appletInstanceInfo] = get(
-                      this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId),
-                    ).sort((appletInfo_a, applet_info_b) =>
-                      appletInfo_a[0].info.name.localeCompare(applet_info_b[0].info.name),
-                    )[0]; // sort alphabetically by group name first
-                    this._selectedAppletInstanceId = appletInstanceInfo.appletId;
-                    this._selectedWeGroupId = weGroupInfo.dna_hash;
-                    this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-                    this.requestUpdate();
-                  }}
-                  class=${classMap({
-                    highlightedAppletCentric:
-                      JSON.stringify(appletClassInfo.devhubHappReleaseHash) ===
-                      JSON.stringify(this._selectedAppletClassId),
-                    appletCentricIconHover:
-                      appletClassInfo.devhubHappReleaseHash != this._selectedAppletClassId,
-                  })}
-                >
-                </sidebar-button>
-              `,
-            // add special modes here
-          )}
-      </div>
-    `;
-  }
-
   renderAppletInstanceList(appletInstances: AppletInstanceInfo[]) {
     return appletInstances.length > 0
       ? html`<div style="display: flex;">
@@ -629,55 +440,6 @@ export class MainDashboard extends NHComponentShoelace {
             })}
         </div>`
       : html`<span id="placeholder"></div>`;
-  }
-
-  /**
-   * Renders Icons of Applets that have been newly installed to the given
-   * we group by someone else but which are not yet installed on the
-   * agents own conductor.
-   *
-   * @param allNewAppletInstances
-   * @returns
-   */
-  renderNewAppletInstanceIcons(allNewAppletInstances: DnaHashMap<NewAppletInstanceInfo[]>) {
-    const relevantNewAppletInstances = allNewAppletInstances.get(this._selectedWeGroupId!);
-
-    if (relevantNewAppletInstances) {
-      return html`<div style="display: flex;">
-        ${relevantNewAppletInstances.map(
-          newAppletInstanceInfo =>
-            html`
-              <icon-dot
-                icon="share"
-                invisible=${newAppletInstanceInfo.federatedGroups.length === 0}
-              >
-                <notification-dot>
-                  <sidebar-button
-                    notificationDot
-                    placement="bottom"
-                    style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
-                    .logoSrc=${newAppletInstanceInfo.applet.logoSrc}
-                    .tooltipText=${newAppletInstanceInfo.applet.customName}
-                    @click=${() => {
-                      this.handleNewAppletInstanceIconClick(newAppletInstanceInfo.appletId);
-                      this.requestUpdate();
-                    }}
-                    class=${classMap({
-                      highlightedAppletCentric:
-                        JSON.stringify(newAppletInstanceInfo.appletId) ===
-                        JSON.stringify(this._selectedAppletInstanceId),
-                      appletCentricIconHover:
-                        JSON.stringify(newAppletInstanceInfo.appletId) !=
-                        JSON.stringify(this._selectedAppletInstanceId),
-                    })}
-                  >
-                  </sidebar-button>
-                </notification-dot>
-              </icon-dot>
-            `,
-        )}
-      </div>`;
-    }
   }
 
   handleWeGroupAdded(e: CustomEvent) {
@@ -789,8 +551,7 @@ export class MainDashboard extends NHComponentShoelace {
             class="top-left-corner-bg ${classMap({
               tlcbgGroupCentric:
                 this._navigationMode === NavigationMode.GroupCentric ||
-                this._navigationMode == NavigationMode.Agnostic,
-              tlcbgAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
+                this._navigationMode == NavigationMode.Agnostic
             })}"
           ></div>
           <div class="column top-left-corner">
@@ -827,8 +588,7 @@ export class MainDashboard extends NHComponentShoelace {
             ${classMap({
               navBarGroupCentric:
                 this._navigationMode === NavigationMode.GroupCentric ||
-                this._navigationMode == NavigationMode.Agnostic,
-              navBarAppletCentric: this._navigationMode === NavigationMode.AppletCentric,
+                this._navigationMode == NavigationMode.Agnostic
             })}"
             style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center; overflow:hidden;"
           >
@@ -858,8 +618,7 @@ export class MainDashboard extends NHComponentShoelace {
             ${classMap({
               navBarAppletCentric:
                 this._navigationMode === NavigationMode.GroupCentric ||
-                this._navigationMode == NavigationMode.Agnostic,
-              navBarGroupCentric: this._navigationMode === NavigationMode.AppletCentric,
+                this._navigationMode == NavigationMode.Agnostic
             })}"
           >
             ${this.renderSecondaryNavigation()}
@@ -966,10 +725,6 @@ export class MainDashboard extends NHComponentShoelace {
       }
 
       .tlcbgGroupCentric {
-        border-color: var(--nh-colors-eggplant-800);
-      }
-
-      .tlcbgAppletCentric {
         border-color: var(--nh-colors-eggplant-800);
       }
 
