@@ -26,14 +26,12 @@ import { DnaHashMap } from '@holochain-open-dev/utils';
 import { WeGroupContext } from './elements/we-group-context';
 import { AppletClassHome } from './elements/dashboard/applet-class-home';
 import { NeighbourhoodHome } from './elements/dashboard/neighbourhood-home';
-import { AppletClassRenderer } from './elements/dashboard/applet-class-renderer';
 import { SensemakerDashboard } from './elements/dashboard/sensemaker-dashboard';
 import { AppletInstanceRenderer } from './elements/dashboard/applet-instance-renderer';
 import { AppletNotInstalled } from './elements/dashboard/applet-not-installed';
 import { NotificationDot } from './elements/components/notification-dot';
 import { InactiveOverlay } from './elements/components/inactive-overlay';
 import { AppletIconBadge } from './elements/components/applet-icon-badge';
-import { mergeEyeViewIcon } from './icons/merge-eye-view-icon';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
@@ -226,8 +224,6 @@ export class MainDashboard extends NHComponentShoelace {
             </button>
           </sl-tooltip>
         </div>
-
-        ${this.renderSpecialAppletModeIcons()}
       `;
       // show all applet classes in NavigationMode.Agnostic
     } else {
@@ -260,13 +256,6 @@ export class MainDashboard extends NHComponentShoelace {
         <we-group-context .weGroupId=${this._selectedWeGroupId}>
           ${this.renderAppletInstanceContent()}
         </we-group-context>
-      `;
-    } else if (this._dashboardMode === DashboardMode.AppletClassRendering) {
-      return html`
-        <applet-class-renderer
-          style="display: flex; flex: 1;"
-          .appletClassId=${this._selectedAppletClassId}
-        ></applet-class-renderer>
       `;
     } else if (this._dashboardMode === DashboardMode.AppletClassHome) {
       // Not used currently as Applet Class Home is disabled and button removed
@@ -691,34 +680,6 @@ export class MainDashboard extends NHComponentShoelace {
     }
   }
 
-  /**
-   * Renders the icons of special modes of an applet *class*.
-   * Currently only the "Birds Eye View" which renders the applet across
-   * all we groups that have one or more applet instances of this class
-   * installed.
-   *
-   * @returns
-   */
-  renderSpecialAppletModeIcons() {
-    return html`
-      <sidebar-button
-        placement="bottom"
-        style="overflow: hidden; margin-left: 2px; margin-right: 2px; border-radius: 50%;"
-        logoSrc="${mergeEyeViewIcon}"
-        tooltipText="Merge Eye View"
-        @click=${() => {
-          this.handleMergeEyeViewClick();
-          this.requestUpdate();
-        }}
-        class=${classMap({
-          highlightedGroupCentric: this._dashboardMode == DashboardMode.AppletClassRendering,
-          secondaryIconHover: !this._specialAppletMode,
-        })}
-      ></sidebar-button>
-      <span style="width: 8px;"></span>
-    `;
-  }
-
   handleWeGroupAdded(e: CustomEvent) {
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
@@ -935,7 +896,6 @@ export class MainDashboard extends NHComponentShoelace {
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
       'nh-sensemaker-settings': NHSensemakerSettings,
-      'applet-class-renderer': AppletClassRenderer,
       'applet-instance-renderer': AppletInstanceRenderer,
       'applet-not-installed': AppletNotInstalled,
       'notification-dot': NotificationDot,

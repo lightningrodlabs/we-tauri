@@ -1,10 +1,10 @@
 import { AppAgentWebsocket, CellId } from "@holochain/client";
-import { WeInfo } from "@neighbourhoods/nh-launcher-applet";
+import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
 
 export class WeGroupService {
   constructor(public client: AppAgentWebsocket, protected cellId: CellId, protected zomeName = "we_coordinator") {}
 
-  async getInfo(): Promise<WeInfo> {
+  async getInfo(): Promise<NeighbourhoodInfo> {
     return this.client.callZome({
       cell_id: this.cellId,
       zome_name: "we",
