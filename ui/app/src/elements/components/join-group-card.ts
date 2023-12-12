@@ -4,13 +4,7 @@ import { decode } from '@msgpack/msgpack';
 import { html, css, CSSResult } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import {
-  Button,
-  List,
-  ListItem,
-  Card,
   Snackbar,
-  Icon,
-  Dialog,
 } from '@scoped-elements/material-web';
 
 import { matrixContext } from '../../context';
@@ -19,11 +13,10 @@ import { sharedStyles } from '../../sharedStyles';
 import { query, state } from 'lit/decorators.js';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { AsyncStatus } from '@holochain-open-dev/stores';
-import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
 import { SlTooltip } from '@scoped-elements/shoelace';
 import { ActionHash, encodeHashToBase64 } from '@holochain/client';
-import { NHButton, NHButtonGroup, NHCard, NHComponent, NHComponentShoelace } from '@neighbourhoods/design-system-components';
+import { NHButton, NHButtonGroup, NHCard, NHComponent } from '@neighbourhoods/design-system-components';
 import { generateHashHTML } from './helpers/functions';
 import { b64images } from '@neighbourhoods/design-system-styles';
 
@@ -60,8 +53,8 @@ export class JoinGroupCard extends NHComponent {
         );
       })
       .catch(e => {
-        if (e.data.data) {
-          if (e.data.data.includes('AppAlreadyInstalled')) {
+        if (e.data) {
+          if (e.data.includes('AppAlreadyInstalled')) {
             (this.shadowRoot?.getElementById('error-snackbar') as Snackbar).show();
           }
         }
