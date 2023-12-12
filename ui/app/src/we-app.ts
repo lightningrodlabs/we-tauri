@@ -20,8 +20,8 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   async firstUpdated() {
     const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
     const adminPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_ADMIN_PORT_2 : import.meta.env.VITE_ADMIN_PORT;
-    const adminWebsocket = await AdminWebsocket.connect(`ws://localhost:${adminPort}`);
-    const appWebsocket = await AppWebsocket.connect(`ws://localhost:${hcPort}`);
+    const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`));
+    const appWebsocket = await AppWebsocket.connect(new URL(`ws://localhost:${hcPort}`));
     console.log("Hello World!", hcPort, adminPort);
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
 
