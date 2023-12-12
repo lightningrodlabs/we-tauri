@@ -32,6 +32,7 @@
     "@detools/tap-diff": "^0.2.2",
     "@holochain/tryorama": "0.15.2",
     "@types/lodash": "^4.14.158",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^14.0.14",
     "@types/tape": "^4.13.4",
     "@neighbourhoods/client": "workspace: *",
