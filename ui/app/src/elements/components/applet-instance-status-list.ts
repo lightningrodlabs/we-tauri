@@ -60,7 +60,7 @@ export class AppletInstanceStatusList extends NHComponent {
     invitationActionHash: ActionHash,
     invitation: JoinMembraneInvitation
   ) {
-    const properties = decode(invitation.cloneDnaRecipe.properties) as any;
+    const properties = decode(invitation.clone_dna_recipe.properties) as any;
     await this.matrixStore
       .joinWeGroup(
         invitationActionHash,
