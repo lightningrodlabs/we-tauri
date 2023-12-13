@@ -77,12 +77,6 @@ export class MainDashboard extends NHComponentShoelace {
   @state()
   private _navigationMode: NavigationMode = NavigationMode.Agnostic;
 
-  /**
-   * Distinguishes between rendering modes, not explicitly required at the moment
-   */
-  @state()
-  private _renderingMode: RenderingMode = RenderingMode.Agnostic;
-
   @state()
   private _selectedWeGroupId: DnaHash | undefined; // DNA hash of the selected we group
 
