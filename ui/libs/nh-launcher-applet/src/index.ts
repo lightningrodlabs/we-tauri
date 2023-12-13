@@ -105,14 +105,14 @@ export type ResourceView = (
   resourceIdentifier: EntryHash,
 ) => void;
 
-export interface AppletRenderers {
+export type AppletRenderers = {
   full: Renderer;
   resourceRenderers: {
     [resourceDefName: string]: ResourceView;
   }
 }
 
-export interface NeighbourhoodServices {
+export type NeighbourhoodServices = {
   profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
   sensemakerStore?: SensemakerStore;
 }
@@ -131,11 +131,11 @@ export interface NeighbourhoodApplet {
   }[]
 }
 
-export interface NeighbourhoodInfo {
+export type NeighbourhoodInfo = {
   logoSrc: string;
   name: string;
 }
-export interface AppletInfo {
+export type AppletInfo = {
   neighbourhoodInfo: NeighbourhoodInfo,
   appInfo: AppInfo,
 }
