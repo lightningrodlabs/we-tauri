@@ -4,14 +4,14 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
+import { DnaHash, EntryHash } from '@holochain/client';
 
 import { NHButton, NHCard, NHComponent, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
-import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
 import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
+import CreateOutputDimensionMethod from './create-output-dimension-form';
 
 export default class NHGlobalConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -129,7 +129,7 @@ export default class NHGlobalConfig extends NHComponent {
     if(this._formType == "input-dimension") {
       return html`<create-dimension .dimensionType=${"input"} .sensemakerStore=${this._sensemakerStore.value}></create-dimension>`
     }
-    return html`<create-method .inputDimensions=${this._inputDimensionList._dimensionEntries} .inputDimensionRanges=${this._inputDimensionList._rangeEntries} .inputRange=${this._selectedInputDimensionRange} .inputDimensionEhs=${this._inputDimensionEhs} .sensemakerStore=${this._sensemakerStore.value}></create-method>`;
+    return html`<create-output-dimension-method-form .sensemakerStore=${this._sensemakerStore.value} .inputRange=${this._selectedInputDimensionRange} .inputDimensions=${this._inputDimensionList._dimensionEntries} .inputDimensionRanges=${this._inputDimensionList._rangeEntries}></create-output-dimension-method-form>`;
   }
 
   static elementDefinitions = {
@@ -138,7 +138,7 @@ export default class NHGlobalConfig extends NHComponent {
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
     'create-dimension': CreateDimension,
-    'create-method': CreateMethod,
+    'create-output-dimension-method-form': CreateOutputDimensionMethod,
     'dimension-list': DimensionList,
   };
 
