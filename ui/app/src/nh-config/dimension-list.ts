@@ -1,6 +1,5 @@
 import { html, css, PropertyValueMap, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
-import {keyed} from 'lit/directives/keyed.js';
 
 import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";

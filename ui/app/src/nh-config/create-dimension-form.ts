@@ -8,6 +8,7 @@ import { object, string, boolean, number, TestFunction } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import { capitalize } from "../elements/components/helpers/functions";
+import { EntryRecord } from "@holochain-open-dev/utils";
 
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -197,7 +198,8 @@ export default class CreateDimension extends NHComponentShoelace {
             this.valid = true;
             if(validateOnly) return;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-            const rangeEh = await this.createRange();
+            const rangeRecord = await this.createRange();
+            const rangeEh = new EntryRecord<Range>(rangeRecord).entryHash;
             if(!rangeEh) return
             
             this._dimension.range_eh = rangeEh;

@@ -6,7 +6,7 @@ import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 
-import { NHButton, NHComponent, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHCard, NHComponent, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import CreateMethod from './create-method-form';
 import CreateDimension from './create-dimension-form';
 import DimensionList from './dimension-list';
@@ -95,7 +95,7 @@ export default class NHGlobalConfig extends NHComponent {
         <nh-dialog
           id="create-dimension-dialog"
           .dialogType=${"create-dimension"}
-          .title=${"Add " + (this._formType == "input-dimension" ? "Input" : "Output") + " Dimension"}
+          .title=${"Dimensions"}
           .size=${"medium"}
           .handleOk=${ () => {
             this._dimensionForm.onSubmit({validateOnly: true});
@@ -113,9 +113,13 @@ export default class NHGlobalConfig extends NHComponent {
             await this._dimensionForm.onSubmit() 
           }}
         >           
-          <div slot="inner-content">
+          <nh-card
+            slot="inner-content"
+            class="nested-card"
+            .heading=${"Add " + (this._formType == "input-dimension" ? "Input" : "Output") + " Dimension"}
+          >
           ${this.renderMainForm()}
-          </div>
+          </nh-card>
         </nh-dialog>
       </main>
     `;
@@ -130,6 +134,7 @@ export default class NHGlobalConfig extends NHComponent {
 
   static elementDefinitions = {
     'nh-button': NHButton,
+    'nh-card': NHCard,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
     'create-dimension': CreateDimension,
