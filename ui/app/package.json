@@ -32,6 +32,7 @@
     "@neighbourhoods/nh-launcher-applet": "workspace:*",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
+    "@types/uuid": "^9.0.7",
     "@webcomponents/scoped-custom-element-registry": "^0.0.9",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "fflate": "^0.7.4",
