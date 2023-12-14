@@ -1,12 +1,10 @@
-import { AppInfo, DnaHash, EntryHash } from "@holochain/client";
-import { contextProvided } from "@lit-labs/context";
+import { AppInfo } from "@holochain/client";
 import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult, PropertyValueMap } from "lit";
-import {  weGroupContext } from "../context";
-import { SlCheckbox, SlInput, SlRadio, SlRadioGroup, SlRange } from "@scoped-elements/shoelace";
-import { object, string, boolean, number, TestFunction } from 'yup';
+import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
+import { object, string, boolean, number } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
-import { property, query, state } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 import { capitalize } from "../elements/components/helpers/functions";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
@@ -118,55 +116,6 @@ export default class CreateDimension extends NHComponentShoelace {
 
     this.submitBtn.loading = false;
     await this.updateComplete
-  }
-
-  private getSumComputationRange(min: number, max: number) : RangeKind {
-    const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
-    const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
-
-    switch (true) {
-      case (max <= min):
-        throw new Error('Invalid RangeKind limits')
-      case (min >=0):
-        // range is [0, x], where x is positive the output range will be [0, INF].
-        //@ts-ignore
-        return { [this._numberType]: {
-          min: 0,
-          max: rangeMax,
-        }} as RangeKind
-      case (min < 0 && max > 0):
-        // range is [x, y], where x is negative and y is positive the output range will be [-INF, INF].
-        //@ts-ignore
-        return { [this._numberType]: {
-          min: rangeMin,
-          max: rangeMax,
-        }} as RangeKind
-      default:
-        // range is [x, 0], where x is negative the output range will be [-INF, 0].
-        //@ts-ignore
-        return { [this._numberType]: {
-          min: rangeMin,
-          max: 0,
-        }} as RangeKind
-    }
-  }
-
-  private computeOutputDimensionRange() {
-    if(!this.inputRange) return;
-    if(this.computationMethod === "SUM") {
-      const rangeKindLimits = Object.values(this.inputRange.kind)[0];
-      const {min, max} = rangeKindLimits;
-      try {
-        this._dimensionRange = { name: this._dimensionRange.name, kind: this.getSumComputationRange(min, max) };
-        this._dimension.range_eh = undefined
-      } catch (error) {
-        console.log("Error calculating output range: ", error)
-      }
-      return
-    }
-    // Else it is AVG...
-    this._dimensionRange = { name: this.inputRange.name, kind: this.inputRange.kind }
-    this._dimension.range_eh = this.inputRange.range_eh
   }
 
   disable() {
@@ -314,14 +263,6 @@ export default class CreateDimension extends NHComponentShoelace {
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     this._dimension.computed = (this.dimensionType == "output");
-  }
-  
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if(this.dimensionType == "output" && (_changedProperties.has('inputRange') || _changedProperties.has('computationMethod') )) {
-      if(typeof _changedProperties.get('inputRange') !== "undefined" || typeof _changedProperties.has('computationMethod') !== "undefined") {
-        this.computeOutputDimensionRange()
-      }
-    } 
   }
 
   render() {
