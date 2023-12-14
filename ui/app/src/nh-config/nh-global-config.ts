@@ -157,6 +157,7 @@ export default class NHGlobalConfig extends NHComponent {
       return html`<create-dimension
         .dimensionType=${'input'}
         .sensemakerStore=${this._sensemakerStore.value}
+        .submitBtn=${this.submitBtn}
       ></create-dimension>`;
     }
     return html`<create-output-dimension-method-form

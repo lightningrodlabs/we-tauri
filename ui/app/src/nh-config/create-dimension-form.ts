@@ -21,19 +21,11 @@ export default class CreateDimension extends NHComponentShoelace {
   
   @property()
   dimensionType!: "input" | "output";
-
-  @property() // Only needed when an output dimension range is being computed
-  inputRange!: Range & { range_eh: EntryHash }
-  @property() // Only needed when an output dimension range is being computed
-  computationMethod!: "AVG" | "SUM";
   
   @state()
   valid: boolean = false;
   @state()
   touched: boolean = false;
-
-  @contextProvided({ context: weGroupContext, subscribe: true })
-  weGroupId!: DnaHash;
 
   private _dimensionSchema = object({
     name: string().min(1, "Must be at least 1 characters").required(),
@@ -74,7 +66,7 @@ export default class CreateDimension extends NHComponentShoelace {
   private _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
 
   @property()
-  private submitBtn!: NHButton;
+  submitBtn!: NHButton;
 
   private resetInputErrorLabels(inputs: NodeListOf<any>) {
     inputs.forEach(input => {
@@ -184,7 +176,7 @@ export default class CreateDimension extends NHComponentShoelace {
     });
   }
 
-  onSubmit({validateOnly} = {validateOnly: false}) {
+  handleSubmit({validateOnly} = {validateOnly: false}) {
     const inputs = this.renderRoot.querySelectorAll("sl-input");
     this.resetInputErrorLabels(inputs);
     const fieldsUntouched = this.validateIfUntouched(inputs);
@@ -212,8 +204,14 @@ export default class CreateDimension extends NHComponentShoelace {
                 composed: true,
               })
             );
+            this.dispatchEvent(
+              new CustomEvent('form-submitted', {
+                bubbles: true,
+                composed: true,
+              }),
+            );
           })
-          .catch(this.handleValidationError.bind(this))
+          .catch((e) => {console.log('e :>> ', e);this.handleValidationError.call(this, e)})
         }
       })
 
@@ -328,59 +326,36 @@ export default class CreateDimension extends NHComponentShoelace {
 
   render() {
     return html`
-      <nh-card .theme=${"dark"} .textSize=${"md"}>
         <form>
-            <div class="field">
-              <sl-input help-text=${this.dimensionType == "output" ? "Your dimension's range will be calculated automatically" : ""} label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
-              <label class="error" for="dimension-name" name="dimension-name">⁎</label>
-            </div>
-            ${this.dimensionType == "input"
-              ? html`<div class="field" style="justify-content: center;">
-                      <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
-                        <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
-                        <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
-                      </sl-radio-group>
-                      <label class="error" for="method" name="method" data-name="method">⁎</label>
-                    </div>`
-              : null
-            }
-            ${this.dimensionType == "input"
-              ? html`
-                <div class="field">
-                  <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
-                  <label class="error" for="min" name="min">⁎</label>
-                </div>
-                <div class="field checkbox">
-                  <label for="global-min" name="use-global-min">Lowest possible</label>
-                  <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
-                </div>
-                <div class="field">
-                  <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
-                  <label class="error" for="max" name="max">⁎</label>
-                </div>
-                <div class="field checkbox">
-                  <label for="global-max" name="use-global-max">Highest possible</label>
-                  <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
-                </div>
-              `
-              : null
-            }
-          <slot name="method-computation"></slot>
-        </form>
-        <slot name="submit-action" slot="footer">
-          <nh-button
-            style="visibility:hidden; opacity: 0"
-            .size=${"auto"}
-            .variant=${"primary"}
-            @click=${() => this.onSubmit()}
-            .disabled=${false}
-            .loading=${false}
-          >Create Dimension</nh-button>
-        </slot>
-      </nh-card>  
+          <div class="field">
+            <sl-input help-text=${this.dimensionType == "output" ? "Your dimension's range will be calculated automatically" : ""} label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <label class="error" for="dimension-name" name="dimension-name">⁎</label>
+          </div>
+          <div class="field" style="justify-content: center;">
+            <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
+              <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
+              <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
+            </sl-radio-group>
+          </div>
+          <div class="field">
+            <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <label class="error" for="min" name="min">⁎</label>
+          </div>
+          <div class="field checkbox">
+            <label for="global-min" name="use-global-min">Lowest possible</label>
+            <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+          </div>
+          <div class="field">
+            <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <label class="error" for="max" name="max">⁎</label>
+          </div>
+          <div class="field checkbox">
+            <label for="global-max" name="use-global-max">Highest possible</label>
+            <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+          </div>
+      </form>
     `;
   }
-
 
   static elementDefinitions = {
     "nh-button": NHButton,
@@ -400,7 +375,8 @@ export default class CreateDimension extends NHComponentShoelace {
         display: grid;
         flex: 1;
         place-content: start;
-        color: var(--nh-theme-fg-default); 
+        color: var(--nh-theme-fg-default);
+        margin: 0 auto;
       }
 
       .field, .field-row {
@@ -429,9 +405,20 @@ export default class CreateDimension extends NHComponentShoelace {
         display: flex;
         gap: calc(1px * var(--nh-spacing-md));
       }
-      
+
       sl-radio::part(label) {
         color: var(--nh-theme-fg-default);
+      }
+
+      sl-radio::part(control) {
+        color: var(--nh-theme-accent-default);
+        border-color: var(--nh-theme-accent-default);
+        background-color: transparent;
+      }
+      sl-checkbox::part(control) {
+        color: var(--nh-theme-accent-default);
+        background-color: var(--nh-theme-fg-default);
+        border-color: var(--nh-theme-accent-default);
       }
 
       sl-input::part(base) {
@@ -466,8 +453,6 @@ export default class CreateDimension extends NHComponentShoelace {
       }
 
       label.error {
-        visibility: hidden;
-        opacity: 0;
         align-items: center;
         padding: 0 8px;
         flex: 1;
