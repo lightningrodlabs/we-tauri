@@ -1,4 +1,4 @@
-import { AppInfo, DnaHash, EntryHash, EntryHashB64, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { contextProvided } from '@lit-labs/context';
 import { NHButton, NHCard, NHBaseForm } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
@@ -12,9 +12,11 @@ import {
   SensemakerStore,
   RangeKindFloat,
   RangeKindInteger,
+  Method,
 } from '@neighbourhoods/client';
 import { property, query, state } from 'lit/decorators.js';
 import { capitalize } from '../elements/components/helpers/functions';
+import { EntryRecord } from '@holochain-open-dev/utils';
 
 const DEFAULT_RANGE_MIN = 0;
 const MIN_RANGE_INT = 0;
@@ -144,30 +146,38 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     this._model.range_eh = this.inputRange.range_eh;
   }
   // Lifecycle hook to trigger the calculation
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (_changedProperties.has('inputRange') || _changedProperties.has('_model')) {
-      if (
-        typeof _changedProperties.get('inputRange') !== 'undefined' ||
-        (typeof _changedProperties.get('_model') !== 'undefined' &&
-          _changedProperties.get('_model').program !== this._model.program)
+  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (changedProperties.has('inputRange') || changedProperties.has('_model')) {
+      if ( // There is a change
+        typeof changedProperties.get('inputRange') !== 'undefined' ||
+        (typeof changedProperties.get('_model') !== 'undefined' &&
+          changedProperties.get('_model').program !== this._model.program)
       ) {
+        this.computeOutputDimensionRange();
+      } else { // This is the first update
+        const inputRange = this.inputDimensionRanges[0];
+        this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+        
         this.computeOutputDimensionRange();
       }
     }
   }
 
+  @query("nh-button[type='submit']")
+  private submitBtn!: NHButton;
+
   /* Concrete implementations of the abstract BaseForm interface */
   // Form schema
   protected get validationSchema(): ObjectSchema<any> {
     return object({
-      dimension_name: string().min(1, 'Must be at least 1 characters').required(),
+      dimensionName: string().min(1, 'Must be at least 1 characters').required(),
       computed: boolean().required(),
 
       method_name: string().min(1, 'Must be at least 1 characters').required(),
       program: string().required(),
       can_compute_live: boolean().required(),
       requires_validation: boolean().required(),
-      input_dimension_ehs: array().min(1, 'Must have an input dimension').required(),
+      input_dimension: string().required(), // b64 entry hash
     });
   }
 
@@ -184,119 +194,118 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     program: 'AVG',
     can_compute_live: false,
     requires_validation: false,
-    input_dimension_ehs: [],
-    output_dimension_eh: null, // Created in the atomic fn call
+    input_dimension: undefined, // Will be put in array for zome call. Later we may support multiple input dimensions
+    output_dimension_eh: null, // Created in the atomic fn call, leave null
   };
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    this._model.input_dimension = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
+  }
 
   // Form submit handler
   private async handleSubmit(e: Event) {
     e.preventDefault();
     const isValid = await this.validateForm();
     this.formWasSubmitted = true;
-    debugger;
+    
     if (isValid) {
       // Form is valid, proceed with submission logic
       console.log('valid! :>> ', isValid);
+      try {
+        await this.createEntries();
+      } catch (error) {
+        console.error('Could not create entries:', error)
+      }
     } else if (this.isFormUntouched()) {
       console.log('untouched! :>> ');
       // Handle the case where the form is invalid and untouched
+    } else {
+      console.log('errored! :>> ');
     }
   }
 
-  // onSubmit({ validateOnly } = { validateOnly: false }) {
-  //   const inputs = this.renderRoot.querySelectorAll('sl-input');
-  //   this.resetInputErrorLabels(inputs);
-  //   const fieldsUntouched = this.validateIfUntouched(inputs);
-  //   if (fieldsUntouched) return;
-  //   this._dimensionRangeSchema()
-  //     .validate(this._dimensionRange.kind[this._rangeNumberType])
-  //     .catch(e => {
-  //       this.handleValidationError.call(this, e);
-  //     })
-  //     .then(async validRange => {
-  //       if (validRange) {
-  //         this._dimensionSchema
-  //           .validate(this._dimension)
-  //           .then(async _ => {
-  //             this.valid = true;
-  //             if (validateOnly) return;
-  //             this.submitBtn.loading = true;
-  //             this.submitBtn.requestUpdate('loading');
-  //             const rangeEh = await this.createRange();
-  //             if (!rangeEh) return;
+  handleInputChange(e: Event) {
+    super.handleInputChange(e);
 
-  //             this._dimension.range_eh = rangeEh;
-  //             const dimensionEh = await this.createDimension();
-  //             await this.updateComplete;
-  //             this.dispatchEvent(
-  //               new CustomEvent('dimension-created', {
-  //                 detail: {
-  //                   dimensionEh,
-  //                   dimensionType: this.dimensionType,
-  //                   dimension: this._dimension,
-  //                 },
-  //                 bubbles: true,
-  //                 composed: true,
-  //               }),
-  //             );
-  //           })
-  //           .catch(this.handleValidationError.bind(this));
-  //       }
-  //     });
-  // }
+    // Change handler overloads
+    const inputValue = (e.target as any).value;
+    if ((e.target as any).name === 'dimensionName') {
+      this._model.method_name = `${inputValue}-method`;
+      // Later the name will be removed from the method entry type
+    } else if ((e.target as any).name === 'input_dimension') {
+      const { inputRange } = this.getInputDimensionAndRangeForOutput(inputValue);
+      if(!inputRange) return;
+      this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+    }
+  }
 
-  // private onChangeValue(e: CustomEvent) {
-  //   const inputControl = e.target as any;
-  //   if (!inputControl.dataset.touched) inputControl.dataset.touched = '1';
-  //   if (!this.touched) {
-  //     this.touched = true;
-  //   }
+  async createEntries() {
+    this._dimensionRangeSchema()
+      .validate(this._dimensionRange.kind[this._rangeNumberType])
+      .catch(e => {
+        console.error('Range validation error :>> ', e, this._dimensionRange);
+      })
+      .then(async validRange => {
+        if (validRange) {
+          this.submitBtn.loading = true;
+          this.submitBtn.requestUpdate('loading');
+          
+          // Create range if needed
+          let range_eh;
+          if(this._model.range_eh) {
+            range_eh = this._model.range_eh
+          } else {
+            try {
+              range_eh = await this.sensemakerStore.createRange(this._dimensionRange);
+            } catch (error) {
+              console.error('Range creation error :>> ', error);
+            }
+          }
 
-  //   switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
-  //     case 'min':
-  //       const newMin = Number(inputControl.value);
-  //       this._currentMinRange = newMin;
-  //       this._dimensionRange.kind[this._rangeNumberType].min = newMin;
-  //       break;
-  //     case 'max':
-  //       const newMax = Number(inputControl.value);
-  //       this._dimensionRange.kind[this._rangeNumberType].max = newMax;
-  //       break;
-  //     case 'use-global-min':
-  //       this._useGlobalMin = !this._useGlobalMin;
-  //       this._dimensionRange.kind[this._rangeNumberType].min =
-  //         this._rangeNumberType == 'Integer' ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
-  //       break;
-  //     case 'use-global-max':
-  //       this._useGlobalMax = !this._useGlobalMax;
-  //       this._dimensionRange.kind[this._rangeNumberType].max =
-  //         this._rangeNumberType == 'Integer' ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
-  //       break;
-  //     case 'dimension-name':
-  //       this._dimension['name'] = inputControl.value;
-  //       this._dimensionRange['name'] = inputControl.value + '-range';
-  //       break;
-  //     case 'number-type':
-  //       this._rangeNumberType = inputControl.value as keyof RangeKindInteger | keyof RangeKindFloat;
-  //       //@ts-ignore
-  //       this._dimensionRange.kind = {
-  //         [this._rangeNumberType]: { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind,
-  //       };
-  //       if (this._useGlobalMin) {
-  //         this._dimensionRange.kind[this._rangeNumberType].min =
-  //           this._rangeNumberType == 'Integer' ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
-  //       }
-  //       if (this._useGlobalMax) {
-  //         this._dimensionRange.kind[this._rangeNumberType].max =
-  //           this._rangeNumberType == 'Integer' ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
-  //       }
-  //       break;
-  //     default:
-  //       this._dimension[inputControl.name] = inputControl.value;
-  //       break;
-  //   }
-  // }
-  // TODO: replace with SM method calls
+          // Create dimension and method atomically
+          const input : {
+            outputDimension: Dimension;
+            partialMethod: Partial<Method>;
+          } = {
+            outputDimension: {
+              name: this._model.dimensionName,
+              computed: this._model.computed,
+              range_eh: range_eh,
+            },
+            partialMethod: {
+              name: this._model.method_name,
+              program: this._model.program,
+              can_compute_live: this._model.can_compute_live,
+              requires_validation: this._model.requires_validation,
+              input_dimension_ehs: [decodeHashFromBase64(this._model.input_dimension)],
+              //@ts-expect-error
+              output_dimension_eh: null
+            }
+          };
+          console.log('input to create dimension/method :>> ', input);
+          let result;
+          try {
+            result = await this.sensemakerStore.createOutputDimensionAndMethodAtomically(input);
+          } catch (error) {
+            console.error('Dimension and method creation error :>> ', error);
+          }
+          console.log('result :>> ', result);
+          await this.updateComplete;
+          this.dispatchEvent(
+            new CustomEvent('dimension-created', {
+              detail: {
+                // dimensionEh,
+                // dimensionType: this.dimensionType,
+                // dimension: this._dimension,
+              },
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        } else {
+          console.error('Range was not calculated correctly')
+        }
+      });
+  }
 
   render() {
     return html`
@@ -309,10 +318,10 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         ></sl-input>
 
         <div class="field select">
-          <label for="input-dimension" data-name="input-dimension">Select input dimension:</label>
+          <label for="input_dimension" data-name="input_dimension">Select input dimension:</label>
           <select
-            id="choose-input-dimension"
-            name="input-dimension"
+            id="choose_input_dimension"
+            name="input_dimension"
             placeholder="Select an input dimension"
             @change=${this.handleInputChange}
           >
@@ -328,9 +337,9 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           </select>
           <label
             class="error"
-            for="input-dimension"
-            name="input-dimension"
-            data-name="input-dimension"
+            for="input_dimension"
+            name="input_dimension"
+            data-name="input_dimension"
             >⁎</label
           >
         </div>
@@ -350,6 +359,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         </div>
 
         <nh-button
+          slot="primary-action"
           type="submit"
           .size=${'auto'}
           .variant=${'primary'}
@@ -447,8 +457,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         }
 
         label.error {
-          visibility: hidden;
-          opacity: 0;
           align-items: center;
           padding: 0 8px;
           flex: 1;
