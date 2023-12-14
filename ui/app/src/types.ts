@@ -6,7 +6,6 @@ export enum DashboardMode {
   WeGroupHome,
   AssessmentsHome,
   AppletGroupInstanceRendering,
-  AppletClassHome,
   AppletClassRendering,
   Loading,
 }
@@ -25,27 +24,9 @@ export enum DashboardMode {
  *
  */
 export enum NavigationMode {
-  AppletCentric,
   GroupCentric,
   Agnostic,
 }
-
-
-//
-/**
- *
- * agentCentricRendering needs access to ?? agentStore maybe?
- *
- * groupCentricRendering needs access to profilesStore and peerStatusStore.
- *
- *
- */
-export enum RenderingMode {
-  AgentCentric,
-  GroupCentric,
-  Agnostic,
-}
-
 
 export interface Applet {
   customName: string; // name of the applet instance as chosen by the person adding it to the group,

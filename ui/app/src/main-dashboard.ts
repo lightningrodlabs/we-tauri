@@ -17,11 +17,10 @@ import { sharedStyles } from './sharedStyles';
 import { HomeScreen } from './elements/dashboard/home-screen';
 import { get } from 'svelte/store';
 import { SlTooltip } from '@scoped-elements/shoelace';
-import { DashboardMode, NavigationMode, RenderingMode } from './types';
+import { DashboardMode, NavigationMode } from './types';
 import { SidebarButton } from './elements/components/sidebar-button';
 import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
 import { WeGroupContext } from './elements/we-group-context';
-import { AppletClassHome } from './elements/dashboard/applet-class-home';
 import { NeighbourhoodHome } from './elements/dashboard/neighbourhood-home';
 import { SensemakerDashboard } from './elements/dashboard/sensemaker-dashboard';
 import { AppletInstanceRenderer } from './elements/dashboard/applet-instance-renderer';
@@ -89,8 +88,6 @@ export class MainDashboard extends NHComponentShoelace {
   @state()
   private _selectedAppletRolename: string | undefined;
 
-  @state()
-  private _specialAppletMode: boolean = false;
   @state()
   private _widgetConfigDialogActivated: boolean = false;
 
@@ -183,14 +180,6 @@ export class MainDashboard extends NHComponentShoelace {
           ${this.renderAppletInstanceContent()}
         </we-group-context>
       `;
-    } else if (this._dashboardMode === DashboardMode.AppletClassHome) {
-      // Not used currently as Applet Class Home is disabled and button removed
-      return html`
-        <applet-class-home
-          style="flex: 1;"
-          .appletClassId=${this._selectedAppletClassId}
-        ></applet-class-home>
-      `;
     } else if (this._dashboardMode === DashboardMode.Loading) {
       return html`
         <div class="center-content" style="flex: 1;display: flex;">
@@ -249,23 +238,6 @@ export class MainDashboard extends NHComponentShoelace {
   handleNewAppletInstanceIconClick(appletId: EntryHash) {
     this._selectedAppletInstanceId = appletId;
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-  }
-
-  handleAppletClassIconClick(classId: EntryHash) {
-    if (this._selectedAppletClassId !== classId) {
-      this._selectedAppletClassId = classId;
-      // this._selectedAppletInstanceId = undefined;
-      // this._dashboardMode = DashboardMode.AppletClassHome; // Not used currently as Applet Class Home is disabled and button removed. Added lines below and commented out line above instead.
-      this._selectedAppletInstanceId = get(
-        this._matrixStore.getInstanceInfosForAppletClass(this._selectedAppletClassId),
-        )[0][1].appletId;
-      this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
-    }
-  }
-
-  handleMergeEyeViewClick() {
-    this._dashboardMode = DashboardMode.AppletClassRendering;
-    this._selectedAppletInstanceId = undefined;
   }
 
   /**
@@ -642,7 +614,6 @@ export class MainDashboard extends NHComponentShoelace {
       'home-screen': HomeScreen,
       'sl-tooltip': SlTooltip,
       'we-group-context': WeGroupContext,
-      'applet-class-home': AppletClassHome,
       'nh-home': NeighbourhoodHome,
       'nh-dialog': NHDialog,
       'with-profile': WithProfile,
