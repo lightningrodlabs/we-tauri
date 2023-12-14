@@ -129,20 +129,6 @@ export interface NewAppletInstanceInfo {
   federatedGroups: DnaHash[];
 }
 
-/**Data of a type of Applet of which one or many may be installed */
-export interface AppletClassData {
-  info: AppletClassInfo;
-  renderers: AppletRenderers;
-}
-
-/**Info about a type of Applet of which one or many may be installed */
-export interface AppletClassInfo {
-  devhubHappReleaseHash: EntryHash; // TODO change this to integrity zome hashes via getDnaDefinition??
-  title: string; // title of the applet in the devhub
-  logoSrc: string | undefined;
-  description: string;
-}
-
 /**stores the Group/Applet matrix */
 export class MatrixStore {
   /** Private */
@@ -159,10 +145,7 @@ export class MatrixStore {
     writable(new DnaHashMap<NewAppletInstanceInfo[]>()); // Applet instances that have been added to the we group by someone else
   // but aren't installed locally yet by the agent.
 
-  private _installedAppletClasses: Writable<EntryHashMap<AppletClassInfo>> =
-    writable(new EntryHashMap<AppletClassInfo>()); // devhub release entry hashes of Applets as keys
-
-  private _appletGuis: EntryHashMap<NeighbourhoodApplet> = new EntryHashMap<NeighbourhoodApplet>(); // devhub hApp release entry hashes of Applets as keys --> no duplicate applet renderers for the same applet class
+  private _appletGuis: EntryHashMap<NeighbourhoodApplet> = new EntryHashMap<NeighbourhoodApplet>(); // devhub hApp release entry hashes of Applets as keys
 
   public get myAgentPubKey() {
     return this.appAgentWebsocket.myPubKey;
@@ -286,22 +269,6 @@ export class MatrixStore {
     );
   }
 
-  public getAppletClassInfo(
-    appletClassId: EntryHash
-  ): Readable<AppletClassInfo | undefined> {
-    // const classStrings = get(this._installedAppletClasses).keys().map(())
-
-    return derived(this._installedAppletClasses, (hashMap) => {
-      const maybeClass = [...hashMap
-        .entries()]
-        .find(
-          ([classId, classInfo]) =>
-            JSON.stringify(classId) === JSON.stringify(appletClassId)
-        );
-      return maybeClass ? maybeClass[1] : undefined;
-    });
-  }
-
   /**
    * Checks whether the specified applet Instance is installed in the conductor
    *
@@ -354,13 +321,6 @@ export class MatrixStore {
         });
       return groupInfos;
     });
-  }
-
-  public installedAppletClasses(): Readable<EntryHashMap<AppletClassInfo>> {
-    return derived(
-      this._installedAppletClasses,
-      (appletClasses) => appletClasses
-    );
   }
 
   /**
@@ -512,40 +472,6 @@ export class MatrixStore {
   }
 
   /**
-   * Gets an array of [GroupInfo, AppletInstanceInfo] of the installed applet instances of the specified applet class
-   * Used to display the group icons in NavifationMode.AppletCentric in the secondary navigation panel.
-   */
-  public getInstanceInfosForAppletClass(
-    devhubHappReleaseHash: EntryHash
-  ): Readable<[WeGroupInfo, AppletInstanceInfo][]> {
-    // todo
-    return derived(this._matrix, (matrix) => {
-      let result: [WeGroupInfo, AppletInstanceInfo][] = [];
-      [...matrix.values()].forEach(([groupData, appletInfos]) => {
-        // const filteredInfos = appletInfos.filter((appletInfo) => appletInfo.applet.devhubHappReleaseHash.toString() === devhubHappReleaseHash.toString());
-
-        appletInfos
-          .filter(
-            (appletInfo) =>
-              appletInfo.applet.devhubHappReleaseHash.toString() ===
-              devhubHappReleaseHash.toString()
-          )
-          .forEach((appletInfo) => result.push([groupData.info, appletInfo]));
-      });
-      return result;
-    });
-  }
-
-  // /**Fetches a generic renderer for a given  */
-  // public fetchGenericRenderer(devHubReleaseHash: EntryHash): genericAppletRenderer {
-  //   // 1. isolate an Applet EntryHash that has this devHubReleaseHash
-
-  //   // 2. fetch the Renderer for this Applet (see fetchAppletRenderers() of we-store.ts)
-
-  //   return {};
-  // }
-
-  /**
    * Fetching all applets for the specified we group (query to the DHT)
    *
    * @param weGroupId : DnaHash
@@ -640,7 +566,6 @@ export class MatrixStore {
    * Updates the matrix:
    * 1. fetch we group cells from the conductor and create WeGroupStore and WeGroupData for each one of them
    * 2. fetch installed applet instances from the source chain for each we group (fast source chain query)
-   * 3. combine 1 and 2 to update the _matrix and _installedAppletClasses
    * @returns
    */
   public async fetchMatrix(): Promise<
@@ -649,7 +574,6 @@ export class MatrixStore {
     // const lobbyClient = new CellClient(this.holochainClient, this.lobbyCell);
 
     let matrix = new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>();
-    let installedAppletClasses = new EntryHashMap<AppletClassInfo>();
     let uninstalledAppletInstances = new DnaHashMap<
       UninstalledAppletInstanceInfo[]
     >();
@@ -754,7 +678,7 @@ export class MatrixStore {
           sensemakerStore,
         };
 
-        // 2. fetch installed applet instances from the source chain for each we group and populate installedAppletClasses along the way
+        // 2. fetch installed applet instances from the source chain for each we group
         const appletsIAmPlaying =
           await this.appletsService.getAppletsIAmPlaying(weGroupCellId);
 
@@ -765,12 +689,6 @@ export class MatrixStore {
             );
           })
           .map(([entryHash, playingApplet, federatedGroups]) => {
-            const appletClassInfo: AppletClassInfo = {
-              devhubHappReleaseHash: playingApplet.applet.devhubHappReleaseHash,
-              title: playingApplet.applet.title,
-              logoSrc: playingApplet.applet.logoSrc,
-              description: playingApplet.applet.description,
-            };
 
             const appletInstanceInfo: AppletInstanceInfo = {
               appletId: entryHash,
@@ -780,12 +698,6 @@ export class MatrixStore {
               applet: playingApplet.applet,
               federatedGroups,
             };
-
-            // populate installedAppletClasses along the way
-            installedAppletClasses.set(
-              playingApplet.applet.devhubHappReleaseHash,
-              appletClassInfo
-            );
 
             return appletInstanceInfo;
           });
@@ -818,14 +730,8 @@ export class MatrixStore {
       })
     );
 
-    // 3. combine 1 and 2 to update the matrix and _installedAppletClasses
     this._matrix.set(matrix);
-    // this._matrix.update((m) => {
-    //   matrix.entries().forEach(([key, value]) => m.set(key, value));
-    //   return m;
-    // });
 
-    this._installedAppletClasses.set(installedAppletClasses);
     this._uninstalledAppletInstances.set(uninstalledAppletInstances);
 
     return derived(this._matrix, (m) => m);
@@ -1161,7 +1067,7 @@ export class MatrixStore {
         "Could not fetch the applet of the specified appletInstanceId from the we group dna."
       );
     } else {
-      // fetch hApp and GUI   <---- COULD BE IMPROVED BY TAKING IT FROM LOCAL STORAGE IN CASE THE SAME APPLET CLASS HAS BEEN INSTALLED EARLIER
+      // fetch hApp and GUI
       // add logic here in case webhapp is installed from the file system.
       let compressedWebHapp: Uint8Array;
 
@@ -1290,22 +1196,6 @@ export class MatrixStore {
         return hashMap;
       });
 
-      // update _installedAppletClasses
-      if (
-        !get(this._installedAppletClasses).get(
-          newAppletInfo.applet.devhubHappReleaseHash
-        )
-      ) {
-        this._installedAppletClasses.update((hashMap) => {
-          hashMap.set(newAppletInfo!.applet.devhubHappReleaseHash, {
-            title: newAppletInfo!.applet.title,
-            logoSrc: newAppletInfo!.applet.logoSrc,
-            description: newAppletInfo!.applet.description,
-            devhubHappReleaseHash: newAppletInfo!.applet.devhubHappReleaseHash,
-          });
-          return hashMap;
-        });
-      }
     }
   }
 
@@ -1480,19 +1370,6 @@ export class MatrixStore {
       return matrix;
     });
 
-    // update _installedAppletClasses
-    if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
-      this._installedAppletClasses.update((hashMap) => {
-        hashMap.set(applet.devhubHappReleaseHash, {
-          title: applet.title,
-          logoSrc: applet.logoSrc,
-          description: applet.description,
-          devhubHappReleaseHash: applet.devhubHappReleaseHash,
-        });
-        return hashMap;
-      });
-    }
-
     return appletInstanceId;
   }
 
@@ -1529,7 +1406,7 @@ export class MatrixStore {
         "Could not find the applet in the record of uninstalled applets."
       );
     } else {
-      // fetch hApp and GUI   <---- COULD BE IMPROVED BY TAKING IT FROM LOCAL STORAGE IN CASE THE SAME APPLET CLASS HAS BEEN INSTALLED EARLIER
+      // fetch hApp and GUI
       // add logic here in case webhapp is installed from the file system.
       let compressedWebHapp: Uint8Array;
 
@@ -1601,23 +1478,6 @@ export class MatrixStore {
         return hashMap;
       });
 
-      // update _installedAppletClasses
-      if (
-        !get(this._installedAppletClasses).get(
-          uninstalledAppletInfo.applet.devhubHappReleaseHash
-        )
-      ) {
-        this._installedAppletClasses.update((hashMap) => {
-          hashMap.set(uninstalledAppletInfo!.applet.devhubHappReleaseHash, {
-            title: uninstalledAppletInfo!.applet.title,
-            logoSrc: uninstalledAppletInfo!.applet.logoSrc,
-            description: uninstalledAppletInfo!.applet.description,
-            devhubHappReleaseHash:
-              uninstalledAppletInfo!.applet.devhubHappReleaseHash,
-          });
-          return hashMap;
-        });
-      }
     }
   }
 
@@ -1759,19 +1619,6 @@ export class MatrixStore {
       matrix.get(federatedGroupId)[1].push(appInstanceInfo);
       return matrix;
     });
-
-    // update _installedAppletClasses
-    if (!get(this._installedAppletClasses).get(applet.devhubHappReleaseHash)) {
-      this._installedAppletClasses.update((hashMap) => {
-        hashMap.set(applet.devhubHappReleaseHash, {
-          title: applet.title,
-          logoSrc: applet.logoSrc,
-          description: applet.description,
-          devhubHappReleaseHash: applet.devhubHappReleaseHash,
-        });
-        return hashMap;
-      });
-    }
 
     return appletInstanceId;
   }
@@ -1951,42 +1798,6 @@ export class MatrixStore {
   ): EntryHash | undefined {
     return this.getAppletInstanceInfo(appletInstanceId)?.applet
       .devhubHappReleaseHash;
-  }
-
-  /**
-   * Gets InstalledAppletInfo of all applets of this class across all we groups
-   * @param devhubHappReleaseHash
-   * @returns
-   */
-  getInstalledAppletInfoListForClass(
-    devhubHappReleaseHash: EntryHash
-  ): AppletInfo[] {
-    const matrix = get(this._matrix);
-    let appletInfosOfClass: AppletInfo[] = [];
-    [...matrix.values()].forEach(([weGroupData, appletInstanceInfos]) => {
-      const weInfo: NeighbourhoodInfo = weGroupData.info.info;
-      const relevantAppletInstanceInfos = appletInstanceInfos.filter(
-        (info) =>
-          JSON.stringify(info.applet.devhubHappReleaseHash) ===
-          JSON.stringify(devhubHappReleaseHash)
-      );
-      const relevantInstalledAppletInfos = relevantAppletInstanceInfos.map(
-        (appletInstanceInfo) => {
-          const installedAppletInfo: AppletInfo = {
-            neighbourhoodInfo:  weInfo,
-            appInfo: appletInstanceInfo.appInfo,
-          };
-          return installedAppletInfo;
-        }
-      );
-
-      appletInfosOfClass = [
-        ...appletInfosOfClass,
-        ...relevantInstalledAppletInfos,
-      ];
-    });
-
-    return appletInfosOfClass;
   }
 
   /**

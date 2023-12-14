@@ -51,8 +51,6 @@ export class MainDashboard extends NHComponentShoelace {
 
   _allWeGroupInfos = new StoreSubscriber(this, () => this._matrixStore.weGroupInfos());
 
-  _allAppletClasses = new StoreSubscriber(this, () => this._matrixStore.installedAppletClasses());
-
   _newAppletInstances = new StoreSubscriber(
     this,
     () => provideAppletInstances(this._matrixStore),
