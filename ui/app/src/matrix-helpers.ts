@@ -33,12 +33,6 @@ export function provideMatrix(matrixStore: MatrixStore) {
   })
 }
 
-export function provideAppletInstances(matrixStore: MatrixStore) {
-  return readable(new DnaHashMap<NewAppletInstanceInfo[]>(), set => {
-    matrixStore.fetchNewAppletInstances().then(m => set(get(m)))
-  })
-}
-
 export function provideAllApplets(matrixStore: MatrixStore, weGroupId: DnaHash) {
   return readable([] as [Uint8Array, Applet, Uint8Array[]][], set => {
     matrixStore.fetchAllApplets(weGroupId).then(m => set(get(m)))

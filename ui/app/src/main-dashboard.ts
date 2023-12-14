@@ -35,7 +35,7 @@ import { NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/de
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import { provideMatrix, provideAppletInstances } from './matrix-helpers.js';
+import { provideMatrix } from './matrix-helpers.js';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -50,12 +50,6 @@ export class MainDashboard extends NHComponentShoelace {
   );
 
   _allWeGroupInfos = new StoreSubscriber(this, () => this._matrixStore.weGroupInfos());
-
-  _newAppletInstances = new StoreSubscriber(
-    this,
-    () => provideAppletInstances(this._matrixStore),
-    () => [this._selectedWeGroupId, this._matrixStore],
-  );
 
   @query('#sensemaker-dashboard')
   _sensemakerDashboard;
@@ -433,7 +427,6 @@ export class MainDashboard extends NHComponentShoelace {
     this._appletName = appletInstanceInfo?.appInfo.installed_app_id;
     this._selectedAppletClassId = applet!.devhubHappReleaseHash;
     this._selectedAppletRolename = Object.keys(applet!.dnaHashes)[0];
-    this._newAppletInstances.store = provideAppletInstances(this._matrixStore)
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
