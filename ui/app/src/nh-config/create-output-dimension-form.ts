@@ -1,8 +1,6 @@
-import { AppInfo, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { contextProvided } from '@lit-labs/context';
+import { EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { NHButton, NHCard, NHBaseForm } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
-import { weGroupContext } from '../context';
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup, SlRange } from '@scoped-elements/shoelace';
 import { object, string, boolean, number, TestFunction, ObjectSchema, array } from 'yup';
 import {
@@ -13,11 +11,9 @@ import {
   RangeKindFloat,
   RangeKindInteger,
   Method,
+  Program,
 } from '@neighbourhoods/client';
-import { property, query, state } from 'lit/decorators.js';
-import { capitalize } from '../elements/components/helpers/functions';
-import { EntryRecord } from '@holochain-open-dev/utils';
-
+import { property, state } from 'lit/decorators.js';
 const DEFAULT_RANGE_MIN = 0;
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -163,8 +159,8 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     }
   }
 
-  @query("nh-button[type='submit']")
-  private submitBtn!: NHButton;
+  @property()
+  submitBtn!: NHButton;
 
   /* Concrete implementations of the abstract BaseForm interface */
   // Form schema
@@ -202,8 +198,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   }
 
   // Form submit handler
-  private async handleSubmit(e: Event) {
-    e.preventDefault();
+  async handleSubmit(e: Event) {
     const isValid = await this.validateForm();
     this.formWasSubmitted = true;
     
@@ -273,30 +268,36 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
             },
             partialMethod: {
               name: this._model.method_name,
-              program: this._model.program,
+              //@ts-ignore
+              program: { [this._model.program == 'AVG' ? 'Average' : 'Sum']: null } as Program,
               can_compute_live: this._model.can_compute_live,
               requires_validation: this._model.requires_validation,
               input_dimension_ehs: [decodeHashFromBase64(this._model.input_dimension)],
-              //@ts-expect-error
-              output_dimension_eh: null
+              output_dimension_eh: undefined
             }
           };
-          console.log('input to create dimension/method :>> ', input);
           let result;
           try {
             result = await this.sensemakerStore.createOutputDimensionAndMethodAtomically(input);
           } catch (error) {
             console.error('Dimension and method creation error :>> ', error);
           }
-          console.log('result :>> ', result);
+          const { outputDimension, method } = result;
+          
           await this.updateComplete;
           this.dispatchEvent(
             new CustomEvent('dimension-created', {
               detail: {
-                // dimensionEh,
-                // dimensionType: this.dimensionType,
-                // dimension: this._dimension,
+                dimensionEh: outputDimension,
+                dimensionType: "output",
+                dimension: input.outputDimension,
               },
+              bubbles: true,
+              composed: true,
+            }),
+          );
+          this.dispatchEvent(
+            new CustomEvent('form-submitted', {
               bubbles: true,
               composed: true,
             }),
@@ -310,41 +311,47 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   render() {
     return html`
       <form>
-        <sl-input
-          label="Dimension Name"
-          name="dimensionName"
-          .value=${this._model.dimensionName}
-          @input=${this.handleInputChange}
-        ></sl-input>
+        <div class="field">
+          <sl-input
+            label="Dimension Name"
+            size="medium"
+            name="dimensionName"
+            .value=${this._model.dimensionName}
+            @input=${this.handleInputChange}
+          ></sl-input>
+        </div>
 
         <div class="field select">
           <label for="input_dimension" data-name="input_dimension">Select input dimension:</label>
-          <select
-            id="choose_input_dimension"
-            name="input_dimension"
-            placeholder="Select an input dimension"
-            @change=${this.handleInputChange}
-          >
-            ${this.inputDimensions
-              .filter(dimension => !dimension.computed)
-              .map(
-                dimension => html`
-                  <option value=${encodeHashToBase64(dimension.dimension_eh)}>
-                    ${dimension.name}
-                  </option>
-                `,
-              )}
-          </select>
-          <label
-            class="error"
-            for="input_dimension"
-            name="input_dimension"
-            data-name="input_dimension"
-            >⁎</label
-          >
+
+          <div class="row">
+            <select
+              id="choose_input_dimension"
+              name="input_dimension"
+              placeholder="Select an input dimension"
+              @change=${this.handleInputChange}
+            >
+              ${this.inputDimensions
+                .filter(dimension => !dimension.computed)
+                .map(
+                  dimension => html`
+                    <option value=${encodeHashToBase64(dimension.dimension_eh)}>
+                      ${dimension.name}
+                    </option>
+                  `,
+                )}
+            </select>
+            <label
+              class="error"
+              for="input_dimension"
+              name="input_dimension"
+              data-name="input_dimension"
+              >⁎</label
+            >
+          </div>
         </div>
         <div class="field radio">
-          <div style="display: flex; justify-content:space-between; align-items: center;">
+          <div class="row">
             <sl-radio-group
               @sl-change=${this.handleInputChange}
               label=${'Select an option'}
@@ -357,17 +364,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
             <label class="error" for="program" name="program" data-name="program">⁎</label>
           </div>
         </div>
-
-        <nh-button
-          slot="primary-action"
-          type="submit"
-          .size=${'auto'}
-          .variant=${'primary'}
-          @click=${this.handleSubmit}
-          .disabled=${false}
-          .loading=${false}
-          >Add</nh-button
-        >
       </form>
     `;
   }
@@ -389,19 +385,31 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         :host {
           display: grid;
           flex: 1;
-          place-content: start;
+          justify-content: center;
+          margin: 0 2rem;
           color: var(--nh-theme-fg-default);
+          max-width: 100%;
         }
 
-        .field,
-        .field-row {
+        .field {
           display: flex;
+          flex-direction: column;
           margin-bottom: calc(1px * var(--nh-spacing-md));
+          gap: calc(1px * var(--nh-spacing-lg));
+        }
+
+        .row {
+          display: flex;
+          justify-content:space-between;
+          align-items: center;
         }
 
         form {
           padding: 0;
           margin: calc(1px * var(--nh-spacing-md)) 0;
+          gap: calc(1px * var(--nh-spacing-md));
+          display: flex;
+          flex-direction: column
         }
 
         legend {
@@ -411,10 +419,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         }
 
         /* Fields */
-        .field-row {
-          justify-content: space-between;
-          align-items: center;
-        }
 
         sl-radio-group::part(base) {
           display: flex;
@@ -425,8 +429,16 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           color: var(--nh-theme-fg-default);
         }
 
+        select {
+          height: calc(1px * var(--nh-spacing-4xl));
+        }
+
+        sl-input::part(base), select {
+          width: 90%;
+        }
+
         sl-input::part(base) {
-          margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+          margin: calc(1px * var(--nh-spacing-md)) 0;
           padding: 0;
         }
 
@@ -448,15 +460,12 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           margin: 0 1rem 1rem;
         }
 
-        sl-input::part(label) {
-          margin: 0 calc(1px * var(--nh-spacing-md));
-        }
-
         :host *::part(form-control-label) {
           color: red;
         }
 
         label.error {
+          height: 100%;
           align-items: center;
           padding: 0 8px;
           flex: 1;
@@ -495,6 +504,12 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         }
         .hidden {
           display: none;
+        }
+
+        sl-radio::part(control) {
+          color: var(--nh-theme-accent-default);
+          border-color: var(--nh-theme-accent-default);
+          background-color: transparent;
         }
       `,
     ];

@@ -73,7 +73,7 @@ export default class CreateDimension extends NHComponentShoelace {
   @state()
   private _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
 
-  @query("nh-button")
+  @property()
   private submitBtn!: NHButton;
 
   private resetInputErrorLabels(inputs: NodeListOf<any>) {
