@@ -14,6 +14,8 @@ import {
   Program,
 } from '@neighbourhoods/client';
 import { property, state } from 'lit/decorators.js';
+import { NHAlert } from '@neighbourhoods/design-system-components';
+
 const DEFAULT_RANGE_MIN = 0;
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -152,6 +154,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         this.computeOutputDimensionRange();
       } else { // This is the first update
         const inputRange = this.inputDimensionRanges[0];
+        if(!inputRange) return;
         this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
         
         this.computeOutputDimensionRange();
@@ -310,9 +313,10 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
   render() {
     return html`
-      <form>
+    ${this.inputDimensions && this.inputDimensions.length > 0 ? html`<form>
         <div class="field">
           <sl-input
+            type="text"
             label="Dimension Name"
             size="medium"
             name="dimensionName"
@@ -339,7 +343,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
                       ${dimension.name}
                     </option>
                   `,
-                )}
+                ) }
             </select>
             <label
               class="error"
@@ -364,7 +368,13 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
             <label class="error" for="program" name="program" data-name="program">⁎</label>
           </div>
         </div>
-      </form>
+      </form>`
+      : html`<nh-alert
+              style="margin-top: 1rem;"
+              .type=${"danger"}
+              .title=${"You have not created any input dimensions"}
+              .closable=${false}
+              .description=${"Close this dialog and create an input dimension first"}></nh-alert>`}
     `;
   }
 
@@ -373,6 +383,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     'nh-card': NHCard,
     'sl-input': SlInput,
     'sl-radio': SlRadio,
+    'nh-alert': NHAlert,
     'sl-radio-group': SlRadioGroup,
     'sl-checkbox': SlCheckbox,
   };
@@ -476,11 +487,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
         /* From test form */
 
-        :host,
-        form,
-        form > * {
-          width: 100%;
-        }
         sl-input::part(base) {
           padding: calc(1px * var(--nh-spacing-sm));
           margin-bottom: calc(1px * var(--nh-spacing-sm));
