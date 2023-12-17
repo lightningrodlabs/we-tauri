@@ -106,7 +106,13 @@ export default class CreateDimension extends NHBaseForm {
         if(validRange) {
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
             
-            const rangeRecord = await this.createRange();
+            let rangeRecord, dimensionRecord;
+            try {
+              rangeRecord = await this.sensemakerStore.createRange(this._dimensionRange);
+            } catch (error) {
+              console.log('Error creating new range for dimension: ', error);
+            }
+
             const rangeEh = new EntryRecord<Range>(rangeRecord).entryHash;
             if(!rangeEh) return
             
