@@ -194,7 +194,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     output_dimension_eh: null, // Created in the atomic fn call, leave null
   };
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    this._model.input_dimension = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
+    if(this.inputDimensions.length) this._model.input_dimension = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
   }
 
   // Form submit handler
