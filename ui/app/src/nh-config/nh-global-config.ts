@@ -13,7 +13,7 @@ import {
   NHDialog,
   NHPageHeaderCard,
 } from '@neighbourhoods/design-system-components';
-import CreateDimension from './create-dimension-form';
+import CreateDimension from './create-input-dimension-form';
 import DimensionList from './dimension-list';
 import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';

@@ -1,7 +1,6 @@
 import NHGlobalConfig from './nh-global-config'
-import CreateMethod from './create-method-form'
-import CreateDimension from './create-dimension-form'
-import MethodList from './method-list'
+import CreateDimension from './create-input-dimension-form'
+import CreateOutputDimensionMethod from './create-output-dimension-form'
 import DimensionList from './dimension-list'
 
-export { NHGlobalConfig, CreateMethod, CreateDimension , MethodList, DimensionList }
+export { NHGlobalConfig, CreateOutputDimensionMethod, CreateDimension, DimensionList }
