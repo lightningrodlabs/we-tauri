@@ -1,15 +1,12 @@
-import { html, css, PropertyValueMap, TemplateResult } from "lit";
+import { html, css, PropertyValueMap } from "lit";
 import { property, state } from "lit/decorators.js";
 
-import { AppInfo, CallZomeResponse, EntryHash, EntryHashB64, encodeHashToBase64 } from "@holochain/client";
+import { AppInfo, CallZomeResponse, EntryHash, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
 import { Dimension,  Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
 
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
-import MethodListForDimension from "./method-list";
-import { StoreSubscriber } from "lit-svelte-stores";
-import { capitalize, generateHashHTML } from "../elements/components/helpers/functions";
-import { classMap } from "lit/directives/class-map.js";
+import { capitalize } from "../elements/components/helpers/functions";
 import { FieldDefinition, FieldDefinitions, Table, TableStore } from "@adaburrows/table-web-component";
 
 type InputDimensionTableRecord = {
@@ -206,7 +203,6 @@ export default class DimensionList extends NHComponent {
   static elementDefinitions = {
     "nh-button": NHButton,
     "nh-card": NHCard,
-    "method-list-for-dimension": MethodListForDimension,
     'wc-table': Table,
   }
 
