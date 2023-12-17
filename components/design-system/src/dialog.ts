@@ -129,16 +129,15 @@ export default class NHDialog extends NHComponentShoelace {
   }
 
   renderActions() {
-    switch (true) {
-      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood', 'create-dimension'].includes(this.dialogType):
-        return html`<sl-button-group id="buttons">
-          <nh-button
-            id="secondary-action-button"
-            .size=${"md"}
-            variant=${"neutral"}
-            @click=${this.hideDialog}
-          >${this.chooseButtonText().secondary}
-          </nh-button>
+    return html`<sl-button-group id="buttons">
+        <nh-button
+          id="secondary-action-button"
+          .size=${"md"}
+          variant=${"neutral"}
+          @click=${this.hideDialog}
+        >${this.chooseButtonText().secondary}
+        </nh-button>
+        <slot name="primary-action">
           <nh-button
             id="primary-action-button"
             .size=${"md"}
@@ -147,22 +146,8 @@ export default class NHDialog extends NHComponentShoelace {
             ?disabled=${this.primaryButtonDisabled}
             >${this.chooseButtonText().primary}
           </nh-button>
-        </sl-button-group>`;
-      case 'widget-config' === this.dialogType:
-        return html`<sl-button-group id="buttons">
-          <nh-button
-          id="primary-action-button"
-          size=${"md"}
-          variant=${"primary"}
-          @click=${this.onOkClicked}
-          ?disabled=${this.primaryButtonDisabled}
-          >${this.chooseButtonText().primary}
-          </nh-button>
-        </sl-button-group>`;
-
-      default:
-        return html``;
-    }
+        </slot>
+      </sl-button-group>`;
   }
 
   render() {
