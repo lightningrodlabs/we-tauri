@@ -1,11 +1,10 @@
 import { AppInfo } from "@holochain/client";
-import { NHButton, NHCard, NHComponentShoelace } from "@neighbourhoods/design-system-components";
-import { html, css, CSSResult, PropertyValueMap } from "lit";
+import { NHBaseForm, NHButton, NHCard } from "@neighbourhoods/design-system-components";
+import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
-import { object, string, boolean, number } from 'yup';
+import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, state } from "lit/decorators.js";
-import { capitalize } from "../elements/components/helpers/functions";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 const MIN_RANGE_INT = 0;
@@ -13,22 +12,18 @@ const MAX_RANGE_INT = 4294967295;
 const MIN_RANGE_FLOAT = -Number.MAX_SAFE_INTEGER;
 const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
 
-export default class CreateDimension extends NHComponentShoelace {
+export default class CreateDimension extends NHBaseForm {
   @property()
   sensemakerStore!: SensemakerStore;
   
   @property()
   dimensionType!: "input" | "output";
-  
-  @state()
-  valid: boolean = false;
-  @state()
-  touched: boolean = false;
 
-  private _dimensionSchema = object({
+  protected get validationSchema() : ObjectSchema<any> { 
+    return object({
     name: string().min(1, "Must be at least 1 characters").required(),
     computed: boolean().required(),
-  });
+  })};
   
   private _currentMinRange : number = 0;
   private _dimensionRangeSchema = () => {
@@ -60,38 +55,16 @@ export default class CreateDimension extends NHComponentShoelace {
     min: 0,
     max: 1,
   }} as any };
+
   @state()
-  private _dimension: Partial<Dimension> = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
+  protected _model: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
 
   @property()
   submitBtn!: NHButton;
 
-  private resetInputErrorLabels(inputs: NodeListOf<any>) {
-    inputs.forEach(input => {
-      input.helpText = "";
-      input.nextElementSibling.style.opacity = 0;
-      input.nextElementSibling.style.visibility = 'hidden';
-      if(input.disabled = true) input.disabled = false;
-    });
-  }
-
-  private validateIfUntouched(inputs: NodeListOf<any>) {
-    let existsUntouched = false;
-    inputs.forEach((input) => {
-      // Just validate text field for an input dimension as range will be calculated
-      if(this.dimensionType == "output" && input.name !== "dimension-name") return
-
-      if(input.dataset.touched !== "1" && input.required) {
-        this.handleValidationError.call(this, { path: input.name, errors: ['untouched']})
-        existsUntouched = true;
-      }
-    });
-    this.touched = !existsUntouched;
-    return existsUntouched
-  }
-
   async resetForm() {
-    this._dimension = { name: "", computed: this.dimensionType == "output", range_eh: undefined };
+    super.reset();
+    
     this._numberType = "Integer";
     //@ts-ignore
     this._dimensionRange = { name: "", kind: { [this._numberType as (keyof RangeKindInteger | keyof RangeKindFloat)]: {
@@ -100,55 +73,50 @@ export default class CreateDimension extends NHComponentShoelace {
     }} as (RangeKindInteger | RangeKindFloat) };
     this._useGlobalMin = false;
     this._useGlobalMax = false;
-    this.valid = false;
-    this.touched = false;
     
-    (this.renderRoot.querySelectorAll('sl-input') as any)?.forEach(input => {
-      delete input.dataset.touched;
-      if(input.disabled = true) input.disabled = false;
-      input.requestUpdate();
-    })    
-    const checkboxes = this.renderRoot.querySelectorAll('sl-checkbox') as any;
-    checkboxes?.length && checkboxes?.forEach(checkbox => {
-      checkbox.checked = false;
-      delete checkbox.dataset.touched;
-    })
 
     this.submitBtn.loading = false;
     await this.updateComplete
   }
 
-  disable() {
-    const inputs = this.renderRoot.querySelectorAll("sl-input");
-    inputs.forEach(input => {
-      input.disabled = true;
-    });
+  // Form submit handler
+  async handleSubmit(e: Event) {
+    const isValid = await this.validateForm();
+    this.formWasSubmitted = true;
+    
+    if (isValid) {
+      // Form is valid, proceed with submission logic
+      console.log('valid! :>> ', isValid);
+      try {
+        await this.createEntries();
+      } catch (error) {
+        console.error('Could not create entries:', error)
+      }
+    } else if (this.isFormUntouched()) {
+      console.log('untouched! :>> ');
+      // Handle the case where the form is invalid and untouched
+    } else {
+      console.log('errored! :>> ');
+    }
   }
-
-  handleSubmit({validateOnly} = {validateOnly: false}) {
-    const inputs = this.renderRoot.querySelectorAll("sl-input");
-    this.resetInputErrorLabels(inputs);
-    const fieldsUntouched = this.validateIfUntouched(inputs);
-    if(fieldsUntouched) return;
+  
+  async createEntries() {
     this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
-      .catch((e) => {this.handleValidationError.call(this, e)})
       .then(async validRange => {
         if(validRange) {
-          this._dimensionSchema.validate(this._dimension)
-          .then(async _ => {
-            this.valid = true;
-            if(validateOnly) return;
             this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+            
             const rangeRecord = await this.createRange();
             const rangeEh = new EntryRecord<Range>(rangeRecord).entryHash;
             if(!rangeEh) return
             
-            this._dimension.range_eh = rangeEh;
+            this._model.range_eh = rangeEh;
             const dimensionEh = await this.createDimension()
             await this.updateComplete;
+
             this.dispatchEvent(
               new CustomEvent("dimension-created", {
-                detail: { dimensionEh, dimensionType: this.dimensionType, dimension: this._dimension },
+                detail: { dimensionEh, dimensionType: "input", dimension: this._model },
                 bubbles: true,
                 composed: true,
               })
@@ -159,36 +127,16 @@ export default class CreateDimension extends NHComponentShoelace {
                 composed: true,
               }),
             );
-          })
-          .catch((e) => {console.log('e :>> ', e);this.handleValidationError.call(this, e)})
         }
       })
 
   }
 
-  private fetchValidationErrorText({ path, errors }: any) {
-    if(errors && errors[0] == 'untouched') return path.split('-').map((word: string, i: number) => !i ? capitalize(word) : word ).join(' ') + " is required";
-    return errors[0];
-  }
+  handleInputChange(e: Event) {
+    super.handleInputChange(e);
 
-  private handleValidationError(err: { path: string, errors: string[] }) {
-    console.log("Error validating dimension for field: ", err.path);
-
-    const errorDOM = this.renderRoot.querySelectorAll("label[name=" + err.path + "]")
-    if(errorDOM.length == 0) return;
-    errorDOM.forEach((errorLabel: any) => {
-      errorLabel.style.visibility = 'visible';
-      errorLabel.style.opacity = '1';
-      
-      const slInput : any = errorLabel.previousElementSibling;
-      slInput.helpText = this.fetchValidationErrorText(err);
-    })
-  }
-
-  private onChangeValue(e: CustomEvent) {
+    // Change handler overloads
     const inputControl = (e.target as any);
-    if(!inputControl.dataset.touched) inputControl.dataset.touched = "1";
-    if(!this.touched) {this.touched = true};
 
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
@@ -209,7 +157,7 @@ export default class CreateDimension extends NHComponentShoelace {
         this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
         break;
       case 'dimension-name':
-        this._dimension['name'] = inputControl.value; 
+        this._model['name'] = inputControl.value; 
         this._dimensionRange['name'] = inputControl.value + '-range'; 
         break;
       case 'number-type':
@@ -224,7 +172,7 @@ export default class CreateDimension extends NHComponentShoelace {
         }
         break;
       default:
-        this._dimension[inputControl.name] = inputControl.value; 
+        this._model[inputControl.name] = inputControl.value; 
         break;
     }
   }
@@ -253,7 +201,7 @@ export default class CreateDimension extends NHComponentShoelace {
         cell_id,
         zome_name: 'sensemaker',
         fn_name: 'create_dimension',
-        payload: this._dimension,
+        payload: this._model,
       });
       return response;
     } catch (error) {
@@ -261,38 +209,34 @@ export default class CreateDimension extends NHComponentShoelace {
     }
   }
 
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    this._dimension.computed = (this.dimensionType == "output");
-  }
-
   render() {
     return html`
         <form>
           <div class="field">
-            <sl-input help-text=${this.dimensionType == "output" ? "Your dimension's range will be calculated automatically" : ""} label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._dimension.name} @sl-input=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
             <label class="error" for="dimension-name" name="dimension-name">⁎</label>
           </div>
           <div class="field" style="justify-content: center;">
-            <sl-radio-group @sl-change=${(e: CustomEvent) => this.onChangeValue(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
+            <sl-radio-group @sl-change=${(e: CustomEvent) => this.handleInputChange(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
               <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
               <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
             </sl-radio-group>
           </div>
           <div class="field">
-            <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
             <label class="error" for="min" name="min">⁎</label>
           </div>
           <div class="field checkbox">
             <label for="global-min" name="use-global-min">Lowest possible</label>
-            <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+            <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
           </div>
           <div class="field">
-            <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max} (e: CustomEvent) => this.onChangeValue(e)(e: CustomEvent) => this.onChangeValue(e)}></sl-input>
+            <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max}  @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
             <label class="error" for="max" name="max">⁎</label>
           </div>
           <div class="field checkbox">
             <label for="global-max" name="use-global-max">Highest possible</label>
-            <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.onChangeValue(e)}></sl-checkbox>
+            <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
           </div>
       </form>
     `;
@@ -309,7 +253,7 @@ export default class CreateDimension extends NHComponentShoelace {
 
   static get styles() {
     return [
-      super.styles as CSSResult,
+      ...super.styles as CSSResult[],
       css`
       /* Layout */
       :host {
