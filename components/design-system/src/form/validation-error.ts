@@ -2,7 +2,7 @@ import { html, css, CSSResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponent } from '../ancestors/base';
 
-export class NHValidationError extends NHComponent {
+export default class NHValidationError extends NHComponent {
   @property() message?: string;
 
   
