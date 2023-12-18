@@ -49,8 +49,9 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
   // Range will need to be calculated or created, depending on form input
   // ...so keep it in state
-  @property()
+  @state()
   inputRange!: Range & { range_eh: EntryHash };
+  
   @property()
   private _rangeNumberType: keyof RangeKindInteger | keyof RangeKindFloat = 'Integer';
   @state()
@@ -143,20 +144,19 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     this._dimensionRange = { name: this.inputRange.name, kind: this.inputRange.kind };
     this._model.range_eh = this.inputRange.range_eh;
   }
+
   // Lifecycle hook to trigger the calculation
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('inputRange')) {
-      if ( // There is a change
-        typeof changedProperties.get('inputRange') !== 'undefined'
+    if (changedProperties.has('inputDimensionRanges')) {
+      let inputRange;
+      if (
+        typeof changedProperties.get('inputDimensionRanges') == 'undefined'
       ) {
-        this.computeOutputDimensionRange();
-      } else { 
-        const inputRange = this.inputDimensionRanges[0];
+        inputRange = this.inputDimensionRanges[0];
         if(!inputRange) return;
         this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
-        
-        this.computeOutputDimensionRange();
-      }
+      } 
+      this.computeOutputDimensionRange();
     }
   }
 
@@ -233,6 +233,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       const { inputRange } = this.getInputDimensionAndRangeForOutput(inputValue);
       if(!inputRange) return;
       this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+      this.computeOutputDimensionRange();
       //@ts-ignore
     } else if ((e.target?.parentElement as any).dataset?.name === 'program') {
       this.computeOutputDimensionRange();   
