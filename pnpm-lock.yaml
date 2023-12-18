@@ -11,6 +11,9 @@ importers:
       lit:
         specifier: ^2.2.0
         version: 2.8.0
+      yup:
+        specifier: ^1.3.3
+        version: 1.3.3
     devDependencies:
       '@babel/core':
         specifier: ^7.17.2
@@ -108,9 +111,6 @@ importers:
       lit:
         specifier: ^2.2.0
         version: 2.8.0
-      yup:
-        specifier: ^1.3.2
-        version: 1.3.2
     devDependencies:
       tslib:
         specifier: ^2.6.2
@@ -9906,8 +9906,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /yup@1.3.2:
-    resolution: {integrity: sha512-6KCM971iQtJ+/KUaHdrhVr2LDkfhBtFPRnsG1P8F4q3uUVQ2RfEM9xekpha9aA4GXWJevjM10eDcPQ1FfWlmaQ==}
+  /yup@1.3.3:
+    resolution: {integrity: sha512-v8QwZSsHH2K3/G9WSkp6mZKO+hugKT1EmnMqLNUcfu51HU9MDyhlETT/JgtzprnrnQHPWsjc6MUDMBp/l9fNnw==}
     dependencies:
       property-expr: 2.0.6
       tiny-case: 1.0.3
