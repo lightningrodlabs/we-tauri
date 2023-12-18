@@ -119,14 +119,14 @@ export abstract class NHBaseForm extends NHComponentShoelace {
     this.touched = Object.fromEntries(zip(Object.keys(this._model), Object.keys(this._model).map( _ => false)));
   }
 
-  async highlightUntouchedFields() {
+  highlightUntouchedFields() {
     ((this as LitElement).renderRoot.querySelectorAll('sl-input, sl-radio-group, select') as any)?.forEach((input: SlInput) => {
       if(this.touched[input?.name || input!.dataset.name || ''] === false) input.classList.add('untouched');
       // Fields not in the model will fail escape early from the above
     })
   }
 
-  async enableAllFields() {
+  enableAllFields() {
     ((this as LitElement).renderRoot.querySelectorAll('sl-input, sl-radio-group, select') as any)?.forEach((input: SlInput) => {
       if(input.disabled = true) input.disabled = false;
     })
