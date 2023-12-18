@@ -18,6 +18,7 @@ const meta: Meta<SelectProps> = {
   },
   render: (args) => html`<nh-select
     .options=${args.options}
+    .placeholder=${args.placeholder}
   >${args.placeholder}</nh-select>`,
 };
 

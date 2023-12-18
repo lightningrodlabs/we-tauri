@@ -1,6 +1,6 @@
 import { classMap } from 'lit/directives/class-map.js';
 import { css, CSSResult, html, PropertyValueMap } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
 
 export type OptionConfig = {
@@ -11,8 +11,22 @@ export type OptionConfig = {
 export default class NHSlide extends NHComponentShoelace {
   @property()
   options: OptionConfig[] = [];
-  // @property()
-  // visible: boolean = true;
+  @state()
+  placeholder?: string = "Select your option:";
+  @state()
+  selected?: string = undefined;
+
+  handleSelected(option: OptionConfig) {
+    this.selected = option.value
+
+    this.dispatchEvent(
+      new CustomEvent("option-selected", {
+        detail: { value: option.value},
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
 
   render() {
     return html`
@@ -20,12 +34,12 @@ export default class NHSlide extends NHComponentShoelace {
         // visible: this.visible,
       })}">
         <div class="select-btn">
-            <span class="sBtn-text">Select your option</span>
+            <span class="sBtn-text">${this.selected || this.placeholder}</span>
             <i class="bx bx-chevron-down"></i>
         </div>
         <ul class="options">
           ${ this.options.map((option: OptionConfig) => 
-            html`<li class="option">
+            html`<li class="option" @click=${() => this.handleSelected(option)}>
               <span class="option-text" data-value=${option.value}>${option.label}</span>
             </li>`
             )
@@ -45,7 +59,7 @@ export default class NHSlide extends NHComponentShoelace {
     options.forEach((option) =>{
         (option as any).addEventListener("click", ()=>{
             let selectedOption = (option.querySelector(".option-text") as any).innerText;
-            (sBtn_text as HTMLElement).innerText = selectedOption;
+            this.selected = selectedOption;
             optionMenu.classList.remove("active");
         });
     });
@@ -58,6 +72,8 @@ export default class NHSlide extends NHComponentShoelace {
       .custom-select{
         width: 100%;
         max-width: 16rem;
+        border-radius: calc(1px * var(--nh-radii-base));
+        overflow: hidden;
       }
       .custom-select .select-btn{
         display: flex;
@@ -75,7 +91,10 @@ export default class NHSlide extends NHComponentShoelace {
         background: transparent !important;
       }
 
-      .custom-select .options{
+      .custom-select .options {
+        border-radius: calc(1px * var(--nh-radii-base));
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
         max-height: 12rem;
         overflow: auto;
         background-color: var(--nh-theme-bg-canvas); 
@@ -91,13 +110,13 @@ export default class NHSlide extends NHComponentShoelace {
         display: block;
       }
       .options .option, .custom-select .select-btn{
-        background-color: var(--nh-theme-bg-canvas);
         box-sizing: border-box;
         height: calc(1.5px * var(--nh-spacing-3xl));
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
       }
 
       .options .option{
+        background-color: var(--nh-theme-bg-canvas);
         display: flex;
         align-items: center;
         cursor: pointer;
@@ -106,7 +125,6 @@ export default class NHSlide extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
         background-color: var(--nh-theme-bg-canvas); 
         color: var(--nh-theme-fg-default); 
-
       }
       .option .option-text, .select-btn{
         line-height: var(--nh-line-heights-body-default);
@@ -115,8 +133,18 @@ export default class NHSlide extends NHComponentShoelace {
         font-weight: var(--nh-font-weights-body-regular);
         color: var(--nh-theme-fg-default); 
       }
+      .select-btn{
+        font-weight: var(--nh-font-weights-body-bold);
+        background: var(--nh-theme-bg-element);
+      }
+      .custom-select.active .select-btn:hover{
+        background: var(--nh-theme-bg-element);
+      }
+      .select-btn:hover{
+        background: var(--nh-theme-bg-detail);
+      }
       .options .option:hover{
-          background: var(--nh-theme-accent-default);
+        background: var(--nh-theme-accent-default);
       }
     `,
   ];
