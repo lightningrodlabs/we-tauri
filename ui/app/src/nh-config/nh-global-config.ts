@@ -35,8 +35,6 @@ export default class NHGlobalConfig extends NHComponent {
   private _dimensionForm;
 
   @state()
-  private _selectedInputDimensionRange!: Range;
-  @state()
   private _formType: 'input-dimension' | 'method' = 'input-dimension';
 
   @query("nh-button[type='submit']")
@@ -167,7 +165,6 @@ export default class NHGlobalConfig extends NHComponent {
     }
     return html`<create-output-dimension-method-form
       .sensemakerStore=${this._sensemakerStore.value}
-      .inputRange=${this._selectedInputDimensionRange}
       .inputDimensions=${this._inputDimensionList._dimensionEntries}
       .inputDimensionRanges=${this._inputDimensionList._rangeEntries}
       .submitBtn=${this.submitBtn}
