@@ -2,7 +2,7 @@ import NHTooltip from "./tooltip";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 
-customElements.define('nh-tooltip', NHTooltip)
+!customElements.get('nh-tooltip') && customElements.define('nh-tooltip', NHTooltip)
 
 export interface TooltipProps {
   text: string;
