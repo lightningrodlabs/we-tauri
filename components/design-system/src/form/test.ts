@@ -2,9 +2,9 @@ import { classMap } from 'lit/directives/class-map.js';
 import { state } from 'lit/decorators.js';
 import { CSSResult, css, html } from 'lit';
 import { NHBaseForm } from "../ancestors/base-form";
-import { ObjectSchema, object, string, boolean } from 'yup';
+import { ObjectSchema, object, string } from 'yup';
 import { SlInput, SlRadioGroup } from '@shoelace-style/shoelace';
-import { NHValidationError } from './validation-error';
+import NHValidationError from './validation-error';
 import NHButton from '../button';
 
 export default class CreateDimensionForm extends NHBaseForm {
@@ -18,20 +18,12 @@ export default class CreateDimensionForm extends NHBaseForm {
   @state()
   protected _model: any = { dimensionName: "", computed: true, range_eh: undefined };
 
-  private async handleSubmit(e: Event) {
-    e.preventDefault();
-    const isValid = await this.validateForm();
-    this.formWasSubmitted = true;
-    if (isValid) {
-      // Form is valid, proceed with submission logic
-      console.log('valid! :>> ', isValid);
-    } else if (this.isFormUntouched()) {
-      console.log('untouched! :>> ');
-      // Handle the case where the form is invalid and untouched
-    }
+  protected async handleValidSubmit() {
+      console.log('valid! :>> ');
   }
 
   private hasErrors() {
+    this.handleValidSubmit()
     return Object.keys(this.errors).length > 0;
   }
   
@@ -54,7 +46,7 @@ export default class CreateDimensionForm extends NHBaseForm {
         
         <nh-validation-error
           class="${classMap({
-            hidden: !this.showValidationErrorForField('dimensionName'),
+            // hidden: !this.shouldShowValidationErrorForField('dimensionName'),
           })}"
           .message=${this.getErrorMessage('dimensionName')}
         ></nh-validation-error>
