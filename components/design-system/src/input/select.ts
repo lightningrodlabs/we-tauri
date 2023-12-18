@@ -1,5 +1,5 @@
 import { classMap } from 'lit/directives/class-map.js';
-import { css, CSSResult, html } from 'lit';
+import { css, CSSResult, html, PropertyValueMap } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
 
@@ -11,25 +11,115 @@ export default class NHSlide extends NHComponentShoelace {
 
   render() {
     return html`
-      <div class="tooltip${classMap({
+      <div class="custom-select${classMap({
         visible: this.visible,
       })}">
-        <slot name="hoverable" class="hoverable">Hover</slot>
-        <div class="content">
-        <svg class="icon${classMap({
-          })}" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5229 2 22 6.47715 22 12C22 17.5229 17.5229 22 12 22C6.47715 22 2 17.5229 2 12ZM4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12ZM12.7071 15.2929C13.0976 15.6834 13.0976 16.3166 12.7071 16.7071C12.3166 17.0976 11.6834 17.0976 11.2929 16.7071C10.9024 16.3166 10.9024 15.6834 11.2929 15.2929C11.6834 14.9024 12.3166 14.9024 12.7071 15.2929ZM11 8C11 7.44771 11.4477 7 12 7C12.5523 7 13 7.44772 13 8V13C13 13.5523 12.5523 14 12 14C11.4477 14 11 13.5523 11 13V8Z" fill="currentColor"/>
-        </svg>
-        ${this.text}
+        <div class="select-btn">
+            <span class="sBtn-text">Select your option</span>
+            <i class="bx bx-chevron-down"></i>
         </div>
+        <ul class="options">
+            <li class="option">
+                <i class="bx bxl-github" style="color: #171515;"></i>
+                <span class="option-text">Github</span>
+            </li>
+            <li class="option">
+                <i class="bx bxl-instagram-alt" style="color: #E1306C;"></i>
+                <span class="option-text">Instagram</span>
+            </li>
+            <li class="option">
+                <i class="bx bxl-linkedin-square" style="color: #0E76A8;"></i>
+                <span class="option-text">Linkedin</span>
+            </li>
+            <li class="option">
+                <i class="bx bxl-facebook-circle" style="color: #4267B2;"></i>
+                <span class="option-text">Facebook</span>
+            </li>
+            <li class="option">
+                <i class="bx bxl-twitter" style="color: #1DA1F2;"></i>
+                <span class="option-text">Twitter</span>
+            </li>
+        </ul>
       </div>
     `;
+  }
+
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    const optionMenu = this.renderRoot.querySelector(".custom-select") as HTMLElement;
+    const selectBtn = optionMenu?.querySelector(".select-btn"),
+        options = optionMenu?.querySelectorAll(".option"),
+        sBtn_text = optionMenu?.querySelector(".sBtn-text");
+
+    selectBtn!.addEventListener("click", () => optionMenu.classList.toggle("active"));       
+    options.forEach((option) =>{
+        (option as any).addEventListener("click", ()=>{
+            let selectedOption = (option.querySelector(".option-text") as any).innerText;
+            (sBtn_text as HTMLElement).innerText = selectedOption;
+            optionMenu.classList.remove("active");
+        });
+    });
+
   }
 
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
-    
+      .custom-select{
+        width: 380px;
+        margin: 140px auto;
+      }
+      .custom-select .select-btn{
+          display: flex;
+          height: 55px;
+          background: #fff;
+          padding: 20px;
+          font-size: 18px;
+          font-weight: 400;
+          border-radius: 8px;
+          align-items: center;
+          cursor: pointer;
+          justify-content: space-between;
+          box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      }
+      .select-btn i{
+          font-size: 25px;
+          transition: 0.3s;
+      }
+      .custom-select.active .select-btn i{
+          transform: rotate(-180deg);
+      }
+      .custom-select .options{
+          position: relative;
+          padding: 20px;
+          margin-top: 10px;
+          border-radius: 8px;
+          background: #fff;
+          box-shadow: 0 0 3px rgba(0,0,0,0.1);
+          display: none;
+      }
+      .custom-select.active .options{
+          display: block;
+      }
+      .options .option{
+          display: flex;
+          height: 55px;
+          cursor: pointer;
+          padding: 0 16px;
+          border-radius: 8px;
+          align-items: center;
+          background: #fff;
+      }
+      .options .option:hover{
+          background: #F2F2F2;
+      }
+      .option i{
+          font-size: 25px;
+          margin-right: 12px;
+      }
+      .option .option-text{
+          font-size: 18px;
+          color: #333;
+      }
     `,
   ];
 }
