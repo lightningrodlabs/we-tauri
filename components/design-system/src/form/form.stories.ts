@@ -12,6 +12,9 @@ const meta: Meta<FormProps> = {
   component: "nh-form",
   argTypes: {
   },
+  parameters: { 
+    backgrounds: { default: 'surface' },
+  },
   render: (_args) => html`<nh-form></nh-form>`,
 };
 

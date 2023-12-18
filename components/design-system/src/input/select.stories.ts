@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 import { NHTooltip } from "..";
 
 customElements.define('nh-select', NHSelect)
-customElements.define('nh-tooltip', NHTooltip)
+!customElements.get('nh-tooltip') && customElements.define('nh-tooltip', NHTooltip)
 
 export interface SelectProps {
   options: OptionConfig[];
@@ -16,7 +16,9 @@ const meta: Meta<SelectProps> = {
   component: "nh-select",
   argTypes: {
     placeholder: { control: "text" }
-  
+  },
+  parameters: { 
+    backgrounds: { default: 'surface' },
   },
   render: (args) => html`<nh-select
     .options=${args.options}
@@ -57,7 +59,7 @@ export const Default: Story = {
 };
 
 export const WithTooltip: Story = {
-  render: (args) => html` <nh-tooltip .visible=${true} .text=${"Info about your field"}>
+  render: (args) => html` <nh-tooltip .visible=${true} .variant=${"primary"} .text=${"Info about your field"}>
     <nh-select
     slot="hoverable"
     .options=${args.options}
