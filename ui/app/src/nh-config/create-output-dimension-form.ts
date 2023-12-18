@@ -201,24 +201,8 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   }
 
   // Form submit handler
-  async handleSubmit(e: Event) {
-    const isValid = await this.validateForm();
-    this.formWasSubmitted = true;
-    
-    if (isValid) {
-      // Form is valid, proceed with submission logic
-      console.log('valid! :>> ', isValid);
-      try {
-        await this.createEntries();
-      } catch (error) {
-        console.error('Could not create entries:', error)
-      }
-    } else if (this.isFormUntouched()) {
-      console.log('untouched! :>> ');
-      // Handle the case where the form is invalid and untouched
-    } else {
-      console.log('errored! :>> ');
-    }
+  async handleValidSubmit() {
+    return await this.createEntries();
   }
 
   handleInputChange(e: Event) {

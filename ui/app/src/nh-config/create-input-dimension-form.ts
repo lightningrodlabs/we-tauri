@@ -82,20 +82,8 @@ export default class CreateDimension extends NHBaseForm {
   }
 
   // Form submit handler
-  async handleSubmit(e: Event) {
-    const isValid = await this.validateForm();
-    this.formWasSubmitted = true;
-    
-    if (isValid) {
-      // Form is valid, proceed with submission logic
-      console.log('valid! :>> ', isValid);
-      await this.createEntries();
-    } else if (this.isFormUntouched()) {
-      console.log('untouched! :>> ');
-      // Handle the case where the form is invalid and untouched
-    } else {
-      console.log('errored! :>> ');
-    }
+  async handleValidSubmit() {
+      return await this.createEntries()
   }
   
   async createEntries() {
@@ -140,7 +128,7 @@ export default class CreateDimension extends NHBaseForm {
 
   handleInputChange(e: Event) {
     super.handleInputChange(e);
-
+    
     // Change handler overloads
     const inputControl = (e.target as any);
 
