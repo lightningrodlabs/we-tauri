@@ -1,11 +1,11 @@
 import { AppInfo } from "@holochain/client";
-import { NHBaseForm, NHButton, NHCard } from "@neighbourhoods/design-system-components";
+import { NHBaseForm, NHButton, NHCard, NHValidationError } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, state } from "lit/decorators.js";
-import { EntryRecord } from "@holochain-open-dev/utils";
+import { classMap } from "lit/directives/class-map.js";
 
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -60,9 +60,6 @@ export default class CreateDimension extends NHBaseForm {
     max: 1,
   }} as any };
 
-  @state()
-  protected _model: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
-
   @property()
   submitBtn!: NHButton;
 
@@ -80,6 +77,7 @@ export default class CreateDimension extends NHBaseForm {
     
 
     this.submitBtn.loading = false;
+    await this.submitBtn.updateComplete;
     await this.updateComplete
   }
 
@@ -91,11 +89,7 @@ export default class CreateDimension extends NHBaseForm {
     if (isValid) {
       // Form is valid, proceed with submission logic
       console.log('valid! :>> ', isValid);
-      try {
-        await this.createEntries();
-      } catch (error) {
-        console.error('Could not create entries:', error)
-      }
+      await this.createEntries();
     } else if (this.isFormUntouched()) {
       console.log('untouched! :>> ');
       // Handle the case where the form is invalid and untouched
@@ -106,39 +100,41 @@ export default class CreateDimension extends NHBaseForm {
   
   async createEntries() {
     this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
-      .then(async validRange => {
-        if(validRange) {
-            this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-            
-            let rangeRecord, dimensionRecord;
-            try {
-              rangeRecord = await this.sensemakerStore.createRange(this._dimensionRange);
-            } catch (error) {
-              console.log('Error creating new range for dimension: ', error);
-            }
-
-            const rangeEh = new EntryRecord<Range>(rangeRecord).entryHash;
-            if(!rangeEh) return
-            
-            this._model.range_eh = rangeEh;
-            const dimensionEh = await this.createDimension()
-            await this.updateComplete;
-
-            this.dispatchEvent(
-              new CustomEvent("dimension-created", {
-                detail: { dimensionEh, dimensionType: "input", dimension: this._model },
-                bubbles: true,
-                composed: true,
-              })
-            );
-            this.dispatchEvent(
-              new CustomEvent('form-submitted', {
-                bubbles: true,
-                composed: true,
-              }),
-            );
+      .then(async _ => {
+        this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
+        
+        let rangeEh, dimensionEh;
+        try {
+          rangeEh = await this.sensemakerStore.createRange(this._dimensionRange);
+        } catch (error) {
+          console.log('Error creating new range for dimension: ', error);
         }
-      })
+
+        if(!rangeEh) return
+        this._model.range_eh = rangeEh;
+        
+        try {
+          dimensionEh = await this.sensemakerStore.createDimension(this._model as Dimension);
+        } catch (error) {
+          console.log('Error creating new dimension: ', error);
+        }
+
+        if(!dimensionEh) return
+        await this.updateComplete;
+        this.dispatchEvent(
+          new CustomEvent("dimension-created", {
+            detail: { dimensionEh, dimensionType: "input", dimension: this._model },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        this.dispatchEvent(
+          new CustomEvent('form-submitted', {
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      }).catch(e => console.log('Error validating new range for dimension: ', e))
 
   }
 
@@ -166,10 +162,6 @@ export default class CreateDimension extends NHBaseForm {
         this._useGlobalMax = !this._useGlobalMax
         this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
         break;
-      case 'dimension-name':
-        this._model['name'] = inputControl.value; 
-        this._dimensionRange['name'] = inputControl.value + '-range'; 
-        break;
       case 'number-type':
         this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat);
         //@ts-ignore
@@ -181,41 +173,6 @@ export default class CreateDimension extends NHBaseForm {
           this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
         }
         break;
-      default:
-        this._model[inputControl.name] = inputControl.value; 
-        break;
-    }
-  }
-  // TODO: replace with SM method calls
-  async createRange() {
-    try {
-      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
-      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      const response = await this.sensemakerStore.client.callZome({
-        cell_id,
-        zome_name: 'sensemaker',
-        fn_name: 'create_range',
-        payload:  this._dimensionRange,
-      });
-      return response
-    } catch (error) {
-      console.log('Error creating new range for dimension: ', error);
-    }
-  }
-  
-  async createDimension() {
-    try {
-      const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
-      const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
-      const response = await this.sensemakerStore.client.callZome({
-        cell_id,
-        zome_name: 'sensemaker',
-        fn_name: 'create_dimension',
-        payload: this._model,
-      });
-      return response;
-    } catch (error) {
-      console.log('Error creating new dimension: ', error);
     }
   }
 
