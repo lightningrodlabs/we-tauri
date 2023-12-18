@@ -26,6 +26,7 @@ export abstract class NHBaseForm extends NHComponentShoelace {
     this.formWasSubmitted = false;
     this.errors = {};
     this.resetTouchedState();
+    this.resetUntouchedFields();
     await this.updateComplete
   }
 
@@ -106,6 +107,12 @@ export abstract class NHBaseForm extends NHComponentShoelace {
     }
   }
 
+  protected resetUntouchedFields(): void {
+    ((this as LitElement).renderRoot.querySelectorAll('.untouched') as any)?.forEach((input: SlInput) => {
+      input.classList.remove('untouched');
+    })
+  }
+
   protected resetTouchedState(): void {
     //@ts-ignore
     const zip = (a, b) => a.map((k, i) => [k, b[i]]);
@@ -116,14 +123,12 @@ export abstract class NHBaseForm extends NHComponentShoelace {
     ((this as LitElement).renderRoot.querySelectorAll('sl-input, sl-radio-group, select') as any)?.forEach((input: SlInput) => {
       if(this.touched[input?.name || input!.dataset.name || ''] === false) input.classList.add('untouched');
       // Fields not in the model will fail escape early from the above
-      input.requestUpdate();
     })
   }
 
   async enableAllFields() {
     ((this as LitElement).renderRoot.querySelectorAll('sl-input, sl-radio-group, select') as any)?.forEach((input: SlInput) => {
       if(input.disabled = true) input.disabled = false;
-      input.requestUpdate();
     })
   }
 
