@@ -91,3 +91,40 @@ export const WithTooltip: Story = {
     ],
   },
 };
+export const RequiredUntouched: Story = {
+  render: (args) => html` <nh-tooltip .visible=${true} .variant=${"danger"} .text=${"This is a required field."}>
+    <nh-select
+    ?required=${true}
+    class="untouched"
+    slot="hoverable"
+    .options=${args.options}
+    .placeholder=${args.placeholder}
+    >${args.placeholder}</nh-select>
+  </nh-tooltip>
+  `,
+  args: {
+    placeholder: "Please select something:",
+    options: [
+      {
+        label: "One",
+        value: "1"
+      },
+      {
+        label: "Two",
+        value: "2"
+      },
+      {
+        label: "Three",
+        value: "3"
+      },
+      {
+        label: "Four",
+        value: "4"
+      },
+      {
+        label: "Five",
+        value: "5"
+      },
+    ],
+  },
+};

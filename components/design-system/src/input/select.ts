@@ -15,6 +15,8 @@ export default class NHSlide extends NHComponentShoelace {
   placeholder?: string = "Select your option:";
   @state()
   selected?: string = undefined;
+  @state()
+  open: boolean = false;
 
   handleSelected(option: OptionConfig) {
     this.selected = option.value
@@ -55,7 +57,7 @@ export default class NHSlide extends NHComponentShoelace {
     const selectBtn = optionMenu?.querySelector(".select-btn"),
         options = optionMenu?.querySelectorAll(".option");
 
-    selectBtn!.addEventListener("click", () => optionMenu.classList.toggle("active"));
+    selectBtn!.addEventListener("click", () => { this.open = !this.open; optionMenu.classList.toggle("active")});
     options.forEach((option) =>{
         (option as any).addEventListener("click", ()=>{
             let selectedOption = (option.querySelector(".option-text") as any).innerText;
@@ -151,6 +153,11 @@ export default class NHSlide extends NHComponentShoelace {
       .options .option:hover{
         background: var(--nh-theme-accent-default);
       }
+
+      :host(.untouched) .custom-select:not(.active) {
+        outline: 2px solid var(--nh-theme-error-default, #E95C7B);
+      }
+
     `,
   ];
 }
