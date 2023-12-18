@@ -11,6 +11,7 @@ import NHPagination from './pagination'
 import NHSlide from './slide'
 import NHSelectAvatar from './select-avatar'
 import NHTabButton from './tab-button'
+import NHTooltip from './tooltip'
 import NHValidationError from './form/validation-error'
 
 export * from './ancestors/base'
@@ -31,5 +32,6 @@ export {
   NHSelectAvatar,
   NHSlide,
   NHTabButton,
+  NHTooltip,
   NHValidationError
 }
