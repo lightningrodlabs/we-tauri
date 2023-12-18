@@ -59,7 +59,6 @@ export default class NHGlobalConfig extends NHComponent {
       _changedProperties.has('_formType') &&
       typeof _changedProperties.get('_formType') !== 'undefined'
     ) {
-      await this.updateComplete;
       this._dimensionForm = this.renderRoot.querySelector(
         this._formType == 'input-dimension'
           ? 'create-dimension'
@@ -78,7 +77,6 @@ export default class NHGlobalConfig extends NHComponent {
     return html`
       <main
         @dimension-created=${async (e: CustomEvent) => await this.onDimensionCreated(e)}
-        @method-created=${async (e: CustomEvent) => await this.onMethodCreated(e)}
       >
         <nh-page-header-card .heading=${'Neighbourhood Config'}>
           <nh-button
@@ -185,20 +183,10 @@ export default class NHGlobalConfig extends NHComponent {
 
   private onDimensionCreated = async (e: CustomEvent) => {
     if (e.detail.dimensionType == 'input') {
-      await this._dimensionForm.resetForm();
-      await this._dimensionForm.requestUpdate();
+      await this._inputDimensionList.firstUpdated()
+      return
     }
-    await this._inputDimensionList.fetchDimensionEntries();
-    await this._inputDimensionList.fetchRangeEntries();
-    await this._outputDimensionList.fetchDimensionEntries();
-    await this._outputDimensionList.fetchRangeEntries();
-  };
-
-  private onMethodCreated = async (e: CustomEvent) => {
-    console.log('method created!');
-    this._dialog.hideDialog();
-    await this._outputDimensionList.fetchRangeEntries();
-    await this._outputDimensionList.fetchDimensionEntries();
+    await this._outputDimensionList.firstUpdated()
   };
 
   static get styles() {
