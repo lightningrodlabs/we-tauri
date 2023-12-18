@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 
 import { AppInfo, CallZomeResponse, EntryHash, encodeHashToBase64 } from "@holochain/client";
 import { decode } from "@msgpack/msgpack";
-import { Dimension,  Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
+import { Dimension,  Method,  Range, RangeKind, SensemakerStore } from "@neighbourhoods/client";
 
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { capitalize } from "../elements/components/helpers/functions";
@@ -38,6 +38,9 @@ export default class DimensionList extends NHComponent {
 
   @state()
   private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
+  
+  @state()
+  private _methodEntries!: Array<Method>;
 
   // TODO: replace fetches below with new SensemakerStore method calls
   async fetchDimension(entryHash: EntryHash) : Promise<CallZomeResponse> {
@@ -120,13 +123,17 @@ export default class DimensionList extends NHComponent {
   }
 
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    await this.fetchDimensionEntries()
-    await this.fetchRangeEntries()
+    try {
+      await this.fetchDimensionEntries()
+      await this.fetchRangeEntries()
+      this._methodEntries = await this.sensemakerStore.getMethods();
+    } catch (error) {
+      console.error('Could not fetch: ', error)
+    }
   }
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-
-    if(_changedProperties.has('_dimensionEntries') || _changedProperties.has('_rangeEntries')) {
+  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if(changedProperties.has('_dimensionEntries') || changedProperties.has('_rangeEntries') || changedProperties.has('_methodEntries')) {
       if(typeof this._rangeEntries == 'undefined') return;
       
       try {
@@ -136,14 +143,23 @@ export default class DimensionList extends NHComponent {
             const range = this._rangeEntries
               .find((range: Range & { range_eh: EntryHash; }) =>
                 encodeHashToBase64(range.range_eh) === encodeHashToBase64(dimension.range_eh));
-            if(!range) {
-              return {
-                ['dimension-name']: dimension.name,
-                ['range-type']: 'N/A',
-                ['range-min']: 0,
-                ['range-max']: 0,
-              }
-            }
+                if(!range) {
+                  return {
+                    ['dimension-name']: dimension.name,
+                    ['range-type']: 'N/A',
+                    ['range-min']: 0,
+                    ['range-max']: 0,
+                  }
+                }
+            const method = (this._methodEntries || [])
+              .find((method: Method) =>
+                encodeHashToBase64(method.output_dimension_eh) === encodeHashToBase64(dimension.dimension_eh));
+            const inputDimension = !!method 
+              ? this._dimensionEntries
+                .find((dimension: Dimension & { dimension_eh: EntryHash; }) =>
+                  encodeHashToBase64(method.input_dimension_ehs[0]) === encodeHashToBase64(dimension.dimension_eh))
+              : {};
+
             const [[rangeType, rangeValues]] : any = Object.entries(range?.kind as RangeKind);
             
             return {
@@ -151,6 +167,9 @@ export default class DimensionList extends NHComponent {
               ['range-type']: rangeType,
               ['range-min']: rangeValues?.min,
               ['range-max']: rangeValues?.max,
+              // For output dimensions
+              ['input-dimension-name']: (inputDimension as any)?.name || '',
+              ['method-operation']: typeof method?.program == 'object' ? Object.keys(method.program)[0] : '',
             }
           });
         this.tableStore.records = tableRecords;
