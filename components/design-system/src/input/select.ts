@@ -8,7 +8,7 @@ export type OptionConfig = {
   value: string,
 }
 
-export default class NHSlide extends NHComponentShoelace {
+export default class NHSelect extends NHComponentShoelace {
   @property()
   options: OptionConfig[] = [];
   @state()

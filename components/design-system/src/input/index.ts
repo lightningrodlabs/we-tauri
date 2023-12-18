@@ -1,7 +1,7 @@
 import NHSelect from './select';
-// import NHProfileIdenticon from './profile-identicon';
+import NHTextInput from './text';
 
 export {
   NHSelect,
-  // NHProfileIdenticon,
+  NHTextInput
 }
