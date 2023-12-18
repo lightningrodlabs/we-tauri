@@ -13,8 +13,9 @@ import {
   Method,
   Program,
 } from '@neighbourhoods/client';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { NHAlert } from '@neighbourhoods/design-system-components';
+import { classMap } from 'lit/directives/class-map.js';
 
 const DEFAULT_RANGE_MIN = 0;
 const MIN_RANGE_INT = 0;
@@ -90,7 +91,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   private getRangeForSumComputation(min: number, max: number): RangeKind {
     const rangeMin = this._rangeNumberType == 'Integer' ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
     const rangeMax = this._rangeNumberType == 'Integer' ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
-
     switch (true) {
       case max <= min:
         throw new Error('Invalid RangeKind limits');
@@ -145,14 +145,12 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   }
   // Lifecycle hook to trigger the calculation
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('inputRange') || changedProperties.has('_model')) {
+    if (changedProperties.has('inputRange')) {
       if ( // There is a change
-        typeof changedProperties.get('inputRange') !== 'undefined' ||
-        (typeof changedProperties.get('_model') !== 'undefined' &&
-          changedProperties.get('_model').program !== this._model.program)
+        typeof changedProperties.get('inputRange') !== 'undefined'
       ) {
         this.computeOutputDimensionRange();
-      } else { // This is the first update
+      } else { 
         const inputRange = this.inputDimensionRanges[0];
         if(!inputRange) return;
         this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
@@ -164,6 +162,8 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
   @property()
   submitBtn!: NHButton;
+  @query("option.default")
+  defaultOption!: HTMLOptionElement;
 
   /* Concrete implementations of the abstract BaseForm interface */
   // Form schema
@@ -196,7 +196,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     input_dimension: undefined, // Will be put in array for zome call. Later we may support multiple input dimensions
     output_dimension_eh: null, // Created in the atomic fn call, leave null
   };
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+  protected firstUpdated(): void {
     if(this.inputDimensions.length) this._model.input_dimension = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
   }
 
@@ -233,6 +233,9 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       const { inputRange } = this.getInputDimensionAndRangeForOutput(inputValue);
       if(!inputRange) return;
       this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+      //@ts-ignore
+    } else if ((e.target?.parentElement as any).dataset?.name === 'program') {
+      this.computeOutputDimensionRange();   
     }
   }
 
@@ -241,6 +244,8 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
     this.submitBtn.loading = false;
     await this.submitBtn.updateComplete;
+    this.defaultOption.selected = true;
+    await this.firstUpdated(); 
   }
 
   async createEntries() {
@@ -322,44 +327,56 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     return html`
     ${this.inputDimensions && this.inputDimensions.length > 0 ? html`<form>
         <div class="field">
-          <sl-input
-            type="text"
-            label="Dimension Name"
-            size="medium"
-            name="dimensionName"
-            .value=${this._model.dimensionName}
-            @input=${this.handleInputChange}
-          ></sl-input>
-        </div>
-
-        <div class="field select">
-          <label for="input_dimension" data-name="input_dimension">Select input dimension:</label>
-
           <div class="row">
-            <select
-              id="choose_input_dimension"
-              name="input_dimension"
-              placeholder="Select an input dimension"
-              @change=${this.handleInputChange}
-            >
-              ${this.inputDimensions
-                .filter(dimension => !dimension.computed)
-                .map(
-                  dimension => html`
-                    <option value=${encodeHashToBase64(dimension.dimension_eh)}>
-                      ${dimension.name}
-                    </option>
-                  `,
-                ) }
-            </select>
+            <sl-input
+              type="text"
+              label="Dimension Name"
+              size="medium"
+              name="dimensionName"
+              .value=${this._model.dimensionName}
+              @input=${this.handleInputChange}
+            ></sl-input>
             <label
               class="error"
               for="input_dimension"
               name="input_dimension"
               data-name="input_dimension"
-              >⁎</label
-            >
+              >⁎</label>
           </div>
+        </div>
+
+        <div class="field select">
+          <div class="row">
+            <label for="input_dimension" data-name="input_dimension">Select input dimension:</label>
+
+            <label
+              class="error"
+              for="input_dimension"
+              name="input_dimension"
+              data-name="input_dimension"
+              >⁎</label>
+          </div>
+          <select
+            id="choose_input_dimension"
+            name="input_dimension"
+            placeholder="Select an input dimension"
+            @change=${this.handleInputChange}
+          >
+            ${this.inputDimensions
+              .filter(dimension => !dimension.computed)
+              .map(
+                (dimension, idx) => html`
+                  <option
+                    class=${classMap({
+                      default:
+                        idx == 0
+                    })}
+                    value=${encodeHashToBase64(dimension.dimension_eh)}>
+                    ${dimension.name}
+                  </option>
+                `,
+              ) }
+          </select>
         </div>
         <div class="field radio">
           <div class="row">
@@ -449,7 +466,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           height: calc(1px * var(--nh-spacing-4xl));
         }
 
-        sl-input::part(base), select {
+        select {
           width: 90%;
         }
 
@@ -496,7 +513,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           padding: calc(1px * var(--nh-spacing-sm));
           margin-bottom: calc(1px * var(--nh-spacing-sm));
           color: var(--nh-theme-fg-default);
-          background: var(--nh-theme-bg-element);
+          
         }
         sl-input::part(form-control-label),
         span.label {
@@ -513,6 +530,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           color: var(--nh-theme-input-placeholder);
           opacity: 1;
         }
+
         .hidden {
           display: none;
         }
