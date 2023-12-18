@@ -88,40 +88,47 @@ export default class NHGlobalConfig extends NHComponent {
           >
           </nh-button>
         </nh-page-header-card>
+
         <dimension-list
           id="input-dimension-list"
           .sensemakerStore=${this._sensemakerStore.value}
           .dimensionType=${'input'}
-        ></dimension-list>
-        <nh-button
-          id="add-dimension"
-          .variant=${'primary'}
-          .size=${'md'}
-          @click=${() => {
-            this._formType = 'input-dimension';
-            this._dialog.showDialog();
-            this.requestUpdate();
-          }}
         >
-          Add Dimension
-        </nh-button>
+          <nh-button
+            slot="action-button"
+            id="add-dimension"
+            .variant=${'primary'}
+            .size=${'md'}
+            @click=${() => {
+              this._formType = 'input-dimension';
+              this._dialog.showDialog();
+              this.requestUpdate();
+            }}
+          >
+            Add Dimension
+          </nh-button>
+        </dimension-list>
+
         <dimension-list
           id="output-dimension-list"
           .sensemakerStore=${this._sensemakerStore.value}
           .dimensionType=${'output'}
-        ></dimension-list>
-        <nh-button
-          id="add-dimension"
-          .variant=${'primary'}
-          .size=${'md'}
-          @click=${() => {
-            this._formType = 'method';
-            this._dialog.showDialog();
-            this.requestUpdate();
-          }}
         >
-          Add Dimension
-        </nh-button>
+          <nh-button
+            slot="action-button"
+            id="add-dimension"
+            .variant=${'primary'}
+            .size=${'md'}
+            @click=${() => {
+              this._formType = 'method';
+              this._dialog.showDialog();
+              this.requestUpdate();
+            }}
+          >
+            Add Dimension
+          </nh-button>
+        </dimension-list>
+        
         <nh-dialog
           id="create-dimension-dialog"
           .dialogType=${'confirmation'}

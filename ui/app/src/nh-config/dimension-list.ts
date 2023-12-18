@@ -209,7 +209,10 @@ export default class DimensionList extends NHComponent {
   render() {
     return html`
       <div class="content">
-        <h1>${capitalize(this.dimensionType)} Dimensions</h1>
+        <div class="title-bar">
+          <h1>${capitalize(this.dimensionType)} Dimensions</h1>
+          <slot class="action" name="action-button"></slot>
+        </div>  
         ${this.tableStore.records && this.tableStore.records.length > 0
           ? html`<wc-table .tableStore=${this.tableStore}></wc-table>`
           : 'No dimensions present'
@@ -227,13 +230,52 @@ export default class DimensionList extends NHComponent {
 
   static get styles() {
     return css`
+      .title-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      h1 {
+        display: flex;
+        flex: 10;
+      }
+
+      .action {
+        display: flex;
+        flex: 1;
+      }
+
       :host {
         display: flex;
         flex: 1;
         justify-content: center;
         align-items: center;
-      }
 
+        /** Global Table **/
+        --table-dimensions-background-color: var(--nh-theme-bg-surface); 
+        --table-dimensions-row-odd-background-color: var(--nh-theme-bg-element); 
+        --table-dimensions-row-even-background-color: var(--nh-theme-bg-element); 
+
+        --table-dimensions-cell-height: 58px;
+
+        --table-dimensions-element-padding: 4px;
+        --table-dimensions-border-spacing: calc(1px * var(--nh-spacing-sm));
+
+        --table-dimensions-height: 100%;
+        --table-dimensions-overflow-x: auto;
+        --table-dimensions-overflow-y: auto;
+
+        /* Border radius */
+        --cell-radius: 5px;
+        --table-dimensions-header-first-heading-border-radius: var(--cell-radius);
+        --table-dimensions-header-last-heading-border-radius: var(--cell-radius);
+        --table-dimensions-header-heading-border-radius: var(--cell-radius);
+        --table-dimensions-body-first-cell-border-radius: var(--cell-radius);
+        --table-dimensions-body-last-cell-border-radius: var(--cell-radius);
+        --table-dimensions-body-cell-border-radius: var(--cell-radius);
+      }
+  
       .content{
         width: 100%;
       }
