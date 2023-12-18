@@ -236,6 +236,13 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     }
   }
 
+  async resetForm() {
+    super.reset();
+
+    this.submitBtn.loading = false;
+    await this.submitBtn.updateComplete;
+  }
+  
   async createEntries() {
     this._dimensionRangeSchema()
       .validate(this._dimensionRange.kind[this._rangeNumberType])
