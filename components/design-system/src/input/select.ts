@@ -3,42 +3,33 @@ import { css, CSSResult, html, PropertyValueMap } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
 
+export type OptionConfig = {
+  label: string,
+  value: string,
+}
+
 export default class NHSlide extends NHComponentShoelace {
   @property()
-  text: string = "Tooltip Text";
-  @property()
-  visible: boolean = true;
+  options: OptionConfig[] = [];
+  // @property()
+  // visible: boolean = true;
 
   render() {
     return html`
       <div class="custom-select${classMap({
-        visible: this.visible,
+        // visible: this.visible,
       })}">
         <div class="select-btn">
             <span class="sBtn-text">Select your option</span>
             <i class="bx bx-chevron-down"></i>
         </div>
         <ul class="options">
-            <li class="option">
-                <i class="bx bxl-github" style="color: #171515;"></i>
-                <span class="option-text">Github</span>
-            </li>
-            <li class="option">
-                <i class="bx bxl-instagram-alt" style="color: #E1306C;"></i>
-                <span class="option-text">Instagram</span>
-            </li>
-            <li class="option">
-                <i class="bx bxl-linkedin-square" style="color: #0E76A8;"></i>
-                <span class="option-text">Linkedin</span>
-            </li>
-            <li class="option">
-                <i class="bx bxl-facebook-circle" style="color: #4267B2;"></i>
-                <span class="option-text">Facebook</span>
-            </li>
-            <li class="option">
-                <i class="bx bxl-twitter" style="color: #1DA1F2;"></i>
-                <span class="option-text">Twitter</span>
-            </li>
+          ${ this.options.map((option: OptionConfig) => 
+            html`<li class="option">
+              <span class="option-text" data-value=${option.value}>${option.label}</span>
+            </li>`
+            )
+          }
         </ul>
       </div>
     `;
@@ -65,60 +56,67 @@ export default class NHSlide extends NHComponentShoelace {
     super.styles as CSSResult,
     css`
       .custom-select{
-        width: 380px;
-        margin: 140px auto;
+        width: 100%;
+        max-width: 16rem;
       }
       .custom-select .select-btn{
-          display: flex;
-          height: 55px;
-          background: #fff;
-          padding: 20px;
-          font-size: 18px;
-          font-weight: 400;
-          border-radius: 8px;
-          align-items: center;
-          cursor: pointer;
-          justify-content: space-between;
-          box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
       }
-      .select-btn i{
-          font-size: 25px;
-          transition: 0.3s;
+      .custom-select .options::-webkit-scrollbar-thumb   {
+        background: var(--nh-theme-bg-detail);
+        width: 2px;
+        border: 2px solid transparent;
       }
-      .custom-select.active .select-btn i{
-          transform: rotate(-180deg);
+      .custom-select .options::-webkit-scrollbar   {
+        width: 8px;
+        background: transparent !important;
       }
+
       .custom-select .options{
-          position: relative;
-          padding: 20px;
-          margin-top: 10px;
-          border-radius: 8px;
-          background: #fff;
-          box-shadow: 0 0 3px rgba(0,0,0,0.1);
-          display: none;
+        max-height: 12rem;
+        overflow: auto;
+        background-color: var(--nh-theme-bg-canvas); 
+
+        margin-top: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+        display: none;
+        padding: 0;
+        box-sizing: border-box;
+        width: 100%;
+        position: relative;
       }
       .custom-select.active .options{
-          display: block;
+        display: block;
       }
+      .options .option, .custom-select .select-btn{
+        background-color: var(--nh-theme-bg-canvas);
+        box-sizing: border-box;
+        height: calc(1.5px * var(--nh-spacing-3xl));
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
+      }
+
       .options .option{
-          display: flex;
-          height: 55px;
-          cursor: pointer;
-          padding: 0 16px;
-          border-radius: 8px;
-          align-items: center;
-          background: #fff;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+
+        width: 100%;
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
+        background-color: var(--nh-theme-bg-canvas); 
+        color: var(--nh-theme-fg-default); 
+
+      }
+      .option .option-text, .select-btn{
+        line-height: var(--nh-line-heights-body-default);
+        font-family: var(--nh-font-families-headlines);
+        font-size: calc(1px * var(--nh-font-size-md));
+        font-weight: var(--nh-font-weights-body-regular);
+        color: var(--nh-theme-fg-default); 
       }
       .options .option:hover{
-          background: #F2F2F2;
-      }
-      .option i{
-          font-size: 25px;
-          margin-right: 12px;
-      }
-      .option .option-text{
-          font-size: 18px;
-          color: #333;
+          background: var(--nh-theme-accent-default);
       }
     `,
   ];
