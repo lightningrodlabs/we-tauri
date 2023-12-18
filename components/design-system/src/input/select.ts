@@ -14,16 +14,15 @@ export default class NHSlide extends NHComponentShoelace {
   @state()
   placeholder?: string = "Select your option:";
   @state()
-  selected?: string = undefined;
+  value?: string = undefined;
   @state()
   open: boolean = false;
 
   handleSelected(option: OptionConfig) {
-    this.selected = option.value
+    this.value = option.value
 
     this.dispatchEvent(
       new CustomEvent("option-selected", {
-        detail: { value: option.value },
         bubbles: true,
         composed: true,
       })
@@ -32,10 +31,10 @@ export default class NHSlide extends NHComponentShoelace {
 
   render() {
     return html`
-      <div class="custom-select${classMap({
+      <div data-open=${this.open} class="custom-select${classMap({
       })}">
         <div class="select-btn">
-            <span>${this.selected || this.placeholder}</span>
+            <span>${this.value || this.placeholder}</span>
             <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
@@ -52,6 +51,10 @@ export default class NHSlide extends NHComponentShoelace {
     `;
   }
 
+  reset() {
+    this.value = undefined;
+  }
+
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     const optionMenu = this.renderRoot.querySelector(".custom-select") as HTMLElement;
     const selectBtn = optionMenu?.querySelector(".select-btn"),
@@ -61,7 +64,7 @@ export default class NHSlide extends NHComponentShoelace {
     options.forEach((option) =>{
         (option as any).addEventListener("click", ()=>{
             let selectedOption = (option.querySelector(".option-text") as any).innerText;
-            this.selected = selectedOption;
+            this.value = selectedOption;
             optionMenu.classList.remove("active");
         });
     });
@@ -70,6 +73,12 @@ export default class NHSlide extends NHComponentShoelace {
   static styles: CSSResult[] = [
     super.styles as CSSResult,
     css`
+      :host {
+        --select-height: calc(1.5px * var(--nh-spacing-3xl));
+        overflow: inherit;
+        max-height: var(--select-height);
+      }
+
       .custom-select{
         width: 100%;
         min-width: 16rem;
@@ -82,15 +91,6 @@ export default class NHSlide extends NHComponentShoelace {
         cursor: pointer;
         align-items: center;
         justify-content: space-between;
-      }
-      .custom-select .options::-webkit-scrollbar-thumb   {
-        background: var(--nh-theme-bg-detail);
-        width: 2px;
-        border: 2px solid transparent;
-      }
-      .custom-select .options::-webkit-scrollbar   {
-        width: 8px;
-        background: transparent !important;
       }
 
       .custom-select .options {
@@ -110,10 +110,11 @@ export default class NHSlide extends NHComponentShoelace {
       }
       .custom-select.active .options{
         display: block;
+        z-index: 5;
       }
       .options .option, .custom-select .select-btn{
         box-sizing: border-box;
-        height: calc(1.5px * var(--nh-spacing-3xl));
+        height: var(--select-height);
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
       }
 
@@ -142,13 +143,13 @@ export default class NHSlide extends NHComponentShoelace {
       }
       .select-btn{
         font-weight: var(--nh-font-weights-body-bold);
-        background: var(--nh-theme-bg-element);
+        background: var(--nh-theme-bg-detail);
       }
       .custom-select.active .select-btn:hover{
         background: var(--nh-theme-bg-element);
       }
       .select-btn:hover{
-        background: var(--nh-theme-bg-detail);
+        background: var(--nh-theme-bg-element);
       }
       .options .option:hover{
         background: var(--nh-theme-accent-default);
@@ -158,6 +159,17 @@ export default class NHSlide extends NHComponentShoelace {
         outline: 2px solid var(--nh-theme-error-default, #E95C7B);
       }
 
+      /* scroll bar */
+
+      .custom-select .options::-webkit-scrollbar-thumb {
+        background: var(--nh-theme-bg-element);
+        width: 2px;
+        border: 2px solid transparent;
+      }
+      .custom-select .options::-webkit-scrollbar   {
+        width: 8px;
+        background: transparent !important;
+      }
     `,
   ];
 }
