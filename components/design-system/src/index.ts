@@ -16,8 +16,9 @@ import NHValidationError from './form/validation-error'
 
 export * from './ancestors/base'
 export * from './ancestors/base-form'
-
+export * from './input'
 export * from './profile'
+
 export {
   NHAlert,
   NHAssessmentWidget,
