@@ -15,16 +15,19 @@ const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
 export default class CreateDimension extends NHBaseForm {
   @property()
   sensemakerStore!: SensemakerStore;
-  
-  @property()
-  dimensionType!: "input" | "output";
 
+  /* Concrete implementations of the abstract BaseForm interface */
+  // Form schema
   protected get validationSchema() : ObjectSchema<any> { 
     return object({
     name: string().min(1, "Must be at least 1 characters").required(),
     computed: boolean().required(),
   })};
   
+  // Form model
+  @state()
+  protected _model: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
+
   private _currentMinRange : number = 0;
   private _dimensionRangeSchema = () => {
     const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
@@ -43,6 +46,7 @@ export default class CreateDimension extends NHBaseForm {
         .max(rangeMax, "The higher extent of this range cannot be higher than " + rangeMax),
     })};
 
+  // Extra form state, not in the model
   @property()
   private _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
 
