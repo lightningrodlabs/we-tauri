@@ -1,8 +1,8 @@
 import { EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { NHButton, NHCard, NHBaseForm } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
-import { SlCheckbox, SlInput, SlRadio, SlRadioGroup, SlRange } from '@scoped-elements/shoelace';
-import { object, string, boolean, number, TestFunction, ObjectSchema, array } from 'yup';
+import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from '@scoped-elements/shoelace';
+import { object, string, boolean, number, ObjectSchema } from 'yup';
 import {
   Dimension,
   Range,
@@ -242,7 +242,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     this.submitBtn.loading = false;
     await this.submitBtn.updateComplete;
   }
-  
+
   async createEntries() {
     this._dimensionRangeSchema()
       .validate(this._dimensionRange.kind[this._rangeNumberType])
@@ -401,12 +401,10 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       css`
         /* Layout */
         :host {
-          display: grid;
-          flex: 1;
           justify-content: center;
-          margin: 0 2rem;
           color: var(--nh-theme-fg-default);
           max-width: 100%;
+          width: 100%;
         }
 
         .field {
