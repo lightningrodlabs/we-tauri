@@ -219,8 +219,15 @@ export default class CreateDimension extends NHBaseForm {
     return html`
         <form>
           <div class="field">
-            <sl-input label="Dimension Name" size="medium" type="text" name="dimension-name" placeholder=${"Enter a dimension name"} required  value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
-            <label class="error" for="dimension-name" name="dimension-name">⁎</label>
+            <sl-input label="Dimension Name" size="medium" type="text" name="name" placeholder=${"Enter a dimension name"} required  value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
+            <label class="error" for="name" name="name">⁎</label>
+
+            <nh-validation-error
+            class="${classMap({
+              hidden: !this.shouldShowValidationErrorForField('name'),
+            })}"
+            .message=${this.getErrorMessage('name')}
+          ></nh-validation-error>
           </div>
           <div class="field" style="justify-content: center;">
             <sl-radio-group @sl-change=${(e: CustomEvent) => this.handleInputChange(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
@@ -255,6 +262,7 @@ export default class CreateDimension extends NHBaseForm {
     "sl-radio": SlRadio,
     "sl-radio-group": SlRadioGroup,
     "sl-checkbox": SlCheckbox,
+    'nh-validation-error': NHValidationError
   }
 
   static get styles() {
@@ -350,6 +358,10 @@ export default class CreateDimension extends NHBaseForm {
         flex-grow: 0;
         flex-basis: 8px;
         color: var(--nh-theme-error-default); 
+      }
+
+      .hidden {
+        display: none;  
       }
     `
     ]
