@@ -238,7 +238,7 @@ export default class DimensionList extends NHComponent {
 
       h1 {
         display: flex;
-        flex: 10;
+        margin-right: calc(1px * var(--nh-spacing-xl));
       }
 
       .action {

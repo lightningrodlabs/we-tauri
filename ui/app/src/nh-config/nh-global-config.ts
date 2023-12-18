@@ -105,7 +105,7 @@ export default class NHGlobalConfig extends NHComponent {
               this.requestUpdate();
             }}
           >
-            Add Dimension
+            Add
           </nh-button>
         </dimension-list>
 
@@ -125,10 +125,10 @@ export default class NHGlobalConfig extends NHComponent {
               this.requestUpdate();
             }}
           >
-            Add Dimension
+            Add
           </nh-button>
         </dimension-list>
-        
+
         <nh-dialog
           id="create-dimension-dialog"
           .dialogType=${'confirmation'}
