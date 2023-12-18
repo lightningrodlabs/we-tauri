@@ -1,5 +1,5 @@
 import { EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { NHButton, NHCard, NHBaseForm } from '@neighbourhoods/design-system-components';
+import { NHButton, NHCard, NHBaseForm, NHTooltip } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from '@scoped-elements/shoelace';
 import { object, string, boolean, number, ObjectSchema } from 'yup';
@@ -169,7 +169,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   // Form schema
   protected get validationSchema(): ObjectSchema<any> {
     return object({
-      dimensionName: string().min(1, 'Must be at least 1 characters').required(),
+      name: string().min(1, 'Must be at least 1 characters').required(),
       computed: boolean().required(),
 
       method_name: string().min(1, 'Must be at least 1 characters').required(),
@@ -185,7 +185,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   protected _model: any = {
     // This model is for an atomic call (Dimension and Method) but keep it in a flat structure for now
     // outputDimension:
-    dimensionName: '',
+    name: '',
     computed: true,
     range_eh: undefined,
     // partialMethod:
@@ -210,7 +210,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
     // Change handler overloads
     const inputValue = (e.target as any).value;
-    if ((e.target as any).name === 'dimensionName') {
+    if ((e.target as any).name === 'name') {
       this._model.method_name = `${inputValue}-method`;
       // Later the name will be removed from the method entry type
     } else if ((e.target as any).name === 'input_dimension') {
@@ -262,7 +262,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
             partialMethod: Partial<Method>;
           } = {
             outputDimension: {
-              name: this._model.dimensionName,
+              name: this._model.name,
               computed: this._model.computed,
               range_eh: range_eh,
             },
@@ -313,20 +313,25 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     ${this.inputDimensions && this.inputDimensions.length > 0 ? html`<form>
         <div class="field">
           <div class="row">
-            <sl-input
-              type="text"
-              label="Dimension Name"
-              size="medium"
-              name="dimensionName"
-              .value=${this._model.dimensionName}
-              @input=${this.handleInputChange}
-            ></sl-input>
-            <label
-              class="error"
-              for="input_dimension"
-              name="input_dimension"
-              data-name="input_dimension"
-              >⁎</label>
+
+            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')}>
+              <sl-input
+                required
+                slot="hoverable"
+                type="text"
+                label="Dimension Name"
+                size="medium"
+                name="name"
+                .value=${this._model.name}
+                @input=${this.handleInputChange}
+              ></sl-input>
+              <label
+                class="error"
+                for="input_dimension"
+                name="input_dimension"
+                data-name="input_dimension"
+                >⁎</label>
+            </nh-tooltip>
           </div>
         </div>
 
@@ -393,6 +398,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     'sl-input': SlInput,
     'sl-radio': SlRadio,
     'nh-alert': NHAlert,
+    "nh-tooltip": NHTooltip,
     'sl-radio-group': SlRadioGroup,
     'sl-checkbox': SlCheckbox,
   };
@@ -472,6 +478,11 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           gap: 1rem;
         }
 
+        sl-input.untouched::part(base), sl-input.untouched:hover::part(base) {
+          margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+          border: 2px solid var(--nh-theme-error-default, #E95C7B);
+        }
+        
         /* Labels */
 
         sl-input::part(help-text) {

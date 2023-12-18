@@ -1,11 +1,9 @@
-import { AppInfo } from "@holochain/client";
-import { NHBaseForm, NHButton, NHCard, NHValidationError } from "@neighbourhoods/design-system-components";
+import { NHBaseForm, NHButton, NHCard, NHTooltip, NHValidationError } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
 
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -168,15 +166,11 @@ export default class CreateDimension extends NHBaseForm {
     return html`
         <form>
           <div class="field">
-            <sl-input label="Dimension Name" size="medium" type="text" name="name" placeholder=${"Enter a dimension name"} required  value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
+            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')}>
+              <sl-input slot="hoverable" label="Dimension Name" size="medium" type="text" name="name" placeholder=${"Enter a dimension name"} required value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
+            </nh-tooltip>
             <label class="error" for="name" name="name">⁎</label>
-          </div>
-          <nh-validation-error
-          class="${classMap({
-            hidden: !this.shouldShowValidationErrorForField('name'),
-          })}"
-          .message=${this.getErrorMessage('name')}
-          ></nh-validation-error>
+          </div>  
 
           <div class="field" style="justify-content: center;">
             <sl-radio-group @sl-change=${(e: CustomEvent) => this.handleInputChange(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
@@ -211,7 +205,8 @@ export default class CreateDimension extends NHBaseForm {
     "sl-radio": SlRadio,
     "sl-radio-group": SlRadioGroup,
     "sl-checkbox": SlCheckbox,
-    'nh-validation-error': NHValidationError
+    "nh-tooltip": NHTooltip,
+    'nh-validation-error': NHValidationError,
   }
 
   static get styles() {
@@ -272,6 +267,11 @@ export default class CreateDimension extends NHBaseForm {
       sl-input::part(base) {
         margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
         padding: 0;
+      }
+
+      sl-input.untouched::part(base), sl-input.untouched:hover::part(base) {
+        margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
+        border: 2px solid var(--nh-theme-error-default, #E95C7B);
       }
 
       sl-input::part(form-control) {
