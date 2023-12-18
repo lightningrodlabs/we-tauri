@@ -49,7 +49,7 @@ export default class NHSlide extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-sm));
         font-weight: var(--nh-font-weights-body-regular);
 
-        background-color: var(--nh-theme-bg-detail); 
+        background-color: var(--nh-theme-bg-element); 
         border: 1px solid var(--nh-theme-accent-disabled);
         color: var(--nh-theme-fg-default); 
 

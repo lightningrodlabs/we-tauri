@@ -21,7 +21,7 @@ export default class NHSlide extends NHComponentShoelace {
 
     this.dispatchEvent(
       new CustomEvent("option-selected", {
-        detail: { value: option.value},
+        detail: { value: option.value },
         bubbles: true,
         composed: true,
       })
@@ -31,11 +31,12 @@ export default class NHSlide extends NHComponentShoelace {
   render() {
     return html`
       <div class="custom-select${classMap({
-        // visible: this.visible,
       })}">
         <div class="select-btn">
-            <span class="sBtn-text">${this.selected || this.placeholder}</span>
-            <i class="bx bx-chevron-down"></i>
+            <span>${this.selected || this.placeholder}</span>
+            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
         </div>
         <ul class="options">
           ${ this.options.map((option: OptionConfig) => 
@@ -52,10 +53,9 @@ export default class NHSlide extends NHComponentShoelace {
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     const optionMenu = this.renderRoot.querySelector(".custom-select") as HTMLElement;
     const selectBtn = optionMenu?.querySelector(".select-btn"),
-        options = optionMenu?.querySelectorAll(".option"),
-        sBtn_text = optionMenu?.querySelector(".sBtn-text");
+        options = optionMenu?.querySelectorAll(".option");
 
-    selectBtn!.addEventListener("click", () => optionMenu.classList.toggle("active"));       
+    selectBtn!.addEventListener("click", () => optionMenu.classList.toggle("active"));
     options.forEach((option) =>{
         (option as any).addEventListener("click", ()=>{
             let selectedOption = (option.querySelector(".option-text") as any).innerText;
@@ -63,7 +63,6 @@ export default class NHSlide extends NHComponentShoelace {
             optionMenu.classList.remove("active");
         });
     });
-
   }
 
   static styles: CSSResult[] = [
@@ -71,7 +70,8 @@ export default class NHSlide extends NHComponentShoelace {
     css`
       .custom-select{
         width: 100%;
-        max-width: 16rem;
+        min-width: 16rem;
+        max-width: 100%;
         border-radius: calc(1px * var(--nh-radii-base));
         overflow: hidden;
       }
@@ -132,6 +132,11 @@ export default class NHSlide extends NHComponentShoelace {
         font-size: calc(1px * var(--nh-font-size-md));
         font-weight: var(--nh-font-weights-body-regular);
         color: var(--nh-theme-fg-default); 
+      }
+
+      .chevron-down {
+        height: 16px;
+        width: 16px;
       }
       .select-btn{
         font-weight: var(--nh-font-weights-body-bold);
