@@ -1,5 +1,5 @@
 import { EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { NHButton, NHCard, NHBaseForm, NHTooltip } from '@neighbourhoods/design-system-components';
+import { NHButton, NHCard, NHBaseForm, NHTooltip, NHSelect } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from '@scoped-elements/shoelace';
 import { object, string, boolean, number, ObjectSchema } from 'yup';
@@ -162,8 +162,9 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
   @property()
   submitBtn!: NHButton;
-  @query("option.default")
-  defaultOption!: HTMLOptionElement;
+
+  @query("#choose_input_dimension")
+  nhSelect!: NHSelect;
 
   /* Concrete implementations of the abstract BaseForm interface */
   // Form schema
@@ -207,7 +208,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
   handleInputChange(e: Event) {
     super.handleInputChange(e);
-
     // Change handler overloads
     const inputValue = (e.target as any).value;
     if ((e.target as any).name === 'name') {
@@ -229,7 +229,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
     this.submitBtn.loading = false;
     await this.submitBtn.updateComplete;
-    this.defaultOption.selected = true;
+    this.nhSelect.reset();
     await this.firstUpdated(); 
   }
 
@@ -346,27 +346,22 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
               data-name="input_dimension"
               >⁎</label>
           </div>
-          <select
+          <nh-select
             id="choose_input_dimension"
             name="input_dimension"
-            placeholder="Select an input dimension"
-            @change=${this.handleInputChange}
-          >
-            ${this.inputDimensions
+            .placeholder="Select an input dimension"
+            @option-selected=${this.handleInputChange}
+            .options=${this.inputDimensions
               .filter(dimension => !dimension.computed)
               .map(
-                (dimension, idx) => html`
-                  <option
-                    class=${classMap({
-                      default:
-                        idx == 0
-                    })}
-                    value=${encodeHashToBase64(dimension.dimension_eh)}>
-                    ${dimension.name}
-                  </option>
-                `,
-              ) }
-          </select>
+                (dimension) => ({
+                  label: dimension.name,
+                  value: encodeHashToBase64(dimension.dimension_eh),
+                })
+              )
+            }
+          >
+          </nh-select>
         </div>
         <div class="field radio">
           <div class="row">
@@ -398,6 +393,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     'sl-input': SlInput,
     'sl-radio': SlRadio,
     'nh-alert': NHAlert,
+    'nh-select': NHSelect,
     "nh-tooltip": NHTooltip,
     'sl-radio-group': SlRadioGroup,
     'sl-checkbox': SlCheckbox,
