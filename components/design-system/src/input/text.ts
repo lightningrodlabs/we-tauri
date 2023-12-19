@@ -110,7 +110,6 @@ export default class NHTextInput extends NHComponent {
       .row {
         justify-content: space-between;
         align-items: center;
-        margin-bottom: calc(1px * var(--nh-spacing-sm));
       }
 
       /* Typo */

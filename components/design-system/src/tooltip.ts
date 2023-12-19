@@ -58,7 +58,7 @@ export default class NHSlide extends NHComponentShoelace {
         position: absolute;
         top: 105%;
         right: 0%;
-        width: 90%;
+        width: 100%;
 
         text-align: left;
         padding: 4px 8px 8px 8px;

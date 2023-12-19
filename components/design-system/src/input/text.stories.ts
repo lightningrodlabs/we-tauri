@@ -40,7 +40,7 @@ export const Default: Story = {
 };
 
 const tooltipRender = (args: TextInputProps) => html`
-  <nh-tooltip .visible=${true} .variant=${args.errored ? "danger" : "primary"} .text=${args.required ? "This is a required field" : "Some information"}>
+  <nh-tooltip .visible=${true} .variant=${args.errored ? "danger" : "primary"} .text=${args.required && !args.errored ? "This is a required field" : args.required && args.errored ? "This field must be filled out" : "Some information"}>
     <nh-text-input
       .required=${args.required}
       .errored=${args.errored}
