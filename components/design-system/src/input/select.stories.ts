@@ -26,7 +26,7 @@ const meta: Meta<SelectProps> = {
     .options=${args.options}
     .placeholder=${args.placeholder}
     .size=${args.size}
-  >${args.placeholder}</nh-select><p>hello</p><p>hello</p>`,
+  >${args.placeholder}</nh-select>`,
 };
 
 export default meta;

@@ -1,6 +1,6 @@
 import { classMap } from 'lit/directives/class-map.js';
 import { css, CSSResult, html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { SlInput } from '@shoelace-style/shoelace';
 import { NHComponent } from '../ancestors/base';
 
@@ -21,7 +21,9 @@ export default class NHTextInput extends NHComponent {
   errored: boolean = false;
 
   @state()
-  value?: string = undefined;
+  value?: string = '';
+  @query('input')
+  _input!: HTMLInputElement;
 
   handleInputChange(e: Event) {
     this.value = (e.target as SlInput).value
@@ -71,18 +73,15 @@ export default class NHTextInput extends NHComponent {
   }
 
   reset() {
-    this.value = undefined;
-  }
-
-  static elementDefinitions = {
-    'sl-input': SlInput,
+    this.value = '';
+    this._input.value = this.value;
   }
 
   static styles: CSSResult[] = [
     css`
       input {
         min-width: 16rem;
-        margin-top: calc(1px * var(--nh-spacing-sm));
+        margin-top: calc(1px * var(--nh-spacing-md));
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
         color: var(--nh-theme-fg-default);
         background-color: var(--nh-theme-bg-detail); 

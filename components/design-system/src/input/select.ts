@@ -64,7 +64,7 @@ export default class NHSelect extends NHComponentShoelace {
         <div data-open=${this.open} class="field custom-select${classMap({
           'errored': this.errored,
           //@ts-ignore
-          ['not-null']: this.value
+          ['not-null']: !!this.value
         })}">
           <div class="select-btn">
               <span>${this.value || this.placeholder}</span>
@@ -108,14 +108,14 @@ export default class NHSelect extends NHComponentShoelace {
     super.styles as CSSResult,
     css`
       :host {
-        --select-height: calc(2 * 1.5px * var(--nh-spacing-3xl)); /* accounts for the label */
+        --select-height: calc(2 * 1.5px * var(--nh-spacing-3xl) - 3px); /* accounts for the label (2*) and borders (-3px) */
         overflow: inherit;
         max-height: var(--select-height);
       }
 
       .custom-select{
         width: 100%;
-        min-width: 16rem;
+        min-width: 18rem;
         max-width: 100%;
         border-radius: calc(1px * var(--nh-radii-base));
         overflow: hidden;
