@@ -1,9 +1,10 @@
-import { NHBaseForm, NHButton, NHCard, NHTooltip, NHValidationError } from "@neighbourhoods/design-system-components";
+import { NHBaseForm, NHButton, NHCard, NHTextInput, NHTooltip, NHValidationError } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
@@ -165,14 +166,21 @@ export default class CreateDimension extends NHBaseForm {
   render() {
     return html`
         <form>
-          <div class="field">
-            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')}>
-              <sl-input slot="hoverable" label="Dimension Name" size="medium" type="text" name="name" placeholder=${"Enter a dimension name"} required value=${this._model.name} @sl-input=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
-            </nh-tooltip>
-            <label class="error" for="name" name="name">⁎</label>
-          </div>  
+          <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
+            <nh-text-input
+              .errored=${this.shouldShowValidationErrorForField('name')}
+              .size=${"medium"}
+              slot="hoverable"
+              .label=${"Dimension Name"}
+              .name=${"name"}
+              .placeholder=${"Enter a dimension name"}
+              .required=${true}
+              .value=${this._model.name}
+              @change=${(e: CustomEvent) => this.handleInputChange(e)}
+            ></nh-text-input>
+          </nh-tooltip>
 
-          <div class="field" style="justify-content: center;">
+          <div class="field radio">
             <sl-radio-group @sl-change=${(e: CustomEvent) => this.handleInputChange(e)} label=${"Select a number type"} data-name=${"number-type"} value=${this._numberType}>
               <sl-radio .checked=${this._numberType == "Integer"} value="Integer">Integer</sl-radio>
               <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
@@ -205,6 +213,7 @@ export default class CreateDimension extends NHBaseForm {
     "sl-radio": SlRadio,
     "sl-radio-group": SlRadioGroup,
     "sl-checkbox": SlCheckbox,
+    "nh-text-input": NHTextInput,
     "nh-tooltip": NHTooltip,
     'nh-validation-error': NHValidationError,
   }
@@ -225,6 +234,10 @@ export default class CreateDimension extends NHBaseForm {
       .field, .field-row {
         display: flex;
         margin-bottom: calc(1px * var(--nh-spacing-md));
+      }
+
+      .field.radio {
+        justify-content: center; margin-top: 8px;
       }
 
       form {

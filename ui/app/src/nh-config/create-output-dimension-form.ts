@@ -1,5 +1,5 @@
 import { EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { NHButton, NHCard, NHBaseForm, NHTooltip, NHSelect } from '@neighbourhoods/design-system-components';
+import { NHButton, NHCard, NHBaseForm, NHTooltip, NHSelect, NHTextInput } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult, PropertyValueMap } from 'lit';
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from '@scoped-elements/shoelace';
 import { object, string, boolean, number, ObjectSchema } from 'yup';
@@ -311,58 +311,44 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   render() {
     return html`
     ${this.inputDimensions && this.inputDimensions.length > 0 ? html`<form>
-        <div class="field">
-          <div class="row">
 
-            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')}>
-              <sl-input
-                required
+            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
+              <nh-text-input
+              .errored=${this.shouldShowValidationErrorForField('name')}
+                .size=${"medium"}
                 slot="hoverable"
-                type="text"
-                label="Dimension Name"
-                size="medium"
-                name="name"
+                .label=${"Dimension Name"}
+                .name=${"name"}
+                .placeholder=${"Enter a dimension name"}
+                .required=${true}
                 .value=${this._model.name}
-                @input=${this.handleInputChange}
-              ></sl-input>
-              <label
-                class="error"
-                for="input_dimension"
-                name="input_dimension"
-                data-name="input_dimension"
-                >⁎</label>
+                @change=${(e: CustomEvent) => this.handleInputChange(e)}
+              ></nh-text-input>
             </nh-tooltip>
-          </div>
-        </div>
 
-        <div class="field select">
-          <div class="row">
-            <label for="input_dimension" data-name="input_dimension">Select input dimension:</label>
-
-            <label
-              class="error"
-              for="input_dimension"
-              name="input_dimension"
-              data-name="input_dimension"
-              >⁎</label>
-          </div>
-          <nh-select
-            id="choose_input_dimension"
-            name="input_dimension"
-            .placeholder="Select an input dimension"
-            @option-selected=${this.handleInputChange}
-            .options=${this.inputDimensions
-              .filter(dimension => !dimension.computed)
-              .map(
-                (dimension) => ({
-                  label: dimension.name,
-                  value: encodeHashToBase64(dimension.dimension_eh),
-                })
-              )
-            }
-          >
-          </nh-select>
-        </div>
+            <nh-tooltip class="tooltip-overflow" .visible=${this.shouldShowValidationErrorForField('input_dimension')} .text=${this.getErrorMessage('input_dimension')} .variant=${"danger"}>
+              <nh-select
+                .errored=${this.shouldShowValidationErrorForField('input_dimension')}
+                .size=${"medium"}
+                slot="hoverable"
+                .required=${true}
+                id="choose_input_dimension"
+                name="input_dimension"
+                .placeholder=${"Select an input dimension"}
+                @change=${this.handleInputChange}
+                .options=${this.inputDimensions
+                  .filter(dimension => !dimension.computed)
+                  .map(
+                    (dimension) => ({
+                      label: dimension.name,
+                      value: encodeHashToBase64(dimension.dimension_eh),
+                    })
+                  )
+                }
+              >
+              </nh-select>
+            </nh-tooltip>
+            
         <div class="field radio">
           <div class="row">
             <sl-radio-group
@@ -374,7 +360,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
               <sl-radio .checked=${this._model.program == 'AVG'} value="AVG">AVG</sl-radio>
               <sl-radio .checked=${this._model.program == 'SUM'} value="SUM">SUM</sl-radio>
             </sl-radio-group>
-            <label class="error" for="program" name="program" data-name="program">⁎</label>
           </div>
         </div>
       </form>`
@@ -394,6 +379,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     'sl-radio': SlRadio,
     'nh-alert': NHAlert,
     'nh-select': NHSelect,
+    "nh-text-input": NHTextInput,
     "nh-tooltip": NHTooltip,
     'sl-radio-group': SlRadioGroup,
     'sl-checkbox': SlCheckbox,
@@ -423,6 +409,10 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           justify-content:space-between;
           align-items: center;
         }
+        .radio .row {
+          justify-content: center;
+          margin-top: calc(1px * var(--nh-spacing-md));
+        }
 
         form {
           padding: 0;
@@ -440,15 +430,15 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
         /* Fields */
 
-        sl-radio-group::part(base) {
-          display: flex;
-          gap: calc(1px * var(--nh-spacing-md));
-        }
-
         sl-radio::part(label) {
           color: var(--nh-theme-fg-default);
         }
 
+        .tooltip-overflow {
+          --select-height: calc(2 * 1.5px * var(--nh-spacing-3xl) - 3px); /* accounts for the label (2*) and borders (-3px) */
+          overflow: inherit;
+          max-height: var(--select-height);
+        }
         select {
           height: calc(1px * var(--nh-spacing-4xl));
         }
@@ -527,6 +517,10 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           display: none;
         }
 
+        sl-radio-group::part(base) {
+          display: flex;
+          gap: calc(1px * var(--nh-spacing-md));
+        }
         sl-radio::part(control) {
           color: var(--nh-theme-accent-default);
           border-color: var(--nh-theme-accent-default);
