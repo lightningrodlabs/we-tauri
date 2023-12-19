@@ -10,11 +10,22 @@ export type OptionConfig = {
 
 export default class NHSelect extends NHComponentShoelace {
   @property()
+  name: string = "Field";
+  @property()
+  label?: string = "Your field";
+  @property()
   options: OptionConfig[] = [];
-  @state()
+  @property()
   placeholder?: string = "Select your option:";
   @property()
   size: "medium" | "large" = "medium";
+  @property()
+  required: boolean = false;
+  @property()
+  disabled: boolean = false;
+  @property()
+  errored: boolean = false;
+
   @state()
   value?: string = undefined;
   @state()
@@ -24,7 +35,7 @@ export default class NHSelect extends NHComponentShoelace {
     this.value = option.value
 
     this.dispatchEvent(
-      new CustomEvent("option-selected", {
+      new CustomEvent("change", {
         bubbles: true,
         composed: true,
       })
@@ -33,26 +44,44 @@ export default class NHSelect extends NHComponentShoelace {
 
   render() {
     return html`
-      <div data-open=${this.open} class="field custom-select${classMap({
-        [this.size]: this.size,
-        //@ts-ignore
-        ['not-null']: this.value
-      })}">
-        <div class="select-btn">
-            <span>${this.value || this.placeholder}</span>
-            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-            </svg>
-        </div>
-        <ul class="options">
-          ${ this.options.map((option: OptionConfig) => 
-            html`<li class="option" @click=${() => this.handleSelected(option)}>
-              <span class="option-text" data-value=${option.value}>${option.label}</span>
-            </li>`
-            )
-          }
-        </ul>
+    <div class="field${classMap({
+      [this.size]: this.size,
+    })}">
+      <div class="row">
+          <label
+            for=${this.name}
+          >${this.label}</label>
+        ${ this.required
+          ? html`<label
+            class="reqd"
+            for=${this.name}
+            name=${this.name}
+            data-name=${this.name}
+          >⁎</label>`
+          : null
+        }
       </div>
+        <div data-open=${this.open} class="field custom-select${classMap({
+          'errored': this.errored,
+          //@ts-ignore
+          ['not-null']: this.value
+        })}">
+          <div class="select-btn">
+              <span>${this.value || this.placeholder}</span>
+              <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
+          </div>
+          <ul class="options">
+            ${ this.options.map((option: OptionConfig) =>
+              html`<li class="option" @click=${() => this.handleSelected(option)}>
+                <span class="option-text" data-value=${option.value}>${option.label}</span>
+              </li>`
+              )
+            }
+          </ul>
+        </div>
+    </div>
     `;
   }
 
@@ -79,7 +108,9 @@ export default class NHSelect extends NHComponentShoelace {
     super.styles as CSSResult,
     css`
       :host {
+        --select-height: calc(2 * 1.5px * var(--nh-spacing-3xl)); /* accounts for the label */
         overflow: inherit;
+        max-height: var(--select-height);
       }
 
       .custom-select{
@@ -88,12 +119,20 @@ export default class NHSelect extends NHComponentShoelace {
         max-width: 100%;
         border-radius: calc(1px * var(--nh-radii-base));
         overflow: hidden;
+        margin-top: calc(1px * var(--nh-spacing-sm));
       }
       .custom-select .select-btn{
         display: flex;
         cursor: pointer;
         align-items: center;
         justify-content: space-between;
+        border: 1px solid var(--nh-theme-accent-disabled);
+        border-radius: calc(1px * var(--nh-radii-base));
+      }
+      .custom-select.active .select-btn {
+        border-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
       }
 
       .custom-select .options {
@@ -131,27 +170,69 @@ export default class NHSelect extends NHComponentShoelace {
         background-color: var(--nh-theme-bg-canvas); 
         color: var(--nh-theme-fg-default); 
       }
-      .option .option-text, .select-btn{
-        line-height: var(--nh-line-heights-body-default);
-        font-family: var(--nh-font-families-headlines);
-        font-size: calc(1px * var(--nh-font-size-md));
-        font-weight: var(--nh-font-weights-body-regular);
-        color: var(--nh-theme-fg-default); 
-      }
+
       .select-btn span {
         margin-right: 8px;
       }
 
+      /* Layout */
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .field {
+        margin-top: calc(1px * var(--nh-spacing-md));
+        flex-direction: column;
+      }
+
+      /* Typo */
+
+      label:not(.reqd), .option .option-text, .select-btn {
+        font-size: calc(1px * var(--nh-font-size-base));
+        font-family: var(--nh-font-families-body);
+        font-weight: var(--nh-font-weights-body-regular);
+        line-height: normal;
+        color: var(--nh-theme-fg-default);
+      }
+
+      .custom-select:not(.not-null) .select-btn {
+        color: #9E9E9E; 
+      }
+      
+      .field.large label:not(.reqd) {
+        font-size: calc(1px * var(--nh-font-size-lg));
+        font-weight: var(--nh-font-weights-body-bold);
+      }
+
+      /* Labels */
+      
+      label {
+        padding: 0;
+      }
+    
+      label.reqd {
+        height: 100%;
+        align-items: center;
+        padding-left: 8px;
+        flex: 1;
+        flex-grow: 0;
+        flex-basis: 8px;
+        color: var(--nh-theme-error-default);
+      }
+
       /* Sizes */
+
       .field.medium .select-btn {
-        --scale: 1px;
+        --scale: 1.5px;
       }
       .field.large .select-btn {
-        --scale: 1.5px;
-        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
+        --scale: 2px;
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-xl));
       }
       .field .select-btn {
-        height: calc(var(--scale) * 40px);
+        height: calc(var(--scale) * var(--nh-spacing-3xl));
       }
 
       .field.medium .select-btn {
@@ -166,6 +247,7 @@ export default class NHSelect extends NHComponentShoelace {
       .chevron-down {
         height: 16px;
         width: 16px;
+        color: var(--nh-theme-accent-emphasis);
       }
 
       /* Colors */
@@ -183,7 +265,7 @@ export default class NHSelect extends NHComponentShoelace {
         background: var(--nh-theme-accent-default);
       }
 
-      :host(.untouched) .custom-select:not(.not-null):not(.active) {
+      .field.errored.custom-select:not(.not-null):not(.active) {
         outline: 2px solid var(--nh-theme-error-default, #E95C7B);
       }
 

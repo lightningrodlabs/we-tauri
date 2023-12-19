@@ -83,7 +83,7 @@ export default class NHTextInput extends NHComponent {
       input {
         min-width: 16rem;
         margin-top: calc(1px * var(--nh-spacing-sm));
-        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-sm));
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
         color: var(--nh-theme-fg-default);
         background-color: var(--nh-theme-bg-detail); 
         border-radius:  calc(1px * var(--nh-radii-base));
