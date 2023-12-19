@@ -120,7 +120,7 @@ export abstract class NHBaseForm extends NHComponentShoelace {
   }
 
   highlightUntouchedFields() {
-    ((this as LitElement).renderRoot.querySelectorAll('sl-input, sl-radio-group, select') as any)?.forEach((input: SlInput) => {
+    ((this as LitElement).renderRoot.querySelectorAll('nh-text-input, sl-radio-group, nh-select') as any)?.forEach((input: SlInput) => {
       if(this.touched[input?.name || input!.dataset.name || ''] === false) input.classList.add('untouched');
       // Fields not in the model will fail escape early from the above
     })
