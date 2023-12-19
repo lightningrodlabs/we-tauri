@@ -11,6 +11,7 @@ export interface TextInputProps {
   placeholder: string;
   errored: boolean;
   required: boolean;
+  size: "medium" | "large";
 }
 
 const meta: Meta<TextInputProps> = {
@@ -18,6 +19,7 @@ const meta: Meta<TextInputProps> = {
   component: "nh-text-input",
   argTypes: {
     placeholder: { control: "text" },
+    size: { options: ["medium", "large"], control: { type: "radio" } },
   },
   parameters: {
     backgrounds: { default: "surface" },
@@ -26,6 +28,7 @@ const meta: Meta<TextInputProps> = {
     .placeholder=${args.placeholder}
     .required=${args.required}
     .errored=${args.errored}
+    .size=${args.size}
   ></nh-text-input>`,
 };
 
@@ -36,6 +39,7 @@ type Story = StoryObj<TextInputProps>;
 export const Default: Story = {
   args: {
     placeholder: "Type here",
+    size: "medium"
   },
 };
 
@@ -45,6 +49,7 @@ const tooltipRender = (args: TextInputProps) => html`
       .required=${args.required}
       .errored=${args.errored}
       .placeholder=${args.placeholder}
+      .size=${args.size}
       slot="hoverable"
     ></nh-text-input>
   </nh-tooltip>
@@ -56,6 +61,7 @@ export const WithTooltip: Story = {
     placeholder: "Type here",
     required: false,
     errored: false,
+    size: "medium"
   },
 };
 
@@ -65,6 +71,7 @@ export const WithTooltipReqd: Story = {
     placeholder: "Type here",
     required: true,
     errored: false,
+    size: "medium"
   },
 };
 
@@ -74,5 +81,6 @@ export const RequiredErrored: Story = {
     placeholder: "Type here",
     required: true,
     errored: true,
+    size: "medium"
   },
 };

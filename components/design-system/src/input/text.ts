@@ -2,14 +2,15 @@ import { classMap } from 'lit/directives/class-map.js';
 import { css, CSSResult, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { SlInput } from '@shoelace-style/shoelace';
-import { NHComponent } from 'components/design-system/dist';
-
+import { NHComponent } from '../ancestors/base';
 
 export default class NHTextInput extends NHComponent {
   @property()
   name: string = "Field";
   @property()
   label?: string = "Your field";
+  @property()
+  size: "medium" | "large" = "medium";
   @property()
   placeholder?: string = "Select your option:";
   @property()
@@ -36,7 +37,8 @@ export default class NHTextInput extends NHComponent {
   render() {
     return html`
     <div class="field${classMap({
-      'errored': this.errored
+      'errored': this.errored,
+      [this.size]: this.size
     })}">
       <div class="row">
           <label
@@ -63,8 +65,6 @@ export default class NHTextInput extends NHComponent {
             ?required=${this.required}
             @input=${this.handleInputChange}
             value=${this.value}
-            size="medium"
-            slot=${this.required ? "hoverable" : null}
           ></input>
       </div>
     `;
@@ -83,12 +83,23 @@ export default class NHTextInput extends NHComponent {
       input {
         min-width: 16rem;
         margin-top: calc(1px * var(--nh-spacing-sm));
-        
-        padding: calc(1px * var(--nh-spacing-sm));
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-sm));
         color: var(--nh-theme-fg-default);
         background-color: var(--nh-theme-bg-detail); 
         border-radius:  calc(1px * var(--nh-radii-base));
         border: 1px solid var(--nh-theme-accent-disabled);
+      }
+
+      /* Sizes */
+      .field.medium input {
+        --scale: 1px;
+      }
+      .field.large input {
+        --scale: 1.5px;
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
+      }
+      .field input {
+        height: calc(var(--scale) * var(--nh-spacing-3xl));
       }
 
       .field:hover input{
@@ -121,6 +132,12 @@ export default class NHTextInput extends NHComponent {
         line-height: normal;
         color: var(--nh-theme-fg-default);
       }
+      
+      .field.large input::placeholder, .field.large label:not(.reqd) {
+        font-size: calc(1px * var(--nh-font-size-lg));
+        font-weight: var(--nh-font-weights-body-bold);
+      }
+
       input::placeholder {
         color: #9E9E9E;
       }

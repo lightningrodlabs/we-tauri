@@ -9,13 +9,15 @@ customElements.define('nh-select', NHSelect)
 export interface SelectProps {
   options: OptionConfig[];
   placeholder: string;
+  size: "medium" | "large";
 }
 
 const meta: Meta<SelectProps> = {
   title: "NHComponent/Input/Select",
   component: "nh-select",
   argTypes: {
-    placeholder: { control: "text" }
+    placeholder: { control: "text" },
+    size: { options: ["medium", "large"], control: { type: "radio" } },
   },
   parameters: { 
     backgrounds: { default: 'surface' },
@@ -23,7 +25,8 @@ const meta: Meta<SelectProps> = {
   render: (args) => html`<nh-select
     .options=${args.options}
     .placeholder=${args.placeholder}
-  >${args.placeholder}</nh-select>`,
+    .size=${args.size}
+  >${args.placeholder}</nh-select><p>hello</p><p>hello</p>`,
 };
 
 export default meta;
@@ -33,6 +36,7 @@ type Story = StoryObj<SelectProps>;
 export const Default: Story = {
   args: {
     placeholder: "Select dimension:",
+    size: "medium",
     options: [
       {
         label: "One",
@@ -64,11 +68,13 @@ export const WithTooltip: Story = {
     slot="hoverable"
     .options=${args.options}
     .placeholder=${args.placeholder}
+    .size=${args.size}
     >${args.placeholder}</nh-select>
   </nh-tooltip>
   `,
   args: {
     placeholder: "Please select something:",
+    size: "medium",
     options: [
       {
         label: "One",
@@ -101,11 +107,13 @@ export const RequiredUntouched: Story = {
     slot="hoverable"
     .options=${args.options}
     .placeholder=${args.placeholder}
+    .size=${args.size}
     >${args.placeholder}</nh-select>
   </nh-tooltip>
   `,
   args: {
     placeholder: "Please select something:",
+    size: "medium",
     options: [
       {
         label: "One",
