@@ -220,7 +220,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       this.computeOutputDimensionRange();
       //@ts-ignore
     } else if ((e.target?.parentElement as any).dataset?.name === 'program') {
-      this.computeOutputDimensionRange();   
+      this.computeOutputDimensionRange();
     }
   }
 
@@ -335,6 +335,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
                 id="choose_input_dimension"
                 name="input_dimension"
                 .placeholder=${"Select an input dimension"}
+                .label=${"Input dimension"}
                 @change=${this.handleInputChange}
                 .options=${this.inputDimensions
                   .filter(dimension => !dimension.computed)
