@@ -3,24 +3,29 @@ import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { NHTooltip } from "..";
 
-customElements.define('nh-text-input', NHTextInput)
-!customElements.get('nh-tooltip') && customElements.define('nh-tooltip', NHTooltip)
+customElements.define("nh-text-input", NHTextInput);
+!customElements.get("nh-tooltip") &&
+  customElements.define("nh-tooltip", NHTooltip);
 
 export interface TextInputProps {
   placeholder: string;
+  errored: boolean;
+  required: boolean;
 }
 
 const meta: Meta<TextInputProps> = {
   title: "NHComponent/Input/TextInput",
   component: "nh-text-input",
   argTypes: {
-    placeholder: { control: "text" }
+    placeholder: { control: "text" },
   },
-  parameters: { 
-    backgrounds: { default: 'surface' },
+  parameters: {
+    backgrounds: { default: "surface" },
   },
   render: (args) => html`<nh-text-input
     .placeholder=${args.placeholder}
+    .required=${args.required}
+    .errored=${args.errored}
   ></nh-text-input>`,
 };
 
@@ -30,33 +35,44 @@ type Story = StoryObj<TextInputProps>;
 
 export const Default: Story = {
   args: {
-    placeholder: "Here is your field:",
+    placeholder: "Type here",
   },
 };
 
-export const WithTooltip: Story = {
-  render: (args) => html` <nh-tooltip .visible=${true} .variant=${"primary"} .text=${"Info about your field"}>
+const tooltipRender = (args: TextInputProps) => html`
+  <nh-tooltip .visible=${true} .variant=${args.errored ? "danger" : "primary"} .text=${args.required ? "This is a required field" : "Some information"}>
     <nh-text-input
-    slot="hoverable"
-    .placeholder=${args.placeholder}
+      .required=${args.required}
+      .errored=${args.errored}
+      .placeholder=${args.placeholder}
+      slot="hoverable"
     ></nh-text-input>
   </nh-tooltip>
-  `,
+`;
+
+export const WithTooltip: Story = {
+  render: tooltipRender,
   args: {
-    placeholder: "Please text something:",
+    placeholder: "Type here",
+    required: false,
+    errored: false,
   },
 };
-export const RequiredUntouched: Story = {
-  render: (args) => html` <nh-tooltip .visible=${true} .variant=${"danger"} .text=${"This is a required field."}>
-    <nh-text-input
-    ?required=${true}
-    class="untouched"
-    slot="hoverable"
-    .placeholder=${args.placeholder}
-    ></nh-text-input>
-  </nh-tooltip>
-  `,
+
+export const WithTooltipReqd: Story = {
+  render: tooltipRender,
   args: {
-    placeholder: "Please text something:",
+    placeholder: "Type here",
+    required: true,
+    errored: false,
+  },
+};
+
+export const RequiredErrored: Story = {
+  render: tooltipRender,
+  args: {
+    placeholder: "Type here",
+    required: true,
+    errored: true,
   },
 };
