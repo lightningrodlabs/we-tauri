@@ -155,6 +155,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
         inputRange = this.inputDimensionRanges[0];
         if(!inputRange) return;
         this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+        this._rangeNumberType = Object.keys(inputRange.kind)[0] as keyof RangeKindInteger | keyof RangeKindFloat;
       } 
       this.computeOutputDimensionRange();
     }
@@ -217,6 +218,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       const { inputRange } = this.getInputDimensionAndRangeForOutput(inputValue);
       if(!inputRange) return;
       this.inputRange = { name: inputRange.name, kind: inputRange.kind, range_eh: inputRange.range_eh} as Range & {range_eh: EntryHash};
+      this._rangeNumberType = Object.keys(inputRange.kind)[0] as keyof RangeKindInteger | keyof RangeKindFloat
       this.computeOutputDimensionRange();
       //@ts-ignore
     } else if ((e.target?.parentElement as any).dataset?.name === 'program') {
