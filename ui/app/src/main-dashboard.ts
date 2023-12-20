@@ -36,7 +36,7 @@ import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-setting
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
-import { NHGlobalConfig } from './nh-global-config';
+import { NHGlobalConfig } from './nh-config';
 
 export class MainDashboard extends NHComponentShoelace {
   @contextProvided({ context: matrixContext, subscribe: true })

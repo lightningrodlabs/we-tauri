@@ -4,7 +4,6 @@ import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/sho
 import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
 
 const MIN_RANGE_INT = 0;
 const MAX_RANGE_INT = 4294967295;
