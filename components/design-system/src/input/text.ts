@@ -60,6 +60,8 @@ export default class NHTextInput extends NHComponent {
 
         </div>
           <input
+            autoComplete="off"
+            aria-autocomplete="none"
             disabled=${this.disabled}
             type="text"
             name=${this.name}
@@ -96,7 +98,7 @@ export default class NHTextInput extends NHComponent {
       .field.medium input {
         --scale: 1px;
       }
-      
+
       .field.large input {
         --scale: 1.5px;
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
