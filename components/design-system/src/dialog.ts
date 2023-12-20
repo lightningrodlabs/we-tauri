@@ -17,6 +17,7 @@ export enum DialogType {
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
   createDimension = 'create-dimension',
+  inputForm = 'input-form',
 }
 
 function preventOverlayClose(event: CustomEvent) : void {
@@ -158,8 +159,8 @@ export default class NHDialog extends NHComponentShoelace {
       <sl-dialog
         id="main"
         class="dialog-scrolling ${classMap({
-          large: this.size == 'large',
-          medium: this.size == 'medium',
+          [this.size]: !!this.size,
+          [this.dialogType]: !!this.dialogType,
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
@@ -290,6 +291,20 @@ export default class NHDialog extends NHComponentShoelace {
       #main::part(close-button) {
         display: none;
       }
+
+      /* Form type */
+      
+      #main.input-form::part(panel) {
+        min-width: 24rem;
+      }
+
+      #main.input-form::part(header) {
+        height: 1px;
+      }
+      #main.input-form::part(footer) {
+        height: 4.5rem;
+      }
+
       ::slotted(div), #buttons {
         display: flex;
         justify-content: center;
