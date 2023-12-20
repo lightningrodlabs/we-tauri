@@ -123,7 +123,7 @@ export default class NHGlobalConfig extends NHComponent {
 
         <nh-dialog
           id="create-dimension-dialog"
-          .dialogType=${'confirmation'}
+          .dialogType=${'input-form'}
           .size=${'medium'}
           @form-submitted=${(e: CustomEvent) => { (e.currentTarget as NHDialog).hideDialog(); this._dimensionForm.resetForm() }}
         >
