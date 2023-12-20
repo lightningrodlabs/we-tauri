@@ -40,7 +40,8 @@ export default class NHTextInput extends NHComponent {
     return html`
     <div class="field${classMap({
       'errored': this.errored,
-      [this.size]: this.size
+      [this.size]: this.size,
+      'disabled': !!this.disabled
     })}">
       <div class="row">
           <label
@@ -59,6 +60,7 @@ export default class NHTextInput extends NHComponent {
 
         </div>
           <input
+            disabled=${this.disabled}
             type="text"
             name=${this.name}
             id=${this.name}
@@ -90,13 +92,16 @@ export default class NHTextInput extends NHComponent {
       }
 
       /* Sizes */
+
       .field.medium input {
         --scale: 1px;
       }
+      
       .field.large input {
         --scale: 1.5px;
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
       }
+
       .field input {
         height: calc(var(--scale) * var(--nh-spacing-3xl));
       }
@@ -104,6 +109,7 @@ export default class NHTextInput extends NHComponent {
       .field:hover input{
         background: var(--nh-theme-bg-element);
       }
+
       .field input:focus-visible{
         outline: 1px solid var(--nh-theme-accent-default);
       }
@@ -160,6 +166,17 @@ export default class NHTextInput extends NHComponent {
       /* Error state */
       .field.errored input {
         outline: 2px solid var(--nh-theme-error-default, #E95C7B);
+      }
+
+      /* Disabled state */
+      .field.disabled input{
+        background-color: var(--nh-theme-input-fg-disabled); 
+        border-color: var(--nh-theme-input-border-disabled);
+      }
+      .field.disabled:hover input{
+        background: var(--nh-theme-input-fg-disabled);
+        border-color: var(--nh-theme-input-border-disabled);
+        cursor: not-allowed;
       }
     `,
   ];
