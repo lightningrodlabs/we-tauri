@@ -3,125 +3,118 @@ import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
 import { object, string, boolean, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
-import { property, state } from "lit/decorators.js";
-
-const MIN_RANGE_INT = 0;
-const MAX_RANGE_INT = 4294967295;
-const MIN_RANGE_FLOAT = -Number.MAX_SAFE_INTEGER;
-const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
+import { property, query, state } from "lit/decorators.js";
+import { MAX_RANGE_FLOAT, MAX_RANGE_INT, MIN_RANGE_FLOAT, MIN_RANGE_INT } from ".";
 
 export default class CreateDimension extends NHBaseForm {
   @property()
   sensemakerStore!: SensemakerStore;
 
-  /* Concrete implementations of the abstract BaseForm interface */
-  // Form schema
-  protected get validationSchema() : ObjectSchema<any> { 
-    return object({
-    name: string().min(1, "Must be at least 1 characters").required(),
-    computed: boolean().required(),
-  })};
-  
+  /* Concrete implementations of the abstract BaseForm interface */  
   // Form model
   @state()
-  protected _model: Partial<Dimension> = { name: "", computed: false, range_eh: undefined };
+  protected _model = { 
+    // This form's model is for two zome calls (Range and Dimension), but keep it in a flat structure for now
+    // Dimension:
+    name: "",
+    range_eh: undefined,
+    // Range:
+    min: undefined as number | undefined,
+    max: undefined as number | undefined,
+  };
 
-  private _currentMinRange : number = 0;
+  // Helper to generate nested, dynamic schema for the Range
   private _dimensionRangeSchema = () => {
     const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
     const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
-    return object({
+    return {
       min: (this._numberType == "Integer" 
-          ? number().integer('Must be an integer') 
-          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
+          ? number().required().integer('Must be an integer') 
+          : number().required().test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
         )
         .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin),
       max:(this._numberType == "Integer" 
-          ? number().integer('Must be an integer') 
-          : number().test('is-decimal', 'Must be a float', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+          ? number().required().integer('Must be an integer') 
+          : number().required().test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
         )
-        .min(this._currentMinRange + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._currentMinRange)
+        .min((this._model?.min || - 1) + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._model.min)
         .max(rangeMax, "The higher extent of this range cannot be higher than " + rangeMax),
-    })};
+  }};
+
+  // Full concrete implementation of form schema
+  protected get validationSchema() : ObjectSchema<any> { 
+    return object({
+    name: string().min(1, "Must be at least 1 characters").required(),
+    ...this._dimensionRangeSchema()
+  })};
 
   // Extra form state, not in the model
   @property()
   private _numberType: (keyof RangeKindInteger | keyof RangeKindFloat) = "Integer";
-
   @state()
   private _useGlobalMin: boolean = false;
   @state()
   private _useGlobalMax: boolean = false;
-  @state()
-  private _dimensionRange: Range = { name: "", kind: { [this._numberType]: {
-    min: 0,
-    max: 1,
-  }} as any };
 
   @property()
   submitBtn!: NHButton;
-
-  async resetForm() {
-    super.reset();
-    
-    this._numberType = "Integer";
-    //@ts-ignore
-    this._dimensionRange = { name: "", kind: { [this._numberType as (keyof RangeKindInteger | keyof RangeKindFloat)]: {
-      min: 0,
-      max: 1,
-    }} as (RangeKindInteger | RangeKindFloat) };
-    this._useGlobalMin = false;
-    this._useGlobalMax = false;
-    
-
-    this.submitBtn.loading = false;
-    await this.submitBtn.updateComplete;
-    await this.updateComplete
-  }
+  @query("nh-text-input[name='min']")
+  _minInput!: NHTextInput;
+  @query("nh-text-input[name='max']")
+  _maxInput!: NHTextInput;
 
   // Form submit handler
   async handleValidSubmit() {
-      return await this.createEntries()
+    this.submitBtn.loading = true;
+    this.submitBtn.requestUpdate("loading");
+
+    return await this.createEntries()
   }
   
   async createEntries() {
-    this._dimensionRangeSchema().validate(this._dimensionRange.kind[this._numberType])
-      .then(async _ => {
-        this.submitBtn.loading = true; this.submitBtn.requestUpdate("loading");
-        
-        let rangeEh, dimensionEh;
-        try {
-          rangeEh = await this.sensemakerStore.createRange(this._dimensionRange);
-        } catch (error) {
-          console.log('Error creating new range for dimension: ', error);
+    let rangeEh, dimensionEh;    
+    let inputRange: Range = {
+      name: this._model.name + '_range',
+      //@ts-ignore
+      kind: { [this._numberType]: {
+        min: this._model.min,
+        max: this._model.max
         }
+      }
+    }
+    try {
+      rangeEh = await this.sensemakerStore.createRange(inputRange);
+    } catch (error) {
+      console.log('Error creating new range for dimension: ', error);
+    }
+    if(!rangeEh) return
+    
+    let inputDimension: Dimension = {
+      name: this._model.name,
+      computed: false, // Hard coded for input dimensions
+      range_eh: rangeEh
+    }
+    try {
+      dimensionEh = await this.sensemakerStore.createDimension(inputDimension);
+    } catch (error) {
+      console.log('Error creating new dimension: ', error);
+    }
+    if(!dimensionEh) return
 
-        if(!rangeEh) return
-        this._model.range_eh = rangeEh;
-        
-        try {
-          dimensionEh = await this.sensemakerStore.createDimension(this._model as Dimension);
-        } catch (error) {
-          console.log('Error creating new dimension: ', error);
-        }
-
-        if(!dimensionEh) return
-        await this.updateComplete;
-        this.dispatchEvent(
-          new CustomEvent("dimension-created", {
-            detail: { dimensionEh, dimensionType: "input", dimension: this._model },
-            bubbles: true,
-            composed: true,
-          })
-        );
-        this.dispatchEvent(
-          new CustomEvent('form-submitted', {
-            bubbles: true,
-            composed: true,
-          }),
-        );
-      }).catch(e => console.log('Error validating new range for dimension: ', e))
-
+    await this.updateComplete;
+    this.dispatchEvent(
+      new CustomEvent("dimension-created", {
+        detail: { dimensionEh, dimensionType: "input", dimension: inputDimension },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    this.dispatchEvent(
+      new CustomEvent('form-submitted', {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   handleInputChange(e: Event) {
@@ -132,37 +125,50 @@ export default class CreateDimension extends NHBaseForm {
 
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
-        const newMin = Number(inputControl.value);
-        this._currentMinRange = newMin;
-        this._dimensionRange.kind[this._numberType].min = newMin;
+        this._model.min = Number(inputControl.value);
         break;
       case 'max':
-        const newMax = Number(inputControl.value);
-        this._dimensionRange.kind[this._numberType].max = newMax;
+        this._model.max = Number(inputControl.value);
         break;
       case 'use-global-min':
         this._useGlobalMin = !this._useGlobalMin
-        this._dimensionRange.kind[this._numberType].min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
+        this._model.min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
+        this.validateForm()
+        this._minInput?.requestUpdate()
         break;
       case 'use-global-max':
         this._useGlobalMax = !this._useGlobalMax
-        this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+        this._model.max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+        this.validateForm()
+        this._maxInput?.requestUpdate()
         break;
       case 'number-type':
         this._numberType = inputControl.value as (keyof RangeKindInteger | keyof RangeKindFloat);
         //@ts-ignore
-        this._dimensionRange.kind = { [this._numberType] : { ...Object.values(this._dimensionRange.kind)[0] } as RangeKind}; 
         if(this._useGlobalMin) {
-          this._dimensionRange.kind[this._numberType].min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
+          this._model.min = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT;
         }
         if(this._useGlobalMax) {
-          this._dimensionRange.kind[this._numberType].max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
+          this._model.max = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT;
         }
         break;
     }
   }
 
+  async resetForm() {
+    super.reset();
+    
+    this._numberType = "Integer";
+    this._useGlobalMin = false;
+    this._useGlobalMax = false;
+    
+    this.submitBtn.loading = false;
+    await this.submitBtn.updateComplete;
+    await this.updateComplete
+  }
+
   render() {
+    debugger;
     return html`
         <form>
           <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
@@ -185,18 +191,40 @@ export default class CreateDimension extends NHBaseForm {
               <sl-radio .checked=${this._numberType == "Float"} value="Float">Float</sl-radio>
             </sl-radio-group>
           </div>
-          <div class="field">
-            <sl-input label="Range Minimum" name="min" ?disabled=${this._useGlobalMin} value=${this._dimensionRange.kind[this._numberType].min} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
-            <label class="error" for="min" name="min">⁎</label>
-          </div>
+          
+        <nh-tooltip .visible=${this.shouldShowValidationErrorForField('min')} .text=${this.getErrorMessage('min')} .variant=${"danger"}>
+          <nh-text-input
+            .errored=${this.shouldShowValidationErrorForField('min')}
+            .size=${"medium"}
+            slot="hoverable"
+            .label=${"Range Minimum"}
+            .required=${true}
+            .placeholder=${"Min"}
+            .name=${"min"}
+            .disabled=${this._useGlobalMin}
+            .value=${this._model.min}
+            @change=${(e: CustomEvent) => this.handleInputChange(e)}>
+          </nh-text--input>
+        </nh-tooltip>
           <div class="field checkbox">
             <label for="global-min" name="use-global-min">Lowest possible</label>
             <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
           </div>
-          <div class="field">
-            <sl-input label="Range Maximum" name="max" ?disabled=${this._useGlobalMax} value=${this._dimensionRange.kind[this._numberType].max}  @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-input>
-            <label class="error" for="max" name="max">⁎</label>
-          </div>
+
+        <nh-tooltip .visible=${this.shouldShowValidationErrorForField('max')} .text=${this.getErrorMessage('max')} .variant=${"danger"}>
+          <nh-text-input
+            .errored=${this.shouldShowValidationErrorForField('max')}
+            .size=${"medium"}
+            slot="hoverable"
+            .label=${"Range Maximum"}
+            .required=${true}
+            .placeholder=${"Max"}
+            .name=${"max"}
+            .disabled=${this._useGlobalMax}
+            .value=${this._model.max}
+            @change=${(e: CustomEvent) => this.handleInputChange(e)}>
+          </nh-text--input>
+        </nh-tooltip>
           <div class="field checkbox">
             <label for="global-max" name="use-global-max">Highest possible</label>
             <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
@@ -241,7 +269,7 @@ export default class CreateDimension extends NHBaseForm {
 
       form {
         padding: 0;
-        margin: calc(1px * var(--nh-spacing-md)) 0;
+        margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-xl)) 0;
       }
 
       legend {
