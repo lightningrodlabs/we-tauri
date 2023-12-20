@@ -249,135 +249,74 @@ export default class CreateDimension extends NHBaseForm {
     return [
       ...super.styles as CSSResult[],
       css`
-      /* Layout */
-      :host {
-        display: grid;
-        flex: 1;
-        place-content: start;
-        color: var(--nh-theme-fg-default);
-        margin: 0 auto;
-      }
+        /* Layout */
+        :host {
+          display: grid;
+          flex: 1;
+          place-content: start;
+          color: var(--nh-theme-fg-default);
+          margin: 0 auto;
+        }
 
-      .field, .field-row {
-        display: flex;
-        margin-top: calc(1px * var(--nh-spacing-md));
-        padding-top: calc(1px * var(--nh-spacing-md));
-      }
+        form {
+          padding: 0;
+          margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-xl)) 0;
+        }
 
-      .field:last-child {
-        padding-bottom: calc(1px * var(--nh-spacing-md));
-      }
+        .field {
+          display: flex;
+          margin-top: calc(1px * var(--nh-spacing-md));
+          padding-top: calc(1px * var(--nh-spacing-md));
+        }
 
-      .field.radio {
-        justify-content: center;  
-      }
+        .field:last-child {
+          padding-bottom: calc(1px * var(--nh-spacing-md));
+        }
 
-      form {
-        padding: 0;
-        margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-xl)) 0;
-      }
+        /* Radio */
 
-      legend {
-        visibility: hidden;
-        opacity: 0;
-        height: 0;
-      }
+        .field.radio {
+          justify-content: center;  
+        }
 
-      /* Fields */
-      .field-row {
-        justify-content: space-between;
-        align-items: center;
-      }
+        sl-radio-group::part(base) {
+          display: flex;
+          gap: calc(1px * var(--nh-spacing-md));
+        }
 
-      sl-radio-group::part(base) {
-        display: flex;
-        gap: calc(1px * var(--nh-spacing-md));
-      }
+        sl-radio::part(label) {
+          color: var(--nh-theme-fg-default);
+        }
 
-      sl-radio::part(label) {
-        color: var(--nh-theme-fg-default);
-      }
+        sl-radio::part(control) {
+          color: var(--nh-theme-accent-default);
+          border-color: var(--nh-theme-accent-default);
+          background-color: transparent;
+        }
 
-      sl-radio::part(control) {
-        color: var(--nh-theme-accent-default);
-        border-color: var(--nh-theme-accent-default);
-        background-color: transparent;
-      }
+        sl-radio {
+          margin-bottom: 0 !important;
+        }
 
-      sl-radio {
-        margin-bottom: 0 !important;
-      }
+        /* Checkbox */
 
-      sl-checkbox::part(base) {
-        position: relative;
-        right: -9px;
-        bottom: 1px
-      }
+        sl-checkbox::part(base) {
+          position: relative;
+          right: -9px;
+          bottom: 1px
+        }
 
-      sl-checkbox::part(control) {
-        color: var(--nh-theme-accent-default);
-        background-color: var(--nh-theme-fg-default);
-        border-color: var(--nh-theme-accent-default);
-        border-radius: 3px;
-      }
+        sl-checkbox::part(control) {
+          color: var(--nh-theme-accent-default);
+          background-color: var(--nh-theme-fg-default);
+          border-color: var(--nh-theme-accent-default);
+          border-radius: 3px;
+        }
 
-      sl-input::part(base) {
-        margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
-        padding: 0;
-      }
-
-      sl-input.untouched::part(base), sl-input.untouched:hover::part(base) {
-        margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
-        border: 2px solid var(--nh-theme-error-default, #E95C7B);
-      }
-
-      sl-input::part(form-control) {
-        display: grid;
-        grid: auto / var(--label-width) 1fr;
-        gap: var(--sl-spacing-3x-small) var(--gap-width);
-        align-items: center;
-      }
-
-      .field.checkbox {
-        justify-content: end;
-        gap: 1rem;
-      }
-
-      /* Labels */
-
-      sl-input::part(help-text) {
-        margin: 0 1rem 1rem;
-      }
-      
-      sl-input::part(label) {
-        margin: 0 calc(1px * var(--nh-spacing-md));
-      }
-
-      :host *::part(form-control-label) {
-        color: red;
-      }
-
-      label.error {
-        height: 100%;
-        align-items: center;
-        padding: 0 8px;
-        flex: 1;
-        flex-grow: 0;
-        flex-basis: 8px;
-        color: var(--nh-theme-error-default);
-      }
-
-      /* From test form */
-
-      sl-input::part(base) {
-        padding: calc(1px * var(--nh-spacing-sm));
-        margin-bottom: calc(1px * var(--nh-spacing-sm));
-        color: var(--nh-theme-fg-default);
-      }
-
-      .hidden {
-        display: none;  
-      }
+        .field.checkbox {
+          justify-content: end;
+          gap: 1rem;
+        }
     `
     ]
   }
