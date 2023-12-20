@@ -385,6 +385,14 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           width: 100%;
         }
 
+        form {
+          padding: 0;
+          margin: calc(1px * var(--nh-spacing-md)) 0;
+          gap: calc(1px * var(--nh-spacing-md));
+          display: flex;
+          flex-direction: column
+        }
+
         .field {
           display: flex;
           flex-direction: column;
@@ -397,118 +405,30 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
           justify-content:space-between;
           align-items: center;
         }
-        .radio .row {
-          justify-content: center;
-          margin-top: calc(1px * var(--nh-spacing-md));
-        }
-
-        form {
-          padding: 0;
-          margin: calc(1px * var(--nh-spacing-md)) 0;
-          gap: calc(1px * var(--nh-spacing-md));
-          display: flex;
-          flex-direction: column
-        }
-
-        legend {
-          visibility: hidden;
-          opacity: 0;
-          height: 0;
-        }
-
-        /* Fields */
-
-        sl-radio::part(label) {
-          color: var(--nh-theme-fg-default);
-        }
-
+        
+        /* Bugfix for custom select */
         .tooltip-overflow {
           --select-height: calc(2 * 1.5px * var(--nh-spacing-3xl) - 3px); /* accounts for the label (2*) and borders (-3px) */
           overflow: inherit;
           max-height: var(--select-height);
         }
-        select {
-          height: calc(1px * var(--nh-spacing-4xl));
+
+        /* Radio group */
+
+        .radio .row {
+          justify-content: center;
+          margin-top: calc(1px * var(--nh-spacing-md));
         }
 
-        select {
-          width: 90%;
-        }
-
-        sl-input::part(base) {
-          margin: calc(1px * var(--nh-spacing-md)) 0;
-          padding: 0;
-        }
-
-        sl-input::part(form-control) {
-          display: grid;
-          grid: auto / var(--label-width) 1fr;
-          gap: var(--sl-spacing-3x-small) var(--gap-width);
-          align-items: center;
-        }
-
-        .field.checkbox {
-          justify-content: end;
-          gap: 1rem;
-        }
-
-        sl-input.untouched::part(base), sl-input.untouched:hover::part(base) {
-          margin: calc(1px * var(--nh-spacing-md)) calc(1px * var(--nh-spacing-md));
-          border: 2px solid var(--nh-theme-error-default, #E95C7B);
-        }
-        
-        /* Labels */
-
-        sl-input::part(help-text) {
-          margin: 0 1rem 1rem;
-        }
-
-        :host *::part(form-control-label) {
-          color: red;
-        }
-
-        label.error {
-          height: 100%;
-          align-items: center;
-          padding: 0 8px;
-          flex: 1;
-          flex-grow: 0;
-          flex-basis: 8px;
-          color: var(--nh-theme-error-default);
-        }
-
-        /* From test form */
-
-        sl-input::part(base) {
-          padding: calc(1px * var(--nh-spacing-sm));
-          margin-bottom: calc(1px * var(--nh-spacing-sm));
+        sl-radio::part(label) {
           color: var(--nh-theme-fg-default);
-          
-        }
-        sl-input::part(form-control-label),
-        span.label {
-          --sl-spacing-3x-small: calc(1px * var(--nh-spacing-xl));
-          font-size: calc(1px * var(--nh-font-size-base));
-          font-family: var(--nh-font-families-body);
-          font-weight: var(--nh-font-weights-body-regular);
-          line-height: normal;
-          color: var(--nh-theme-fg-default);
-
-          margin-bottom: calc(1px * var(--nh-spacing-sm));
-        }
-        sl-input::part(input)::placeholder {
-          color: var(--nh-theme-input-placeholder);
-          opacity: 1;
-        }
-
-        .hidden {
-          display: none;
         }
 
         sl-radio-group::part(base) {
           display: flex;
           gap: calc(1px * var(--nh-spacing-md));
         }
+
         sl-radio::part(control) {
           color: var(--nh-theme-accent-default);
           border-color: var(--nh-theme-accent-default);
