@@ -48,7 +48,7 @@ export default class NHGlobalConfig extends NHComponent {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>,
   ): void {
     if (_changedProperties.has('_formType')) {
-      this._dimensionForm = this.renderRoot.querySelector('create-dimension');
+      this._dimensionForm = this.renderRoot.querySelector('create-input-dimension-form');
     }
   }
 
@@ -59,7 +59,7 @@ export default class NHGlobalConfig extends NHComponent {
     ) {
       this._dimensionForm = this.renderRoot.querySelector(
         this._formType == 'input-dimension'
-          ? 'create-dimension'
+          ? 'create-input-dimension-form'
           : 'create-output-dimension-method-form',
       );
     }
@@ -151,10 +151,10 @@ export default class NHGlobalConfig extends NHComponent {
 
   private renderMainForm(): TemplateResult {
     if (this._formType == 'input-dimension') {
-      return html`<create-input-dimension
+      return html`<create-input-dimension-form
         .sensemakerStore=${this._sensemakerStore.value}
         .submitBtn=${this.submitBtn}
-      ></create-input-dimension>`;
+      ></create-input-dimension-form>`;
     }
     return html`<create-output-dimension-method-form
       .sensemakerStore=${this._sensemakerStore.value}
@@ -169,7 +169,7 @@ export default class NHGlobalConfig extends NHComponent {
     'nh-card': NHCard,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
-    'create-input-dimension': CreateDimension,
+    'create-input-dimension-form': CreateDimension,
     'create-output-dimension-method-form': CreateOutputDimensionMethod,
     'dimension-list': DimensionList,
   };
