@@ -158,9 +158,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   @property()
   submitBtn!: NHButton;
 
-  @query("#choose_input_dimension")
-  nhSelect!: NHSelect;
-
   /* Concrete implementations of the abstract BaseForm interface */
   // Form schema
   protected get validationSchema(): ObjectSchema<any> {
@@ -192,10 +189,7 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
     input_dimension: undefined, // Will be put in array for zome call. Later we may support multiple input dimensions
     output_dimension_eh: null, // Created in the atomic fn call, leave null
   };
-  protected firstUpdated(): void {
-    if(this.inputDimensions.length) this._model.input_dimension = encodeHashToBase64(this.inputDimensions[0].dimension_eh);
-  }
-
+  
   // Form submit handler
   async handleValidSubmit() {
     return await this.createEntries();
@@ -225,8 +219,6 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
     this.submitBtn.loading = false;
     await this.submitBtn.updateComplete;
-    this.nhSelect.reset();
-    await this.firstUpdated(); 
   }
 
   async createEntries() {

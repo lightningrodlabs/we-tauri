@@ -168,7 +168,6 @@ export default class CreateDimension extends NHBaseForm {
   }
 
   render() {
-    debugger;
     return html`
         <form>
           <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
