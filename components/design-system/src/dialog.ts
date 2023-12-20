@@ -203,8 +203,12 @@ export default class NHDialog extends NHComponentShoelace {
 
   onEsc = async (e: any) => { 
     const key = e.key;
+    
     if (key === "Escape") {
       e?.preventDefault();
+      this.showDialog()
+      await this.requestUpdate()
+      // TODO: investigate why this is still closing
     }
   }
 
@@ -212,7 +216,7 @@ export default class NHDialog extends NHComponentShoelace {
     let result : { preventDefault?: boolean };
     if (this.handleOk) {
       result = this.handleOk();
-    } else { result = { preventDefault: false }}
+    } else { result = { preventDefault:   false }}
     this.hideDialog();
     if(result && result.preventDefault) this.showDialog();
   };
