@@ -15,7 +15,6 @@ import {
 } from '@neighbourhoods/client';
 import { property, query, state } from 'lit/decorators.js';
 import { NHAlert } from '@neighbourhoods/design-system-components';
-import { classMap } from 'lit/directives/class-map.js';
 
 const DEFAULT_RANGE_MIN = 0;
 const MIN_RANGE_INT = 0;

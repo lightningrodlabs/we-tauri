@@ -4,7 +4,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash, EntryHash } from '@holochain/client';
+import { DnaHash } from '@holochain/client';
 
 import {
   NHButton,
@@ -63,12 +63,6 @@ export default class NHGlobalConfig extends NHComponent {
           : 'create-output-dimension-method-form',
       );
     }
-  }
-
-  isDimensionFormValid() {
-    if (!this._dimensionForm) return false;
-
-    return this._dimensionForm.touched; // && this._dimensionForm.valid
   }
 
   render() {
@@ -157,11 +151,10 @@ export default class NHGlobalConfig extends NHComponent {
 
   private renderMainForm(): TemplateResult {
     if (this._formType == 'input-dimension') {
-      return html`<create-dimension
-        .dimensionType=${'input'}
+      return html`<create-input-dimension
         .sensemakerStore=${this._sensemakerStore.value}
         .submitBtn=${this.submitBtn}
-      ></create-dimension>`;
+      ></create-input-dimension>`;
     }
     return html`<create-output-dimension-method-form
       .sensemakerStore=${this._sensemakerStore.value}
@@ -176,7 +169,7 @@ export default class NHGlobalConfig extends NHComponent {
     'nh-card': NHCard,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
-    'create-dimension': CreateDimension,
+    'create-input-dimension': CreateDimension,
     'create-output-dimension-method-form': CreateOutputDimensionMethod,
     'dimension-list': DimensionList,
   };
