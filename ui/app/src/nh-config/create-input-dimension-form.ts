@@ -1,7 +1,7 @@
 import { NHBaseForm, NHButton, NHCard, NHTextInput, NHTooltip, NHValidationError } from "@neighbourhoods/design-system-components";
 import { html, css, CSSResult } from "lit";
 import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from "@scoped-elements/shoelace";
-import { object, string, boolean, number, ObjectSchema } from 'yup';
+import { object, string, number, ObjectSchema } from 'yup';
 import { Dimension, Range, RangeKind, SensemakerStore, RangeKindFloat, RangeKindInteger } from "@neighbourhoods/client";
 import { property, query, state } from "lit/decorators.js";
 import { MAX_RANGE_FLOAT, MAX_RANGE_INT, MIN_RANGE_FLOAT, MIN_RANGE_INT } from ".";
@@ -27,15 +27,16 @@ export default class CreateDimension extends NHBaseForm {
   private _dimensionRangeSchema = () => {
     const rangeMin = this._numberType == "Integer" ? MIN_RANGE_INT : MIN_RANGE_FLOAT
     const rangeMax = this._numberType == "Integer" ? MAX_RANGE_INT : MAX_RANGE_FLOAT
+    const numberType = number().typeError('The input must be numeric').required('Enter a number');
     return {
       min: (this._numberType == "Integer" 
-          ? number().required().integer('Must be an integer') 
-          : number().required().test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
+          ? numberType.integer('Must be an integer') 
+          : numberType.test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^(\-)?\d+(\.\d+)?$/)) as any)
         )
         .min(rangeMin, "The lower extent of this range cannot be lower than " + rangeMin),
       max:(this._numberType == "Integer" 
-          ? number().required().integer('Must be an integer') 
-          : number().required().test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
+          ? numberType.integer('Must be an integer') 
+          : numberType.test('is-decimal', 'Must be a decimal number', ((value: number) => value.toString().match(/^\d+(\.\d+)?$/)) as any)
         )
         .min((this._model?.min || - 1) + 1, "The higher extent of this range cannot be lower than the lower extent: " + this._model.min)
         .max(rangeMax, "The higher extent of this range cannot be higher than " + rangeMax),
@@ -44,7 +45,7 @@ export default class CreateDimension extends NHBaseForm {
   // Full concrete implementation of form schema
   protected get validationSchema() : ObjectSchema<any> { 
     return object({
-    name: string().min(1, "Must be at least 1 characters").required(),
+    name: string().min(1, "Must be at least 1 characters").required("Enter a dimension name, e.g. Likes"),
     ...this._dimensionRangeSchema()
   })};
 
@@ -169,7 +170,7 @@ export default class CreateDimension extends NHBaseForm {
 
   render() {
     return html`
-        <form>
+        <form method="post" action="" autoComplete="off">
           <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
             <nh-text-input
               .errored=${this.shouldShowValidationErrorForField('name')}
@@ -259,11 +260,16 @@ export default class CreateDimension extends NHBaseForm {
 
       .field, .field-row {
         display: flex;
-        margin-bottom: calc(1px * var(--nh-spacing-md));
+        margin-top: calc(1px * var(--nh-spacing-md));
+        padding-top: calc(1px * var(--nh-spacing-md));
+      }
+
+      .field:last-child {
+        padding-bottom: calc(1px * var(--nh-spacing-md));
       }
 
       .field.radio {
-        justify-content: center; margin-top: 8px;
+        justify-content: center;  
       }
 
       form {
@@ -297,10 +303,22 @@ export default class CreateDimension extends NHBaseForm {
         border-color: var(--nh-theme-accent-default);
         background-color: transparent;
       }
+
+      sl-radio {
+        margin-bottom: 0 !important;
+      }
+
+      sl-checkbox::part(base) {
+        position: relative;
+        right: -9px;
+        bottom: 1px
+      }
+
       sl-checkbox::part(control) {
         color: var(--nh-theme-accent-default);
         background-color: var(--nh-theme-fg-default);
         border-color: var(--nh-theme-accent-default);
+        border-radius: 3px;
       }
 
       sl-input::part(base) {
