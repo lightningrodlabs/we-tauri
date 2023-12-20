@@ -15,12 +15,7 @@ import {
 } from '@neighbourhoods/client';
 import { property, query, state } from 'lit/decorators.js';
 import { NHAlert } from '@neighbourhoods/design-system-components';
-
-const DEFAULT_RANGE_MIN = 0;
-const MIN_RANGE_INT = 0;
-const MAX_RANGE_INT = 4294967295;
-const MIN_RANGE_FLOAT = -Number.MAX_SAFE_INTEGER;
-const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
+import { MAX_RANGE_FLOAT, MAX_RANGE_INT, MIN_RANGE_FLOAT, MIN_RANGE_INT, DEFAULT_RANGE_MIN } from ".";
 
 export default class CreateOutputDimensionMethod extends NHBaseForm {
   @property()
@@ -312,44 +307,43 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
   render() {
     return html`
     ${this.inputDimensions && this.inputDimensions.length > 0 ? html`<form>
+        <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
+          <nh-text-input
+          .errored=${this.shouldShowValidationErrorForField('name')}
+            .size=${"medium"}
+            slot="hoverable"
+            .label=${"Dimension Name"}
+            .name=${"name"}
+            .placeholder=${"Enter a dimension name"}
+            .required=${true}
+            .value=${this._model.name}
+            @change=${(e: CustomEvent) => this.handleInputChange(e)}
+          ></nh-text-input>
+        </nh-tooltip>
 
-            <nh-tooltip .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
-              <nh-text-input
-              .errored=${this.shouldShowValidationErrorForField('name')}
-                .size=${"medium"}
-                slot="hoverable"
-                .label=${"Dimension Name"}
-                .name=${"name"}
-                .placeholder=${"Enter a dimension name"}
-                .required=${true}
-                .value=${this._model.name}
-                @change=${(e: CustomEvent) => this.handleInputChange(e)}
-              ></nh-text-input>
-            </nh-tooltip>
-
-            <nh-tooltip class="tooltip-overflow" .visible=${this.shouldShowValidationErrorForField('input_dimension')} .text=${this.getErrorMessage('input_dimension')} .variant=${"danger"}>
-              <nh-select
-                .errored=${this.shouldShowValidationErrorForField('input_dimension')}
-                .size=${"medium"}
-                slot="hoverable"
-                .required=${true}
-                id="choose_input_dimension"
-                name="input_dimension"
-                .placeholder=${"Select an input dimension"}
-                .label=${"Input dimension"}
-                @change=${this.handleInputChange}
-                .options=${this.inputDimensions
-                  .filter(dimension => !dimension.computed)
-                  .map(
-                    (dimension) => ({
-                      label: dimension.name,
-                      value: encodeHashToBase64(dimension.dimension_eh),
-                    })
-                  )
-                }
-              >
-              </nh-select>
-            </nh-tooltip>
+        <nh-tooltip class="tooltip-overflow" .visible=${this.shouldShowValidationErrorForField('input_dimension')} .text=${this.getErrorMessage('input_dimension')} .variant=${"danger"}>
+          <nh-select
+            .errored=${this.shouldShowValidationErrorForField('input_dimension')}
+            .size=${"medium"}
+            slot="hoverable"
+            .required=${true}
+            id="choose_input_dimension"
+            name="input_dimension"
+            .placeholder=${"Select an input dimension"}
+            .label=${"Input dimension"}
+            @change=${this.handleInputChange}
+            .options=${this.inputDimensions
+              .filter(dimension => !dimension.computed)
+              .map(
+                (dimension) => ({
+                  label: dimension.name,
+                  value: encodeHashToBase64(dimension.dimension_eh),
+                })
+              )
+            }
+          >
+          </nh-select>
+        </nh-tooltip>
             
         <div class="field radio">
           <div class="row">

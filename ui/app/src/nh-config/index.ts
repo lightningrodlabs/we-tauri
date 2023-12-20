@@ -8,4 +8,6 @@ export const MAX_RANGE_INT = 4294967295;
 export const MIN_RANGE_FLOAT = -Number.MAX_SAFE_INTEGER;
 export const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
 
+export const DEFAULT_RANGE_MIN = 0;
+
 export { NHGlobalConfig, CreateOutputDimensionMethod, CreateDimension, DimensionList }
