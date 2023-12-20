@@ -149,7 +149,7 @@ export abstract class NHBaseForm extends NHComponentShoelace {
   }
 
   protected shouldShowValidationErrorForField(inputName: string): boolean {
-    return this.formWasSubmitted && (!this.touched[inputName] || (this.touched[inputName] && this.errors[inputName] && !(this.errors[inputName] == ''))) as boolean
+    return this.formWasSubmitted && (this.errors[inputName] && !(this.errors[inputName] == '')) as boolean
   }  
   
   static styles: CSSResult[] = [
