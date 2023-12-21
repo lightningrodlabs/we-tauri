@@ -226,6 +226,7 @@ export default class NHDialog extends NHComponentShoelace {
         max-height: 16rem;
         --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-backdrop);
       }
+      
       @media (max-height: 767px) {
         .container {
           justify-content: center;
@@ -237,10 +238,12 @@ export default class NHDialog extends NHComponentShoelace {
         max-height: 90vh;
         min-width: 50vw;
       }
+
       #main.large::part(panel) {
         min-height: 90vh;
         min-width: 95vw;
       }
+
       #main.large::slotted(*) {
         min-height: 80vh;
         overflow-y: auto;
@@ -249,15 +252,16 @@ export default class NHDialog extends NHComponentShoelace {
       #main.medium::slotted(div) {
         min-height: 90vh;
       }
+
       #main.large::slotted(div) {
         min-height: 80vh;
       }
-
 
       #main::part(overlay),
       #main::part(base) {
         transition: opacity 1s ease-in-out;
       }
+
       #main::part(body),
       #main::part(footer),
       #main::part(header) {
@@ -267,6 +271,7 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-md));
         align-items: flex-start;
       }
+
       #main::part(title) {
         text-transform: uppercase;
         font-weight: var(--nh-font-weights-body-bold);
@@ -274,10 +279,12 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-sm));
         color: var(--nh-theme-fg-muted);
       }
+
       #main::part(title) {
         font-size: calc(1px * var(--nh-font-size-sm));
         letter-spacing: 0.5px;
       }
+
       #main::part(close-button) {
         display: none;
       }
@@ -291,8 +298,12 @@ export default class NHDialog extends NHComponentShoelace {
       #main.input-form::part(header) {
         height: 1px;
       }
+
       #main.input-form::part(footer) {
         height: 4.5rem;
+        justify-content: flex-end;
+        align-items: center;
+        padding-right: 20px;
       }
 
       ::slotted(div), #buttons {
@@ -301,9 +312,11 @@ export default class NHDialog extends NHComponentShoelace {
         align-items: center;
         gap: padding: calc(1px * var(--nh-spacing-md));
       }
+
       #buttons {
-        justify-content: end;
+        justify-content: flex-end;
       }
+
       #primary-action-button::part(base), #secondary-action-button::part(base) {
         border-radius: calc(1px * var(--nh-radii-md));
         background-color: var(--nh-theme-bg-surface);
@@ -312,9 +325,11 @@ export default class NHDialog extends NHComponentShoelace {
         width: calc(1rem * var(--nh-spacing-sm));
         border: none;
       }
+
       #secondary-action-button {
         margin-right: calc(1px * var(--nh-spacing-md));
       }
+
       #primary-action-button::part(base) {
         background-color: var(--nh-theme-bg-detail);
       }
