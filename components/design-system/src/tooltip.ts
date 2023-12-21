@@ -71,6 +71,10 @@ export default class NHSlide extends NHComponentShoelace {
         visibility: visible;
       }
 
+      :host(.extend) .tooltip .content {
+        width: 150%;
+      }
+
       .tooltip .content::after {
         content: " ";
         position: absolute;

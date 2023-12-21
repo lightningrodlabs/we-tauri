@@ -10,7 +10,7 @@ export default class NHTextInput extends NHComponent {
   @property()
   label?: string = "Your field";
   @property()
-  size: "medium" | "large" = "medium";
+  size: "small" | "medium" | "large" = "medium";
   @property()
   placeholder?: string = "Select your option:";
   @property()
@@ -60,7 +60,7 @@ export default class NHTextInput extends NHComponent {
 
         </div>
           <input
-            autoComplete="off"
+            autocomplete="off"
             aria-autocomplete="none"
             disabled=${this.disabled}
             type="text"
@@ -84,7 +84,6 @@ export default class NHTextInput extends NHComponent {
   static styles: CSSResult[] = [
     css`
       input {
-        min-width: 16rem;
         margin-top: calc(1px * var(--nh-spacing-md));
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
         color: var(--nh-theme-fg-default);
@@ -95,17 +94,23 @@ export default class NHTextInput extends NHComponent {
 
       /* Sizes */
 
-      .field.medium input {
+      .field.medium input, .field.small input {
         --scale: 1px;
       }
-
+      
       .field.large input {
         --scale: 1.5px;
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
       }
-
+      
       .field input {
+        min-width: 16rem;
         height: calc(var(--scale) * var(--nh-spacing-3xl));
+      }
+
+      .field.small input {
+        min-width: initial;
+        max-width: 6rem;
       }
 
       .field:hover input{
@@ -121,10 +126,12 @@ export default class NHTextInput extends NHComponent {
       .field, .row {
         display: flex;
       }
+
       .field {
         margin-top: calc(1px * var(--nh-spacing-md));
         flex-direction: column;
       }
+
       .row {
         justify-content: space-between;
         align-items: center;
