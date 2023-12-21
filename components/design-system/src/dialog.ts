@@ -21,7 +21,7 @@ export enum DialogType {
 }
 
 function preventOverlayClose(event: CustomEvent) : void {
-  if (event.detail.source === 'overlay') {
+  if (event.detail.source === 'overlay' || event.detail.source === 'keyboard') {
     event.preventDefault();
   }
 }
@@ -67,7 +67,7 @@ export default class NHDialog extends NHComponentShoelace {
     this._dialog.removeEventListener('sl-request-close', preventOverlayClose)
     typeof this.onClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.onClose);
 
-    this._dialog.removeEventListener("keydown", this.onEsc);
+    // this._dialog.removeEventListener("keydown", this.onEsc);
   }
 
   updated(changedProperties: any) {
@@ -81,7 +81,7 @@ export default class NHDialog extends NHComponentShoelace {
 
   firstUpdated() {
     if(!this._dialog) return
-    this._dialog?.addEventListener("keydown", this.onEsc); // Stop bug with escaping and destroying dialog
+    // this._dialog?.addEventListener("keydown", this.onEsc); // Stop bug with escaping and destroying dialog
     this._dialog.addEventListener('sl-request-close', preventOverlayClose)
     typeof this.onClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.onClose);
   }
@@ -201,16 +201,16 @@ export default class NHDialog extends NHComponentShoelace {
     if(result && !(result.preventDefault)) this.hideDialog();
   }
 
-  onEsc = async (e: any) => { 
-    const key = e.key;
+  // onEsc = async (e: any) => { 
+  //   const key = e.key;
     
-    if (key === "Escape") {
-      e?.preventDefault();
-      this.showDialog()
-      await this.requestUpdate()
-      // TODO: investigate why this is still closing
-    }
-  }
+  //   if (key === "Escape") {
+  //     e?.preventDefault();
+  //     this.showDialog()
+  //     await this.requestUpdate()
+  //     // TODO: investigate why this is still closing
+  //   }
+  // }
 
   onOkClicked = () => {
     let result : { preventDefault?: boolean };
