@@ -126,7 +126,7 @@ export default class CreateDimension extends NHBaseForm {
 
     switch (inputControl?.name || inputControl.parentElement.dataset?.name) {
       case 'min':
-        this._model.min = Number(inputControl.value);
+        this._model.min = Number(inputControl.value); 
         break;
       case 'max':
         this._model.max = Number(inputControl.value);
@@ -192,43 +192,48 @@ export default class CreateDimension extends NHBaseForm {
             </sl-radio-group>
           </div>
           
-        <nh-tooltip .visible=${this.shouldShowValidationErrorForField('min')} .text=${this.getErrorMessage('min')} .variant=${"danger"}>
-          <nh-text-input
-            .errored=${this.shouldShowValidationErrorForField('min')}
-            .size=${"medium"}
-            slot="hoverable"
-            .label=${"Range Minimum"}
-            .required=${true}
-            .placeholder=${"Min"}
-            .name=${"min"}
-            .disabled=${this._useGlobalMin}
-            .value=${this._model.min}
-            @change=${(e: CustomEvent) => this.handleInputChange(e)}>
-          </nh-text--input>
-        </nh-tooltip>
-          <div class="field checkbox">
-            <label for="global-min" name="use-global-min">Lowest possible</label>
-            <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
+        <div class="row-2">
+          <div class="field">
+            <nh-tooltip class="extend" .visible=${this.shouldShowValidationErrorForField('min')} .text=${this.getErrorMessage('min')} .variant=${"danger"}>
+              <nh-text-input
+                .errored=${this.shouldShowValidationErrorForField('min')}
+                .size=${"small"}
+                slot="hoverable"
+                .label=${"Min"}
+                .required=${true}
+                .placeholder=${"Min"}
+                .name=${"min"}
+                .disabled=${this._useGlobalMin}
+                .value=${this._model.min}
+                @change=${(e: CustomEvent) => this.handleInputChange(e)}>
+              </nh-text--input>
+            </nh-tooltip>
+            <div class="field checkbox">
+              <label for="global-min" name="use-global-min">Lowest possible</label>
+              <sl-checkbox name="use-global-min" .checked=${this._useGlobalMin} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
+            </div>
           </div>
-
-        <nh-tooltip .visible=${this.shouldShowValidationErrorForField('max')} .text=${this.getErrorMessage('max')} .variant=${"danger"}>
-          <nh-text-input
-            .errored=${this.shouldShowValidationErrorForField('max')}
-            .size=${"medium"}
-            slot="hoverable"
-            .label=${"Range Maximum"}
-            .required=${true}
-            .placeholder=${"Max"}
-            .name=${"max"}
-            .disabled=${this._useGlobalMax}
-            .value=${this._model.max}
-            @change=${(e: CustomEvent) => this.handleInputChange(e)}>
-          </nh-text--input>
-        </nh-tooltip>
-          <div class="field checkbox">
-            <label for="global-max" name="use-global-max">Highest possible</label>
-            <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
+          <div class="field">
+            <nh-tooltip class="extend" .visible=${this.shouldShowValidationErrorForField('max')} .text=${this.getErrorMessage('max')} .variant=${"danger"}>
+              <nh-text-input
+                .errored=${this.shouldShowValidationErrorForField('max')}
+                .size=${"small"}
+                slot="hoverable"
+                .label=${"Max"}
+                .required=${true}
+                .placeholder=${"Max"}
+                .name=${"max"}
+                .disabled=${this._useGlobalMax}
+                .value=${this._model.max}
+                @change=${(e: CustomEvent) => this.handleInputChange(e)}>
+              </nh-text--input>
+            </nh-tooltip>
+            <div class="field checkbox">
+              <label for="global-max" name="use-global-max">Highest possible</label>
+              <sl-checkbox name="use-global-max" .checked=${this._useGlobalMax} @sl-change=${(e: CustomEvent) => this.handleInputChange(e)}></sl-checkbox>
+            </div>
           </div>
+        </div>
       </form>
     `;
   }
@@ -263,25 +268,54 @@ export default class CreateDimension extends NHBaseForm {
           margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-xl)) 0;
         }
 
+        .row-2 {
+          display: flex;
+          justify-content:space-between;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .row-2:last-child {
+          padding-bottom: calc(1px * var(--nh-spacing-md));
+        }
+
         .field {
           display: flex;
-          margin-top: calc(1px * var(--nh-spacing-md));
+          margin-top: calc(1px * var(--nh-spacing-sm));
           padding-top: calc(1px * var(--nh-spacing-md));
         }
 
-        .field:last-child {
-          padding-bottom: calc(1px * var(--nh-spacing-md));
+        .row-2 .field {
+          flex-basis: 50%;
+          margin: 0;
+          flex-direction: column;
+        }
+        .row-2 .field:first-child {
+          align-items: flex-start;
+        }
+        .row-2 .field:last-child {
+          align-items: flex-end;
         }
 
         /* Radio */
 
         .field.radio {
           justify-content: center;  
+          padding-top: calc(1px * var(--nh-spacing-md));
+          margin-top: calc(1px * var(--nh-spacing-lg));
         }
 
+        sl-radio-group, sl-radio-group::part(base) {
+          width: 100%;
+        }
+          
         sl-radio-group::part(base) {
           display: flex;
+          justify-content: space-around;
           gap: calc(1px * var(--nh-spacing-md));
+        }
+
+        sl-radio:hover::part(control) {
+          background-color: var(--nh-theme-bg-detail); 
         }
 
         sl-radio::part(label) {
@@ -315,7 +349,10 @@ export default class CreateDimension extends NHBaseForm {
 
         .field.checkbox {
           justify-content: end;
-          gap: 1rem;
+          display: flex;
+          width: 8rem;
+          font-size: 90%;
+          flex-direction: initial;
         }
     `
     ]

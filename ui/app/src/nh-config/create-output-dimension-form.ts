@@ -415,24 +415,38 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
 
         /* Radio group */
 
-        .radio .row {
-          justify-content: center;
-          margin-top: calc(1px * var(--nh-spacing-md));
+        .field.radio {
+          justify-content: center;  
+          padding-top: calc(1px * var(--nh-spacing-md));
+          margin-top: calc(1px * var(--nh-spacing-lg));
+        }
+
+        sl-radio-group, sl-radio-group::part(base) {
+          width: 100%;
+        }
+          
+        sl-radio-group::part(base) {
+          display: flex;
+          justify-content: space-around;
+          gap: calc(1px * var(--nh-spacing-md));
+        }
+
+        sl-radio:hover::part(control) {
+          background-color: var(--nh-theme-bg-detail); 
         }
 
         sl-radio::part(label) {
           color: var(--nh-theme-fg-default);
         }
 
-        sl-radio-group::part(base) {
-          display: flex;
-          gap: calc(1px * var(--nh-spacing-md));
-        }
-
         sl-radio::part(control) {
           color: var(--nh-theme-accent-default);
           border-color: var(--nh-theme-accent-default);
           background-color: transparent;
+        }
+
+        sl-radio {
+          margin-bottom: 0 !important;
         }
       `,
     ];

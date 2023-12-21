@@ -200,8 +200,8 @@ export default class NHGlobalConfig extends NHComponent {
       }
 
       h2 {
-        margin: 0;
-        padding-left: 2rem;
+        margin: 0 auto;
+        width: 18rem;
       }
 
       main {
