@@ -21,6 +21,7 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import AssessmentWidgetConfigForm from './assessment-widget-config-form';
 import { ResourceDef } from '@neighbourhoods/client';
 import ResourceDefList from './resource-def-list';
+import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -32,12 +33,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   private _dialog;
   @query('assessment-widget-config-form')
   private _form;
-
   @query('#resource-def-list')
   private _resourceDefList;
-  
   @query("nh-button[type='submit']")
   submitBtn;
+  
+  @state()
+  editingConfig: boolean = false;
 
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
@@ -69,7 +71,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         </resource-def-list>
 
         <div class="container">
-          <assessment-widget-tray .editable=${true}>
+          <assessment-widget-tray
+            .editable=${true}
+            .editing=${this.editingConfig}
+            @add-widget=${() => {
+              this.editingConfig = true;
+            }}
+          >
             <div slot="widgets">
                 <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
                 <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
@@ -77,6 +85,14 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
             </div>
           </assessment-widget-tray>
+
+          <sl-details summary="Toggle Me" .open=${this.editingConfig}>
+            <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
+            <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
+          
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+            aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          </sl-details>
         </div>
 
         <nh-dialog
@@ -117,6 +133,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-card': NHCard,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
+    'sl-details': SlDetails,
+    'sl-icon': SlIcon,
     'assessment-widget-config-form': AssessmentWidgetConfigForm,
     'resource-def-list': ResourceDefList,
     'assessment-widget-tray': NHResourceAssessmentTray,
@@ -168,11 +186,29 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
       .container {
-        padding: calc(1px * var(--nh-spacing-lg));
+        padding: calc(1px * var(--nh-spacing-lg)) 0;
         grid-column: 2 / -1;
         display: grid;
         align-items: flex-start;
         justify-items: center;
+        box-sizing: border-box;
+      }
+
+      sl-details {
+        width: 100%;
+      }
+
+      sl-details::part(base) {
+        border-radius: calc(1px * var(--nh-radii-lg));
+        background-color: var(--nh-theme-bg-surface);
+        border-color: var(--nh-theme-fg-disabled);
+        margin: 0 calc(1px * var(--nh-spacing-lg));
+      }
+
+      sl-details::part(summary-icon) {
+        /* Disable the expand/collapse animation */
+        rotate: none;
+        color: var(--nh-theme-accent-emphasis);
       }
     `;
   }
