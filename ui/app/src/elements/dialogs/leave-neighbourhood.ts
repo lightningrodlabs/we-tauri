@@ -1,7 +1,7 @@
 import { CSSResult, html } from "lit";
 import { property, query } from "lit/decorators.js";
 
-import { NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
+import { NHAlert, NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
 import { Snackbar } from "@scoped-elements/material-web";
 import { contextProvided } from "@lit-labs/context";
 import { DnaHash } from "@holochain/client";
@@ -83,8 +83,6 @@ export class LeaveNeighbourhood extends NHComponentShoelace {
                 <nh-dialog
                   id="leave-neighbourhood"
                   .title=${"Leave Neighbourhood"}
-                  .alertMessage=${"Are you sure you want to leave this neighbourhood?"}
-                  .alertType=${"warning"}
                   .dialogType=${"leave-neighbourhood"}
                   .size=${"medium"}
                   .handleOk=${() => this.leaveGroup()}
@@ -92,7 +90,13 @@ export class LeaveNeighbourhood extends NHComponentShoelace {
                   .primaryButtonDisabled=${false}
                 >
                 <div slot="inner-content">
-                  <nh-card .theme=${"dark"} .title="" .heading="" class="nested-card">
+                <nh-card .theme=${"dark"} .title="" .heading="" class="nested-card">
+                <nh-alert
+                  .title=${"Are you sure?"}
+                  .closable=${false}
+                  .type=${"danger"}
+                >
+                </nh-alert>
                     This will:
                     <ul>
                       <li>delete all applets that you have installed for this neighbourhood, together with all the data you have stored in these applets</li>
@@ -112,6 +116,7 @@ export class LeaveNeighbourhood extends NHComponentShoelace {
 
   static get elementDefinitions() {
     return {
+      "nh-alert": NHAlert,
       "nh-dialog": NHDialog,
       "nh-button": NHButton,
       "mwc-snackbar": Snackbar,

@@ -22,7 +22,7 @@ import { matrixContext, weGroupContext } from '../../context';
 import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
 import { fakeMd5SeededEntryHash } from '../../utils';
 import { SlInput, SlTextarea } from '@scoped-elements/shoelace';
-import { NHButton, NHDialog } from '@neighbourhoods/design-system-components';
+import { NHAlert, NHButton, NHDialog } from '@neighbourhoods/design-system-components';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -176,14 +176,18 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
         size="medium"
         dialogType=${"applet-install"}
         handleOk=${this.createApplet.bind(this)}
-        title="Install Applet"
+        .title=${"Install Applet"}
         .openButtonRef=${this._openAppletDialogButton}
         .primaryButtonDisabled=${this.publishDisabled}
-        alertMessage="Note: It is recommended to download and install Applets from the
-          Applets Library if available. This guarantees compatibility between Applets of the same
-          type and version across neighbourhoods and it allows features like federation."
       >
         <div slot="inner-content" class="column">
+          <nh-alert
+            .title=${"Note:"}
+            .description=${"It is recommended to download and install Applets from the Applets Library if available. This guarantees compatibility between Applets of the same type and version across neighbourhoods and it allows features like federation."}
+            .closable=${false}
+            .type=${"neutral"}
+          >
+          </nh-alert>
           <div style="width: 100%;">
             <sl-input
               id="installed-app-id"
@@ -229,6 +233,7 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
   static elementDefinitions = {
     'sl-textarea': SlTextarea,
     'sl-input': SlInput,
+    'nh-alert': NHAlert,
     'nh-button': NHButton,
     'nh-dialog': NHDialog,
     'mwc-snackbar': Snackbar,

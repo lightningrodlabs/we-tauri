@@ -1,7 +1,7 @@
 import { CSSResult, html } from "lit";
 import { property, query } from "lit/decorators.js";
 
-import { NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
+import { NHAlert, NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
 
 export class UninstallApplet extends NHComponentShoelace {
   @property()
@@ -26,9 +26,7 @@ export class UninstallApplet extends NHComponentShoelace {
     return html`
                 <nh-dialog
                   id="uninstall-applet"
-                  .title=${"Uninstall Applet"}
-                  .alertMessage=${"Are you sure you want to uninstall this applet?"}
-                  .alertType=${"warning"}
+                  .title=${"Uninstall Applet"}}
                   .dialogType=${"applet-uninstall"}
                   .size=${"medium"}
                   .handleOk=${this.confirm}
@@ -37,6 +35,12 @@ export class UninstallApplet extends NHComponentShoelace {
                 >
                 <div slot="inner-content">
                   <nh-card .theme=${"dark"} .title="" .heading="" class="nested-card">
+                    <nh-alert
+                      .title=${"Are you sure you want to uninstall?"}
+                      .closable=${false}
+                      .type=${"danger"}
+                    >
+                    </nh-alert>
                     <ul>
                       <li>This will <strong>delete all data</strong> you have stored within this applet.</li>
                       <li>In case this applet has been federated with other neighbourhoods, <b>it will also be removed from those neighbourhoods</b>.</li>
@@ -52,6 +56,7 @@ export class UninstallApplet extends NHComponentShoelace {
 
   static get elementDefinitions() {
     return {
+      "nh-alert": NHAlert,
       "nh-dialog": NHDialog,
       "nh-button": NHButton,
       "nh-card": NHCard,

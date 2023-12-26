@@ -256,8 +256,12 @@ export class SensemakerDashboard extends NHComponentShoelace {
       <div class="container skeleton-overview">
         <main>
         <div class="alert-wrapper">
-          <nh-alert style="display: flex; flex: 1; gap: 8px;">
-            <span>There are no applets installed - go to your Neighbourhood Home to install them, then visit the applets and return here for data.</span>
+          <nh-alert
+            .title=${"There are no applets installed"}
+            .description=${"Go to your Neighbourhood Home to install them, then visit the applets and return here for data."}
+            .type=${"danger"}
+            style="display: flex; flex: 1; gap: 8px;"
+          >
           </nh-alert>
         </div>
           <div class="skeleton-nav-container">
