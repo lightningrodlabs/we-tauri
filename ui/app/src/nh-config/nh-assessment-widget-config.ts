@@ -4,19 +4,23 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash } from '@holochain/client';
+import { DnaHash, EntryHash } from '@holochain/client';
 
 import {
+  NHAssessmentContainer,
   NHButton,
   NHCard,
   NHComponent,
   NHDialog,
   NHPageHeaderCard,
+  NHResourceAssessmentTray,
 } from '@neighbourhoods/design-system-components';
 
-import { query } from 'lit/decorators.js';
+import { query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import AssessmentWidgetConfigForm from './assessment-widget-config-form';
+import { ResourceDef } from '@neighbourhoods/client';
+import ResourceDefList from './resource-def-list';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -64,6 +68,17 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         >
         </resource-def-list>
 
+        <div class="container">
+          <assessment-widget-tray .editable=${true}>
+            <div slot="widgets">
+                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+            </div>
+          </assessment-widget-tray>
+        </div>
+
         <nh-dialog
           .dialogType=${'input-form'}
           .size=${'medium'}
@@ -92,7 +107,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       </main>
     `;
   }
-
+ 
   private renderMainForm(): TemplateResult {
     return html`<assessment-widget-config-form></assessment-widget-config-form>`
   }
@@ -103,6 +118,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
     'assessment-widget-config-form': AssessmentWidgetConfigForm,
+    'resource-def-list': ResourceDefList,
+    'assessment-widget-tray': NHResourceAssessmentTray,
+    'assessment-widget': NHAssessmentContainer,
   };
 
   private onClickBackButton() {
@@ -133,7 +151,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         flex: 1;
         place-content: start;
         color: var(--nh-theme-fg-default);
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr 3fr;
         grid-template-rows: 4rem auto;
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
@@ -144,9 +162,17 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
       resource-def-list {
-        grid-column: 1 / -1;
+        grid-column: 1 / 1;
         display: flex;
         align-items: start;
+      }
+
+      .container {
+        padding: calc(1px * var(--nh-spacing-lg));
+        grid-column: 2 / -1;
+        display: grid;
+        align-items: flex-start;
+        justify-items: center;
       }
     `;
   }
