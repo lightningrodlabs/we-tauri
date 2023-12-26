@@ -151,7 +151,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         flex: 1;
         place-content: start;
         color: var(--nh-theme-fg-default);
-        grid-template-columns: 1fr 3fr;
+        grid-template-columns: 1fr 5fr;
         grid-template-rows: 4rem auto;
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
