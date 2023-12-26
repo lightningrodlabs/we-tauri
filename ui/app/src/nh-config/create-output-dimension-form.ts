@@ -353,10 +353,11 @@ export default class CreateOutputDimensionMethod extends NHBaseForm {
       </form>`
       : html`<nh-alert
               style="margin-top: 1rem;"
-              .type=${"danger"}
-              .title=${"You have not created any input dimensions"}
+              .type=${"neutral"}
               .closable=${false}
-              .description=${"Close this dialog and create an input dimension first"}></nh-alert>`}
+              .title=${"You have not created any input dimensions"}
+              .description=${"Click 'Add' to create an input dimension first"}>
+            </nh-alert>`}
     `;
   }
 

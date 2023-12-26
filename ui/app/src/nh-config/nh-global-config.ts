@@ -136,11 +136,16 @@ export default class NHGlobalConfig extends NHComponent {
 
           <nh-button
             slot="primary-action"
-            .disabled=${this._formType == 'method' && this._inputDimensionList._dimensionEntries && this._inputDimensionList._dimensionEntries.length == 0}
             type="submit"
             .size=${'auto'}
             .variant=${'primary'}
-            @click=${() => this._dimensionForm.handleSubmit()}
+            @click=${() => {
+                const cannotCreateOutputMethod = !(this._inputDimensionList._dimensionEntries && this._inputDimensionList._dimensionEntries.length > 0);
+                if(this._formType == 'method' && cannotCreateOutputMethod) this._formType = 'input-dimension'
+
+                this._dimensionForm.handleSubmit()
+              }
+            }
             .loading=${false}
             >Add</nh-button
           >
