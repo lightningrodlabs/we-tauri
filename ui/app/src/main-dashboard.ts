@@ -32,7 +32,7 @@ import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-setting
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
-import { NHGlobalConfig } from './nh-config';
+import { NHGlobalConfig, NHAssessmentWidgetConfig } from './nh-config';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
 export class MainDashboard extends ScopedRegistryHost(LitElement) {
@@ -604,7 +604,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'nh-button': NHButton,
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
-      'nh-global-config': NHGlobalConfig,
+      'nh-global-config': NHAssessmentWidgetConfig,
       'nh-sensemaker-settings': NHSensemakerSettings,
       'applet-instance-renderer': AppletInstanceRenderer,
       'applet-not-installed': AppletNotInstalled,
