@@ -147,7 +147,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
         <we-group-context .weGroupId=${this._selectedWeGroupId} @return-home=${() =>{
           this._dashboardMode = DashboardMode.WeGroupHome;
         }}>
-          <nh-global-config></nh-global-config>
+          <nh-widget-config></nh-widget-config>
         </we-group-context>
       `
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
@@ -604,7 +604,8 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'nh-button': NHButton,
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
-      'nh-global-config': NHAssessmentWidgetConfig,
+      'nh-widget-config': NHAssessmentWidgetConfig,
+      'nh-global-config': NHGlobalConfig,
       'nh-sensemaker-settings': NHSensemakerSettings,
       'applet-instance-renderer': AppletInstanceRenderer,
       'applet-not-installed': AppletNotInstalled,
@@ -673,7 +674,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
         6% {opacity: 0;}
         7% {opacity: 0; z-index:1}
         100% {opacity: 0; z-index:1}
-      }
+      }NHGlobalConfig
 
       .tlcbgGroupCentric {
         border-color: var(--nh-colors-eggplant-800);
