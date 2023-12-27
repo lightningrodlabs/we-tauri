@@ -9,11 +9,13 @@ import { DnaHash } from '@holochain/client';
 import {
   NHAssessmentContainer,
   NHButton,
+  NHButtonGroup,
   NHCard,
   NHComponent,
   NHDialog,
   NHPageHeaderCard,
   NHResourceAssessmentTray,
+  NHTooltip,
 } from '@neighbourhoods/design-system-components';
 
 import { query, state } from 'lit/decorators.js';
@@ -90,58 +92,68 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             class="slide ${classMap({
               editing: this.editingConfig,
             })}"
-            summary="Edit the Assessment Widget Configuration"
             .open=${this.editingConfig}
             @sl-hide=${(_e: Event) => {
               this.editingConfig = false;
             }}
           >
-            <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
-            <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
-          
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-            aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              <div>
+                <h2>Assessment Widget Configuration</h2>
+                ${this.renderMainForm()}
+              </div>
+              <nh-button-group 
+                .direction=${"horizontal"}
+                class="action-buttons"
+              >
+                <span slot="buttons">
+                  <nh-button
+                    id="close-widget-config"
+                    .variant=${'warning'}
+                    .size=${'md'}
+                    @click=${() => {
+                      this.editingConfig = false;
+                    }}
+                  >
+                    Cancel
+                  </nh-button>
+                  <nh-button
+                    id="update-widget-config"
+                    .variant=${'primary'}
+                    .size=${'md'}
+                    @click=${() => {
+                    }}
+                  >
+                    Update
+                  </nh-button>
+                  <nh-button
+                    id="add-widget-config"
+                    .variant=${'success'}
+                    .size=${'md'}
+                    @click=${() => {
+                    }}
+                  >
+                    Create
+                  </nh-button>
+                </span>
+              </nh-button-group>
+            </div>
           </sl-details>
         </div>
-
-        <nh-dialog
-          .dialogType=${'input-form'}
-          .size=${'medium'}
-          @form-submitted=${(e: CustomEvent) => { (e.currentTarget as NHDialog).hideDialog(); this._form.resetForm() }}
-        >
-          <div slot="inner-content" class="container">
-            <h2>
-              ${'Add a thing'}
-            </h2>
-            ${this.renderMainForm()}
-          </div>
-
-          <nh-button
-            slot="primary-action"
-            type="submit"
-            .size=${'auto'}
-            .variant=${'primary'}
-            @click=${() => {
-
-              }
-            }
-            .loading=${false}
-            >Add</nh-button
-          >
-        </nh-dialog>
       </main>
     `;
   }
- 
+
   private renderMainForm(): TemplateResult {
     return html`<assessment-widget-config-form></assessment-widget-config-form>`
   }
 
   static elementDefinitions = {
     'nh-button': NHButton,
+    'nh-button-group': NHButtonGroup,
     'nh-card': NHCard,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
+    'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
     'sl-icon': SlIcon,
     'assessment-widget-config-form': AssessmentWidgetConfigForm,
@@ -167,7 +179,14 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         align-items: flex-start;
       }
 
+      .action-buttons {
+        position: absolute; 
+        right: calc(1px * var(--nh-spacing-xl));
+        bottom: calc(1px * var(--nh-spacing-xs));
+      }
+
       h2 {
+        text-align: center;
         margin: 0 auto;
         width: 18rem;
       }
@@ -212,6 +231,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
       sl-details.editing::part(header) {
         pointer-events: none;
+        height: 0px;
+        padding: 0;
       }
 
       sl-details.editing::part(base) {

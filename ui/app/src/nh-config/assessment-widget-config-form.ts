@@ -13,7 +13,7 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
   // Form model
   @state()
   protected _model = { 
-    // This form's model is for two zome calls (Range and Dimension), but keep it in a flat structure for now
+    name: ""
   };
 
   // Full concrete implementation of form schema
@@ -101,7 +101,20 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
   render() {
     return html`
       <form method="post" action="" autoComplete="off">
-          
+        <nh-tooltip  .visible=${this.shouldShowValidationErrorForField('name')} .text=${this.getErrorMessage('name')} .variant=${"danger"}>
+          <nh-text-input
+            .errored=${this.shouldShowValidationErrorForField('name')}
+            .size=${"medium"}
+            slot="hoverable"
+            .label=${"name"}
+            .required=${true}
+            .placeholder=${"name"}
+            .name=${"name"}
+            .disabled=${false}
+            .value=${this._model.name}
+            @change=${(e: CustomEvent) => this.handleInputChange(e)}>
+          </nh-text--input>
+        </nh-tooltip>
       </form>
     `;
   }
@@ -123,7 +136,7 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
       css`
         /* Layout */
         :host {
-          display: grid;
+          display: flex;
           flex: 1;
           place-content: start;
           color: var(--nh-theme-fg-default);
