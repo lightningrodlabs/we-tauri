@@ -4,7 +4,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash, EntryHash } from '@holochain/client';
+import { DnaHash } from '@holochain/client';
 
 import {
   NHAssessmentContainer,
@@ -19,9 +19,9 @@ import {
 import { query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import AssessmentWidgetConfigForm from './assessment-widget-config-form';
-import { ResourceDef } from '@neighbourhoods/client';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
+import { classMap } from 'lit/directives/class-map.js';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -86,7 +86,16 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             </div>
           </assessment-widget-tray>
 
-          <sl-details summary="Toggle Me" .open=${this.editingConfig}>
+          <sl-details
+            class="slide ${classMap({
+              editing: this.editingConfig,
+            })}"
+            summary="Edit the Assessment Widget Configuration"
+            .open=${this.editingConfig}
+            @sl-hide=${(_e: Event) => {
+              this.editingConfig = false;
+            }}
+          >
             <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
             <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
           
@@ -192,13 +201,31 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         align-items: flex-start;
         justify-items: center;
         box-sizing: border-box;
+        position: relative;
       }
 
       sl-details {
         width: 100%;
+        position: absolute;
+        bottom: 0;
+      }
+
+      sl-details.editing::part(header) {
+        pointer-events: none;
+      }
+
+      sl-details.editing::part(base) {
+        opacity: 1;
+      }
+
+      sl-details::part(content) {
+        min-height: 24rem;
       }
 
       sl-details::part(base) {
+        opacity: 0;
+        transition: 0.5s all cubic-bezier(0.4, 0, 1, 1);
+
         border-radius: calc(1px * var(--nh-radii-lg));
         background-color: var(--nh-theme-bg-surface);
         border-color: var(--nh-theme-fg-disabled);
@@ -206,9 +233,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
       sl-details::part(summary-icon) {
-        /* Disable the expand/collapse animation */
-        rotate: none;
-        color: var(--nh-theme-accent-emphasis);
+        display: none;
       }
     `;
   }
