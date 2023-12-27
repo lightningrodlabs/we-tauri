@@ -7,14 +7,19 @@ import {
   NHTooltip,
 } from '@neighbourhoods/design-system-components';
 import { html, css, CSSResult } from 'lit';
-import { SlCheckbox, SlInput, SlRadio, SlRadioGroup } from '@scoped-elements/shoelace';
 import { object, string, number, ObjectSchema } from 'yup';
-import { SensemakerStore } from '@neighbourhoods/client';
+import { Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { property, state } from 'lit/decorators.js';
+import { clap, fire_range, heart, like_dislike, thumb } from './icons-temp';
+import { encodeHashToBase64 } from '@holochain/client';
 
 export default class AssessmentWidgetConfigForm extends NHBaseForm {
   @property()
   sensemakerStore!: SensemakerStore;
+  @property()
+  inputDimensions!: Array<Dimension>;
+  @property()
+  outputDimensions!: Array<Dimension>;
 
   /* Concrete implementations of the abstract BaseForm interface */
   // Form model
@@ -103,6 +108,7 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
 
     // Change handler overloads
     const inputControl = e.target as any;
+    console.log('this._model :>> ', this._model);
     //..
   }
 
@@ -125,36 +131,41 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
         >
           <nh-select
             .errored=${this.shouldShowValidationErrorForField('assessment_widget')}
-            .size=${'large'}
             slot="hoverable"
-            .required=${true}
-            id="choose_assessment_widget"
             name="assessment_widget"
+            id="choose_assessment_widget"
+            .size=${'large'}
+            .required=${true}
             .placeholder=${'Select'}
             .label=${'1. Select an assessment widget for this resource: '}
             @change=${this.handleInputChange}
             .options=${ [
-      {
-        label: "One",
-        value: "1"
-      },
-      {
-        label: "Two",
-        value: "2"
-      },
-      {
-        label: "Three",
-        value: "3"
-      },
-      {
-        label: "Four",
-        value: "4"
-      },
-      {
-        label: "Five",
-        value: "5"
-      },
-    ]}
+              {
+                label: "Heart",
+                value: "Heart",
+                imageB64: heart,
+              },
+              {
+                label: "Like",
+                value: "Like",
+                imageB64: thumb,
+              },
+              {
+                label: "Clap",
+                value: "Clap",
+                imageB64: clap,
+              },
+              {
+                label: "Like/Dislike",
+                value: "Like/Dislike",
+                imageB64: like_dislike,
+              },
+              {
+                label: "Fire",
+                value: "Fire",
+                imageB64: fire_range,
+              },
+            ]}
           >
           </nh-select>
         </nh-tooltip>
@@ -174,28 +185,14 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
             .placeholder=${'Select'}
             .label=${'2. Select the input dimension: '}
             @change=${this.handleInputChange}
-            .options=${ [
-      {
-        label: "One",
-        value: "1"
-      },
-      {
-        label: "Two",
-        value: "2"
-      },
-      {
-        label: "Three",
-        value: "3"
-      },
-      {
-        label: "Four",
-        value: "4"
-      },
-      {
-        label: "Five",
-        value: "5"
-      },
-    ]}
+            .options=${this?.inputDimensions
+              ?.map(
+                (dimension) => ({
+                  label: dimension.name,
+                  value: dimension.name,
+                })
+              ) || []
+            }
           >
           </nh-select>
         </nh-tooltip>
@@ -216,28 +213,14 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
             .placeholder=${'Select'}
             .label=${'3. Select the output dimension: '}
             @change=${this.handleInputChange}
-            .options=${ [
-      {
-        label: "One",
-        value: "1"
-      },
-      {
-        label: "Two",
-        value: "2"
-      },
-      {
-        label: "Three",
-        value: "3"
-      },
-      {
-        label: "Four",
-        value: "4"
-      },
-      {
-        label: "Five",
-        value: "5"
-      },
-    ]}
+            .options=${this?.outputDimensions
+              ?.map(
+                (dimension) => ({
+                  label: dimension.name,
+                  value: dimension.name,
+                })
+              ) || []
+            }
           >
           </nh-select>
         </nh-tooltip>
@@ -266,14 +249,18 @@ export default class AssessmentWidgetConfigForm extends NHBaseForm {
           overflow: auto;
         }
 
+        :host, form {
+          min-height: 25rem;
+        }
+
         form {
           display: flex;
           flex: 1;
           flex-wrap: wrap;
-          align-items: center;
+          align-items: flex-start;
           padding: 0;
-          margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-xl)) 0;
-          gap: calc(1px * var(--nh-spacing-md));
+          margin: calc(1px * var(--nh-spacing-md)) 0 calc(1px * var(--nh-spacing-3xl)) 0;
+          gap: 0 calc(1px * var(--nh-spacing-4xl));
           padding-bottom: 4rem;
         }
 

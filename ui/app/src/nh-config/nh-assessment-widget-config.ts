@@ -4,7 +4,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash } from '@holochain/client';
+import { DnaHash, EntryHash } from '@holochain/client';
 
 import {
   NHAssessmentContainer,
@@ -24,6 +24,8 @@ import AssessmentWidgetConfigForm from './assessment-widget-config-form';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
+import { Dimension } from '@neighbourhoods/client';
+import { EntryRecord } from '@holochain-open-dev/utils';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -43,12 +45,37 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @state()
   editingConfig: boolean = false;
 
+  @state()
+  inputDimensionEntries!: Array<Dimension>;
+  @state()
+  outputDimensionEntries!: Array<Dimension>;
+
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
 
-  protected async updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+  async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    this.assignDimensionEntries();
+    console.log(this._form.renderRoot.querySelectorAll('nh-tooltip'))
+  }
 
+  async assignDimensionEntries() {
+    try {
+      const input : Dimension[] = [];
+      const output : Dimension[] = [];
+      const dimensionEntries = await this._sensemakerStore.value?.getDimensions();
+      dimensionEntries!.forEach(dimension => {
+        if(dimension.computed) {
+          output.push(dimension);
+          return;
+        }
+        input.push(dimension);
+      })
+      this.inputDimensionEntries = input;
+      this.outputDimensionEntries = output;
+    } catch (error) {
+      console.log('Error fetching dimension details: ', error);
+    }
   }
 
   render() {
@@ -144,7 +171,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   private renderMainForm(): TemplateResult {
-    return html`<assessment-widget-config-form></assessment-widget-config-form>`
+    return html`<assessment-widget-config-form
+      .inputDimensions=${this.inputDimensionEntries}
+      .outputDimensions=${this.outputDimensionEntries}
+    ></assessment-widget-config-form>`
   }
 
   static elementDefinitions = {
@@ -198,7 +228,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         place-content: start;
         color: var(--nh-theme-fg-default);
         grid-template-columns: 1fr 5fr;
-        grid-template-rows: 4rem auto;
+        grid-template-rows: 4rem minmax(44rem, auto) 100%;
         padding: calc(1px * var(--nh-spacing-xl));
         gap: calc(1px * var(--nh-spacing-sm));
       }
@@ -240,7 +270,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
       sl-details::part(content) {
-        min-height: 24rem;
+        min-height: 28rem;
+        padding: calc(1px * var(--nh-spacing-xl));
       }
 
       sl-details::part(base) {
