@@ -22,7 +22,6 @@ import {
 
 import { query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import AssessmentWidgetConfigForm from './assessment-widget-config-form';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
@@ -288,7 +287,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
     'sl-icon': SlIcon,
-    'assessment-widget-config-form': AssessmentWidgetConfigForm,
     'resource-def-list': ResourceDefList,
     'assessment-widget-tray': NHResourceAssessmentTray,
     'assessment-widget': NHAssessmentContainer,
