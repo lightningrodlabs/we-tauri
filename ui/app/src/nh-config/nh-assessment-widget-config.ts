@@ -2,6 +2,7 @@ import { html, css, TemplateResult, PropertyValueMap } from 'lit';
 import { contextProvided } from '@lit-labs/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
+import { object, string, number, ObjectSchema } from 'yup';
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
 import { DnaHash, EntryHash } from '@holochain/client';
@@ -13,6 +14,7 @@ import {
   NHCard,
   NHComponent,
   NHDialog,
+  NHForm,
   NHPageHeaderCard,
   NHResourceAssessmentTray,
   NHTooltip,
@@ -26,6 +28,7 @@ import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import { Dimension } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
+import { heart, thumb, clap, like_dislike, fire_range } from './icons-temp';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -35,7 +38,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   @query('nh-dialog')
   private _dialog;
-  @query('assessment-widget-config-form')
+  @query('nh-form')
   private _form;
   @query('#resource-def-list')
   private _resourceDefList;
@@ -128,7 +131,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 <h2>Assessment Widget Configuration</h2>
                 ${this.renderMainForm()}
               </div>
-              <nh-button-group 
+              <nh-button-group
                 .direction=${"horizontal"}
                 class="action-buttons"
               >
@@ -153,11 +156,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     Update
                   </nh-button>
                   <nh-button
+                    type="submit"
+                    @click=${() => this._form?.handleSubmit()}
                     id="add-widget-config"
                     .variant=${'success'}
                     .size=${'md'}
-                    @click=${() => {
-                    }}
                   >
                     Create
                   </nh-button>
@@ -171,16 +174,115 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   private renderMainForm(): TemplateResult {
-    return html`<assessment-widget-config-form
-      .inputDimensions=${this.inputDimensionEntries}
-      .outputDimensions=${this.outputDimensionEntries}
-    ></assessment-widget-config-form>`
+    return html`
+      <nh-form
+        .config=${{
+          submitBtnRef: this.submitBtn,
+          rows: [1,1,1],
+          fields: [
+            [{
+              type: 'select',
+              selectOptions: [
+                {
+                  label: "Heart",
+                  value: "Heart",
+                  imageB64: heart,
+                },
+                {
+                  label: "Like",
+                  value: "Like",
+                  imageB64: thumb,
+                },
+                {
+                  label: "Clap",
+                  value: "Clap",
+                  imageB64: clap,
+                },
+                {
+                  label: "Like/Dislike",
+                  value: "Like/Dislike",
+                  imageB64: like_dislike,
+                },
+                {
+                  label: "Fire",
+                  value: "Fire",
+                  imageB64: fire_range,
+                },
+              ],
+              name: "assessment_widget",
+              id: "assessment-widget",
+              defaultValue: "",
+              size: "large",
+              required: true,
+              placeholder: 'Select',
+              label: '1. Select an assessment widget for this resource: ',
+            }],
+            [{
+            type: 'select',
+            selectOptions: this?.inputDimensionEntries
+            ?.map(
+              (dimension) => ({
+                label: dimension.name,
+                value: dimension.name,
+              })
+            ) || [],
+            name: "input_dimension",
+            id: "input-dimension",
+            defaultValue: "",
+            size: "large",
+            required: true,
+            placeholder: 'Select',
+            label: '2. Select the input dimension: ',
+            }],
+            [{
+            type: 'select',
+            selectOptions: this?.outputDimensionEntries
+            ?.map(
+              (dimension) => ({
+                label: dimension.name,
+                value: dimension.name,
+              })
+            ) || []
+          ,
+            name: "output_dimension",
+            id: "output-dimension",
+            defaultValue: "",
+            size: "large",
+            required: true,
+            placeholder: 'Select',
+            label: '3. Select the output dimension: ',
+            }]
+          ],
+          resetOverride() {
+            console.log('reset :>>');
+          },
+          submitOverride() {
+            console.log('submit :>>');
+          },
+          submitBtnLabel: "Confirm",
+          progressiveValidation: true,
+          schema: object({
+            assessment_widget: string()
+              .min(1, 'Must be at least 1 characters')
+              .required('Select a widget'),
+            input_dimension: string()
+              .min(1, 'Must be at least 1 characters')
+              .required('Select an input dimension'),
+            output_dimension: string()
+              .min(1, 'Must be at least 1 characters')
+              .required('Select an output dimension'),
+          })
+        }}
+        >
+      </nh-form>
+    `
   }
 
   static elementDefinitions = {
     'nh-button': NHButton,
     'nh-button-group': NHButtonGroup,
     'nh-card': NHCard,
+    'nh-form': NHForm,
     'nh-dialog': NHDialog,
     'nh-page-header-card': NHPageHeaderCard,
     'nh-tooltip': NHTooltip,
@@ -202,6 +304,22 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       .container {
         display: flex;
         width: 100%;
+      }
+      
+      nh-form {
+        display: flex;
+        min-height: 30rem;
+      }
+      
+      @media (min-width: 1350px) {
+        form {
+            flex-wrap: nowrap;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        :host {
+          overflow: hidden;
+        }
       }
 
       .container {
