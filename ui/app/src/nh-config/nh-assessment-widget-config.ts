@@ -5,7 +5,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 import { object, string, number, ObjectSchema } from 'yup';
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { DnaHash, EntryHash } from '@holochain/client';
+import { AppInfo, CallZomeResponse, DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 
 import {
   NHAssessmentContainer,
@@ -25,9 +25,10 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
-import { Dimension } from '@neighbourhoods/client';
+import { AssessmentWidgetBlockConfig, Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from './icons-temp';
+import { decode } from '@msgpack/msgpack';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -35,8 +36,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
-  @query('nh-dialog')
-  private _dialog;
   @query('nh-form')
   private _form;
   @query('#resource-def-list')
@@ -52,25 +51,37 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   _formAction: "create" | "update" = "create";
 
   @state()
-  inputDimensionEntries!: Array<Dimension>;
+  inputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
   @state()
-  outputDimensionEntries!: Array<Dimension>;
+  outputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
+
+  /* Temp - need to add Store method that returns records with entry hashes*/
+  @state()
+  private _dimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
+  @state()
+  private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
 
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
   );
 
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.assignDimensionEntries();
-    console.log(this._form.renderRoot.querySelectorAll('nh-tooltip'))
+    try {
+      if(!this._sensemakerStore?.value) return;
+      await this.fetchDimensionEntries()
+      await this.fetchRangeEntries()
+      await this.assignDimensionEntries();
+    } catch (error) {
+      console.error('Could not fetch: ', error)
+    }
   }
 
   async assignDimensionEntries() {
     try {
-      const input : Dimension[] = [];
-      const output : Dimension[] = [];
-      const dimensionEntries = await this._sensemakerStore.value?.getDimensions();
-      dimensionEntries!.forEach(dimension => {
+      const input : any = [];
+      const output : any = [];
+      // const dimensionEntries = await this._sensemakerStore.value?.getDimensions();
+      this._dimensionEntries!.forEach(dimension => {
         if(dimension.computed) {
           output.push(dimension);
           return;
@@ -86,8 +97,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render() {
     return html`
-      <main
-      >
+      <main>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
           <nh-button
             slot="secondary-action"
@@ -101,7 +111,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
         <resource-def-list
           id="resource-def-list"
-          .sensemakerStore=${this._sensemakerStore.value}
+          .sensemakerStore=${this._sensemakerStore?.value}
         >
         </resource-def-list>
 
@@ -180,8 +190,41 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             </div>
           </sl-details>
         </div>
-      </main>
+        </main>
     `;
+  }
+
+  async createEntries(model: any) {
+    const resource_def_eh = model.input_dimension; // temp
+    const { assessment_widget, input_dimension, output_dimension } = model;
+
+    let input: AssessmentWidgetBlockConfig[] = [{
+      inputAssessmentWidget: {
+        dimensionEh: input_dimension,
+        componentName: assessment_widget 
+      } as any,
+      outputAssessmentWidget: {
+        dimensionEh: output_dimension,
+        componentName: assessment_widget
+      } as any
+    }];
+
+    let configEh;
+    try {
+      configEh = await (this._sensemakerStore?.value as SensemakerStore).setAssessmentWidgetTrayConfig(resource_def_eh, input);
+    } catch (error) {
+      console.log('Error setting assessment widget config: ', error);
+    }
+    if(!configEh) return
+    console.log('configEh :>> ', configEh);
+
+    await this.updateComplete;
+    this.dispatchEvent(
+      new CustomEvent("assessment-widget-config-created", {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   private renderMainForm(): TemplateResult {
@@ -238,7 +281,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             ?.map(
               (dimension) => ({
                 label: dimension.name,
-                value: dimension.name,
+                value: encodeHashToBase64(dimension.dimension_eh)
               })
             ) || [],
             name: "input_dimension",
@@ -255,7 +298,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             ?.map(
               (dimension) => ({
                 label: dimension.name,
-                value: dimension.name,
+                value: encodeHashToBase64(dimension.dimension_eh),
               })
             ) || []
           ,
@@ -272,8 +315,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             console.log('reset :>>');
           },
           submitOverride: (() => {
-            this._formAction == "create"
-            ? console.log('submit created :>>')
+            return this._formAction == "create"
+            ? (model) => this.createEntries(model)
             : console.log('submit updated :>>')
           })(),
           progressiveValidation: true,
@@ -422,4 +465,98 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
     `;
   }
+
+    // COPIED FROM dimension-list, this will need lifting up into the layout component
+    // TODO: replace fetches below with new SensemakerStore method calls
+    async fetchDimension(entryHash: EntryHash) : Promise<CallZomeResponse> {
+      try {
+        //@ts-ignore
+        const appInfo: AppInfo = await this._sensemakerStore.value.client.appInfo();
+        const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+
+        //@ts-ignore
+        return this._sensemakerStore.value.client.callZome({
+              cell_id,
+              zome_name: 'sensemaker',
+              fn_name: 'get_dimension',
+              payload: entryHash,
+        });
+      } catch (error) {
+        console.log('Error fetching dimension details: ', error);
+      }
+    }
+  
+    async fetchRange(entryHash: EntryHash) : Promise<CallZomeResponse> {
+      try {
+        //@ts-ignore
+        const appInfo: AppInfo = await this._sensemakerStore.value.client.appInfo();
+        const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+
+        //@ts-ignore
+        return this._sensemakerStore.value.client.callZome({
+              cell_id,
+              zome_name: 'sensemaker',
+              fn_name: 'get_range',
+              payload: entryHash,
+        });
+      } catch (error) {
+        console.log('Error fetching range details: ', error);
+      }
+    }
+  
+    async fetchDimensionEntriesFromHashes(dimensionEhs: EntryHash[]) : Promise<Dimension[]> {
+      const response = await Promise.all(dimensionEhs.map(eH => this.fetchDimension(eH)))
+      return response.map(payload => {
+        try {
+          //@ts-ignore
+          return decode(payload.entry.Present.entry) as Dimension
+        } catch (error) {
+          console.log('Error decoding dimension payload: ', error);
+        }
+      }) as Dimension[];
+    }
+  
+    async fetchRangeEntries() {
+      await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
+    }
+  
+    async fetchDimensionEntries() {
+      try {
+        //@ts-ignore
+        const appInfo: AppInfo = await this._sensemakerStore.value.client.appInfo();
+        const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
+
+        //@ts-ignore
+        const response = await this._sensemakerStore.value.client.callZome({
+          cell_id,
+          zome_name: 'sensemaker',
+          fn_name: 'get_dimensions',
+          payload: null,
+        });
+        this._dimensionEntries = response.map(payload => {
+          try {
+            const entryHash = payload.signed_action.hashed.content.entry_hash;
+
+          //@ts-ignore
+            return { ...decode(payload.entry.Present.entry) as Dimension & { dimension_eh: EntryHash }, dimension_eh: entryHash};
+          } catch (error) {
+            console.log('Error decoding dimension payload: ', error);
+          }
+        }) as Array<Dimension & { dimension_eh: EntryHash }>;
+      } catch (error) {
+        console.log('Error fetching dimension details: ', error);
+      }
+    }
+  
+    async fetchRangeEntriesFromHashes(rangeEhs: EntryHash[]) {
+      const response = await Promise.all(rangeEhs.map(eH => this.fetchRange(eH)))
+      this._rangeEntries = response.map((payload, index) => {
+        try {
+          //@ts-ignore
+          return { ...decode(payload.entry.Present.entry) as Range, range_eh: rangeEhs[index]}
+        } catch (error) {
+          console.log('Error decoding range payload: ', error);
+        }
+      }) as Array<Range & { range_eh: EntryHash }>;
+    }
 }
