@@ -141,6 +141,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     .size=${'md'}
                     @click=${() => {
                       this.editingConfig = false;
+                      this._form?.resetForm()
                     }}
                   >
                     Cancel
