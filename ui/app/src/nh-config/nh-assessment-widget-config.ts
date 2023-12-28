@@ -43,9 +43,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   private _resourceDefList;
   @query("nh-button[type='submit']")
   submitBtn;
+  @query("#update-widget-config")
+  updateBtn;
   
   @state()
   editingConfig: boolean = false;
+  @state()
+  _formAction: "create" | "update" = "create";
 
   @state()
   inputDimensionEntries!: Array<Dimension>;
@@ -118,7 +122,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           </assessment-widget-tray>
 
           <sl-details
-            class="slide ${classMap({
+            class="${classMap({
               editing: this.editingConfig,
             })}"
             .open=${this.editingConfig}
@@ -150,14 +154,21 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     id="update-widget-config"
                     .variant=${'primary'}
                     .size=${'md'}
-                    @click=${() => {
+                    @click=${async () => {
+                      this._formAction = 'update';
+                      await this.requestUpdate();
+                      this._form?.handleSubmit()
                     }}
                   >
                     Update
                   </nh-button>
                   <nh-button
                     type="submit"
-                    @click=${() => this._form?.handleSubmit()}
+                    @click=${async () => {  
+                      this._formAction = 'create';
+                      await this.requestUpdate();
+                      this._form?.handleSubmit()}
+                    }
                     id="add-widget-config"
                     .variant=${'success'}
                     .size=${'md'}
@@ -177,7 +188,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     return html`
       <nh-form
         .config=${{
-          submitBtnRef: this.submitBtn,
+          submitBtnRef: (() => {
+            return this._formAction == "create"
+            ? this.submitBtn
+            : this.updateBtn
+          })(),
           rows: [1,1,1],
           fields: [
             [{
@@ -256,10 +271,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           resetOverride() {
             console.log('reset :>>');
           },
-          submitOverride() {
-            console.log('submit :>>');
-          },
-          submitBtnLabel: "Confirm",
+          submitOverride: (() => {
+            this._formAction == "create"
+            ? console.log('submit created :>>')
+            : console.log('submit updated :>>')
+          })(),
           progressiveValidation: true,
           schema: object({
             assessment_widget: string()
