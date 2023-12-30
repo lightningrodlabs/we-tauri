@@ -5,7 +5,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 import { object, string, number, ObjectSchema } from 'yup';
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { AppInfo, CallZomeResponse, DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
+import { AppInfo, CallZomeResponse, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 import {
   NHAssessmentContainer,
@@ -25,7 +25,7 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
-import { AssessmentWidgetBlockConfig, Dimension, SensemakerStore } from '@neighbourhoods/client';
+import { AssessmentWidgetBlockConfig, AssessmentWidgetConfig, AssessmentWidgetRegistration, ClientAssessmentWidgetConfig, Dimension, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from './icons-temp';
 import { decode } from '@msgpack/msgpack';
@@ -51,6 +51,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   _formAction: "create" | "update" = "create";
 
   @state()
+  _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistration> = {};
+  @state()
   inputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
   @state()
   outputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
@@ -71,6 +73,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       await this.fetchDimensionEntries()
       await this.fetchRangeEntries()
       await this.assignDimensionEntries();
+      await this.mockRegisterWidgets();
+      await this.fetchRegisteredWidgets();
     } catch (error) {
       console.error('Could not fetch: ', error)
     }
@@ -92,6 +96,24 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this.outputDimensionEntries = output;
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
+    }
+  }
+
+  async mockRegisterWidgets() {
+    const mockAppletEh = "uhCEk3ltwE4DcG0CcpWjdxX2TH7GokU8IOW0-_tveFx8Fm3GguKPX";
+    try {
+      await this._sensemakerStore.value!.registerAppletConfigWidgets(decodeHashFromBase64(mockAppletEh));
+    } catch (error) {
+      console.log('Error registering widgets: ', error);
+    }
+  }
+
+  async fetchRegisteredWidgets() {
+    try {
+      this._registeredWidgets = await this._sensemakerStore.value!.getRegisteredWidgets()
+      console.log('this._registeredWidgets  :>> ', this._registeredWidgets );
+    } catch (error) {
+      console.log('Error fetching widget registrations: ', error);
     }
   }
 
@@ -198,15 +220,18 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     const resource_def_eh = model.input_dimension; // temp
     const { assessment_widget, input_dimension, output_dimension } = model;
 
+    const inputDimensionBinding = {
+      dimensionEh: input_dimension,
+      componentName: assessment_widget 
+    } as any;
+    const outputDimensionBinding = {
+      dimensionEh: output_dimension,
+      componentName: assessment_widget 
+    } as any;
+
     let input: AssessmentWidgetBlockConfig[] = [{
-      inputAssessmentWidget: {
-        dimensionEh: input_dimension,
-        componentName: assessment_widget 
-      } as any,
-      outputAssessmentWidget: {
-        dimensionEh: output_dimension,
-        componentName: assessment_widget
-      } as any
+      inputAssessmentWidget: inputDimensionBinding,
+      outputAssessmentWidget: outputDimensionBinding
     }];
 
     let configEh;
@@ -240,33 +265,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           fields: [
             [{
               type: 'select',
-              selectOptions: [
-                {
-                  label: "Heart",
-                  value: "Heart",
-                  imageB64: heart,
-                },
-                {
-                  label: "Like",
-                  value: "Like",
-                  imageB64: thumb,
-                },
-                {
-                  label: "Clap",
-                  value: "Clap",
-                  imageB64: clap,
-                },
-                {
-                  label: "Like/Dislike",
-                  value: "Like/Dislike",
-                  imageB64: like_dislike,
-                },
-                {
-                  label: "Fire",
-                  value: "Fire",
-                  imageB64: fire_range,
-                },
-              ],
+              selectOptions: (() => {
+                return Object.values(this?._registeredWidgets as any)?.map((widget) => ({
+                    label: (widget as ClientAssessmentWidgetConfig).name,
+                    value: (widget as ClientAssessmentWidgetConfig).name,
+                    imageB64: (widget as ClientAssessmentWidgetConfig).name == 'Heart' ? heart : thumb,
+                  })) || []
+              })(),
               name: "assessment_widget",
               id: "assessment-widget",
               defaultValue: "",
