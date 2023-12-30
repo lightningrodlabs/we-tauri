@@ -25,7 +25,8 @@ import {
   SignalPayload,
   AssessmentWidgetBlockConfig,
   AssessmentWidgetRegistrationInput,
-  GetMethodsForDimensionQueryParams
+  GetMethodsForDimensionQueryParams,
+  AssessmentWidgetKind
 } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
@@ -453,6 +454,38 @@ export class SensemakerStore {
       record[key] = registration;
       return record
     }, {} as Record<EntryHashB64, AssessmentWidgetRegistrationInput>)
+  }
+
+  async registerAppletConfigWidgets(appletEh: EntryHash) {
+    // TODO: swap this out for relevant part of the applet config 
+    const assessmentWidgets = {
+      "importance": {
+        name: "Importance Ranker",
+        range: {
+          name: "20-scale", kind: { Integer: { min: 0, max: 20 } } } as Range,
+        kind: "input" as AssessmentWidgetKind
+      },
+      "likes": {
+        name: "Like Ranker",
+        range: {
+          name: "100-scale", kind: { Integer: { min: 0, max: 100 } } } as Range,
+        kind: "input" as AssessmentWidgetKind
+      },
+    };
+    try {
+      await Promise.all(Object.entries(assessmentWidgets)
+        .map(([assessmentWidgetKey, assessmentWidgetConfig]) =>  {
+          return this.service.registerWidget({
+            appletEh: appletEh,
+            widgetKey: assessmentWidgetKey,
+            name: assessmentWidgetConfig.name,
+            range: assessmentWidgetConfig.range,
+            kind: assessmentWidgetConfig.kind
+          })
+      }))
+    } catch (error) {
+      console.error('error registering widgets :>> ', error);
+    }
   }
 
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
