@@ -460,13 +460,13 @@ export class SensemakerStore {
     // TODO: swap this out for relevant part of the applet config 
     const assessmentWidgets = {
       "importance": {
-        name: "Importance Ranker",
+        name: "Thumb",
         range: {
           name: "20-scale", kind: { Integer: { min: 0, max: 20 } } } as Range,
         kind: "input" as AssessmentWidgetKind
       },
       "likes": {
-        name: "Like Ranker",
+        name: "Heart",
         range: {
           name: "100-scale", kind: { Integer: { min: 0, max: 100 } } } as Range,
         kind: "input" as AssessmentWidgetKind
