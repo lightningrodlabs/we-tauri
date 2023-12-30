@@ -25,10 +25,16 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import ResourceDefList from './resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
-import { AssessmentWidgetBlockConfig, AssessmentWidgetConfig, AssessmentWidgetRegistration, ClientAssessmentWidgetConfig, Dimension, SensemakerStore } from '@neighbourhoods/client';
+import { AssessmentWidgetBlockConfig, AssessmentWidgetRegistration, ClientAssessmentWidgetConfig, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from './icons-temp';
 import { decode } from '@msgpack/msgpack';
+
+function rangeKindEqual(range1: RangeKind, range2: RangeKind) {
+  return Object.keys(range1)[0] == Object.keys(range2)[0] // Number type
+    && Object.values(range1)[0]!.min == Object.values(range2)[0]!.min
+    && Object.values(range1)[0]!.max == Object.values(range2)[0]!.max
+}
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -49,6 +55,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   editingConfig: boolean = false;
   @state()
   _formAction: "create" | "update" = "create";
+
+  @state()
+  _selectedWidget: string = '';
 
   @state()
   _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistration> = {};
@@ -253,8 +262,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   private renderMainForm(): TemplateResult {
+    const dimensionEntries = this._dimensionEntries as any;
+    const rangeEntries = this._rangeEntries as any;
+    
     return html`
-      <nh-form
+      <nh-form @change=${async (e) => { this._selectedWidget = this._form._model.assessment_widget; e.currentTarget.requestUpdate(); await e.currentTarget.updateComplete;}}
         .config=${{
           submitBtnRef: (() => {
             return this._formAction == "create"
@@ -282,13 +294,21 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             }],
             [{
             type: 'select',
-            selectOptions: this?.inputDimensionEntries
-            ?.map(
-              (dimension) => ({
-                label: dimension.name,
-                value: encodeHashToBase64(dimension.dimension_eh)
-              })
-            ) || [],
+            selectOptions: (() => rangeEntries && rangeEntries.length ? this?.inputDimensionEntries
+              ?.filter(
+                (dimension) => {
+                  const selectedWidgetRange = Object.values(this._registeredWidgets).find(widget => widget.name == this._selectedWidget)?.range;
+                  if(this._selectedWidget == '' || !selectedWidgetRange) return false;
+
+                  const dimensionRange = rangeEntries.find(range => encodeHashToBase64(range.range_eh) == encodeHashToBase64(dimension.range_eh));
+
+                  return rangeKindEqual(selectedWidgetRange.kind as RangeKind, dimensionRange.kind as RangeKind);
+              }).map(dimension => {
+                  return {
+                  label: dimension.name,
+                  value: encodeHashToBase64(dimension.dimension_eh)
+                }}
+            ) : [])(),
             name: "input_dimension",
             id: "input-dimension",
             defaultValue: "",
@@ -299,14 +319,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             }],
             [{
             type: 'select',
-            selectOptions: this?.outputDimensionEntries
-            ?.map(
-              (dimension) => ({
-                label: dimension.name,
-                value: encodeHashToBase64(dimension.dimension_eh),
-              })
-            ) || []
-          ,
+            selectOptions: (() => this?.outputDimensionEntries
+              ?.map(
+                (dimension) => ({
+                  label: dimension.name,
+                  value: encodeHashToBase64(dimension.dimension_eh),
+                })
+            ) || [])(),
             name: "output_dimension",
             id: "output-dimension",
             defaultValue: "",
