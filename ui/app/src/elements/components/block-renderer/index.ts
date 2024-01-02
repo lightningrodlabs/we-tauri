@@ -2,11 +2,11 @@ import {
   NHDelegateReceiver,
   NHDelegateReceiverComponent,
   NHDelegateReceiverConstructor,
-  AppBlockDelegate,
-  ResourceBlockDelegate,
   InputAssessmentWidgetDelegate,
-  OutputAssessmentWidgetDelegate
-} from "@neighbourhoods/nh-launcher-applet"
+  OutputAssessmentWidgetDelegate,
+  ResourceBlockDelegate,
+  AppBlockDelegate
+} from "@neighbourhoods/client"
 
 /**
  * Allows rendering a single child web component in a completely scoped manner.

@@ -24,7 +24,7 @@ import type {
   WeGroupData,
   AppletInstanceInfo, NewAppletInstanceInfo,
 } from './matrix-store';
-import type { NeighbourhoodInfo } from '@neighbourhoods/nh-launcher-applet';
+import type { NeighbourhoodInfo } from '@neighbourhoods/client';
 import { Applet } from './types';
 
 export function provideMatrix(matrixStore: MatrixStore) {

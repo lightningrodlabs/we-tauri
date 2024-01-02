@@ -63,7 +63,6 @@ export interface AppletMetaData {
   icon: IconSrcOption,
 }
 
-
 export interface PlayingApplet {
   applet: Applet;
   agentPubKey: AgentPubKey;
@@ -74,28 +73,22 @@ export type Signal = {
   message: { type: "NewApplet"; content: Applet };
 };
 
-
 export type GuiFile = Uint8Array;
 
 export type IconFileOption = Uint8Array | undefined;
 
 export type IconSrcOption = string | undefined;
 
-
-
-export type SignalPayload =
- | {
+export type SignalPayload = {
   applet_hash: EntryHash,
   message: Message,
   federated_groups: Array<DnaHash>
  };
 
-
-export type Message =
-  | {
-    type: "NewApplet",
-    content: Applet,
-  };
+export type Message = {
+  type: "NewApplet",
+  content: Applet,
+};
 
 
 

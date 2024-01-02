@@ -1,6 +1,33 @@
-import { AgentPubKey, AppAgentClient, AppSignal, encodeHashToBase64, EntryHash, EntryHashB64, Record as HolochainRecord, RoleName } from '@holochain/client';
+import {
+  AgentPubKey,
+  AppAgentClient,
+  AppSignal,
+  encodeHashToBase64,
+  EntryHash,
+  EntryHashB64,
+  Record as HolochainRecord,
+  RoleName
+} from '@holochain/client';
 import { SensemakerService } from './sensemakerService';
-import { AppletConfig, AppletConfigInput, Assessment, ComputeContextInput, ConcreteAssessDimensionWidget, ConcreteDisplayDimensionWidget, CreateAssessmentInput, CulturalContext, Dimension, GetAssessmentsForResourceInput, Method, MethodDimensionMap, Range, ResourceDef, RunMethodInput, SignalPayload, WidgetMappingConfig, WidgetRegistry, AssessmentWidgetBlockConfig, AssessmentWidgetRegistrationInput, AssessmentWidgetRegistration, GetMethodsForDimensionQueryParams } from './index';
+import {
+  AppletConfig,
+  AppletConfigInput,
+  Assessment,
+  ComputeContextInput,
+  CreateAssessmentInput,
+  CulturalContext,
+  Dimension,
+  GetAssessmentsForResourceInput,
+  Method,
+  Range,
+  ResourceDef,
+  RunMethodInput,
+  SignalPayload,
+  AssessmentWidgetBlockConfig,
+  AssessmentWidgetRegistrationInput,
+  AssessmentWidgetRegistration,
+  GetMethodsForDimensionQueryParams
+} from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
 import { createContext } from '@lit-labs/context';
@@ -22,14 +49,11 @@ export class SensemakerStore {
 
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
   
-  _widgetRegistry: Writable<WidgetRegistry> = writable({});
+  // _widgetRegistry: Writable<WidgetRegistry> = writable({});
 
   _activeMethod: Writable<{
     [resourceDefEh: string]: EntryHashB64 // mapping from resourceDefEh to active methodEh
   }> = writable({});
-
-  _methodDimensionMapping: Writable<MethodDimensionMap> = writable({});
-
 
   /** Static info */
   public myAgentPubKey: AgentPubKey;
@@ -80,16 +104,16 @@ export class SensemakerStore {
     return derived(this._contextResults, contextResults => contextResults)
   }
 
-  widgetRegistry() {
-    return derived(this._widgetRegistry, widgetRegistry => widgetRegistry)
-  }
+  // widgetRegistry() {
+  //   return derived(this._widgetRegistry, widgetRegistry => widgetRegistry)
+  // }
   
   activeMethod() {
     return derived(this._activeMethod, activeMethod => activeMethod)
   }
-  methodDimensionMapping() {
-    return derived(this._methodDimensionMapping, methodDimensionMapping => methodDimensionMapping)
-  }
+  // methodDimensionMapping() {
+  //   return derived(this._methodDimensionMapping, methodDimensionMapping => methodDimensionMapping)
+  // }
 
   isAssessedByMeAlongDimension(resource_eh: EntryHashB64, dimension_eh: EntryHashB64) {
     return derived(this._resourceAssessments, resourceAssessments => {
@@ -384,19 +408,6 @@ export class SensemakerStore {
     }
     for (const dimensionEh of Object.values(appletConfig.dimensions)) {
       await this.getDimension(dimensionEh);
-    }
-    for (const methodEh of Object.values(appletConfig.methods)) {
-      const method = await this.getMethod(methodEh);
-
-      // update the method dimension mapping
-      // NOTE: this will be removed when we have widget configurations implemented
-      this._methodDimensionMapping.update((methodDimensionMapping) => {
-        methodDimensionMapping[encodeHashToBase64(methodEh)] = {
-          inputDimensionEh: method.input_dimension_ehs[0],
-          outputDimensionEh: method.output_dimension_eh,
-        };
-        return methodDimensionMapping;
-      });
     }
     for (const resourceDefEh of Object.values(appletConfig.resource_defs)) {
       await this.getResourceDef(resourceDefEh);

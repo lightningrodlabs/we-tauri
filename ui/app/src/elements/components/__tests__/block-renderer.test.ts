@@ -6,7 +6,7 @@ import { fixture, html as testHtml, expect } from '@open-wc/testing'
 import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement } from "lit"
 import { NHButton } from '@neighbourhoods/design-system-components'
-import { NHDelegateReceiver } from "@neighbourhoods/nh-launcher-applet"
+import { NHDelegateReceiver } from "@neighbourhoods/client"
 import { BlockRenderer } from '../block-renderer'
 
 interface TestDelegate {

@@ -11,11 +11,9 @@ import { property, state } from "lit/decorators.js";
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { RenderBlock } from "../components/render-block";
-
+import { AppBlockRenderer } from "../components/block-renderer";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
-
 
 export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
 
@@ -34,7 +32,6 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   @property()
   appletInstanceId!: EntryHash;
 
-
   _rendererTask = new Task(
     this,
     async () => {
@@ -49,6 +46,9 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
 
 
   render() {
+    /**
+     * TODO: Need to create a method to fetch the full view for the applet and create the delegate
+     */
     return this._rendererTask.render({
       pending: () => html`
         <div class="row center-content" style="flex: 1;">
@@ -57,7 +57,7 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
       `,
       complete: (renderer) =>
         html`
-          <render-block
+          <app-block
             .renderer=${renderer.full}
             style="flex: 1"
           ></render-block>
@@ -65,10 +65,9 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
     });
   }
 
-
   static get elementDefinitions() {
     return {
-      "render-block": RenderBlock,
+      "app-block": AppBlockRenderer,
       "mwc-circular-progress": CircularProgress,
     };
   }
@@ -82,6 +81,5 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
       }
     `,
   ];
-
 
 }

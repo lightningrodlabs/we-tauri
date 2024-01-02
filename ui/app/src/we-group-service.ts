@@ -1,5 +1,5 @@
 import { AppAgentWebsocket, CellId } from "@holochain/client";
-import { NeighbourhoodInfo } from "@neighbourhoods/nh-launcher-applet";
+import { NeighbourhoodInfo } from "@neighbourhoods/client";
 
 export class WeGroupService {
   constructor(public client: AppAgentWebsocket, protected cellId: CellId, protected zomeName = "we_coordinator") {}

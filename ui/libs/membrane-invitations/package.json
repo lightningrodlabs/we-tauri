@@ -3,12 +3,18 @@
   "version": "0.2.0",
   "contributors": ["Neighbourhoods contributors", "guillem.cordoba@gmail.com"],
   "description": "Frontend module for the Holochain hc_zome_membrane_invitations zome",
+  "source": "./src/index.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": ["dist"],
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch --preserveWatchOutput"

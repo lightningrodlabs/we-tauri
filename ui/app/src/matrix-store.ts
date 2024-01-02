@@ -41,16 +41,14 @@ import {
   EntryHashMap,
 } from "@holochain-open-dev/utils";
 import {
-  AppletRenderers,
   NeighbourhoodApplet,
   AppletInfo,
   NeighbourhoodServices,
   NeighbourhoodInfo,
-} from "@neighbourhoods/nh-launcher-applet";
-import { SensemakerStore } from "@neighbourhoods/client";
+  SensemakerStore
+} from "@neighbourhoods/client";
 import {
   Applet,
-  AppletGui,
   AppletMetaData,
   GuiFile,
   IconFileOption,
@@ -87,12 +85,6 @@ export interface WeGroupInfo {
   cloneName: string;
   enabled: boolean;
 }
-
-/**Data of a specific instance of an installed Applet */
-// export interface AppletInstanceData {
-//   info: AppletInstanceInfo,
-//   renderers: AppletRenderers,
-// }
 
 /**Info about a specific instance of an installed Applet */
 export interface AppletInstanceInfo {
@@ -353,9 +345,7 @@ export class MatrixStore {
     const weGroupId =
       this.getWeGroupInfoForAppletInstance(appletInstanceId).cell_id[0];
     const [_weGroupData, appInstanceInfos] = get(this._matrix).get(weGroupId);
-    const appInstanceInfo = appInstanceInfos.find(
-      (info) => compareUint8Arrays(info.appletId, appletInstanceId)
-    )!;
+    const appInstanceInfo = appInstanceInfos.find(info => compareUint8Arrays(info.appletId, appletInstanceId))!;
     const appInfo = appInstanceInfo.appInfo;
 
     let appletAppAgentWebsocket: AppAgentClient;
@@ -366,10 +356,8 @@ export class MatrixStore {
       //instantiate the websocket
       console.log('app agent websocket being instantiated');
       appletAppAgentWebsocket = await getAppletWebSocket(appInfo.installed_app_id);
-      this._matrix.update((matrix) => {
-        matrix.get(weGroupId)[1].find(
-          (info) => compareUint8Arrays(info.appletId, appletInstanceId)
-        )!.appAgentWebsocket = appletAppAgentWebsocket;
+      this._matrix.update(matrix => {
+        matrix.get(weGroupId)[1].find(info => compareUint8Arrays(info.appletId, appletInstanceId))!.appAgentWebsocket = appletAppAgentWebsocket;
         return matrix;
       })
 
@@ -384,6 +372,9 @@ export class MatrixStore {
       appletAppAgentWebsocket = appInstanceInfo.appAgentWebsocket;
     }
 
+    /**
+     * TODO: this need to be broken down into the various views that can be used.
+     */
     const renderers = await gui.appletRenderers(
       appletAppAgentWebsocket,
       weServices,
@@ -392,9 +383,7 @@ export class MatrixStore {
 
     // now that the applet instance renderers have been fetched and instantiated, add them to the AppletInstanceInfo
     this._matrix.update((matrix) => {
-      matrix.get(weGroupId)[1].find(
-        (info) => compareUint8Arrays(info.appletId, appletInstanceId)
-      )!.views = renderers;
+      matrix.get(weGroupId)[1].find(info => compareUint8Arrays(info.appletId, appletInstanceId))!.views = renderers;
       return matrix;
     })
 
