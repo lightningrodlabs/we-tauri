@@ -7,7 +7,7 @@ import {
   addAllAgentsToAllConductors,
   cleanAllConductors,
 } from "@holochain/tryorama";
-import { AssessmentWidgetBlockConfig } from "@neighbourhoods/client";
+import { AssessmentWidgetBlockConfig } from "../../../src/index";
 import { setUpAliceandBob } from "../../utils";
 
 import pkg from "tape-promise/tape";

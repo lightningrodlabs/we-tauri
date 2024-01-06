@@ -1,6 +1,5 @@
 import { ContextProvider } from "@lit-labs/context";
 import { state, query, customElement } from "lit/decorators.js";
-import { AppWebsocket, AdminWebsocket, InstalledCell, ProvisionedCell } from "@holochain/client";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { LitElement, html, css } from "lit";
 
@@ -8,7 +7,7 @@ import { sharedStyles } from "./sharedStyles";
 import { MatrixStore } from "./matrix-store";
 import { matrixContext } from "./context";
 import { MainDashboard } from "./main-dashboard";
-import { getCellId } from "./utils";
+import { getAdminWebsocket, getAppWebsocket, getCellId } from "./utils";
 
 @customElement('we-app')
 export class WeApp extends ScopedElementsMixin(LitElement) {
@@ -18,15 +17,11 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
   loading = true;
 
   async firstUpdated() {
-    const hcPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_HC_PORT_2 : import.meta.env.VITE_HC_PORT;
-    const adminPort = import.meta.env.VITE_AGENT === "2" ? import.meta.env.VITE_ADMIN_PORT_2 : import.meta.env.VITE_ADMIN_PORT;
-    const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`));
-    const appWebsocket = await AppWebsocket.connect(new URL(`ws://localhost:${hcPort}`));
-    console.log("Hello World!", hcPort, adminPort);
+    const adminWebsocket = await getAdminWebsocket();
+    const appWebsocket = await getAppWebsocket();
     const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
 
     // authorize signing credentials for all cells
-
     for (const roleName in weAppInfo.cell_info) {
       for (const cellInfo of weAppInfo.cell_info[roleName]) {
         await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
@@ -35,6 +30,8 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
     new ContextProvider(this, matrixContext, this._matrixStore);
+
+    // TODO: add code to prefetch groups and register applets here.
 
     this.loading = false;
   }

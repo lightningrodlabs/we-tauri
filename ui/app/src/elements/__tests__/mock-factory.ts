@@ -3,13 +3,12 @@ import { AssessmentDict, AssessmentTableRecord } from '../components/helpers/typ
 import { FieldDefinition } from '@adaburrows/table-web-component';
 import { generateHeaderHTML } from '../components/helpers/functions';
 import { html } from 'lit';
-import { Applet } from '../../types';
+import { Applet, AppletInstanceInfo } from '../../types';
 import { EntryHash, DnaHash, HoloHash } from '@holochain/client';
 import { AppletTuple, testAppletBaseRoleName } from '../dashboard/__tests__/matrix-test-harness';
 import { writable } from 'svelte/store';
 import { vi } from 'vitest';
 import { Dimension, SensemakerStore } from '@neighbourhoods/client';
-import { AppletInstanceInfo } from '../../matrix-store';
 import { encode } from '@msgpack/msgpack';
 import { Profile, ProfilesStore } from '@holochain-open-dev/profiles';
 

@@ -5,10 +5,11 @@ import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@s
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
-import { AppletInstanceInfo, MatrixStore, NewAppletInstanceInfo } from "../../matrix-store";
+import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
 import { NHButton } from "@neighbourhoods/design-system-components";
+import { AppletInstanceInfo, NewAppletInstanceInfo } from "../../types";
 
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 

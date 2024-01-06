@@ -13,7 +13,7 @@ import {
 } from "@scoped-elements/material-web";
 
 import { matrixContext, weGroupContext } from "../../context";
-import { AppletInstanceInfo, MatrixStore, UninstalledAppletInstanceInfo } from "../../matrix-store";
+import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from './holo-identicon.js';
@@ -24,6 +24,7 @@ import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton } from "@neighbourhoods/design-system-components";
 import { UninstallApplet } from "../dialogs/uninstall-applet";
 import { AppletListItem } from "./applet-list-item";
+import { UninstalledAppletInstanceInfo } from "../../types";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })

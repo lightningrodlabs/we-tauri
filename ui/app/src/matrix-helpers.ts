@@ -21,11 +21,16 @@ import { DnaHash } from '@holochain/client';
 import { DnaHashMap } from '@holochain-open-dev/utils';
 import type {
   MatrixStore,
-  WeGroupData,
-  AppletInstanceInfo, NewAppletInstanceInfo,
 } from './matrix-store';
 import type { NeighbourhoodInfo } from '@neighbourhoods/client';
-import { Applet } from './types';
+import {
+  Applet,
+  WeGroupData,
+  AppletInstanceInfo,
+  NewAppletInstanceInfo,
+} from './types';
+
+// TODO: these adaptors shouldn't exist, and they are hacky, we should modify the matrixStore to do the right thing
 
 export function provideMatrix(matrixStore: MatrixStore) {
   return readable(new DnaHashMap<[WeGroupData, AppletInstanceInfo[]]>(), set => {

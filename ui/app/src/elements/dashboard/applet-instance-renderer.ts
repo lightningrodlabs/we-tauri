@@ -1,7 +1,7 @@
 import { PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
 import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { EntryHash } from "@holochain/client";
-import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
+import { AppBlockDelegate, SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { contextProvided } from "@lit-labs/context";
 import { Task } from "@lit-labs/task";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
@@ -12,8 +12,6 @@ import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { AppBlockRenderer } from "../components/block-renderer";
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(() => r(null), ms));
 
 export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
 
@@ -35,39 +33,32 @@ export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
   _rendererTask = new Task(
     this,
     async () => {
-      await sleep(1);
-      return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId, {
-        profilesStore: this._profilesStore,
-        sensemakerStore: this._sensemakerStore,
-      });
+      return this._matrixStore.fetchAppletInstanceRenderers(this.appletInstanceId);
     },
     () => [this._matrixStore, this.appletInstanceId]
   );
 
-
   render() {
-    /**
-     * TODO: Need to create a method to fetch the full view for the applet and create the delegate
-     */
     return this._rendererTask.render({
       pending: () => html`
         <div class="row center-content" style="flex: 1;">
           <mwc-circular-progress indeterminate></mwc-circular-progress>
         </div>
       `,
-      complete: (renderer) =>
-        html`
-          <app-block
-            .renderer=${renderer.full}
-            style="flex: 1"
-          ></render-block>
-        `,
+      complete: (renderers) => {
+        console.log("got renderers", renderers)
+        if (renderers.appletRenderers && renderers.appletRenderers['full']) {
+          const delegate: AppBlockDelegate = this._matrixStore.createAppDelegate(this.appletInstanceId)
+          console.log(delegate)
+          return html`<app-block-renderer .component=${renderers.appletRenderers['full']} .nhDelegate=${delegate} style="flex: 1"></app-block-renderer>`
+        }
+      },
     });
   }
 
   static get elementDefinitions() {
     return {
-      "app-block": AppBlockRenderer,
+      "app-block-renderer": AppBlockRenderer,
       "mwc-circular-progress": CircularProgress,
     };
   }

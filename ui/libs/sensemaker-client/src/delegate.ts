@@ -8,7 +8,7 @@ export type UnsubscribeFn = () => void;
 /**
  * A callback function to be called when updates occur
  */
-export type CallbackFn = (_: Assessment) => void;
+export type CallbackFn = (_: Assessment | undefined) => void;
 
 /**
  * Generic constructor type

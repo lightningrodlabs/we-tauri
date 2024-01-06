@@ -11,16 +11,13 @@ import {
   TextArea,
 } from '@scoped-elements/material-web';
 
-import md5 from 'md5';
-
 import { AppletMetaData } from '../../types';
 import { StoreSubscriber } from 'lit-svelte-stores';
-import { get, readable } from 'svelte/store';
 import { MatrixStore } from '../../matrix-store';
 import { provideAllApplets } from "../../matrix-helpers";
 import { matrixContext, weGroupContext } from '../../context';
 import { DnaHash, EntryHash, EntryHashB64 } from '@holochain/client';
-import { fakeMd5SeededEntryHash } from '../../utils';
+import { fakeSeededEntryHash } from '../../utils';
 import { SlInput, SlTextarea } from '@scoped-elements/shoelace';
 import { NHAlert, NHButton, NHDialog } from '@neighbourhoods/design-system-components';
 
@@ -123,26 +120,20 @@ export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
     }
   }
 
-  // TODO! make typing right here
-  loadFileBytes(e: any) {
-    const files: FileList = e.target.files;
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      console.log(e.target?.result);
-    };
-    reader.readAsArrayBuffer(files[0]);
-    // TODO! make typing right here
-    reader.onloadend = _e => {
-      const buffer = reader.result as ArrayBuffer;
-      const ui8 = new Uint8Array(buffer);
-      // create a fake devhub happ release hash from the filehash --> used to compare when joining an applet
-      // to ensure it is the same applet and to allow recognizing same applets across groups
-      const md5FileHash = new Uint8Array(md5(ui8, { asBytes: true }));
-      this._fakeDevhubHappReleaseHash = fakeMd5SeededEntryHash(md5FileHash);
-      this._fileBytes = ui8;
-      console.log('fake devhub happ release hash: ', this._fakeDevhubHappReleaseHash);
-    };
+  async loadFileBytes(e: Event) {
+    const target = e.target as HTMLInputElement
+    if (target.files) {
+      const file = target.files.item(0);
+      if (file) {
+        const ab = await file.arrayBuffer()
+        const ui8 = new Uint8Array(ab)
+        // create a fake devhub happ release hash from the filehash --> used to compare when joining an applet
+        // to ensure it is the same applet and to allow recognizing same applets across groups
+        this._fakeDevhubHappReleaseHash = await fakeSeededEntryHash(ui8);
+        this._fileBytes = ui8;
+        console.log('fake devhub happ release hash: ', this._fakeDevhubHappReleaseHash);
+      }
+    }
   }
 
   renderErrorSnackbar() {

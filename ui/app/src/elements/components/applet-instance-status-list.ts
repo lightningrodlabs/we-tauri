@@ -13,7 +13,7 @@ import {
 } from "@scoped-elements/material-web";
 
 import { matrixContext, weGroupContext } from "../../context";
-import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
+import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { query, state } from "lit/decorators.js";
 import { HoloIdenticon } from './holo-identicon.js';
@@ -28,6 +28,7 @@ import { NHButton, NHComponent, NHDialog } from "@neighbourhoods/design-system-c
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { AppletListItem } from "./applet-list-item";
 import { UninstallApplet } from "../dialogs/uninstall-applet";
+import { AppletInstanceInfo } from "../../types";
 
 export class AppletInstanceStatusList extends NHComponent {
   @contextProvided({ context: sensemakerStoreContext, subscribe: true })
@@ -121,25 +122,6 @@ export class AppletInstanceStatusList extends NHComponent {
               }
             })
             .map((appletInfo: AppletInstanceInfo) => {
-
-              // return html`
-              // ${this._widgetConfigDialogActivated ? html`
-              //   <nh-dialog
-              //     id="applet-widget-config"
-              //     size="large"
-              //     dialogType="widget-config"
-              //     handleOk=${() => { this._widgetConfigDialogActivated = false}}
-              //     isOpen=${true}
-              //     title="Configure Applet Widgets"
-              //     .primaryButtonDisabled=${true}
-              //   >
-              //     <div slot="inner-content">
-              //       <nh-sensemaker-settings
-              //         .sensemakerStore=${this._sensemakerStore}
-              //         .appletName=${appletInfo.appInfo.installed_app_id}
-              //       ></nh-sensemaker-settings>
-              //     </div>
-              //   </nh-dialog>` : html``}
               return html`
                 <applet-list-item .sensemakerStore=${this._sensemakerStore} .appletInfo=${appletInfo} .appletStatus=${getStatus(appletInfo.appInfo)} .onDelete=${() => {this._currentAppInfo = appletInfo; this._uninstallAppletDialog.open()}}></applet-list-item>
               `;

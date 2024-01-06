@@ -8,16 +8,12 @@ import { classMap } from 'lit/directives/class-map.js';
 import { HoloIdenticon } from './elements/components/holo-identicon.js';
 
 import { matrixContext } from './context';
-import {
-  AppletInstanceInfo,
-  MatrixStore,
-  WeGroupInfo,
-} from './matrix-store';
+import { MatrixStore } from './matrix-store';
 import { sharedStyles } from './sharedStyles';
 import { HomeScreen } from './elements/dashboard/home-screen';
 import { get } from 'svelte/store';
 import { SlTooltip } from '@scoped-elements/shoelace';
-import { DashboardMode, NavigationMode } from './types';
+import { AppletInstanceInfo, DashboardMode, NavigationMode, WeGroupInfo } from './types';
 import { SidebarButton } from './elements/components/sidebar-button';
 import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
 import { WeGroupContext } from './elements/we-group-context';
@@ -73,13 +69,7 @@ export class MainDashboard extends NHComponentShoelace {
   private _selectedWeGroupId: DnaHash | undefined; // DNA hash of the selected we group
 
   @state()
-  private _selectedAppletClassId: EntryHash | undefined; // devhub hApp release hash of the selected Applet class
-
-  @state()
   private _selectedAppletInstanceId: EntryHash | undefined; // hash of the Applet's entry in group's we dna of the selected Applet instance
-
-  @state()
-  private _selectedAppletRolename: string | undefined;
 
   @state()
   private _widgetConfigDialogActivated: boolean = false;
@@ -219,7 +209,6 @@ export class MainDashboard extends NHComponentShoelace {
     this._navigationMode = NavigationMode.GroupCentric;
     if (this._selectedWeGroupId !== weGroupId) {
       this._selectedAppletInstanceId = undefined;
-      this._selectedAppletClassId = undefined;
     }
     this._dashboardMode = DashboardMode.WeGroupHome;
     this._selectedWeGroupId = weGroupId;
@@ -387,8 +376,6 @@ export class MainDashboard extends NHComponentShoelace {
                         .tooltipText=${appletInstanceInfo.applet.customName}
                         @click=${() => {
                           this._selectedAppletInstanceId = appletInstanceInfo.appletId;
-                          this._selectedAppletClassId =
-                            appletInstanceInfo.applet.devhubHappReleaseHash;
                           this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
                           this.requestUpdate();
                         }}
@@ -413,14 +400,12 @@ export class MainDashboard extends NHComponentShoelace {
   handleWeGroupAdded(e: CustomEvent) {
     this._selectedWeGroupId = e.detail;
     this._selectedAppletInstanceId = undefined;
-    this._selectedAppletClassId = undefined;
     this._dashboardMode = DashboardMode.WeGroupHome;
     this._navigationMode = NavigationMode.GroupCentric;
   }
 
   handleWeGroupLeft(e: CustomEvent) {
     this._selectedAppletInstanceId = undefined;
-    this._selectedAppletClassId = undefined;
     this._selectedWeGroupId = undefined;
     this._dashboardMode = DashboardMode.MainHome;
     this._navigationMode = NavigationMode.Agnostic;
@@ -435,8 +420,6 @@ export class MainDashboard extends NHComponentShoelace {
     );
     const applet = appletInstanceInfo?.applet;
     this._appletName = appletInstanceInfo?.appInfo.installed_app_id;
-    this._selectedAppletClassId = applet!.devhubHappReleaseHash;
-    this._selectedAppletRolename = Object.keys(applet!.dnaHashes)[0];
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
@@ -446,7 +429,6 @@ export class MainDashboard extends NHComponentShoelace {
 
   goHome() {
     this._selectedWeGroupId = undefined;
-    this._selectedAppletClassId = undefined;
     this._selectedAppletInstanceId = undefined;
     this._dashboardMode = DashboardMode.MainHome;
     this._navigationMode = NavigationMode.Agnostic;

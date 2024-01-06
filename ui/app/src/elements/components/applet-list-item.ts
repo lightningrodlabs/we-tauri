@@ -3,13 +3,14 @@ import { html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { InstallableApplets } from "./installable-applets";
 import { contextProvided } from "@lit-labs/context";
-import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
+import { MatrixStore } from "../../matrix-store";
 import { matrixContext } from "../../context";
 import { AppInfo } from "@holochain/client";
 import { Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { SensemakerStore } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
+import { AppletInstanceInfo } from "../../types";
 
 export class AppletListItem extends NHComponent {
   @contextProvided({ context: matrixContext, subscribe: true })

@@ -25,6 +25,9 @@ export type AppletInfo = {
   appInfo: AppInfo,
 }
 
+/**
+ * Applet config as it exists in the SensemakerStore
+ */
 export interface AppletConfig {
   name: string,
   ranges: {
@@ -44,6 +47,9 @@ export interface AppletConfig {
   }
 }
 
+/**
+ * Applet config as written by the applet developer
+ */
 export interface AppletConfigInput {
   name: string,
   resource_defs: Array<ConfigResourceDef>,
@@ -56,16 +62,6 @@ export interface AppletConfigInput {
 }
 
 /**
- * Object to track the stores instantiated per applet.
- *
- * TODO: If this is only used in the matrix store, we can move it out of here.
- */
-export type NeighbourhoodServices = {
-  profilesStore?: ProfilesStore;  // in case of cross-we renderers the profilesStore may not be required
-  sensemakerStore?: SensemakerStore;
-}
-
-/**
  * The resource renderer interface.
  *
  * Technically, if we knew what zome call correpsonded to which reading of a
@@ -74,9 +70,16 @@ export type NeighbourhoodServices = {
  * TODO: we could extend the applet interface to allow creating a resource reader
  * delegates for each resource type which could be sent to each resource renderer
  * to ensure the code doesn't do anything malicious with the AppAgentClient.
+ *
+ * Although, if we switch to using a schema based store per context, then this
+ * doesn't matter since each applet just needs to provide the required schemas
+ * and the CA manages which contexts have which resources that and the permissions
+ * of the user would determine access to the context.
  */
 export interface ResourceBlockDelegate {
-  appAgentWebsocket: AppAgentClient
+  appAgentWebsocket: AppAgentClient,
+  appInfo: AppInfo
+  neighbourhoodInfo: NeighbourhoodInfo,
 }
 
 /**
@@ -87,7 +90,8 @@ export interface ResourceBlockDelegate {
  */
 export interface AppBlockDelegate {
   appAgentWebsocket: AppAgentClient
-  appletInfo: AppletInfo[]
+  appInfo: AppInfo,
+  neighbourhoodInfo: NeighbourhoodInfo,
   sensemakerStore: SensemakerStore
   profileStore: ProfilesStore
 }
@@ -104,4 +108,10 @@ export interface NeighbourhoodApplet {
   appletRenderers: AppletRenderers;
   resourceRenderers: ResourceRenderers;
   assessmentWidgets: AssessmentWidgetRenderers;
+}
+
+export interface NeighbourhoodAppletRenderers {
+  appletRenderers?: AppletRenderers;
+  resourceRenderers?: ResourceRenderers;
+  assessmentWidgets?: AssessmentWidgetRenderers;
 }

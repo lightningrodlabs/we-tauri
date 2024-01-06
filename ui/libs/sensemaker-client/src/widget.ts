@@ -1,11 +1,11 @@
 import { EntryHash } from '@holochain/client';
-import { Range } from "./range";
+import { Range, RangeValue } from "./range";
+import { Assessment } from './assessment';
 import {
   CallbackFn,
   NHDelegateReceiverConstructor,
   UnsubscribeFn
 } from "./delegate"
-import { Assessment } from './assessment';
 
 /**
  * The minimal interface needed for an assessment widget.
@@ -16,10 +16,10 @@ import { Assessment } from './assessment';
  * the sensemaker data.
  */
 export interface InputAssessmentWidgetDelegate {
-  getLatestAssessmentForUser(): Assessment // get the latest assessment value the user created (or none if never assessed or invalidated)
+  getLatestAssessmentForUser(): Promise<Assessment | undefined> // get the latest assessment value the user created (or none if never assessed or invalidated)
   subscribe(_:CallbackFn): UnsubscribeFn // subscribe to when the current assessment changes
-  createAssessment(assessment: Assessment): Assessment // create an assessment
-  invalidateLastAssessment(): void // invalidate the last created assessment [ignore for now, we only support creating new assessments]
+  createAssessment(value: RangeValue): Promise<Assessment> // create an assessment
+  invalidateAssessment(): void // invalidate assessment [ignore for now, we only support creating new assessments]
 }
 
 /**
@@ -29,14 +29,17 @@ export interface InputAssessmentWidgetDelegate {
  * assessment changes without exposing the sensemaker store AppAgentClient.
  */
 export interface OutputAssessmentWidgetDelegate {
-  getLatestAssessment(): Assessment // get the latest computed assessment value (regardless of user, for computed dimensions)
+  getLatestAssessment(): Promise<Assessment | undefined> // get the latest computed assessment value (regardless of user, for computed dimensions)
   subscribe(_:CallbackFn): UnsubscribeFn // subscribe to when the current computed dimension changes
 }
 
+/**
+ * Can either be 'input' or 'output'
+ */
 export type AssessmentWidgetKind = 'input' | 'output';
 
 /**
- * Defines an Assessment Widget
+ * Defines an Assessment Widget in an Applet config
  */
 export type AssessmentWidgetRenderer = {
   name: string,         // Likely appended to the App name in the dashboard configuration screen
@@ -45,8 +48,14 @@ export type AssessmentWidgetRenderer = {
   kind: AssessmentWidgetKind
 }
 
+/**
+ * Defines the different assessment control renderers by name
+ */
 export type AssessmentWidgetRenderers = Record<string, AssessmentWidgetRenderer>
 
+/**
+ * Defines the shape of the data sent to the sensemaker to register a an assessment control
+ */
 export interface AssessmentWidgetRegistrationInput {
   appletEh: EntryHash, // Applet entry hash
   widgetKey: string,  // keyof an AssessmentWidgetConfigDict
@@ -54,27 +63,56 @@ export interface AssessmentWidgetRegistrationInput {
   range: Range,
   kind: AssessmentWidgetKind
 }
-export type AssessmentWidgetRegistration = AssessmentWidgetRegistrationInput;
 
+/**
+ * Shape of object used to update the assessment control registration
+ */
 export type AssessmentWidgetRegistrationUpdateInput = {
   assessmentRegistrationEh: EntryHash,
   assessmentRegistrationUpdate: AssessmentWidgetRegistrationInput
 }
 
-// configuration data as stored by the `widgets` zome API
+/**
+ * Maps dimensions to assessment controls
+ */
 export type AssessmentWidgetConfig = {
   dimensionEh: EntryHash,
-  widgetEh: EntryHash // This is specifically for when components are separated out into their own DHT entry (or sequence of DHT entries to allow extra large codebases to be stored).
+  /**
+   * This is specifically for when components are separated out into their own
+   * DHT entry (or sequence of DHT entries to allow extra large codebases to
+   * be stored).
+   */
+  widgetEh: EntryHash
 } | {
   dimensionEh: EntryHash,
-  appletEh: EntryHash, // This is whatever the id for the Applet is
-  componentName: string // This is the name of the component as exposed by the applet interface
+  /**
+   * This is whatever the id for the Applet is.
+   */
+  appletEh: EntryHash,
+  /**
+   * This is the name of the component as exposed by the applet interface
+   */
+  componentName: string
 }
 
-// configuration data as stored by the `widgets` zome API
+/**
+ * Used to configure the assessment tray, 
+ */
 export interface AssessmentWidgetBlockConfig {
-  // This is the widget that allows making an assessment and displaying the user's chosen selection if the user can select one of many options
+  /**
+   * This is the widget that allows making an assessment and displaying the
+   * user's chosen selection if the user can select one of many options.
+   */
   inputAssessmentWidget: AssessmentWidgetConfig,
-  // This is the widget that displays the computed result, for the case where output and input and separate, as in the Todo applet.
+  /**
+   * This is the widget that displays the computed result, for the case where
+   * output and input and separate, as in the Todo applet.
+   */
   outputAssessmentWidget: AssessmentWidgetConfig
 }
+
+/**
+ * This is currently associated with each resource type.
+ * In the future, it may be matched by [resource def, context].
+ */
+export type AssessmentTrayConfig = AssessmentWidgetBlockConfig[]

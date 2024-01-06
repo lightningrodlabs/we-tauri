@@ -13,12 +13,13 @@ import {
 } from "@scoped-elements/material-web";
 
 import { sharedStyles } from "../../sharedStyles";
-import { AppletInstanceInfo, MatrixStore } from "../../matrix-store";
+import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { get } from "svelte/store";
 import { classMap } from "lit/directives/class-map.js";
+import { AppletInstanceInfo } from "../../types";
 
 export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
   @contextProvided({ context: matrixContext, subscribe: true })
@@ -40,7 +41,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
 
   _allGroups = new StoreSubscriber(
     this,
-    () => this._matrixStore.getAllWeGroupInfos()
+    () => this._matrixStore.weGroupInfos()
   );
 
 
@@ -131,7 +132,7 @@ export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
           <span style="margin-bottom: 10px;"><b>Neighbourhoods:</b></span>
 
           ${this._appletInfo
-            ? this._allGroups.value
+            ? Array.from(this._allGroups.value.values())
               .filter((weGroupInfo) => JSON.stringify(weGroupInfo.dna_hash) !== JSON.stringify(this.weGroupId))
               .map((weGroupInfo) => {
                 if(this._matrixStore.isInstalledInGroup(this._appletInfo!.appletId, weGroupInfo.dna_hash)) {

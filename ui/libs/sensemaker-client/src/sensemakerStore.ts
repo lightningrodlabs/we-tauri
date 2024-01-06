@@ -25,7 +25,6 @@ import {
   SignalPayload,
   AssessmentWidgetBlockConfig,
   AssessmentWidgetRegistrationInput,
-  AssessmentWidgetRegistration,
   GetMethodsForDimensionQueryParams
 } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
@@ -439,42 +438,22 @@ export class SensemakerStore {
     return appletConfig;
   }
   
-  async registerWidget(widgetRegistration: AssessmentWidgetRegistrationInput): Promise<AssessmentWidgetRegistration> {
+  async registerWidget(widgetRegistration: AssessmentWidgetRegistrationInput): Promise<AssessmentWidgetRegistrationInput> {
     const result = await this.service.registerWidget(widgetRegistration);
-    return new EntryRecord<AssessmentWidgetRegistration>(result).entry
+    return new EntryRecord<AssessmentWidgetRegistrationInput>(result).entry
   }
 
-  async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistration>> {
+  async getRegisteredWidgets(): Promise<Record<EntryHashB64, AssessmentWidgetRegistrationInput>> {
     const result : HolochainRecord[] = await this.service.getRegisteredWidgets();
     return result.reduce((record, value) => {
-      const entryRecord = new EntryRecord<AssessmentWidgetRegistration>(value);
+      const entryRecord = new EntryRecord<AssessmentWidgetRegistrationInput>(value);
       const key: EntryHashB64 = encodeHashToBase64(entryRecord.entryHash);
-      const registration: AssessmentWidgetRegistration = entryRecord.entry;
+      const registration: AssessmentWidgetRegistrationInput = entryRecord.entry;
       
       record[key] = registration;
       return record
-    }, {} as Record<EntryHashB64, AssessmentWidgetRegistration>)
+    }, {} as Record<EntryHashB64, AssessmentWidgetRegistrationInput>)
   }
-
-  // async registerAppletConfigWidgets(appletEh: EntryHash, assessmentWidgets: AssessmentWidgetConfigDict) {
-  //   try {
-  //     await Promise.all(Object.entries(assessmentWidgets)
-  //       .map(([assessmentWidgetKey, assessmentWidgetConfig]) =>  {
-  //         return this.service.registerWidget({
-  //           applet_eh: appletEh,
-  //           widget_key: assessmentWidgetKey,
-  //           name: assessmentWidgetConfig.name,
-  //           // TODO: consult on the correct way to register a widget at the applet config stage when ranges not yet created.
-  //           // Perhaps take as input to this method the range_ehs once that part of applet registration has happened
-
-  //           // range_eh: ???
-  //           kind: assessmentWidgetConfig.kind
-  //         })
-  //     }))
-  //   } catch (error) {
-      
-  //   }
-  // }
 
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
