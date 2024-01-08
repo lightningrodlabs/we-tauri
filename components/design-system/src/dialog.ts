@@ -16,10 +16,12 @@ export enum DialogType {
   confirmation = 'confirmation',
   appletInstall = 'applet-install',
   appletUninstall = 'applet-uninstall',
+  createDimension = 'create-dimension',
+  inputForm = 'input-form',
 }
 
 function preventOverlayClose(event: CustomEvent) : void {
-  if (event.detail.source === 'overlay') {
+  if (event.detail.source === 'overlay' || event.detail.source === 'keyboard') {
     event.preventDefault();
   }
 }
@@ -34,10 +36,10 @@ export default class NHDialog extends NHComponentShoelace {
   dialogType!: DialogType;
 
   @property()
-  handleOk!: () => void;
+  handleOk!: () => { preventDefault?: boolean };
 
   @property()
-  handleClose!: () => void;
+  handleClose!: () => { preventDefault?: boolean };
 
   @property({ type: Boolean })
   isOpen = false;
@@ -63,7 +65,7 @@ export default class NHDialog extends NHComponentShoelace {
       this.openButtonRef?.removeEventListener('click', this.showDialog);
     }
     this._dialog.removeEventListener('sl-request-close', preventOverlayClose)
-    typeof this.handleClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.handleClose);
+    typeof this.onClose == 'function' && this._dialog.removeEventListener('sl-after-hide', this.onClose);
   }
 
   updated(changedProperties: any) {
@@ -78,7 +80,7 @@ export default class NHDialog extends NHComponentShoelace {
   firstUpdated() {
     if(!this._dialog) return
     this._dialog.addEventListener('sl-request-close', preventOverlayClose)
-    typeof this.handleClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.handleClose);
+    typeof this.onClose == 'function' && this._dialog.addEventListener('sl-after-hide', this.onClose);
   }
     
   chooseButtonText() {
@@ -112,6 +114,12 @@ export default class NHDialog extends NHComponentShoelace {
         primary: 'Uninstall',
         secondary: 'Cancel',
       }
+
+      case DialogType.createDimension:
+      return {
+        primary: 'Create Dimension',
+        secondary: 'Cancel',
+      }
     
       default:
         return {
@@ -122,16 +130,15 @@ export default class NHDialog extends NHComponentShoelace {
   }
 
   renderActions() {
-    switch (true) {
-      case ['applet-install', 'applet-uninstall', 'create-neighbourhood', 'leave-neighbourhood'].includes(this.dialogType):
-        return html`<sl-button-group id="buttons">
-          <nh-button
-            id="secondary-action-button"
-            .size=${"md"}
-            variant=${"neutral"}
-            @click=${this.hideDialog}
-          >${this.chooseButtonText().secondary}
-          </nh-button>
+    return html`<sl-button-group id="buttons">
+        <nh-button
+          id="secondary-action-button"
+          .size=${"md"}
+          variant=${"neutral"}
+          @click=${this.hideDialog}
+        >${this.chooseButtonText().secondary}
+        </nh-button>
+        <slot name="primary-action">
           <nh-button
             id="primary-action-button"
             .size=${"md"}
@@ -140,22 +147,8 @@ export default class NHDialog extends NHComponentShoelace {
             ?disabled=${this.primaryButtonDisabled}
             >${this.chooseButtonText().primary}
           </nh-button>
-        </sl-button-group>`;
-      case 'widget-config' === this.dialogType:
-        return html`<sl-button-group id="buttons">
-          <nh-button
-          id="primary-action-button"
-          size=${"md"}
-          variant=${"primary"}
-          @click=${this.onOkClicked}
-          ?disabled=${this.primaryButtonDisabled}
-          >${this.chooseButtonText().primary}
-          </nh-button>
-        </sl-button-group>`;
-
-      default:
-        return html``;
-    }
+        </slot>
+      </sl-button-group>`;
   }
 
   render() {
@@ -163,12 +156,12 @@ export default class NHDialog extends NHComponentShoelace {
       <sl-dialog
         id="main"
         class="dialog-scrolling ${classMap({
-          large: this.size == 'large',
-          medium: this.size == 'medium',
+          [this.size]: !!this.size,
+          [this.dialogType]: !!this.dialogType,
         })}"
         ?open=${this.isOpen}
         label="${this.title}"
-        @sl-hide=${() => typeof this.handleClose == 'function' && this.handleClose()}
+        @sl-hide=${(e:any) => typeof this.onClose == 'function' && this.onClose(e)}
       >
         <div class="container">
           ${this.alertMessage
@@ -194,11 +187,24 @@ export default class NHDialog extends NHComponentShoelace {
     this.primaryButtonDisabled = !value;
   };
 
+  onClose = async (_e: any) => {
+    if(typeof this.handleClose !== 'function') return; 
+    
+    let result : { preventDefault?: boolean };
+    if (this.handleClose) {
+      result = await this.handleClose();
+    } else { result = { preventDefault: false }}
+    // TODO: stop this from closing when result.preventDefault is true
+    if(result && !(result.preventDefault)) this.hideDialog();
+  }
+
   onOkClicked = () => {
+    let result : { preventDefault?: boolean };
     if (this.handleOk) {
-      this.handleOk();
-    }
+      result = this.handleOk();
+    } else { result = { preventDefault:   false }}
     this.hideDialog();
+    if(result && result.preventDefault) this.showDialog();
   };
 
   static get elementDefinitions() {
@@ -220,6 +226,7 @@ export default class NHDialog extends NHComponentShoelace {
         max-height: 16rem;
         --sl-shadow-x-large: 2px -1px var(--nh-theme-bg-backdrop);
       }
+      
       @media (max-height: 767px) {
         .container {
           justify-content: center;
@@ -231,10 +238,12 @@ export default class NHDialog extends NHComponentShoelace {
         max-height: 90vh;
         min-width: 50vw;
       }
+
       #main.large::part(panel) {
         min-height: 90vh;
         min-width: 95vw;
       }
+
       #main.large::slotted(*) {
         min-height: 80vh;
         overflow-y: auto;
@@ -243,15 +252,16 @@ export default class NHDialog extends NHComponentShoelace {
       #main.medium::slotted(div) {
         min-height: 90vh;
       }
+
       #main.large::slotted(div) {
         min-height: 80vh;
       }
-
 
       #main::part(overlay),
       #main::part(base) {
         transition: opacity 1s ease-in-out;
       }
+
       #main::part(body),
       #main::part(footer),
       #main::part(header) {
@@ -261,6 +271,7 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-md));
         align-items: flex-start;
       }
+
       #main::part(title) {
         text-transform: uppercase;
         font-weight: var(--nh-font-weights-body-bold);
@@ -268,22 +279,44 @@ export default class NHDialog extends NHComponentShoelace {
         padding: calc(1px * var(--nh-spacing-sm));
         color: var(--nh-theme-fg-muted);
       }
+
       #main::part(title) {
         font-size: calc(1px * var(--nh-font-size-sm));
         letter-spacing: 0.5px;
       }
+
       #main::part(close-button) {
         display: none;
       }
+
+      /* Form type */
+      
+      #main.input-form::part(panel) {
+        min-width: 24rem;
+      }
+
+      #main.input-form::part(header) {
+        height: 1px;
+      }
+
+      #main.input-form::part(footer) {
+        height: 4.5rem;
+        justify-content: flex-end;
+        align-items: center;
+        padding-right: 20px;
+      }
+
       ::slotted(div), #buttons {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: padding: calc(1px * var(--nh-spacing-md));
       }
+
       #buttons {
-        justify-content: end;
+        justify-content: flex-end;
       }
+
       #primary-action-button::part(base), #secondary-action-button::part(base) {
         border-radius: calc(1px * var(--nh-radii-md));
         background-color: var(--nh-theme-bg-surface);
@@ -292,9 +325,11 @@ export default class NHDialog extends NHComponentShoelace {
         width: calc(1rem * var(--nh-spacing-sm));
         border: none;
       }
+
       #secondary-action-button {
         margin-right: calc(1px * var(--nh-spacing-md));
       }
+
       #primary-action-button::part(base) {
         background-color: var(--nh-theme-bg-detail);
       }

@@ -1,6 +1,6 @@
 {
   "name": "@neighbourhoods/design-system-components",
-  "version": "0.0.13",
+  "version": "0.0.17",
   "type": "module",
   "files": [
     "dist"

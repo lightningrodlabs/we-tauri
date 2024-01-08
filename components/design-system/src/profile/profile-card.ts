@@ -84,7 +84,7 @@ export default class NHProfileCard extends NHComponentShoelace {
             : html`<nh-card
             class="nested-card"
             .theme=${"dark"}
-            .heading=${this.agentName}
+            .heading=${this.agentName || "No Profile"}
             .hasContextMenu=${false}
               .hasPrimaryAction=${true}
               .textSize=${"sm"}
