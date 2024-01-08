@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { spreadProps } from '@open-wc/lit-helpers'
+import { spreadProps } from './helpers/spreadProps'
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 import { b64images } from '@neighbourhoods/design-system-styles';
@@ -62,7 +62,7 @@ const meta: Meta<CardListProps> = {
     vertical: { control: "boolean" },
     grid: { control: "boolean" },
   },
-  parameters: { 
+  parameters: {
     backgrounds: { default: 'canvas' },
   },
   render: (args) => html`<card-list--test-root ${spreadProps(args)} />`,
