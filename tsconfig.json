@@ -11,10 +11,47 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "noImplicitAny": false,
     "sourceMap": true,
     "inlineSources": true,
     "declaration": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@neighbourhoods/design-system-components": [
+        "./ui/libs/design-system-components/src/index"
+      ],
+      "@neighbourhoods/design-system-components/*": [
+        "./ui/libs/design-system-components/src/*"
+      ],
+      "@neighbourhoods/dev-util-components": [
+        "./ui/libs/dev-util/src/index"
+      ],
+      "@neighbourhoods/dev-util-components/*": [
+        "./ui/libs/dev-util/src/*"
+      ],
+      "@neighbourhoods/testing-utils": [
+        "./ui/libs/testing-utils/src/index"
+      ],
+      "@neighbourhoods/testing-utils/*": [
+        "./ui/libs/testing-utils/src/*"
+      ],
+      "@neighbourhoods/client": [
+        "./ui/libs/sensemaker-client/src/index"
+      ],
+      "@neighbourhoods/client/*": [
+        "./ui/libs/sensemaker-client/src/index/*"
+      ],
+      "@neighbourhoods/membrane-invitations": [
+        "./ui/libs/membrane-invitations/src/index"
+      ],
+      "@neighbourhoods/membrane-invitations/*": [
+        "./ui/libs/membrane-invitations/src/index/*"
+      ]
+    },
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+  },
+  "exclude": ["**/.pnpm/**", "**/dist/**", "**/.cargo/**", "**/node_modules/**"],
 }

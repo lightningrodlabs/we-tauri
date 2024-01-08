@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "./src",
-    "declaration": false,
     "incremental": true,
     "types": ["vite/client"]
   },

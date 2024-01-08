@@ -1,10 +1,6 @@
 {
   "name": "nh-launcher",
   "private": true,
-  "workspaces": [
-    "ui/app",
-    "ui/libs/*"
-  ],
   "scripts": {
     "test": "npm run test:laucher; npm run test:client",
     "test:launcher": "npm test -w nh-launcher",
@@ -31,26 +27,27 @@
 
     "stop:local-services": "kill `cat .local-services-pid`; rm .local-services-pid; rm .bootstrap-path; rm .signal-path",
 
-    "build": "npm run build:happ && npm run build:es-libs && npm run build:nh-launcher && hc web-app pack workdir",
-    "build:happ": "npm run build:dnas && hc app pack ./workdir",
-    "build:dnas": "npm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
+    "build": "pnpm run build:happ && pnpm run build:es-libs && pnpm run build:nh-launcher && hc web-app pack workdir",
+    "build:happ": "pnpm run build:dnas && hc app pack ./workdir",
+    "build:dnas": "pnpm run build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
-    "build:es-libs": "npm run build:nh-client && npm run build:membrane-invitations",
-    "build:nh-client": "npm run build -w @neighbourhoods/client",
-    "build:membrane-invitations": "npm run build -w @neighbourhoods/membrane-invitations",
-    "build:nh-launcher": "npm run build -w nh-launcher",
-    "build:nh-watch": "npm run build:watch -w nh-launcher",
+    "build:es-libs": "pnpm run build:design-system-components && pnpm run build:client && pnpm run build:membrane-invitations",
+    "build:design-system-components": "pnpm run --dir ui/libs/design-system-components build",
+    "build:client": "pnpm run --dir ui/libs/sensemaker-client build",
+    "build:membrane-invitations": "pnpm run --dir ui/libs/membrane-invitations build",
+    "build:nh-launcher": "pnpm run --dir ui/app build",
+    "build:nh-watch": "pnpm run --dir ui/app build:watch",
 
-    "clean": "npm run clean:sandbox; npm run clean:build && npm run clean:modules",
+    "clean": "pnpm run clean:sandbox; pnpm run clean:build && pnpm run clean:modules",
     "clean:happ": "rm workdir/we.happ; rm workdir/we.webhapp",
     "clean:dnas": "rimraf dnas/**/workdir/*.dna",
-    "clean:build": "rimraf target; npm run clean:dnas; npm run clean:happ; rimraf ui/app/dist; exit 0",
+    "clean:build": "rimraf target; pnpm run clean:dnas; pnpm run clean:happ; rimraf ui/app/dist; exit 0",
     "clean:modules": "rimraf **/node_modules",
     "clean:sandbox": "hc sandbox clean",
 
     "playground": "run-singleton \"holochain-playground\"",
     "check-env": "test ! -f .env && cp .env.example .env; exit 0",
-    "postinstall": "npm run check-env",
+    "postinstall": "pnpm run check-env",
     "prepare": "husky install"
   },
   "devDependencies": {

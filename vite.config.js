@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
+// import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export const configure = (UMDName, entryPath) => defineConfig({
@@ -16,7 +16,7 @@ export const configure = (UMDName, entryPath) => defineConfig({
       // external: /^lit/
     },
   },
-  plugins: [tsconfigPaths()],
+  // plugins: [tsconfigPaths()],
 })
 
 

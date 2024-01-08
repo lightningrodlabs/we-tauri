@@ -1,13 +1,13 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
     "paths": {
       "@neighbourhoods/design-system-components": [
-        "../design-system/dist/index"
+        "../design-system-components/dist/index"
       ],
       "@neighbourhoods/design-system-components/*": [
-        "../design-system/dist/*"
+        "../design-system-components/dist/*"
       ]
     },
   },
