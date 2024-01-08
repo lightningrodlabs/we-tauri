@@ -3,13 +3,13 @@ import { property, query } from "lit/decorators.js";
 
 import { NHAlert, NHButton, NHCard, NHComponentShoelace, NHDialog } from "@neighbourhoods/design-system-components";
 import { Snackbar } from "@scoped-elements/material-web";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { DnaHash } from "@holochain/client";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
 export class LeaveNeighbourhood extends NHComponentShoelace {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
   @property()

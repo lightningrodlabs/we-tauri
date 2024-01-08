@@ -14,7 +14,7 @@ import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { generateHeaderHTML, generateHashHTML } from './helpers/functions';
 import { AssessmentTableRecord, AssessmentTableType } from './helpers/types';
 import { WithProfile } from './profile/with-profile';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { AgentPubKeyB64, DnaHash, encodeHashToBase64 } from '@holochain/client';
 import { weGroupContext } from '../../context';
 import { WeGroupContext } from '../we-group-context';
@@ -23,7 +23,7 @@ export const tableId = 'assessmentsForResource';
 
 @customElement('dashboard-table')
 export class StatefulTable extends NHComponentShoelace {
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @property({ type: Array })

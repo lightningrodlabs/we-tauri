@@ -1,4 +1,4 @@
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
@@ -27,10 +27,10 @@ import { AppletListItem } from "./applet-list-item";
 import { UninstalledAppletInstanceInfo } from "../../types";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _uninstalledApplets = new StoreSubscriber(

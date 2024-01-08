@@ -1,5 +1,5 @@
 import { JoinMembraneInvitation } from '@neighbourhoods/membrane-invitations';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { decode } from '@msgpack/msgpack';
 import { html, css, CSSResult } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
@@ -21,7 +21,7 @@ import { generateHashHTML } from './helpers/functions';
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 export class JoinGroupCard extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
   _myInvitations = new StoreSubscriber(

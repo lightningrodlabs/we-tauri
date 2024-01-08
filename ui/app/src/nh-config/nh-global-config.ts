@@ -1,5 +1,5 @@
 import { html, css, TemplateResult, PropertyValueMap } from 'lit';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
@@ -20,9 +20,9 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import CreateOutputDimensionMethod from './create-output-dimension-form';
 
 export default class NHGlobalConfig extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @query('nh-dialog')

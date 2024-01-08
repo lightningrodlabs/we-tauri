@@ -1,7 +1,7 @@
 import { AssessmentDict } from '../helpers/types';
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { contextProvider} from '@lit-labs/context';
+import { provide } from '@lit/context';
 import { AppletConfig } from '@neighbourhoods/client';
 import { MockFactory } from '../../__tests__/mock-factory';
 import { mockContext } from './helpers';
@@ -16,7 +16,7 @@ export class TestHarness extends LitElement {
   /**
    * Providing a context at the root element to maintain application state
    */
-  @contextProvider({ context: mockContext })
+  @provide({ context: mockContext })
   @property({attribute: false})
   // Create a mock store with the mock data
   _sensemakerStore: Object = MockFactory.mockStoreResponse('all')

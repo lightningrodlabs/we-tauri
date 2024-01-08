@@ -1,4 +1,4 @@
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { html, css, CSSResult } from "lit";
 import { get } from "svelte/store";
 
@@ -19,7 +19,7 @@ import { AppletNotInstalled } from "./applet-not-installed";
 import { provideWeGroupInfo } from "../../matrix-helpers";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
   _profilesStore = new StoreSubscriber(
@@ -28,10 +28,10 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     () => [this._matrixStore, this.weGroupId]
   );
 
-  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  @consume({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _neighbourhoodInfo = new StoreSubscriber(

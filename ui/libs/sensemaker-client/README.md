@@ -23,7 +23,7 @@ Stateful properties use [`svelte/store`](https://svelte.dev/tutorial/writable-st
 
 ```typescript
 export class ContextSelector extends ScopedElementsMixin(LitElement) {
-    @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+    @consume({ context: sensemakerStoreContext, subscribe: true })
     @state()
     public  sensemakerStore!: SensemakerStore
 

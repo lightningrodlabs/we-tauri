@@ -44,7 +44,7 @@ export type AssessmentWidgetKind = 'input' | 'output';
 export type AssessmentWidgetRenderer = {
   name: string,         // Likely appended to the App name in the dashboard configuration screen
   range: Range,         // Output components must support a range of [-INF, INF] unless it is used with an AVG.
-  component?: NHDelegateReceiverConstructor<InputAssessmentWidgetDelegate> | NHDelegateReceiverConstructor<OutputAssessmentWidgetDelegate>, // Intersection of HTML Element and the delegate interface for
+  component: NHDelegateReceiverConstructor<InputAssessmentWidgetDelegate> | NHDelegateReceiverConstructor<OutputAssessmentWidgetDelegate>, // Intersection of HTML Element and the delegate interface for
   kind: AssessmentWidgetKind
 }
 

@@ -9,7 +9,7 @@ import {
 import { LitElement, css, html, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { AppInfo, EntryHash, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { StatefulTable } from './table';
 import { FieldDefinition } from '@adaburrows/table-web-component';
@@ -21,15 +21,15 @@ import { matrixContext, weGroupContext } from '../../context';
 
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
-  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  @consume({ context: sensemakerStoreContext, subscribe: true })
   @property({ type: SensemakerStore, attribute: true })
   _sensemakerStore!: SensemakerStore;
 
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @property()

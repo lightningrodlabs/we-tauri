@@ -1,76 +1,58 @@
 import { css, html, LitElement, PropertyValues } from "lit";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import {
-  contextProvided,
-  ContextProvider,
-} from "@lit-labs/context";
+  consume,
+  provide
+} from "@lit/context";
 import { property, state } from "lit/decorators.js";
 import { StoreSubscriber } from "lit-svelte-stores";
-import { peerStatusStoreContext } from "@holochain-open-dev/peer-status";
-import { profilesStoreContext } from "@holochain-open-dev/profiles";
+import { PeerStatusStore, peerStatusStoreContext } from "@holochain-open-dev/peer-status";
+import { ProfilesStore, profilesStoreContext } from "@holochain-open-dev/profiles";
 import { get } from "svelte/store";
 
 import { matrixContext, weGroupContext } from "../context";
 import { MatrixStore } from "../matrix-store";
 import { DnaHash } from "@holochain/client";
-import { sensemakerStoreContext } from "@neighbourhoods/client";
+import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 
 
 export class WeGroupContext extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   matrixStore!: MatrixStore;
 
+  @provide({context: weGroupContext})
   @property()
   weGroupId!: DnaHash;
 
-  _profilesStore = new StoreSubscriber(this, () => this.matrixStore?.profilesStore(this.weGroupId));
-  _peerStatusStore = new StoreSubscriber(this, () => this.matrixStore?.peerStatusStore(this.weGroupId));
-  _sensemakerStore = new StoreSubscriber(this, () => this.matrixStore?.sensemakerStore(this.weGroupId));
+  @provide({context: profilesStoreContext})
+  @property({attribute: false})
+  profilesStore!: ProfilesStore;
 
+  @provide({context: peerStatusStoreContext})
+  @property({attribute: false})
+  peerStatusStore!: PeerStatusStore;
 
-  _weGroupIdProvider!: ContextProvider<typeof weGroupContext>;
-  _profilesProvider!: ContextProvider<typeof profilesStoreContext>;
-  _peerStatusProvider!: ContextProvider<typeof peerStatusStoreContext>;
-  _sensemakerProvider!: ContextProvider<typeof sensemakerStoreContext>;
+  @provide({context: sensemakerStoreContext})
+  @property({attribute: false})
+  sensemakerStore!: SensemakerStore;
+
 
   connectedCallback() {
     super.connectedCallback();
 
-    const profilesStore = get(this.matrixStore.profilesStore(this.weGroupId));
-    const peerStatusStore = get(this.matrixStore.peerStatusStore(this.weGroupId));
-    const sensemakerStore = get(this.matrixStore.sensemakerStore(this.weGroupId));
-
-    this._weGroupIdProvider = new ContextProvider(
-      this,
-      weGroupContext,
-      this.weGroupId,
-    );
-    this._profilesProvider = new ContextProvider(
-      this,
-      profilesStoreContext,
-      profilesStore
-    );
-    this._peerStatusProvider = new ContextProvider(
-      this,
-      peerStatusStoreContext,
-      peerStatusStore
-    );
-    this._sensemakerProvider = new ContextProvider(
-      this,
-      sensemakerStoreContext,
-      sensemakerStore
-    );
+    this.profilesStore = get(this.matrixStore?.profilesStore(this.weGroupId))!;
+    this.peerStatusStore = get(this.matrixStore.peerStatusStore(this.weGroupId))!;
+    this.sensemakerStore = get(this.matrixStore.sensemakerStore(this.weGroupId))!;
   }
 
   updated(changedValues: PropertyValues) {
     super.updated(changedValues);
 
     if (changedValues.has("weGroupId")) {
-      this._profilesProvider.setValue(this._profilesStore.value!);
-      this._peerStatusProvider.setValue(this._peerStatusStore.value!);
-      this._weGroupIdProvider.setValue(this.weGroupId);
-      this._sensemakerProvider.setValue(this._sensemakerStore.value!);
+      this.profilesStore = get(this.matrixStore?.profilesStore(this.weGroupId))!;
+      this.peerStatusStore = get(this.matrixStore.peerStatusStore(this.weGroupId))!;
+      this.sensemakerStore = get(this.matrixStore.sensemakerStore(this.weGroupId))!;
     }
   }
 

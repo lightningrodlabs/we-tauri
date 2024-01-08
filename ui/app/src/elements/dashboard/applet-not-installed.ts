@@ -1,5 +1,5 @@
 import { DnaHash, EntryHash } from "@holochain/client";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
@@ -13,11 +13,11 @@ import { AppletInstanceInfo, NewAppletInstanceInfo } from "../../types";
 
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @property()

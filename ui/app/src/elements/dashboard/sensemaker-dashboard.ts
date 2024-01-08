@@ -1,6 +1,6 @@
 import { CSSResult, PropertyValueMap, css, html } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { contextProvided, contextProvider } from '@lit-labs/context';
+import { consume, provide } from '@lit/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
 import { matrixContext } from '../../context';
@@ -40,10 +40,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
-  @contextProvider({ context: sensemakerStoreContext })
+  @provide({ context: sensemakerStoreContext })
   @property({ attribute: false })
   _sensemakerStore!: SensemakerStore;
 
@@ -396,11 +396,11 @@ export class SensemakerDashboard extends NHComponentShoelace {
                   {return !(this.context_ehs[context] && encodeHashToBase64(this.context_ehs[context]) == this.selectedContext)
                     ? ''
                     : html`<sl-tab-panel 
-                              @context-display=${function(e: CustomEvent) { 
+                              @context-display=${(e: CustomEvent) => {
                                 const flatResults = typeof e.detail.results == "object" ? e.detail.results[this.selectedContext].flat() : [];
                                 const dashboardFilterComponent = (e.currentTarget as any).children[0];
                                 dashboardFilterComponent.contextEhs = flatResults;
-                                }.bind(this)}
+                                }}
                               class="dashboard-tab-panel ${classMap({
                                 active:
                                   encodeHashToBase64(this.context_ehs[context]) === this.selectedContext,

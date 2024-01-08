@@ -2,11 +2,11 @@ import { css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { EntryHash } from '@holochain/client';
 import { AssessDimensionWidget, Assessment, RangeValue, RangeValueFloat, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 
 @customElement('average-star-dimension')
 export class StarDimensionAssessment extends AssessDimensionWidget {
-    @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+    @consume({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
 

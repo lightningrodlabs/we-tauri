@@ -13,7 +13,7 @@ export type CallbackFn = (_: Assessment | undefined) => void;
 /**
  * Generic constructor type
  */
-export type Constructor<T = Object> = new (...args: any[]) => T;
+export type Constructor<T = Object> = (new () => T) | (new (...args: any[]) => T);
 
 /**
  * Simple interface for allowing a a delegate to be set

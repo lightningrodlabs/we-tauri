@@ -5,7 +5,7 @@
 
 
 
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";

@@ -1,5 +1,5 @@
 import { JoinMembraneInvitation } from "@neighbourhoods/membrane-invitations";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { decode } from "@msgpack/msgpack";
 import { html, css } from "lit";
 import { StoreSubscriber   } from "lit-svelte-stores";
@@ -31,13 +31,13 @@ import { UninstallApplet } from "../dialogs/uninstall-applet";
 import { AppletInstanceInfo } from "../../types";
 
 export class AppletInstanceStatusList extends NHComponent {
-  @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+  @consume({ context: sensemakerStoreContext, subscribe: true })
   _sensemakerStore!: SensemakerStore;
 
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _installedApplets = new StoreSubscriber(

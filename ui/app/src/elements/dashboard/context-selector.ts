@@ -3,13 +3,13 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SensemakerStore, AppletConfig, sensemakerStoreContext, ComputeContextInput, ContextResult } from '@neighbourhoods/client';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { NHButton, NHButtonGroup } from '@neighbourhoods/design-system-components';
 import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 import { get } from '@holochain-open-dev/stores';
 
 export class ContextSelector extends ScopedRegistryHost(LitElement) {
-  @contextProvided({ context: sensemakerStoreContext })
+  @consume({ context: sensemakerStoreContext })
   sensemakerStore!: SensemakerStore;
 
   config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>

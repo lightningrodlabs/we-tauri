@@ -8,18 +8,18 @@ import {
   NHProfileCard,
   NHProfileIdenticon,
 } from '@neighbourhoods/design-system-components';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { AsyncStatus, StoreSubscriber } from '@holochain-open-dev/stores';
 import { MatrixStore } from '../../../matrix-store';
 import { matrixContext, weGroupContext } from '../../../context';
 import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 export class WithProfile extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true  })
+  @consume({ context: weGroupContext, subscribe: true  })
   @state()
   weGroupId!: DnaHash;
 

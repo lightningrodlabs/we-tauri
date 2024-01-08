@@ -6,9 +6,9 @@ import {
   CircularProgress,
   Card,
 } from "@scoped-elements/material-web";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { property, query, state } from "lit/decorators.js";
-import { Task } from "@lit-labs/task";
+import { Task } from "@lit/task";
 
 import { sharedStyles } from "../../sharedStyles";
 import {
@@ -24,11 +24,11 @@ import { MatrixStore } from "../../matrix-store";
 import { DnaHash } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _installableApplets = new Task(

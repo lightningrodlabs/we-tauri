@@ -1,4 +1,4 @@
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { state, query, queryAsync } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 import { html, css, CSSResult, unsafeCSS } from 'lit';
@@ -35,7 +35,7 @@ import { provideMatrix } from './matrix-helpers.js';
 import { NHGlobalConfig } from './nh-config';
 
 export class MainDashboard extends NHComponentShoelace {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 

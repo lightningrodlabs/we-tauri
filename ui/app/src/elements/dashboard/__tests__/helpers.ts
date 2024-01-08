@@ -1,4 +1,4 @@
-import { createContext } from "@lit-labs/context";
+import { createContext } from "@lit/context";
 import { fixture, html } from "@open-wc/testing";
 import { MatrixStore } from "../../../matrix-store";
 

@@ -1,6 +1,6 @@
-import { ContextProvider } from "@lit-labs/context";
+import { provide } from "@lit/context";
 import { state, query, customElement } from "lit/decorators.js";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { LitElement, html, css } from "lit";
 
 import { sharedStyles } from "./sharedStyles";
@@ -10,7 +10,8 @@ import { MainDashboard } from "./main-dashboard";
 import { getAdminWebsocket, getAppWebsocket, getCellId } from "./utils";
 
 @customElement('we-app')
-export class WeApp extends ScopedElementsMixin(LitElement) {
+export class WeApp extends ScopedRegistryHost(LitElement) {
+  @provide({context: matrixContext})
   private _matrixStore!: MatrixStore;
 
   @state()
@@ -29,7 +30,7 @@ export class WeApp extends ScopedElementsMixin(LitElement) {
     }
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
-    new ContextProvider(this, matrixContext, this._matrixStore);
+
 
     // TODO: add code to prefetch groups and register applets here.
 

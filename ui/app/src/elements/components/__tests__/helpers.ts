@@ -2,7 +2,7 @@ import { fixture, html } from '@open-wc/testing';
 import { AssessmentDict } from '../helpers/types';
 import { encodeHashToBase64 } from '@holochain/client';
 import { mockAssessments } from './sensemaker-store-test-harness';
-import { createContext } from '@lit-labs/context';
+import { createContext } from '@lit/context';
 import { SensemakerStore } from '@neighbourhoods/client';
 
 // Create a mock context with the mock store

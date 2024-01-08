@@ -1,7 +1,7 @@
 import { html, css, CSSResult} from "lit";
 import { state, property } from "lit/decorators.js";
 
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { SlInput, SlTooltip} from '@scoped-elements/shoelace';
 
 import { matrixContext } from "../../context";
@@ -13,7 +13,7 @@ import { InferType, object, string } from "yup";
 const NH_DEFAULT_LOGO = b64images.nhIcons.logoCol;
 
 export class CreateNeighbourhoodDialog extends NHComponentShoelace {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   _matrixStore!: MatrixStore;
 
   _neighbourhoodSchema = object({

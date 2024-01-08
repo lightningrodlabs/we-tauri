@@ -1,5 +1,5 @@
 import { JoinMembraneInvitation } from "@neighbourhoods/membrane-invitations";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { decode } from "@msgpack/msgpack";
 import { html, css, CSSResult } from "lit";
 import {
@@ -18,7 +18,7 @@ import { ManagingGroupsCard } from "../components/managing-groups-card";
 
 
 export class HomeScreen extends NHComponentShoelace {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
   @query("#we-dialog")

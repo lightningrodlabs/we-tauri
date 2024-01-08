@@ -1,4 +1,4 @@
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { html, css } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
 import { Snackbar } from "@scoped-elements/material-web";
@@ -12,10 +12,10 @@ import { AppletListItem } from "./applet-list-item";
 import { provideNewAppletInstancesForGroup } from "../../matrix-helpers";
 
 export class JoinableAppletInstanceList extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   _joinableApplets = new StoreSubscriber(

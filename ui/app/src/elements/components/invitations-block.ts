@@ -3,7 +3,7 @@ import {
   TextField,
   Snackbar,
 } from "@scoped-elements/material-web";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { query, state } from "lit/decorators.js";
 
 import { MatrixStore } from "../../matrix-store";
@@ -15,11 +15,11 @@ import { b64images } from "@neighbourhoods/design-system-styles";
 
 export class InvitationsBlock extends NHComponentShoelace {
   // TODO: add Yup schema for hash validation
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   @state()
   _matrixStore!: MatrixStore;
 
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @state()

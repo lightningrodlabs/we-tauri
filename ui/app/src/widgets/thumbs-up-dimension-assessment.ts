@@ -3,11 +3,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { EntryHash } from '@holochain/client';
 import { Checkbox } from '@scoped-elements/material-web'
 import { AssessDimensionWidget, Assessment, RangeValue, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 
 @customElement('thumbs-up-dimension-assessment')
 export class ThumbsUpDimenionAssessment extends AssessDimensionWidget {
-    @contextProvided({ context: sensemakerStoreContext, subscribe: true })
+    @consume({ context: sensemakerStoreContext, subscribe: true })
     @state()
     sensemakerStore!: SensemakerStore;
 

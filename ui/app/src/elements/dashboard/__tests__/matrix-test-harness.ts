@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { contextProvider } from '@lit-labs/context';
+import { provide } from '@lit/context';
 import { DnaHash, EntryHash } from '@holochain/client';
 import { Applet } from '../../../types';
 import { MockFactory } from '../../__tests__/mock-factory';
@@ -28,7 +28,7 @@ export class TestHarness extends LitElement {
   /**
    * Providing a context at the root element to maintain application state
    */
-  @contextProvider({ context: mockContext })
+  @provide({ context: mockContext })
   @property({ attribute: false })
   // Create a mock store with the mock data
   _matrixStore;

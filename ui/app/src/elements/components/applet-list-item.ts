@@ -2,7 +2,7 @@ import { NHComponent, NHButton, NHPageHeaderCard, NHDialog } from "@neighbourhoo
 import { html, css } from "lit";
 import { property, state } from "lit/decorators.js";
 import { InstallableApplets } from "./installable-applets";
-import { contextProvided } from "@lit-labs/context";
+import { consume } from "@lit/context";
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext } from "../../context";
 import { AppInfo } from "@holochain/client";
@@ -13,7 +13,7 @@ import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { AppletInstanceInfo } from "../../types";
 
 export class AppletListItem extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
   matrixStore!: MatrixStore;
 
   @property()

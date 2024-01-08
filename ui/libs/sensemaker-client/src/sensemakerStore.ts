@@ -29,7 +29,7 @@ import {
 } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option } from './utils';
-import { createContext } from '@lit-labs/context';
+import { createContext } from '@lit/context';
 import { get } from "svelte/store";
 import { EntryRecord } from '@holochain-open-dev/utils';
 
