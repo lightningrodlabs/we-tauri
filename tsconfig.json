@@ -49,6 +49,12 @@
       ],
       "@neighbourhoods/membrane-invitations/*": [
         "./ui/libs/membrane-invitations/src/index/*"
+      ],
+      "@neighbourhoods/design-system-styles": [
+        ".ui/libs/styles/index.ts"
+      ],
+      "@neighbourhoods/design-system-styles/*": [
+        ".ui/libs/styles/*"
       ]
     },
     "tsBuildInfoFile": "tsconfig.tsbuildinfo"

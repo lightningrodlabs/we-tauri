@@ -22,7 +22,7 @@
   "devDependencies": {
     "@babel/core": "^7.17.2",
     "@base2/pretty-print-object": "^1.0.2",
-    "@neighbourhoods/design-system-styles": "^0.0.6",
+    "@neighbourhoods/design-system-styles": "workspace:*",
     "@storybook/addon-actions": "^7.4.0",
     "@storybook/addon-essentials": "^7.4.0",
     "@storybook/addon-interactions": "^7.4.0",

@@ -27,7 +27,7 @@
     "@msgpack/msgpack": "^2.8.0",
     "@neighbourhoods/client": "workspace:*",
     "@neighbourhoods/design-system-components": "workspace:*",
-    "@neighbourhoods/design-system-styles": "^0.0.7",
+    "@neighbourhoods/design-system-styles": "workspace: *",
     "@neighbourhoods/membrane-invitations": "workspace:*",
     "@scoped-elements/material-web": "^0.0.19",
     "@scoped-elements/shoelace": "^0.0.8",
