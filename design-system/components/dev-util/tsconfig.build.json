@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "paths": {
+      "@neighbourhoods/design-system-components": [
+        "../design-system/dist/index"
+      ],
+      "@neighbourhoods/design-system-components/*": [
+        "../design-system/dist/*"
+      ]
+    },
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["./src/**/*.d.ts", "**/*.stories.*"]
+}
