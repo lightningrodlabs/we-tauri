@@ -1,7 +1,7 @@
 import { consume } from '@lit/context';
 import { state, query, queryAsync, property } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
-import { html, css, CSSResult, unsafeCSS } from 'lit';
+import { html, css, CSSResult, unsafeCSS, LitElement } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { CircularProgress, Fab, Icon, Snackbar } from '@scoped-elements/material-web';
 import { classMap } from 'lit/directives/class-map.js';
@@ -33,8 +33,9 @@ import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
 import { NHGlobalConfig } from './nh-config';
+import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
-export class MainDashboard extends NHComponentShoelace {
+export class MainDashboard extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;
@@ -618,7 +619,7 @@ export class MainDashboard extends NHComponentShoelace {
 
   static styles: CSSResult[] = [
     sharedStyles,
-    super.styles as CSSResult,
+    // super.styles as CSSResult, // This adds inherited style from design-system-styles, generated from figma tokens.json. Removed as breaking change with Lit3 and we need to move to a mix-in pattern.
     css`
       :host {
         display: flex;
