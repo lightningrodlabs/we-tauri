@@ -20,7 +20,7 @@ export default {
   },
 
   plugins: [
-    css({include: ['build/dark/variables/css/_variables.css'], modules: true}),
+    css({include: ['build/dark/variables/css/variables.css'], modules: true}),
     postcss(),
     /** Resolve bare module imports */
     nodeResolve({

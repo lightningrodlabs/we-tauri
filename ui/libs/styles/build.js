@@ -116,7 +116,8 @@ themeNames.forEach((themeName) => {
             destination: 'variables.css',
             format: 'css/variables',
             options: {
-              "outputReferences": true
+              "outputReferences": false,
+              "showFileHeader": false
             }
           },
         ],
@@ -125,21 +126,7 @@ themeNames.forEach((themeName) => {
   });
   sd.cleanAllPlatforms();
   sd.buildAllPlatforms();
-
-  removeComments(themeName);
 })
-
-
-function removeComments(themeName) {
-    const input = fs.createReadStream(`build/${themeName}/css/variables.css`)
-    const output = fs.createWriteStream(`build/${themeName}/css/_variables.css`)
-    input // take input
-      .pipe(RemoveFirstLine())
-      .pipe(RemoveFirstLine())
-      .pipe(RemoveFirstLine())
-      .pipe(RemoveFirstLine())
-      .pipe(output);
-}
 
 /* minify css */
 function minifyCSS(content) {

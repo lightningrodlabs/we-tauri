@@ -3,9 +3,15 @@
   "version": "0.0.8",
   "description": "packaged styles for the Neighbourhoods design system",
   "main": "index.ts",
+  "files": [
+    "build",
+    "assets",
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "prepare": "npm run build:styles && npm run build",
-    "build": "rollup -c rollup.config.mjs",
+    "prepare": "pnpm run build",
+    "build": "pnpm build:styles && rollup -c rollup.config.mjs",
     "build:styles": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

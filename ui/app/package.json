@@ -5,7 +5,7 @@
     "start": "vite dev --clearScreen false --port $UI_PORT",
     "dev": "vite dev --clearScreen false --port $UI_PORT",
     "dev2": "concurrently \"npm run dev\" \"VITE_AGENT=2 vite dev --clearScreen false --port $UI_PORT_2\"",
-    "build": "npm run clean; tsc; vite build && npm run zip",
+    "build": "npm run clean; vite build && npm run zip",
     "build:watch": "npm run clean; vite build -w",
     "zip": "cd ./dist && bestzip ../ui.zip *",
     "clean": "rimraf ui.zip dist",
