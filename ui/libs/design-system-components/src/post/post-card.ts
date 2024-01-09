@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponent } from '../ancestors/base';
 import NHCard from "../card";
@@ -18,7 +18,7 @@ export default class NHPostCard extends NHComponent {
   @property()
   iconImg: string = b64images.icons.pear;
 
-  render() {
+  render() : TemplateResult {
     return html`
       <nh-card
         .theme=${"dark"}

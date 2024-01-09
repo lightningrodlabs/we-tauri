@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
@@ -17,7 +17,7 @@ export default class NHCardList extends NHComponentShoelace {
     'nh-button': NHButton,
   }
   
-  render() {
+  render() : TemplateResult {
     return html`
       <div class="list-container ${classMap({
         vertical: this.type == 'linear'&& this.direction === 'vertical',

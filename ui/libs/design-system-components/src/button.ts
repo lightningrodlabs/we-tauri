@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from "./ancestors/base";
@@ -25,7 +25,7 @@ export default class NHButton extends NHComponent {
     | "warning"
     | "danger" = "primary";
 
-  render() {
+  render() : TemplateResult {
     return html`
       <button
         type="button"

@@ -1,5 +1,5 @@
 import { classMap } from 'lit/directives/class-map.js';
-import { css, CSSResult, html } from 'lit';
+import { css, CSSResult, html, TemplateResult } from 'lit';
 import {property, query } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.js';
@@ -28,7 +28,7 @@ export default class NHAlert extends NHComponentShoelace {
     this.alert.toast()
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <sl-alert id="main"
         class="alert ${classMap({ [this.type]: !!this.type, 'toast': !!this.isToast })}"

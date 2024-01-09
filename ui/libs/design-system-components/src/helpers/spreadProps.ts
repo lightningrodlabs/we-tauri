@@ -5,7 +5,7 @@
 
 import { ElementPart, Part } from 'lit';
 import { nothing } from 'lit/html.js';
-import { directive } from 'lit/directive.js';
+import { DirectiveResult, directive } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 
 type EventListenerWithOptions = EventListenerOrEventListenerObject &
@@ -76,7 +76,7 @@ export class SpreadPropsDirective extends AsyncDirective {
     }
 }
 
-export const spreadProps = directive(SpreadPropsDirective);
+export const spreadProps: DirectiveResult<typeof SpreadPropsDirective> = directive(SpreadPropsDirective);
 
 /**
  * Usage:

@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import SlTextarea from "@shoelace-style/shoelace/dist/components/textarea/textarea.js";
 import NHCard from "../card";
@@ -12,7 +12,7 @@ export default class NHCreatePost extends NHComponentShoelace {
   @property()
   textAreaValue!: string;
 
-  render() {
+  render() : TemplateResult {
     return html`
       <nh-card
         class="squarish"  

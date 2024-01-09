@@ -1,4 +1,4 @@
-import { css, CSSResult, html, PropertyValueMap } from "lit";
+import { css, CSSResult, html, PropertyValueMap, TemplateResult } from "lit";
 import {property, query, queryAll } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
@@ -43,7 +43,7 @@ export default class NHAssessmentWidget extends NHComponentShoelace {
     });
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <div class="assessment-widget">
         <div class="assessment-container">

@@ -1,5 +1,5 @@
 import { classMap } from 'lit/directives/class-map.js';
-import { css, CSSResult, html, PropertyValueMap } from 'lit';
+import { css, CSSResult, html, PropertyValueMap, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
 
@@ -42,7 +42,7 @@ export default class NHSelect extends NHComponentShoelace {
     );
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
     <div class="field${classMap({
       [this.size]: this.size,

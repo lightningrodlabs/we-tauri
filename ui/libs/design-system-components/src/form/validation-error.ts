@@ -1,4 +1,4 @@
-import { html, css, CSSResult } from 'lit';
+import { html, css, CSSResult, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponent } from '../ancestors/base';
 
@@ -27,7 +27,7 @@ export default class NHValidationError extends NHComponent {
     }
   `];
 
-  render() {
+  render() : TemplateResult {
     return html`${this.message ? html`<span>${this.message}</span>` : ''}`;
   }
 }

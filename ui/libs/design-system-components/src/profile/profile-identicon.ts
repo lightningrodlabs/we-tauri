@@ -1,4 +1,4 @@
-import { css, CSSResult, html, } from "lit";
+import { css, CSSResult, html, TemplateResult, } from "lit";
 import { property } from "lit/decorators.js";
 import { NHComponentShoelace } from "../ancestors/base";
 import NHCard from "../card";
@@ -24,7 +24,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
     'sl-skeleton': SlSkeleton,
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
     <div class="container">
       ${this.loading 

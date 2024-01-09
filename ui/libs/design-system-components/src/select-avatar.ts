@@ -1,4 +1,4 @@
-import { CSSResult, css, html } from "lit";
+import { CSSResult, TemplateResult, css, html } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import { NHComponent } from "./ancestors/base.js";
 import { SlAvatar, SlTooltip } from "@shoelace-style/shoelace";
@@ -62,7 +62,7 @@ export default class NHSelectAvatar extends NHComponent {
         }
     }
     
-    renderAvatar() {
+    renderAvatar() : TemplateResult {
         if (this.value)
             return html `
         <div

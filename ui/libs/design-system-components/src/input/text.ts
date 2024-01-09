@@ -1,5 +1,5 @@
 import { classMap } from 'lit/directives/class-map.js';
-import { css, CSSResult, html } from 'lit';
+import { css, CSSResult, html, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { SlInput } from '@shoelace-style/shoelace';
 import { NHComponent } from '../ancestors/base';
@@ -36,7 +36,7 @@ export default class NHTextInput extends NHComponent {
     );
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
     <div class="field${classMap({
       'errored': this.errored,

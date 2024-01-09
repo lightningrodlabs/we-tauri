@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
@@ -21,7 +21,7 @@ export default class NHPagination extends NHComponent {
     this.requestUpdate();
   }
 
-  renderPagination(index: number) {
+  renderPagination(index: number)  : TemplateResult{
     const renderRestOfPagination = () => html`
       ${new Array(this.length).fill(undefined).map((_, i) => {
         return html`<li>
@@ -91,7 +91,7 @@ export default class NHPagination extends NHComponent {
     }
   }
 
-  render() {
+  render() : TemplateResult {
     return html`<div class="container">${this.renderPagination(this.currentIndex)}</div>`;
   }
 

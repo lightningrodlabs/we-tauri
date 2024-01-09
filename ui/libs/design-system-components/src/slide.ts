@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from 'lit';
+import { css, CSSResult, html, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 
@@ -6,7 +6,7 @@ export default class NHSlide extends NHComponentShoelace {
   @property()
   heading!: string;
 
-  render() {
+  render() : TemplateResult {
     return html`
       <div class="container">
         <h2>${this.heading}</h2>

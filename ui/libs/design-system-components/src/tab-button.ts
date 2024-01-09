@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponent } from './ancestors/base';
@@ -15,7 +15,7 @@ export default class NHTabButton extends NHComponent {
   @property()
   size: string = "md";
 
-  render() {
+  render() : TemplateResult {
     return html`
       <button
         ?disabled=${this.disabled}

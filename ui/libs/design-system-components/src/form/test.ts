@@ -1,6 +1,6 @@
 import { classMap } from 'lit/directives/class-map.js';
 import { state } from 'lit/decorators.js';
-import { CSSResult, css, html } from 'lit';
+import { CSSResult, TemplateResult, css, html } from 'lit';
 import { NHBaseForm } from "../ancestors/base-form";
 import { ObjectSchema, object, string } from 'yup';
 import { SlInput, SlRadioGroup } from '@shoelace-style/shoelace';
@@ -34,7 +34,7 @@ export default class CreateDimensionForm extends NHBaseForm {
       'nh-validation-error': NHValidationError,
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <form @submit=${(e: Event) => this.handleSubmit(e)}>
         <sl-input

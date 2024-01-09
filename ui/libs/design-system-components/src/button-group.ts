@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import { html as litHtml, literal } from "lit/static-html.js";
 import { property } from "lit/decorators.js";
 import { NHComponent } from "./ancestors/base";
@@ -26,7 +26,7 @@ export default class NHButtonGroup extends NHComponent {
   @property()
   addItemButton: boolean = false;
 
-  render() {
+  render() : TemplateResult {
     return html`
       <div
         class="container${classMap({

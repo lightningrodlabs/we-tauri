@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import { NHComponentShoelace } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
@@ -37,7 +37,7 @@ export default class NHMenu extends NHComponentShoelace {
     },
   ];
 
-  renderTopLevel() {
+  renderTopLevel() : TemplateResult {
     return html`
       ${this.menuSectionDetails.map(({ sectionName, sectionMembers }) => {
         return html`
@@ -86,7 +86,7 @@ export default class NHMenu extends NHComponentShoelace {
     "sl-menu-label": SlMenuLabel,
   };
 
-  render() {
+  render() : TemplateResult {
     return html`
       <nav
         class="container${classMap({

@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from 'lit';
+import { css, CSSResult, html, TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { NHComponentShoelace } from './ancestors/base';
 import { classMap } from "lit/directives/class-map.js";
@@ -129,7 +129,7 @@ export default class NHDialog extends NHComponentShoelace {
     }
   }
 
-  renderActions() {
+  renderActions() : TemplateResult {
     return html`<sl-button-group id="buttons">
         <nh-button
           id="secondary-action-button"
@@ -151,7 +151,7 @@ export default class NHDialog extends NHComponentShoelace {
       </sl-button-group>`;
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <sl-dialog
         id="main"

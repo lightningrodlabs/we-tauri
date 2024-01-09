@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { NHComponentShoelace } from "./ancestors/base";
@@ -20,7 +20,7 @@ export default class NHCard extends NHComponentShoelace {
   @property()
   footerAlign: "l" | "r" | "c" = "c";
 
-  render() {
+  render() : TemplateResult {
     return html`
       <div
         class="container${classMap({

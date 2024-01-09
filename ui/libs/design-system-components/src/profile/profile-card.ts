@@ -1,4 +1,4 @@
-import { css, CSSResult, html } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { NHComponentShoelace } from "../ancestors/base";
@@ -28,7 +28,7 @@ export default class NHProfileCard extends NHComponentShoelace {
     'sl-tooltip': SlTooltip,
   }
 
-  renderHash(hash: string) {
+  renderHash(hash: string) : TemplateResult {
     return html`
       <div
         class="hash-container"
@@ -50,7 +50,7 @@ export default class NHProfileCard extends NHComponentShoelace {
     `;
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <nh-card
         class="squarish"
