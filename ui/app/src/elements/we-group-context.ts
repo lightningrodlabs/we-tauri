@@ -17,8 +17,8 @@ import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client"
 
 
 export class WeGroupContext extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   matrixStore!: MatrixStore;
 
   @provide({context: weGroupContext})

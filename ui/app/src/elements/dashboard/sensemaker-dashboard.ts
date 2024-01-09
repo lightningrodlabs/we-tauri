@@ -40,7 +40,8 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @state() loading: boolean = true;
   @state() loadingState: LoadingState = LoadingState.FirstRender;
 
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @provide({ context: sensemakerStoreContext })

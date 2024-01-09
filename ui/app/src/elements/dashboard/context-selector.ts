@@ -9,7 +9,8 @@ import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/
 import { get } from '@holochain-open-dev/stores';
 
 export class ContextSelector extends ScopedRegistryHost(LitElement) {
-  @consume({ context: sensemakerStoreContext })
+  @consume({ context: sensemakerStoreContext, subscribe: true })
+  @property({attribute: false})
   sensemakerStore!: SensemakerStore;
 
   config: StoreSubscriber<AppletConfig> = new StoreSubscriber(this, () =>

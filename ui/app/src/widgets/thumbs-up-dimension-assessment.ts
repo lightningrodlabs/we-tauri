@@ -8,7 +8,7 @@ import { consume } from '@lit/context';
 @customElement('thumbs-up-dimension-assessment')
 export class ThumbsUpDimenionAssessment extends AssessDimensionWidget {
     @consume({ context: sensemakerStoreContext, subscribe: true })
-    @state()
+    @property({attribute: false})
     sensemakerStore!: SensemakerStore;
 
     @property()

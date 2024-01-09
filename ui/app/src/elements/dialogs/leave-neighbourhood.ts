@@ -9,7 +9,8 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
 export class LeaveNeighbourhood extends NHComponentShoelace {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @property()

@@ -1,13 +1,15 @@
-import { css, html } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { EntryHash } from '@holochain/client';
-import { AssessDimensionWidget, Assessment, RangeValue, RangeValueFloat, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
+import { Assessment, RangeValue, RangeValueFloat, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { consume } from '@lit/context';
+import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
 @customElement('average-star-dimension')
-export class StarDimensionAssessment extends AssessDimensionWidget {
+export class StarDimensionAssessment extends ScopedRegistryHost(LitElement) {
+
     @consume({ context: sensemakerStoreContext, subscribe: true })
-    @state()
+    @property({attribute: false})
     sensemakerStore!: SensemakerStore;
 
     @property()

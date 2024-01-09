@@ -15,7 +15,7 @@ import {
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
-import { query, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
@@ -27,10 +27,12 @@ import { AppletListItem } from "./applet-list-item";
 import { UninstalledAppletInstanceInfo } from "../../types";
 
 export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   _uninstalledApplets = new StoreSubscriber(

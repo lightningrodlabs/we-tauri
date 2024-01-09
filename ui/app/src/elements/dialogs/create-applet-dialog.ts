@@ -20,10 +20,12 @@ import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, EntryHashB64 } from "@holochain/client";
 
 export class CreateAppletDialog extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   _allApplets = new StoreSubscriber(

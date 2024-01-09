@@ -4,7 +4,7 @@ import {
   Snackbar,
 } from "@scoped-elements/material-web";
 import { consume } from "@lit/context";
-import { query, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 
 import { MatrixStore } from "../../matrix-store";
 import { matrixContext, weGroupContext } from "../../context";
@@ -15,11 +15,12 @@ import { b64images } from "@neighbourhoods/design-system-styles";
 
 export class InvitationsBlock extends NHComponentShoelace {
   // TODO: add Yup schema for hash validation
-  @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @state()

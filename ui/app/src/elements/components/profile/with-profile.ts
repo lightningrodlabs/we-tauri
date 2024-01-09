@@ -15,12 +15,12 @@ import { matrixContext, weGroupContext } from '../../../context';
 import { AgentPubKeyB64, AppSignal, DnaHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 export class WithProfile extends NHComponent {
-  @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true  })
-  @state()
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @property()

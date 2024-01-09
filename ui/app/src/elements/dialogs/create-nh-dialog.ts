@@ -13,7 +13,8 @@ import { InferType, object, string } from "yup";
 const NH_DEFAULT_LOGO = b64images.nhIcons.logoCol;
 
 export class CreateNeighbourhoodDialog extends NHComponentShoelace {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   _neighbourhoodSchema = object({

@@ -13,11 +13,13 @@ import { AppletInstanceInfo, NewAppletInstanceInfo } from "../../types";
 
 export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
 
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @property()

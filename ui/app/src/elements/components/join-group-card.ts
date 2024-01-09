@@ -10,7 +10,7 @@ import {
 import { matrixContext } from '../../context';
 import { MatrixStore } from '../../matrix-store';
 import { sharedStyles } from '../../sharedStyles';
-import { query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { AsyncStatus } from '@holochain-open-dev/stores';
 import { CreateNeighbourhoodDialog } from '../dialogs/create-nh-dialog';
@@ -21,7 +21,8 @@ import { generateHashHTML } from './helpers/functions';
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 export class JoinGroupCard extends NHComponent {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   matrixStore!: MatrixStore;
 
   _myInvitations = new StoreSubscriber(

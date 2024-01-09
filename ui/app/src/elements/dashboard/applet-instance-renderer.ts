@@ -15,16 +15,20 @@ import { AppBlockRenderer } from "../components/block-renderer";
 
 export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
 
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: profilesStoreContext, subscribe: true })
+  @property({attribute: false})
   _profilesStore!: ProfilesStore;
 
   @consume({ context: sensemakerStoreContext, subscribe: true })
+  @property({attribute: false})
   _sensemakerStore!: SensemakerStore;
 
   @consume({ context: peerStatusStoreContext, subscribe: true })
+  @property({attribute: false})
   _peerStatusStore!: PeerStatusStore;
 
   @property()

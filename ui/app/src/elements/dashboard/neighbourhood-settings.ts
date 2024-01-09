@@ -4,7 +4,7 @@ import { consume } from "@lit/context";
 import {  CircularProgress, LinearProgress, Snackbar } from "@scoped-elements/material-web";
 import { css, html } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
-import { query, state } from "lit/decorators.js";
+import { property, query, state } from "lit/decorators.js";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { AppletInstanceStatusList } from "../components/applet-instance-status-list";
@@ -17,16 +17,20 @@ import { provideWeGroupInfo } from "../../matrix-helpers";
 
 export class NeighbourhoodSettings extends NHComponent {
 
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: profilesStoreContext, subscribe: true })
+  @property({attribute: false})
   _profilesStore!: ProfilesStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @consume({ context: sensemakerStoreContext, subscribe: true })
+  @property({attribute: false})
   _sensemakerStore!: SensemakerStore;
 
   _neighbourhoodInfo = new StoreSubscriber(

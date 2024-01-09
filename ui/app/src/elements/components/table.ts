@@ -24,6 +24,7 @@ export const tableId = 'assessmentsForResource';
 @customElement('dashboard-table')
 export class StatefulTable extends NHComponentShoelace {
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @property({ type: Array })

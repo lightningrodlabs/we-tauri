@@ -22,10 +22,12 @@ import { SlInput, SlTextarea } from '@scoped-elements/shoelace';
 import { NHAlert, NHButton, NHDialog } from '@neighbourhoods/design-system-components';
 
 export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   _allApplets = new StoreSubscriber(

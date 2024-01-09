@@ -24,11 +24,12 @@ import { MatrixStore } from "../../matrix-store";
 import { DnaHash } from "@holochain/client";
 
 export class InstallableApplets extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   _installableApplets = new Task(

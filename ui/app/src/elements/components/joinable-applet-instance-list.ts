@@ -10,12 +10,15 @@ import { b64images } from "@neighbourhoods/design-system-styles";
 import { NHButton, NHComponent } from "@neighbourhoods/design-system-components";
 import { AppletListItem } from "./applet-list-item";
 import { provideNewAppletInstancesForGroup } from "../../matrix-helpers";
+import { property } from "lit/decorators.js";
 
 export class JoinableAppletInstanceList extends NHComponent {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute:false})
   matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute:false})
   weGroupId!: DnaHash;
 
   _joinableApplets = new StoreSubscriber(

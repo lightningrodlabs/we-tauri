@@ -1,5 +1,5 @@
 import { consume } from '@lit/context';
-import { state, query, queryAsync } from 'lit/decorators.js';
+import { state, query, queryAsync, property } from 'lit/decorators.js';
 import { DnaHash, EntryHash, encodeHashToBase64 } from '@holochain/client';
 import { html, css, CSSResult, unsafeCSS } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
@@ -35,8 +35,8 @@ import { provideMatrix } from './matrix-helpers.js';
 import { NHGlobalConfig } from './nh-config';
 
 export class MainDashboard extends NHComponentShoelace {
-  @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   // :SHONK: not accessed, only used to call `matrixStore.fetchMatrix` to populate below Readables

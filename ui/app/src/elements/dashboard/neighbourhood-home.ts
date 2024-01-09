@@ -5,7 +5,7 @@ import { get } from "svelte/store";
 import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
-import {  state } from "lit/decorators.js";
+import {  property, state } from "lit/decorators.js";
 import { NHButton, NHCard, NHComponentShoelace, NHDialog, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 import { SlSkeleton, SlTooltip } from "@scoped-elements/shoelace";
 import { InvitationsBlock } from "../components/invitations-block";
@@ -19,7 +19,8 @@ import { AppletNotInstalled } from "./applet-not-installed";
 import { provideWeGroupInfo } from "../../matrix-helpers";
 
 export class NeighbourhoodHome extends NHComponentShoelace {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   _profilesStore = new StoreSubscriber(
@@ -29,9 +30,11 @@ export class NeighbourhoodHome extends NHComponentShoelace {
   );
 
   @consume({ context: sensemakerStoreContext, subscribe: true })
+  @property({attribute: false})
   _sensemakerStore!: SensemakerStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   _neighbourhoodInfo = new StoreSubscriber(
@@ -144,6 +147,7 @@ export class NeighbourhoodHome extends NHComponentShoelace {
     } else if (!this._profilesStore.value?.myProfile || !get(this._profilesStore.value?.myProfile)) {
       return this.renderProfilePrompt();
     } else {
+      // XXX: I don't like this pattern
       return subscribe(this._profilesStore.value?.myProfile, p => {
         return p && p.status === 'complete' && p.value?.entry.nickname
           ? this.renderContent()

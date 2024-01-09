@@ -22,14 +22,15 @@ import { matrixContext, weGroupContext } from '../../context';
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
   @consume({ context: sensemakerStoreContext, subscribe: true })
-  @property({ type: SensemakerStore, attribute: true })
+  @property({attribute: false})
   _sensemakerStore!: SensemakerStore;
 
   @consume({ context: matrixContext, subscribe: true })
-  @state()
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @property()

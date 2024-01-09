@@ -13,7 +13,8 @@ import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { AppletInstanceInfo } from "../../types";
 
 export class AppletListItem extends NHComponent {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   matrixStore!: MatrixStore;
 
   @property()

@@ -20,9 +20,12 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import CreateOutputDimensionMethod from './create-output-dimension-form';
 
 export default class NHGlobalConfig extends NHComponent {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
+
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @query('nh-dialog')

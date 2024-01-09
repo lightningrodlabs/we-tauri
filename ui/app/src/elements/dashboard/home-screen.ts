@@ -10,7 +10,7 @@ import {
 import { matrixContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 
-import { query } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 import { NHComponentShoelace } from '@neighbourhoods/design-system-components';
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { JoinGroupCard } from "../components/join-group-card";
@@ -18,7 +18,8 @@ import { ManagingGroupsCard } from "../components/managing-groups-card";
 
 
 export class HomeScreen extends NHComponentShoelace {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   matrixStore!: MatrixStore;
 
   @query("#we-dialog")

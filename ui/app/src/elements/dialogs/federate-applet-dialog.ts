@@ -22,10 +22,12 @@ import { classMap } from "lit/directives/class-map.js";
 import { AppletInstanceInfo } from "../../types";
 
 export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
-  @consume({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext , subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
 
   @consume({ context: weGroupContext, subscribe: true })
+  @property({attribute: false})
   weGroupId!: DnaHash;
 
   @state()
