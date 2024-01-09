@@ -82,14 +82,22 @@ themeNames.forEach((themeName) => {
         transformGroup: 'tokens-studio',
         prefix: "nh",
         buildPath: `build/${themeName}/js/`,
-        "files": [
+        files: [
           {
-            "format": "javascript/module",
-            "destination": "variables.js"
+            format: "javascript/module-flat",
+            destination: "variables.js",
+            options: {
+              "outputReferences": false,
+              "showFileHeader": false
+            }
           },
           {
-            "format": "typescript/module-declarations",
-            "destination": "variables.d.ts"
+            format: "typescript/module-declarations",
+            destination: "variables.d.ts",
+            options: {
+              "outputReferences": false,
+              "showFileHeader": false
+            }
           }
         ]
       },
