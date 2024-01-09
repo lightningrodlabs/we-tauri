@@ -22,6 +22,7 @@ import CreateOutputDimensionMethod from '../create-output-dimension-form';
 export default class NHDimensionsConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
   @property({ attribute: false })
+  _matrixStore!: MatrixStore;
   
   @consume({ context: weGroupContext, subscribe: true })
   @property({ attribute: false })
@@ -67,7 +68,7 @@ export default class NHDimensionsConfig extends NHComponent {
     }
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <main
         @dimension-created=${async (e: CustomEvent) => await this.onDimensionCreated(e)}

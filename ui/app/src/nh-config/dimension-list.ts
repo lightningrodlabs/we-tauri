@@ -85,11 +85,14 @@ export default class DimensionList extends NHComponent {
   }
 
   async fetchRangeEntries() {
+    console.log('this.sensemakerStore.client :>> ', this.sensemakerStore.client);
     await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
   }
 
   async fetchDimensionEntries() {
     try {
+      
+    console.log('this.sensemakerStore.client :>> ', this.sensemakerStore);
       const appInfo: AppInfo = await this.sensemakerStore.client.appInfo();
       const cell_id = (appInfo.cell_info['sensemaker'][1] as any).cloned.cell_id;
       const response = await this.sensemakerStore.client.callZome({
