@@ -4,6 +4,14 @@
     "types": ["vite/client"],
     "rootDir": "./src",
     "outDir": "./dist",
+    "paths": {
+      "@neighbourhoods/design-system-styles": ["../libs/styles"],
+      "@neighbourhoods/design-system-components": ["../libs/design-system-components"],
+      "@neighbourhoods/dev-util-components": ["../libs/dev-util"],
+      "@neighbourhoods/testing-utils": ["../libs/testing-utils"],
+      "@neighbourhoods/client": ["../libs/sensemake-client"],
+      "@neighbourhoods/membrane-invitations": ["../libs/membrane-invitations"]
+    }
   },
   "include": ["./src/index.ts"]
 }
