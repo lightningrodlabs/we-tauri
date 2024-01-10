@@ -1,9 +1,7 @@
 import { css, unsafeCSS } from 'lit';
 
-import { b64fonts } from "@neighbourhoods/design-system-styles";
 
 export const sharedStyles = css`
-${unsafeCSS(b64fonts)}
 // We Shared Styles:
 .default-font {
   font-family: Manrope, 'Work Sans', 'Arial', sans-serif;

@@ -25,7 +25,7 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import ResourceDefList from '../resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
-import { AssessmentWidgetBlockConfig, AssessmentWidgetRegistration, ClientAssessmentWidgetConfig, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
+import { AssessmentWidgetBlockConfig, AssessmentWidgetRegistrationInput, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from '../icons-temp';
 import { decode } from '@msgpack/msgpack';
@@ -63,7 +63,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   _selectedWidget: string = '';
 
   @state()
-  _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistration> = {};
+  _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
   @state()
   inputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
   @state()
@@ -282,9 +282,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               type: 'select',
               selectOptions: (() => {
                 return Object.values(this?._registeredWidgets as any)?.map((widget) => ({
-                    label: (widget as ClientAssessmentWidgetConfig).name,
-                    value: (widget as ClientAssessmentWidgetConfig).name,
-                    imageB64: (widget as ClientAssessmentWidgetConfig).name == 'Heart' ? heart : thumb,
+                    label: (widget as any).name,
+                    value: (widget as any).name,
+                    imageB64: (widget as any).name == 'Heart' ? heart : thumb,
                   })) || []
               })(),
               name: "assessment_widget",

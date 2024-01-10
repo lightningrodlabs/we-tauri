@@ -44,7 +44,7 @@ export default class ResourceDefList extends NHComponent {
   },
   ];
   
-  protected async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+  protected async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     const result = await this.sensemakerStore.getResourceDefs()
     console.log('result :>> ', result);
     // this._resourceDefEntries = result;

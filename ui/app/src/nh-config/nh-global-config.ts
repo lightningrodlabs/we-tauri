@@ -4,7 +4,6 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { MatrixStore } from '../matrix-store';
 import { matrixContext, weGroupContext } from '../context';
-import { StoreSubscriber } from 'lit-svelte-stores';
 import { DnaHash } from '@holochain/client';
 
 import DimensionsConfig from './pages/nh-dimensions-config';

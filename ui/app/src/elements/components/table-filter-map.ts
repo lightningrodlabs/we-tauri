@@ -321,53 +321,7 @@ export class DashboardFilterMap extends LitElement {
             [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
               heading: generateHeaderHTML('Assessment', cleanResourceNameForUI(dimensionName)),
               decorator: (value: any) => {
-                const assessment = value[1] as Assessment;
-                const isAssessment = !!assessment;
-                if (isAssessment) {
-                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[
-                    encodeHashToBase64(assessment.dimension_eh)
-                  ].assess;
-                  if(!assessWidgetType) return  html`<div></div>`;
-                  const assessWidget = new assessWidgetType();
-                  assessWidget.resourceEh = assessment.resource_eh;
-                  assessWidget.dimensionEh = assessment.dimension_eh;
-                  assessWidget.resourceDefEh = assessment.resource_def_eh;
-                  const methodMap = get(this._sensemakerStore.methodDimensionMapping());
-                  // given the assessment.dimension_eh, find the method eh that maps to it
-                  const methodEh = Object.keys(methodMap).find(
-                    key =>
-                      encodeHashToBase64(methodMap[key].inputDimensionEh) ===
-                      encodeHashToBase64(assessment.dimension_eh),
-                  );
-                  assessWidget.methodEh = decodeHashFromBase64(methodEh!);
-                  assessWidget.sensemakerStore = this._sensemakerStore;
-                  assessWidget.latestAssessment = get(
-                    this._sensemakerStore.myLatestAssessmentAlongDimension(
-                      encodeHashToBase64(assessment.resource_eh),
-                      encodeHashToBase64(assessment.dimension_eh),
-                    ),
-                  );
-
-                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[
-                    encodeHashToBase64(assessment.dimension_eh)
-                  ].display;
-                  const displayWidget = new displayWidgetType();
-                  displayWidget.assessment = assessment;
-                  const displayWidgetStyles = displayWidgetType.styles as any;
-
-                  return html`
-                    <style>
-                      ${unsafeCSS(displayWidgetStyles[1])}
-                      .display-box, .display-box-wrapper {
-                        display: grid;
-                        place-content: center;
-                      }
-                    </style>
-                    <div class="widget-wrapper">${displayWidget.render()}</div>
-                  `;
-                } else {
-                  return html`<div></div>`;
-                }
+                // TODO: Get assessment value from OutputAssessmentWidget
               },
             }),
           }),
@@ -379,51 +333,7 @@ export class DashboardFilterMap extends LitElement {
             [dimensionName]: new FieldDefinition<AssessmentTableRecord>({
               heading: generateHeaderHTML('Dimension', cleanResourceNameForUI(dimensionName)),
               decorator: (value: any) => {
-                const assessment = value[1] as Assessment;
-                const isAssessment = !!assessment;
-                if (isAssessment) {
-                  const assessWidgetType = get(this._sensemakerStore.widgetRegistry())[
-                    encodeHashToBase64(assessment.dimension_eh)
-                  ].assess;
-                  const assessWidget = new assessWidgetType();
-                  assessWidget.resourceEh = assessment.resource_eh;
-                  assessWidget.dimensionEh = assessment.dimension_eh;
-                  assessWidget.resourceDefEh = assessment.resource_def_eh;
-                  const methodMap = get(this._sensemakerStore.methodDimensionMapping());
-                  // given the assessment.dimension_eh, find the method eh that maps to it
-                  const methodEh = Object.keys(methodMap).find(
-                    key =>
-                      encodeHashToBase64(methodMap[key].outputDimensionEh) ===
-                      encodeHashToBase64(assessment.dimension_eh),
-                  );
-                  assessWidget.methodEh = decodeHashFromBase64(methodEh!);
-                  assessWidget.sensemakerStore = this._sensemakerStore;
-                  assessWidget.latestAssessment = get(
-                    this._sensemakerStore.myLatestAssessmentAlongDimension(
-                      encodeHashToBase64(assessment.resource_eh),
-                      encodeHashToBase64(assessment.dimension_eh),
-                    ),
-                  );
-
-                  const displayWidgetType = get(this._sensemakerStore.widgetRegistry())[
-                    encodeHashToBase64(assessment.dimension_eh)
-                  ].display;
-                  const displayWidget = new displayWidgetType();
-                  displayWidget.assessment = assessment;
-                  const displayWidgetStyles = displayWidgetType.styles as any;
-                  return html`
-                    <style>
-                      ${unsafeCSS(displayWidgetStyles[1])}
-                      .display-box, .display-box-wrapper {
-                        display: grid;
-                        place-content: center;
-                      }
-                    </style>
-                    <div class="widget-wrapper">${displayWidget.render()}</div>
-                  `;
-                } else {
-                  return html`<div></div>`;
-                }
+                // TODO: Get assessment value from OutputAssessmentWidget
               },
             }),
           }),
