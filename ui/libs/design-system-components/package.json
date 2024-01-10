@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@lit-labs/scoped-registry-mixin": "^1.0.1",
+    "@neighbourhoods/client": "workspace:*",
     "@neighbourhoods/design-system-styles": "workspace:*",
     "@shoelace-style/shoelace": "^2.8.0",
     "@storybook/web-components": "^7.4.0",

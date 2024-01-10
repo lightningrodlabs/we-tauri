@@ -27,12 +27,12 @@ import { AppletIconBadge } from './elements/components/applet-icon-badge';
 import { getStatus } from './utils';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
-import { NHButton, NHComponentShoelace, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
 import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
-import { NHGlobalConfig, NHAssessmentWidgetConfig } from './nh-config';
+import { NHGlobalConfig } from './nh-config';
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
 
 export class MainDashboard extends ScopedRegistryHost(LitElement) {
@@ -147,7 +147,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
         <we-group-context .weGroupId=${this._selectedWeGroupId} @return-home=${() =>{
           this._dashboardMode = DashboardMode.WeGroupHome;
         }}>
-          <nh-widget-config></nh-widget-config>
+          <nh-global-config></nh-global-config>
         </we-group-context>
       `
     } else if (this._dashboardMode === DashboardMode.WeGroupHome) {
@@ -604,7 +604,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'nh-button': NHButton,
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
-      'nh-widget-config': NHAssessmentWidgetConfig,
       'nh-global-config': NHGlobalConfig,
       'nh-sensemaker-settings': NHSensemakerSettings,
       'applet-instance-renderer': AppletInstanceRenderer,

@@ -1,10 +1,10 @@
 import { html, css, TemplateResult, PropertyValueMap } from 'lit';
-import { contextProvided } from '@lit-labs/context';
+import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
 import { object, string, number, ObjectSchema } from 'yup';
-import { MatrixStore } from '../matrix-store';
-import { matrixContext, weGroupContext } from '../context';
+import { MatrixStore } from '../../matrix-store';
+import { matrixContext, weGroupContext } from '../../context';
 import { AppInfo, CallZomeResponse, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 import {
@@ -20,14 +20,14 @@ import {
   NHTooltip,
 } from '@neighbourhoods/design-system-components';
 
-import { query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import ResourceDefList from './resource-def-list';
+import ResourceDefList from '../resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import { AssessmentWidgetBlockConfig, AssessmentWidgetRegistration, ClientAssessmentWidgetConfig, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
-import { heart, thumb, clap, like_dislike, fire_range } from './icons-temp';
+import { heart, thumb, clap, like_dislike, fire_range } from '../icons-temp';
 import { decode } from '@msgpack/msgpack';
 
 function rangeKindEqual(range1: RangeKind, range2: RangeKind) {
@@ -37,9 +37,12 @@ function rangeKindEqual(range1: RangeKind, range2: RangeKind) {
 }
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
-  @contextProvided({ context: matrixContext, subscribe: true })
+  @consume({ context: matrixContext, subscribe: true })
+  @property({attribute: false})
   _matrixStore!: MatrixStore;
-  @contextProvided({ context: weGroupContext, subscribe: true })
+  
+  @property({attribute: false})
+  @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
 
   @query('nh-form')

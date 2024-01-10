@@ -1,5 +1,6 @@
 import NHGlobalConfig from './nh-global-config'
 import NHDimensionConfig from './pages/nh-dimensions-config'
+import NHAssessmentWidgetConfig from './pages/nh-assessment-widget-config'
 import CreateDimension from './create-input-dimension-form'
 import CreateOutputDimensionMethod from './create-output-dimension-form'
 import DimensionList from './dimension-list'
@@ -11,4 +12,4 @@ export const MAX_RANGE_FLOAT = Number.MAX_SAFE_INTEGER;
 
 export const DEFAULT_RANGE_MIN = 0;
 
-export { NHGlobalConfig, NHDimensionConfig,CreateOutputDimensionMethod, CreateDimension, DimensionList }
+export { NHGlobalConfig, NHDimensionConfig, NHAssessmentWidgetConfig, CreateOutputDimensionMethod, CreateDimension, DimensionList }

@@ -5,6 +5,7 @@ import { NHComponent } from "./ancestors/base";
 import { classMap } from "lit/directives/class-map.js";
 import "./button";
 import "./tab-button";
+//@ts-ignore
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 export const capitalize = (part: string) =>

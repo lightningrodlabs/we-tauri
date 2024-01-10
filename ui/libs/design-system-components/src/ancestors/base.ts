@@ -1,5 +1,6 @@
 import { css, CSSResult, LitElement, unsafeCSS } from 'lit';
 
+//@ts-ignore
 import { Dark, Shoelace } from '@neighbourhoods/design-system-styles';
 // import materialUIAdapter from '../styles/css/dark/material-adapter.css?inline' assert { type: 'css' };
 import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';

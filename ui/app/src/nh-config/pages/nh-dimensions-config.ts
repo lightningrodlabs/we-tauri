@@ -213,6 +213,7 @@ export default class NHDimensionsConfig extends NHComponent {
       }
 
       main {
+        --menu-width: 138px; /* TODO: lift this variable up do dedup in the parent component */
         width: 100%;
         display: grid;
         flex: 1;

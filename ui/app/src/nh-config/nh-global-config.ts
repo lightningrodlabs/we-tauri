@@ -8,6 +8,7 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 import { DnaHash } from '@holochain/client';
 
 import DimensionsConfig from './pages/nh-dimensions-config';
+import AssessmentWidgetConfig from './pages/nh-assessment-widget-config';
 
 import { NHComponent, NHMenu } from '@neighbourhoods/design-system-components';
 import { property, query, state } from 'lit/decorators.js';
@@ -43,7 +44,7 @@ export default class NHGlobalConfig extends NHComponent {
       case 'dimensions':
         return html`<dimensions-config></dimensions-config>`;
       case 'widgets':
-        return html`hi widgets`;
+        return html`<assessment-widget-config></assessment-widget-config>`;
       default:
         return html`Default Page`;
     }
@@ -116,6 +117,7 @@ export default class NHGlobalConfig extends NHComponent {
   static elementDefinitions = {
     'nh-menu': NHMenu,
     'dimensions-config': DimensionsConfig,
+    'assessment-widget-config': AssessmentWidgetConfig,
   };
 
   private onClickBackButton() {
@@ -136,12 +138,13 @@ export default class NHGlobalConfig extends NHComponent {
       }
 
       main {
+        --menu-width: 138px;
         width: 100%;
         display: grid;
         flex: 1;
         place-content: start;
         color: var(--nh-theme-fg-default);
-        grid-template-columns: 1fr 3fr;
+        grid-template-columns: calc(16px + var(--menu-width)) 3fr;
         grid-template-rows: 4rem auto;
         gap: calc(1px * var(--nh-spacing-sm));
       }
@@ -149,6 +152,11 @@ export default class NHGlobalConfig extends NHComponent {
       nh-page-header-card {
         grid-column: 1 / -1;
       }
+
+      nh-menu {
+        display: flex;
+      }
+
       nav {
         grid-column: 1 / -2;
         display: flex;
