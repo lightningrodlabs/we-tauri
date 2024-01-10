@@ -10,6 +10,8 @@ export default class NHCard extends NHComponentShoelace {
   @property()
   heading!: string;
   @property()
+  subheading!: string;
+  @property()
   hasContextMenu: boolean = false;
   @property()
   hasPrimaryAction: boolean = false;
@@ -42,6 +44,7 @@ export default class NHCard extends NHComponentShoelace {
         <slot name="header">
           ${this.title ? html`<h2 class="title">${this.title}</h2>` : html``}
           ${this.heading ? html`<h1>${this.heading}</h1>` : html``}
+          ${this.subheading ? html`<h3>${this.subheading}</h3>` : html``}
         </slot>
         <div
           class="content${classMap({
@@ -71,11 +74,16 @@ export default class NHCard extends NHComponentShoelace {
       padding: calc(1px * var(--nh-spacing-xl));
       position: relative;
     }
+    
+    /* Variants created from host class name */
     :host(.nested-card) .container {
       min-width: calc(264px - calc(2px * var(--nh-spacing-3xl)));
     }
     :host(.squarish) {
       max-width: calc(200px);
+    }
+    :host(.tight) .container {
+      min-width: 200px;
     }
     :host(.responsive) .container {
       max-width: initial;
@@ -85,12 +93,24 @@ export default class NHCard extends NHComponentShoelace {
       box-sizing: border-box;
       padding: 15%;
     }
+
     .container.light {
       background-color: var(--nh-theme-bg-detail);
     }
+
     .container.dark {
       background-color: var(--nh-theme-bg-surface);
     }
+
+    :host(.button) .container {
+      background-color: var(--nh-theme-bg-canvas);
+    }
+
+    :host(.button) .container:hover {
+      background-color: var(--nh-theme-bg-element);
+      cursor: pointer;
+    }
+
     :host(.transparent) .container {
       background-color: transparent;
     }
@@ -124,6 +144,15 @@ export default class NHCard extends NHComponentShoelace {
       margin-bottom: calc(1px * var(--nh-spacing-sm));
       line-height: var(--nh-line-heights-headlines-default);
       font-weight: 500;
+    }
+
+    h3 {
+      margin-top: -1rem;
+      font-size: calc(1px * var(--nh-font-size-md));
+      color: var(--nh-theme-fg-default);
+      padding-left: 4px;
+      line-height: var(--nh-line-heights-headlines-default);
+      font-weight: var(--nh-font-weights-body-regular);
     }
     
     /* Content */

@@ -1,11 +1,13 @@
 import { classMap } from 'lit/directives/class-map.js';
-import { css, CSSResult, html, PropertyValueMap, TemplateResult } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { css, CSSResult, html, TemplateResult } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
+import { b64images } from '@neighbourhoods/design-system-styles';
 
 export type OptionConfig = {
   label: string,
   value: string,
+  imageB64?: string,
 }
 
 export default class NHSelect extends NHComponentShoelace {
@@ -29,10 +31,21 @@ export default class NHSelect extends NHComponentShoelace {
   @state()
   value?: string = undefined;
   @state()
+  labelValue?: string = undefined;
+  @state()
+  image?: string = undefined;
+  @state()
   open: boolean = false;
+  
+  @query(".custom-select")
+  _optionMenu!: HTMLElement;
 
   handleSelected(option: OptionConfig) {
     this.value = option.value
+    this.labelValue = option.label
+    this.image = option?.imageB64
+
+    this._optionMenu.classList.remove("active");
 
     this.dispatchEvent(
       new CustomEvent("change", {
@@ -40,12 +53,13 @@ export default class NHSelect extends NHComponentShoelace {
         composed: true,
       })
     );
-  }
+  } 
 
   render() : TemplateResult {
     return html`
     <div class="field${classMap({
       [this.size]: this.size,
+      ['with-icons']: this.options.some((option: OptionConfig) => option?.imageB64),
     })}">
       <div class="row">
           <label
@@ -66,18 +80,42 @@ export default class NHSelect extends NHComponentShoelace {
           //@ts-ignore
           ['not-null']: !!this.value
         })}">
-          <div class="select-btn">
-              <span>${this.value || this.placeholder}</span>
+          <div class="select-btn" @click=${() => { this.open = !this.open; this._optionMenu.classList.toggle("active")}}>
+          ${
+            this.options.some((option: OptionConfig) => option?.imageB64)
+              ? html`<div class="flex">
+                ${this?.image ? html `<span class="option-image"><img
+                    class="icon"
+                    alt=${this.value}
+                    src=${`data:image/png;base64,${this?.image || b64images.icons.refresh}`}
+                  /></span>` : null}
+                  <span>${this.value || this.placeholder}</span>
+              </div>`
+              : html`<span>${this.labelValue || this.placeholder}</span>`
+          }
               <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
               </svg>
           </div>
           <ul class="options">
-            ${ this.options.map((option: OptionConfig) =>
-              html`<li class="option" @click=${() => this.handleSelected(option)}>
-                <span class="option-text" data-value=${option.value}>${option.label}</span>
+            ${ this.options?.length
+              ? this.options.map((option: OptionConfig) =>
+                option?.imageB64 && option.imageB64 !== ''
+                  ? html`<li class="option" @click=${() => this.handleSelected(option)}>
+                    <span class="option-image"><img
+                      class="icon"
+                      alt=${option.value}
+                      src=${`data:image/png;base64,${option?.imageB64 || b64images.icons.refresh}`}
+                    /></span>
+                    <span class="option-text" data-value=${option.value}>${option.label}</span>
+                  </li>`
+                  : html`<li class="option" @click=${() => this.handleSelected(option)}>
+                          <span class="option-text" data-value=${option.value}>${option.label}</span>
+                        </li>`
+                )
+              : html`<li class="option">
+                <span class="option-text" data-value=${undefined}>No options available</span>
               </li>`
-              )
             }
           </ul>
         </div>
@@ -87,21 +125,8 @@ export default class NHSelect extends NHComponentShoelace {
 
   reset() {
     this.value = undefined;
-  }
-
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    const optionMenu = this.renderRoot.querySelector(".custom-select") as HTMLElement;
-    const selectBtn = optionMenu?.querySelector(".select-btn"),
-        options = optionMenu?.querySelectorAll(".option");
-
-    selectBtn!.addEventListener("click", () => { this.open = !this.open; optionMenu.classList.toggle("active")});
-    options.forEach((option) =>{
-        (option as any).addEventListener("click", ()=>{
-            let selectedOption = (option.querySelector(".option-text") as any).innerText;
-            this.value = selectedOption;
-            optionMenu.classList.remove("active");
-        });
-    });
+    this.labelValue = undefined;
+    this.image = undefined;
   }
 
   static styles: CSSResult[] = [
@@ -147,13 +172,15 @@ export default class NHSelect extends NHComponentShoelace {
         display: none;
         padding: 0;
         box-sizing: border-box;
-        width: 100%;
         position: relative;
+        width: 100%;
+        overflow-x: hidden;
       }
       .custom-select.active .options{
         display: block;
         z-index: 5;
       }
+
       .options .option, .custom-select .select-btn{
         box-sizing: border-box;
         padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-lg));
@@ -186,6 +213,31 @@ export default class NHSelect extends NHComponentShoelace {
         margin-top: calc(1px * var(--nh-spacing-md));
         flex-direction: column;
       }
+      .option {
+        display: flex;
+      }
+      .field.with-icons .option {
+        justify-content: space-between;
+      }
+      .field.with-icons .flex {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex: 1;
+        padding: 0;
+        padding-right: 12px;
+      }
+      .field.with-icons .flex .option-image {
+        padding-left: 12px;
+      }
+
+      .field.with-icons .select-btn {
+        justify-content: space-between;
+      }
+      .icon {
+        height: 48px;
+        padding-top: 8px;
+      }
 
       /* Typo */
 
@@ -202,6 +254,13 @@ export default class NHSelect extends NHComponentShoelace {
       }
       
       .field.large label:not(.reqd) {
+        margin-top: 1rem;
+        height: 2rem;
+        display: flex;
+        align-items: flex-end;
+      } 
+
+      .field.large label:not(.reqd), .field.large .option-text {
         font-size: calc(1px * var(--nh-font-size-lg));
         font-weight: var(--nh-font-weights-body-bold);
       }
@@ -242,6 +301,16 @@ export default class NHSelect extends NHComponentShoelace {
       .field.large .select-btn {
         font-size: calc(1px * var(--nh-font-size-lg));
         font-weight: var(--nh-font-weights-body-bold);
+      }
+      .field.large  .options {
+        width: initial;
+      }
+      .field.with-icons .option {
+        padding: calc(1px * var(--nh-spacing-sm)) calc(1px * var(--nh-spacing-3xl));
+      }
+      .field.large  .options .option {
+        --scale: 2px;
+        height: calc(var(--scale) * var(--nh-spacing-3xl));
       }
 
       .chevron-down {

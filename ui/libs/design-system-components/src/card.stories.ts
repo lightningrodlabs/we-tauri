@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 import { b64images } from '@neighbourhoods/design-system-styles';
 
-import { BasicWidget } from "./assessment-widget.stories";
+import { Empty } from "./widgets/assessment-container.stories";
 import NHButton from './button'
 import NHCard from './card'
 
@@ -33,7 +33,7 @@ class TestRoot extends NHComponent {
     </p>
     ${this.hasWidget && !this.hasPrimaryAction
       ? html`<div slot="footer">
-          ${(BasicWidget as any).render({
+          ${(Empty as any).render({
             name: "Pear",
             iconAlt: "a pear",
             iconImg: b64images.icons.pear,

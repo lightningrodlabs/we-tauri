@@ -49,6 +49,10 @@ export default class NHCardList extends NHComponentShoelace {
         flex-direction: column;
         max-width: 500px;
       }
+      :host(.nested), :host(.nested) .list-container {
+        padding: calc(1px * var(--nh-spacing-xs)) 0;
+        background-color: var(--nh-theme-bg-surface);
+      }
     `,
   ];
 }

@@ -63,9 +63,16 @@ export default class NHMenu extends NHComponentShoelace {
                     class="menu-item ${classMap({
                       active: !!(this.selectedMenuItemId && this.selectedMenuItemId.match(sectionName + '-' + idx + '-' + idx2)),
                     })}"
-                    value="${label}"
+                    value=${label}
                     @click=${() => {
                       this.selectedMenuItemId = sectionName + '-' + idx + '-' + idx2;
+                      this.dispatchEvent(
+                        new CustomEvent("sub-nav-item-selected", {
+                          detail: { item: label, itemId: this.selectedMenuItemId},
+                          bubbles: true,
+                          composed: true,
+                        })
+                      )
                     }}
                     >${label}
                   </sl-menu-item>

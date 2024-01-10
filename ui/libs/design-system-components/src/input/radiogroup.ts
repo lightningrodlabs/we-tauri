@@ -151,6 +151,7 @@ export default class NHRadioGroup extends NHComponent {
       .row {
         justify-content: space-between;
         align-items: center;
+        min-width: 18rem; /* Using nh-text-input as a basis */
       }
 
       /* Typo */

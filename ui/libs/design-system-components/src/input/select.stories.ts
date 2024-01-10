@@ -2,6 +2,7 @@ import NHSelect, { OptionConfig } from "./select";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { NHTooltip } from "..";
+import { b64images } from "@neighbourhoods/design-system-styles";
 
 customElements.define('nh-select', NHSelect)
 !customElements.get('nh-tooltip') && customElements.define('nh-tooltip', NHTooltip)
@@ -61,6 +62,39 @@ export const Default: Story = {
     ]
   },
 };
+export const DefaultImages: Story = {
+  args: {
+    placeholder: "Select dimension:",
+    size: "large",
+    options: [
+      {
+        label: "One",
+        value: "1",
+        imageB64: b64images.icons.chili
+      },
+      {
+        label: "Two",
+        value: "2",
+        imageB64: b64images.icons.fire
+      },
+      {
+        label: "Three",
+        value: "3",
+        imageB64: b64images.icons.icecube
+      },
+      {
+        label: "Four",
+        value: "4",
+        imageB64: b64images.icons.pear
+      },
+      {
+        label: "Five",
+        value: "5",
+        imageB64: b64images.icons.snowflake
+      },
+    ]
+  },
+};
 
 export const WithTooltip: Story = {
   render: (args) => html` <nh-tooltip .visible=${true} .variant=${"primary"} .text=${"Info about your field"}>
@@ -97,6 +131,53 @@ export const WithTooltip: Story = {
         value: "5"
       },
     ],
+  },
+};
+
+export const DefaultImagesTooltip: Story = {
+  render: (args) => html` <nh-tooltip .visible=${true} .variant=${"danger"} .text=${"This is a required field."}>
+    <nh-select
+    ?required=${true}
+    .size=${"large"}
+    class="untouched"
+    slot="hoverable"
+    .options=${args.options}
+    .placeholder=${args.placeholder}
+    .size=${args.size}
+    >${args.placeholder}</nh-select>
+  </nh-tooltip>
+  `,
+  
+  args: {
+    placeholder: "Select dimension:",
+    size: "medium",
+    options: [
+      {
+        label: "One",
+        value: "1",
+        imageB64: b64images.icons.chili
+      },
+      {
+        label: "Two",
+        value: "2",
+        imageB64: b64images.icons.fire
+      },
+      {
+        label: "Three",
+        value: "3",
+        imageB64: b64images.icons.icecube
+      },
+      {
+        label: "Four",
+        value: "4",
+        imageB64: b64images.icons.pear
+      },
+      {
+        label: "Five",
+        value: "5",
+        imageB64: b64images.icons.snowflake
+      },
+    ]
   },
 };
 export const RequiredUntouched: Story = {
