@@ -20,5 +20,5 @@ indent_size = 2
 # Markdown
 [*.{md,markdown}]
 trim_trailing_whitespace = false
-indent_style = tab
+indent_style = space
 indent_size = 4
