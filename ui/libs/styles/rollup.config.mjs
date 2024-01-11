@@ -6,7 +6,8 @@ import typescript from '@rollup/plugin-typescript';
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: "index.ts",
+  inlineSources: true,
+  input: "src/index.ts",
   output: {
     // entryFileNames: "[hash].js",
     // chunkFileNames: "[hash].js",

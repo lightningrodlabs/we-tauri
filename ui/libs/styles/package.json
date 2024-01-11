@@ -2,17 +2,22 @@
   "name": "@neighbourhoods/design-system-styles",
   "version": "0.0.8",
   "description": "packaged styles for the Neighbourhoods design system",
-  "main": "index.ts",
+  "source": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "./dist/index.d.ts",
   "files": [
-    "build",
-    "assets",
     "dist",
+    "src",
     "README.md"
   ],
   "scripts": {
     "prepare": "pnpm run build",
-    "build": "pnpm build:styles && rollup -c rollup.config.mjs",
-    "build:styles": "node build.js",
+    "build": "pnpm build:styles && rollup -c rollup.config.mjs && cp -R src/themes dist/themes && cp -R src/*.css dist/",
+    "build:styles": "node scripts/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

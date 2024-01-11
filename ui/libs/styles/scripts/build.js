@@ -1,7 +1,6 @@
 const fs = require("fs")
 const { registerTransforms } = require('@tokens-studio/sd-transforms')
 const StyleDictionary = require('style-dictionary')
-const {RemoveFirstLine} = require('./remove-line')
 
 registerTransforms(StyleDictionary)
 
@@ -65,7 +64,7 @@ function writeThemeTokenFiles(tokenFile) {
       }
     );
     const tokenJSON = JSON.stringify(theme);
-    fs.writeFileSync(`${kebabCase(themeName)}.json`, tokenJSON);
+    fs.writeFileSync(`tokens/${kebabCase(themeName)}.json`, tokenJSON, {});
   }
   return themeNames.map(kebabCase);
 }
@@ -76,12 +75,12 @@ console.log('included theme names :>> ', themeNames);
 
 themeNames.forEach((themeName) => {
   const sd = StyleDictionary.extend({
-    source: [`${themeName}.json`],
+    source: [`tokens/${themeName}.json`],
     platforms: {
       js: {
         transformGroup: 'tokens-studio',
         prefix: "nh",
-        buildPath: `build/${themeName}/js/`,
+        buildPath: `src/themes/${themeName}/js/`,
         files: [
           {
             format: "javascript/module-flat",
@@ -92,7 +91,7 @@ themeNames.forEach((themeName) => {
             }
           },
           {
-            format: "typescript/module-declarations",
+            format: "typescript/es6-declarations",
             destination: "variables.d.ts",
             options: {
               "outputReferences": false,
@@ -118,7 +117,7 @@ themeNames.forEach((themeName) => {
           'name/cti/kebab',
         ],
         prefix: "nh",
-        buildPath: `build/${themeName}/css/`,
+        buildPath: `src/themes/${themeName}/css/`,
         files: [
           {
             destination: 'variables.css',

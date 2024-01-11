@@ -3,11 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "declarationDir": "./dist",
-    "paths": {
-      "@neighbourhoods/design-system-styles": ["../styles"],
-      "@neighbourhoods/design-system-components": ["../design-system-components"],
-    }
+    "declarationDir": "./dist"
   },
   "include": ["./src/index.ts"],
   "exclude": ["**/*.stories.*"]
