@@ -1,5 +1,7 @@
-target/
 node_modules/
+
+# Build or test related artifacts
+target/
 dist/
 .cargo/
 .hc*
@@ -9,10 +11,9 @@ dist/
 web_assets.zip
 DevHub/
 .running
-.DS_Store
 **/tsconfig.tsbuildinfo
 
-# custom holochain binaries
+# Custom holochain binaries
 holochain-v0.0.155-x86_64-unknown-linux-gnu
 holochain-v0.0.156-x86_64-unknown-linux-gnu
 package-lock.json
@@ -24,3 +25,23 @@ package-lock.json
 .local-services-pid
 .bootstrap-path
 .signal-path
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
