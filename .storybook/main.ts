@@ -1,8 +1,12 @@
 import type { StorybookConfig } from "@storybook/web-components-vite";
 
 const config: StorybookConfig = {
-  stories: ['../components/**/src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-essentials', '@storybook/addon-links', '@storybook/addon-interactions'],
+  stories: ['../ui/libs/**/src/**/*.stories.@(js|jsx|ts|tsx)'],
+  addons: [
+    '@storybook/addon-essentials',
+    '@storybook/addon-links',
+    '@storybook/addon-interactions'
+  ],
   framework: {
     name: "@storybook/web-components-vite",
     options: {},
@@ -19,7 +23,11 @@ const config: StorybookConfig = {
       ...(config.optimizeDeps?.include ?? []),
       '@storybook/web-components',
     ]
-    config.optimizeDeps.exclude = [...(config.optimizeDeps?.exclude ?? []), 'lit', 'lit-html']
+    config.optimizeDeps.exclude = [
+      ...(config.optimizeDeps?.exclude ?? []),
+      'lit',
+      'lit-html'
+    ]
 
     // return the customized config
     return config
