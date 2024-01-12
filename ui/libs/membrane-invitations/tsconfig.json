@@ -1,25 +1,10 @@
 {
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noEmitOnError": true,
-    "lib": ["es2017", "dom"],
-    "strict": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "noImplicitAny": false,
-    "sourceMap": true,
-    "inlineSources": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "declarationDir": "./dist",
-    "skipLibCheck": true,
-    "rootDir": "./src",
-    "declaration": true,
-    "incremental": true
   },
-
-  "include": ["src/**/*.ts"]
+  "include": ["./src/index.ts"],
+  "exclude": ["**/*.stories.*"]
 }

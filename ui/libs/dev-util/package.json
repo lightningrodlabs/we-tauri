@@ -22,6 +22,7 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "scripts": {
+    "prepare": "pnpm build",
     "build": "vite build && tsc --build"
   },
   "devDependencies": {

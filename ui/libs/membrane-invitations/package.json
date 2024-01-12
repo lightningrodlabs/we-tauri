@@ -16,7 +16,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "prepare": "pnpm build",
+    "build": "tsc --build",
     "build:watch": "tsc --watch --preserveWatchOutput"
   },
   "type": "module",

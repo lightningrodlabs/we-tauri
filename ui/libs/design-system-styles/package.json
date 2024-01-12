@@ -15,7 +15,7 @@
     "README.md"
   ],
   "scripts": {
-    "prepare": "pnpm run build",
+    "prepare": "pnpm build",
     "build": "pnpm build:styles && rollup -c rollup.config.mjs && cp -R src/themes dist/themes && cp -R src/global dist/global",
     "build:styles": "node scripts/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"

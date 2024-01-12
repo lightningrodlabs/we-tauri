@@ -2,6 +2,7 @@
   "name": "nh-launcher",
   "version": "0.0.1",
   "scripts": {
+    "prepare": "pnpm build",
     "start": "vite dev --clearScreen false --port $UI_PORT",
     "dev": "vite dev --clearScreen false --port $UI_PORT",
     "dev2": "concurrently \"npm run dev\" \"VITE_AGENT=2 vite dev --clearScreen false --port $UI_PORT_2\"",

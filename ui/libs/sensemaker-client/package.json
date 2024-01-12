@@ -14,6 +14,7 @@
     "README.md"
   ],
   "scripts": {
+    "prepare": "pnpm build",
     "build": "tsc --build",
     "build:watch": "tsc --watch --preserveWatchOutput",
     "test:debug": "TRYORAMA_LOG_LEVEL=debug RUST_BACKTRACE=1 RUST_LOG=holochain::core::ribosome::host_fn::debug=debug TRYORAMA_HOLOCHAIN_PATH=\"holochain\" node --loader ts-node/esm --experimental-specifier-resolution=node tests/index.ts",
@@ -30,6 +31,7 @@
     "lit": "^3.0.0",
     "lit-html": "^3.0.0",
     "@holochain-open-dev/utils": "^0.16.3",
+    "@holochain-open-dev/peer-status": "^0.9.1",
     "@holochain-open-dev/profiles": "^0.17.3"
   },
   "devDependencies": {
