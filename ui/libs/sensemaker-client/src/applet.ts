@@ -7,7 +7,6 @@ import { Range } from "./range";
 import { SensemakerStore } from "./sensemakerStore";
 import { NHDelegateReceiverConstructor } from "./delegate";
 import { AssessmentWidgetRenderers } from "./widget";
-import { ProfilesStore } from "@holochain-open-dev/profiles";
 
 /**
  * Logo and name of Neighbourhood
@@ -16,7 +15,7 @@ export type NeighbourhoodInfo = {
   logoSrc: string;
   name: string;
 }
-  
+
 /**
  * Combination of We app info and Neighbourhood info.
  */
@@ -51,14 +50,14 @@ export interface AppletConfig {
  * Applet config as written by the applet developer
  */
 export interface AppletConfigInput {
-  name: string,
-  resource_defs: Array<ConfigResourceDef>,
+  name: string;
+  resource_defs: Array<ConfigResourceDef>;
   // This is going to be changed when we figure out how contexts are configured by the CA
-  cultural_contexts: Array<ConfigCulturalContext>,
+  cultural_contexts: Array<ConfigCulturalContext>;
   // These become suggestions rather than enforced things.
-  methods?: Array<ConfigMethod>,
-  ranges?: Array<Range>,
-  dimensions?: Array<ConfigDimension>,
+  methods?: Array<ConfigMethod>;
+  ranges?: Array<Range>;
+  dimensions?: Array<ConfigDimension>;
 }
 
 /**
@@ -77,9 +76,9 @@ export interface AppletConfigInput {
  * of the user would determine access to the context.
  */
 export interface ResourceBlockDelegate {
-  appAgentWebsocket: AppAgentClient,
-  appInfo: AppInfo
-  neighbourhoodInfo: NeighbourhoodInfo,
+  appAgentWebsocket: AppAgentClient;
+  appInfo: AppInfo;
+  neighbourhoodInfo: NeighbourhoodInfo;
 }
 
 /**
@@ -89,11 +88,10 @@ export interface ResourceBlockDelegate {
  * to ensure that the applet views don't have direct access to the AppAgentClient.
  */
 export interface AppBlockDelegate {
-  appAgentWebsocket: AppAgentClient
-  appInfo: AppInfo,
-  neighbourhoodInfo: NeighbourhoodInfo,
-  sensemakerStore: SensemakerStore
-  profileStore: ProfilesStore
+  appAgentWebsocket: AppAgentClient;
+  appInfo: AppInfo;
+  neighbourhoodInfo: NeighbourhoodInfo;
+  sensemakerStore: SensemakerStore;
 }
 
 export type AppletRenderers = Record<string, NHDelegateReceiverConstructor<AppBlockDelegate>>

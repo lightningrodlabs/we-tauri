@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+  },
+  "include": ["./src/index.ts"],
+  "exclude": ["**/*.stories.*"]
+}

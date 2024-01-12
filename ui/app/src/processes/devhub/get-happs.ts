@@ -1,5 +1,5 @@
 import { AppWebsocket, EntryHash, ActionHash, AppInfo } from "@holochain/client";
-import { getCellId } from "../../utils";
+import { getCellId } from "@neighbourhoods/app-loader";
 import { HappEntry, HappReleaseEntry } from "./types";
 
 

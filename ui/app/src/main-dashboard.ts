@@ -24,7 +24,7 @@ import { AppletNotInstalled } from './elements/dashboard/applet-not-installed';
 import { NotificationDot } from './elements/components/notification-dot';
 import { InactiveOverlay } from './elements/components/inactive-overlay';
 import { AppletIconBadge } from './elements/components/applet-icon-badge';
-import { getStatus } from './utils';
+import { getStatus } from '@neighbourhoods/app-loader';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
 import { NHButton, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';

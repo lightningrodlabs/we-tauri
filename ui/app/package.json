@@ -26,6 +26,7 @@
     "@lit/task": "^1.0.0",
     "@lit-labs/scoped-registry-mixin": "^1.0.3",
     "@msgpack/msgpack": "^2.8.0",
+    "@neighbourhoods/app-loader": "workspace:*",
     "@neighbourhoods/client": "workspace:*",
     "@neighbourhoods/design-system-components": "workspace:*",
     "@neighbourhoods/design-system-styles": "workspace: *",

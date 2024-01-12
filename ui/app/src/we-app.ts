@@ -7,7 +7,7 @@ import { sharedStyles } from "./sharedStyles";
 import { MatrixStore } from "./matrix-store";
 import { matrixContext } from "./context";
 import { MainDashboard } from "./main-dashboard";
-import { getAdminWebsocket, getAppWebsocket, getCellId } from "./utils";
+import { connectHolochainApp, getCellId } from "@neighbourhoods/app-loader";
 
 @customElement('we-app')
 export class WeApp extends ScopedRegistryHost(LitElement) {
@@ -18,16 +18,11 @@ export class WeApp extends ScopedRegistryHost(LitElement) {
   loading = true;
 
   async firstUpdated() {
-    const adminWebsocket = await getAdminWebsocket();
-    const appWebsocket = await getAppWebsocket();
-    const weAppInfo = await appWebsocket.appInfo( { installed_app_id: "we"} );
-
-    // authorize signing credentials for all cells
-    for (const roleName in weAppInfo.cell_info) {
-      for (const cellInfo of weAppInfo.cell_info[roleName]) {
-        await adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
-      }
-    }
+    const {
+      adminWebsocket,
+      appWebsocket,
+      appInfo: weAppInfo
+    } = await connectHolochainApp('we');
 
     this._matrixStore = await MatrixStore.connect(appWebsocket, adminWebsocket, weAppInfo);
 

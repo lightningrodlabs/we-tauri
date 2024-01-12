@@ -15,7 +15,7 @@ export class LeaveNeighbourhood extends NHComponentShoelace {
 
   @property()
   weGroupId!: DnaHash;
-  
+
   @property()
   private _isOpen: boolean = false;
 
@@ -28,7 +28,7 @@ export class LeaveNeighbourhood extends NHComponentShoelace {
 
   async leaveGroup() {
     // (this.shadowRoot?.getElementById("leaving-progress") as Snackbar).show();
-    const weGroupName = this._matrixStore.getWeGroupInfo(this.weGroupId)?.name;
+    const weGroupName = this._matrixStore.getNeighbourhoodInfo(this.weGroupId)?.name;
     try {
 
       //TODO: fix NH leaving error

@@ -1,20 +1,22 @@
 import {
+  AppAgentClient,
+  AppInfo,
+} from "@holochain/client";
+import {
   AppBlockDelegate,
   Assessment,
   CallbackFn,
   DimensionEh,
   InputAssessmentWidgetDelegate,
+  NeighbourhoodInfo,
   OutputAssessmentWidgetDelegate,
   RangeValue,
   ResourceBlockDelegate,
   ResourceDefEh,
   ResourceEh,
+  SensemakerStore,
   UnsubscribeFn
 } from "@neighbourhoods/client";
-import {
-  AppletInstanceInfo,
-  WeGroupData,
-} from "./types";
 import { EntryRecord } from "@holochain-open-dev/utils";
 
 export class SubscriberManager extends Array<CallbackFn> {
@@ -34,14 +36,18 @@ export class SubscriberManager extends Array<CallbackFn> {
 /**
  * Creates an AppBlockDelegate to be passed into an applet block
  */
-export function createAppDelegate(appInstanceInfo: AppletInstanceInfo, weGroupData: WeGroupData): AppBlockDelegate {
+export function createAppDelegate(
+  appAgentWebsocket: AppAgentClient,
+  appInfo: AppInfo,
+  neighbourhoodInfo: NeighbourhoodInfo,
+  sensemakerStore: SensemakerStore
+): AppBlockDelegate {
 
   const delegate: AppBlockDelegate = {
-    appAgentWebsocket: appInstanceInfo.appAgentWebsocket!,
-    appInfo: appInstanceInfo.appInfo!,
-    neighbourhoodInfo: weGroupData.info.info,
-    sensemakerStore: weGroupData.sensemakerStore,
-    profileStore: weGroupData.profilesStore
+    appAgentWebsocket,
+    appInfo,
+    neighbourhoodInfo,
+    sensemakerStore
   }
 
   return delegate;
@@ -50,12 +56,16 @@ export function createAppDelegate(appInstanceInfo: AppletInstanceInfo, weGroupDa
 /**
  * Creates an ResourceBlockDelegate to be passed into an resource block
  */
-export function createResourceBlockDelegate(appInstanceInfo: AppletInstanceInfo, weGroupData: WeGroupData): ResourceBlockDelegate {
+export function createResourceBlockDelegate(
+  appAgentWebsocket: AppAgentClient,
+  appInfo: AppInfo,
+  neighbourhoodInfo: NeighbourhoodInfo
+): ResourceBlockDelegate {
 
   const delegate: ResourceBlockDelegate = {
-    appAgentWebsocket: appInstanceInfo.appAgentWebsocket!,
-    appInfo: appInstanceInfo.appInfo!,
-    neighbourhoodInfo: weGroupData.info.info
+    appAgentWebsocket,
+    appInfo,
+    neighbourhoodInfo
   }
 
   return delegate;
@@ -65,12 +75,10 @@ export function createResourceBlockDelegate(appInstanceInfo: AppletInstanceInfo,
  * Creates an ResourceBlockDelegate to be passed into an resource block
  */
 export function createOutputAssessmentWidgetDelegate(
-  weGroupData: WeGroupData,
+  sensemakerStore: SensemakerStore,
   dimensionEh: DimensionEh,
-  resourceDefEh: ResourceDefEh,
   resourceEh: ResourceEh
 ): OutputAssessmentWidgetDelegate {
-  const sensemaker = weGroupData.sensemakerStore
   const subscribers = new SubscriberManager()
 
   let assessment: Assessment | undefined
@@ -78,8 +86,14 @@ export function createOutputAssessmentWidgetDelegate(
   const delegate: OutputAssessmentWidgetDelegate = {
     /**
      * Get the latest computed assessment for the resource
+     *
+     * TODO: finish implementation
      */
     async getLatestAssessment(): Promise<Assessment | undefined> {
+      const assessments = await sensemakerStore.getAssessmentsForResources({
+        resource_ehs: [resourceEh],
+        dimension_ehs: [dimensionEh],
+      })
       return assessment
     },
 
@@ -102,12 +116,11 @@ export function createOutputAssessmentWidgetDelegate(
  * Creates an ResourceBlockDelegate to be passed into an resource block
  */
 export function createInputAssessmentWidgetDelegate(
-  weGroupData: WeGroupData,
+  sensemakerStore: SensemakerStore,
   dimensionEh: DimensionEh,
   resourceDefEh: ResourceDefEh,
   resourceEh: ResourceEh
 ): InputAssessmentWidgetDelegate {
-  const sensemaker = weGroupData.sensemakerStore
   const subscribers = new SubscriberManager()
 
   let assessment: Assessment | undefined
@@ -115,8 +128,14 @@ export function createInputAssessmentWidgetDelegate(
   const delegate: InputAssessmentWidgetDelegate = {
     /**
      * Used to render the currently selected value for the user
+     *
+     * TODO: finish implementation
      */
     async getLatestAssessmentForUser(): Promise<Assessment | undefined> {
+      const assessments = await sensemakerStore.getAssessmentsForResources({
+        resource_ehs: [resourceEh],
+        dimension_ehs: [dimensionEh],
+      })
       return assessment
     },
 
@@ -135,14 +154,14 @@ export function createInputAssessmentWidgetDelegate(
      * Create an assessment for the current user
      */
     async createAssessment(value: RangeValue): Promise<Assessment> {
-      const assessmentEh =  await sensemaker.createAssessment({
+      const assessmentEh =  await sensemakerStore.createAssessment({
         value,
         dimension_eh: dimensionEh,
         resource_eh: resourceEh,
         resource_def_eh: resourceDefEh,
         maybe_input_dataset: null
       })
-      const assessmentRecord = await sensemaker.getAssessment(assessmentEh)
+      const assessmentRecord = await sensemakerStore.getAssessment(assessmentEh)
       const assessmentEntryRecord = new EntryRecord<Assessment>(assessmentRecord)
       assessment = assessmentEntryRecord.entry
       subscribers.dispatch(assessment)

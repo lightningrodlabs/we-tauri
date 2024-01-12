@@ -8,6 +8,16 @@ import {
   AppBlockDelegate
 } from "@neighbourhoods/client"
 
+// Proposed interface changes
+declare global {
+  interface ShadowRootInit {
+    customElements?: CustomElementRegistry;
+  }
+  interface ShadowRoot {
+    importNode(node: Node, deep?: boolean): Node;
+  }
+}
+
 /**
  * Allows rendering a single child web component in a completely scoped manner.
  * The child component does not need to be registered globally or in any other
@@ -56,8 +66,7 @@ export class BlockRenderer<D> extends HTMLElement implements NHDelegateReceiver<
     // set loading content -- but I'm not sure we really need this since the
     // blank state shouldn't be long until the inner components take over and
     // have their own loading screen
-    // @ts-ignore
-    this.shadowRoot.innerHTML = `<div id="compRoot"><b>L&nbsp;O&nbsp;A&nbsp;D&nbsp;I&nbsp;N&nbsp;G&nbsp;.&nbsp;.&nbsp;.</b></div>`
+    this.shadowRoot!.innerHTML = `<div id="compRoot"><b>L&nbsp;O&nbsp;A&nbsp;D&nbsp;I&nbsp;N&nbsp;G&nbsp;.&nbsp;.&nbsp;.</b></div>`
   }
 
   // Expose the component setter/getter
@@ -73,7 +82,7 @@ export class BlockRenderer<D> extends HTMLElement implements NHDelegateReceiver<
   }
 
   // Let the DOM know we take attributes
-  static get observedAttributes() { 
+  static get observedAttributes() {
     return ['component', 'nhDelegate']
   }
 

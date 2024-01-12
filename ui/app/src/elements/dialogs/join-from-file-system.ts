@@ -17,7 +17,8 @@ import { MatrixStore } from "../../matrix-store";
 import { provideAllApplets } from "../../matrix-helpers";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash, EntryHash, EntryHashB64 } from "@holochain/client";
-import { compareUint8Arrays, fakeSeededEntryHash } from "../../utils";
+import { fakeSeededEntryHash } from "../../utils";
+import { compareUint8Arrays } from "@neighbourhoods/app-loader";
 
 export class JoinFromFsDialog extends ScopedElementsMixin(LitElement) {
   @consume({ context: matrixContext , subscribe: true })

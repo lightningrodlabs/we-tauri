@@ -41,11 +41,6 @@ import {
 import {
   AppBlockDelegate,
   AppletRenderers,
-  Assessment,
-  AssessmentWidgetRegistrationInput,
-  AssessmentWidgetRenderers,
-  CallbackFn,
-  CreateAssessmentInput,
   DimensionEh,
   InputAssessmentWidgetDelegate,
   NeighbourhoodApplet,
@@ -56,8 +51,7 @@ import {
   ResourceDefEh,
   ResourceEh,
   ResourceRenderers,
-  SensemakerStore,
-  UnsubscribeFn
+  SensemakerStore
 } from "@neighbourhoods/client";
 import {
   Applet,
@@ -77,24 +71,24 @@ import { GlobalAppletsService } from "./global-applets-service";
 import { ProfilesClient, ProfilesStore } from "@holochain-open-dev/profiles";
 import { PeerStatusStore, PeerStatusClient } from "@holochain-open-dev/peer-status";
 import {
-  compareCellIds,
-  compareUint8Arrays,
-  agentPubKey,
-  getAppAgentWebsocket,
-  getCellId,
-  getClonedCellId,
-  dnaHash,
   importModuleFromArrayBuffer,
   decompressWebHapp,
-  getProvisionedDnaHash,
   toSha1
 } from "./utils";
 import {
+  compareUint8Arrays,
+  agentPubKey,
+  dnaHash,
+  getCellId,
+  compareCellIds,
+  getClonedCellId,
+  getProvisionedDnaHash,
+  getAppAgentWebsocket,
   createAppDelegate,
   createResourceBlockDelegate,
   createInputAssessmentWidgetDelegate,
   createOutputAssessmentWidgetDelegate
-} from "./delegateConstructors";
+} from "@neighbourhoods/app-loader";
 
 declare global {
   interface Crypto {
@@ -200,34 +194,32 @@ export class MatrixStore {
   }
 
   /**
-   * Gets we group info from the matrix store
-   * 
-   * XXX: why is this? we can easily use weGroupInfos.
-   *
-   * @param weGroupId : DnaHash
-   * @returns : WeInfo
-   */
-  public getWeGroupInfo(weGroupId): NeighbourhoodInfo | undefined {
-    if (weGroupId) {
-      return get(this._matrix).get(weGroupId)
-        ? get(this._matrix).get(weGroupId)[0].info.info
-        : undefined;
-    }
-  }
-
-  /**
    * Returns the we group infos indexed by group hash
-   */
-  public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
-    return derived(this._matrix, (matrix) => {
-      let groupInfos = new DnaHashMap<WeGroupInfo>();
-      matrix
-        .forEach(([groupData, _appletInstanceInfos], groupId) => {
-          groupInfos.set(groupId, groupData.info);
-        });
+  */
+ public weGroupInfos(): Readable<DnaHashMap<WeGroupInfo>> {
+   return derived(this._matrix, (matrix) => {
+     let groupInfos = new DnaHashMap<WeGroupInfo>();
+     matrix
+     .forEach(([groupData, _appletInstanceInfos], groupId) => {
+       groupInfos.set(groupId, groupData.info);
+      });
       return groupInfos;
     });
   }
+
+    /**
+     * Gets we group info from the matrix store
+     * @param weGroupId : DnaHash
+     * @returns : WeInfo
+     */
+    public getNeighbourhoodInfo(weGroupId: DnaHash): NeighbourhoodInfo | undefined {
+      if (weGroupId) {
+        const weGroupInfoMap = this.weGroupInfos()
+        return get(weGroupInfoMap).get(weGroupId)
+          ? get(weGroupInfoMap).get(weGroupId)[0].info
+          : undefined;
+      }
+    }
 
   /**
    * Fetches we group info from the conductor
@@ -394,7 +386,13 @@ export class MatrixStore {
       info => compareUint8Arrays(info.appletId, appletInstanceId)
     )!;
     const weGroupData = weGroup[0];
-    return createAppDelegate(appInstanceInfo, weGroupData);
+
+    return createAppDelegate(
+      appInstanceInfo.appAgentWebsocket!,
+      appInstanceInfo.appInfo!,
+      weGroupData.info.info,
+      weGroupData.sensemakerStore
+    );
   }
 
   /**
@@ -410,7 +408,11 @@ export class MatrixStore {
       info => compareUint8Arrays(info.appletId, appletInstanceId)
     )!;
     const weGroupData = weGroup[0];
-    return createResourceBlockDelegate(appInstanceInfo, weGroupData);
+    return createResourceBlockDelegate(
+      appInstanceInfo.appAgentWebsocket!,
+      appInstanceInfo.appInfo!,
+      weGroupData.info.info
+    );
   }
 
   /**
@@ -419,7 +421,6 @@ export class MatrixStore {
   public createOutputAssessmentWidgetDelegate(
     appletInstanceId: Uint8Array,
     dimensionEh: DimensionEh,
-    resourceDefEh: ResourceDefEh,
     resourceEh: ResourceEh
   ): OutputAssessmentWidgetDelegate {
     // Get Neighbourhood id
@@ -428,7 +429,11 @@ export class MatrixStore {
     const weGroup = get(this._matrix).get(weGroupId);
     const weGroupData = weGroup[0];
 
-    return createOutputAssessmentWidgetDelegate(weGroupData, dimensionEh, resourceDefEh, resourceEh);
+    return createOutputAssessmentWidgetDelegate(
+      weGroupData.sensemakerStore,
+      dimensionEh,
+      resourceEh
+    );
   }
 
   /**
@@ -446,7 +451,12 @@ export class MatrixStore {
     const weGroup = get(this._matrix).get(weGroupId);
     const weGroupData = weGroup[0];
 
-    return createInputAssessmentWidgetDelegate(weGroupData, dimensionEh, resourceDefEh, resourceEh);
+    return createInputAssessmentWidgetDelegate(
+      weGroupData.sensemakerStore,
+      dimensionEh,
+      resourceDefEh,
+      resourceEh
+    );
   }
 
   /**Gets an array of all AppletInfo of the applets installed for the specified group */
@@ -1046,7 +1056,7 @@ export class MatrixStore {
             });
             return matrix;
           });
-  
+
           // Remove the newly joined app instance from the list of new apps available to join
           this._newAppletInstances.update((hashMap) => {
             const withoutCurrentAppInstance = hashMap
@@ -1216,7 +1226,7 @@ export class MatrixStore {
 
       // Network seed
       const networkSeed = Object.values(uninstalledAppletInfo.applet.networkSeed)[0];
-      
+
       // Install the happ
       const { installedAppId, enabledApp } = await this.installAndEnableHapp(weGroupId, appBundle, uninstalledAppletInfo.applet.customName, networkSeed)
 

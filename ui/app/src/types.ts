@@ -107,6 +107,11 @@ export type Message = {
   content: Applet,
 };
 
+// TODO: Why is WeGroupData separate from WeGroupInfo?
+// If we make some of this more specific to Neighbourhoods, and why not since it
+// is already forked beyond recognition, we could merge WeGroupInfo into
+// NeighbourhoodInfo. Possibly with WeGroupData, too.
+
 /**
  * Data of a group
  */
@@ -131,7 +136,7 @@ export type WeGroupInfo = {
 
 type BaseAppletInstanceInfo = {
   appletId: EntryHash; // hash of the Applet entry in the applets zome of the group's we dna
-  applet: Applet;
+  applet: Applet; // TODO: Maybe change this to DevHubAppInfo?
   federatedGroups: DnaHash[];
 }
 
@@ -145,7 +150,7 @@ export type AppletInstanceInfo = BaseAppletInstanceInfo & {
 }
 
 /**
- * 
+ *
  */
 export type UninstalledAppletInstanceInfo = BaseAppletInstanceInfo
 

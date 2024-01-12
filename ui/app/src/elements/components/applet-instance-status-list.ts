@@ -20,7 +20,7 @@ import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
-import { getStatus } from "../../utils";
+import { getStatus } from "@neighbourhoods/app-loader";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
