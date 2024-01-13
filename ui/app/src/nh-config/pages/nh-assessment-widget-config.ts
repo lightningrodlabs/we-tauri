@@ -5,7 +5,15 @@ import { StoreSubscriber } from 'lit-svelte-stores';
 import { object, string, number, ObjectSchema } from 'yup';
 import { MatrixStore } from '../../matrix-store';
 import { matrixContext, weGroupContext } from '../../context';
-import { AppInfo, CallZomeResponse, DnaHash, EntryHash, EntryHashB64, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
+import {
+  AppInfo,
+  CallZomeResponse,
+  DnaHash,
+  EntryHash,
+  EntryHashB64,
+  decodeHashFromBase64,
+  encodeHashToBase64
+} from '@holochain/client';
 
 import {
   NHAssessmentContainer,
@@ -40,7 +48,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;
-  
+
   @property({attribute: false})
   @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
@@ -53,7 +61,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   submitBtn;
   @query("#update-widget-config")
   updateBtn;
-  
+
   @state()
   editingConfig: boolean = false;
   @state()
@@ -208,7 +216,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                   </nh-button>
                   <nh-button
                     type="submit"
-                    @click=${async () => {  
+                    @click=${async () => {
                       this._formAction = 'create';
                       await this.requestUpdate();
                       this._form?.handleSubmit()}
@@ -234,11 +242,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
     const inputDimensionBinding = {
       dimensionEh: input_dimension,
-      componentName: assessment_widget 
+      componentName: assessment_widget
     } as any;
     const outputDimensionBinding = {
       dimensionEh: output_dimension,
-      componentName: assessment_widget 
+      componentName: assessment_widget
     } as any;
 
     let input: AssessmentWidgetBlockConfig[] = [{
@@ -267,7 +275,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   private renderMainForm(): TemplateResult {
     const dimensionEntries = this._dimensionEntries as any;
     const rangeEntries = this._rangeEntries as any;
-    
+
     return html`
       <nh-form @change=${async (e) => { this._selectedWidget = this._form._model.assessment_widget; e.currentTarget.requestUpdate(); await e.currentTarget.updateComplete;}}
         .config=${{
@@ -300,12 +308,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             selectOptions: (() => rangeEntries && rangeEntries.length ? this?.inputDimensionEntries
               ?.filter(
                 (dimension) => {
-                  const selectedWidgetRange = Object.values(this._registeredWidgets).find(widget => widget.name == this._selectedWidget)?.range;
-                  if(this._selectedWidget == '' || !selectedWidgetRange) return false;
+                  const selectedWidgetRangeKind = Object.values(this._registeredWidgets).find(widget => widget.name == this._selectedWidget)?.rangeKind;
+                  if(this._selectedWidget == '' || !selectedWidgetRangeKind) return false;
 
                   const dimensionRange = rangeEntries.find(range => encodeHashToBase64(range.range_eh) == encodeHashToBase64(dimension.range_eh));
 
-                  return rangeKindEqual(selectedWidgetRange.kind as RangeKind, dimensionRange.kind as RangeKind);
+                  return rangeKindEqual(selectedWidgetRangeKind, dimensionRange.kind as RangeKind);
               }).map(dimension => {
                   return {
                   label: dimension.name,
@@ -382,7 +390,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   private onClickBackButton() {
     this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
   }
-  
+
   static get styles() {
     return css`
       :host,
@@ -390,12 +398,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         display: flex;
         width: 100%;
       }
-      
+
       nh-form {
         display: flex;
         min-height: 30rem;
       }
-      
+
       @media (min-width: 1350px) {
         form {
             flex-wrap: nowrap;
@@ -413,7 +421,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
       .action-buttons {
-        position: absolute; 
+        position: absolute;
         right: calc(1px * var(--nh-spacing-xl));
         bottom: calc(1px * var(--nh-spacing-xs));
       }
@@ -512,7 +520,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         console.log('Error fetching dimension details: ', error);
       }
     }
-  
+
     async fetchRange(entryHash: EntryHash) : Promise<CallZomeResponse> {
       try {
         //@ts-ignore
@@ -530,7 +538,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         console.log('Error fetching range details: ', error);
       }
     }
-  
+
     async fetchDimensionEntriesFromHashes(dimensionEhs: EntryHash[]) : Promise<Dimension[]> {
       const response = await Promise.all(dimensionEhs.map(eH => this.fetchDimension(eH)))
       return response.map(payload => {
@@ -542,11 +550,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         }
       }) as Dimension[];
     }
-  
+
     async fetchRangeEntries() {
       await this.fetchRangeEntriesFromHashes(this._dimensionEntries.map((dimension: Dimension) => dimension.range_eh));
     }
-  
+
     async fetchDimensionEntries() {
       try {
         //@ts-ignore
@@ -574,7 +582,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         console.log('Error fetching dimension details: ', error);
       }
     }
-  
+
     async fetchRangeEntriesFromHashes(rangeEhs: EntryHash[]) {
       const response = await Promise.all(rangeEhs.map(eH => this.fetchRange(eH)))
       this._rangeEntries = response.map((payload, index) => {

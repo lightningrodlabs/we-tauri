@@ -64,33 +64,30 @@ export default () => {
 
         // Test 0: Given no registered widgets Then Alice can read all registered widgets and get an empty array
 
-          const getAll1 : Record[] = await callZomeAlice(
-            "widgets",
-            "get_assessment_widget_registrations",
-            null
-          );
-          t.deepEqual([], getAll1);
+        const getAll1 : Record[] = await callZomeAlice(
+          "widgets",
+          "get_assessment_widget_registrations",
+          null
+        );
+        t.deepEqual([], getAll1);
 
-        // Test 1: Alice can create a widget registration entry
-          // use provider DNA method to get some entry hash for applet_eh
-          const dummyEntryHash: EntryHash = await callZomeAlice(
-            "test_provider",
-            "create_post",
-            { title: 'dummy', content: 'test' },
-            false,
-          );
-          // create range
-          const twentyScaleRange = {
-            "name": "20-scale",
-            "kind": {
-              "Integer": { "min": 0, "max": 20 }
-            },
-          };
+      // Test 1: Alice can create a widget registration entry
+        // use provider DNA method to get some entry hash for applet_eh
+        const dummyEntryHash: EntryHash = await callZomeAlice(
+          "test_provider",
+          "create_post",
+          { title: 'dummy', content: 'test' },
+          false,
+        );
+        // create range
+        const twentyScaleRangeKind = {
+          "Integer": { "min": 0, "max": 20 }
+        };
         const testWidgetRegistration = {
           appletEh: dummyEntryHash,
-          widgetKey: 'importance', 
+          widgetKey: 'importance',
           name: 'Importance Widget',
-          range: twentyScaleRange,
+          rangeKind: twentyScaleRangeKind,
           kind: 'input'
         };
         const widgetRegistrationCreationRecord : Record = await callZomeAlice(
@@ -101,9 +98,9 @@ export default () => {
         );
         t.ok(widgetRegistrationCreationRecord, "create a new assessment widget registration");
 
-        const widgetRegistrationCreationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(widgetRegistrationCreationRecord);
+        const widgetRegistrationCreationEntryRecord = new EntryRecord<AssessmentWidgetRegistrationInput>(widgetRegistrationCreationRecord);
 
-        t.deepEqual(widgetRegistrationCreationEntryRecord.entry.range, twentyScaleRange, "created assessment widget registration with the correct range");
+        t.deepEqual(widgetRegistrationCreationEntryRecord.entry.rangeKind, twentyScaleRangeKind, "created assessment widget registration with the correct range");
 
         // Test 2: Given a created registration entry Then Alice can read that widget registration entry
 
@@ -114,8 +111,8 @@ export default () => {
         );
         t.ok(get1, "get an assessment widget registration");
 
-        const getWidgetRegistrationEntryRecord = new EntryRecord<AssessmentWidgetRegistration>(get1);
-        t.deepEqual(getWidgetRegistrationEntryRecord.entry.range, twentyScaleRange, "got assessment widget registration with the correct range");
+        const getWidgetRegistrationEntryRecord = new EntryRecord<AssessmentWidgetRegistrationInput>(get1);
+        t.deepEqual(getWidgetRegistrationEntryRecord.entry.rangeKind, twentyScaleRangeKind, "got assessment widget registration with the correct range");
 
         // Test 3: Given a created registration entry Then Alice can read all registered widgets and get an array of one
 
@@ -125,8 +122,8 @@ export default () => {
           null
         );
         t.equal(1, getAll2.length);
-        const firstRecord = new EntryRecord<AssessmentWidgetRegistration>(getAll2[0]);
-        t.deepEqual(firstRecord.entry.range, twentyScaleRange, "got assessment widget registrations with the correct range");
+        const firstRecord = new EntryRecord<AssessmentWidgetRegistrationInput>(getAll2[0]);
+        t.deepEqual(firstRecord.entry.rangeKind, twentyScaleRangeKind, "got assessment widget registrations with the correct range");
 
 
         // Test 4: Given a created registration entry Then Alice can delete that widget registration entry

@@ -1,5 +1,5 @@
 use hdi::prelude::*;
-use crate::Range;
+use crate::range::RangeKind;
 
 #[hdk_entry_helper]
 #[derive(Clone)]
@@ -8,7 +8,7 @@ pub struct AssessmentWidgetRegistration {
   pub applet_eh: EntryHash,
   pub widget_key: String,
   pub name: String,
-  pub range: Range, // currently storing as nested which is not different from the input
+  pub range_kind: RangeKind, // currently storing as nested which is not different from the input
   pub kind: String
 }
 
@@ -20,7 +20,7 @@ impl TryFrom<AssessmentWidgetRegistrationInput> for AssessmentWidgetRegistration
             applet_eh: value.applet_eh,
             widget_key: value.widget_key,
             name: value.name,
-            range: value.range,
+            range_kind: value.range_kind,
             kind: value.kind,
         };
         Ok(registration)
@@ -33,6 +33,6 @@ pub struct AssessmentWidgetRegistrationInput {
   pub applet_eh: EntryHash,
   pub widget_key: String,
   pub name: String,
-  pub range: Range,
+  pub range_kind: RangeKind,
   pub kind: String
 }
