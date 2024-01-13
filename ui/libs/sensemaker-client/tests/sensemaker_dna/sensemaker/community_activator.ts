@@ -4,7 +4,7 @@ import { decode } from '@msgpack/msgpack';
 import pkg from 'tape-promise/tape';
 import { installAgent, setUpAliceandBob } from "../../utils";
 import { EntryRecord } from "@holochain-open-dev/utils";
-import { ResourceDef } from "@neighbourhoods/client";
+import { ResourceDef } from "#client";
 const { test } = pkg;
 
 const COMMUNITY_ACTIVATOR_ZOME_ERROR = JSON.stringify({
@@ -76,7 +76,7 @@ export default () => test("test CA progenitor pattern", async (t) => {
             integerRange,
             true
         );
-        
+
         const rangeHash = new EntryRecord<Range>(rangeRecord).entryHash;
         t.ok(rangeHash);
 

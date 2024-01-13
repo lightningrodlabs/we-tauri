@@ -1,7 +1,19 @@
 import { Action, AppEntryDef, Create, EntryHash, Record } from "@holochain/client";
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
-//@ts-ignore
-import { AppletConfig, AppletConfigInput, ConfigCulturalContext, ConfigMethod, ConfigResourceDef, ConfigThreshold, CreateAppletConfigInput, CulturalContext, Dimension, Method, Range, ResourceDef, Threshold } from "@neighbourhoods/client";
+import {
+  AppletConfig,
+  AppletConfigInput,
+  ConfigCulturalContext,
+  ConfigMethod,
+  ConfigResourceDef,
+  ConfigThreshold,
+  CulturalContext,
+  Dimension,
+  Method,
+  Range,
+  ResourceDef,
+  Threshold
+} from "#client";
 import pkg from "tape-promise/tape";
 
 import { setUpAliceandBob } from "../../utils";

@@ -1,7 +1,7 @@
 import { Record } from "@holochain/client";
 import { pause, runScenario } from "@holochain/tryorama";
 import { setUpAliceandBob } from "../../utils";
-import { Method, Dimension } from "@neighbourhoods/client";
+import { Method, Dimension } from "#client";
 import pkg from "tape-promise/tape";
 import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
@@ -50,7 +50,7 @@ export default () => {
       try {
         await scenario.shareAllAgents();
         await pause(pauseDuration);
-        
+
         // Given Alice has created 2 input dimensions,
         // When Alice tries to create output dimension and method atomically with the first input dimension (happy path)
           // Alice creates input dimension

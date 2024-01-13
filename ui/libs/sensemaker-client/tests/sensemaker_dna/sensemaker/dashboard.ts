@@ -8,7 +8,7 @@ import {
   cleanAllConductors,
 } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
-import { AppletConfig, AppletConfigInput, Assessment, CreateAssessmentInput, Method, RangeValueInteger } from "@neighbourhoods/client";
+import { AppletConfig, AppletConfigInput, Assessment, CreateAssessmentInput, Method, RangeValueInteger } from "#client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, sampleAppletConfig, setUpAliceandBob } from "../../utils";

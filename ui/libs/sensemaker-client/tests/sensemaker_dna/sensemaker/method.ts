@@ -1,7 +1,7 @@
 import { Record } from "@holochain/client";
 import { pause, runScenario } from "@holochain/tryorama";
 import { setUpAliceandBob } from "../../utils";
-import { Method, Dimension } from "@neighbourhoods/client";
+import { Method, Dimension } from "#client";
 import pkg from "tape-promise/tape";
 import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
@@ -74,7 +74,7 @@ export default () => {
           true
           );
         t.equal(allMethodsOutput2.length, 2);
-        
+
 
         /* Querying via Input/Output Dimension Ehs */
         // Given two methods have been created, When Alice gets methods for dimension without QueryParams Then array of length 2 is returned (all methods)
@@ -107,8 +107,8 @@ export default () => {
         t.equal(methodsForDimensionInputDimensionQuery2.length, 1);
         // And the only element of the array is the method created from the second input dimension entry hash
         t.deepEqual(method2, new EntryRecord<Method>(methodsForDimensionInputDimensionQuery2[0]).entry);
-        
-        
+
+
          // Given two methods have been created, When Alice gets methods for dimension with QueryParams for the only output dimension entry hash Then array of length 2 is returned
         const methodsForDimensionOutputDimensionQuery: Record[] = await callZomeAlice(
           "sensemaker",
@@ -124,7 +124,7 @@ export default () => {
           await createMethods('my-seed');
         t.ok(createMethodEntryHash3);
         t.ok(createMethodEntryHash4);
-        
+
         // When Alice gets methods for dimension without QueryParams Then array of length 4 is returned (all methods)
         const methodsForDimensionNoQuery2: Record[] = await callZomeAlice(
           "sensemaker",

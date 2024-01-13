@@ -8,6 +8,7 @@ const { test } = pkg;
 
 import { sensemakerDna } from "../../utils";
 import { setUpAliceandBob } from "../../utils";
+import { Range } from "#client";
 
 const app_entry_def: AppEntryDef = { entry_index: 0, zome_index: 0, visibility: { Public: null } };
 export default () => test("range CRUD tests", async (t) => {
@@ -44,14 +45,14 @@ export default () => test("range CRUD tests", async (t) => {
       await scenario.shareAllAgents();
       await pause(500);
 
-      const tenScaleRange = {
+      const tenScaleRange: Range = {
         "name": "10-scale",
         "kind": {
           "Integer": { "min": 0, "max": 10 }
         },
       };
 
-      const twentyScaleRange = {
+      const twentyScaleRange: Range = {
         "name": "20-scale",
         "kind": {
           "Integer": { "min": 0, "max": 20 }

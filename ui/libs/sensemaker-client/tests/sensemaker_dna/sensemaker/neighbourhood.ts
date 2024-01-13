@@ -28,7 +28,7 @@ import {
   Dimension,
   ResourceDef,
   CulturalContext,
-} from "@neighbourhoods/client";
+} from "#client";
 import { ok } from "assert";
 import pkg from "tape-promise/tape";
 import { installAgent, setUpAliceandBob } from "../../utils";

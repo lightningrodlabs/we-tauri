@@ -9,7 +9,7 @@ import {
 import { cleanAllConductors, pause, runScenario } from "@holochain/tryorama";
 import { decode } from "@msgpack/msgpack";
 import pkg from "tape-promise/tape";
-import { AppletConfig } from "@neighbourhoods/client";
+import { AppletConfig } from "#client";
 import { setUpAliceandBob } from "../../utils";
 const { test } = pkg;
 

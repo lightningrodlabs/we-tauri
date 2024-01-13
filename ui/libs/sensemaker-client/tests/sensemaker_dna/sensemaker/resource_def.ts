@@ -1,7 +1,7 @@
 import { EntryHash, Record } from "@holochain/client";
 import { pause, runScenario } from "@holochain/tryorama";
 import { setUpAliceandBob } from "../../utils";
-import { ResourceDef, Method, Dimension } from "@neighbourhoods/client";
+import { ResourceDef, Method, Dimension } from "#client";
 import pkg from "tape-promise/tape";
 import { EntryRecord } from "@holochain-open-dev/utils";
 const { test } = pkg;
@@ -74,7 +74,7 @@ export default () => {
           true
           );
         t.equal(allResourceDefsOutput2.length, 2);
-        
+
       } catch (e) {
         console.error(e);
         t.ok(null);
@@ -146,7 +146,7 @@ export default () => {
           createPost,
           false
         );
-        
+
         const readPostOutput: Record = await callZomeAlice(
           "test_provider",
           "get_post",
@@ -172,7 +172,7 @@ export default () => {
           "role_name": "test_provider_dna",
           "zome_name": "provider",
         }
-      
+
         const createResourceDefRecord: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",
@@ -182,7 +182,7 @@ export default () => {
         const createResourceDefEntryHash = new EntryRecord<ResourceDef>(
           createResourceDefRecord
         ).entryHash;
-        
+
         const createResourceDefRecord2: Record = await callZomeAlice(
           "sensemaker",
           "create_resource_def",

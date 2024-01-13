@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "declarationDir": "./dist"
+    "declarationDir": "./dist",
+    "paths": {
+      "#client": ["./src"]
+    }
   },
   "include": ["./src/index.ts"]
 }
