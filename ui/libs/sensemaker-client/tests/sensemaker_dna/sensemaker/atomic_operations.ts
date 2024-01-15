@@ -77,7 +77,7 @@ export default () => {
         const [dimensionRecord, methodRecord] = await callZomeAlice(
           "sensemaker",
           "atomic_create_dimension_with_method",
-          { partial_method: totalLikenessMethod, output_dimension: createObjectiveDimension },
+          { partialMethod: totalLikenessMethod, outputDimension: createObjectiveDimension },
           true
         );
 
@@ -85,6 +85,7 @@ export default () => {
         const methodEntryRecord = new EntryRecord<Method>(methodRecord);
         // Then two entries are created
         t.ok(dimensionEntryRecord.entryHash, 'created an output dimension atomically');
+        
         t.ok(methodEntryRecord.entryHash, 'created a method atomically');
 
         // And When Alice gets all methods Then array of length 1 is returned
@@ -130,7 +131,7 @@ export default () => {
           await callZomeAlice(
             "sensemaker",
             "atomic_create_dimension_with_method",
-            { partial_method: totalLikenessMethod2, output_dimension: createObjectiveDimension2 },
+            { partialMethod: totalLikenessMethod2, outputDimension: createObjectiveDimension2 },
             true
           );
         } catch (e) {
@@ -145,7 +146,7 @@ export default () => {
           await callZomeAlice(
             "sensemaker",
             "atomic_create_dimension_with_method",
-            { partial_method: {...totalLikenessMethod2, output_dimension_eh: outputDimensionRangeHash }, output_dimension: createObjectiveDimension },
+            { partialMethod: {...totalLikenessMethod2, output_dimension_eh: outputDimensionRangeHash }, outputDimension: createObjectiveDimension },
             true
           );
         } catch (e) {
@@ -182,7 +183,7 @@ export default () => {
           await callZomeAlice(
             "sensemaker",
             "atomic_create_dimension_with_method",
-            { partial_method: invalidInputMethod, output_dimension: createObjectiveDimension3 },
+            { partialMethod: invalidInputMethod, outputDimension: createObjectiveDimension3 },
             true
           );
         } catch (e) {
