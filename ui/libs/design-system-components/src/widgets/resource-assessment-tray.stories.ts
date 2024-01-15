@@ -2,7 +2,6 @@ import ResourceAssessmentTray from "./resource-assessment-tray";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { NHComponent } from "../ancestors/base";
-import { spreadProps } from "@open-wc/lit-helpers";
 import NHAssessmentContainer from "./assessment-container";
 import { b64images } from "@neighbourhoods/design-system-styles";
 
@@ -38,7 +37,7 @@ const meta: Meta<any> = {
   parameters: {
     backgrounds: { default: "detail" },
   },
-  render: (args) => html`<assessment-tray--test-root ${spreadProps(args)} />`,
+  render: (args) => html`<assessment-tray--test-root .editable=${args.editable} .assessmentWidgetTrayConfig=${args.assessmentWidgetTrayConfig} .editing=${args.editing} .icons=${args.icons} />`,
 };
 
 export default meta;
