@@ -323,6 +323,7 @@ export class MatrixStore {
       info => compareUint8Arrays(info.appletId, appletInstanceId)
     )!;
 
+    // XXX: This doesn't need to happen here, it should happen when the delegate is fetched
     // Check if the applets app agent websocket has been instantiated yet
     let appletAppAgentWebsocket: AppAgentClient;
     if (!appInstanceInfo.appAgentWebsocket) {
@@ -794,7 +795,7 @@ export class MatrixStore {
 
     // hash network seed to not expose it in the app id but still
     // be able to detect the cell based on the network seed
-    const hashedNetworkSeed = toSha1(networkSeed)
+    const hashedNetworkSeed = await toSha1(networkSeed)
     const cloneName = `group@we-${name}-${hashedNetworkSeed}`
     const sensemakerCloneName = `${cloneName}-sensemaker`
 
@@ -1559,7 +1560,7 @@ export class MatrixStore {
 
     // hash network seed to not expose it in the app id but still
     // be able to detect the cell based on the network seed
-    const hashedNetworkSeed = toSha1(network_seed)
+    const hashedNetworkSeed = await toSha1(network_seed)
     const installed_app_id: InstalledAppId = `applet@we-${hashedNetworkSeed}-${customName}`;
 
     // install app bundle
