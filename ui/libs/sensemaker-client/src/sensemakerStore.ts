@@ -29,7 +29,7 @@ import {
   AssessmentWidgetKind
 } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
-import { getLatestAssessment, Option } from './utils';
+import { getLatestAssessment, Option, serializeAsyncActions } from './utils';
 import { createContext } from '@lit/context';
 import { get } from "svelte/store";
 import { EntryRecord } from '@holochain-open-dev/utils';
@@ -458,6 +458,7 @@ export class SensemakerStore {
 
   async registerAppletConfigWidgets(appletEh: EntryHash) {
     // TODO: swap this out for relevant part of the applet config
+    
     const assessmentWidgets = {
       "importance": {
         name: "Thumb",
@@ -471,9 +472,9 @@ export class SensemakerStore {
       },
     };
     try {
-      await Promise.all(Object.entries(assessmentWidgets)
+      serializeAsyncActions<HolochainRecord>(Object.entries(assessmentWidgets)
         .map(([assessmentWidgetKey, assessmentWidgetConfig]) =>  {
-          return this.service.registerWidget({
+          return () => this.service.registerWidget({
             appletEh: appletEh,
             widgetKey: assessmentWidgetKey,
             name: assessmentWidgetConfig.name,
