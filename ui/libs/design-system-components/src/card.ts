@@ -23,6 +23,7 @@ export default class NHCard extends NHComponentShoelace {
   footerAlign: "l" | "r" | "c" = "c";
 
   render() : TemplateResult {
+    console.log('this.hasContextMenu :>> ', this.hasContextMenu);
     return html`
       <div
         class="container${classMap({

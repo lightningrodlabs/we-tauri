@@ -1,5 +1,4 @@
 import { html } from "lit";
-import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
@@ -10,7 +9,13 @@ import NHPageHeaderCard from './page-header-card'
 
 import { NHComponent } from './ancestors/base'
 
-class TestRoot extends NHComponent {
+class TestRoot extends NHComponent implements PageHeaderCardProps{
+  slotName: string;
+  header: string;
+  secondary: string;
+  primary: string;
+  primaryText: string;
+  
   static elementDefinitions = {
     'nh-button': NHButton,
     'nh-button-group': NHButtonGroup,
@@ -77,7 +82,7 @@ const meta: Meta<PageHeaderCardProps> = {
   title: "NHComponent/PageHeaderCard",
   component: "page-header-card--test-root",
   argTypes: {},
-  render: (args) => html`<page-header-card--test-root ${spreadProps(args)} />`,
+  render: (args) => html`<page-header-card--test-root .header=${args.header} .secondary=${args.secondary} .primary=${args.primary} .primaryText=${args.primaryText}  .slotName=${args.slotName} />`,
 };
 
 export default meta;

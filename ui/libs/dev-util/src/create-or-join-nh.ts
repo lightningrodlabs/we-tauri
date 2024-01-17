@@ -17,7 +17,7 @@ export default class CreateOrJoinNh extends NHComponent
         }
         .nh-creation-container input {
           /* :TODO: turn into Design System component */
-          width: 15em;
+            width: 15em;
         }
     `
 
@@ -27,11 +27,11 @@ export default class CreateOrJoinNh extends NHComponent
     render() {
         return html`
             <div class="nh-creation-container">
-                <nh-button clickHandler=${this.dispatchCreateNeighbourhood} label="Create Neighbourhood"></nh-button>
+                <nh-button @click=${this.dispatchCreateNeighbourhood}>Create Neighbourhood</nh-button>
                 <p>&mdash; or &mdash;</p>
                 <div>
                     <input id="ca-pubkey" placeholder=${`community activator pubkey`} />
-                    <nh-button clickHandler=${this.dispatchJoinNeighbourhood} label="Join Neighbourhood"></nh-button>
+                    <nh-button @click=${this.dispatchJoinNeighbourhood}>Join Neighbourhood</nh-button>
                 </div>
             </div>
         `

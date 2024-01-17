@@ -4,6 +4,7 @@ import { NHComponentShoelace } from "../ancestors/base";
 import NHCard from "../card";
 import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import { classMap } from "lit/directives/class-map.js";
+import { b64images } from "@neighbourhoods/design-system-styles";
 
 export default class NHProfileIdenticon extends NHComponentShoelace {
   @property()
@@ -36,7 +37,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
         .theme=${"dark"}
         >
           <div class="content">
-            <img class="identicon" src=${this.agentAvatarSrc || "icons/profile.svg"} alt="user identicon" />
+            <img class="identicon" src=${this.agentAvatarSrc || `data:image/svg+xml;base64,${b64images.nhIcons.blankProfile}`} alt="user identicon" />
             <sl-skeleton
                   effect="pulse"
                   class="skeleton-part"
@@ -56,7 +57,7 @@ export default class NHProfileIdenticon extends NHComponentShoelace {
                     .footerAlign=${"c"}
                 >
           <div class="content">
-            <img class="identicon" src=${this.agentAvatarSrc || "icons/profile.svg"} alt="user identicon" />
+            <img class="identicon" src=${this.agentAvatarSrc || `data:image/svg+xml;base64,${b64images.nhIcons.blankProfile}`} alt="user identicon" />
             <h1>${this.agentName}</h1>
           </div>
         </nh-card>`

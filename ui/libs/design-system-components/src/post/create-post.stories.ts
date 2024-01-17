@@ -1,5 +1,4 @@
 import { html } from "lit";
-import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 import NHButton from '../button'
@@ -7,7 +6,13 @@ import NHCreatePost from "./create-post";
 
 import { NHComponent } from '../ancestors/base'
 
-class TestRoot extends NHComponent {
+class TestRoot extends NHComponent implements CreatePostProps{
+  theme: string;
+  prompt: string;
+  sampleInput: string;
+  placeholder: string;
+  valid: boolean;
+  
   static elementDefinitions = {
     'nh-button': NHButton,
     'nh-create-post': NHCreatePost,
@@ -44,7 +49,7 @@ const meta: Meta<CreatePostProps> = {
   parameters: { 
     backgrounds: { default: 'backdrop' },
   },
-  render: (args) => html`<create-post--test-root ${spreadProps(args)} />`,
+  render: (args) => html`<create-post--test-root .theme=${args.theme} .prompt=${args.prompt} .placeholder=${args.placeholder} .sampleInput=${args.sampleInput} .valid=${args.valid} />`,
 };
 
 export default meta;

@@ -6,6 +6,7 @@ import NHCard from "../card";
 import NHButton from "../button";
 import SlSkeleton from "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 import SlTooltip from "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
+import { b64images } from "@neighbourhoods/design-system-styles";
 
 export default class NHProfileCard extends NHComponentShoelace {
   @property()
@@ -61,7 +62,7 @@ export default class NHProfileCard extends NHComponentShoelace {
         .textSize=${"md"}
       >
         <div class="card-header">
-          <img class="identicon" src=${this.agentAvatarSrc || "icons/profile.svg"} alt="user identicon" />
+          <img class="identicon"  src=${this.agentAvatarSrc || `data:image/svg+xml;base64,${b64images.nhIcons.blankProfile}`} alt="user identicon" />
           </div>
           <div class="content">
           ${this.loading 

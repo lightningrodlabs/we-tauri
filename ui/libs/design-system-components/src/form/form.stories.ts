@@ -1,4 +1,4 @@
-import NHForm from "./test";
+import NHForm from "./form";
 import { html } from "lit";
 import type { Meta, StoryObj } from "@storybook/web-components";
 

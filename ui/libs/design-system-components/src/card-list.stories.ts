@@ -1,5 +1,4 @@
 import { html } from "lit";
-import { spreadProps } from './helpers/spreadProps'
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 import { b64images } from '@neighbourhoods/design-system-styles';
@@ -12,7 +11,15 @@ import NHPageHeaderCard from "./page-header-card";
 
 import { NHComponent } from './ancestors/base'
 
-class TestRoot extends NHComponent {
+class TestRoot extends NHComponent implements CardListProps {
+  hasHeader: boolean;
+  grid: boolean;
+  vertical: boolean;
+  contentText: string;
+  cards: any[];
+  widgets: boolean;
+  buttons: boolean;
+  
   static elementDefinitions = {
     'nh-button': NHButton,
     'nh-card': NHCard,
@@ -31,11 +38,25 @@ class TestRoot extends NHComponent {
         <nh-button slot="primary-action">Upload Applet File</nh-button>
       </nh-page-header-card>`
         : null}
-      ${this.cards.map((card) => {
+      ${this.cards.map((card: any) => {
         card.hasWidget = this.widgets;
         card.hasPrimaryAction = this.buttons;
         card.contentText = this.contentText;
-        return html`<nh-card ${spreadProps(card)} />`;
+        return html`
+        <nh-card
+          .theme=${card.theme}
+          .textSize=${card.textSize}
+          .heading=${card.heading}
+          .title=${card.title}
+          .footerAlign=${card.footerAlign}
+          .hasPrimaryAction=${card.hasPrimaryAction}
+          .hasWidget=${card.hasWidget}
+          >
+          <p>
+            ${this.contentText || `Lorem ipsum dolor sit amet, consectetur adipiscing elit. In mi massa,
+            auctor vitae viverra et, consequat vulputate felis. Integer congue leo
+            quis urna vestibulum varius. Duis vehicula ligula id leo.`}</p>
+        </nh-card>`;
       })}</nh-card-list
     >`
   }
@@ -65,7 +86,7 @@ const meta: Meta<CardListProps> = {
   parameters: {
     backgrounds: { default: 'canvas' },
   },
-  render: (args) => html`<card-list--test-root ${spreadProps(args)} />`,
+  render: (args) => html`<card-list--test-root .cards=${args.cards} .widgets=${args.widgets} .buttons=${args.buttons} .vertical=${args.vertical} .grid=${args.grid}/>`,
 };
 
 export default meta;
@@ -82,6 +103,7 @@ export const Dark: Story = {
         theme: "dark",
         textSize: "md",
         footerAlign: "c",
+        contentText: "c",
       },
       {
         title: "Card 2",

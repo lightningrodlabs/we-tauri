@@ -23,7 +23,7 @@ export const Render: Story = {
 }
 
 const createListener = jest.fn()
-export const CreateNH: Story = html`<create-or-join-nh @create-nh=${createListener}></create-or-join-nh>`
+export const CreateNH: Story = { render: () => html`<create-or-join-nh @create-nh=${createListener}></create-or-join-nh>`}
 CreateNH.parameters = { ...meta.parameters }
 CreateNH.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
@@ -35,7 +35,7 @@ CreateNH.play = async ({ canvasElement }) => {
 }
 
 const joinListener = jest.fn()
-export const JoinNH: Story = html`<create-or-join-nh @join-nh=${joinListener}></create-or-join-nh>`
+export const JoinNH: Story = { render: () => html`<create-or-join-nh @join-nh=${joinListener}></create-or-join-nh>`}
 JoinNH.parameters = { ...meta.parameters }
 JoinNH.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)

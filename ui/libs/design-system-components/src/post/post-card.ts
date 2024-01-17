@@ -2,7 +2,7 @@ import { css, CSSResult, html, TemplateResult } from "lit";
 import {property } from "lit/decorators.js";
 import { NHComponent } from '../ancestors/base';
 import NHCard from "../card";
-import NHAssessmentWidget from "../assessment-widget";
+import NHAssessmentWidget from "../widgets/assessment-container";
 import { b64images } from '@neighbourhoods/design-system-styles';
 
 const kebabCase = (str: string) => str

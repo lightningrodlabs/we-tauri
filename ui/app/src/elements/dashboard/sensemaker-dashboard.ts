@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { consume, provide } from '@lit/context';
 import { AppletConfig, SensemakerStore, sensemakerStoreContext } from '@neighbourhoods/client';
 import { MatrixStore } from '../../matrix-store';
-import { matrixContext } from '../../context';
+import { matrixContext, weGroupContext } from '../../context';
 import {
   SlMenuItem,
   SlMenu,
@@ -18,7 +18,7 @@ import { StatefulTable } from '../components/table';
 import { DashboardFilterMap } from '../components/table-filter-map';
 
 import { Readable, StoreSubscriber, derived, get } from '@holochain-open-dev/stores';
-import { encodeHashToBase64 } from '@holochain/client';
+import { EntryHash, decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
 
 import { NHAlert, NHButton, NHComponentShoelace, NHPageHeaderCard } from '@neighbourhoods/design-system-components';
 
@@ -34,6 +34,7 @@ import { cleanResourceNameForUI, snakeCase, zip } from '../components/helpers/fu
 import { ContextSelector } from './context-selector';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { flattenRoleAndZomeIndexedResourceDefs } from '../../utils';
+import { ResourceBlockRenderer, createInputAssessmentWidgetDelegate } from '@neighbourhoods/app-loader';
 
 @customElement('sensemaker-dashboard')
 export class SensemakerDashboard extends NHComponentShoelace {
@@ -43,6 +44,10 @@ export class SensemakerDashboard extends NHComponentShoelace {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;
+
+  @consume({ context: weGroupContext , subscribe: true })
+  @property({attribute: false})
+  _weGroupId!: Uint8Array;
 
   @provide({ context: sensemakerStoreContext })
   @property({ attribute: false })
@@ -66,15 +71,13 @@ export class SensemakerDashboard extends NHComponentShoelace {
   async connectedCallback() {
     super.connectedCallback();
 
-    this.selectedWeGroupId = (this.parentElement as any)?.__weGroupId;
-    if (!this.selectedWeGroupId) return;
-
+    if (!this._weGroupId) return;
+    
     this._sensemakerStore = get(
-      this._matrixStore.sensemakerStore(this.selectedWeGroupId) as Readable<SensemakerStore>,
+      this._matrixStore.sensemakerStore(this._weGroupId) as Readable<SensemakerStore>,
     );
-
     const appletInstancesStream = this._matrixStore.getAppletInstanceInfosForGroup(
-      this.selectedWeGroupId,
+      this._weGroupId,
     );
 
     appletInstancesStream.subscribe(applets => {
@@ -195,9 +198,23 @@ export class SensemakerDashboard extends NHComponentShoelace {
       </div>
     `;
   }
-  renderSidebar(appletIds: string[]) {
+  async renderSidebar(appletIds: string[]) {
+
+const appletInstanceInfos = get(this._matrixStore?.getAppletInstanceInfosForGroup(this._weGroupId))
+console.log('appletInstanceInfos :>> ', appletInstanceInfos);
+// const appId = Object.keys(Object.fromEntries((appletInstanceInfos).entries()))[0];
+// if(!appId) return;
+
+debugger;
+const comp = this._matrixStore.createResourceBlockDelegate(decodeHashFromBase64(appId))
+
+console.log('this._sensemakerStore :>> ', comp);
+    console.log('this._matrixStore :>> ', appId);
+    // const componentNhDelegate = createInputAssessmentWidgetDelegate(this._sensemakerStore, )
     return html`
       <nav>
+
+    <resource-block-renderer .component=${null} .nhDelegate=${null}></resource-block-renderer>
         <div>
           <sl-input class="search-input" placeholder="SEARCH" size="small"></sl-input>
         </div>
@@ -441,6 +458,7 @@ export class SensemakerDashboard extends NHComponentShoelace {
       'nh-context-selector': ContextSelector,
       'dashboard-table': StatefulTable,
       'dashboard-filter-map': DashboardFilterMap,
+      // 'resource-block-renderer': ResourceBlockRenderer,
     };
   }
 

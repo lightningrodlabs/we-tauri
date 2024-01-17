@@ -1,5 +1,4 @@
 import { html } from "lit";
-import { spreadProps } from '@open-wc/lit-helpers'
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 import { b64images } from '@neighbourhoods/design-system-styles';
@@ -10,7 +9,17 @@ import NHCard from './card'
 
 import { NHComponent } from './ancestors/base'
 
-class TestRoot extends NHComponent {
+class TestRoot extends NHComponent implements CardProps {
+  textSize: "lg" | "md" | "sm";
+  footerAlign: "l" | "r" | "c";
+  title: string;
+  theme: "dark" | "light";
+  heading: string;
+  hasContextMenu: boolean;
+  hasPrimaryAction?: boolean | undefined;
+  contentText?: string | undefined;
+  hasWidget?: boolean | undefined;
+
   static elementDefinitions = {
     'nh-button': NHButton,
     'nh-card': NHCard,
@@ -77,9 +86,10 @@ const meta: Meta<CardProps> = {
     textSize: { control: "none" },
     hasWidget: { control: "boolean" },
     hasPrimaryAction: { control: "boolean" },
+    hasContextMenu: { control: "boolean" },
     // textSize: { options: ["md", "sm"], control: { type: "radio" } },
   },
-  render: (args) => html`<card--test-root ${spreadProps(args)} />`,
+  render: (args) => html`<card--test-root .title=${args.title} .heading=${args.heading} .theme=${args.theme} .footerAlign=${args.footerAlign} .textSize=${args.textSize} .hasWidget=${args.hasWidget} .hasPrimaryAction=${args.hasPrimaryAction} .hasContextMenu=${args.hasContextMenu} />`,
 };
 
 export default meta;
@@ -87,6 +97,7 @@ export default meta;
 type Story = StoryObj<CardProps>;
 export const Basic: Story = {
   args: {
+    title: "Title",
     theme: "dark",
     hasWidget: false,
     textSize: "md",
