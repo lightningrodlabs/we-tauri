@@ -13,13 +13,14 @@ export type CallbackFn = (_: Assessment | undefined) => void;
 /**
  * Generic constructor type
  */
-export type Constructor<T = Object> = (new () => T) | (new (...args: any[]) => T);
+export type Constructor<T, Args extends any[] = any[]> = new (...args: Args) => T;
 
 /**
  * Simple interface for allowing a a delegate to be set
  */
 export interface NHDelegateReceiver<D> {
   set nhDelegate(delegate: D)
+  get nhDelegate(): D
 }
 
 /**
