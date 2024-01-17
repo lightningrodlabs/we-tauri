@@ -22,3 +22,8 @@ export function getLatestAssessment(assessments: Assessment[], dimension_eh: Ent
         return latestAssessment;
     }
 }
+
+export function serializeAsyncActions<T>(actions: Array<() => Promise<T>>) {
+    let actionFiber = Promise.resolve({}) as Promise<T>;
+    actionFiber = actions.reduce((chain: Promise<T>, curr) => chain.then(curr), actionFiber);
+}
