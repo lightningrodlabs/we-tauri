@@ -173,7 +173,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             }}
           >
               <div>
-                <h2>Assessment Widget Configuration</h2>
+                <h2>Add Assessment Control</h2>
                 ${this.renderMainForm()}
               </div>
               <nh-button-group
@@ -193,18 +193,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     Cancel
                   </nh-button>
                   <nh-button
-                    id="update-widget-config"
-                    .variant=${'primary'}
-                    .size=${'md'}
-                    @click=${async () => {
-                      this._formAction = 'update';
-                      await this.requestUpdate();
-                      this._form?.handleSubmit()
-                    }}
-                  >
-                    Update
-                  </nh-button>
-                  <nh-button
                     type="submit"
                     @click=${async () => {
                       this._formAction = 'create';
@@ -215,7 +203,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     .variant=${'success'}
                     .size=${'md'}
                   >
-                    Create
+                    Add
                   </nh-button>
                 </span>
               </nh-button-group>
@@ -226,6 +214,18 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     `;
   }
 
+//   <nh-button
+//   id="update-widget-config"
+//   .variant=${'primary'}
+//   .size=${'md'}
+//   @click=${async () => {
+//     this._formAction = 'update';
+//     await this.requestUpdate();
+//     this._form?.handleSubmit()
+//   }}
+// >
+//   Update
+// </nh-button>
   async createEntries(model: any) {
     const resource_def_eh = model.input_dimension; // temp
     const { assessment_widget, input_dimension, output_dimension } = model;

@@ -39,7 +39,7 @@ export default class NHResourceAssessmentTray extends NHComponent {
   render() {
     console.log('this.assessmentWidgetTrayConfig :>> ', this.assessmentWidgetTrayConfig);
     return html`
-      <div*::slotted(div
+      <div
         class="assessment-widget-tray${classMap({
           editable: !!this.editable,
         })}"
