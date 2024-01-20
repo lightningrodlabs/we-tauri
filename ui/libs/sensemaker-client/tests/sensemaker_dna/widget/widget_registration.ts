@@ -73,18 +73,13 @@ export default () => {
 
       // Test 1: Alice can create a widget registration entry
         // use provider DNA method to get some entry hash for applet_eh
-        const dummyEntryHash: EntryHash = await callZomeAlice(
-          "test_provider",
-          "create_post",
-          { title: 'dummy', content: 'test' },
-          false,
-        );
+        const installedAppId: string = "applet-test-neighbourhood-13687278ewqr78ewq9r7w8e6rtqwbygvhauigyoqru";
         // create range
         const twentyScaleRangeKind = {
           "Integer": { "min": 0, "max": 20 }
         };
-        const testWidgetRegistration = {
-          appletEh: dummyEntryHash,
+        const testWidgetRegistration: AssessmentWidgetRegistrationInput = {
+          appletId: installedAppId,
           widgetKey: 'importance',
           name: 'Importance Widget',
           rangeKind: twentyScaleRangeKind,

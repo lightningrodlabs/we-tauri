@@ -456,37 +456,6 @@ export class SensemakerStore {
     }, {} as Record<EntryHashB64, AssessmentWidgetRegistrationInput>)
   }
 
-  async registerAppletConfigWidgets(appletEh: EntryHash) {
-    // TODO: swap this out for relevant part of the applet config
-    
-    const assessmentWidgets = {
-      "importance": {
-        name: "Thumb",
-        rangeKind: { Integer: { min: 0, max: 20 } },
-        kind: "input" as AssessmentWidgetKind
-      },
-      "likes": {
-        name: "Heart",
-        rangeKind: { Integer: { min: 0, max: 100 } },
-        kind: "input" as AssessmentWidgetKind
-      },
-    };
-    try {
-      serializeAsyncActions<HolochainRecord>(Object.entries(assessmentWidgets)
-        .map(([assessmentWidgetKey, assessmentWidgetConfig]) =>  {
-          return () => this.service.registerWidget({
-            appletEh: appletEh,
-            widgetKey: assessmentWidgetKey,
-            name: assessmentWidgetConfig.name,
-            rangeKind: assessmentWidgetConfig.rangeKind,
-            kind: assessmentWidgetConfig.kind
-          })
-      }))
-    } catch (error) {
-      console.error('error registering widgets :>> ', error);
-    }
-  }
-
   async checkIfAppletConfigExists(appletName: string): Promise<Option<AppletConfig>> {
     const maybeAppletConfig = await this.service.checkIfAppletConfigExists(appletName);
     if (maybeAppletConfig) {

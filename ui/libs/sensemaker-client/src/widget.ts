@@ -57,7 +57,7 @@ export type AssessmentWidgetRenderers = Record<string, AssessmentWidgetRenderer>
  * Defines the shape of the data sent to the sensemaker to register a an assessment control
  */
 export interface AssessmentWidgetRegistrationInput {
-  appletEh: EntryHash, // Applet entry hash
+  appletId: string, // Applet id
   widgetKey: string,  // keyof an AssessmentWidgetConfigDict
   name: string,
   rangeKind: RangeKind,
@@ -88,7 +88,7 @@ export type AssessmentWidgetConfig = {
   /**
    * This is whatever the id for the Applet is.
    */
-  appletEh: EntryHash,
+  appletId: string,
   /**
    * This is the name of the component as exposed by the applet interface
    */

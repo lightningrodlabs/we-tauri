@@ -5,7 +5,7 @@ use crate::range::RangeKind;
 #[derive(Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AssessmentWidgetRegistration {
-  pub applet_eh: EntryHash,
+  pub applet_id: String,
   pub widget_key: String,
   pub name: String,
   pub range_kind: RangeKind, // currently storing as nested which is not different from the input
@@ -17,7 +17,7 @@ impl TryFrom<AssessmentWidgetRegistrationInput> for AssessmentWidgetRegistration
     type Error = WasmError;
     fn try_from(value: AssessmentWidgetRegistrationInput) -> Result<Self, Self::Error> {
         let registration = AssessmentWidgetRegistration {
-            applet_eh: value.applet_eh,
+            applet_id: value.applet_id,
             widget_key: value.widget_key,
             name: value.name,
             range_kind: value.range_kind,
@@ -30,7 +30,7 @@ impl TryFrom<AssessmentWidgetRegistrationInput> for AssessmentWidgetRegistration
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AssessmentWidgetRegistrationInput {
-  pub applet_eh: EntryHash,
+  pub applet_id: String,
   pub widget_key: String,
   pub name: String,
   pub range_kind: RangeKind,

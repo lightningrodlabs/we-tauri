@@ -41,6 +41,7 @@ import {
 import {
   AppBlockDelegate,
   AppletRenderers,
+  AssessmentWidgetRegistrationInput,
   DimensionEh,
   InputAssessmentWidgetDelegate,
   NeighbourhoodApplet,
@@ -51,7 +52,8 @@ import {
   ResourceDefEh,
   ResourceEh,
   ResourceRenderers,
-  SensemakerStore
+  SensemakerStore,
+  serializeAsyncActions
 } from "@neighbourhoods/client";
 import {
   Applet,
@@ -330,6 +332,13 @@ export class MatrixStore {
       //instantiate the websocket
       appletAppAgentWebsocket = await getAppAgentWebsocket(appInstanceInfo.appInfo.installed_app_id);
       appInstanceInfo.appAgentWebsocket = appletAppAgentWebsocket;
+
+      // authorize signing credentials for all cells in the applet happ
+      for (const roleName in appInstanceInfo.appInfo.cell_info) {
+        for (const cellInfo of appInstanceInfo.appInfo.cell_info[roleName]) {
+          await this.adminWebsocket.authorizeSigningCredentials(getCellId(cellInfo)!);
+        }
+      }
     }
     else {
       appletAppAgentWebsocket = appInstanceInfo.appAgentWebsocket;
@@ -1628,19 +1637,27 @@ export class MatrixStore {
 
     const sensemakerStore = get(this.sensemakerStore(weGroupId));
     if (sensemakerStore) {
+      const registrationActions: Array<()=>Promise<AssessmentWidgetRegistrationInput>> = []
       try {
         const registeredConfig = await sensemakerStore.registerApplet(appletConfig);
         console.log('registeredConfig', registeredConfig)
         console.log('registering widgets to SM store')
         for (let widgetKey in applet.assessmentWidgets) {
+          console.log(widgetKey)
           const widgetConfig = applet.assessmentWidgets[widgetKey]
-          // const registration: AssessmentWidgetRegistrationInput = {
-          //   appletEh
-          // }
+          const registration: AssessmentWidgetRegistrationInput = {
+            appletId: installedAppId,
+            widgetKey,  // keyof an AssessmentWidgetConfigDict
+            name: widgetConfig.name,
+            rangeKind: widgetConfig.rangeKind,
+            kind: widgetConfig.kind
+          }
+          registrationActions.push(() => sensemakerStore.registerWidget(registration))
         }
       } catch (e) {
         console.error(e)
       }
+      serializeAsyncActions(registrationActions);
     }
   }
 

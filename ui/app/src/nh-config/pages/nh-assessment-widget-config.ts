@@ -93,7 +93,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       await this.fetchDimensionEntries()
       await this.fetchRangeEntries()
       await this.assignDimensionEntries();
-      await this.mockRegisterWidgets();
       await this.fetchRegisteredWidgets();
     } catch (error) {
       console.error('Could not fetch: ', error)
@@ -116,15 +115,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this.outputDimensionEntries = output;
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
-    }
-  }
-
-  async mockRegisterWidgets() {
-    const mockAppletEh = "uhCEk3ltwE4DcG0CcpWjdxX2TH7GokU8IOW0-_tveFx8Fm3GguKPX";
-    try {
-      await this._sensemakerStore.value!.registerAppletConfigWidgets(decodeHashFromBase64(mockAppletEh));
-    } catch (error) {
-      console.log('Error registering widgets: ', error);
     }
   }
 
