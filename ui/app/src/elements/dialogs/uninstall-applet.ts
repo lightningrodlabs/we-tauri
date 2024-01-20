@@ -26,7 +26,7 @@ export class UninstallApplet extends NHComponentShoelace {
     return html`
                 <nh-dialog
                   id="uninstall-applet"
-                  .title=${"Uninstall Applet"}}
+                  .title=${"Uninstall Applet"}
                   .dialogType=${"applet-uninstall"}
                   .size=${"medium"}
                   .handleOk=${this.confirm}

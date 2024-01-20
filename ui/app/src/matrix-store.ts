@@ -1640,10 +1640,10 @@ export class MatrixStore {
       const registrationActions: Array<()=>Promise<AssessmentWidgetRegistrationInput>> = []
       try {
         const registeredConfig = await sensemakerStore.registerApplet(appletConfig);
-        console.log('registeredConfig', registeredConfig)
-        console.log('registering widgets to SM store')
+        // console.log('registeredConfig', registeredConfig)
+        // console.log('registering widgets to SM store')
         for (let widgetKey in applet.assessmentWidgets) {
-          console.log(widgetKey)
+          // console.log(widgetKey)
           const widgetConfig = applet.assessmentWidgets[widgetKey]
           const registration: AssessmentWidgetRegistrationInput = {
             appletId: installedAppId,
