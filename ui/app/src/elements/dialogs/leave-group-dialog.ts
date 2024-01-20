@@ -13,7 +13,6 @@ import {
 
 import { sharedStyles } from "../../sharedStyles";
 import { StoreSubscriber } from "lit-svelte-stores";
-import { get, readable } from 'svelte/store';
 import { MatrixStore } from "../../matrix-store";
 import { provideAllApplets } from "../../matrix-helpers";
 import { matrixContext, weGroupContext } from "../../context";
@@ -22,15 +21,15 @@ import { DnaHash } from "@holochain/client";
 export class LeaveGroupDialog extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
-  _matrixStore!: MatrixStore;
+  _matrixStore: MatrixStore | undefined;
 
   @consume({ context: weGroupContext, subscribe: true })
   @property({attribute: false})
-  weGroupId!: DnaHash;
+  weGroupId: DnaHash | undefined;
 
   _allApplets = new StoreSubscriber(
     this,
-    () => provideAllApplets(this._matrixStore, this.weGroupId),
+    () => provideAllApplets(this._matrixStore!, this.weGroupId!),
     () => [this._matrixStore, this.weGroupId]
   );
 

@@ -5,8 +5,6 @@ import { html, css, CSSResult, unsafeCSS, LitElement } from 'lit';
 import { StoreSubscriber } from 'lit-svelte-stores';
 import { CircularProgress, Fab, Icon, Snackbar } from '@scoped-elements/material-web';
 import { classMap } from 'lit/directives/class-map.js';
-import { HoloIdenticon } from './elements/components/holo-identicon.js';
-
 import { matrixContext } from './context';
 import { MatrixStore } from './matrix-store';
 import { sharedStyles } from './sharedStyles';
@@ -28,7 +26,6 @@ import { getStatus } from '@neighbourhoods/app-loader';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
 import { NHButton, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
-import { NHSensemakerSettings } from './elements/dashboard/nh-sensemaker-settings';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
@@ -71,9 +68,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
 
   @state()
   private _selectedAppletInstanceId: EntryHash | undefined; // hash of the Applet's entry in group's we dna of the selected Applet instance
-
-  @state()
-  private _widgetConfigDialogActivated: boolean = false;
 
   @query('#open-create-nh-dialog')
   _createNHDialogButton!: HTMLElement;
@@ -424,7 +418,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
     this._dashboardMode = DashboardMode.AppletGroupInstanceRendering;
     this._navigationMode = NavigationMode.GroupCentric;
 
-    this._widgetConfigDialogActivated = true;
     this.requestUpdate();
   }
 
@@ -451,28 +444,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
         id="create-nh-dialog"
         .openDialogButton=${this._createNHDialogButton}
       ></create-nh-dialog>
-      ${this._widgetConfigDialogActivated
-        ? html`
-            <nh-dialog
-              id="applet-widget-config"
-              size="large"
-              dialogType="widget-config"
-              handleOk=${() => { this._widgetConfigDialogActivated = false }}
-              isOpen=${true}
-              title="Configure Applet Widgets"
-              .primaryButtonDisabled=${true}
-            >
-              <div slot="inner-content">
-                <nh-sensemaker-settings
-                  .appletName=${this._appletName}
-                  .sensemakerStore=${get(
-                    this._matrixStore.sensemakerStore(this._selectedWeGroupId as Uint8Array),
-                  )}
-                ></nh-sensemaker-settings>
-              </div>
-            </nh-dialog>
-          `
-        : html``}
 
       <mwc-snackbar
         id="applet-centric-snackbar"
@@ -593,7 +564,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'mwc-icon': Icon,
       'mwc-snackbar': Snackbar,
       'sidebar-button': SidebarButton,
-      'holo-identicon': HoloIdenticon,
       'create-nh-dialog': CreateNeighbourhoodDialog,
       'home-screen': HomeScreen,
       'sl-tooltip': SlTooltip,
@@ -605,7 +575,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'nh-profile-card': NHProfileCard,
       'sensemaker-dashboard': SensemakerDashboard,
       'nh-global-config': NHGlobalConfig,
-      'nh-sensemaker-settings': NHSensemakerSettings,
       'applet-instance-renderer': AppletInstanceRenderer,
       'applet-not-installed': AppletNotInstalled,
       'notification-dot': NotificationDot,

@@ -9,7 +9,6 @@ import { AppInfo } from "@holochain/client";
 import { Snackbar } from "@scoped-elements/material-web";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { SensemakerStore } from "@neighbourhoods/client";
-import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { AppletInstanceInfo } from "../../types";
 
 export class AppletListItem extends NHComponent {
@@ -19,13 +18,13 @@ export class AppletListItem extends NHComponent {
 
   @property()
   sensemakerStore!: SensemakerStore;
-  
+
   @property()
   appletStatus!: string;
-  
+
   @property()
   appletInfo!: AppletInstanceInfo;
-  
+
   @property()
   onJoin!: () => void;
 
@@ -34,13 +33,7 @@ export class AppletListItem extends NHComponent {
 
   @property()
   onDelete!: () => void;
-  
-  @state()
-  private _widgetConfigDialogActivated: boolean = false;
 
-  onConfigureWidgets() {
-    this._widgetConfigDialogActivated = true;
-  }
   async disableApp(appInfo: AppInfo) {
     const list = (this.parentNode as any);
     this.matrixStore.disableApp(appInfo)
@@ -85,15 +78,6 @@ export class AppletListItem extends NHComponent {
       >Reinstall</nh-button>
     `
     : html`
-      <sl-tooltip placement="top" content="Configure Widgets" hoist>
-        <nh-button
-          @click=${() => {this.onConfigureWidgets()}}
-          .variant=${"neutral"}
-          .size=${"md"}
-        >Configure
-        </nh-button>
-      </sl-tooltip>
-
       ${this.appletStatus === "RUNNING"
         ? html`
           <nh-button
@@ -134,24 +118,6 @@ export class AppletListItem extends NHComponent {
                     ${this.renderButtons()}
                   </div>
                 </div>
-
-              ${this._widgetConfigDialogActivated ? html`
-                <nh-dialog
-                  id="applet-widget-config"
-                  size="large"
-                  dialogType="widget-config"
-                  handleOk=${() => { this._widgetConfigDialogActivated = false}}
-                  isOpen=${true}
-                  title="Configure Applet Widgets"
-                  .primaryButtonDisabled=${true}
-                >
-                  <div slot="inner-content">
-                    <nh-sensemaker-settings
-                      .sensemakerStore=${this.sensemakerStore}
-                      .appletName=${this.appletInfo.appInfo.installed_app_id}
-                    ></nh-sensemaker-settings>
-                  </div>
-                </nh-dialog>` : html``}
     `;
   }
 
@@ -161,7 +127,6 @@ export class AppletListItem extends NHComponent {
       "nh-page-header-card": NHPageHeaderCard,
       "installable-applets": InstallableApplets,
       "nh-dialog": NHDialog,
-      "nh-sensemaker-settings": NHSensemakerSettings,
   }
 
   static get styles() {
@@ -179,7 +144,7 @@ export class AppletListItem extends NHComponent {
         }
 
         h4 {
-          color: var(--nh-theme-fg-muted); 
+          color: var(--nh-theme-fg-muted);
         }
     `];
   }

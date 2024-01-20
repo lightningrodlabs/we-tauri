@@ -16,14 +16,12 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { property, query, state } from "lit/decorators.js";
-import { HoloIdenticon } from './holo-identicon.js';
 import { CreateNeighbourhoodDialog } from "../dialogs/create-nh-dialog";
 import { SlTooltip } from "@scoped-elements/shoelace";
 import { ActionHash, DnaHash, AppInfo } from "@holochain/client";
 import { getStatus } from "@neighbourhoods/app-loader";
 import { FederateAppletDialog } from "../dialogs/federate-applet-dialog";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
-import { NHSensemakerSettings } from "../dashboard/nh-sensemaker-settings";
 import { NHButton, NHComponent, NHDialog } from "@neighbourhoods/design-system-components";
 import { b64images } from "@neighbourhoods/design-system-styles";
 import { AppletListItem } from "./applet-list-item";
@@ -186,14 +184,12 @@ export class AppletInstanceStatusList extends NHComponent {
       "mwc-card": Card,
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
-      "holo-identicon": HoloIdenticon,
       "create-we-group-dialog": CreateNeighbourhoodDialog,
       "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "applet-list-item": AppletListItem,
       "uninstall-applet-dialog": UninstallApplet,
       "federate-applet-dialog": FederateAppletDialog,
-      "nh-sensemaker-settings": NHSensemakerSettings,
       'nh-dialog': NHDialog,
     };
   }
