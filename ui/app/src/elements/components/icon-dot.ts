@@ -1,11 +1,11 @@
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { Icon } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { sharedStyles } from "../../sharedStyles";
 
-export class IconDot extends ScopedElementsMixin(LitElement) {
+export class IconDot extends ScopedRegistryHost(LitElement) {
 
   @property()
   placement: "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end" = "right";

@@ -1,8 +1,8 @@
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { property, query } from "lit/decorators.js";
 
-export class AppletIconBadge extends ScopedElementsMixin(LitElement) {
+export class AppletIconBadge extends ScopedRegistryHost(LitElement) {
 
   @property()
   logoSrc!: string;

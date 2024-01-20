@@ -1,6 +1,6 @@
 import { DnaHash, EntryHash } from "@holochain/client";
 import { consume } from "@lit/context";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { Button, CircularProgress, Dialog, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
@@ -11,7 +11,7 @@ import { JoinFromFsDialog } from "../dialogs/join-from-file-system";
 import { NHButton } from "@neighbourhoods/design-system-components";
 import { AppletInstanceInfo, NewAppletInstanceInfo } from "../../types";
 
-export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
+export class AppletNotInstalled extends ScopedRegistryHost(LitElement) {
 
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
@@ -220,7 +220,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
         display: grid;
         flex: 1;
         place-content: center;
-        color: var(--nh-theme-fg-default); 
+        color: var(--nh-theme-fg-default);
       }
 
       .logo-large {
@@ -238,7 +238,7 @@ export class AppletNotInstalled extends ScopedElementsMixin(LitElement) {
         flex-direction: column;
         gap: calc(1px * var(--nh-spacing-xl));
       }
-      
+
       .buttons {
         flex-direction: row-reverse;
       }

@@ -2,7 +2,7 @@ import { EntryHash } from "@holochain/client";
 import { AppBlockDelegate } from "@neighbourhoods/client";
 import { consume } from "@lit/context";
 import { Task } from "@lit/task";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { CircularProgress } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
@@ -11,7 +11,7 @@ import { MatrixStore } from "../../matrix-store";
 import { sharedStyles } from "../../sharedStyles";
 import { AppBlockRenderer } from "@neighbourhoods/app-loader";
 
-export class AppletInstanceRenderer extends ScopedElementsMixin(LitElement) {
+export class AppletInstanceRenderer extends ScopedRegistryHost(LitElement) {
 
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})

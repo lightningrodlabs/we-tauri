@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { consume } from "@lit/context";
 import {
   TextField,
@@ -21,7 +21,7 @@ import { get } from "svelte/store";
 import { classMap } from "lit/directives/class-map.js";
 import { AppletInstanceInfo } from "../../types";
 
-export class FederateAppletDialog extends ScopedElementsMixin(LitElement) {
+export class FederateAppletDialog extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;

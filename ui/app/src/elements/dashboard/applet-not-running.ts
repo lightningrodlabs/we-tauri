@@ -1,8 +1,8 @@
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { Button, CircularProgress, Icon, IconButtonToggle, Snackbar } from "@scoped-elements/material-web";
 import { css, html, LitElement } from "lit";
 import { sharedStyles } from "../../sharedStyles";
-export class AppletNotRunning extends ScopedElementsMixin(LitElement) {
+export class AppletNotRunning extends ScopedRegistryHost(LitElement) {
 
   render() {
 

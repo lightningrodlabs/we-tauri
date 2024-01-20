@@ -1,5 +1,5 @@
 import { html, LitElement, css } from "lit";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import {
   Button,
   TextField,
@@ -23,7 +23,7 @@ import { matrixContext, weGroupContext } from "../../context";
 import { MatrixStore } from "../../matrix-store";
 import { DnaHash } from "@holochain/client";
 
-export class InstallableApplets extends ScopedElementsMixin(LitElement) {
+export class InstallableApplets extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;

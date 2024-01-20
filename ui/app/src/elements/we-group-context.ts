@@ -1,5 +1,5 @@
 import { css, html, LitElement, PropertyValues } from "lit";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import {
   consume,
   provide
@@ -16,7 +16,7 @@ import { DnaHash } from "@holochain/client";
 import { SensemakerStore, sensemakerStoreContext } from "@neighbourhoods/client";
 
 
-export class WeGroupContext extends ScopedElementsMixin(LitElement) {
+export class WeGroupContext extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   matrixStore!: MatrixStore;

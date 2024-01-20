@@ -1,4 +1,4 @@
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { property, query } from "lit/decorators.js";
 
@@ -6,7 +6,7 @@ import { property, query } from "lit/decorators.js";
  * Adds an opaque overlay on top of the Icon.
  * Can be used in case an applet is deactivated in the conductor.
  */
-export class InactiveOverlay extends ScopedElementsMixin(LitElement) {
+export class InactiveOverlay extends ScopedRegistryHost(LitElement) {
   render() {
     return html`
       <div style="position: relative; display: inline-block;">

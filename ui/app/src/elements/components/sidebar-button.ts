@@ -6,13 +6,13 @@
 
 
 import { consume } from "@lit/context";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
 
 import { property, query } from "lit/decorators.js";
 
-export class SidebarButton extends ScopedElementsMixin(LitElement) {
+export class SidebarButton extends ScopedRegistryHost(LitElement) {
 
   @property()
   logoSrc!: string;

@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { consume } from '@lit/context';
 import {
   TextField,
@@ -21,7 +21,7 @@ import { fakeSeededEntryHash } from '../../utils';
 import { SlInput, SlTextarea } from '@scoped-elements/shoelace';
 import { NHAlert, NHButton, NHDialog } from '@neighbourhoods/design-system-components';
 
-export class InstallFromFsDialog extends ScopedElementsMixin(LitElement) {
+export class InstallFromFsDialog extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;

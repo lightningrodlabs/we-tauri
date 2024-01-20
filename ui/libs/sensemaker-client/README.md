@@ -22,7 +22,7 @@ See the [API Documentation](./docs/API.md) for implementation details.
 Stateful properties use [`svelte/store`](https://svelte.dev/tutorial/writable-stores) to provide a reactive interface to the data. To subscribe to the store, you can use [`lit-svelte-store`](https://www.npmjs.com/package/lit-svelte-stores) to create a reactive property in a lit-element component:
 
 ```typescript
-export class ContextSelector extends ScopedElementsMixin(LitElement) {
+export class ContextSelector extends ScopedRegistryHost(LitElement) {
     @consume({ context: sensemakerStoreContext, subscribe: true })
     @property({attribute: false})
     public  sensemakerStore!: SensemakerStore

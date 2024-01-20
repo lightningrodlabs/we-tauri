@@ -1,5 +1,5 @@
 import { consume } from "@lit/context";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { html, LitElement, css } from "lit";
 import { StoreSubscriber } from "lit-svelte-stores";
 import {
@@ -26,7 +26,7 @@ import { UninstallApplet } from "../dialogs/uninstall-applet";
 import { AppletListItem } from "./applet-list-item";
 import { UninstalledAppletInstanceInfo } from "../../types";
 
-export class UninstalledAppletInstanceList extends ScopedElementsMixin(LitElement) {
+export class UninstalledAppletInstanceList extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   matrixStore!: MatrixStore;

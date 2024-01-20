@@ -1,8 +1,8 @@
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { css, html, LitElement } from "lit";
 import { property, query } from "lit/decorators.js";
 
-export class NotificationDot extends ScopedElementsMixin(LitElement) {
+export class NotificationDot extends ScopedRegistryHost(LitElement) {
 
   @property()
   placement: "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end" = "right";

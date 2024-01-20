@@ -1,6 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { property, query, state } from "lit/decorators.js";
-import { ScopedRegistryHost as ScopedElementsMixin } from "@lit-labs/scoped-registry-mixin"
+import { ScopedRegistryHost } from "@lit-labs/scoped-registry-mixin"
 import { consume } from "@lit/context";
 import {
   TextField,
@@ -19,7 +19,7 @@ import { provideAllApplets } from "../../matrix-helpers";
 import { matrixContext, weGroupContext } from "../../context";
 import { DnaHash } from "@holochain/client";
 
-export class LeaveGroupDialog extends ScopedElementsMixin(LitElement) {
+export class LeaveGroupDialog extends ScopedRegistryHost(LitElement) {
   @consume({ context: matrixContext , subscribe: true })
   @property({attribute: false})
   _matrixStore!: MatrixStore;
