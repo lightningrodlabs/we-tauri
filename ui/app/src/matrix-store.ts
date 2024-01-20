@@ -1666,14 +1666,12 @@ export class MatrixStore {
     // initalize assessment data
     await weGroupData.sensemakerStore.getAssessmentsForResources({});
     // loop through each applet in the group
-    appletInstanceInfos.forEach(async (appletInstanceInfo) => {
-      await this.fetchAppletInstanceRenderers(appletInstanceInfo.appletId);
-      await this.registerAppletWithSensemaker(
-        weGroupId,
-        appletInstanceInfo.appInfo.installed_app_id,
-        appletInstanceInfo.applet.devhubHappReleaseHash
-      );
-    });
+    serializeAsyncActions<NeighbourhoodAppletRenderers>(appletInstanceInfos.map((appletInstanceInfo) => { return () => this.fetchAppletInstanceRenderers(appletInstanceInfo.appletId)} ))
+    serializeAsyncActions<void>(appletInstanceInfos.map((appletInstanceInfo) => { return () => this.registerAppletWithSensemaker(
+      weGroupId,
+      appletInstanceInfo.appInfo.installed_app_id,
+      appletInstanceInfo.applet.devhubHappReleaseHash
+    )} ))
   }
 
   getResourceView(weGroupId: DnaHash, resourceDefEh: EntryHash) {
