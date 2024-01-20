@@ -185,7 +185,6 @@ export class AppletInstanceStatusList extends NHComponent {
       "mwc-icon": Icon,
       "mwc-snackbar": Snackbar,
       "create-we-group-dialog": CreateNeighbourhoodDialog,
-      "sl-tooltip": SlTooltip,
       "mwc-dialog": Dialog,
       "applet-list-item": AppletListItem,
       "uninstall-applet-dialog": UninstallApplet,

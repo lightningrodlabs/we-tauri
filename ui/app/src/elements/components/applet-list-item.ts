@@ -123,7 +123,6 @@ export class AppletListItem extends NHComponent {
 
   static elementDefinitions = {
       "nh-button": NHButton,
-      "sl-tooltip": SlTooltip,
       "nh-page-header-card": NHPageHeaderCard,
       "installable-applets": InstallableApplets,
       "nh-dialog": NHDialog,

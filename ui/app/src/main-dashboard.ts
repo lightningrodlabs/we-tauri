@@ -10,7 +10,6 @@ import { MatrixStore } from './matrix-store';
 import { sharedStyles } from './sharedStyles';
 import { HomeScreen } from './elements/dashboard/home-screen';
 import { get } from 'svelte/store';
-import { SlTooltip } from '@scoped-elements/shoelace';
 import { AppletInstanceInfo, DashboardMode, NavigationMode, WeGroupInfo } from './types';
 import { SidebarButton } from './elements/components/sidebar-button';
 import { CreateNeighbourhoodDialog } from './elements/dialogs/create-nh-dialog';
@@ -25,7 +24,7 @@ import { AppletIconBadge } from './elements/components/applet-icon-badge';
 import { getStatus } from '@neighbourhoods/app-loader';
 import { AppletNotRunning } from './elements/dashboard/applet-not-running';
 import { IconDot } from './elements/components/icon-dot';
-import { NHButton, NHDialog, NHProfileCard } from '@neighbourhoods/design-system-components';
+import { NHButton, NHDialog, NHProfileCard, NHTooltip } from '@neighbourhoods/design-system-components';
 import { WithProfile } from './elements/components/profile/with-profile';
 import { b64images } from '@neighbourhoods/design-system-styles';
 import { provideMatrix } from './matrix-helpers.js';
@@ -112,19 +111,20 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
           : null
         }
           ${this._dashboardMode == DashboardMode.AssessmentsHome
-            ? html`<sl-tooltip placement="bottom" content="Add Applet" hoist>
-            <button class="applet-add" @click=${async () => {this._dashboardMode = DashboardMode.WeGroupHome; (await this._neighbourhoodHome).showLibrary();}}></button>
-          </sl-tooltip>`
+            ? html`<nh-tooltip class="right" .text=${"Add Applet"}>
+            <button slot="hoverable" class="applet-add" @click=${async () => {this._dashboardMode = DashboardMode.WeGroupHome; (await this._neighbourhoodHome).showLibrary();}}></button>
+          </nh-tooltip>`
             : html`
-            <sl-tooltip hoist placement="bottom" content="Dashboard">
+            <nh-tooltip  class="right" .text=${"Dashboard"}>
             <button
+              slot="hoverable"
               class="dashboard-icon"
               @click=${() => {
                 this._selectedAppletInstanceId = undefined;
                 this._dashboardMode = DashboardMode.AssessmentsHome;
               }}
             ></button>
-          </sl-tooltip>`}
+          </nh-tooltip>`}
         </div>
       `;
       // show all applet classes in NavigationMode.Agnostic
@@ -242,7 +242,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
                 weGroupInfo =>
                   html`
                     <sidebar-button
-                      style="overflow: hidden; margin-top: 2px; margin-bottom: 2px;"
+                      style="margin-top: 2px; margin-bottom: 2px;"
                       .logoSrc=${weGroupInfo.info.logoSrc}
                       .tooltipText=${weGroupInfo.info.name}
                       @click=${async () => {
@@ -264,9 +264,9 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
           </div>`
         : html`<div id="placeholder"></div>`}
 
-      <sl-tooltip placement="right" content="Add Neighbourhood" hoist>
-        <button id="open-create-nh-dialog" class="group-add"></button>
-      </sl-tooltip> `;
+      <nh-tooltip class="right" .text=${"Add Neighbourhood"}>
+        <button slot="hoverable" id="open-create-nh-dialog" class="group-add"></button>
+      </nh-tooltip> `;
   }
 
   /**
@@ -366,7 +366,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
                     >
                       <sidebar-button
                         placement="bottom"
-                        style="overflow: hidden; margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
+                        style="margin-left: calc(1px * var(--nh-spacing-md)); margin-right: 2px; border-radius: 50%;"
                         .logoSrc=${appletInstanceInfo.applet.logoSrc}
                         .tooltipText=${appletInstanceInfo.applet.customName}
                         @click=${() => {
@@ -476,30 +476,28 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
             })}"
           ></div>
           <div class="column top-left-corner">
-            <sl-tooltip
-              hoist
-              placement="right"
-              .content="${"Home"}"
-            >
-              <sidebar-button
-                id="nh-logo"
-                logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoWhite}"
-                @click=${this.goHome}
-                class=${classMap({
-                  highlightedHome: this._dashboardMode === DashboardMode.MainHome,
-                  homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
-                })}
-              ></sidebar-button>
-              <sidebar-button
-                id="nh-logo-col"
-                logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoCol}"
-                @click=${this.goHome}
-                class=${classMap({
-                  highlightedHome: this._dashboardMode === DashboardMode.MainHome,
-                  homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
-                })}
-              ></sidebar-button>
-            </sl-tooltip>
+            <nh-tooltip .text=${"Home"} class="right">
+              <div slot="hoverable" style="width: 72px; height: 72px;">
+                <sidebar-button
+                  id="nh-logo"
+                  logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoWhite}"
+                  @click=${this.goHome}
+                  class=${classMap({
+                    highlightedHome: this._dashboardMode === DashboardMode.MainHome,
+                    homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
+                  })}
+                ></sidebar-button>
+                <sidebar-button
+                  id="nh-logo-col"
+                  logoSrc="data:image/svg+xml;base64,${b64images.nhIcons.logoCol}"
+                  @click=${this.goHome}
+                  class=${classMap({
+                    highlightedHome: this._dashboardMode === DashboardMode.MainHome,
+                    homeIconHover: this._dashboardMode !== DashboardMode.MainHome,
+                  })}
+                ></sidebar-button>
+              </div>
+            </nh-tooltip>
           </div>
 
           <div
@@ -511,17 +509,16 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
                 this._navigationMode === NavigationMode.GroupCentric ||
                 this._navigationMode == NavigationMode.Agnostic
             })}"
-            style="flex-basis: 100%; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center; overflow:hidden;"
+            style="flex-basis: 100%; overflow: visible; display: grid; grid-template-rows: 1fr 82px 90px; align-items: flex-start; justify-items: center;"
           >
             ${this.renderPrimaryNavigation()}
             <div class="user-profile-menu">
-              <sl-tooltip
-                hoist
-                placement="right"
-                .content="${"Your Profile"}"
+              <nh-tooltip
+              class="right"
+                .text="${"Your Profile"}"
               >
-                <button class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
-                </sl-tooltip>
+                <button slot="hoverable" class="user-profile" type="button" @click=${() => {this.toggleUserMenu()}}></button>
+              </nh-tooltip>
                 ${this._selectedWeGroupId
                   ? html`<we-group-context .weGroupId=${this._selectedWeGroupId}><with-profile id="component-card" .agentHash=${encodeHashToBase64(this._matrixStore.myAgentPubKey)} .component=${"card"} class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}></with-profile></we-group-context>`
                   : html`<div id="component-card" class="context-menu" data-open=${this.userProfileMenuVisible} @mouseleave=${() => {this.toggleUserMenu()}}>No profile</div>`
@@ -566,7 +563,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
       'sidebar-button': SidebarButton,
       'create-nh-dialog': CreateNeighbourhoodDialog,
       'home-screen': HomeScreen,
-      'sl-tooltip': SlTooltip,
+      'nh-tooltip': NHTooltip,
       'we-group-context': WeGroupContext,
       'nh-home': NeighbourhoodHome,
       'nh-dialog': NHDialog,

@@ -40,6 +40,8 @@ export default class NHSlide extends NHComponentShoelace {
       .tooltip {
         position: relative;
         display: inline-block;
+        height: fit-content;
+        width: fit-content;
       }
       
       /* Tooltip text */
@@ -85,6 +87,24 @@ export default class NHSlide extends NHComponentShoelace {
         border-width: 7px;
         border-style: solid;
         border-color: transparent transparent var(--nh-theme-accent-disabled) transparent;
+      }
+      
+      /* Temp right tooltip, TODO: needs cleaning up */
+      :host(.right) .tooltip .content {
+        bottom: initial;
+        top: 25%;
+        left: 110%;
+        padding: 4px 8px;
+        min-width: 8rem;
+      }
+      :host(.right) .tooltip .content svg {
+        display: none;
+      }
+      :host(.right) .tooltip .content::after {
+        left: -0.5rem;
+        right: initial;
+        bottom: 34%;
+        transform: rotate(-90deg);
       }
 
       .icon {

@@ -261,7 +261,6 @@ export class JoinGroupCard extends NHComponent {
   static elementDefinitions = {
       'mwc-snackbar': Snackbar,
       'create-we-group-dialog': CreateNeighbourhoodDialog,
-      'sl-tooltip': SlTooltip,
       'nh-card': NHCard,
       'nh-button-group': NHButtonGroup,
       'nh-button': NHButton,

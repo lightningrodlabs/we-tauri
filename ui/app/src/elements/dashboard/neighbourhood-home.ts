@@ -169,7 +169,6 @@ export class NeighbourhoodHome extends NHComponentShoelace {
       "profile-prompt": ProfilePrompt,
       "invitations-block": InvitationsBlock,
       "neighbourhood-settings": NeighbourhoodSettings,
-      "sl-tooltip": SlTooltip,
       "sl-skeleton": SlSkeleton,
       'applet-not-installed': AppletNotInstalled,
   }

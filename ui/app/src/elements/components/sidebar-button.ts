@@ -11,6 +11,7 @@ import { css, html, LitElement } from "lit";
 import { SlTooltip, SlSkeleton } from "@scoped-elements/shoelace";
 
 import { property, query } from "lit/decorators.js";
+import { NHTooltip } from "@neighbourhoods/design-system-components";
 
 export class SidebarButton extends ScopedRegistryHost(LitElement) {
 
@@ -23,11 +24,7 @@ export class SidebarButton extends ScopedRegistryHost(LitElement) {
   @property()
   placement: "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end" = "right";
 
-  @query("#tooltip")
-  _tooltip!: SlTooltip;
-
   private handleClick(e: any) {
-    this._tooltip.hide();
     this.dispatchEvent(
       new Event("click", {
         composed: true,
@@ -37,19 +34,18 @@ export class SidebarButton extends ScopedRegistryHost(LitElement) {
   }
 
   render() {
-    return html`<sl-tooltip
-      hoist
-      id="tooltip"
-      placement="${this.placement}"
-      .content=${this.tooltipText}
-    >
-      <img class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
-    </sl-tooltip>`;
+    return this.tooltipText
+      ? html`
+        <nh-tooltip .text=${this.tooltipText} class="right">
+          <img slot="hoverable" class="icon" src="${this.logoSrc}" @click=${this.handleClick} />
+        </nh-tooltip>
+      `
+      : html`<img slot="hoverable" class="icon" src="${this.logoSrc}" @click=${this.handleClick} />`;
   }
 
   static get elementDefinitions() {
     return {
-      "sl-tooltip": SlTooltip,
+      "nh-tooltip": NHTooltip,
     };
   }
 
@@ -57,7 +53,6 @@ export class SidebarButton extends ScopedRegistryHost(LitElement) {
     return css`
       :host {
         display: flex;
-        overflow: hidden;
       }
       .icon {
         cursor: pointer;
