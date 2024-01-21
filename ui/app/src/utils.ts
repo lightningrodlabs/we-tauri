@@ -12,6 +12,11 @@ export async function fakeSeededEntryHash(happBytes: Uint8Array): Promise<EntryH
   return new Uint8Array([0x84, 0x21, 0x24, ...new Uint8Array(sha), ...new Uint8Array(4)])
 }
 
+export function onlyUniqueResourceName(collection: Array<{resource_name: string} & any>) {
+  const uniques = collection.map(item => [item!.resource_name, collection.find(el => el.resource_name == item!.resource_name)]).reduce((coll, item) =>  {coll.set(item[0], item[1]); return coll;}, new Map())
+  return [...uniques.values()]
+}
+
 export async function toSha1(thing: string) {
   const trans = new TextEncoder()
   const digestBuffer = await crypto.subtle.digest('SHA-1', trans.encode(thing));

@@ -12,6 +12,9 @@ import AssessmentWidgetConfig from './pages/nh-assessment-widget-config';
 import { NHComponent, NHMenu } from '@neighbourhoods/design-system-components';
 import { property, query, state } from 'lit/decorators.js';
 import { provideWeGroupInfo } from '../matrix-helpers';
+import { onlyUniqueResourceName } from '../utils';
+import { ResourceDef } from '@neighbourhoods/client';
+import { cleanForUI } from '../elements/components/helpers/functions';
 
 export default class NHGlobalConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
@@ -22,6 +25,12 @@ export default class NHGlobalConfig extends NHComponent {
   @property({ attribute: false })
   weGroupId!: DnaHash;
 
+  _sensemakerStore = new StoreSubscriber(this, () =>
+    this._matrixStore?.sensemakerStore(this.weGroupId),
+  );
+
+  private _resourceDefEntries: Array<ResourceDef> = [];
+  
   _neighbourhoodInfo = new StoreSubscriber(
     this,
     () => provideWeGroupInfo(this._matrixStore, this.weGroupId),
@@ -32,12 +41,24 @@ export default class NHGlobalConfig extends NHComponent {
   @state()
   _page: 'dimensions' | 'widgets' | undefined = 'dimensions'; // TODO: make this an enum
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+  protected async updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (this._neighbourhoodInfo?.value && !this?._nhName) {
       this._nhName = this._neighbourhoodInfo?.value.name;
     }
+
+    if(changedProperties.has('weGroupId')) {
+
+      if(!this._sensemakerStore.value) return
+      const result = await this._sensemakerStore.value.getResourceDefs()
+      this._resourceDefEntries = onlyUniqueResourceName(result);
+    }
+    
   }
 
+  protected async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    
+  }
+  
   renderPage() : TemplateResult {
     switch (this._page) {
       case 'dimensions':
@@ -53,8 +74,8 @@ export default class NHGlobalConfig extends NHComponent {
     return html`
       <main>
         <nh-menu
-          .menuSectionDetails=${[
-            {
+          .menuSectionDetails=${
+            (() => ([{
               sectionName: this._nhName,
               sectionMembers: [
                 {
@@ -79,8 +100,9 @@ export default class NHGlobalConfig extends NHComponent {
                 },
                 {
                   label: 'Assessments',
-                  subSectionMembers: [],
+                  subSectionMembers: this._resourceDefEntries.map(rd => cleanForUI(rd.resource_name)),
                   callback: () => (this._page = 'widgets'),
+
                 },
                 {
                   label: 'Contexts',
@@ -103,8 +125,8 @@ export default class NHGlobalConfig extends NHComponent {
                   callback: () => (this._page = undefined),
                 },
               ],
-            },
-          ]}
+            }]))()
+          }
           .selectedMenuItemId=${'Sensemaker-0'}
         >
         </nh-menu>
