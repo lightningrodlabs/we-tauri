@@ -10,7 +10,7 @@ import DimensionsConfig from './pages/nh-dimensions-config';
 import AssessmentWidgetConfig from './pages/nh-assessment-widget-config';
 
 import { NHComponent, NHMenu } from '@neighbourhoods/design-system-components';
-import { property, query, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { provideWeGroupInfo } from '../matrix-helpers';
 import { onlyUniqueResourceName } from '../utils';
 import { ResourceDef } from '@neighbourhoods/client';
@@ -24,6 +24,9 @@ export default class NHGlobalConfig extends NHComponent {
   @consume({ context: weGroupContext, subscribe: true })
   @property({ attribute: false })
   weGroupId!: DnaHash;
+
+  @state()
+  selectedResourceDef!: ResourceDef;
 
   _sensemakerStore = new StoreSubscriber(this, () =>
     this._matrixStore?.sensemakerStore(this.weGroupId),
@@ -41,7 +44,7 @@ export default class NHGlobalConfig extends NHComponent {
   @state()
   _page: 'dimensions' | 'widgets' | undefined = 'dimensions'; // TODO: make this an enum
 
-  protected async updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+  protected async updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     if (this._neighbourhoodInfo?.value && !this?._nhName) {
       this._nhName = this._neighbourhoodInfo?.value.name;
     }
@@ -52,11 +55,6 @@ export default class NHGlobalConfig extends NHComponent {
       const result = await this._sensemakerStore.value.getResourceDefs()
       this._resourceDefEntries = onlyUniqueResourceName(result);
     }
-    
-  }
-
-  protected async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    
   }
   
   renderPage() : TemplateResult {
@@ -64,7 +62,7 @@ export default class NHGlobalConfig extends NHComponent {
       case 'dimensions':
         return html`<dimensions-config></dimensions-config>`;
       case 'widgets':
-        return html`<assessment-widget-config></assessment-widget-config>`;
+        return html`<assessment-widget-config .resourceDef=${this.selectedResourceDef}></assessment-widget-config>`;
       default:
         return html`Default Page`;
     }
@@ -74,6 +72,14 @@ export default class NHGlobalConfig extends NHComponent {
     return html`
       <main>
         <nh-menu
+          @sub-nav-item-selected=${(e: CustomEvent) => {
+            const [mainMenuItemName, mainMenuItemIndex, subMenuItemIndex] = e.detail.itemId.split(/\-/);
+            if (mainMenuItemName !== 'Sensemaker') return; // Only current active main menu item is Sensemaker, but you can change this later
+
+            // THIS RELIES ON THE SAME ORDERING/INDEXING OCCURRING IN `this._resourceDefEntries` AS WELL AS THE RENDERED SUBMENU and may need to be changed
+            this.selectedResourceDef = this._resourceDefEntries[subMenuItemIndex]
+          }
+          }
           .menuSectionDetails=${
             (() => ([{
               sectionName: this._nhName,
@@ -126,8 +132,9 @@ export default class NHGlobalConfig extends NHComponent {
                 },
               ],
             }]))()
-          }
-          .selectedMenuItemId=${'Sensemaker-0'}
+          } 
+          .selectedMenuItemId=${'Sensemaker-0' // This is the default selected item
+        }
         >
         </nh-menu>
         <slot name="page"> ${this.renderPage()} </slot>

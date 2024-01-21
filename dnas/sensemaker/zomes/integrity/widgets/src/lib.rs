@@ -9,18 +9,18 @@ pub struct DimensionWidgetBinding {
     pub widget_registry_eh: EntryHash,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum DimensionBinding {
-    Widget(DimensionWidgetBinding),
-}
+// #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
+// #[serde(tag = "type", rename_all = "camelCase")]
+// pub enum DimensionBinding {
+//     Widget(DimensionWidgetBinding),
+// }
 
 #[hdk_entry_helper]
 #[serde(rename_all = "camelCase")]
 #[derive(Clone)]
 pub struct AssessmentWidgetBlockConfig {
-    input_assessment_widget: DimensionBinding,
-    output_assessment_widget: DimensionBinding,
+    input_assessment_widget: DimensionWidgetBinding,
+    output_assessment_widget: DimensionWidgetBinding,
 }
 
 #[hdk_entry_defs]

@@ -59,7 +59,7 @@ export default class NHSelect extends NHComponentShoelace {
     return html`
     <div class="field${classMap({
       [this.size]: this.size,
-      ['with-icons']: this.options.some((option: OptionConfig) => option?.imageB64),
+      ['with-icons']: this.options?.some((option: OptionConfig) => option?.imageB64),
     })}">
       <div class="row">
           <label
@@ -82,7 +82,7 @@ export default class NHSelect extends NHComponentShoelace {
         })}">
           <div class="select-btn" @click=${() => { this.open = !this.open; this._optionMenu.classList.toggle("active")}}>
           ${
-            this.options.some((option: OptionConfig) => option?.imageB64)
+            this.options?.some((option: OptionConfig) => option?.imageB64)
               ? html`<div class="flex">
                 ${this?.image ? html `<span class="option-image"><img
                     class="icon"

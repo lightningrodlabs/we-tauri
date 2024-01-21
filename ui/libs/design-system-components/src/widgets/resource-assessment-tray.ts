@@ -37,7 +37,6 @@ export default class NHResourceAssessmentTray extends NHComponent {
   }
 
   render() {
-    console.log('this.assessmentWidgetTrayConfig :>> ', this.assessmentWidgetTrayConfig);
     return html`
       <div
         class="assessment-widget-tray${classMap({

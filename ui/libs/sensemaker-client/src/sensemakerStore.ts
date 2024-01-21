@@ -277,7 +277,7 @@ export class SensemakerStore {
         });
         return resourceDefinitions;
       });
-      return entryRecords.map(entryRecord => entryRecord.entry);
+      return entryRecords.map(entryRecord => ({...entryRecord.entry, resource_def_eh: entryRecord.entryHash}));
   }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {

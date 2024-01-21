@@ -33,7 +33,7 @@ import { b64images } from '@neighbourhoods/design-system-styles';
 import ResourceDefList from '../resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
-import { AssessmentWidgetBlockConfig, AssessmentWidgetRegistrationInput, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
+import { AssessmentWidgetBlockConfig, AssessmentWidgetConfig, AssessmentWidgetRegistrationInput, Dimension, RangeKind, SensemakerStore } from '@neighbourhoods/client';
 import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from '../icons-temp';
 import { decode } from '@msgpack/msgpack';
@@ -52,6 +52,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @property({attribute: false})
   @consume({ context: weGroupContext, subscribe: true })
   weGroupId!: DnaHash;
+  
+  @property()
+  resourceDef!: any;
+  
+  @state()
+  existingConfig!: AssessmentWidgetBlockConfig[];
 
   @query('nh-form')
   private _form;
@@ -94,8 +100,20 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       await this.fetchRangeEntries()
       await this.assignDimensionEntries();
       await this.fetchRegisteredWidgets();
+      await this.fetchExistingWidgetConfigBlock();
     } catch (error) {
       console.error('Could not fetch: ', error)
+    }
+  }
+
+  async fetchExistingWidgetConfigBlock() {
+    if(!this._sensemakerStore.value || !this.resourceDef) return
+    try {
+      const currentConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(this.resourceDef?.resource_def_eh)
+      this.existingConfig = currentConfig;
+      console.log('currentConfig :>> ', currentConfig);
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -127,7 +145,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     }
   }
 
-  render() {
+  render() : TemplateResult {
     return html`
       <main>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
@@ -141,27 +159,35 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           </nh-button>
         </nh-page-header-card>
 
-        <resource-def-list
-          id="resource-def-list"
-          .sensemakerStore=${this._sensemakerStore?.value}
-        >
-        </resource-def-list>
-
         <div class="container">
-          <assessment-widget-tray
-            .editable=${true}
-            .editing=${this.editingConfig}
-            @add-widget=${() => {
-              this.editingConfig = true;
-            }}
-          >
-            <div slot="widgets">
-                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
-                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
-                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
-                <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
-            </div>
-          </assessment-widget-tray>
+          <div>
+            <assessment-widget-tray
+              .editable=${true}
+              .editing=${this.editingConfig}
+              @add-widget=${() => {
+                this.editingConfig = true;
+              }}
+            >
+              <div slot="widgets">
+                  <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                  <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                  <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+                  <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
+              </div>
+            </assessment-widget-tray>
+            <nh-button
+              id="set-widget-config"
+              .variant=${'primary'}
+              .size=${'md'}
+              @click=${async () => {
+                // this._formAction = 'update';
+                // await this.requestUpdate();
+                // this._form?.handleSubmit()
+              }}
+            >
+              ${typeof this?.existingConfig == 'object' && this?.existingConfig?.length > 0 ? 'Update' : "Create"}
+            </nh-button>
+          </div>
 
           <sl-details
             class="${classMap({
@@ -178,7 +204,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               </div>
               <nh-button-group
                 .direction=${"horizontal"}
-                class="action-buttons"
+                class="action-buttons"input
               >
                 <span slot="buttons">
                   <nh-button
@@ -214,44 +240,41 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     `;
   }
 
-//   <nh-button
-//   id="update-widget-config"
-//   .variant=${'primary'}
-//   .size=${'md'}
-//   @click=${async () => {
-//     this._formAction = 'update';
-//     await this.requestUpdate();
-//     this._form?.handleSubmit()
-//   }}
-// >
-//   Update
-// </nh-button>
   async createEntries(model: any) {
-    const resource_def_eh = model.input_dimension; // temp
+    debugger;
+    const resource_def_eh = this.resourceDef?.resource_def_eh;
+
     const { assessment_widget, input_dimension, output_dimension } = model;
 
+    const selectedWidgetDetails = (Object.entries(this._registeredWidgets || {})).find(([widgetEh, widget]) => widget.name == model.assessment_widget)
+    const selectedWidgetEh = selectedWidgetDetails?.[0];
+    if(!selectedWidgetEh) throw Error('Could not get an entry hash for your selected widget.')
+
+
     const inputDimensionBinding = {
-      dimensionEh: input_dimension,
-      componentName: assessment_widget
-    } as any;
+      type: 'widget',
+      dimensionEh: decodeHashFromBase64(input_dimension),
+      widgetRegistryEh: decodeHashFromBase64(selectedWidgetEh)
+    } as AssessmentWidgetConfig;
     const outputDimensionBinding = {
-      dimensionEh: output_dimension,
-      componentName: assessment_widget
-    } as any;
+      type: 'widget',
+      dimensionEh: decodeHashFromBase64(output_dimension),
+      widgetRegistryEh: decodeHashFromBase64(selectedWidgetEh)
+    } as AssessmentWidgetConfig;
 
-    let input: AssessmentWidgetBlockConfig[] = [{
-      inputAssessmentWidget: inputDimensionBinding,
-      outputAssessmentWidget: outputDimensionBinding
-    }];
-
+    const widgetConfigs = [...(this?.existingConfig as any || []), {
+        resourceDefEh: resource_def_eh,
+        inputAssessmentWidget: inputDimensionBinding,
+        outputAssessmentWidget: outputDimensionBinding
+      }
+    ];
     let configEh;
     try {
-      configEh = await (this._sensemakerStore?.value as SensemakerStore).setAssessmentWidgetTrayConfig(resource_def_eh, input);
+      configEh = await (this._sensemakerStore?.value as SensemakerStore).setAssessmentWidgetTrayConfig(resource_def_eh, widgetConfigs);
     } catch (error) {
       console.log('Error setting assessment widget config: ', error);
     }
     if(!configEh) return
-    console.log('configEh :>> ', configEh);
 
     await this.updateComplete;
     this.dispatchEvent(
@@ -372,7 +395,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
     'sl-icon': SlIcon,
-    'resource-def-list': ResourceDefList,
     'assessment-widget-tray': NHResourceAssessmentTray,
     'assessment-widget': NHAssessmentContainer,
   };

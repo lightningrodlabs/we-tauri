@@ -82,7 +82,7 @@ export type AssessmentWidgetConfig = {
    * DHT entry (or sequence of DHT entries to allow extra large codebases to
    * be stored).
    */
-  widgetEh: EntryHash
+  widgetRegistryEh: EntryHash
 } | {
   dimensionEh: EntryHash,
   /**
