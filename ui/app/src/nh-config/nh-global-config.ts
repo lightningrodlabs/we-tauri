@@ -12,7 +12,7 @@ import AssessmentWidgetConfig from './pages/nh-assessment-widget-config';
 import { NHComponent, NHMenu } from '@neighbourhoods/design-system-components';
 import { property, state } from 'lit/decorators.js';
 import { provideWeGroupInfo } from '../matrix-helpers';
-import { onlyUniqueResourceName } from '../utils';
+import { removeResourceNameDuplicates } from '../utils';
 import { ResourceDef } from '@neighbourhoods/client';
 import { cleanForUI } from '../elements/components/helpers/functions';
 
@@ -50,10 +50,9 @@ export default class NHGlobalConfig extends NHComponent {
     }
 
     if(changedProperties.has('weGroupId')) {
-
       if(!this._sensemakerStore.value) return
       const result = await this._sensemakerStore.value.getResourceDefs()
-      this._resourceDefEntries = onlyUniqueResourceName(result);
+      this._resourceDefEntries = removeResourceNameDuplicates(result); // This de-duplicates resources with the same name from other applets (including uninstalled) 
     }
   }
   
@@ -73,10 +72,11 @@ export default class NHGlobalConfig extends NHComponent {
       <main>
         <nh-menu
           @sub-nav-item-selected=${(e: CustomEvent) => {
+            this._page = 'widgets';
             const [mainMenuItemName, mainMenuItemIndex, subMenuItemIndex] = e.detail.itemId.split(/\-/);
             if (mainMenuItemName !== 'Sensemaker') return; // Only current active main menu item is Sensemaker, but you can change this later
 
-            // THIS RELIES ON THE SAME ORDERING/INDEXING OCCURRING IN `this._resourceDefEntries` AS WELL AS THE RENDERED SUBMENU and may need to be changed
+            // THIS RELIES ON THE SAME ORDERING/INDEXING OCCURRING IN `this._resourceDefEntries` AS IN THE RENDERED SUBMENU and may need to be changed
             this.selectedResourceDef = this._resourceDefEntries[subMenuItemIndex]
           }
           }
@@ -106,7 +106,7 @@ export default class NHGlobalConfig extends NHComponent {
                 },
                 {
                   label: 'Assessments',
-                  subSectionMembers: this._resourceDefEntries.map(rd => cleanForUI(rd.resource_name)),
+                  subSectionMembers: this._resourceDefEntries.map(rd =>  cleanForUI(rd.resource_name)),
                   callback: () => (this._page = 'widgets'),
 
                 },
@@ -148,10 +148,6 @@ export default class NHGlobalConfig extends NHComponent {
     'assessment-widget-config': AssessmentWidgetConfig,
   };
 
-  private onClickBackButton() {
-    this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
-  }
-
   static get styles() {
     return css`
       :host,
@@ -190,6 +186,7 @@ export default class NHGlobalConfig extends NHComponent {
         display: flex;
         align-items: start;
       }
+      
       slot[name='page'] {
         grid-column: 2 / -2;
         display: flex;
