@@ -11,6 +11,7 @@ import {
   NeighbourhoodInfo,
   OutputAssessmentWidgetDelegate,
   RangeValue,
+  RangeValueInteger,
   ResourceBlockDelegate,
   ResourceDefEh,
   ResourceEh,
@@ -179,4 +180,46 @@ export function createInputAssessmentWidgetDelegate(
   }
 
   return delegate;
+}
+
+export class FakeInputAssessmentWidgetDelegate implements InputAssessmentWidgetDelegate {
+  public subscribers;
+  assessment: Assessment | undefined
+  latestAssessment: Assessment | undefined
+
+  constructor() {
+    this.subscribers = new SubscriberManager();
+
+  }
+
+  /**
+   * Mock assessment value
+   */
+  async getLatestAssessmentForUser(): Promise<Assessment | undefined> {
+    return Promise.resolve(this.latestAssessment);
+  }
+
+  setLatestAssessmentForUser() {
+    this.latestAssessment = this.assessment
+  }
+
+  subscribe(callback: CallbackFn) {
+    return this.subscribers.subscribe(callback)
+  }
+  
+  async createAssessment(value: RangeValue): Promise<Assessment> {
+    this.assessment = {
+      value
+    } as Assessment;
+
+    this.subscribers.dispatch(this.assessment)
+    return this.assessment;
+  }
+
+  invalidateAssessment() {
+    this.assessment = undefined
+    this.subscribers.dispatch(this.assessment)
+    console.error("We are still discussing implementing this feature. You last used")
+  }
+  
 }
