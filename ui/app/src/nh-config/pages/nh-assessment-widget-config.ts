@@ -582,6 +582,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         display: none;
       }
 
+      /* Form actions */
       .action-buttons {
         position: absolute;
         right: calc(1px * var(--nh-spacing-xl));
