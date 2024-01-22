@@ -1,4 +1,3 @@
-import { compareUint8Arrays } from '@neighbourhoods/app-loader';
 import { html, css, TemplateResult, PropertyValueMap } from 'lit';
 import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
@@ -15,6 +14,7 @@ import {
   decodeHashFromBase64,
   encodeHashToBase64,
 } from '@holochain/client';
+import { compareUint8Arrays } from '@neighbourhoods/app-loader';
 
 import {
   NHAssessmentContainer,
@@ -31,7 +31,6 @@ import {
 
 import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import ResourceDefList from '../resource-def-list';
 import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import {
@@ -149,44 +148,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     }
   }
 
-  async fetchExistingWidgetConfigBlock() {
-    if (!this._sensemakerStore.value || !this.resourceDef) return;
-    try {
-      this.fetchedConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
-        this.resourceDef?.resource_def_eh,
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async partitionDimensionEntries() {
-    try {
-      const input: any = [];
-      const output: any = [];
-      this._unpartitionedDimensionEntries!.forEach(dimension => {
-        if (dimension.computed) {
-          output.push(dimension);
-          return;
-        }
-        input.push(dimension);
-      });
-      this._inputDimensionEntries = input;
-      this._outputDimensionEntries = output;
-    } catch (error) {
-      console.log('Error fetching dimension details: ', error);
-    }
-  }
-
-  async fetchRegisteredWidgets() {
-    try {
-      this._registeredWidgets = await this._sensemakerStore.value!.getRegisteredWidgets();
-      console.log('this._registeredWidgets  :>> ', this._registeredWidgets);
-    } catch (error) {
-      console.log('Error fetching widget registrations: ', error);
-    }
-  }
-
   render(): TemplateResult {
     return html`
       <main>
@@ -213,7 +174,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               <div slot="widgets">
               ${
                 this?.configuredInputWidgets
-                  ? this.configuredInputWidgets.map(inputWidgetConfig => {
+                  ? this.configuredInputWidgets.map((inputWidgetConfig: AssessmentWidgetConfig) => {
                       // console.log('inputWidgetConfig :>> ', inputWidgetConfig);
                       const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
                       console.log('fakeDelegate :>> ', fakeDelegate);
@@ -294,8 +255,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 <nh-button
                   type="submit"
                   @click=${async () => {
-                    // this._formAction = 'create';
-                    await this.requestUpdate();
                     await this._form?.handleSubmit();
                     this._form?.resetForm();
                   }}
@@ -323,38 +282,36 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     );
     const selectedWidgetEh = selectedWidgetDetails?.[0];
     if (!selectedWidgetEh) throw Error('Could not get an entry hash for your selected widget.');
-    console.log('this._registeredWidgets :>> ', this._registeredWidgets);
-    debugger;
     const inputDimensionBinding = {
-      appletId: this._appletInstanceInfo?.appletId as any,
-      componentName: '',
+      type: "applet",
+      appletId: this._appletInstanceInfo?.appletId as any, // TODO: Needs changing from string to EntryHash in the client package before correct typing here
+      componentName: assessment_widget,
       dimensionEh: decodeHashFromBase64(input_dimension),
     } as AssessmentWidgetConfig;
     const outputDimensionBinding = {
+      type: "applet",
       appletId: this._appletInstanceInfo?.appletId as any,
-      componentName: '',
+      componentName: assessment_widget,
       dimensionEh: decodeHashFromBase64(output_dimension),
     } as AssessmentWidgetConfig;
 
-    const widgetConfigs = [
-      ...((this?.fetchedConfig as any) || []),
+    const widgetConfigs = [ ...(this?.fetchedConfig || []),
       {
-        resourceDefEh: resource_def_eh,
         inputAssessmentWidget: inputDimensionBinding,
         outputAssessmentWidget: outputDimensionBinding,
       },
     ];
-    let configEh;
+    let successful;
     try {
-      configEh = await (
+      successful = await (
         this._sensemakerStore?.value as SensemakerStore
       ).setAssessmentWidgetTrayConfig(resource_def_eh, widgetConfigs);
     } catch (error) {
       // TODO: after nh-form integration, return a Promise.resolve here
       console.log('Error setting assessment widget config: ', error);
     }
-    if (!configEh) return;
-
+    if (!successful) return;
+    console.log('successfully set the widget tray config? ', successful);
     await this.updateComplete;
     this.dispatchEvent(
       new CustomEvent('assessment-widget-config-created', {
@@ -365,6 +322,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   private renderMainForm(): TemplateResult {
+    console.log('decode :>> ', decode([130, 173, 114, 101, 115, 111, 117, 114, 99, 101, 68, 101, 102, 69, 104, 192, 173, 119, 105, 100, 103, 101, 116, 67, 111, 110, 102, 105, 103, 115, 145, 131, 173, 114, 101, 115, 111, 117, 114, 99, 101, 68, 101, 102, 69, 104, 192, 181, 105, 110, 112, 117, 116, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 87, 105, 100, 103, 101, 116, 131, 168, 97, 112, 112, 108, 101, 116, 73, 100, 196, 39, 132, 33, 36, 8, 12, 75, 105, 219, 17, 172, 175, 40, 252, 52, 3, 24, 135, 31, 95, 60, 116, 30, 253, 175, 114, 214, 14, 63, 104, 186, 14, 44, 85, 108, 184, 128, 51, 143, 42, 173, 99, 111, 109, 112, 111, 110, 101, 110, 116, 78, 97, 109, 101, 175, 72, 101, 97, 116, 32, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 171, 100, 105, 109, 101, 110, 115, 105, 111, 110, 69, 104, 196, 39, 132, 33, 36, 203, 185, 47, 43, 105, 247, 29, 131, 50, 36, 100, 162, 11, 184, 122, 198, 183, 125, 92, 145, 178, 8, 44, 26, 15, 198, 162, 79, 219, 215, 147, 28, 70, 47, 226, 233, 182, 111, 117, 116, 112, 117, 116, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 87, 105, 100, 103, 101, 116, 131, 168, 97, 112, 112, 108, 101, 116, 73, 100, 196, 39, 132, 33, 36, 8, 12, 75, 105, 219, 17, 172, 175, 40, 252, 52, 3, 24, 135, 31, 95, 60, 116, 30, 253, 175, 114, 214, 14, 63, 104, 186, 14, 44, 85, 108, 184, 128, 51, 143, 42, 173, 99, 111, 109, 112, 111, 110, 101, 110, 116, 78, 97, 109, 101, 175, 72, 101, 97, 116, 32, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 171, 100, 105, 109, 101, 110, 115, 105, 111, 110, 69, 104, 196, 39, 132, 33, 36, 160, 69, 46, 13, 6, 32, 113, 163, 77, 229, 216, 35, 126, 52, 57, 120, 221, 206, 46, 196, 158, 187, 157, 104, 116, 163, 68, 70, 198, 157, 158, 146, 249, 83, 185, 90]));
     const rangeEntries = this._rangeEntries as any;
 
     return html`
@@ -484,7 +442,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-page-header-card': NHPageHeaderCard,
     'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
-    'sl-icon': SlIcon,
     'assessment-widget-tray': NHResourceAssessmentTray,
     'input-assessment-renderer': InputAssessmentRenderer,
     'assessment-widget': NHAssessmentContainer,
@@ -608,6 +565,44 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       }
 
     `;
+  }
+
+  async fetchExistingWidgetConfigBlock() {
+    if (!this._sensemakerStore.value || !this.resourceDef) return;
+    try {
+      this.fetchedConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
+        this.resourceDef?.resource_def_eh,
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async partitionDimensionEntries() {
+    try {
+      const input: any = [];
+      const output: any = [];
+      this._unpartitionedDimensionEntries!.forEach(dimension => {
+        if (dimension.computed) {
+          output.push(dimension);
+          return;
+        }
+        input.push(dimension);
+      });
+      this._inputDimensionEntries = input;
+      this._outputDimensionEntries = output;
+    } catch (error) {
+      console.log('Error fetching dimension details: ', error);
+    }
+  }
+
+  async fetchRegisteredWidgets() {
+    try {
+      this._registeredWidgets = await this._sensemakerStore.value!.getRegisteredWidgets();
+      console.log('this._registeredWidgets  :>> ', this._registeredWidgets);
+    } catch (error) {
+      console.log('Error fetching widget registrations: ', error);
+    }
   }
 
   // COPIED FROM dimension-list, this will need lifting up into the layout component
