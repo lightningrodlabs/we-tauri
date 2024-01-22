@@ -87,24 +87,24 @@ export default () => {
         // create a config
         const testWidgetConfig1 = {
           inputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },
         };
         const testWidgetConfig2 = {
           inputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },
@@ -153,12 +153,12 @@ export default () => {
         // create a new widget config and replace one of the prior ones with it
         const testWidgetConfig1b = {
           inputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },
           outputAssessmentWidget: {
-            type: 'widget',
+            type: 'standalone',
             dimensionEh: dummyEntryHash,
             widgetRegistryEh: dummyEntryHash,
           },

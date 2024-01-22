@@ -2,18 +2,29 @@ use hdi::prelude::*;
 use sensemaker_integrity_structs::{Properties, AssessmentWidgetRegistration};
 
 #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum DimensionWidgetBinding {
+    Standalone(DimensionStandaloneWidgetBinding),
+    Applet(DimensionAppletWidgetBinding),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
 #[serde(rename_all = "camelCase")]
-pub struct DimensionWidgetBinding {
+pub struct DimensionStandaloneWidgetBinding {
     pub dimension_eh: EntryHash,
     // Widget Registration object that has all data needed to load the component from the matrix
     pub widget_registry_eh: EntryHash,
 }
 
-// #[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
-// #[serde(tag = "type", rename_all = "camelCase")]
-// pub enum DimensionBinding {
-//     Widget(DimensionWidgetBinding),
-// }
+#[derive(Debug, Clone, Serialize, Deserialize, SerializedBytes)]
+#[serde(rename_all = "camelCase")]
+pub struct DimensionAppletWidgetBinding {
+    pub dimension_eh: EntryHash,
+    // id of the AppletConfig stored in companion zome
+    pub applet_id: EntryHash,
+    // name of the component as exposed by the applet interface
+    pub component_name: String,
+}
 
 #[hdk_entry_helper]
 #[serde(rename_all = "camelCase")]
