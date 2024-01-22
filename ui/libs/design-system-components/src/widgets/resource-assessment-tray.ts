@@ -106,6 +106,12 @@ export default class NHResourceAssessmentTray extends NHComponent {
         overflow-x: auto;
         max-height: 48px;
         display: flex;
+        padding-right: 4px;
+      }
+
+      slot[name="widgets"] {
+        min-width: 56px;
+        min-height: 48px;
       }
 
       .assessment-widget-tray {
