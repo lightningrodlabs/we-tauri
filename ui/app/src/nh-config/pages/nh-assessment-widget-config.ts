@@ -45,20 +45,12 @@ import {
   ResourceDef,
   SensemakerStore,
 } from '@neighbourhoods/client';
-import { heart, thumb, clap, like_dislike, fire_range } from '../icons-temp';
 import { decode } from '@msgpack/msgpack';
 import { InputAssessmentRenderer } from '@neighbourhoods/app-loader';
 import { get } from 'svelte/store';
 import { Applet, AppletInstanceInfo } from '../../types';
 import { FakeInputAssessmentWidgetDelegate } from '@neighbourhoods/app-loader';
-
-function rangeKindEqual(range1: RangeKind, range2: RangeKind) {
-  return (
-    Object.keys(range1)[0] == Object.keys(range2)[0] && // Number type
-    Object.values(range1)[0]!.min == Object.values(range2)[0]!.min &&
-    Object.values(range1)[0]!.max == Object.values(range2)[0]!.max
-  );
-}
+import { rangeKindEqual } from '../../utils';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
@@ -84,9 +76,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   
   @state() loading: boolean = false;
   @state() editingConfig: boolean = false;
+  @state() configuredWidgetsPersisted: boolean = true; // Is the in memory representation the same as on DHT?
   
   @state() selectWidgetInputValue: string = ''; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
   
+  @state() private _workingWidgetControls!: AssessmentWidgetBlockConfig[];
   // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrations (individual)
   @state() private _fetchedConfig!: AssessmentWidgetBlockConfig[];
   @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
@@ -125,7 +119,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    console.log('changedProperties :>> ', changedProperties);
+    // console.log('changedProperties :>> ', changedProperties);
     if (changedProperties.has('_fetchedConfig')) {
       this.configuredInputWidgets = this._fetchedConfig.map(widgetRegistrationEntry => {
         return widgetRegistrationEntry.inputAssessmentWidget;
@@ -135,7 +129,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render(): TemplateResult {
     return html`
-      <main @assessment-widget-config-created=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
+      <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
           <nh-button
             slot="secondary-action"
@@ -152,10 +146,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             <assessment-widget-tray
               .editable=${true}
               .editing=${!!this.editingConfig}
-              @add-widget=${() => {
-                this.editingConfig = true;
-                this.requestUpdate()
-                console.log(!!this.editingConfig);
+              @add-widget=${async (e: CustomEvent) => {
+                this.editingConfig = false;
+                console.log(e, 'event');
+                // await this.createEntries()
               }}
             >
               <div slot="widgets">
@@ -184,16 +178,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             <nh-button
               id="set-widget-config"
               .variant=${'primary'}
-              .loading=${(() => this.loading)()}
-              .disabled=${!this._fetchedConfig || this._fetchedConfig.length == 0}
+              .loading=${this.loading}
+              .disabled=${!this._fetchedConfig || this.configuredWidgetsPersisted}
               .size=${'md'}
-              @click=${async () => {
-                debugger;
-                // TODO: setAssessmentWidgetBlock
-                // this._formAction = 'update';
-                // await this.requestUpdate();
-                // this._form?.handleSubmit()
-              }}
+              @click=${this.createEntries}
             >Update Config</nh-button>
           </div>
 
@@ -243,9 +231,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     </main>`;
   }
 
-  async createEntries(model: any) {
-    const resource_def_eh = this.resourceDef?.resource_def_eh;
-
+  async updateWorkingWidgetControls(model: any) {
     const { assessment_widget, input_dimension, output_dimension } = model;
 
     const selectedWidgetDetails = Object.entries(this._registeredWidgets || {}).find(
@@ -253,6 +239,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     );
     const selectedWidgetEh = selectedWidgetDetails?.[0];
     if (!selectedWidgetEh) throw Error('Could not get an entry hash for your selected widget.');
+
     const inputDimensionBinding = {
       type: "applet",
       appletId: this._appletInstanceInfo?.appletId as any, // TODO: Needs changing from string to EntryHash in the client package before correct typing here
@@ -266,17 +253,23 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       dimensionEh: decodeHashFromBase64(output_dimension),
     } as AssessmentWidgetConfig;
 
-    const widgetConfigs = [ ...(this?._fetchedConfig || []),
+    this._workingWidgetControls = [ ...(this?._fetchedConfig || []),
       {
         inputAssessmentWidget: inputDimensionBinding,
         outputAssessmentWidget: outputDimensionBinding,
       },
     ];
+  }
+
+  async createEntries() {
+    if(!this._workingWidgetControls || !(this._workingWidgetControls.length > 0)) throw Error('Nothing to persist, try adding another widget to the config.')
+    const resource_def_eh = this.resourceDef?.resource_def_eh;
+
     let successful;
     try {
       successful = await (
         this._sensemakerStore?.value as SensemakerStore
-      ).setAssessmentWidgetTrayConfig(resource_def_eh, widgetConfigs);
+      ).setAssessmentWidgetTrayConfig(resource_def_eh, this._workingWidgetControls);
     } catch (error) {
       // TODO: after nh-form integration, return a Promise.resolve here
       console.log('Error setting assessment widget config: ', error);
@@ -285,7 +278,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     console.log('successfully set the widget tray config? ', successful);
     await this.updateComplete;
     this._form.dispatchEvent(
-      new CustomEvent('assessment-widget-config-created', {
+      new CustomEvent('assessment-widget-config-set', {
         bubbles: true,
         composed: true,
       }),
@@ -326,18 +319,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                               .component=${componentToBind}
                               .nhDelegate=${fakeDelegate}
                             ></input-assessment-renderer>`
-                          })
-                          return html`
-                            <input-assessment-renderer
-                              .component=${componentToBind}
-                              .nhDelegate=${fakeDelegate}
-                            ></input-assessment-renderer>
-                          `;
-                        return ({
-                        label: (widget as any).name,
-                        value: (widget as any).name,
-                        imageB64: (widget as any).name == 'Heart' ? heart : thumb,
-                      })})
+                          })})
                     : []
                 )(), // IIFE regenerates select options dynamically
                 name: 'assessment_widget',
@@ -365,7 +347,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                           const dimensionRange = rangeEntries.find(range =>
                             compareUint8Arrays(range.range_eh, dimension.range_eh),
                           );
-
+                          // TODO: rangeKind INCLUDES rather than equal
                           return rangeKindEqual(
                             selectedWidgetRangeKind,
                             dimensionRange.kind as RangeKind,
@@ -404,7 +386,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               },
             ],
           ],
-          submitOverride: model => this.createEntries(model),
+          submitOverride: model => this.updateWorkingWidgetControls(model),
           progressiveValidation: true,
           schema: object({
             assessment_widget: string()
@@ -560,9 +542,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   async fetchExistingWidgetConfigBlock() {
     if (!this._sensemakerStore.value || !this.resourceDef) return;
     try {
-      this._fetchedConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
+      this._fetchedConfig ||= await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
         this.resourceDef?.resource_def_eh,
       );
+      this.configuredWidgetsPersisted = true;
     } catch (error) {
       console.error(error);
     }

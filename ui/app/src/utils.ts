@@ -5,7 +5,7 @@ import {
 import { GuiFile, IconSrcOption } from "./types";
 import { decompressSync, unzipSync } from "fflate";
 import { decode } from "@msgpack/msgpack";
-import { NeighbourhoodApplet } from "@neighbourhoods/client";
+import { NeighbourhoodApplet, RangeKind } from "@neighbourhoods/client";
 
 export async function fakeSeededEntryHash(happBytes: Uint8Array): Promise<EntryHash> {
   const sha = await crypto.subtle.digest("SHA-256", happBytes)
@@ -15,6 +15,22 @@ export async function fakeSeededEntryHash(happBytes: Uint8Array): Promise<EntryH
 export function removeResourceNameDuplicates(collection: Array<{resource_name: string} & any>) {
   const uniques = collection.map(item => [item!.resource_name, collection.find(el => el.resource_name == item!.resource_name)]).reduce((coll, item) =>  {coll.set(item[0], item[1]); return coll;}, new Map())
   return [...uniques.values()]
+}
+
+export function rangeKindEqual(rk1: RangeKind, rk2: RangeKind) {
+  return (
+    Object.keys(rk1)[0] == Object.keys(rk2)[0] && // Number type
+    Object.values(rk1)[0]!.min == Object.values(rk2)[0]!.min &&
+    Object.values(rk1)[0]!.max == Object.values(rk2)[0]!.max
+  );
+}
+
+export function rangeKind1CoversRangeKind2(rk1: RangeKind, rk2: RangeKind) {
+  return (
+    Object.keys(rk1)[0] == Object.keys(rk2)[0] && // Number type
+    Object.values(rk1)[0]!.min <= Object.values(rk2)[0]!.min &&
+    Object.values(rk1)[0]!.max >= Object.values(rk2)[0]!.max
+  );
 }
 
 export async function toSha1(thing: string) {
