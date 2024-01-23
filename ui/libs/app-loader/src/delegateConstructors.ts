@@ -184,8 +184,8 @@ export function createInputAssessmentWidgetDelegate(
 
 export class FakeInputAssessmentWidgetDelegate implements InputAssessmentWidgetDelegate {
   public subscribers;
-  assessment: Assessment | undefined
-  latestAssessment: Assessment | undefined
+  public assessment: Assessment | undefined
+  public latestAssessment: Assessment | undefined
 
   constructor() {
     this.subscribers = new SubscriberManager();
@@ -196,6 +196,16 @@ export class FakeInputAssessmentWidgetDelegate implements InputAssessmentWidgetD
    * Mock assessment value
    */
   async getLatestAssessmentForUser(): Promise<Assessment | undefined> {
+    console.log('got latest assessment for user :>> ');
+    return Promise.resolve(this.latestAssessment);
+  }
+
+  /**
+   * Mock assessment value
+   */
+  async getLatestAssessment(): Promise<Assessment | undefined> {
+    console.log('got latest assessment :>> ');
+    
     return Promise.resolve(this.latestAssessment);
   }
 

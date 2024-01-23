@@ -31,7 +31,7 @@ import {
 
 import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import { SlDetails } from '@scoped-elements/shoelace';
+import { SlDetails, SlSpinner } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import {
   AssessmentWidgetBlockConfig,
@@ -46,6 +46,7 @@ import {
   SensemakerStore,
 } from '@neighbourhoods/client';
 import { decode } from '@msgpack/msgpack';
+import {repeat} from 'lit/directives/repeat.js';
 import { InputAssessmentRenderer } from '@neighbourhoods/app-loader';
 import { get } from 'svelte/store';
 import { Applet, AppletInstanceInfo } from '../../types';
@@ -80,13 +81,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   
   @state() selectWidgetInputValue: string = ''; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
   
-  @state() private _workingWidgetControls!: AssessmentWidgetBlockConfig[];
+  @state() _workingWidgetControls!: AssessmentWidgetBlockConfig[];
   // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrations (individual)
   @state() private _fetchedConfig!: AssessmentWidgetBlockConfig[];
   @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
   
   // Derived from _fetchedConfig
-  @state() configuredInputWidgets!: AssessmentWidgetConfig[];
+  @state() configuredInputWidgets!: AssessmentWidgetBlockConfig[];
   
   @state() private _appletInstanceInfo!: AppletInstanceInfo | undefined;
   
@@ -119,15 +120,32 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    // console.log('changedProperties :>> ', changedProperties);
-    if (changedProperties.has('_fetchedConfig')) {
-      this.configuredInputWidgets = this._fetchedConfig.map(widgetRegistrationEntry => {
-        return widgetRegistrationEntry.inputAssessmentWidget;
-      });
+    // if (changedProperties.has('_workingWidgetControls')) {
+
+    //   const newWidgets = ;
+    //   this.configuredInputWidgets = this.configuredInputWidgets.concat(newWidgets);
+    // }
+  }
+
+  private getCombinedWorkingAndFetchedWidgets() {
+    let widgets: AssessmentWidgetBlockConfig[]
+    if(this._fetchedConfig && this._workingWidgetControls && this._workingWidgetControls.length > 0) {
+      widgets = this._fetchedConfig.length > 0 ? [
+        ...this._fetchedConfig, ...this._workingWidgetControls
+      ] : this._workingWidgetControls;
+      console.log('working :>> ', widgets);
+    } else if(this._fetchedConfig) {
+      widgets = this._fetchedConfig;
+      console.log('fetched :>> ', widgets);
+    } else {
+      widgets = [];
     }
+    return widgets;
   }
 
   render(): TemplateResult {
+    let renderableWidgets = (this.configuredInputWidgets || this.getCombinedWorkingAndFetchedWidgets())?.map((widgetRegistrationEntry: AssessmentWidgetBlockConfig) => widgetRegistrationEntry.inputAssessmentWidget as AssessmentWidgetConfig)
+    console.log('renderableWidgets :>> ', renderableWidgets);
     return html`
       <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
@@ -152,15 +170,14 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 // await this.createEntries()
               }}
             >
-              <div slot="widgets">
+              <div slot="widgets"><div style="display: flex; gap: 4px;">
                 ${
-                  this?.configuredInputWidgets && this?.appletRenderers
-                    ? this.configuredInputWidgets.map((inputWidgetConfig: AssessmentWidgetConfig) => {
+                  this?.appletRenderers && (this._fetchedConfig && this._fetchedConfig.length > 0 || this?._workingWidgetControls)
+                    ? repeat(renderableWidgets, () => +(new Date), (inputWidgetConfig, index) => {
                         if(!this.appletRenderers) return;
                         const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
                         const filteredComponentRenderers = Object.values(this.appletRenderers.assessmentWidgets as AssessmentWidgetRenderers).filter(component => component.name == (inputWidgetConfig as any).componentName);
                         const componentToBind = filteredComponentRenderers[0].component;
-
                         return html`
                           <input-assessment-renderer
                             .component=${componentToBind}
@@ -168,20 +185,18 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                           ></input-assessment-renderer>
                         `;
                       })
-                    : html`
-                      <assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>
-                    ` // Effectively just one blank space
+                    : null
                 }
-                <assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>
-              </div>
+                ${this.editingConfig ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;"> <sl-spinner class="icon-spinner"></sl-spinner> </div>` : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
+              </div></div>
             </assessment-widget-tray>
             <nh-button
               id="set-widget-config"
               .variant=${'primary'}
               .loading=${this.loading}
-              .disabled=${!this._fetchedConfig || this.configuredWidgetsPersisted}
+              .disabled=${!this.loading && this._fetchedConfig && this.configuredWidgetsPersisted}
               .size=${'md'}
-              @click=${this.createEntries}
+              @click=${async () => {await this.createEntries(); this.configuredWidgetsPersisted = true}}
             >Update Config</nh-button>
           </div>
 
@@ -218,6 +233,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                   @click=${async () => {
                     await this._form?.handleSubmit();
                     this._form?.resetForm();
+                    this.editingConfig = false;
                   }}
                   id="add-widget-config"
                   .variant=${'success'}
@@ -231,7 +247,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     </main>`;
   }
 
-  async updateWorkingWidgetControls(model: any) {
+  async pushToInMemoryWidgetControls(model: any) {
     const { assessment_widget, input_dimension, output_dimension } = model;
 
     const selectedWidgetDetails = Object.entries(this._registeredWidgets || {}).find(
@@ -252,13 +268,16 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       componentName: assessment_widget,
       dimensionEh: decodeHashFromBase64(output_dimension),
     } as AssessmentWidgetConfig;
+    const input = {
+      inputAssessmentWidget: inputDimensionBinding,
+      outputAssessmentWidget: outputDimensionBinding,
+    }
 
-    this._workingWidgetControls = [ ...(this?._fetchedConfig || []),
-      {
-        inputAssessmentWidget: inputDimensionBinding,
-        outputAssessmentWidget: outputDimensionBinding,
-      },
-    ];
+    this.configuredInputWidgets = [ ...this?.getCombinedWorkingAndFetchedWidgets(), input];
+    this._workingWidgetControls = [ ...(this?._workingWidgetControls || []), input];
+    
+    this.configuredWidgetsPersisted = false;
+    this.requestUpdate();
   }
 
   async createEntries() {
@@ -269,7 +288,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     try {
       successful = await (
         this._sensemakerStore?.value as SensemakerStore
-      ).setAssessmentWidgetTrayConfig(resource_def_eh, this._workingWidgetControls);
+      ).setAssessmentWidgetTrayConfig(resource_def_eh, this.getCombinedWorkingAndFetchedWidgets());
     } catch (error) {
       // TODO: after nh-form integration, return a Promise.resolve here
       console.log('Error setting assessment widget config: ', error);
@@ -310,7 +329,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                           const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
                           const renderer: AssessmentWidgetRenderer = this.appletRenderers.assessmentWidgets![widget.widgetKey]
                           const componentToBind = renderer.component;
-                          debugger;
                           return ({
                             label: renderer.name,
                             value: renderer.name,
@@ -386,7 +404,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               },
             ],
           ],
-          submitOverride: model => this.updateWorkingWidgetControls(model),
+          submitOverride: model => {console.log('submitted'); this.pushToInMemoryWidgetControls(model)},
           progressiveValidation: true,
           schema: object({
             assessment_widget: string()
@@ -414,6 +432,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-page-header-card': NHPageHeaderCard,
     'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
+    'sl-spinner': SlSpinner,
     'assessment-widget-tray': NHResourceAssessmentTray,
     'input-assessment-renderer': InputAssessmentRenderer,
     'assessment-widget': NHAssessmentContainer,
@@ -457,7 +476,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         box-sizing: border-box;
         position: relative;
       }
-      
+
+      input-assessment-renderer {
+        display: flex;
+        align-items: center;
+      }
+
       /* Typo */
       h2 {
         text-align: center;
@@ -524,6 +548,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         max-width: initial !important;
         min-height: 30rem;
       }
+      
+      .icon-spinner {
+        font-size: 1.5rem;
+        --speed: 10000ms;
+        --track-width: 4px;
+        --indicator-color: var(--nh-theme-accent-emphasis);
+      }
 
       @media (min-width: 1350px) {
         form {
@@ -545,6 +576,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this._fetchedConfig ||= await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
         this.resourceDef?.resource_def_eh,
       );
+      console.log('this._fetchedConfig :>> ', this._fetchedConfig);
       this.configuredWidgetsPersisted = true;
     } catch (error) {
       console.error(error);
@@ -591,7 +623,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         this._appletInstanceInfo!.appletId,
       );
     } catch (error) {
-      console.log('Error fetching applet renderers ', error);
+      console.log('Error fetching appleticon-spinner renderers ', error);
     }
   }
 

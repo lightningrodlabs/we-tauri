@@ -13,8 +13,8 @@ class DelegateReceiverClass<D> extends LitElement {
 
   @property()
   public set nhDelegate(delegate: D) {
-    console.log("Got delegate", delegate)
-    console.log("Had delegate", this._nhDelegate)
+    // console.log("Got delegate", delegate)
+    // console.log("Had delegate", this._nhDelegate)
     this._nhDelegate = delegate;
     this.loadData()
   }
