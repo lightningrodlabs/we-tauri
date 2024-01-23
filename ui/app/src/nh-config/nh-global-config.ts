@@ -107,7 +107,7 @@ export default class NHGlobalConfig extends NHComponent {
                 {
                   label: 'Assessments',
                   subSectionMembers: this._resourceDefEntries.map(rd =>  cleanForUI(rd.resource_name)),
-                  callback: () => (this._page = 'widgets'),
+                  callback: () => {this.selectedResourceDef = this._resourceDefEntries[0]; this._page = 'widgets'},
 
                 },
                 {
