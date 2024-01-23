@@ -2,7 +2,7 @@ import { html, css, TemplateResult, PropertyValueMap } from 'lit';
 import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
-import { object, string, number, ObjectSchema } from 'yup';
+import { object, string } from 'yup';
 import { MatrixStore } from '../../matrix-store';
 import { matrixContext, weGroupContext } from '../../context';
 import {
@@ -31,25 +31,22 @@ import {
 
 import { property, query, state } from 'lit/decorators.js';
 import { b64images } from '@neighbourhoods/design-system-styles';
-import { SlDetails, SlIcon } from '@scoped-elements/shoelace';
+import { SlDetails } from '@scoped-elements/shoelace';
 import { classMap } from 'lit/directives/class-map.js';
 import {
   AssessmentWidgetBlockConfig,
   AssessmentWidgetConfig,
   AssessmentWidgetRegistrationInput,
+  AssessmentWidgetRenderers,
   Dimension,
   NeighbourhoodAppletRenderers,
   RangeKind,
+  ResourceDef,
   SensemakerStore,
 } from '@neighbourhoods/client';
-import { EntryRecord } from '@holochain-open-dev/utils';
 import { heart, thumb, clap, like_dislike, fire_range } from '../icons-temp';
 import { decode } from '@msgpack/msgpack';
-import {
-  InputAssessmentRenderer,
-  createAppDelegate,
-  createResourceBlockDelegate,
-} from '@neighbourhoods/app-loader';
+import { InputAssessmentRenderer } from '@neighbourhoods/app-loader';
 import { get } from 'svelte/store';
 import { Applet, AppletInstanceInfo } from '../../types';
 import { FakeInputAssessmentWidgetDelegate } from '@neighbourhoods/app-loader';
@@ -76,27 +73,27 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   );
 
   @property() // Selected from the sub-menu of the page
-  resourceDef!: any;
+  resourceDef!: ResourceDef & {resource_def_eh: EntryHash };
 
   appletRenderers!: NeighbourhoodAppletRenderers;
   currentApplet!: Applet;
   
   @query('nh-form') private _form;
-  // @query('#resource-def-list') private _resourceDefList;
   @query("nh-button[type='submit']") private submitBtn;
-  // @query('#update-widget-config') updateBtn;
   
   @state() loading: boolean = false;
   @state() editingConfig: boolean = false;
   
-  @state() selectWidgetInputValue: string = '';
-
-  fetchedConfig!: AssessmentWidgetBlockConfig[];
-
-  configuredInputWidgets!: AssessmentWidgetConfig[];
+  @state() selectWidgetInputValue: string = ''; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
+  
+  // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrations (individual)
+  @state() private _fetchedConfig!: AssessmentWidgetBlockConfig[];
+  @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
+  
+  // Derived from _fetchedConfig
+  @state() configuredInputWidgets!: AssessmentWidgetConfig[];
   
   @state() private _appletInstanceInfo!: AppletInstanceInfo | undefined;
-  @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
   
   @state() private _inputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
   @state() private _outputDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
@@ -115,34 +112,19 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       await this.fetchRegisteredWidgets();
       await this.fetchExistingWidgetConfigBlock();
 
-      const appletInstanceInfos = get(
-        this._matrixStore?.getAppletInstanceInfosForGroup(this.weGroupId),
-      );
-      const applets = get(await this._matrixStore.fetchAllApplets(this.weGroupId));
-      if (!applets?.length) return (this.loading = false);
-
-      this.currentApplet = applets[0][1]; // TODO: un-hard code this once we are fed an applet Id (maybe from the nav somewhere.. once it distinguishes between applets)
-      this._appletInstanceInfo = appletInstanceInfos?.find(appletInfo => {
-        return appletInfo.applet.title == this.currentApplet.title;
-      });
-      const sameHash = compareUint8Arrays(applets[0][0], this._appletInstanceInfo?.appletId);
-      const sameHash2 = compareUint8Arrays(
-        applets[0][0],
-        this._appletInstanceInfo?.applet.devhubHappReleaseHash,
-      );
-      this.appletRenderers = await this._matrixStore.fetchAppletInstanceRenderers(
-        this._appletInstanceInfo!.appletId,
-      );
-      // console.log('renderers :>> ', renderers);
+      await this.fetchCurrentAppletInstanceInfo();
+      await this.fetchCurrentAppletInstanceRenderers();
+      this.loading = false;
     } catch (error) {
-      console.error('Could not fetch: ', error);
+      console.error('Could not fetch/assign applet and widget data: ', error);
+      this.loading = false;
     }
-    this.loading = false;
   }
 
   protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    if (changedProperties.has('fetchedConfig')) {
-      this.configuredInputWidgets = this.fetchedConfig.map(widgetRegistrationEntry => {
+    console.log('changedProperties :>> ', changedProperties);
+    if (changedProperties.has('_fetchedConfig')) {
+      this.configuredInputWidgets = this._fetchedConfig.map(widgetRegistrationEntry => {
         return widgetRegistrationEntry.inputAssessmentWidget;
       });
     }
@@ -150,7 +132,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render(): TemplateResult {
     return html`
-      <main>
+      <main @assessment-widget-config-created=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
           <nh-button
             slot="secondary-action"
@@ -166,68 +148,57 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           <div class="widget-block-config">
             <assessment-widget-tray
               .editable=${true}
-              .editing=${this.editingConfig}
+              .editing=${!!this.editingConfig}
               @add-widget=${() => {
                 this.editingConfig = true;
+                this.requestUpdate()
+                console.log(!!this.editingConfig);
               }}
             >
               <div slot="widgets">
-              ${
-                this?.configuredInputWidgets
-                  ? this.configuredInputWidgets.map((inputWidgetConfig: AssessmentWidgetConfig) => {
-                      // console.log('inputWidgetConfig :>> ', inputWidgetConfig);
-                      const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
-                      console.log('fakeDelegate :>> ', fakeDelegate);
-                      console.log('this.configuredInputWidgets :>> ', this.configuredInputWidgets);
-                      console.log('this.fetchedConfig :>> ', this.fetchedConfig);
+                ${
+                  this?.configuredInputWidgets && this?.appletRenderers
+                    ? this.configuredInputWidgets.map((inputWidgetConfig: AssessmentWidgetConfig) => {
+                        if(!this.appletRenderers) return;
+                        const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
+                        const filteredComponentRenderers = Object.values(this.appletRenderers.assessmentWidgets as AssessmentWidgetRenderers).filter(component => component.name == (inputWidgetConfig as any).componentName);
+                        const componentToBind = filteredComponentRenderers[0].component;
 
-                      console.log('this._registeredWidgets :>> ', this._registeredWidgets);
-                      // return html`<assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>`
-                      // <assessment-widget .icon=${""} .assessmentValue=${0}></assessment-widget>
-                      debugger;
-                      const widgetEh = encodeHashToBase64(inputWidgetConfig.widgetEh);
-                      // const component = this.appletRenderers.assessmentWidgets[]
-                      return html`
-                        <input-assessment-renderer
-                          .component=${NHAssessmentContainer}
-                          .nhDelegate=${fakeDelegate}
-                        ></input-assessment-renderer>
-                      `;
-                    })
-                  : html`
+                        return html`
+                          <input-assessment-renderer
+                            .component=${componentToBind}
+                            .nhDelegate=${fakeDelegate}
+                          ></input-assessment-renderer>
+                        `;
+                      })
+                    : html`
                       <assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>
                     ` // Effectively just one blank space
-              }
+                }
                 <assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>
-                
-                </div>
+              </div>
             </assessment-widget-tray>
             <nh-button
               id="set-widget-config"
               .variant=${'primary'}
               .loading=${(() => this.loading)()}
-              .disabled=${(() => this.fetchedConfig && this.fetchedConfig.length == 0)()}
+              .disabled=${!this._fetchedConfig || this._fetchedConfig.length == 0}
               .size=${'md'}
               @click=${async () => {
+                debugger;
                 // TODO: setAssessmentWidgetBlock
                 // this._formAction = 'update';
                 // await this.requestUpdate();
                 // this._form?.handleSubmit()
               }}
-            >
-              ${
-                typeof this?.fetchedConfig == 'object' && this?.fetchedConfig?.length > 0
-                  ? 'Update'
-                  : 'Create'
-              }
-            </nh-button>
+            >Update Config</nh-button>
           </div>
 
           <sl-details
             class="${classMap({
-              editing: this.editingConfig,
+              editing: true,
             })}"
-            .open=${this.editingConfig}
+            .open=${true}
             @sl-hide=${(_e: Event) => {
               this.editingConfig = false;
             }}
@@ -249,9 +220,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     this.editingConfig = false;
                     this._form?.resetForm();
                   }}
-                >
-                  Cancel
-                </nh-button>
+                >Cancel</nh-button>
+                
                 <nh-button
                   type="submit"
                   @click=${async () => {
@@ -261,9 +231,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                   id="add-widget-config"
                   .variant=${'success'}
                   .size=${'md'}
-                >
-                  Add
-                </nh-button>
+                >Add</nh-button>
               </span>
             </nh-button-group>
           </div>
@@ -295,7 +263,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       dimensionEh: decodeHashFromBase64(output_dimension),
     } as AssessmentWidgetConfig;
 
-    const widgetConfigs = [ ...(this?.fetchedConfig || []),
+    const widgetConfigs = [ ...(this?._fetchedConfig || []),
       {
         inputAssessmentWidget: inputDimensionBinding,
         outputAssessmentWidget: outputDimensionBinding,
@@ -313,7 +281,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     if (!successful) return;
     console.log('successfully set the widget tray config? ', successful);
     await this.updateComplete;
-    this.dispatchEvent(
+    this._form.dispatchEvent(
       new CustomEvent('assessment-widget-config-created', {
         bubbles: true,
         composed: true,
@@ -322,7 +290,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   }
 
   private renderMainForm(): TemplateResult {
-    console.log('decode :>> ', decode([130, 173, 114, 101, 115, 111, 117, 114, 99, 101, 68, 101, 102, 69, 104, 192, 173, 119, 105, 100, 103, 101, 116, 67, 111, 110, 102, 105, 103, 115, 145, 131, 173, 114, 101, 115, 111, 117, 114, 99, 101, 68, 101, 102, 69, 104, 192, 181, 105, 110, 112, 117, 116, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 87, 105, 100, 103, 101, 116, 131, 168, 97, 112, 112, 108, 101, 116, 73, 100, 196, 39, 132, 33, 36, 8, 12, 75, 105, 219, 17, 172, 175, 40, 252, 52, 3, 24, 135, 31, 95, 60, 116, 30, 253, 175, 114, 214, 14, 63, 104, 186, 14, 44, 85, 108, 184, 128, 51, 143, 42, 173, 99, 111, 109, 112, 111, 110, 101, 110, 116, 78, 97, 109, 101, 175, 72, 101, 97, 116, 32, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 171, 100, 105, 109, 101, 110, 115, 105, 111, 110, 69, 104, 196, 39, 132, 33, 36, 203, 185, 47, 43, 105, 247, 29, 131, 50, 36, 100, 162, 11, 184, 122, 198, 183, 125, 92, 145, 178, 8, 44, 26, 15, 198, 162, 79, 219, 215, 147, 28, 70, 47, 226, 233, 182, 111, 117, 116, 112, 117, 116, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 87, 105, 100, 103, 101, 116, 131, 168, 97, 112, 112, 108, 101, 116, 73, 100, 196, 39, 132, 33, 36, 8, 12, 75, 105, 219, 17, 172, 175, 40, 252, 52, 3, 24, 135, 31, 95, 60, 116, 30, 253, 175, 114, 214, 14, 63, 104, 186, 14, 44, 85, 108, 184, 128, 51, 143, 42, 173, 99, 111, 109, 112, 111, 110, 101, 110, 116, 78, 97, 109, 101, 175, 72, 101, 97, 116, 32, 65, 115, 115, 101, 115, 115, 109, 101, 110, 116, 171, 100, 105, 109, 101, 110, 115, 105, 111, 110, 69, 104, 196, 39, 132, 33, 36, 160, 69, 46, 13, 6, 32, 113, 163, 77, 229, 216, 35, 126, 52, 57, 120, 221, 206, 46, 196, 158, 187, 157, 104, 116, 163, 68, 70, 198, 157, 158, 146, 249, 83, 185, 90]));
     const rangeEntries = this._rangeEntries as any;
 
     return html`
@@ -549,7 +516,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       /* Form layout */
       nh-form {
         display: flex;
-        min-width: initial;
+        min-width: initial !important;
         min-height: 30rem;
       }
 
@@ -570,7 +537,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   async fetchExistingWidgetConfigBlock() {
     if (!this._sensemakerStore.value || !this.resourceDef) return;
     try {
-      this.fetchedConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
+      this._fetchedConfig = await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
         this.resourceDef?.resource_def_eh,
       );
     } catch (error) {
@@ -593,6 +560,32 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this._outputDimensionEntries = output;
     } catch (error) {
       console.log('Error fetching dimension details: ', error);
+    }
+  }
+
+  async fetchCurrentAppletInstanceInfo() {
+    try {
+      const appletInstanceInfos = get(
+        this._matrixStore?.getAppletInstanceInfosForGroup(this.weGroupId),
+      );
+      const applets = get(await this._matrixStore.fetchAllApplets(this.weGroupId));
+
+      this.currentApplet = applets[0][1]; // TODO: un-hard code this once we are fed an applet Id (maybe from the nav somewhere.. once it distinguishes between applets)
+      this._appletInstanceInfo = appletInstanceInfos?.find(appletInfo => {
+        return appletInfo.applet.title == this.currentApplet.title;
+      });
+    } catch (error) {
+      console.log('Error fetching applet instance info ', error);
+    }
+  }
+
+  async fetchCurrentAppletInstanceRenderers() {
+    try {
+      this.appletRenderers = await this._matrixStore.fetchAppletInstanceRenderers(
+        this._appletInstanceInfo!.appletId,
+      );
+    } catch (error) {
+      console.log('Error fetching applet renderers ', error);
     }
   }
 
