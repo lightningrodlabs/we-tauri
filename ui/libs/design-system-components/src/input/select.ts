@@ -85,9 +85,10 @@ export default class NHSelect extends NHComponentShoelace {
                             class="icon"
                             alt=${option.value}
                             src=${`data:image/png;base64,${option?.imageB64}`}
-                          /></span>
+                          />
                         ` // Case with images defined as b64 in OptionConfig.imageB64
                 }
+              </span>
               <span class="option-text" data-value=${option.value}>${option.label}</span>
             </li>` // Case with images
           : html`
@@ -255,9 +256,19 @@ export default class NHSelect extends NHComponentShoelace {
       .field.with-icons .select-btn {
         justify-content: space-between;
       }
-      .icon, input-assessment-renderer {
-        height: 48px;
+
+      .icon {
         padding-top: 8px;
+      }
+      
+      .icon, input-assessment-renderer {
+        display: grid;
+        place-content: center;
+        height: 48px;
+      }
+
+      input-assessment-renderer {
+        padding-right: 16px;
       }
 
       /* Typo */

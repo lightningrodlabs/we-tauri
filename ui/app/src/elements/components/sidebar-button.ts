@@ -53,6 +53,7 @@ export class SidebarButton extends ScopedRegistryHost(LitElement) {
     return css`
       :host {
         display: flex;
+        overflow: visible;
       }
       .icon {
         cursor: pointer;

@@ -114,7 +114,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       await this.fetchExistingWidgetConfigBlock();
 
       await this.fetchCurrentAppletInstanceInfo();
-      await this.fetchCurrentAppletInstanceRenderers();
+      if(this._appletInstanceInfo) {
+        await this.fetchCurrentAppletInstanceRenderers();
+      }
       this.loading = false;
     } catch (error) {
       console.error('Could not fetch/assign applet and widget data: ', error);

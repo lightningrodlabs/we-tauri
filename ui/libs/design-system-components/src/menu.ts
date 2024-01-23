@@ -110,7 +110,7 @@ export default class NHMenu extends NHComponentShoelace {
     css`
       /* Layout */
       :host {
-        --menu-width: 138px;
+        --menu-width: 200px;
         --nh-theme-menu-sub-title: #A89CB0; /* TODO: check with design team if this is up to date */
       }
       nav.container {

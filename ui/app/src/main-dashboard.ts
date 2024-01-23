@@ -115,7 +115,7 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
             <button slot="hoverable" class="applet-add" @click=${async () => {this._dashboardMode = DashboardMode.WeGroupHome; (await this._neighbourhoodHome).showLibrary();}}></button>
           </nh-tooltip>`
             : html`
-            <nh-tooltip  class="right" .text=${"Dashboard"}>
+            <nh-tooltip class="left" .text=${"Dashboard"}>
             <button
               slot="hoverable"
               class="dashboard-icon"

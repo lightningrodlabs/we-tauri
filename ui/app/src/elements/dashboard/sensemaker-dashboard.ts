@@ -467,9 +467,9 @@ console.log('this._sensemakerStore :>> ', comp);
     css`
       /** Layout **/
       :host {
-        --menu-width: 138px;
+        --menu-width: 200px;
         --tab-nav-tab-radius: calc(1px * var(--nh-radii-xl));
-        width: calc(100% - 138px);
+        width: calc(100% - var(--menu-width));
       }
 
       .container {

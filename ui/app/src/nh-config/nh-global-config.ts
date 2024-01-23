@@ -162,7 +162,7 @@ export default class NHGlobalConfig extends NHComponent {
       }
 
       main {
-        --menu-width: 138px;
+        --menu-width: 200px;
         width: 100%;
         display: grid;
         flex: 1;
