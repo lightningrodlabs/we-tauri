@@ -155,7 +155,7 @@ export default class NHResourceAssessmentTray extends NHComponent {
       .editable .add-assessment-icon {
         height: 24px;
         width: 24px;
-        margin-left: 4px;
+        margin: 4px 6px;
         padding: 6px;
         border-radius: calc(1px * var(--nh-radii-xl));
         background-color: var(--nh-theme-accent-default);
@@ -169,18 +169,14 @@ export default class NHResourceAssessmentTray extends NHComponent {
       .editable .add-widget-icon {
         visibility: visible;
         opacity: 1;
-        position: absolute;
         height: 48px;
-        left: 0px;
-        top: 4px;
-        left: 4px;
         padding-left: 6px;
         padding-right: 6px;
         gap: 8px;
       }
 
       .editable .icon-spinner {
-        font-size: 2.15rem;
+        font-size: 2.1rem;
         --speed: 10000ms;
         --track-width: 4px;
         --indicator-color: var(--nh-theme-accent-emphasis);
