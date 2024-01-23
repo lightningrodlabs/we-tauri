@@ -135,7 +135,6 @@ export default class NHForm extends NHBaseForm {
           ? html`${this.config.fields[idx].map((field: FieldConfig) => html`<div class="field">${this.renderField(field)}</div>`)}`
           : html`${this.config.fields[idx].map((field: FieldConfig) => this.renderField(field))}`
         }
-          
         </div>
       `;
     })}`
@@ -143,12 +142,15 @@ export default class NHForm extends NHBaseForm {
 
   private async resetLaterSelects(currentSelectId: string) {
     const selectFieldConfigs: FieldConfig[] = this.config.fields.flat().filter((field: FieldConfig) => field.type == 'select');
+
     let firstSelectIndex;
     for (let i = 0; i < selectFieldConfigs.length; i++) {
-      if(!firstSelectIndex) continue;
-
       const element = selectFieldConfigs[i];
-      if(element.id == currentSelectId) firstSelectIndex = i;
+      if(element.id == currentSelectId) {
+        firstSelectIndex = i
+        continue;
+      };
+      if(typeof firstSelectIndex == 'undefined') continue;
 
       const select: NHSelect | null = this.renderRoot.querySelector("#" + element.id)
       if(!select) continue;
@@ -200,7 +202,7 @@ export default class NHForm extends NHBaseForm {
             .variant=${'danger'}
           >
             <nh-select
-              @click=${(e : any) => {this._selectOpenStates[fieldConfig.id as string] = e.currentTarget.open; this.closeOtherSelects(fieldConfig.id as string); this.config.progressiveValidation && this.resetLaterSelects(fieldConfig.id as string); this.requestUpdate() }}
+              @click=${(e : any) => {this._selectOpenStates[fieldConfig.id as string] = e.currentTarget.open; this.closeOtherSelects(fieldConfig.id as string); if(this.config.progressiveValidation) this.resetLaterSelects(fieldConfig.id as string); this.requestUpdate() }}
               slot="hoverable"
               .errored=${this.shouldShowValidationErrorForField(fieldConfig.name)}
               .size=${fieldConfig.size}
