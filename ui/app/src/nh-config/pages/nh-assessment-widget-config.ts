@@ -37,6 +37,7 @@ import {
   AssessmentWidgetBlockConfig,
   AssessmentWidgetConfig,
   AssessmentWidgetRegistrationInput,
+  AssessmentWidgetRenderer,
   AssessmentWidgetRenderers,
   Dimension,
   NeighbourhoodAppletRenderers,
@@ -308,15 +309,35 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 type: 'select',
                 placeholder: 'Select',
                 label: '1. Select an assessment widget for this resource: ',
-                selectOptions: (() => {
-                  return (
-                    Object.values(this?._registeredWidgets as any)?.map(widget => ({
-                      label: (widget as any).name,
-                      value: (widget as any).name,
-                      imageB64: (widget as any).name == 'Heart' ? heart : thumb,
-                    })) || []
-                  );
-                })(),
+                selectOptions: (() =>
+                  this?._registeredWidgets && this?.appletRenderers
+                    ? Object.values(this._registeredWidgets)!.map((widget: AssessmentWidgetRegistrationInput) => {
+                          const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
+                          const renderer: AssessmentWidgetRenderer = this.appletRenderers.assessmentWidgets![widget.widgetKey]
+                          const componentToBind = renderer.component;
+                          debugger;
+                          return ({
+                            label: renderer.name,
+                            value: renderer.name,
+                            renderBlock: () => html`
+                            <input-assessment-renderer
+                              .component=${componentToBind}
+                              .nhDelegate=${fakeDelegate}
+                            ></input-assessment-renderer>`
+                          })
+                          return html`
+                            <input-assessment-renderer
+                              .component=${componentToBind}
+                              .nhDelegate=${fakeDelegate}
+                            ></input-assessment-renderer>
+                          `;
+                        return ({
+                        label: (widget as any).name,
+                        value: (widget as any).name,
+                        imageB64: (widget as any).name == 'Heart' ? heart : thumb,
+                      })})
+                    : []
+                )(), // IIFE regenerates select options dynamically
                 name: 'assessment_widget',
                 id: 'assessment-widget',
                 defaultValue: '',
@@ -516,7 +537,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       /* Form layout */
       nh-form {
         display: flex;
-        min-width: initial !important;
+        max-width: initial !important;
         min-height: 30rem;
       }
 

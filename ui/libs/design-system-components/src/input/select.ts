@@ -3,11 +3,13 @@ import { css, CSSResult, html, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { NHComponentShoelace } from '../ancestors/base';
 import { b64images } from '@neighbourhoods/design-system-styles';
+import { InputAssessmentRenderer } from '@neighbourhoods/app-loader';
 
 export type OptionConfig = {
   label: string,
   value: string,
   imageB64?: string,
+  renderBlock?: () => TemplateResult,
 }
 
 export default class NHSelect extends NHComponentShoelace {
@@ -31,7 +33,7 @@ export default class NHSelect extends NHComponentShoelace {
   @state()
   value?: string = undefined;
   @state()
-  labelValue?: string = undefined;
+  visibleSelectValue?: string = undefined;
   @state()
   image?: string = undefined;
   @state()
@@ -42,7 +44,7 @@ export default class NHSelect extends NHComponentShoelace {
 
   handleSelected(option: OptionConfig) {
     this.value = option.value
-    this.labelValue = option.label
+    this.visibleSelectValue = option.label
     this.image = option?.imageB64
 
     this._optionMenu.classList.remove("active");
@@ -55,78 +57,97 @@ export default class NHSelect extends NHComponentShoelace {
     );
   } 
 
+  renderVisibleOption() : TemplateResult {
+    return this.options?.some((option: OptionConfig) => option?.imageB64 || option?.renderBlock)
+        ? html`<div class="flex">
+                ${this?.image ? html `<span class="option-image"><img
+                    class="icon"
+                    alt=${this.value}
+                    src=${`data:image/png;base64,${this?.image || b64images.icons.refresh}`}
+                  /></span>` : null}
+                <span>${this.value || this.placeholder}</span>
+              </div>`
+        : html`<span>${this.visibleSelectValue || this.placeholder}</span>`
+  }
+
+  renderAllOptions() {
+    return this.options?.length
+      ? this.options.map((option: OptionConfig) =>
+        (option?.imageB64 && option.imageB64 !== '') || (option?.renderBlock && typeof option.renderBlock == 'function')
+          ? html`
+            <li class="option" @click=${() => this.handleSelected(option)}>
+              <span class="option-image">
+                ${option?.renderBlock 
+                  ? html`
+                      ${option.renderBlock()}
+                    ` // Case with an input-assesment-renderer in OptionConfig.renderBlock
+                  : html`<img
+                            class="icon"
+                            alt=${option.value}
+                            src=${`data:image/png;base64,${option?.imageB64}`}
+                          /></span>
+                        ` // Case with images defined as b64 in OptionConfig.imageB64
+                }
+              <span class="option-text" data-value=${option.value}>${option.label}</span>
+            </li>` // Case with images
+          : html`
+            <li class="option" @click=${() => this.handleSelected(option)}>
+              <span class="option-text" data-value=${option.value}>${option.label}</span>
+            </li>` // Case with no images
+        )
+      : html`
+          <li class="option">
+            <span class="option-text" data-value=${undefined}>No options available</span>
+          </li>` // Case with no options
+  }
+
   render() : TemplateResult {
     return html`
-    <div class="field${classMap({
-      [this.size]: this.size,
-      ['with-icons']: this.options?.some((option: OptionConfig) => option?.imageB64),
-    })}">
-      <div class="row">
-          <label
-            for=${this.name}
-          >${this.label}</label>
-        ${ this.required
-          ? html`<label
-            class="reqd"
-            for=${this.name}
-            name=${this.name}
-            data-name=${this.name}
-          >⁎</label>`
-          : null
-        }
-      </div>
+      <div class="field${classMap({
+        [this.size]: this.size,
+        ['with-icons']: this.options?.some((option: OptionConfig) => option?.imageB64),
+      })}">
+        <div class="row">
+            <label
+              for=${this.name}
+            >${this.label}</label>
+          ${ this.required
+            ? html`<label
+              class="reqd"
+              for=${this.name}
+              name=${this.name}
+              data-name=${this.name}
+            >⁎</label>`
+            : null
+          }
+        </div>
         <div data-open=${this.open} class="field custom-select${classMap({
           'errored': this.errored,
           //@ts-ignore
           ['not-null']: !!this.value
         })}">
           <div class="select-btn" @click=${() => { this.open = !this.open; this._optionMenu.classList.toggle("active")}}>
-          ${
-            this.options?.some((option: OptionConfig) => option?.imageB64)
-              ? html`<div class="flex">
-                ${this?.image ? html `<span class="option-image"><img
-                    class="icon"
-                    alt=${this.value}
-                    src=${`data:image/png;base64,${this?.image || b64images.icons.refresh}`}
-                  /></span>` : null}
-                  <span>${this.value || this.placeholder}</span>
-              </div>`
-              : html`<span>${this.labelValue || this.placeholder}</span>`
-          }
-              <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-              </svg>
+            ${this.renderVisibleOption()}
+            <svg class="chevron-down" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
           </div>
           <ul class="options">
-            ${ this.options?.length
-              ? this.options.map((option: OptionConfig) =>
-                option?.imageB64 && option.imageB64 !== ''
-                  ? html`<li class="option" @click=${() => this.handleSelected(option)}>
-                    <span class="option-image"><img
-                      class="icon"
-                      alt=${option.value}
-                      src=${`data:image/png;base64,${option?.imageB64 || b64images.icons.refresh}`}
-                    /></span>
-                    <span class="option-text" data-value=${option.value}>${option.label}</span>
-                  </li>`
-                  : html`<li class="option" @click=${() => this.handleSelected(option)}>
-                          <span class="option-text" data-value=${option.value}>${option.label}</span>
-                        </li>`
-                )
-              : html`<li class="option">
-                <span class="option-text" data-value=${undefined}>No options available</span>
-              </li>`
-            }
+            ${this.renderAllOptions()}
           </ul>
         </div>
-    </div>
+      </div>
     `;
   }
 
   reset() {
     this.value = undefined;
-    this.labelValue = undefined;
+    this.visibleSelectValue = undefined;
     this.image = undefined;
+  }
+
+  static elementDefinitions = {
+    'input-assessment-renderer': InputAssessmentRenderer,
   }
 
   static styles: CSSResult[] = [
@@ -234,7 +255,7 @@ export default class NHSelect extends NHComponentShoelace {
       .field.with-icons .select-btn {
         justify-content: space-between;
       }
-      .icon {
+      .icon, input-assessment-renderer {
         height: 48px;
         padding-top: 8px;
       }
@@ -344,7 +365,7 @@ export default class NHSelect extends NHComponentShoelace {
         background: var(--nh-theme-bg-element);
         width: 2px;
         border: 2px solid transparent;
-      }
+      }any
       .custom-select .options::-webkit-scrollbar   {
         width: 8px;
         background: transparent !important;
