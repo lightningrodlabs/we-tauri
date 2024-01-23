@@ -141,6 +141,22 @@ export default class NHForm extends NHBaseForm {
     })}`
   }
 
+  private async resetLaterSelects(currentSelectId: string) {
+    const selectFieldConfigs: FieldConfig[] = this.config.fields.flat().filter((field: FieldConfig) => field.type == 'select');
+    let firstSelectIndex;
+    for (let i = 0; i < selectFieldConfigs.length; i++) {
+      if(!firstSelectIndex) continue;
+
+      const element = selectFieldConfigs[i];
+      if(element.id == currentSelectId) firstSelectIndex = i;
+
+      const select: NHSelect | null = this.renderRoot.querySelector("#" + element.id)
+      if(!select) continue;
+      select.reset();
+      await select.updateComplete;
+    } 
+  }
+
   private async closeOtherSelects(currentSelectId: string) {
     const awaitingUpdate : any = [];
     if(this._selectOpenStates[currentSelectId] && Object.values(this._selectOpenStates).filter(value => value).length > 1) {
@@ -184,7 +200,7 @@ export default class NHForm extends NHBaseForm {
             .variant=${'danger'}
           >
             <nh-select
-              @click=${(e : any) => {this._selectOpenStates[fieldConfig.id as string] = e.currentTarget.open; this.closeOtherSelects(fieldConfig.id as string); this.requestUpdate() }}
+              @click=${(e : any) => {this._selectOpenStates[fieldConfig.id as string] = e.currentTarget.open; this.closeOtherSelects(fieldConfig.id as string); this.config.progressiveValidation && this.resetLaterSelects(fieldConfig.id as string); this.requestUpdate() }}
               slot="hoverable"
               .errored=${this.shouldShowValidationErrorForField(fieldConfig.name)}
               .size=${fieldConfig.size}
@@ -201,7 +217,6 @@ export default class NHForm extends NHBaseForm {
         `;
       case "radio-group":
         const config = fieldConfig as RadioGroupFieldConfig;
-        console.log('config :>> ', this._model);
         return html`
           <nh-tooltip
             .visible=${this.shouldShowValidationErrorForField(config.name)}
