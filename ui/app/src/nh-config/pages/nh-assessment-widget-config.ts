@@ -147,7 +147,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               .editable=${true}
               .editing=${!!this.editingConfig}
               @add-widget=${async (e: CustomEvent) => {
-                this.editingConfig = false;
+                this.editingConfig = true;
                 console.log(e, 'event');
                 // await this.createEntries()
               }}
@@ -187,9 +187,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
           <sl-details
             class="${classMap({
-              editing: true,
+              editing: !!this.editingConfig,
             })}"
-            .open=${true}
+            .open=${!!this.editingConfig}
             @sl-hide=${(_e: Event) => {
               this.editingConfig = false;
             }}
