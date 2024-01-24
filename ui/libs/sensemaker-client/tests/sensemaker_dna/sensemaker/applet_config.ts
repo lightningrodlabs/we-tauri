@@ -138,8 +138,6 @@ export default () =>
                 const resourceDef: ResourceDef = {
                     resource_name: "task_item",
                     base_types: [app_entry_def],
-                    dimension_ehs: [dimensionHash],
-                    installed_app_id: "test_applet",
                     role_name: "test_provider_dna",
                     zome_name: "test_provider",
                 }
@@ -149,8 +147,6 @@ export default () =>
                 const configResourceDef: ConfigResourceDef = {
                     resource_name: resourceDef.resource_name,
                     base_types: resourceDef.base_types,
-                    dimensions: [configDimension],
-                    installed_app_id: resourceDef.installed_app_id,
                     role_name: resourceDef.role_name,
                     zome_name: resourceDef.zome_name,
                 }

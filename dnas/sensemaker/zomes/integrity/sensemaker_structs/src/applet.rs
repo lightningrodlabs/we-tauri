@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use hdi::prelude::*;
 
 use crate::{
-    CulturalContext, Dimension, Method, OrderingKind, Program, Range, RangeValue, ResourceDef,
+    CulturalContext, Dimension, Method, OrderingKind, Program, Range, RangeValue,
     ThresholdKind,
 };
 
@@ -48,11 +48,6 @@ impl AppletConfigInput {
             .collect::<ExternResult<Vec<EntryHash>>>()?;
 
         // Mapping to detect errors. There may be better ways to handle this other than map
-        let _check_result_resources: Vec<bool> = self
-            .resource_defs
-            .into_iter()
-            .map(|resource| resource.check_format(dimension_ehs.clone()))
-            .collect::<ExternResult<Vec<bool>>>()?;
         let _check_result_methods: Vec<bool> = self
             .methods
             .into_iter()
@@ -96,31 +91,8 @@ impl ConfigDimension {
 pub struct ConfigResourceDef {
     pub resource_name: String,
     pub base_types: Vec<AppEntryDef>,
-    pub dimensions: Vec<ConfigDimension>,
-    pub installed_app_id: String,
     pub role_name: String,
     pub zome_name: String,
-}
-
-impl ConfigResourceDef {
-    pub fn check_format(self, root_dimension_ehs: Vec<EntryHash>) -> ExternResult<bool> {
-        let converted_resource: ResourceDef = ResourceDef::try_from(self.clone())?;
-        let resources_dimension_ehs = converted_resource.dimension_ehs;
-
-        // check if all dimensions in resource type exist in the root dimensions
-        if let false = resources_dimension_ehs
-            .to_owned()
-            .into_iter()
-            .all(|eh| root_dimension_ehs.contains(&eh))
-        {
-            let error = format!(
-                "resource type name {} has one or more dimensions not found in root dimensions",
-                self.resource_name
-            );
-            return Err(wasm_error!(WasmErrorInner::Guest(error)));
-        }
-        Ok(true)
-    }
 }
 
 #[derive(Serialize, Deserialize, SerializedBytes, Debug, Clone)]
@@ -191,13 +163,6 @@ pub struct ConfigCulturalContext {
 impl ConfigCulturalContext {
     pub fn check_format(self, root_dimension_ehs: Vec<EntryHash>) -> ExternResult<bool> {
         let converted_cc: CulturalContext = CulturalContext::try_from(self.to_owned())?;
-
-        // let dimension_ehs_in_resource = self
-        //     .resource_def
-        //     .dimensions
-        //     .into_iter()
-        //     .map(|dimension| hash_entry(dimension))
-        //     .collect::<ExternResult<Vec<EntryHash>>>()?;
 
         let threholds_dimension_ehs = converted_cc
             .thresholds

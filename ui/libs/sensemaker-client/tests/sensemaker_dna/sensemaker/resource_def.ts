@@ -159,7 +159,6 @@ export default () => {
           //@ts-ignore
           "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
           "dimension_ehs": [createDimensionEntryHash],
-          "installed_app_id": "test_provider",
           "role_name": "test_provider_dna",
           "zome_name": "provider",
         }
@@ -168,7 +167,6 @@ export default () => {
           //@ts-ignore
           "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
           "dimension_ehs": [createDimensionEntryHash2],
-          "installed_app_id": "test_provider",
           "role_name": "test_provider_dna",
           "zome_name": "provider",
         }

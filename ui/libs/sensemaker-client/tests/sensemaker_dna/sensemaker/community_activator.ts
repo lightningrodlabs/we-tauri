@@ -112,7 +112,6 @@ export default () => test("test CA progenitor pattern", async (t) => {
             //@ts-ignore
             "base_types": [readPostOutput.signed_action.hashed.content.entry_type.App],
             "dimension_ehs": [createDimensionEntryHash],
-            "installed_app_id": "test_provider",
             "role_name": "test_provider_dna",
             "zome_name": "provider",
         }

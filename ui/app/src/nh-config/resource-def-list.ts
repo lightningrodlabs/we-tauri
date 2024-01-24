@@ -8,7 +8,7 @@ import { decodeHashFromBase64 } from "@holochain/client";
 import { NHButtonGroup } from "@neighbourhoods/design-system-components";
 import { b64images } from "@neighbourhoods/design-system-styles";
 
-export default class ResourceDefList extends NHComponent {  
+export default class ResourceDefList extends NHComponent {
   @property()
   sensemakerStore!: SensemakerStore;
 
@@ -16,34 +16,32 @@ export default class ResourceDefList extends NHComponent {
   private _resourceDefEntries: Array<ResourceDef> = [ {
     "resource_name": "Feed Post",
     "base_types": [],
-    "dimension_ehs": [decodeHashFromBase64('amockhash')],
-    "installed_app_id": "test_provider",
     "role_name": "test_provider_dna",
     "zome_name": "provider",
   },{
     "resource_name": "Todo Item",
     "base_types": [],
-    "dimension_ehs": [decodeHashFromBase64('amockhash')],
-    "installed_app_id": "test_provider",
     "role_name": "test_provider_dna",
     "zome_name": "provider",
   },{
     "resource_name": "Photo",
     "base_types": [],
-    "dimension_ehs": [decodeHashFromBase64('amockhash')],
-    "installed_app_id": "test_provider",
     "role_name": "test_provider_dna",
     "zome_name": "provider",
   },{
     "resource_name": "Article",
     "base_types": [],
-    "dimension_ehs": [decodeHashFromBase64('amockhash')],
-    "installed_app_id": "test_provider",
     "role_name": "test_provider_dna",
     "zome_name": "provider",
   },
   ];
-  
+
+  protected async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    const result = await this.sensemakerStore.getResourceDefs()
+    console.log('result :>> ', result);
+    // this._resourceDefEntries = result;
+  }
+
   render() {
     return html`
       <nh-button-group class="content"  .direction=${"vertical"}

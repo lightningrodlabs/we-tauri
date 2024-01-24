@@ -207,7 +207,6 @@ export default () => {
             readPostOutput.signed_action.hashed.content.entry_type.App,
           ],
           dimension_ehs: [createDimensionEntryHash],
-          installed_app_id: "test_provider",
           role_name: "test_provider_dna",
           zome_name: "provider",
         };
@@ -655,7 +654,6 @@ export default () => {
             readPostOutput.signed_action.hashed.content.entry_type.App,
           ],
           dimension_ehs: [createDimensionEntryHash],
-          installed_app_id: "test_provider",
           role_name: "test_provider_dna",
           zome_name: "provider",
         };
@@ -1265,7 +1263,6 @@ export default () => {
             { entry_index: 0, zome_index: 0, visibility: { Public: null } },
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
-          installed_app_id: "test_provider",
           role_name: "test_provider_dna",
           zome_name: "provider",
         };
@@ -1523,7 +1520,6 @@ export default () => {
             { entry_index: 0, zome_index: 0, visibility: { Public: null } },
           ],
           dimension_ehs: [createDimensionEntryHash, createDimensionEntryHash2],
-          installed_app_id: "test_provider",
           role_name: "test_provider_dna",
           zome_name: "provider",
         };
