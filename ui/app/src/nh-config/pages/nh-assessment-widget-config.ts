@@ -40,6 +40,7 @@ import {
   AssessmentWidgetRenderer,
   AssessmentWidgetRenderers,
   Dimension,
+  Method,
   NeighbourhoodAppletRenderers,
   ResourceDef,
   SensemakerStore,
@@ -80,11 +81,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @state() configuredWidgetsPersisted: boolean = true; // Is the in memory representation the same as on DHT?
   
   @state() selectedWidgetKey: string | undefined; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
+  @state() selectedInputDimensionEh: EntryHash | undefined; // used to filter for the 3rd select
   
   @state() _workingWidgetControls!: AssessmentWidgetBlockConfig[];
   @state() _workingWidgetControlRendererCache: Record<string, any> = new Map();
 
-  // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrations (individual)
+  // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrationInputs (individual)
   @state() private _fetchedConfig!: AssessmentWidgetBlockConfig[];
   @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
   
@@ -98,6 +100,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   /* Temp - need to add Store method that returns records with entry hashes*/
   @state() private _unpartitionedDimensionEntries!: Array<Dimension & { dimension_eh: EntryHash }>;
   @state() private _rangeEntries!: Array<Range & { range_eh: EntryHash }>;
+  @state() private _methodEntries!: any;
 
 
   async firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -106,6 +109,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       if (!this._sensemakerStore?.value || !this.weGroupId) return;
       await this.fetchDimensionEntries();
       await this.fetchRangeEntries();
+      await this.fetchMethodEntries();
       await this.partitionDimensionEntries();
       await this.fetchRegisteredWidgets();
       await this.fetchExistingWidgetConfigBlock();
@@ -119,6 +123,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       console.error('Could not fetch/assign applet and widget data: ', error);
       this.loading = false;
     }
+  }
+
+  private findInputDimensionsForOutputDimension(outputDimensionEh: EntryHash) {
+    const methods = this._methodEntries.filter((method: Method) => compareUint8Arrays(method.output_dimension_eh, outputDimensionEh))
+    
+    return methods.map((method: Method) => method.input_dimension_ehs[0])
   }
 
   private getCombinedWorkingAndFetchedWidgets() {
@@ -144,6 +154,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render(): TemplateResult {
     let renderableWidgets = (this.configuredInputWidgets || this.getCombinedWorkingAndFetchedWidgets())?.map((widgetRegistrationEntry: AssessmentWidgetBlockConfig) => widgetRegistrationEntry.inputAssessmentWidget as AssessmentWidgetConfig)
+    console.log('renderableWidgets :>> ', renderableWidgets);
     return html`
       <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets()}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
@@ -184,7 +195,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     : null
                 }
                 ${this.loading || this.editingConfig || !this._fetchedConfig || !this.appletRenderers 
-                  ? html`<div style="display: grid; place-content: center; height: 48px;">
+                  ? html`<div style="display: grid; place-content: center; height: 48px; min-width: 48px;">
                       ${this.renderWidgetControlPlaceholder()}
                     </div>` 
                   : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
@@ -220,13 +231,25 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               <span slot="buttons">
                 <nh-button
                   id="close-widget-config"
-                  .variant=${'warning'}
+                  .variant=${'danger'}
                   .size=${'md'}
                   @click=${() => {
                     this.editingConfig = false;
                     this._form?.resetForm();
                   }}
                 >Cancel</nh-button>
+
+                <nh-button
+                  id="reset-widget-config"
+                  .variant=${'warning'}
+                  .size=${'md'}
+                  @click=${() => {
+                    this._workingWidgetControls = [];
+                    this.selectedWidgetKey = undefined;
+                    this._form?.resetForm();
+                    this.requestUpdate()
+                  }}
+                >Reset</nh-button>
                 
                 <nh-button
                   type="submit"
@@ -304,18 +327,23 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     );
   }
 
-  private renderMainForm(): TemplateResult {
-    const rangeEntries = this._rangeEntries as any;
+  handleFormChange = async e => {
     const widgets = typeof this._registeredWidgets == 'object' && Object.values(this._registeredWidgets) || []
+
+    const selectedWidget = widgets?.find(widget => widget.name == this._form._model.assessment_widget);
+    this.selectedWidgetKey = selectedWidget?.widgetKey;
+    this.placeHolderWidget = this?._workingWidgetControlRendererCache.get(this.selectedWidgetKey)
+    
+    this.selectedInputDimensionEh = this._form._model.input_dimension;
+
+    e.currentTarget.requestUpdate();
+    await e.currentTarget.updateComplete;
+  }
+
+  private renderMainForm(): TemplateResult {
     return html`
       <nh-form
-        @change=${async e => {
-          const selectedWidget = widgets?.find(widget => widget.name == this._form._model.assessment_widget);
-          this.selectedWidgetKey = selectedWidget?.widgetKey;
-          this.placeHolderWidget = this?._workingWidgetControlRendererCache.get(this.selectedWidgetKey)
-          e.currentTarget.requestUpdate();
-          await e.currentTarget.updateComplete;
-        }}
+        @change=${this.handleFormChange}
         .config=${{
           submitBtnRef: (() => this.submitBtn)(),
           rows: [1, 1, 1],
@@ -365,7 +393,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 placeholder: 'Select',
                 label: '2. Select the input dimension: ',
                 selectOptions: (() =>
-                  rangeEntries && rangeEntries.length
+                  this._rangeEntries && this._rangeEntries.length
                     ? this?._inputDimensionEntries
                         ?.filter(dimension => {
                           const selectedWidgetRangeKind = Object.values(
@@ -373,9 +401,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                           ).find(widget => widget.widgetKey == this.selectedWidgetKey)?.rangeKind;
                           if (typeof this.selectedWidgetKey == 'undefined' || !selectedWidgetRangeKind) return false;
 
-                          const dimensionRange = rangeEntries.find(range =>
+                          const dimensionRange = this._rangeEntries!.find(range =>
                             compareUint8Arrays(range.range_eh, dimension.range_eh),
-                          );
+                          ) as any;
                           return dimensionIncludesControlRange(
                             dimensionRange.kind,
                             selectedWidgetRangeKind,
@@ -402,10 +430,19 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 placeholder: 'Select',
                 label: '3. Select the output dimension: ',
                 selectOptions: (() =>
-                  this?._outputDimensionEntries?.map(dimension => ({
-                    label: dimension.name,
-                    value: encodeHashToBase64(dimension.dimension_eh),
-                  })) || [])(),
+                this._methodEntries && this?._outputDimensionEntries
+                  ? this._outputDimensionEntries
+                    ?.filter(dimension => {
+                      if(typeof this._methodEntries !== 'undefined') {
+                        const inputDimensions = this.findInputDimensionsForOutputDimension(dimension.dimension_eh);
+                        return inputDimensions.map(eh => encodeHashToBase64(eh)).includes(this._form._model.input_dimension)
+                      } else return false
+                    })
+                    .map(dimension => ({
+                      label: dimension.name,
+                      value: encodeHashToBase64(dimension.dimension_eh),
+                    }))
+                  : []).bind(this)(),
                 name: 'output_dimension',
                 id: 'output-dimension',
                 defaultValue: '',
@@ -563,7 +600,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
         font-size: 1.5rem;
         --speed: 10000ms;
         --track-width: 4px;
-        --indicator-color: var(--nh-theme-accent-emphasis);
+        --indicator-color: var(var(--nh-theme-fg-muted);
       }
 
       @media (min-width: 1350px) {
@@ -698,6 +735,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     await this.fetchRangeEntriesFromHashes(
       this._unpartitionedDimensionEntries.map((dimension: Dimension) => dimension.range_eh),
     );
+  }
+
+  async fetchMethodEntries() {
+    this._methodEntries = await this._sensemakerStore.value?.getMethods();
   }
 
   async fetchDimensionEntries() {
