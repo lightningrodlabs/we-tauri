@@ -2,7 +2,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { CSSResult, css, html } from "lit"
 import { property, state } from "lit/decorators.js";
 import { b64images } from "@neighbourhoods/design-system-styles";
-import { NHComponent, NHTooltip } from '..';
+import { NHAlert, NHComponent, NHTooltip } from '..';
 import NHAssessmentContainer from './assessment-container';
 import { AssessmentWidgetBlockConfig, AssessmentWidgetConfig } from '@neighbourhoods/client';
 import { SlSpinner } from '@shoelace-style/shoelace';
@@ -52,17 +52,7 @@ export default class NHResourceAssessmentTray extends NHComponent {
           })}"
           data-expanded=${this.expanded}
         >
-      ${this.assessmentWidgetTrayConfig.length > 0
-        ? html`<span class="widget-config-icons">${this.assessmentWidgetTrayConfig?.map(({inputAssessmentWidget} : {inputAssessmentWidget: AssessmentWidgetConfig}) => html`
-          <assessment-container
-            .assessmentValue=${1}
-            .iconImg=${mockWidgetRegistry((inputAssessmentWidget as any).componentName)}
-          ></assessment-container>`)}
-          <assessment-container
-            .assessmentValue=${0}
-            .iconImg=${""}
-          ></assessment-container></span>`
-        : html`<slot name="widgets"></slot>`}
+        <slot name="widgets"></slot>
 
         <div name="add-widget-icon" class="add-widget-icon" @click=${() => {
           this.dispatchEvent(
@@ -97,7 +87,7 @@ export default class NHResourceAssessmentTray extends NHComponent {
           <div class="menu-dot"></div>
           <div class="menu-dot"></div>
         </nav>
-      </div></nh-tooltip>
+      </nh-tooltip>
     `
   }
 

@@ -1,4 +1,4 @@
-import { html, css, TemplateResult, PropertyValueMap } from 'lit';
+import { html, css, TemplateResult, PropertyValueMap, CSSResult } from 'lit';
 import { consume } from '@lit/context';
 import { StoreSubscriber } from 'lit-svelte-stores';
 
@@ -17,6 +17,7 @@ import {
 import { compareUint8Arrays } from '@neighbourhoods/app-loader';
 
 import {
+  NHAlert,
   NHAssessmentContainer,
   NHButton,
   NHButtonGroup,
@@ -73,6 +74,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   currentApplet!: Applet;
   
   @query('nh-form') private _form;
+  @query('nh-alert') private _successAlert;
   @query("nh-button[type='submit']") private submitBtn;
   
   @state() loading: boolean = false;
@@ -154,7 +156,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render(): TemplateResult {
     let renderableWidgets = (this.configuredInputWidgets || this.getCombinedWorkingAndFetchedWidgets())?.map((widgetRegistrationEntry: AssessmentWidgetBlockConfig) => widgetRegistrationEntry.inputAssessmentWidget as AssessmentWidgetConfig)
-    console.log('renderableWidgets :>> ', renderableWidgets);
     return html`
       <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets()}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
@@ -207,7 +208,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               .loading=${this.loading}
               .disabled=${!this.loading && this._fetchedConfig && this.configuredWidgetsPersisted}
               .size=${'md'}
-              @click=${async () => {await this.createEntries(); this.configuredWidgetsPersisted = true}}
+              @click=${async () => {
+                await this.createEntries();
+                this._successAlert.openToast();
+                this.configuredWidgetsPersisted = true
+              }}
             >Update Config</nh-button>
           </div>
 
@@ -266,6 +271,14 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
             </nh-button-group>
           </div>
         </sl-details>
+        <nh-alert 
+          .title=${"You have saved your changes."}
+          .description=${"You have saved your changes."}
+          .closable=${false}
+          .isToast=${true}
+          .open=${false}
+          .type=${"success"}></nh-alert>
+        </div>
       </div>
     </main>`;
   }
@@ -480,6 +493,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     'nh-tooltip': NHTooltip,
     'sl-details': SlDetails,
     'sl-spinner': SlSpinner,
+    'nh-alert': NHAlert,
     'assessment-widget-tray': NHResourceAssessmentTray,
     'input-assessment-renderer': InputAssessmentRenderer,
     'assessment-widget': NHAssessmentContainer,
@@ -489,8 +503,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     this.dispatchEvent(new CustomEvent('return-home', { bubbles: true, composed: true }));
   }
 
-  static get styles() {
-    return css`
+  static styles: CSSResult[] = [
+    ...super.styles as CSSResult[],
+    css`
       /* Layout */
       :host,
       .container {
@@ -613,9 +628,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
           overflow: hidden;
         }
       }
+  `];
 
-    `;
-  }
 
   async fetchExistingWidgetConfigBlock() {
     if (!this._sensemakerStore.value || !this.resourceDef) return;
