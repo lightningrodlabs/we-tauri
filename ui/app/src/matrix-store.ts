@@ -473,9 +473,10 @@ export class MatrixStore {
   public getAppletInstanceInfosForGroup(
     groupDnaHash: DnaHash
   ): Readable<AppletInstanceInfo[] | undefined> {
+    const groupInfos = get(this._matrix).get(groupDnaHash);
     return readable(
-      get(this._matrix).get(groupDnaHash)
-        ? get(this._matrix).get(groupDnaHash)[1]
+      groupInfos
+        ? groupInfos[1]
         : undefined
     );
   }
