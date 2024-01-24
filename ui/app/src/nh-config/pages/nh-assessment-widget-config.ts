@@ -41,7 +41,6 @@ import {
   AssessmentWidgetRenderers,
   Dimension,
   NeighbourhoodAppletRenderers,
-  RangeKind,
   ResourceDef,
   SensemakerStore,
 } from '@neighbourhoods/client';
@@ -51,7 +50,7 @@ import { InputAssessmentRenderer } from '@neighbourhoods/app-loader';
 import { get } from 'svelte/store';
 import { Applet, AppletInstanceInfo } from '../../types';
 import { FakeInputAssessmentWidgetDelegate } from '@neighbourhoods/app-loader';
-import { rangeKindEqual } from '../../utils';
+import { dimensionIncludesControlRange } from '../../utils';
 
 export default class NHAssessmentWidgetConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
@@ -82,6 +81,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   @state() selectWidgetInputValue: string = ''; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
   
   @state() _workingWidgetControls!: AssessmentWidgetBlockConfig[];
+  @state() _workingWidgetControlRendererCache: Record<string, any> = new Map();
+
   // AssessmentWidgetBlockConfig (group) and AssessmentWidgetRegistrations (individual)
   @state() private _fetchedConfig!: AssessmentWidgetBlockConfig[];
   @state() private _registeredWidgets: Record<EntryHashB64, AssessmentWidgetRegistrationInput> = {};
@@ -119,24 +120,14 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     }
   }
 
-  protected updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    // if (changedProperties.has('_workingWidgetControls')) {
-
-    //   const newWidgets = ;
-    //   this.configuredInputWidgets = this.configuredInputWidgets.concat(newWidgets);
-    // }
-  }
-
   private getCombinedWorkingAndFetchedWidgets() {
     let widgets: AssessmentWidgetBlockConfig[]
     if(this._fetchedConfig && this._workingWidgetControls && this._workingWidgetControls.length > 0) {
       widgets = this._fetchedConfig.length > 0 ? [
         ...this._fetchedConfig, ...this._workingWidgetControls
       ] : this._workingWidgetControls;
-      console.log('working :>> ', widgets);
     } else if(this._fetchedConfig) {
       widgets = this._fetchedConfig;
-      console.log('fetched :>> ', widgets);
     } else {
       widgets = [];
     }
@@ -145,7 +136,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   render(): TemplateResult {
     let renderableWidgets = (this.configuredInputWidgets || this.getCombinedWorkingAndFetchedWidgets())?.map((widgetRegistrationEntry: AssessmentWidgetBlockConfig) => widgetRegistrationEntry.inputAssessmentWidget as AssessmentWidgetConfig)
-    console.log('renderableWidgets :>> ', renderableWidgets);
     return html`
       <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
@@ -166,14 +156,12 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
               .editing=${!!this.editingConfig}
               @add-widget=${async (e: CustomEvent) => {
                 this.editingConfig = true;
-                console.log(e, 'event');
-                // await this.createEntries()
               }}
             >
               <div slot="widgets"><div style="display: flex; gap: 4px;">
                 ${
                   this?.appletRenderers && (this._fetchedConfig && this._fetchedConfig.length > 0 || this?._workingWidgetControls)
-                    ? repeat(renderableWidgets, () => +(new Date), (inputWidgetConfig, index) => {
+                    ? repeat(renderableWidgets, () => +(new Date), (inputWidgetConfig, _index) => {
                         if(!this.appletRenderers) return;
                         const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
                         const filteredComponentRenderers = Object.values(this.appletRenderers.assessmentWidgets as AssessmentWidgetRenderers).filter(component => component.name == (inputWidgetConfig as any).componentName);
@@ -187,7 +175,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                       })
                     : null
                 }
-                ${this.editingConfig ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;"> <sl-spinner class="icon-spinner"></sl-spinner> </div>` : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
+                ${this.editingConfig || !this._fetchedConfig || !this.appletRenderers ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;"><sl-spinner class="icon-spinner"></sl-spinner></div>` : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
               </div></div>
             </assessment-widget-tray>
             <nh-button
@@ -326,17 +314,23 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 selectOptions: (() =>
                   this?._registeredWidgets && this?.appletRenderers
                     ? Object.values(this._registeredWidgets)!.map((widget: AssessmentWidgetRegistrationInput) => {
-                          const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
-                          const renderer: AssessmentWidgetRenderer = this.appletRenderers.assessmentWidgets![widget.widgetKey]
-                          const componentToBind = renderer.component;
-                          return ({
-                            label: renderer.name,
-                            value: renderer.name,
-                            renderBlock: () => html`
+                          let renderBlock;
+                          if(this?._workingWidgetControlRendererCache.has(widget.widgetKey)) {
+                            renderBlock = this._workingWidgetControlRendererCache.get(widget.widgetKey);
+                          } else {
+                            const fakeDelegate = new FakeInputAssessmentWidgetDelegate();
+                            const renderer: AssessmentWidgetRenderer = this.appletRenderers.assessmentWidgets![widget.widgetKey]
+                            renderBlock = () => html`
                             <input-assessment-renderer
-                              .component=${componentToBind}
+                              .component=${renderer.component}
                               .nhDelegate=${fakeDelegate}
                             ></input-assessment-renderer>`
+                          }
+                          
+                          return ({
+                            label: widget.name,
+                            value: widget.name,
+                            renderBlock
                           })})
                     : []
                 )(), // IIFE regenerates select options dynamically
@@ -365,10 +359,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                           const dimensionRange = rangeEntries.find(range =>
                             compareUint8Arrays(range.range_eh, dimension.range_eh),
                           );
-                          // TODO: rangeKind INCLUDES rather than equal
-                          return rangeKindEqual(
+                          return dimensionIncludesControlRange(
+                            dimensionRange.kind,
                             selectedWidgetRangeKind,
-                            dimensionRange.kind as RangeKind,
                           );
                         })
                         .map(dimension => {
@@ -576,7 +569,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this._fetchedConfig ||= await this._sensemakerStore.value.getAssessmentWidgetTrayConfig(
         this.resourceDef?.resource_def_eh,
       );
-      console.log('this._fetchedConfig :>> ', this._fetchedConfig);
       this.configuredWidgetsPersisted = true;
     } catch (error) {
       console.error(error);
@@ -630,7 +622,6 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   async fetchRegisteredWidgets() {
     try {
       this._registeredWidgets = await this._sensemakerStore.value!.getRegisteredWidgets();
-      console.log('this._registeredWidgets  :>> ', this._registeredWidgets);
     } catch (error) {
       console.log('Error fetching widget registrations: ', error);
     }
