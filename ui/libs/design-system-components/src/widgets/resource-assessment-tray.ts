@@ -2,7 +2,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { CSSResult, css, html } from "lit"
 import { property, state } from "lit/decorators.js";
 import { b64images } from "@neighbourhoods/design-system-styles";
-import { NHComponent } from '..';
+import { NHComponent, NHTooltip } from '..';
 import NHAssessmentContainer from './assessment-container';
 import { AssessmentWidgetBlockConfig, AssessmentWidgetConfig } from '@neighbourhoods/client';
 import { SlSpinner } from '@shoelace-style/shoelace';
@@ -36,14 +36,22 @@ export default class NHResourceAssessmentTray extends NHComponent {
     this.expanded = !this.expanded
   }
 
+  tooltipMessage() {
+    if(this.editing) return "Add as many widgets as you need - the changes won't be saved until the Update Config button is pressed"
+
+    return "To add a widget, click the plus icon."
+  }
+
   render() {
     return html`
-      <div
-        class="assessment-widget-tray${classMap({
-          editable: !!this.editable,
-        })}"
-        data-expanded=${this.expanded}
-      >
+      <nh-tooltip .type=${this.editing ? "warning" : "success"} .text=${this.tooltipMessage()}>
+        <div
+          slot="hoverable"
+          class="assessment-widget-tray${classMap({
+            editable: !!this.editable,
+          })}"
+          data-expanded=${this.expanded}
+        >
       ${this.assessmentWidgetTrayConfig.length > 0
         ? html`<span class="widget-config-icons">${this.assessmentWidgetTrayConfig?.map(({inputAssessmentWidget} : {inputAssessmentWidget: AssessmentWidgetConfig}) => html`
           <assessment-container
@@ -89,12 +97,13 @@ export default class NHResourceAssessmentTray extends NHComponent {
           <div class="menu-dot"></div>
           <div class="menu-dot"></div>
         </nav>
-      </div>
+      </div></nh-tooltip>
     `
   }
 
   static elementDefinitions = {
     'assessment-container': NHAssessmentContainer,
+    'nh-tooltip': NHTooltip,
     'sl-spinner': SlSpinner,
   }
 

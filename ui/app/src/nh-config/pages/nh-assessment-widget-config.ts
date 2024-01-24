@@ -256,7 +256,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                   @click=${async () => {
                     await this._form?.handleSubmit();
                     this._form?.resetForm();
-                    this.editingConfig = false;
+                    // this.editingConfig = false;
                   }}
                   id="add-widget-config"
                   .variant=${'success'}
