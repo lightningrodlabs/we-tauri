@@ -16,13 +16,13 @@ class DelegateReceiverClass<D> extends LitElement {
     // console.log("Got delegate", delegate)
     // console.log("Had delegate", this._nhDelegate)
     this._nhDelegate = delegate;
-    this.loadData()
+    setTimeout(this.loadData.bind(this), 1)
   }
   public get nhDelegate() {
     return this._nhDelegate!
   }
 
-  public loadData = async () => {}
+  public async loadData() {}
 }
 
 export class AppBlock extends DelegateReceiverClass<AppBlockDelegate> {}
@@ -33,7 +33,7 @@ export class InputAssessmentControl extends DelegateReceiverClass<InputAssessmen
   @property()
   assessment: Assessment | undefined
 
-  public loadData = async () => {
+  public async loadData() {
     this.assessment = await this.nhDelegate.getLatestAssessmentForUser();
     this.nhDelegate.subscribe((assessment) => {
       this.assessment = assessment
@@ -45,7 +45,7 @@ export class OutputAssessmentControl extends DelegateReceiverClass<OutputAssessm
   @property()
   assessment: Assessment | undefined
 
-  public loadData = async () => {
+  public async loadData() {
     this.assessment = await this.nhDelegate.getLatestAssessment()
     this.nhDelegate.subscribe((assessment) => {
       this.assessment = assessment
