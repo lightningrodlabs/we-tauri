@@ -1,3 +1,4 @@
+import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { css, CSSResult, html, TemplateResult } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
@@ -78,9 +79,8 @@ export default class NHSelect extends NHComponentShoelace {
             <li class="option" @click=${() => this.handleSelected(option)}>
               <span class="option-image">
                 ${option?.renderBlock 
-                  ? html`
-                      ${option.renderBlock()}
-                    ` // Case with an input-assesment-renderer in OptionConfig.renderBlock
+                  ? repeat([option], () => +(new Date), (option, _idx) => (option as any).renderBlock())
+                  // Case with an input-assesment-renderer in OptionConfig.renderBlock. This will be refactored
                   : html`<img
                             class="icon"
                             alt=${option.value}

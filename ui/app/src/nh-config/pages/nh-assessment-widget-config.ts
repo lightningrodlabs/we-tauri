@@ -76,9 +76,10 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
   
   @state() loading: boolean = false;
   @state() editingConfig: boolean = false;
+  @state() placeHolderWidget!: () => TemplateResult;
   @state() configuredWidgetsPersisted: boolean = true; // Is the in memory representation the same as on DHT?
   
-  @state() selectWidgetInputValue: string = ''; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
+  @state() selectedWidgetKey: string | undefined; // nh-form select options for the 2nd/3rd selects are configured dynamically when this state change triggers a re-render
   
   @state() _workingWidgetControls!: AssessmentWidgetBlockConfig[];
   @state() _workingWidgetControlRendererCache: Record<string, any> = new Map();
@@ -119,7 +120,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this.loading = false;
     }
   }
-
+  
   private getCombinedWorkingAndFetchedWidgets() {
     let widgets: AssessmentWidgetBlockConfig[]
     if(this._fetchedConfig && this._workingWidgetControls && this._workingWidgetControls.length > 0) {
@@ -134,10 +135,17 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
     return widgets;
   }
 
+  renderWidgetControlPlaceholder() {
+    if(typeof this.selectedWidgetKey != 'undefined' && this?._workingWidgetControlRendererCache.has(this.selectedWidgetKey) && this?.placeHolderWidget) {
+      return repeat([this.selectedWidgetKey], () => +(new Date), (_, _idx) =>this?.placeHolderWidget())
+    }
+    return html`<sl-spinner class="icon-spinner"></sl-spinner>`
+  }
+
   render(): TemplateResult {
     let renderableWidgets = (this.configuredInputWidgets || this.getCombinedWorkingAndFetchedWidgets())?.map((widgetRegistrationEntry: AssessmentWidgetBlockConfig) => widgetRegistrationEntry.inputAssessmentWidget as AssessmentWidgetConfig)
     return html`
-      <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets(); console.log('this._registeredWidgets :>> ', this._registeredWidgets)}}>
+      <main @assessment-widget-config-set=${async () => {await this.fetchRegisteredWidgets()}}>
         <nh-page-header-card .heading=${'Assessment Widget Config'}>
           <nh-button
             slot="secondary-action"
@@ -175,7 +183,11 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                       })
                     : null
                 }
-                ${this.editingConfig || !this._fetchedConfig || !this.appletRenderers ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;"><sl-spinner class="icon-spinner"></sl-spinner></div>` : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
+                ${this.loading || this.editingConfig || !this._fetchedConfig || !this.appletRenderers 
+                  ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;">
+                      ${this.renderWidgetControlPlaceholder()}
+                    </div>` 
+                  : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
               </div></div>
             </assessment-widget-tray>
             <nh-button
@@ -294,11 +306,13 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
 
   private renderMainForm(): TemplateResult {
     const rangeEntries = this._rangeEntries as any;
-
+    const widgets = typeof this._registeredWidgets == 'object' && Object.values(this._registeredWidgets) || []
     return html`
       <nh-form
         @change=${async e => {
-          this.selectWidgetInputValue = this._form._model.assessment_widget;
+          const selectedWidget = widgets?.find(widget => widget.name == this._form._model.assessment_widget);
+          this.selectedWidgetKey = selectedWidget?.widgetKey;
+          this.placeHolderWidget = this?._workingWidgetControlRendererCache.get(this.selectedWidgetKey)
           e.currentTarget.requestUpdate();
           await e.currentTarget.updateComplete;
         }}
@@ -325,6 +339,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                               .component=${renderer.component}
                               .nhDelegate=${fakeDelegate}
                             ></input-assessment-renderer>`
+                            this?._workingWidgetControlRendererCache.set(widget.widgetKey, renderBlock)
                           }
                           
                           return ({
@@ -353,8 +368,8 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                         ?.filter(dimension => {
                           const selectedWidgetRangeKind = Object.values(
                             this._registeredWidgets,
-                          ).find(widget => widget.name == this.selectWidgetInputValue)?.rangeKind;
-                          if (this.selectWidgetInputValue == '' || !selectedWidgetRangeKind) return false;
+                          ).find(widget => widget.widgetKey == this.selectedWidgetKey)?.rangeKind;
+                          if (typeof this.selectedWidgetKey == 'undefined' || !selectedWidgetRangeKind) return false;
 
                           const dimensionRange = rangeEntries.find(range =>
                             compareUint8Arrays(range.range_eh, dimension.range_eh),
