@@ -25,11 +25,19 @@ export function rangeKindEqual(rk1: RangeKind, rk2: RangeKind) {
   );
 }
 
-export function rangeKind1CoversRangeKind2(rk1: RangeKind, rk2: RangeKind) {
+export function controlIncludesDimensionRange(controlRange: RangeKind, dimensionRange: RangeKind) {
   return (
-    Object.keys(rk1)[0] == Object.keys(rk2)[0] && // Number type
-    Object.values(rk1)[0]!.min <= Object.values(rk2)[0]!.min &&
-    Object.values(rk1)[0]!.max >= Object.values(rk2)[0]!.max
+    Object.keys(dimensionRange)[0] == Object.keys(controlRange)[0] && // Number type
+    Object.values(dimensionRange)[0]!.min >= Object.values(controlRange)[0]!.min &&
+    Object.values(dimensionRange)[0]!.max <= Object.values(controlRange)[0]!.max
+  );
+}
+
+export function dimensionIncludesControlRange(dimensionRange: RangeKind, controlRange: RangeKind) {
+  return (
+    Object.keys(dimensionRange)[0] == Object.keys(controlRange)[0] && // Number type
+    Object.values(dimensionRange)[0]!.min <= Object.values(controlRange)[0]!.min &&
+    Object.values(dimensionRange)[0]!.max >= Object.values(controlRange)[0]!.max
   );
 }
 

@@ -831,7 +831,6 @@ export class MainDashboard extends ScopedRegistryHost(LitElement) {
 
       .appletCentricIconHover {
         border: transparent 1px solid;
-        overflow: auto;
       }
 
       .appletCentricIconHover:hover {

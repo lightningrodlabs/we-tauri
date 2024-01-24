@@ -26,7 +26,6 @@ import {
   AssessmentWidgetBlockConfig,
   AssessmentWidgetRegistrationInput,
   GetMethodsForDimensionQueryParams,
-  AssessmentWidgetKind
 } from './index';
 import { derived, Readable, Writable, writable } from 'svelte/store';
 import { getLatestAssessment, Option, serializeAsyncActions } from './utils';
