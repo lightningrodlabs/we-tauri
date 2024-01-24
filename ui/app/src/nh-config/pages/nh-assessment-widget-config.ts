@@ -120,7 +120,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
       this.loading = false;
     }
   }
-  
+
   private getCombinedWorkingAndFetchedWidgets() {
     let widgets: AssessmentWidgetBlockConfig[]
     if(this._fetchedConfig && this._workingWidgetControls && this._workingWidgetControls.length > 0) {
@@ -184,7 +184,7 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                     : null
                 }
                 ${this.loading || this.editingConfig || !this._fetchedConfig || !this.appletRenderers 
-                  ? html`<div style="display: grid; place-content: center; width: 48px; height: 48px;">
+                  ? html`<div style="display: grid; place-content: center; height: 48px;">
                       ${this.renderWidgetControlPlaceholder()}
                     </div>` 
                   : html`<assessment-widget .icon=${''} .assessmentValue=${0}></assessment-widget>`}
@@ -327,7 +327,9 @@ export default class NHAssessmentWidgetConfig extends NHComponent {
                 label: '1. Select an assessment widget for this resource: ',
                 selectOptions: (() =>
                   this?._registeredWidgets && this?.appletRenderers
-                    ? Object.values(this._registeredWidgets)!.map((widget: AssessmentWidgetRegistrationInput) => {
+                    ? Object.values(this._registeredWidgets)!
+                      .filter((widget: AssessmentWidgetRegistrationInput) => widget.kind == "input")
+                      .map((widget: AssessmentWidgetRegistrationInput) => {
                           let renderBlock;
                           if(this?._workingWidgetControlRendererCache.has(widget.widgetKey)) {
                             renderBlock = this._workingWidgetControlRendererCache.get(widget.widgetKey);
