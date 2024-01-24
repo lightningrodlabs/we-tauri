@@ -27,7 +27,7 @@
 
     "stop:local-services": "kill `cat .local-services-pid`; rm .local-services-pid; rm .bootstrap-path; rm .signal-path",
 
-    "build": "pnpm build:happ && pnpm run -r --filter=!./applet-dev-workspace/** build && hc web-app pack workdir",
+    "build": "pnpm build:happ && pnpm run -r --filter=./ui/app build && hc web-app pack workdir",
     "build:happ": "pnpm build:dnas && hc app pack ./workdir",
     "build:dnas": "pnpm build:zomes && hc dna pack ./dnas/we/workdir && hc dna pack ./dnas/lobby/workdir && hc dna pack ./dnas/sensemaker/workdir && hc dna pack ./dnas/test_provider/workdir",
     "build:zomes": "CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown",
