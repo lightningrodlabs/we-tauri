@@ -267,7 +267,7 @@ export class SensemakerStore {
     }
   }
 
-  async getResourceDefs(): Promise<Array<ResourceDef>> {
+  async getResourceDefs(): Promise<Array<EntryRecord<ResourceDef>>> {
       const resourceDefRecords : HolochainRecord[] = await this.service.getResourceDefs();
       const entryRecords = resourceDefRecords.map((record: HolochainRecord) => new EntryRecord<ResourceDef>(record));
       this.resourceDefinitions.update(resourceDefinitions => {
@@ -276,7 +276,7 @@ export class SensemakerStore {
         });
         return resourceDefinitions;
       });
-      return entryRecords.map(entryRecord => ({...entryRecord.entry, resource_def_eh: entryRecord.entryHash}));
+      return entryRecords
   }
 
   async createAssessment(assessment: CreateAssessmentInput): Promise<EntryHash> {

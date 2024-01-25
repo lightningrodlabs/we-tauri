@@ -15,6 +15,7 @@ import { provideWeGroupInfo } from '../matrix-helpers';
 import { removeResourceNameDuplicates } from '../utils';
 import { ResourceDef } from '@neighbourhoods/client';
 import { cleanForUI } from '../elements/components/helpers/functions';
+import { EntryRecord } from '@holochain-open-dev/utils';
 
 export default class NHGlobalConfig extends NHComponent {
   @consume({ context: matrixContext, subscribe: true })
@@ -52,7 +53,7 @@ export default class NHGlobalConfig extends NHComponent {
     if(changedProperties.has('weGroupId')) {
       if(!this._sensemakerStore.value) return
       const result = await this._sensemakerStore.value.getResourceDefs()
-      this._resourceDefEntries = removeResourceNameDuplicates(result); // This de-duplicates resources with the same name from other applets (including uninstalled) 
+      this._resourceDefEntries = removeResourceNameDuplicates(result.map((entryRec) => ({...entryRec.entry, resource_def_eh: entryRec.entryHash}))); // This de-duplicates resources with the same name from other applets (including uninstalled) 
     }
   }
   
