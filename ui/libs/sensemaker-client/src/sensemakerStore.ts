@@ -40,7 +40,7 @@ interface ContextResults {
 export class SensemakerStore {
   _contextResults: Writable<ContextResults> = writable({});
 
-  ranges: Writable<Map<EntryHashB64, Range>> = writable(new Map<EntryHashB64, Range>());
+  ranges: Writable<Map<EntryHashB64, EntryRecord<Range>>> = writable(new Map<EntryHashB64, EntryRecord<Range>>());
   dimensions: Writable<Map<EntryHashB64, Dimension>> = writable(new Map<EntryHashB64, Dimension>());
   methods: Writable<Map<EntryHashB64, Method>> = writable(new Map<EntryHashB64, Method>());
   resourceDefinitions: Writable<Map<EntryHashB64, ResourceDef>> = writable(new Map<EntryHashB64, ResourceDef>());
@@ -150,13 +150,13 @@ export class SensemakerStore {
     const rangeRecord = await this.service.createRange(range);
     const entryRecord = new EntryRecord<Range>(rangeRecord);
     this.ranges.update(ranges => {
-      ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       return ranges;
     });
     return entryRecord.entryHash;
   }
 
-  async getRange(rangeEh: EntryHash): Promise<Range> {
+  async getRange(rangeEh: EntryHash): Promise<EntryRecord<Range>> {
     const range = get(this.ranges).get(encodeHashToBase64(rangeEh));
     if(range) {
       return range;
@@ -165,10 +165,10 @@ export class SensemakerStore {
       const rangeRecord = await this.service.getRange(rangeEh)
       const entryRecord = new EntryRecord<Range>(rangeRecord);
       this.ranges.update(ranges => {
-        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         return ranges;
       });
-      return entryRecord.entry;
+      return entryRecord;
     }
   }
 
