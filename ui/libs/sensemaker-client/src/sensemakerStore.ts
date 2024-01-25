@@ -41,7 +41,7 @@ export class SensemakerStore {
   _contextResults: Writable<ContextResults> = writable({});
 
   ranges: Writable<Map<EntryHashB64, EntryRecord<Range>>> = writable(new Map<EntryHashB64, EntryRecord<Range>>());
-  dimensions: Writable<Map<EntryHashB64, Dimension>> = writable(new Map<EntryHashB64, Dimension>());
+  dimensions: Writable<Map<EntryHashB64, EntryRecord<Dimension>>> = writable(new Map<EntryHashB64, EntryRecord<Dimension>>());
   methods: Writable<Map<EntryHashB64, Method>> = writable(new Map<EntryHashB64, Method>());
   resourceDefinitions: Writable<Map<EntryHashB64, ResourceDef>> = writable(new Map<EntryHashB64, ResourceDef>());
   contexts: Writable<Map<string, Map<EntryHashB64, CulturalContext>>> = writable(new Map<string, Map<EntryHashB64, CulturalContext>>());
@@ -213,7 +213,7 @@ export class SensemakerStore {
     return entryRecord.entryHash;
   }
 
-  async getDimension(dimensionEh: EntryHash): Promise<Dimension> {
+  async getDimension(dimensionEh: EntryHash): Promise<EntryRecord<Dimension>> {
     const dimension = get(this.dimensions).get(encodeHashToBase64(dimensionEh));
     if(dimension) {
       return dimension;
@@ -222,23 +222,23 @@ export class SensemakerStore {
       const dimensionRecord = await this.service.getDimension(dimensionEh)
       const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
       this.dimensions.update(dimensions => {
-        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         return dimensions;
       });
-      return entryRecord.entry;
+      return entryRecord;
     }
   }
 
-  async getDimensions(): Promise<Array<Dimension>> {
+  async getDimensions(): Promise<Array<EntryRecord<Dimension>>> {
     const dimensionRecords = await this.service.getDimensions();
     const entryRecords = dimensionRecords.map(dimensionRecord => new EntryRecord<Dimension>(dimensionRecord));
     this.dimensions.update(dimensions => {
       entryRecords.forEach(entryRecord => {
-        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       });
       return dimensions;
     });
-    return entryRecords.map(entryRecord => entryRecord.entry);
+    return entryRecords;
   }
 
   async createResourceDef(resourceDef: ResourceDef): Promise<EntryHash> {
