@@ -43,7 +43,7 @@ export class SensemakerStore {
   ranges: Writable<Map<EntryHashB64, EntryRecord<Range>>> = writable(new Map<EntryHashB64, EntryRecord<Range>>());
   dimensions: Writable<Map<EntryHashB64, EntryRecord<Dimension>>> = writable(new Map<EntryHashB64, EntryRecord<Dimension>>());
   methods: Writable<Map<EntryHashB64, Method>> = writable(new Map<EntryHashB64, Method>());
-  resourceDefinitions: Writable<Map<EntryHashB64, ResourceDef>> = writable(new Map<EntryHashB64, ResourceDef>());
+  resourceDefinitions: Writable<Map<EntryHashB64, EntryRecord<ResourceDef>>> = writable(new Map<EntryHashB64, EntryRecord<ResourceDef>>());
   contexts: Writable<Map<string, Map<EntryHashB64, CulturalContext>>> = writable(new Map<string, Map<EntryHashB64, CulturalContext>>());
 
   _resourceAssessments: Writable<{ [entryHash: string]: Array<Assessment> }> = writable({});
@@ -251,7 +251,7 @@ export class SensemakerStore {
     return entryRecord.entryHash;
   }
 
-  async getResourceDef(resourceDefEh: EntryHash): Promise<ResourceDef> {
+  async getResourceDef(resourceDefEh: EntryHash): Promise<EntryRecord<ResourceDef>> {
     const resourceDef = get(this.resourceDefinitions).get(encodeHashToBase64(resourceDefEh));
     if(resourceDef) {
       return resourceDef;
@@ -260,10 +260,10 @@ export class SensemakerStore {
       const resourceDefRecord = await this.service.getResourceDef(resourceDefEh)
       const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
       this.resourceDefinitions.update(resourceDefs => {
-        resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         return resourceDefs;
       });
-      return entryRecord.entry;
+      return entryRecord;
     }
   }
 
@@ -272,7 +272,7 @@ export class SensemakerStore {
       const entryRecords = resourceDefRecords.map((record: HolochainRecord) => new EntryRecord<ResourceDef>(record));
       this.resourceDefinitions.update(resourceDefinitions => {
         entryRecords.forEach(entryRecord => {
-          resourceDefinitions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+          resourceDefinitions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         });
         return resourceDefinitions;
       });
