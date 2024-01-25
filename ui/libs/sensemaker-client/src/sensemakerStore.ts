@@ -172,16 +172,16 @@ export class SensemakerStore {
     }
   }
 
-  async getRanges(): Promise<Array<Range>> {
+  async getRanges(): Promise<Array<EntryRecord<Range>>> {
     const rangeRecords = await this.service.getRanges();
     const entryRecords = rangeRecords.map(rangeRecord => new EntryRecord<Range>(rangeRecord));
     this.ranges.update(ranges => {
       entryRecords.forEach(entryRecord => {
-        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        ranges.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       });
       return ranges;
     });
-    return entryRecords.map(entryRecord => entryRecord.entry);
+    return entryRecords;
   }
 
   async createOutputDimensionAndMethodAtomically(input: {outputDimension: Dimension, partialMethod: Partial<Method>}): Promise<{outputDimension: EntryHash, method: EntryHash}> {
