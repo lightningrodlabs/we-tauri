@@ -189,7 +189,7 @@ export class SensemakerStore {
 
     const dimensionEntryRecord = new EntryRecord<Dimension>(dimensionRecord);
     this.dimensions.update(dimensions => {
-      dimensions.set(encodeHashToBase64(dimensionEntryRecord.entryHash), dimensionEntryRecord.entry);
+      dimensions.set(encodeHashToBase64(dimensionEntryRecord.entryHash), dimensionEntryRecord);
       return dimensions;
     });
 
@@ -207,7 +207,7 @@ export class SensemakerStore {
     const dimensionRecord = await this.service.createDimension(dimension);
     const entryRecord = new EntryRecord<Dimension>(dimensionRecord);
     this.dimensions.update(dimensions => {
-      dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      dimensions.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       return dimensions;
     });
     return entryRecord.entryHash;
@@ -245,7 +245,7 @@ export class SensemakerStore {
     const resourceDefRecord = await this.service.createResourceDef(resourceDef);
     const entryRecord = new EntryRecord<ResourceDef>(resourceDefRecord);
     this.resourceDefinitions.update(resourceDefs => {
-      resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      resourceDefs.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       return resourceDefs;
     });
     return entryRecord.entryHash;
