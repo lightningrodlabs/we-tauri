@@ -291,8 +291,9 @@ export class SensemakerStore {
     return entryRecord.entryHash;
   }
 
-  async getAssessment(assessmentEh: EntryHash): Promise<HolochainRecord> {
-    return await this.service.getAssessment(assessmentEh)
+  async getAssessment(assessmentEh: EntryHash): Promise<EntryRecord<Assessment>> {
+    const record = await this.service.getAssessment(assessmentEh)
+    return new EntryRecord<Assessment>(record)
   }
 
   async getAssessmentsForResources(getAssessmentsInput: GetAssessmentsForResourceInput): Promise<Record<EntryHashB64, Array<Assessment>>> {
