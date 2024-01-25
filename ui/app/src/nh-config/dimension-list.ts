@@ -8,6 +8,7 @@ import { Dimension,  Method,  Range, RangeKind, SensemakerStore } from "@neighbo
 import { NHButton, NHCard, NHComponent } from "@neighbourhoods/design-system-components";
 import { capitalize } from "../elements/components/helpers/functions";
 import { FieldDefinition, FieldDefinitions, Table, TableStore } from "@adaburrows/table-web-component";
+import { EntryRecord } from "@holochain-open-dev/utils";
 
 type InputDimensionTableRecord = {
   ['dimension-name']: string,
@@ -126,7 +127,7 @@ export default class DimensionList extends NHComponent {
     try {
       await this.fetchDimensionEntries()
       await this.fetchRangeEntries()
-      this._methodEntries = await this.sensemakerStore.getMethods();
+      this._methodEntries = (await (this.sensemakerStore.getMethods()) as Array<EntryRecord<Method>>).map(eR => eR.entry);
     } catch (error) {
       console.error('Could not fetch: ', error)
     }

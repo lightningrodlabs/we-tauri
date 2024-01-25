@@ -42,7 +42,7 @@ export class SensemakerStore {
 
   ranges: Writable<Map<EntryHashB64, EntryRecord<Range>>> = writable(new Map<EntryHashB64, EntryRecord<Range>>());
   dimensions: Writable<Map<EntryHashB64, EntryRecord<Dimension>>> = writable(new Map<EntryHashB64, EntryRecord<Dimension>>());
-  methods: Writable<Map<EntryHashB64, Method>> = writable(new Map<EntryHashB64, Method>());
+  methods: Writable<Map<EntryHashB64, EntryRecord<Method>>> = writable(new Map<EntryHashB64, EntryRecord<Method>>());
   resourceDefinitions: Writable<Map<EntryHashB64, EntryRecord<ResourceDef>>> = writable(new Map<EntryHashB64, EntryRecord<ResourceDef>>());
   contexts: Writable<Map<string, Map<EntryHashB64, CulturalContext>>> = writable(new Map<string, Map<EntryHashB64, CulturalContext>>());
 
@@ -195,7 +195,7 @@ export class SensemakerStore {
 
     const methodEntryRecord = new EntryRecord<Method>(methodRecord);
     this.methods.update(methods => {
-      methods.set(encodeHashToBase64(methodEntryRecord.entryHash), methodEntryRecord.entry);
+      methods.set(encodeHashToBase64(methodEntryRecord.entryHash), methodEntryRecord);
       return methods;
     });
 
@@ -310,13 +310,13 @@ export class SensemakerStore {
     const methodRecord = await this.service.createMethod(method);
     const entryRecord = new EntryRecord<Method>(methodRecord);
     this.methods.update((methods) => {
-      methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+      methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
       return methods;
     });
     return entryRecord.entryHash;
   }
 
-  async getMethod(methodEh: EntryHash): Promise<Method> {
+  async getMethod(methodEh: EntryHash): Promise<EntryRecord<Method>> {
     const method = get(this.methods).get(encodeHashToBase64(methodEh));
     if (method) {
       return method;
@@ -325,22 +325,22 @@ export class SensemakerStore {
       const methodRecord = await this.service.getMethod(methodEh)
       const entryRecord = new EntryRecord<Method>(methodRecord);
       this.methods.update((methods) => {
-        methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+        methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         return methods;
       });
-      return entryRecord.entry;
+      return entryRecord;
     }
   }
-  async getMethods(): Promise<Array<Method>> {
+  async getMethods(): Promise<Array<EntryRecord<Method>>> {
       const methodRecords : HolochainRecord[] = await this.service.getMethods();
       const entryRecords = methodRecords.map((record: HolochainRecord) => new EntryRecord<Method>(record));
       this.methods.update(methods => {
         entryRecords.forEach(entryRecord => {
-          methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord.entry);
+          methods.set(encodeHashToBase64(entryRecord.entryHash), entryRecord);
         });
         return methods;
       });
-      return entryRecords.map(entryRecord => entryRecord.entry);
+      return entryRecords;
   }
   async getMethodsForDimension(queryParams: GetMethodsForDimensionQueryParams): Promise<Array<Method>> {
     // TODO: get from memory first?
