@@ -1,3 +1,4 @@
+import { CulturalContext } from './culturalContext';
 import {
   AgentPubKey,
   AppAgentClient,
@@ -342,12 +343,12 @@ export class SensemakerStore {
       });
       return entryRecords;
   }
-  async getMethodsForDimension(queryParams: GetMethodsForDimensionQueryParams): Promise<Array<Method>> {
+  async getMethodsForDimension(queryParams: GetMethodsForDimensionQueryParams): Promise<Array<EntryRecord<Method>>> {
     // TODO: get from memory first?
       const methodRecords : HolochainRecord[] = await this.service.getMethodsForDimensionEntryHash(queryParams);
       const entryRecords = methodRecords.map((record: HolochainRecord) => new EntryRecord<Method>(record));
 
-      return entryRecords.map(entryRecord => entryRecord.entry);
+      return entryRecords;
   }
 
   async runMethod(runMethodInput: RunMethodInput): Promise<Assessment> {
@@ -378,9 +379,10 @@ export class SensemakerStore {
     return entryRecord.entryHash;
   }
 
-  async getCulturalContext(culturalContextEh: EntryHash): Promise<HolochainRecord> {
+  async getCulturalContext(culturalContextEh: EntryHash): Promise<EntryRecord<CulturalContext>> {
     // :TODO: if we want cultural contexts to be bound to applets, it should be part of the cultural context entry.
-    return await this.service.getCulturalContext(culturalContextEh)
+    const record = await this.service.getCulturalContext(culturalContextEh);
+    return new EntryRecord<CulturalContext>(record)
   }
 
   async computeContext(contextName: string, computeContextInput: ComputeContextInput): Promise<Array<EntryHash>> {
@@ -418,8 +420,7 @@ export class SensemakerStore {
       );
     }
     for (const contextEh of Object.values(appletConfig.cultural_contexts)) {
-      const contextRecord = await this.getCulturalContext(contextEh);
-      const entryRecord = new EntryRecord<CulturalContext>(contextRecord);
+      const entryRecord = await this.getCulturalContext(contextEh);
       this.contexts.update((contexts) => {
         const appletContexts = contexts.get(appletConfig.name);
         if (appletContexts) {

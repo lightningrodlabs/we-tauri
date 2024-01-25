@@ -18,6 +18,7 @@ import { generateHeaderHTML, cleanResourceNameForUI } from './helpers/functions'
 import { decode } from '@msgpack/msgpack';
 import { MatrixStore } from '../../matrix-store';
 import { matrixContext, weGroupContext } from '../../context';
+import { EntryRecord } from '@holochain-open-dev/utils';
 
 @customElement('dashboard-filter-map')
 export class DashboardFilterMap extends LitElement {
@@ -154,9 +155,9 @@ export class DashboardFilterMap extends LitElement {
   async fetchCurrentContextEntry() {
     if (this.selectedContext == 'none') return;
 
-    const contexts = await this._sensemakerStore.getCulturalContext(this.selectedContext);
+    const context: EntryRecord<CulturalContext> = await this._sensemakerStore.getCulturalContext(this.selectedContext);
     try {
-      this._contextEntry = decode((contexts.entry as any).Present.entry) as CulturalContext;
+      this._contextEntry = context.entry as CulturalContext;
     } catch (error) {
       console.log('No context entry exists for that context entry hash!');
     }
